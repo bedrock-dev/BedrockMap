@@ -14,8 +14,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->main_tab->setTabText(1, "NBT");
     ui->main_tab->setTabText(0, "Map");
 
-    this->map = new MapWidget();
-    ui->map_tab_grid->addWidget(map, 1, 1);
+    if (this->world.init(R"(C:\Users\xhy\Desktop\t)")) {
+        this->map = new MapWidget(&this->world, nullptr);
+        ui->map_tab_grid->addWidget(map, 1, 1);
+    } else {
+        ui->map_tab_grid->addWidget(new QLabel("Invalid world path"), 1, 1);
+    }
 }
 
 MainWindow::~MainWindow() { delete ui; }

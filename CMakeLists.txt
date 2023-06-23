@@ -44,7 +44,11 @@ set(PROJECT_SOURCES
         mainwindow.ui
         mapwidget.h
         mapwidget.cpp
-        world.h world.cpp
+        world.h
+        world.cpp
+        lrucache.h
+        asynclevelloader.h
+        asynclevelloader.cpp
     )
 
 add_executable(BedrockMap ${PROJECT_SOURCES} )

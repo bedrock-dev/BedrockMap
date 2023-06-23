@@ -1,6 +1,9 @@
 #include <QApplication>
+#include <QDebug>
 #include <QDesktopWidget>
 
+#include "asynclevelloader.h"
+#include "lrucache.h"
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
@@ -20,4 +23,20 @@ int main(int argc, char *argv[]) {
     w.show();
 
     return a.exec();
+
+    //    AsyncLevelLoader loader;
+    //    loader.init(R"(C:\Users\xhy\Desktop\t)");
+    //    qDebug() << "Loader!!";
+    //    for (int i = 0; i < 3; i++) {
+    //        qDebug() << "========================Round==================";
+    //        for (int j = 0; j < 5; j++) {
+    //            bl::chunk_pos p{0, j, 0};
+    //            auto *chunk = loader.get(p);
+    //            qDebug() << "Chunk  Read status" << p.to_string().c_str() <<
+    //            ": "
+    //                     << (chunk ? 1 : 0);
+    //        }
+    //    }
+
+    return 0;
 }
