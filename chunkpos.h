@@ -1,9 +1,7 @@
 #ifndef CHUNKPOS_H
 #define CHUNKPOS_H
 
-
-class ChunkPos
-{
+class ChunkPos {
    public:
     ChunkPos(int x, int z) : x_(x), z_(z) {}
     int x() const { return this->x_; }

@@ -3,19 +3,24 @@
 
 #include <QMainWindow>
 
+#include "mapwidget.h"
+
 QT_BEGIN_NAMESPACE
     namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
     class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+        Q_OBJECT
 
-        public:
-                  MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+       public:
+        MainWindow(QWidget *parent = nullptr);
+        ~MainWindow();
 
-   private:
-    Ui::MainWindow *ui;
-};
-#endif // MAINWINDOW_H
+       private:
+        Ui::MainWindow *ui;
+        MapWidget *map;
+        world world;
+    };
+
+#endif  // MAINWINDOW_H

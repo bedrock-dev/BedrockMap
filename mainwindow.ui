@@ -163,7 +163,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="cursor_pos_label">
             <property name="text">
              <string>(-1230,1110)</string>
             </property>

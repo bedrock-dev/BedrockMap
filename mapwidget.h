@@ -6,7 +6,8 @@
 #include <QWidget>
 #include <tuple>
 
-#include "chunkpos.h"
+#include "bedrock_key.h"
+#include "world.h"
 
 class MapWidget : public QWidget {
     Q_OBJECT
@@ -21,6 +22,8 @@ class MapWidget : public QWidget {
 
     void wheelEvent(QWheelEvent *event) override;
 
+    void resizeEvent(QResizeEvent *event) override;
+
    private:
     // for debug
 
@@ -30,17 +33,19 @@ class MapWidget : public QWidget {
 
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
-    std::tuple<ChunkPos, ChunkPos, QRect> getRenderRange(const QRect &camera);
+    std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(
+        const QRect &camera);
 
    signals:
 
    private:
     int bw{6};             //每个方块需要几个像素
     QPoint origin{0, 0};   //记录区块0,0相对widget左上角的坐标
-    ChunkPos spawn{0, 0};  // orgin 处要会绘制的区块坐标
+    bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
     bool dragging{false};
-    const QRect camera{200, 200, 800,
-                       600};  //需要绘制的范围，后面设置成和widget等大即可
+    QRect camera{0, 0, width(),
+                 height()};  //需要绘制的范围，后面设置成和widget等大即可
+    world *world{nullptr};
 };
 
 #endif  // MAPWIDGET_H

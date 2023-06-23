@@ -12,15 +12,13 @@
 
 MapWidget::MapWidget(QWidget *parent) : QWidget(parent) {
     //初始化为正中央
-    //    this->origin = {this->width() / 2.0, this->height() / 2.0};
-
-    this->origin = {this->size().width() / 2, this->size().height() / 2};
 }
 
-void MapWidget::paintEvent(QPaintEvent *event) {
-    this->debugDrawCamera(event);
-    //    this->debugDrawGrid(event);
+void MapWidget::resizeEvent(QResizeEvent *event) {
+    this->camera = QRect(20, 20, this->width() - 20, this->height() - 20);
 }
+
+void MapWidget::paintEvent(QPaintEvent *event) { this->debugDrawCamera(event); }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
     static QPoint lastMove;
@@ -87,10 +85,10 @@ void MapWidget::debugDrawCamera(QPaintEvent *evet) {
 
     pen2.setWidth(4);
     painter.setPen(pen2);
-    for (int i = minChunk.x(); i <= maxChunk.x(); i++) {
-        for (int j = minChunk.z(); j <= maxChunk.z(); j++) {
-            int x = (i - minChunk.x()) * bw * 16 + renderRange.x();
-            int y = (j - minChunk.z()) * bw * 16 + renderRange.y();
+    for (int i = minChunk.x; i <= maxChunk.x; i++) {
+        for (int j = minChunk.z; j <= maxChunk.z; j++) {
+            int x = (i - minChunk.x) * bw * 16 + renderRange.x();
+            int y = (j - minChunk.z) * bw * 16 + renderRange.y();
             painter.drawRect(x, y, bw * 16, bw * 16);
             painter.drawText(
                 x + bw, y + bw * 8,
@@ -101,7 +99,7 @@ void MapWidget::debugDrawCamera(QPaintEvent *evet) {
 
 void MapWidget::debugDrawGrid(QPaintEvent *event) {}
 
-std::tuple<ChunkPos, ChunkPos, QRect> MapWidget::getRenderRange(
+std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(
     const QRect &camera) {
     //需要的参数
     // origin  焦点原点在什么地方
@@ -125,11 +123,11 @@ std::tuple<ChunkPos, ChunkPos, QRect> MapWidget::getRenderRange(
         renderX, renderY, chunk_w * CHUNK_WIDTH, chunk_h * CHUNK_WIDTH
 
     );
-    auto minChunk = ChunkPos((renderX - origin.x()) / CHUNK_WIDTH,
-                             (renderY - origin.y()) / CHUNK_WIDTH);
+    auto minChunk = bl::chunk_pos{(renderX - origin.x()) / CHUNK_WIDTH,
+                                  (renderY - origin.y()) / CHUNK_WIDTH};
 
     auto maxChunk =
-        ChunkPos(minChunk.x() + chunk_w - 1, minChunk.z() + chunk_h - 1);
+        bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1};
 
     return {minChunk, maxChunk, renderRange};
 }

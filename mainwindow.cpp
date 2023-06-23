@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->main_tab->setTabText(1, "NBT");
     ui->main_tab->setTabText(0, "Map");
 
-    ui->map_tab_grid->addWidget(new MapWidget(), 1, 1);
+    this->map = new MapWidget();
+    ui->map_tab_grid->addWidget(map, 1, 1);
 }
 
 MainWindow::~MainWindow() { delete ui; }
