@@ -36,8 +36,8 @@ class world {
    private:
     static void initBiomeColorTable();
 
-    LRUCache<bl::chunk_pos, QImage> top_biome_image_cache_;
-    LRUCache<bl::chunk_pos, QImage> top_block_image_cache_;
+    LRUCache<bl::chunk_pos, QImage>* top_biome_image_cache_;
+    LRUCache<bl::chunk_pos, QImage>* top_block_image_cache_;
 
     AsyncLevelLoader level_loader_;
 

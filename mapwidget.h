@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPaintEvent>
+#include <QTimer>
 #include <QWidget>
 #include <array>
 #include <tuple>
@@ -13,7 +14,12 @@
 class MapWidget : public QWidget {
     Q_OBJECT
    public:
-    MapWidget(world *w, QWidget *parent) : QWidget(parent), world(w) {}
+    MapWidget(world *w, QWidget *parent) : QWidget(parent), world(w) {
+        this->asyncRefreshTimer = new QTimer();
+        connect(this->asyncRefreshTimer, SIGNAL(timeout()), this,
+                SLOT(asyncRefresh()));
+        this->asyncRefreshTimer->start(100);
+    }
 
     void paintEvent(QPaintEvent *event) override;
 
@@ -24,6 +30,9 @@ class MapWidget : public QWidget {
     void wheelEvent(QWheelEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
+
+   public slots:
+    void asyncRefresh();
 
    private:
     // for debug
@@ -37,6 +46,8 @@ class MapWidget : public QWidget {
         const std::function<void(const bl::chunk_pos &, const QPoint &)> &f);
     // functio draw
 
+    void drawGrid(QPaintEvent *event, QPainter *p);
+
     void drawSlimeChunks(QPaintEvent *event, QPainter *p);
 
     void drawBiome(QPaintEvent *event, QPainter *p);
@@ -49,6 +60,8 @@ class MapWidget : public QWidget {
    signals:
 
    private:
+    QTimer *asyncRefreshTimer;
+
     int bw{6};                  //每个方块需要几个像素
     QPoint origin{0, 0};        //记录区块0,0相对widget左上角的坐标
     bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标

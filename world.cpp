@@ -5,6 +5,7 @@
 
 #include "asynclevelloader.h"
 #include "color.h"
+#include "lrucache.h"
 
 namespace {
 QVector<QRgb> biome_color_table{};
@@ -12,7 +13,11 @@ QImage *EMPTY_IMAGE{nullptr};
 
 }  // namespace
 
-world::world() { initBiomeColorTable(); }
+world::world() {
+    this->top_biome_image_cache_ = new LRUCache<bl::chunk_pos, QImage>(65536);
+    this->top_block_image_cache_ = new LRUCache<bl::chunk_pos, QImage>(65536);
+    initBiomeColorTable();
+}
 
 bool world::init(const std::string &level_path) {
     return this->level_loader_.init(level_path);
@@ -21,7 +26,7 @@ bool world::init(const std::string &level_path) {
 QImage *world::topBiome(const bl::chunk_pos &p) {
     QImage *res{nullptr};
 
-    if (this->top_biome_image_cache_.get(p, res)) {
+    if (this->top_biome_image_cache_->get(p, res)) {
         if (res) {
             return res;
         } else {
@@ -32,19 +37,18 @@ QImage *world::topBiome(const bl::chunk_pos &p) {
     auto *ch = this->level_loader_.get(p);
 
     if (ch) {
-        auto biomes = ch->get_biome_y(64);
         QImage *image = new QImage(16, 16, QImage::Format_Indexed8);
         image->setColorTable(biome_color_table);
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int idx = static_cast<uint>(biomes[i][j]);
+                int idx = static_cast<uint>(ch->get_top_biome(i, j));
                 if (idx >= 0 && idx < biome_color_table.size()) {
                     image->setPixel(i, j, idx);
                 }
             }
         }
 
-        this->top_biome_image_cache_.put(p, image);
+        this->top_biome_image_cache_->put(p, image);
         return image;
     } else {
         return EMPTY_IMAGE;

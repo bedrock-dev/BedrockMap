@@ -24,10 +24,13 @@ void MapWidget::resizeEvent(QResizeEvent *event) {
     this->camera = QRect(-10, -10, this->width(), this->height());
 }
 
+void MapWidget::asyncRefresh() { this->update(); }
+
 void MapWidget::paintEvent(QPaintEvent *event) {
     QPainter p(this);
     //    this->drawSlimeChunks(event, &p);
     this->drawBiome(event, &p);
+    this->drawGrid(event, &p);
 }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -106,10 +109,6 @@ void MapWidget::debugDrawCamera(QPaintEvent *evet, QPainter *painter) {
 void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter,
                              const bl::chunk_pos &pos, const QPoint &start,
                              QImage *q) {
-    //    qDebug() << "Draw " << pos.to_string().c_str();
-
-    //    QPen qe(QColor(255, 0, 255));
-    //    painter->setPen(qe);
     if (q)
         painter->drawImage(
             QRectF(start.x(), start.y(), 16 * this->bw, 16 * this->bw), *q,
@@ -126,6 +125,15 @@ void MapWidget::forEachChunkInCamera(
             f({i, j, minChunk.dim}, {x, y});
         }
     }
+}
+
+void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
+    QPen pen(QColor(25, 25, 255));
+    painter->setPen(pen);
+    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch,
+                                                      const QPoint &p) {
+        painter->drawRect(QRectF(p.x(), p.y(), this->bw * 16, this->bw * 16));
+    });
 }
 
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {

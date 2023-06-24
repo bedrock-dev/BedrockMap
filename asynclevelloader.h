@@ -53,7 +53,7 @@ class AsyncLevelLoader : public QObject {
     std::mutex m_;
 
     std::unordered_set<bl::chunk_pos> processing_;
-    std::array<LRUCache<bl::chunk_pos, bl::chunk>, 3> chunk_cache_;
+    std::vector<LRUCache<bl::chunk_pos, bl::chunk>*> chunk_cache_{nullptr};
     QThreadPool pool_;
 };
 
