@@ -7,9 +7,7 @@
 #include "qdebug.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->chunk_cache_ = std::vector<LRUCache<bl::chunk_pos, bl::chunk> *>(
-        3, new LRUCache<bl::chunk_pos, bl::chunk>(16384));
-
+    this->chunk_cache_ = std::vector<LRUCache<bl::chunk_pos, bl::chunk> *>(3, new LRUCache<bl::chunk_pos, bl::chunk>(4096));
     this->pool_.setMaxThreadCount(1);
 }
 

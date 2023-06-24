@@ -46,11 +46,13 @@ class LRUCache {
             this->cache[key] = list.begin();
             if (list.size() > cap) {
                 auto last = list.back().first;
+                delete list.back().second;
                 list.pop_back();
                 cache.erase(last);
             }
         } else {
             //找到了,擦除旧的，并挪动到头部
+            delete iter->second->second;
             list.erase(iter->second);
             this->list.insert(list.begin(), {key, value});
             this->cache[key] = list.begin();
@@ -59,9 +61,7 @@ class LRUCache {
 
    private:
     std::list<std::pair<Key, Value *>> list;
-    std::unordered_map<Key,
-                       typename std::list<std::pair<Key, Value *>>::iterator>
-        cache;
+    std::unordered_map<Key, typename std::list<std::pair<Key, Value *>>::iterator> cache;
     std::mutex m_;
     int cap;
 };

@@ -27,10 +27,25 @@ void MapWidget::asyncRefresh() { this->update(); }
 
 void MapWidget::paintEvent(QPaintEvent *event) {
     QPainter p(this);
-    //    this->drawSlimeChunks(event, &p);
-    this->drawBiome(event, &p);
-    this->drawGrid(event, &p);
-    this->drawChunkPos(event, &p);
+
+    switch (this->layeType) {
+        case MapWidget::Biome:
+            drawBiome(event, &p);
+            break;
+        case MapWidget::Terrain:
+            drawTerrain(event, &p);
+            break;
+        case MapWidget::Slime:
+            drawSlimeChunks(event, &p);
+            break;
+        case MapWidget::Height:
+            drawHeight(event, &p);
+            break;
+    }
+
+    if (render_grid) this->drawGrid(event, &p);
+    if (render_text) this->drawChunkPos(event, &p);
+
     //    this->debugDrawCamera(event, &p);
 }
 
@@ -193,9 +208,11 @@ void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
     });
 }
 
-void MapWidget::gotoBlockPos(int x, int z) {
-    // qDebug() << "Goto" << x << "," << z;
+void MapWidget::drawTerrain(QPaintEvent *event, QPainter *p) {}
 
+void MapWidget::drawHeight(QPaintEvent *event, QPainter *p) {}
+
+void MapWidget::gotoBlockPos(int x, int z) {
     int px = this->camera.width() / 2;
     int py = this->camera.height() / 2;
     //坐标换算
@@ -203,33 +220,23 @@ void MapWidget::gotoBlockPos(int x, int z) {
     this->update();
 }
 
-std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(
-    const QRect &camera) {
+std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
     //需要的参数
     // origin  焦点原点在什么地方
     // bw 像素宽度
     const int CHUNK_WIDTH = 16 * this->bw;
-    int renderX =
-        (camera.x() - origin.x()) / CHUNK_WIDTH * CHUNK_WIDTH + origin.x();
-    int renderY =
-        (camera.y() - origin.y()) / CHUNK_WIDTH * CHUNK_WIDTH + origin.y();
+    int renderX = (camera.x() - origin.x()) / CHUNK_WIDTH * CHUNK_WIDTH + origin.x();
+    int renderY = (camera.y() - origin.y()) / CHUNK_WIDTH * CHUNK_WIDTH + origin.y();
     if (renderX >= camera.x()) renderX -= CHUNK_WIDTH;
     if (renderY >= camera.y()) renderY -= CHUNK_WIDTH;
-
     int chunk_w = (camera.x() + camera.width() - renderX) / CHUNK_WIDTH;
     if ((camera.x() + camera.width() - renderX) % CHUNK_WIDTH != 0) chunk_w++;
-
     int chunk_h = (camera.y() + camera.height() - renderY) / CHUNK_WIDTH;
     if ((camera.y() + camera.height() - renderY) % CHUNK_WIDTH != 0) chunk_h++;
 
-    QRect renderRange(
-
-        renderX, renderY, chunk_w * CHUNK_WIDTH, chunk_h * CHUNK_WIDTH
-
-    );
-    auto minChunk = bl::chunk_pos{(renderX - origin.x()) / CHUNK_WIDTH, (renderY - origin.y()) / CHUNK_WIDTH, this->dim};
-
-    auto maxChunk = bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1, this->dim};
-
+    QRect renderRange(renderX, renderY, chunk_w * CHUNK_WIDTH, chunk_h * CHUNK_WIDTH);
+    const int dim = static_cast<int>(this->dimType);
+    auto minChunk = bl::chunk_pos{(renderX - origin.x()) / CHUNK_WIDTH, (renderY - origin.y()) / CHUNK_WIDTH, dim};
+    auto maxChunk = bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1, dim};
     return {minChunk, maxChunk, renderRange};
 }

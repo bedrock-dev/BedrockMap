@@ -5,6 +5,7 @@
 #include <QPaintEvent>
 #include <QTimer>
 #include <QWidget>
+#include <QtDebug>
 #include <array>
 #include <tuple>
 
@@ -14,7 +15,12 @@
 class MapWidget : public QWidget {
     Q_OBJECT
 
+
    public:
+    enum LayerType { Biome = 0, Terrain = 1, Slime = 2, Height = 3 };
+
+    enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2 };
+
     MapWidget(world *w, QWidget *parent) : QWidget(parent), world(w) {
         this->asyncRefreshTimer = new QTimer();
         connect(this->asyncRefreshTimer, SIGNAL(timeout()), this,
@@ -36,6 +42,26 @@ class MapWidget : public QWidget {
     void gotoBlockPos(int x, int z);
 
    public:
+    inline void changeDimemsion(DimType dim) {
+        this->dimType = dim;
+        this->update();
+    }
+
+    inline void changeLayer(LayerType layer) {
+        this->layeType = layer;
+        this->update();
+    }
+
+    inline void enableGrid(bool able) {
+        qDebug() << able;
+        this->render_grid = able;
+        this->update();
+    }
+    inline void enableText(bool able) {
+        this->render_text = able;
+        this->update();
+    }
+
    signals:
     void mouseMove(int x, int z);
 
@@ -62,6 +88,9 @@ class MapWidget : public QWidget {
 
     void drawBiome(QPaintEvent *event, QPainter *p);
 
+    void drawTerrain(QPaintEvent *event, QPainter *p);
+
+    void drawHeight(QPaintEvent *event, QPainter *p);
 
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
@@ -77,11 +106,15 @@ class MapWidget : public QWidget {
     QPoint origin{0, 0};        //记录区块0,0相对widget左上角的坐标
     bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
     bool dragging{false};
-    QRect camera{0, 0, width(),
-                 height()};  //需要绘制的范围，后面设置成和widget等大即可
+    QRect camera{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
     world *world{nullptr};
 
-    int dim{0};
+    DimType dimType{DimType::OverWorld};
+    LayerType layeType{LayerType::Biome};
+
+    // render control
+    bool render_grid{true};
+    bool render_text{true};
 };
 
 #endif  // MAPWIDGET_H

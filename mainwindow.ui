@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
-    <height>683</height>
+    <width>760</width>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,21 +28,21 @@
         <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="overwrold_btn">
             <property name="text">
              <string>主世界</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="nether_btn">
             <property name="text">
              <string>下界</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="theend_btn">
             <property name="text">
              <string>末地</string>
             </property>
@@ -73,86 +73,140 @@
         <item row="1" column="0">
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QRadioButton" name="radioButton">
-            <property name="text">
-             <string>网格</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButton_2">
-            <property name="text">
-             <string>坐标</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Layers</string>
+             <string>显示</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_5">
+           <layout class="QGridLayout" name="layer_btn_grid" rowstretch="1,0" columnstretch="0,0">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="biome_layer_btn">
+              <property name="text">
+               <string>群系</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="terrain_layer_btn">
+              <property name="text">
+               <string>地形</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="height_layer_btn">
+              <property name="text">
+               <string>高度图</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="slime_layer_btn">
+              <property name="text">
+               <string>史莱姆区块</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>群系</string>
+             <string>元素</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_7">
-            <property name="text">
-             <string>地形</string>
-            </property>
-           </widget>
+           <layout class="QGridLayout" name="element_btn_grid" rowstretch="1,0">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="pushButton_9">
+              <property name="text">
+               <string>方块实体</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pushButton_10">
+              <property name="text">
+               <string>村庄</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pushButton_8">
+              <property name="text">
+               <string>HSA</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="pushButton">
+              <property name="text">
+               <string>实体</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_6">
-            <property name="text">
-             <string>高度图</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_4">
-            <property name="text">
-             <string>史莱姆区块</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_11">
+           <widget class="QLabel" name="label_5">
             <property name="text">
              <string>结构</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_9">
+           <layout class="QGridLayout" name="structure_btn_grid" rowstretch="1,0,0">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="text">
+               <string>沙漠神殿</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QPushButton" name="pushButton_11">
+              <property name="text">
+               <string>女巫</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pushButton_3">
+              <property name="text">
+               <string>海底神殿</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pushButton_12">
+              <property name="text">
+               <string>哨塔</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QPushButton" name="pushButton_13">
+              <property name="text">
+               <string>其他</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>方块实体</string>
+             <string>工具</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_8">
+           <widget class="QPushButton" name="pushButton_14">
             <property name="text">
-             <string>HSA</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_10">
-            <property name="text">
-             <string>村庄</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Tools</string>
+             <string>启用编辑模式</string>
             </property>
            </widget>
           </item>
@@ -171,22 +225,15 @@
           </item>
          </layout>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="pushButton_15">
+            <property name="text">
+             <string>截图</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
@@ -229,6 +276,35 @@
           </item>
          </layout>
         </item>
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="grid_checkbox">
+            <property name="text">
+             <string>网格</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="text_checkbox">
+            <property name="text">
+             <string>文本</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QCheckBox" name="checkBox_3">
+            <property name="text">
+             <string>调试</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
@@ -261,8 +337,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>711</width>
-     <height>25</height>
+     <width>760</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
