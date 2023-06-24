@@ -17,6 +17,12 @@ QT_END_NAMESPACE
         MainWindow(QWidget *parent = nullptr);
         ~MainWindow();
 
+       public slots:
+        void updateXZEdit(int x, int z);
+
+       private slots:
+        void on_goto_btn_clicked();
+
        private:
         Ui::MainWindow *ui;
         MapWidget *map;

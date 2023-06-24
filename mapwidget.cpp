@@ -12,6 +12,7 @@
 #include <QRectF>
 #include <QRgb>
 #include <QVector>
+#include <cmath>
 
 #include "color.h"
 
@@ -20,9 +21,7 @@ namespace {
 // QImage biomeChunkImage;
 
 }  // namespace
-void MapWidget::resizeEvent(QResizeEvent *event) {
-    this->camera = QRect(-10, -10, this->width(), this->height());
-}
+void MapWidget::resizeEvent(QResizeEvent *event) { this->camera = QRect(-10, -10, this->width() + 10, this->height() + 10); }
 
 void MapWidget::asyncRefresh() { this->update(); }
 
@@ -31,6 +30,8 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     //    this->drawSlimeChunks(event, &p);
     this->drawBiome(event, &p);
     this->drawGrid(event, &p);
+    this->drawChunkPos(event, &p);
+    //    this->debugDrawCamera(event, &p);
 }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -45,6 +46,19 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
         }
         lastMove = {event->x(), event->y()};
         this->update();
+    } else if (event->buttons() & Qt::RightButton) {
+        // todo: Select
+    } else {
+        auto cursor = this->mapFromGlobal(QCursor::pos());
+
+        auto [mi, ma, render] = this->getRenderRange(this->camera);
+
+        int rx = cursor.x() - render.x();
+        int ry = cursor.y() - render.y();
+
+        int x = rx / (this->bw) + mi.get_min_pos().x;
+        int y = ry / (this->bw) + mi.get_min_pos().z;
+        emit this->mouseMove(x, y);
     }
 }
 
@@ -56,14 +70,17 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 void MapWidget::wheelEvent(QWheelEvent *event) {
     auto angle = event->angleDelta().y();
-
-    if (angle > 0 && this->bw < 80) {
+    auto lastBW = this->bw;
+    if (angle > 0 && this->bw < 64) {
         this->bw++;
     } else if (angle < 0 && this->bw > 2) {
         this->bw--;
     }
 
-    // focus on cursor
+    auto cursor = this->mapFromGlobal(QCursor::pos());
+    double ratio = this->bw * 1.0 / lastBW;
+    this->origin.setX((this->origin.x() - cursor.x()) * ratio + cursor.x());
+    this->origin.setY((this->origin.y() - cursor.y()) * ratio + cursor.y());
     this->update();
 }
 
@@ -73,37 +90,12 @@ void MapWidget::debugDrawCamera(QPaintEvent *evet, QPainter *painter) {
     QBrush brush(QColor(0, 255, 255, 125));  //画刷
     painter->setPen(pen);                    //添加画笔
     painter->setBrush(brush);                //添加画刷
-
     painter->drawEllipse(this->origin, 10, 10);
-
-    painter->drawRect(this->origin.rx(), this->origin.ry(), this->bw * 16,
-                      this->bw * 16);
-
+    painter->drawRect(this->origin.rx(), this->origin.ry(), this->bw * 16, this->bw * 16);
     // render range
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera);
-
-    pen.setColor(QColor(120, 0, 223));
-    painter->setPen(pen);
-    painter->drawRect(camera);
-    pen.setColor(QColor(255, 255, 255));
-    painter->setPen(pen);
-    //    painter.drawRect(renderRange);
-    //    //Grid
-    QPen pen2;
-    pen2.setBrush(QBrush(QColor(0, 0, 0, 255)));
-
-    pen2.setWidth(4);
-    painter->setPen(pen2);
-    for (int i = minChunk.x; i <= maxChunk.x; i++) {
-        for (int j = minChunk.z; j <= maxChunk.z; j++) {
-            int x = (i - minChunk.x) * bw * 16 + renderRange.x();
-            int y = (j - minChunk.z) * bw * 16 + renderRange.y();
-            painter->drawRect(x, y, bw * 16, bw * 16);
-            painter->drawText(
-                x + bw, y + bw * 8,
-                QString("[%1,%2]").arg(QString::number(i), QString::number(j)));
-        }
-    }
+    painter->fillRect(renderRange, QBrush(QColor(120, 241, 21, 100)));
+    painter->drawEllipse(this->mapFromGlobal(QCursor::pos()), 20, 20);
 }
 
 void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter,
@@ -128,19 +120,62 @@ void MapWidget::forEachChunkInCamera(
 }
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
-    QPen pen(QColor(25, 25, 255));
+    //细区块边界线
+    QPen pen;
+    pen.setColor(QColor(250, 250, 250));
+    pen.setWidth(1);
     painter->setPen(pen);
-    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch,
-                                                      const QPoint &p) {
-        painter->drawRect(QRectF(p.x(), p.y(), this->bw * 16, this->bw * 16));
+
+    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
+        if (this->bw >= 4) painter->drawRect(QRectF(p.x(), p.y(), this->bw * 16, this->bw * 16));
+    });
+
+    //粗经纬线
+    pen.setColor(QColor(20, 20, 20));
+    //根据bw计算几个区块合一起
+
+    pen.setWidth(4);
+    painter->setPen(pen);
+    auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera);
+
+    auto alignedMinChunkPos = bl::chunk_pos{minChunk.x / 16 * 16, minChunk.z / 16 * 16, 0};
+    //纵轴线起始x坐标
+    int xStart = (alignedMinChunkPos.x - minChunk.x) * this->bw * 16 + renderRange.x();
+    //横轴线起始x坐标
+    int yStart = (alignedMinChunkPos.z - minChunk.z) * this->bw * 16 + renderRange.y();
+
+    const int step = 16 * 16 * this->bw;
+
+    for (int i = xStart; i <= renderRange.width() + renderRange.x(); i += step) {
+        painter->drawLine(QLine(i, 0, i, this->height()));
+    }
+    for (int i = yStart; i <= renderRange.height() + renderRange.y(); i += step) {
+        painter->drawLine(QLine(0, i, this->width(), i));
+    }
+}
+
+void MapWidget::drawChunkPos(QPaintEvent *event, QPainter *painter) {
+    QFont font("微软雅黑", 8);
+    painter->setFont(font);
+    QPen pen;
+    painter->setPen(pen);
+    const int DIG = std::max(1, 32 / this->bw);
+
+    this->forEachChunkInCamera([event, this, painter, DIG, &pen](const bl::chunk_pos &ch, const QPoint &p) {
+        if ((ch.x % 16 == 0 && ch.z % 16 == 0) || this->bw >= 8) {
+            auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
+            auto rect = QRect{p.x() + 2, p.y() + 2, text.size() * 9, 20};
+            painter->fillRect(rect, QBrush(QColor(255, 255, 255, 140)));
+            painter->drawText(rect, Qt::AlignCenter, text);
+        }
     });
 }
 
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
     const int W = this->bw * 16;
     auto img = QImage(W, W, QImage::Format_Indexed8);
-    img.setColor(0, qRgba(255, 255, 255, 255));
-    img.setColor(1, qRgba(0, 255, 0, 255));
+    img.setColor(0, qRgba(40, 40, 40, 40));
+    img.setColor(1, qRgba(02, 163, 52, 255));
 
     this->forEachChunkInCamera(
         [event, this, &img, painter](const bl::chunk_pos &ch, const QPoint &p) {
@@ -152,11 +187,20 @@ void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
-    this->forEachChunkInCamera(
-        [event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-            auto top = this->world->topBiome(ch);
-            this->drawOneChunk(event, painter, ch, p, top);
-        });
+    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
+        auto top = this->world->topBiome(ch);
+        this->drawOneChunk(event, painter, ch, p, top);
+    });
+}
+
+void MapWidget::gotoBlockPos(int x, int z) {
+    // qDebug() << "Goto" << x << "," << z;
+
+    int px = this->camera.width() / 2;
+    int py = this->camera.height() / 2;
+    //坐标换算
+    this->origin = {px - x * this->bw, py - z * this->bw};
+    this->update();
 }
 
 std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(
@@ -183,11 +227,9 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(
         renderX, renderY, chunk_w * CHUNK_WIDTH, chunk_h * CHUNK_WIDTH
 
     );
-    auto minChunk = bl::chunk_pos{(renderX - origin.x()) / CHUNK_WIDTH,
-                                  (renderY - origin.y()) / CHUNK_WIDTH, 0};
+    auto minChunk = bl::chunk_pos{(renderX - origin.x()) / CHUNK_WIDTH, (renderY - origin.y()) / CHUNK_WIDTH, this->dim};
 
-    auto maxChunk =
-        bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1, 0};
+    auto maxChunk = bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1, this->dim};
 
     return {minChunk, maxChunk, renderRange};
 }

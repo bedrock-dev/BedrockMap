@@ -13,12 +13,14 @@
 
 class MapWidget : public QWidget {
     Q_OBJECT
+
    public:
     MapWidget(world *w, QWidget *parent) : QWidget(parent), world(w) {
         this->asyncRefreshTimer = new QTimer();
         connect(this->asyncRefreshTimer, SIGNAL(timeout()), this,
                 SLOT(asyncRefresh()));
         this->asyncRefreshTimer->start(100);
+        setMouseTracking(true);
     }
 
     void paintEvent(QPaintEvent *event) override;
@@ -30,6 +32,12 @@ class MapWidget : public QWidget {
     void wheelEvent(QWheelEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
+
+    void gotoBlockPos(int x, int z);
+
+   public:
+   signals:
+    void mouseMove(int x, int z);
 
    public slots:
     void asyncRefresh();
@@ -48,9 +56,12 @@ class MapWidget : public QWidget {
 
     void drawGrid(QPaintEvent *event, QPainter *p);
 
+    void drawChunkPos(QPaintEvent *event, QPainter *p);
+
     void drawSlimeChunks(QPaintEvent *event, QPainter *p);
 
     void drawBiome(QPaintEvent *event, QPainter *p);
+
 
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
@@ -69,6 +80,7 @@ class MapWidget : public QWidget {
     QRect camera{0, 0, width(),
                  height()};  //需要绘制的范围，后面设置成和widget等大即可
     world *world{nullptr};
+
     int dim{0};
 };
 

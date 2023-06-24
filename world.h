@@ -33,6 +33,8 @@ class world {
 
     QImage* topBiome(const bl::chunk_pos& p);
 
+    QImage* height(const bl::chunk_pos& p);
+
    private:
     static void initBiomeColorTable();
 
