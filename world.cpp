@@ -17,30 +17,39 @@ QImage *EMPTY_IMAGE{nullptr};
 }  // namespace
 
 world::world() {
-    this->top_biome_image_cache_ = new LRUCache<bl::chunk_pos, QImage>(65536);
-    this->top_block_image_cache_ = new LRUCache<bl::chunk_pos, QImage>(65536);
     initBiomeColorTable();
+    this->top_biome_image_cache_ = new QCache<bl::chunk_pos, QImage>(65536);
 }
 
 bool world::init(const std::string &level_path) {
-    return this->level_loader_.init(level_path);
+    auto r = this->level_loader_.init(level_path);
+
+    this->loadered_ = r;
+    return r;
+}
+
+void world::close() {
+    if (!this->loadered_) {
+        return;
+    }
+    this->loadered_ = false;
+    this->level_loader_.close();
 }
 
 QImage *world::topBiome(const bl::chunk_pos &p) {
-    QImage *res{nullptr};
+    if (!this->loadered_) return EMPTY_IMAGE;
 
-    if (this->top_biome_image_cache_->get(p, res)) {
-        if (res) {
-            return res;
-        } else {
-            return EMPTY_IMAGE;
-        }
+    auto *img = this->top_biome_image_cache_->operator[](p);
+    if (img) return img;  // hit
+
+    bool null_chunk{false};
+    auto *ch = this->level_loader_.get(p, null_chunk);
+    if (null_chunk) {
+        return EMPTY_IMAGE;
     }
 
-    auto *ch = this->level_loader_.get(p);
-
     if (ch) {
-        QImage *image = new QImage(16, 16, QImage::Format_Indexed8);
+        auto *image = new QImage(16, 16, QImage::Format_Indexed8);
         image->setColorTable(biome_color_table);
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
@@ -50,8 +59,8 @@ QImage *world::topBiome(const bl::chunk_pos &p) {
                 }
             }
         }
-
-        this->top_biome_image_cache_->put(p, image);
+        // only cache non empty chunk
+        this->top_biome_image_cache_->insert(p, image);
         return image;
     } else {
         return EMPTY_IMAGE;
@@ -59,35 +68,37 @@ QImage *world::topBiome(const bl::chunk_pos &p) {
 }
 
 QImage *world::height(const bl::chunk_pos &p) {
-    QImage *res{nullptr};
+    //    if (!this->loadered_) return EMPTY_IMAGE;
+    //    QImage *res{nullptr};
 
-    if (this->top_biome_image_cache_->get(p, res)) {
-        if (res) {
-            return res;
-        } else {
-            return EMPTY_IMAGE;
-        }
-    }
+    //    if (this->top_biome_image_cache_ && this->top_biome_image_cache_->get(p, res)) {
+    //        if (res) {
+    //            return res;
+    //        } else {
+    //            return EMPTY_IMAGE;
+    //        }
+    //    }
 
-    auto *ch = this->level_loader_.get(p);
+    //    auto *ch = this->level_loader_.get(p);
 
-    if (ch) {
-        QImage *image = new QImage(16, 16, QImage::Format_Indexed8);
-        image->setColorTable(height_color_table);
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                int h = ch->get_height(j, i) + 64;
-                if (h >= 0 && h < 384) {
-                    image->setPixel(i, j, h);
-                }
-            }
-        }
+    //    if (ch) {
+    //        QImage *image = new QImage(16, 16, QImage::Format_Indexed8);
+    //        image->setColorTable(height_color_table);
+    //        for (int i = 0; i < 16; i++) {
+    //            for (int j = 0; j < 16; j++) {
+    //                int h = ch->get_height(j, i) + 64;
+    //                if (h >= 0 && h < 384) {
+    //                    image->setPixel(i, j, h);
+    //                }
+    //            }
+    //        }
 
-        this->top_biome_image_cache_->put(p, image);
-        return image;
-    } else {
-        return EMPTY_IMAGE;
-    }
+    //        this->top_biome_image_cache_->put(p, image);
+    //        return image;
+    //    } else {
+    //        return EMPTY_IMAGE;
+    //    }
+    return EMPTY_IMAGE;
 }
 
 void world::initBiomeColorTable() {

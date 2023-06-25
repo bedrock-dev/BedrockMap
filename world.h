@@ -11,8 +11,6 @@
 #include "bedrock_key.h"
 #include "bedrock_level.h"
 #include "color.h"
-#include "lrucache.h"
-
 // data soruce
 namespace bl {
 
@@ -23,6 +21,7 @@ inline uint qHash(const bl::chunk_pos& key, uint seed) {
     hash = 2873465L * hash + key.dim;
     return hash;
 }
+
 }  // namespace bl
 
 class world {
@@ -31,17 +30,28 @@ class world {
 
     bool init(const std::string& level_path);
 
+    void close();
+
     QImage* topBiome(const bl::chunk_pos& p);
 
     QImage* height(const bl::chunk_pos& p);
 
+    std::vector<QString> debug_info() {
+        if (!this->loadered_) return {};
+        auto r = this->level_loader_.debug_info();
+        r.push_back(
+            QString("Top biome image cache: %1/%2")
+                .arg(QString::number(top_biome_image_cache_->totalCost()), QString::number(top_biome_image_cache_->maxCost())));
+        return r;
+    }
+
    private:
     static void initBiomeColorTable();
 
-    LRUCache<bl::chunk_pos, QImage>* top_biome_image_cache_;
-    LRUCache<bl::chunk_pos, QImage>* top_block_image_cache_;
+    QCache<bl::chunk_pos, QImage>* top_biome_image_cache_;
 
     AsyncLevelLoader level_loader_;
+    bool loadered_{false};
 
     // thread pool
 };

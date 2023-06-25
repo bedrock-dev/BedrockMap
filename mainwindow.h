@@ -30,6 +30,9 @@ QT_END_NAMESPACE
 
         void on_text_checkbox_stateChanged(int arg1);
 
+        void open_level();
+        void close_level();
+
        private:
         Ui::MainWindow *ui;
         std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns;

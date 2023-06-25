@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QCache>
 #include <QDebug>
 #include <QDesktopWidget>
 

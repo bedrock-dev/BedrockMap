@@ -1,5 +1,6 @@
 #ifndef LRUCACHE_H
 #define LRUCACHE_H
+#include <QtDebug>
 #include <list>
 #include <mutex>
 #include <unordered_map>
@@ -56,6 +57,11 @@ class LRUCache {
             list.erase(iter->second);
             this->list.insert(list.begin(), {key, value});
             this->cache[key] = list.begin();
+        }
+    }
+    ~LRUCache() {
+        for (auto &l : list) {
+            delete l.second;
         }
     }
 

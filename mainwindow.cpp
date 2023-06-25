@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 
+#include <QDialog>
+#include <QFileDialog>
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QtDebug>
 
 #include "./ui_mainwindow.h"
@@ -16,12 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->main_tab->setTabText(0, "Map");
 
     // Main map view
-    if (this->world.init(R"(C:\Users\xhy\Desktop\t)")) {
-        this->map = new MapWidget(&this->world, nullptr);
-        ui->map_tab_grid->addWidget(map, 1, 1);
-    } else {
-        ui->map_tab_grid->addWidget(new QLabel("Invalid world path"), 1, 1);
-    }
+
+    //    this->world.init(R"(C:\Users\xhy\Desktop\t)");
+    this->map = new MapWidget(&this->world, nullptr);
+    ui->map_tab_grid->addWidget(map, 1, 1);
 
     // layer btns
     this->layer_btns = {{MapWidget::LayerType::Biome, ui->biome_layer_btn},
@@ -57,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this->map, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
     ui->x_edit->setValidator(new QIntValidator(-1000000, 1000000, this));
     ui->z_edit->setValidator(new QIntValidator(-1000000, 1000000, this));
+
+    // menu actions
+    connect(ui->action_open, SIGNAL(triggered()), this, SLOT(open_level()));
+    connect(ui->action_close, SIGNAL(triggered()), this, SLOT(close_level()));
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -76,3 +81,12 @@ void MainWindow::on_goto_btn_clicked() {
 void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map->enableGrid(arg1 > 0); }
 
 void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map->enableText(arg1 > 0); }
+
+void MainWindow::open_level() {
+    QString dir = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (!this->world.init(dir.toStdString())) {
+        QMessageBox::information(NULL, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
+    }
+}
+
+void MainWindow::close_level() { this->world.close(); }

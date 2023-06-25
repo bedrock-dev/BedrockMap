@@ -341,10 +341,13 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="file_menu">
     <property name="title">
      <string>文件</string>
     </property>
+    <addaction name="action_open"/>
+    <addaction name="action_close"/>
+    <addaction name="actio_nexit"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -355,12 +358,55 @@
     <property name="title">
      <string>帮助</string>
     </property>
+    <addaction name="actionhelp"/>
+    <addaction name="actionsettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionset"/>
    </widget>
-   <addaction name="menu"/>
+   <addaction name="file_menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_open">
+   <property name="text">
+    <string>打开</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_close">
+   <property name="text">
+    <string>关闭</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actio_nexit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionhelp">
+   <property name="text">
+    <string>help</string>
+   </property>
+  </action>
+  <action name="actionsettings">
+   <property name="text">
+    <string>open source</string>
+   </property>
+  </action>
+  <action name="actionset">
+   <property name="text">
+    <string>settings</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

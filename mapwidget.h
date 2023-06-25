@@ -15,7 +15,6 @@
 class MapWidget : public QWidget {
     Q_OBJECT
 
-
    public:
     enum LayerType { Biome = 0, Terrain = 1, Slime = 2, Height = 3 };
 

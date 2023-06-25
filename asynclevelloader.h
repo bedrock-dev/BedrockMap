@@ -1,9 +1,12 @@
 #ifndef ASYNCLEVELLOADER_H
 #define ASYNCLEVELLOADER_H
+#include <QCache>
 #include <QRunnable>
 #include <QThreadPool>
+#include <atomic>
 #include <mutex>
 #include <unordered_set>
+#include <vector>
 
 #include "bedrock_level.h"
 #include "lrucache.h"
@@ -31,14 +34,17 @@ class AsyncLevelLoader : public QObject {
    public:
     AsyncLevelLoader();
 
-    bl::chunk* get(const bl::chunk_pos& p);
+    bl::chunk* get(const bl::chunk_pos& p, bool& empty);
     bool init(const std::string& path);
+
+    void close();
 
    public slots:
     void handle_task_finished_task(int x, int z, int dim, bl::chunk* chunk);
 
    public:
     ~AsyncLevelLoader();
+    std::vector<QString> debug_info();
 
    private:
     // processing
@@ -48,13 +54,41 @@ class AsyncLevelLoader : public QObject {
 
     void remove_chunk_from_queue(const bl::chunk_pos& pos);
 
+
    private:
+    std::atomic_bool loadered_{false};
+
     bl::bedrock_level level_;
     std::mutex m_;
 
     std::unordered_set<bl::chunk_pos> processing_;
-    std::vector<LRUCache<bl::chunk_pos, bl::chunk>*> chunk_cache_{nullptr};
+    //  std::vector<LRUCache<bl::chunk_pos, bl::chunk>*> chunk_cache_;
+    std::vector<QCache<bl::chunk_pos, bl::chunk>*> chunk_cache_;
+
+    std::vector<QCache<bl::chunk_pos, char>*> invalid_cache_;
+
     QThreadPool pool_;
 };
+
+inline std::vector<QString> AsyncLevelLoader::debug_info() {
+    std::vector<QString> res;
+
+    res.emplace_back("Chunk Data Cache");
+
+    for (int i = 0; i < 3; i++) {
+        res.push_back(QString(" - [%1]: %2/%3")
+                          .arg(QString::number(i), QString::number(this->chunk_cache_[i]->totalCost()),
+                               QString::number(this->chunk_cache_[i]->maxCost())));
+    }
+
+    res.emplace_back("Invalid Chunk Cache");
+    for (int i = 0; i < 3; i++) {
+        res.push_back(QString(" - [%1]: %2/%3")
+                          .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
+                               QString::number(this->invalid_cache_[i]->maxCost())));
+    }
+    res.push_back(QString("Pool %1 task in queue").arg(QString::number(this->processing_.size())));
+    return res;
+}
 
 #endif // ASYNCLEVELLOADER_H

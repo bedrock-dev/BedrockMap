@@ -46,7 +46,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     if (render_grid) this->drawGrid(event, &p);
     if (render_text) this->drawChunkPos(event, &p);
 
-    //    this->debugDrawCamera(event, &p);
+    this->debugDrawCamera(event, &p);
 }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -100,22 +100,31 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
 }
 
 void MapWidget::debugDrawCamera(QPaintEvent *evet, QPainter *painter) {
-    QPen pen;  //画笔
-    pen.setColor(QColor(255, 0, 0));
-    QBrush brush(QColor(0, 255, 255, 125));  //画刷
-    painter->setPen(pen);                    //添加画笔
-    painter->setBrush(brush);                //添加画刷
-    painter->drawEllipse(this->origin, 10, 10);
-    painter->drawRect(this->origin.rx(), this->origin.ry(), this->bw * 16, this->bw * 16);
-    // render range
-    auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera);
-    painter->fillRect(renderRange, QBrush(QColor(120, 241, 21, 100)));
-    painter->drawEllipse(this->mapFromGlobal(QCursor::pos()), 20, 20);
+    //    QPen pen;  //画笔
+    //    pen.setColor(QColor(255, 0, 0));
+    //    QBrush brush(QColor(0, 255, 255, 125));  //画刷
+    //    painter->setPen(pen);                    //添加画笔
+    //    painter->setBrush(brush);                //添加画刷
+    //    painter->drawEllipse(this->origin, 10, 10);
+    //    painter->drawRect(this->origin.rx(), this->origin.ry(), this->bw * 16, this->bw * 16);
+    //    // render range
+    //    auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera);
+    //    painter->fillRect(renderRange, QBrush(QColor(120, 241, 21, 100)));
+    //    painter->drawEllipse(this->mapFromGlobal(QCursor::pos()), 20, 20);
+
+    // debug
+    painter->fillRect(QRectF(0, 0, 500, 400), QBrush(QColor(255, 255, 255, 150)));
+    QFont font("Arial", 10);
+    painter->setFont(font);
+    auto dbgInfo = this->world->debug_info();
+    int i = 0;
+    for (auto &s : dbgInfo) {
+        painter->drawText(QPoint(2, i * 40 + 20), s);
+        i++;
+    }
 }
 
-void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter,
-                             const bl::chunk_pos &pos, const QPoint &start,
-                             QImage *q) {
+void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter, const bl::chunk_pos &pos, const QPoint &start, QImage *q) {
     if (q)
         painter->drawImage(
             QRectF(start.x(), start.y(), 16 * this->bw, 16 * this->bw), *q,
