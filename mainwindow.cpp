@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QSplitter>
 #include <QtDebug>
 
 #include "./ui_mainwindow.h"
@@ -16,10 +17,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     this->map_ = new MapWidget(this, nullptr);
     this->map_->gotoBlockPos(0, 0);
+    this->chunk_editor_widget_ = new ChunkEditorWidget();
     ui->map_visual_layout->insertWidget(1, this->map_, 10);
+    // ui->main_layout->addWidget();
+    //    ui->main_layout->addWidget(this->chunk_editor_widget_, 1);
+    ui->main_layout->replaceWidget(ui->empty_chunk_editor_widget, this->chunk_editor_widget_);
+
     // layer btns
     this->layer_btns_ = {{MapWidget::LayerType::Biome, ui->biome_layer_btn},
                          {MapWidget::LayerType::Terrain, ui->terrain_layer_btn},
+
                          {MapWidget::LayerType::Height, ui->height_layer_btn},
                          {MapWidget::LayerType::Slime, ui->slime_layer_btn}};
 
@@ -67,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->x_edit->setMaximumWidth(160);
     ui->z_edit->setMaximumWidth(160);
 
-    ui->chunk_edit_widget->setVisible(false);
+    // ui->chunk_edit_widget->setVisible(false);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -78,7 +85,7 @@ void MainWindow::updateXZEdit(int x, int z) {
     ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z) + " in [" + QString::number(cp.x) + "," + QString::number(cp.z) + "]");
 }
 
-void MainWindow::openChunkEditor(const bl::chunk_pos &p) { ui->chunk_edit_widget->setVisible(true); }
+void MainWindow::openChunkEditor(const bl::chunk_pos &p) { this->chunk_editor_widget_->setVisible(true); }
 
 void MainWindow::on_goto_btn_clicked() {
     int x = ui->x_edit->text().toInt();
@@ -114,8 +121,8 @@ void MainWindow::close_level() { this->world_.close(); }
 void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_->enableDebug(arg1 > 0); }
 
 void MainWindow::toggle_chunk_edit_view() {
-    auto x = ui->chunk_edit_widget->isVisible();
-    ui->chunk_edit_widget->setVisible(!x);
+    auto x = this->chunk_editor_widget_->isVisible();
+    this->chunk_editor_widget_->setVisible(!x);
 }
 
 void MainWindow::toggle_full_map_mode() {
@@ -125,10 +132,10 @@ void MainWindow::toggle_full_map_mode() {
     ui->map_top_toolbar_widget->setVisible(!full_map_mode_);
     ui->map_buttom_toolbar_widget->setVisible(!full_map_mode_);
     if (this->full_map_mode_) {
-        this->chunk_edit_widget_hided_ = ui->chunk_edit_widget->isVisible();
-        ui->chunk_edit_widget->setVisible(false);
+        this->chunk_edit_widget_hided_ = this->chunk_editor_widget_->isVisible();
+        this->chunk_editor_widget_->setVisible(false);
     } else {
-        ui->chunk_edit_widget->setVisible(this->chunk_edit_widget_hided_);
+        this->chunk_editor_widget_->setVisible(this->chunk_edit_widget_hided_);
     }
 }
 

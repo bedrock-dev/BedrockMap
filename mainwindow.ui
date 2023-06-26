@@ -17,7 +17,7 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="central_widget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
+   <layout class="QHBoxLayout" name="main_layout" stretch="2,1">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -155,9 +155,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="debug_checkbox">
+            <property name="text">
+             <string>调试</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="enable_chunk_edit_check_box">
             <property name="text">
-             <string>启用区块编辑器</string>
+             <string>数据修改</string>
             </property>
            </widget>
           </item>
@@ -218,13 +225,6 @@
              <widget class="QPushButton" name="theend_btn">
               <property name="text">
                <string>末地</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="debug_checkbox">
-              <property name="text">
-               <string>调试</string>
               </property>
              </widget>
             </item>
@@ -338,43 +338,8 @@
      </widget>
     </item>
     <item>
-     <widget class="QWidget" name="chunk_edit_widget" native="true">
-      <layout class="QVBoxLayout" name="chunk_edit_layout">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Chunk Info</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTabWidget" name="chunk_edit_tab">
-         <property name="currentIndex">
-          <number>3</number>
-         </property>
-         <widget class="QWidget" name="chunk_map_tab">
-          <attribute name="title">
-           <string>地图</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="chunk_actor_tab">
-          <attribute name="title">
-           <string>实体</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="chunk_block_actor_tab">
-          <attribute name="title">
-           <string>方块实体</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="chunk_pt_tab">
-          <attribute name="title">
-           <string>计划刻</string>
-          </attribute>
-         </widget>
-        </widget>
-       </item>
-      </layout>
+     <widget class="QWidget" name="empty_chunk_editor_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </widget>
     </item>
    </layout>

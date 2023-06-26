@@ -8,8 +8,8 @@
 #include <QPushButton>
 #include <unordered_map>
 
+#include "chunkeditorwidget.h"
 #include "mapwidget.h"
-
 QT_BEGIN_NAMESPACE
     namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -58,6 +58,7 @@ QT_END_NAMESPACE
         bool full_map_mode_{false};
         bool chunk_edit_widget_hided_{true};
         MapWidget *map_;
+        ChunkEditorWidget *chunk_editor_widget_;
         world world_;
 
         bool write_mode_{false};

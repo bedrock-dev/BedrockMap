@@ -48,7 +48,10 @@ set(PROJECT_SOURCES
         lrucache.h
         asynclevelloader.h
         asynclevelloader.cpp
-    icon.qrc
+        icon.qrc
+        chunkeditorwidget.h
+        chunkeditorwidget.cpp
+        chunkeditorwidget.ui
 
         )
 
