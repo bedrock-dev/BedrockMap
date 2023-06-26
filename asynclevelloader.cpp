@@ -1,17 +1,17 @@
 #include "asynclevelloader.h"
 
 #include <QObject>
+#include <QtConcurrent>
 #include <chrono>
 #include <thread>
 
 #include "qdebug.h"
 #include "world.h"
-
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(1);
+    this->pool_.setMaxThreadCount(4);
     for (int i = 0; i < 3; i++) {
-        this->chunk_cache_.push_back(new QCache<bl::chunk_pos, bl ::chunk>(4096));
-        this->invalid_cache_.push_back(new QCache<bl::chunk_pos, char>(16384));
+        this->chunk_cache_.push_back(new QCache<bl::chunk_pos, bl ::chunk>(1024));
+        this->invalid_cache_.push_back(new QCache<bl::chunk_pos, char>(32768));
     }
 }
 
@@ -46,14 +46,10 @@ bl::chunk *AsyncLevelLoader::get(const bl::chunk_pos &p, bool &empty) {
 }
 
 bool AsyncLevelLoader::init(const std::string &path) {
-    qDebug() << "open level" << path.c_str();
     this->level_.set_cache(false);
     auto res = this->level_.open(path);
     if (res) {
         this->loadered_ = true;
-        qDebug() << "open level" << path.c_str() << "Success";
-    } else {
-        qDebug() << "open level" << path.c_str() << "Failure";
     }
     return res;
 }
@@ -70,8 +66,13 @@ void AsyncLevelLoader::handle_task_finished_task(int x, int z, int dim, bl::chun
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 
 void LoadChunkTask::run() {
-    auto *chunk = this->level_->get_chunk(this->pos_);
-    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, chunk);
+    try {
+        auto *chunk = this->level_->get_chunk(this->pos_);
+        emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, chunk);
+
+    } catch (std::exception &e) {
+        emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, nullptr);
+    }
 }
 
 bool AsyncLevelLoader::chunk_in_queue(const bl::chunk_pos &p) {
@@ -103,4 +104,13 @@ void AsyncLevelLoader::close() {
     this->level_.close();  //关闭存档
     for (auto &c : this->chunk_cache_) c->clear();
     qDebug() << "close level";
+}
+
+QFuture<bl::chunk *> AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
+    auto directChunkReader = [&](const bl::chunk_pos &chunk_pos) {
+        auto *p = this->level_.get_chunk(chunk_pos);
+        return p;
+    };
+
+    return QtConcurrent::run(directChunkReader, p);
 }

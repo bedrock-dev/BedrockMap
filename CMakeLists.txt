@@ -21,7 +21,6 @@ set(BEDROCK_LIBS
     ${BEDROCK_LEVEL_ROOT}/.build/libnbt-cpp.a
 
     ${BEDROCK_LEVEL_ROOT}/libs/libz.a
-
     )
 include_directories(
     ${BEDROCK_LEVEL_ROOT}/src/include
@@ -31,8 +30,8 @@ include_directories(
     )
 
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Concurrent REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent REQUIRED)
 
 
 
@@ -49,12 +48,14 @@ set(PROJECT_SOURCES
         lrucache.h
         asynclevelloader.h
         asynclevelloader.cpp
-    )
+    icon.qrc
+
+        )
 
 add_executable(BedrockMap ${PROJECT_SOURCES} )
 
 
-target_link_libraries(BedrockMap PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${BEDROCK_LIBS})
+target_link_libraries(BedrockMap PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent ${BEDROCK_LIBS})
 
 set_target_properties(BedrockMap PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

@@ -12,6 +12,8 @@
 #include "bedrock_key.h"
 #include "world.h"
 
+class MainWindow;
+
 class MapWidget : public QWidget {
     Q_OBJECT
 
@@ -20,12 +22,14 @@ class MapWidget : public QWidget {
 
     enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2 };
 
-    MapWidget(world *w, QWidget *parent) : QWidget(parent), world(w) {
+    MapWidget(MainWindow *w, QWidget *parent) : QWidget(parent), mw_(w) {
         this->asyncRefreshTimer = new QTimer();
         connect(this->asyncRefreshTimer, SIGNAL(timeout()), this,
                 SLOT(asyncRefresh()));
         this->asyncRefreshTimer->start(100);
         setMouseTracking(true);
+        this->setContextMenuPolicy(Qt::CustomContextMenu);
+        setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     }
 
     void paintEvent(QPaintEvent *event) override;
@@ -34,11 +38,19 @@ class MapWidget : public QWidget {
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void mousePressEvent(QMouseEvent *event) override;
+
+    void keyPressEvent(QKeyEvent *event) override;
+
+    void keyReleaseEvent(QKeyEvent *event) override;
+
     void wheelEvent(QWheelEvent *event) override;
+
+    // void mouseDoubleClickEvent(QMouseEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
 
-    void gotoBlockPos(int x, int z);
+    bl::block_pos getCursorBlockPos();
 
    public:
     inline void changeDimemsion(DimType dim) {
@@ -60,12 +72,29 @@ class MapWidget : public QWidget {
         this->render_text = able;
         this->update();
     }
+    inline void enableDebug(bool able) {
+        this->render_debug = able;
+        this->update();
+    }
+
+    void saveImage(const QRect &rect);
 
    signals:
     void mouseMove(int x, int z);
 
    public slots:
     void asyncRefresh();
+    // https://stackoverflow.com/questions/24254006/rightclick-event-in-qt-to-open-a-context-menu
+    void showContextMenu(const QPoint &p);
+
+    void gotoBlockPos(int x, int z);
+
+    inline void focusOnCursor() {
+        auto p = this->getCursorBlockPos();
+        gotoBlockPos(p.x, p.z);
+    }
+
+    void openChunkEditor();
 
    private:
     // for debug
@@ -91,6 +120,9 @@ class MapWidget : public QWidget {
 
     void drawHeight(QPaintEvent *event, QPainter *p);
 
+    void drawSelectArea(QPaintEvent *event, QPainter *p);
+
+    QRect getRenderSelectArea();
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
     std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(
@@ -99,21 +131,34 @@ class MapWidget : public QWidget {
    signals:
 
    private:
-    QTimer *asyncRefreshTimer;
+    // bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
 
-    int bw{6};                  //每个方块需要几个像素
-    QPoint origin{0, 0};        //记录区块0,0相对widget左上角的坐标
-    bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
+    // select area
+    bl::chunk_pos select_min;
+    bl::chunk_pos select_max;
+    bool select{false};
+
+    // operation control
     bool dragging{false};
-    QRect camera{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
-    world *world{nullptr};
+    bool control_pressed{false};
+    //
 
+    MainWindow *mw_{nullptr};
+    // render control
+    QRect camera{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
     DimType dimType{DimType::OverWorld};
     LayerType layeType{LayerType::Biome};
+    QTimer *asyncRefreshTimer;
 
-    // render control
+    int bw{6};            //每个方块需要几个像素
+    QPoint origin{0, 0};  //记录区块0,0相对widget左上角的坐标
+
     bool render_grid{true};
+
     bool render_text{true};
+    bool render_debug{false};
+
+    // function control
 };
 
 #endif  // MAPWIDGET_H

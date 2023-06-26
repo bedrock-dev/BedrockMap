@@ -3,6 +3,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QPushButton>
 #include <unordered_map>
@@ -17,14 +18,20 @@ QT_END_NAMESPACE
 {
         Q_OBJECT
 
+        virtual void keyPressEvent(QKeyEvent *event) override;
+
        public:
         MainWindow(QWidget *parent = nullptr);
         ~MainWindow();
-
+        inline world *get_world() { return &this->world_; }
        public slots:
         void updateXZEdit(int x, int z);
+        // public
+
+        void openChunkEditor(const bl::chunk_pos &p);
 
        private slots:
+
         void on_goto_btn_clicked();
         void on_grid_checkbox_stateChanged(int arg1);
 
@@ -33,13 +40,27 @@ QT_END_NAMESPACE
         void open_level();
         void close_level();
 
+        void on_debug_checkbox_stateChanged(int arg1);
+
+        void toggle_chunk_edit_view();
+
+        void toggle_full_map_mode();
+
+        void on_enable_chunk_edit_check_box_stateChanged(int arg1);
+
+        void on_screenshot_btn_clicked();
+
        private:
         Ui::MainWindow *ui;
-        std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns;
-        std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns;
+        std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns_;
+        std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
 
-        MapWidget *map;
-        world world;
+        bool full_map_mode_{false};
+        bool chunk_edit_widget_hided_{true};
+        MapWidget *map_;
+        world world_;
+
+        bool write_mode_{false};
     };
 
 #endif  // MAINWINDOW_H

@@ -6,92 +6,121 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>760</width>
-    <height>590</height>
+    <width>801</width>
+    <height>517</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QTabWidget" name="main_tab">
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Tab 1</string>
-       </attribute>
-       <layout class="QGridLayout" name="map_tab_grid" rowstretch="1,10,2" columnstretch="1,10">
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="overwrold_btn">
-            <property name="text">
-             <string>主世界</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="nether_btn">
-            <property name="text">
-             <string>下界</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="theend_btn">
-            <property name="text">
-             <string>末地</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="block_pos_label">
-            <property name="text">
-             <string>0,0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="0">
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="central_widget">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="sizeConstraint">
+     <enum>QLayout::SetMaximumSize</enum>
+    </property>
+    <property name="leftMargin">
+     <number>4</number>
+    </property>
+    <property name="topMargin">
+     <number>4</number>
+    </property>
+    <property name="rightMargin">
+     <number>4</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QWidget" name="map_widget" native="true">
+      <layout class="QHBoxLayout" name="map_layout" stretch="0,8">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QWidget" name="map_toolbar_wdiget" native="true">
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
           <item>
-           <widget class="QLabel" name="label_4">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="grid_checkbox">
+              <property name="text">
+               <string>网格</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="text_checkbox">
+              <property name="text">
+               <string>文本</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
             <property name="text">
              <string>显示</string>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QGridLayout" name="layer_btn_grid" rowstretch="1,0" columnstretch="0,0">
+           <layout class="QGridLayout" name="layer_btn_grid" rowstretch="1,0,0" columnstretch="1,0">
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
+            <property name="spacing">
+             <number>2</number>
+            </property>
             <item row="0" column="0">
              <widget class="QPushButton" name="biome_layer_btn">
               <property name="text">
                <string>群系</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="terrain_layer_btn">
-              <property name="text">
-               <string>地形</string>
               </property>
              </widget>
             </item>
@@ -102,7 +131,14 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="terrain_layer_btn">
+              <property name="text">
+               <string>地形</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
              <widget class="QPushButton" name="slime_layer_btn">
               <property name="text">
                <string>史莱姆区块</string>
@@ -112,101 +148,16 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>元素</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QGridLayout" name="element_btn_grid" rowstretch="1,0">
-            <item row="0" column="0">
-             <widget class="QPushButton" name="pushButton_9">
-              <property name="text">
-               <string>方块实体</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="pushButton_10">
-              <property name="text">
-               <string>村庄</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="pushButton_8">
-              <property name="text">
-               <string>HSA</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="pushButton">
-              <property name="text">
-               <string>实体</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>结构</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QGridLayout" name="structure_btn_grid" rowstretch="1,0,0">
-            <item row="0" column="1">
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="text">
-               <string>沙漠神殿</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QPushButton" name="pushButton_11">
-              <property name="text">
-               <string>女巫</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="pushButton_3">
-              <property name="text">
-               <string>海底神殿</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="pushButton_12">
-              <property name="text">
-               <string>哨塔</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QPushButton" name="pushButton_13">
-              <property name="text">
-               <string>其他</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="label_4">
             <property name="text">
              <string>工具</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_14">
+           <widget class="QCheckBox" name="enable_chunk_edit_check_box">
             <property name="text">
-             <string>启用编辑模式</string>
+             <string>启用区块编辑器</string>
             </property>
            </widget>
           </item>
@@ -224,110 +175,206 @@
            </spacer>
           </item>
          </layout>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QPushButton" name="pushButton_15">
-            <property name="text">
-             <string>截图</string>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="map_visual_layout">
+         <property name="spacing">
+          <number>1</number>
+         </property>
+         <item>
+          <widget class="QWidget" name="map_top_toolbar_widget" native="true">
+           <layout class="QHBoxLayout" name="hor_toolbar_layout">
+            <property name="spacing">
+             <number>2</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+            <property name="leftMargin">
+             <number>2</number>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
+            <property name="topMargin">
+             <number>2</number>
             </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>X</string>
+            <property name="rightMargin">
+             <number>2</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="z_edit"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="cursor_pos_label">
-            <property name="text">
-             <string>Z</string>
+            <property name="bottomMargin">
+             <number>2</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="x_edit"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="goto_btn">
-            <property name="text">
-             <string>前往</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QCheckBox" name="grid_checkbox">
-            <property name="text">
-             <string>网格</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="text_checkbox">
-            <property name="text">
-             <string>文本</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="2" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QCheckBox" name="checkBox_3">
-            <property name="text">
-             <string>调试</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Tab 2</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QTreeWidget" name="treeWidget">
-          <column>
-           <property name="text">
-            <string>1</string>
+            <item>
+             <widget class="QPushButton" name="overwrold_btn">
+              <property name="text">
+               <string>主世界</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="nether_btn">
+              <property name="text">
+               <string>下界</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="theend_btn">
+              <property name="text">
+               <string>末地</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="debug_checkbox">
+              <property name="text">
+               <string>调试</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="block_pos_label">
+              <property name="text">
+               <string>0,0</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>开发中</string>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
            </property>
-          </column>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QWidget" name="map_buttom_toolbar_widget" native="true">
+           <layout class="QHBoxLayout" name="position_toolbar_layout">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="screenshot_btn">
+              <property name="text">
+               <string>截图</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>X</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="z_edit"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="cursor_pos_label">
+              <property name="text">
+               <string>Z</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="x_edit"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="goto_btn">
+              <property name="text">
+               <string>前往</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="chunk_edit_widget" native="true">
+      <layout class="QVBoxLayout" name="chunk_edit_layout">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Chunk Info</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTabWidget" name="chunk_edit_tab">
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
+         <widget class="QWidget" name="chunk_map_tab">
+          <attribute name="title">
+           <string>地图</string>
+          </attribute>
          </widget>
-        </item>
-       </layout>
-      </widget>
+         <widget class="QWidget" name="chunk_actor_tab">
+          <attribute name="title">
+           <string>实体</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="chunk_block_actor_tab">
+          <attribute name="title">
+           <string>方块实体</string>
+          </attribute>
+         </widget>
+         <widget class="QWidget" name="chunk_pt_tab">
+          <attribute name="title">
+           <string>计划刻</string>
+          </attribute>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -337,7 +384,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>760</width>
+     <width>801</width>
      <height>21</height>
     </rect>
    </property>
@@ -353,6 +400,8 @@
     <property name="title">
      <string>工具</string>
     </property>
+    <addaction name="action_full_map"/>
+    <addaction name="action_settings"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -367,7 +416,6 @@
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="action_open">
    <property name="text">
     <string>打开</string>
@@ -394,17 +442,27 @@
   </action>
   <action name="actionhelp">
    <property name="text">
-    <string>help</string>
+    <string>帮助</string>
    </property>
   </action>
   <action name="actionsettings">
    <property name="text">
-    <string>open source</string>
+    <string>开源</string>
    </property>
   </action>
   <action name="actionset">
    <property name="text">
-    <string>settings</string>
+    <string>关于</string>
+   </property>
+  </action>
+  <action name="action_full_map">
+   <property name="text">
+    <string>全屏地图</string>
+   </property>
+  </action>
+  <action name="action_settings">
+   <property name="text">
+    <string>打开配置文件</string>
    </property>
   </action>
  </widget>
