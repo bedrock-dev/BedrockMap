@@ -313,7 +313,11 @@ void MapWidget::gotoBlockPos(int x, int z) {
     this->update();
 }
 
-void MapWidget::openChunkEditor() { this->mw_->openChunkEditor(this->getCursorBlockPos().to_chunk_pos()); }
+void MapWidget::openChunkEditor() {
+    auto cp = this->getCursorBlockPos().to_chunk_pos();
+    cp.dim = static_cast<int>(this->dimType);
+    return this->mw_->openChunkEditor(cp);
+}
 
 std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
     //需要的参数

@@ -37,6 +37,15 @@
       </spacer>
      </item>
      <item>
+      <widget class="QLineEdit" name="x_edit"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="z_edit"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="dim_edit"/>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton">
        <property name="text">
         <string>加载数据</string>
@@ -59,95 +68,46 @@
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
-       <string>Tab 2</string>
+       <string>地形</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>当前层</string>
+          <widget class="QLineEdit" name="terrain_level_edit"/>
+         </item>
+         <item>
+          <widget class="QSlider" name="terrain_level_slider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="widget" native="true"/>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QSlider" name="horizontalSlider">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_2">
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QPushButton" name="terrain_goto_level_btn">
            <property name="text">
-            <string>当前层</string>
+            <string>PushButton</string>
            </property>
           </widget>
-         </item>
-         <item>
-          <widget class="QWidget" name="widget_2" native="true"/>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QSlider" name="horizontalSlider_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_3">
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </item>
         </layout>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="map_tab">
-      <property name="statusTip">
-       <string/>
-      </property>
-      <property name="whatsThis">
-       <string/>
-      </property>
+     <widget class="QWidget" name="actor_tab">
       <attribute name="title">
-       <string>Tab 1</string>
+       <string>实体</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3"/>
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </widget>
      <widget class="QWidget" name="block_actor_tab">
       <attribute name="title">
-       <string>页</string>
+       <string>方块实体</string>
       </attribute>
      </widget>
      <widget class="QWidget" name="pt_tab">
       <attribute name="title">
-       <string>页</string>
+       <string>计划刻</string>
       </attribute>
      </widget>
     </widget>

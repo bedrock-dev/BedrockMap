@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 #include <QCache>
+#include <QFuture>
 #include <QImage>
 #include <QThreadPool>
 #include <string>
@@ -27,6 +28,10 @@ inline uint qHash(const bl::chunk_pos& key, uint seed) {
 class world {
    public:
     world();
+
+    inline bool is_open() { return this->loadered_; }
+
+    QFuture<bl::chunk*> getChunkDirect(const bl::chunk_pos& p);
 
     bool init(const std::string& level_path);
 

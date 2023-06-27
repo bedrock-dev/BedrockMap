@@ -9,6 +9,7 @@
 
 #include "./ui_mainwindow.h"
 #include "mapwidget.h"
+#include "nbtwidget.h"
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {}
 
@@ -63,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(close_level()));
     connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
 
+    connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
+
     // init stat
     ui->biome_layer_btn->setEnabled(false);
     ui->overwrold_btn->setEnabled(false);
@@ -85,7 +88,22 @@ void MainWindow::updateXZEdit(int x, int z) {
     ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z) + " in [" + QString::number(cp.x) + "," + QString::number(cp.z) + "]");
 }
 
-void MainWindow::openChunkEditor(const bl::chunk_pos &p) { this->chunk_editor_widget_->setVisible(true); }
+void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
+    if (!this->world_.is_open()) {
+        QMessageBox::information(NULL, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
+        return;
+    }
+    // add a watcher
+    auto *chunk = this->world_.getChunkDirect(p).result();
+
+    if (!chunk) {
+        QMessageBox::information(NULL, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
+
+    } else {
+        this->chunk_editor_widget_->setVisible(true);
+        this->chunk_editor_widget_->load_chunk_data(chunk);
+    }
+}
 
 void MainWindow::on_goto_btn_clicked() {
     int x = ui->x_edit->text().toInt();
@@ -142,3 +160,12 @@ void MainWindow::toggle_full_map_mode() {
 void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
 
 void MainWindow::on_screenshot_btn_clicked() { this->map_->saveImage(QRect{0, 0, 1, 1}); }
+
+void MainWindow::openNBTEditor() {
+    auto *w = new NbtWidget();
+    auto g = this->geometry();
+    const int ext = 100;
+    w->setWindowTitle("NBT Editor");
+    w->setGeometry(QRect(g.x() + ext, g.y() + ext, g.width() - ext * 2, g.height() - ext * 2));
+    w->show();
+}

@@ -56,6 +56,8 @@ world::world() {
     this->height_image_cache_ = new QCache<bl::chunk_pos, QImage>(16384);
 }
 
+QFuture<bl::chunk *> world::getChunkDirect(const bl::chunk_pos &p) { return this->level_loader_.getChunkDirect(p); }
+
 bool world::init(const std::string &level_path) {
     auto r = this->level_loader_.init(level_path);
 

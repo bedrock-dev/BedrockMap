@@ -17,7 +17,7 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="central_widget">
-   <layout class="QHBoxLayout" name="main_layout" stretch="2,1">
+   <layout class="QHBoxLayout" name="main_layout" stretch="3,2">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -38,7 +38,7 @@
     </property>
     <item>
      <widget class="QWidget" name="map_widget" native="true">
-      <layout class="QHBoxLayout" name="map_layout" stretch="0,8">
+      <layout class="QHBoxLayout" name="map_layout" stretch="1,8">
        <property name="spacing">
         <number>2</number>
        </property>
@@ -339,7 +339,7 @@
     </item>
     <item>
      <widget class="QWidget" name="empty_chunk_editor_widget" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout_2"/>
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
      </widget>
     </item>
    </layout>
@@ -367,6 +367,7 @@
     </property>
     <addaction name="action_full_map"/>
     <addaction name="action_settings"/>
+    <addaction name="action_NBT"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -428,6 +429,11 @@
   <action name="action_settings">
    <property name="text">
     <string>打开配置文件</string>
+   </property>
+  </action>
+  <action name="action_NBT">
+   <property name="text">
+    <string>NBT编辑器</string>
    </property>
   </action>
  </widget>

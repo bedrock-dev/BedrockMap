@@ -35,7 +35,6 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent REQUIRED)
 
 
 
-
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -52,6 +51,18 @@ set(PROJECT_SOURCES
         chunkeditorwidget.h
         chunkeditorwidget.cpp
         chunkeditorwidget.ui
+        chunksectionwidget.h
+        chunksectionwidget.cpp
+
+        nbtwidget.h
+        nbtwidget.cpp
+        nbtwidget.ui
+
+
+
+#        nbtpalettewidget.h
+#        nbtpalettewidget.cpp
+#        nbtpalettewidget.ui
 
         )
 

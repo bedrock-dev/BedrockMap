@@ -50,6 +50,8 @@ QT_END_NAMESPACE
 
         void on_screenshot_btn_clicked();
 
+        void openNBTEditor();
+
        private:
         Ui::MainWindow *ui;
         std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns_;
