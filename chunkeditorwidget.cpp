@@ -1,6 +1,7 @@
 #include "chunkeditorwidget.h"
 
 #include <QMessageBox>
+#include <QtDebug>
 
 #include "chunksectionwidget.h"
 #include "nbtwidget.h"
@@ -16,7 +17,11 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new 
     ui->terrain_level_edit->setText("0");
     // actor tab
     this->actor_editor_ = new NbtWidget();
+    this->pending_tick_editor_ = new NbtWidget();
+    this->block_entity_editor_ = new NbtWidget();
     ui->actor_tab->layout()->addWidget(this->actor_editor_);
+    ui->pt_tab->layout()->addWidget(this->pending_tick_editor_);
+    ui->block_actor_tab->layout()->addWidget(this->block_entity_editor_);
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
@@ -29,6 +34,9 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         this->chunk_section_->set_chunk(chunk);
         this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
         this->chunk_section_->setYLevel(0);
+        qDebug() << "read baseic data";
+        this->pending_tick_editor_->load_new_data(chunk_->pending_ticks());
+        this->block_entity_editor_->load_new_data(chunk_->block_entities());
     } else {
         QMessageBox::information(NULL, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
     }

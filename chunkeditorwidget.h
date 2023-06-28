@@ -36,7 +36,9 @@ class ChunkEditorWidget : public QWidget
    private:
     ChunkSectionWidget *chunk_section_{nullptr};
 
-    NbtWidget *actor_editor_;
+    NbtWidget *actor_editor_{nullptr};
+    NbtWidget *block_entity_editor_{nullptr};
+    NbtWidget *pending_tick_editor_{nullptr};
 
     Ui::ChunkEditorWidget *ui;
     int y_level{0};

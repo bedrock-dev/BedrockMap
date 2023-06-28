@@ -37,14 +37,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="load_btn">
        <property name="text">
         <string>加载</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="save_btn">
        <property name="text">
         <string>另存为</string>
        </property>
@@ -57,8 +57,8 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QListWidget" name="listWidget"/>
-     <widget class="QTreeWidget" name="treeWidget">
+     <widget class="QListWidget" name="list_widget"/>
+     <widget class="QTreeWidget" name="tree_widget">
       <column>
        <property name="text">
         <string notr="true">1</string>

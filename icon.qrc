@@ -3,5 +3,19 @@
         <file>res/map.ico</file>
         <file>res/Aqua.css</file>
         <file>res/Diffnes.qss</file>
+        <file>res/nbt/TAG_Byte.ico</file>
+        <file>res/nbt/TAG_Byte_Array.ico</file>
+        <file>res/nbt/TAG_Byte_bool.ico</file>
+        <file>res/nbt/TAG_Compound.ico</file>
+        <file>res/nbt/TAG_Double.ico</file>
+        <file>res/nbt/TAG_End.ico</file>
+        <file>res/nbt/TAG_Float.ico</file>
+        <file>res/nbt/TAG_Int.ico</file>
+        <file>res/nbt/TAG_Int_Array.ico</file>
+        <file>res/nbt/TAG_List.ico</file>
+        <file>res/nbt/TAG_Long.ico</file>
+        <file>res/nbt/TAG_Long_Array.ico</file>
+        <file>res/nbt/TAG_Short.ico</file>
+        <file>res/nbt/TAG_String.ico</file>
     </qresource>
 </RCC>

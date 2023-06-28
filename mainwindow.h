@@ -40,6 +40,8 @@ QT_END_NAMESPACE
         void open_level();
         void close_level();
 
+        void close_and_exit();
+
         void on_debug_checkbox_stateChanged(int arg1);
 
         void toggle_chunk_edit_view();

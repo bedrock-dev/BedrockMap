@@ -64,7 +64,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
@@ -104,11 +104,13 @@
       <attribute name="title">
        <string>方块实体</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4"/>
      </widget>
      <widget class="QWidget" name="pt_tab">
       <attribute name="title">
        <string>计划刻</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5"/>
      </widget>
     </widget>
    </item>

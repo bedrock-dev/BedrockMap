@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->map_visual_layout->insertWidget(1, this->map_, 10);
     // ui->main_layout->addWidget();
     //    ui->main_layout->addWidget(this->chunk_editor_widget_, 1);
-    ui->main_layout->replaceWidget(ui->empty_chunk_editor_widget, this->chunk_editor_widget_);
+    ui->splitter->replaceWidget(1, this->chunk_editor_widget_);
 
     // layer btns
     this->layer_btns_ = {{MapWidget::LayerType::Biome, ui->biome_layer_btn},
@@ -64,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(close_level()));
     connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
 
+    connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
+
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
 
     // init stat
@@ -94,11 +96,11 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         return;
     }
     // add a watcher
+    qDebug() << "try read chunk";
     auto *chunk = this->world_.getChunkDirect(p).result();
-
+    qDebug() << "read chunk success fully";
     if (!chunk) {
         QMessageBox::information(NULL, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
-
     } else {
         this->chunk_editor_widget_->setVisible(true);
         this->chunk_editor_widget_->load_chunk_data(chunk);
@@ -129,12 +131,10 @@ void MainWindow::open_level() {
 
 void MainWindow::close_level() { this->world_.close(); }
 
-// void MainWindow::switch_tab(int x) {
-//    static QString titles[]{"Bedrock Map Viewer", "Bedrock NBT Editor"};
-//    setWindowTitle(titles[x]);
-//    ui->map_widget->setVisible(x == 0);
-//    ui->nbt_widget->setVisible(x == 1);
-//}
+void MainWindow::close_and_exit() {
+    this->world_.close();
+    this->close();
+}
 
 void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_->enableDebug(arg1 > 0); }
 

@@ -124,7 +124,7 @@ QImage *world::height(const bl::chunk_pos &p) {
         image->setColorTable(height_color_table);
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int idx = ch->get_height(j, i) + 64;
+                int idx = ch->get_height(i, j) + 64;
                 if (idx >= 0 && idx < height_color_table.size()) {
                     image->setPixel(i, j, idx);
                 }
