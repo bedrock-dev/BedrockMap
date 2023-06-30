@@ -10,62 +10,70 @@
 
 #include "chunkeditorwidget.h"
 #include "mapwidget.h"
+
 QT_BEGIN_NAMESPACE
-    namespace Ui { class MainWindow; }
+namespace Ui {
+    class MainWindow;
+}
 QT_END_NAMESPACE
 
-    class MainWindow : public QMainWindow
-{
-        Q_OBJECT
+class MainWindow : public QMainWindow {
+Q_OBJECT
 
-        virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
 
-       public:
-        MainWindow(QWidget *parent = nullptr);
-        ~MainWindow();
-        inline world *get_world() { return &this->world_; }
-       public slots:
-        void updateXZEdit(int x, int z);
-        // public
+public:
+    MainWindow(QWidget *parent = nullptr);
 
-        void openChunkEditor(const bl::chunk_pos &p);
+    ~MainWindow();
 
-       private slots:
+    inline world *get_world() { return &this->world_; }
 
-        void on_goto_btn_clicked();
-        void on_grid_checkbox_stateChanged(int arg1);
+public slots:
 
-        void on_text_checkbox_stateChanged(int arg1);
+    void updateXZEdit(int x, int z);
+    // public
 
-        void open_level();
-        void close_level();
+    void openChunkEditor(const bl::chunk_pos &p);
 
-        void close_and_exit();
+private slots:
 
-        void on_debug_checkbox_stateChanged(int arg1);
+    void on_goto_btn_clicked();
 
-        void toggle_chunk_edit_view();
+    void on_grid_checkbox_stateChanged(int arg1);
 
-        void toggle_full_map_mode();
+    void on_text_checkbox_stateChanged(int arg1);
 
-        void on_enable_chunk_edit_check_box_stateChanged(int arg1);
+    void open_level();
 
-        void on_screenshot_btn_clicked();
+    void close_level();
 
-        void openNBTEditor();
+    void close_and_exit();
 
-       private:
-        Ui::MainWindow *ui;
-        std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns_;
-        std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
+    void on_debug_checkbox_stateChanged(int arg1);
 
-        bool full_map_mode_{false};
-        bool chunk_edit_widget_hided_{true};
-        MapWidget *map_;
-        ChunkEditorWidget *chunk_editor_widget_;
-        world world_;
+    void toggle_chunk_edit_view();
 
-        bool write_mode_{false};
-    };
+    void toggle_full_map_mode();
+
+    void on_enable_chunk_edit_check_box_stateChanged(int arg1);
+
+    void on_screenshot_btn_clicked();
+
+    void openNBTEditor();
+
+private:
+    Ui::MainWindow *ui;
+    std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns_;
+    std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
+
+    bool full_map_mode_{false};
+    bool chunk_edit_widget_hided_{true};
+    MapWidget *map_;
+    ChunkEditorWidget *chunk_editor_widget_;
+    world world_;
+
+    bool write_mode_{false};
+};
 
 #endif  // MAINWINDOW_H

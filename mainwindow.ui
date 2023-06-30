@@ -82,7 +82,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>显示</string>
+              <string>层</string>
              </property>
             </widget>
            </item>
@@ -103,13 +103,6 @@
              <property name="spacing">
               <number>2</number>
              </property>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="biome_layer_btn">
-               <property name="text">
-                <string>群系</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="0">
               <widget class="QPushButton" name="height_layer_btn">
                <property name="text">
@@ -124,14 +117,84 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QPushButton" name="slime_layer_btn">
+             <item row="0" column="0">
+              <widget class="QPushButton" name="biome_layer_btn">
                <property name="text">
-                <string>史莱姆区块</string>
+                <string>群系</string>
                </property>
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox">
+             <property name="text">
+              <string>选层</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="bottomMargin">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSlider" name="horizontalSlider">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>确定</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>对象</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="slime_layer_btn">
+             <property name="text">
+              <string>史莱姆区块</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="text">
+              <string>实体</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QLabel" name="label_4">

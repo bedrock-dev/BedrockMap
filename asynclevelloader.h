@@ -1,5 +1,6 @@
 #ifndef ASYNCLEVELLOADER_H
 #define ASYNCLEVELLOADER_H
+
 #include <QCache>
 #include <QFuture>
 #include <QRunnable>
@@ -10,66 +11,79 @@
 #include <vector>
 
 #include "bedrock_level.h"
-#include "lrucache.h"
+#include "config.h"
 
 class AsyncLevelLoader;
 
+struct chunk_region {
+    std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_;
+
+    ~chunk_region();
+
+    bool valid() const;
+};
+
 class LoadChunkTask : public QObject, public QRunnable {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
-    explicit LoadChunkTask(bl::bedrock_level* level, const bl::chunk_pos& pos)
-        : QRunnable(), level_(level), pos_(pos) {}
+public:
+    explicit LoadChunkTask(bl::bedrock_level *level, const bl::chunk_pos &pos)
+            : QRunnable(), level_(level), pos_(pos) {}
+
     void run() override;
-   signals:
-    void finish(int x, int z, int dim, bl::chunk* chunk);
 
-   private:
-    bl::bedrock_level* level_;
-    bl::chunk_pos pos_;
+signals:
+
+    void finish(int x, int z, int dim, chunk_region *group); //NOLINT
+
+private:
+    bl::bedrock_level *level_;
+    region_pos pos_;
 };
 
 class AsyncLevelLoader : public QObject {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     AsyncLevelLoader();
 
-    bl::chunk* get(const bl::chunk_pos& p, bool& empty);
-    bool init(const std::string& path);
+    chunk_region *getRegion(const region_pos &p, bool &empty);
+
+    bool init(const std::string &path);
 
     void close();
 
-   public:
-    QFuture<bl::chunk*> getChunkDirect(const bl::chunk_pos& p);
+public:
+    QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
 
-   public slots:
-    void handle_task_finished_task(int x, int z, int dim, bl::chunk* chunk);
+public slots:
 
-   public:
-    ~AsyncLevelLoader();
+    void handle_task_finished_task(int x, int z, int dim, chunk_region *chunk);
+
+public:
+    ~AsyncLevelLoader() override;
+
     std::vector<QString> debug_info();
 
-   private:
+private:
     // processing
-    bool chunk_in_queue(const bl::chunk_pos& p);
+    bool region_in_queue(const bl::chunk_pos &p);
 
-    void insert_chunk_to_queue(const bl::chunk_pos& pos);
+    void insert_region_to_queue(const bl::chunk_pos &pos);
 
-    void remove_chunk_from_queue(const bl::chunk_pos& pos);
+    void remove_region_from_queue(const bl::chunk_pos &pos);
 
-
-   private:
-    std::atomic_bool loadered_{false};
+private:
+    std::atomic_bool loaded_{false};
 
     bl::bedrock_level level_;
     std::mutex m_;
 
-    std::unordered_set<bl::chunk_pos> processing_;
-    //  std::vector<LRUCache<bl::chunk_pos, bl::chunk>*> chunk_cache_;
-    std::vector<QCache<bl::chunk_pos, bl::chunk>*> chunk_cache_;
+    std::unordered_set<region_pos> processing_;
 
-    std::vector<QCache<bl::chunk_pos, char>*> invalid_cache_;
+    std::vector<QCache<region_pos, chunk_region> *> region_cache_;
+
+    std::vector<QCache<region_pos, char> *> invalid_cache_;
 
     QThreadPool pool_;
 };
@@ -81,18 +95,18 @@ inline std::vector<QString> AsyncLevelLoader::debug_info() {
 
     for (int i = 0; i < 3; i++) {
         res.push_back(QString(" - [%1]: %2/%3")
-                          .arg(QString::number(i), QString::number(this->chunk_cache_[i]->totalCost()),
-                               QString::number(this->chunk_cache_[i]->maxCost())));
+                              .arg(QString::number(i), QString::number(this->region_cache_[i]->totalCost()),
+                                   QString::number(this->region_cache_[i]->maxCost())));
     }
 
     res.emplace_back("Null chunk cache:");
     for (int i = 0; i < 3; i++) {
         res.push_back(QString(" - [%1]: %2/%3")
-                          .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
-                               QString::number(this->invalid_cache_[i]->maxCost())));
+                              .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
+                                   QString::number(this->invalid_cache_[i]->maxCost())));
     }
     res.emplace_back("Background thread pool:");
-    res.push_back(QString(" - Read threds: %1").arg(QString::number(4)));
+    res.push_back(QString(" - Read threads: %1").arg(QString::number(4)));
     res.push_back(QString(" - Task queue size %1").arg(QString::number(this->processing_.size())));
 
     return res;

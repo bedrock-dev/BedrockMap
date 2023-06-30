@@ -20,20 +20,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->map_->gotoBlockPos(0, 0);
     this->chunk_editor_widget_ = new ChunkEditorWidget();
     ui->map_visual_layout->insertWidget(1, this->map_, 10);
-    // ui->main_layout->addWidget();
-    //    ui->main_layout->addWidget(this->chunk_editor_widget_, 1);
     ui->splitter->replaceWidget(1, this->chunk_editor_widget_);
 
-    // layer btns
-    this->layer_btns_ = {{MapWidget::LayerType::Biome, ui->biome_layer_btn},
+    // layer btn
+    this->layer_btns_ = {{MapWidget::LayerType::Biome,   ui->biome_layer_btn},
                          {MapWidget::LayerType::Terrain, ui->terrain_layer_btn},
 
-                         {MapWidget::LayerType::Height, ui->height_layer_btn},
-                         {MapWidget::LayerType::Slime, ui->slime_layer_btn}};
+                         {MapWidget::LayerType::Height,  ui->height_layer_btn},
+                         {MapWidget::LayerType::Slime,   ui->slime_layer_btn}};
 
-    for (auto &kv : this->layer_btns_) {
+    for (auto &kv: this->layer_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
-            for (auto &x : this->layer_btns_) {
+            for (auto &x: this->layer_btns_) {
                 x.second->setEnabled(x.first != kv.first);
             }
             this->map_->changeLayer(kv.first);
@@ -42,17 +40,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Dimension Btn
     this->dim_btns_ = {
-        {MapWidget::DimType::OverWorld, ui->overwrold_btn},
-        {MapWidget::DimType::Nether, ui->nether_btn},
-        {MapWidget::DimType::TheEnd, ui->theend_btn},
+            {MapWidget::DimType::OverWorld, ui->overwrold_btn},
+            {MapWidget::DimType::Nether,    ui->nether_btn},
+            {MapWidget::DimType::TheEnd,    ui->theend_btn},
     };
 
-    for (auto &kv : this->dim_btns_) {
+    for (auto &kv: this->dim_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
-            for (auto &x : this->dim_btns_) {
+            for (auto &x: this->dim_btns_) {
                 x.second->setEnabled(x.first != kv.first);
             }
-            this->map_->changeDimemsion(kv.first);
+            this->map_->changeDimension(kv.first);
         });
     }
 
@@ -87,7 +85,8 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::updateXZEdit(int x, int z) {
     bl::block_pos bp{x, 0, z};
     auto cp = bp.to_chunk_pos();
-    ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z) + " in [" + QString::number(cp.x) + "," + QString::number(cp.z) + "]");
+    ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z) + " in [" + QString::number(cp.x) + "," +
+                                 QString::number(cp.z) + "]");
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {

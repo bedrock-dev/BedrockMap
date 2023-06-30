@@ -15,18 +15,22 @@
 class MainWindow;
 
 class MapWidget : public QWidget {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
-    enum LayerType { Biome = 0, Terrain = 1, Slime = 2, Height = 3 };
+public:
+    enum LayerType {
+        Biome = 0, Terrain = 1, Slime = 2, Height = 3
+    };
 
-    enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2 };
+    enum DimType {
+        OverWorld = 0, Nether = 1, TheEnd = 2
+    };
 
     MapWidget(MainWindow *w, QWidget *parent) : QWidget(parent), mw_(w) {
-        this->asyncRefreshTimer = new QTimer();
-        connect(this->asyncRefreshTimer, SIGNAL(timeout()), this,
+        this->sync_refresh_timer_ = new QTimer();
+        connect(this->sync_refresh_timer_, SIGNAL(timeout()), this,
                 SLOT(asyncRefresh()));
-        this->asyncRefreshTimer->start(100);
+        this->sync_refresh_timer_->start(100);
         setMouseTracking(true);
         this->setContextMenuPolicy(Qt::CustomContextMenu);
         setFocusPolicy(Qt::FocusPolicy::StrongFocus);
@@ -52,38 +56,43 @@ class MapWidget : public QWidget {
 
     bl::block_pos getCursorBlockPos();
 
-   public:
-    inline void changeDimemsion(DimType dim) {
-        this->dimType = dim;
+public:
+    inline void changeDimension(DimType dim) {
+        this->dim_type_ = dim;
         this->update();
     }
 
     inline void changeLayer(LayerType layer) {
-        this->layeType = layer;
+        this->layer_type_ = layer;
         this->update();
     }
 
     inline void enableGrid(bool able) {
         qDebug() << able;
-        this->render_grid = able;
+        this->render_grid_ = able;
         this->update();
     }
+
     inline void enableText(bool able) {
-        this->render_text = able;
+        this->render_text_ = able;
         this->update();
     }
+
     inline void enableDebug(bool able) {
-        this->render_debug = able;
+        this->render_debug_ = able;
         this->update();
     }
 
     void saveImage(const QRect &rect);
 
-   signals:
-    void mouseMove(int x, int z);
+signals:
 
-   public slots:
+    void mouseMove(int x, int z); //NOLINT
+
+public slots:
+
     void asyncRefresh();
+
     // https://stackoverflow.com/questions/24254006/rightclick-event-in-qt-to-open-a-context-menu
     void showContextMenu(const QPoint &p);
 
@@ -96,17 +105,22 @@ class MapWidget : public QWidget {
 
     void openChunkEditor();
 
-   private:
+private:
     // for debug
 
-    void debugDrawCamera(QPaintEvent *event, QPainter *p);
+    void drawDebugWindow(QPaintEvent *event, QPainter *p);
 
     // draw chunk help
-    void drawOneChunk(QPaintEvent *event, QPainter *p, const bl::chunk_pos &pos,
-                      const QPoint &start, QImage *img);
-    void forEachChunkInCamera(
-        const std::function<void(const bl::chunk_pos &, const QPoint &)> &f);
-    // functio draw
+    void
+    drawOneChunk(QPaintEvent *event, QPainter *p, const bl::chunk_pos &pos, const QPoint &start, QImage *img) const;
+
+    void drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const;
+
+    void forEachChunkInCamera(const std::function<void(const bl::chunk_pos &, const QPoint &)> &f);
+
+    void foreachRegionInCamera(const std::function<void(const region_pos &p, const QPoint &)> &f);
+
+    // function draw
 
     void drawGrid(QPaintEvent *event, QPainter *p);
 
@@ -125,39 +139,35 @@ class MapWidget : public QWidget {
     QRect getRenderSelectArea();
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
-    std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(
-        const QRect &camera);
+    std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(const QRect &camera);
 
-   signals:
+signals:
 
-   private:
+private:
     // bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
 
     // select area
-    bl::chunk_pos select_min;
-    bl::chunk_pos select_max;
-    bool select{false};
+    bl::chunk_pos select_min_;
+    bl::chunk_pos select_max_;
+    bool has_selected_{false};
 
     // operation control
-    bool dragging{false};
-    bool control_pressed{false};
+    bool dragging_{false};
+    bool CTRL_pressed_{false};
     //
 
     MainWindow *mw_{nullptr};
     // render control
-    QRect camera{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
-    DimType dimType{DimType::OverWorld};
-    LayerType layeType{LayerType::Biome};
-    QTimer *asyncRefreshTimer;
+    QRect camera_{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
+    DimType dim_type_{DimType::OverWorld};
+    LayerType layer_type_{LayerType::Biome};
+    QTimer *sync_refresh_timer_;
 
-    int bw{6};            //每个方块需要几个像素
-    QPoint origin{0, 0};  //记录区块0,0相对widget左上角的坐标
-
-    bool render_grid{true};
-
-    bool render_text{true};
-    bool render_debug{false};
-
+    int bw_{6};            //每个方块需要几个像素
+    QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
+    bool render_grid_{true};
+    bool render_text_{true};
+    bool render_debug_{false};
     // function control
 };
 

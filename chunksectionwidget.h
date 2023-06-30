@@ -4,12 +4,18 @@
 #include <QWidget>
 
 #include "chunk.h"
+
 class ChunkSectionWidget : public QWidget {
-    Q_OBJECT
-   public:
-    enum DrawType { Biome, Terrain };
+Q_OBJECT
+public:
+    enum DrawType {
+        Biome, Terrain
+    };
+
     explicit ChunkSectionWidget(QWidget *parent = nullptr);
+
     void paintEvent(QPaintEvent *event) override;
+
     void resizeEvent(QResizeEvent *event) override;
 
     void setDrawType(DrawType t) {
@@ -26,11 +32,11 @@ class ChunkSectionWidget : public QWidget {
 
     int get_block_pix();
 
-   signals:
-   private:
-    DrawType dt_;
+signals:
+private:
+    DrawType dt_{Biome};
     int y_level_{0};
-    bl::chunk *ch_;
+    bl::chunk *ch_{nullptr};
 };
 
 #endif // CHUNKSECTIONWIDGET_H

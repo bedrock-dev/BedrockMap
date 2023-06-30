@@ -4,36 +4,38 @@
 #include <QWidget>
 
 #include "chunk.h"
+
 namespace Ui {
 
-class ChunkEditorWidget;
+    class ChunkEditorWidget;
 
 }  // namespace Ui
 class ChunkSectionWidget;
+
 class NbtWidget;
 
-class ChunkEditorWidget : public QWidget
-{
-    Q_OBJECT
+class ChunkEditorWidget : public QWidget {
+Q_OBJECT
 
-   public:
+public:
     explicit ChunkEditorWidget(QWidget *parent = nullptr);
 
-    ~ChunkEditorWidget();
+    ~ChunkEditorWidget() override;
 
     void load_chunk_data(bl::chunk *chunk);
 
-   private slots:
+private slots:
+
     void on_close_btn_clicked();
 
     void on_terrain_level_slider_valueChanged(int value);
 
     void on_terrain_goto_level_btn_clicked();
 
-   private:
+private:
     void refreshData();
 
-   private:
+private:
     ChunkSectionWidget *chunk_section_{nullptr};
 
     NbtWidget *actor_editor_{nullptr};

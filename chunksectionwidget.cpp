@@ -4,6 +4,7 @@
 #include <QtDebug>
 
 #include "color.h"
+
 ChunkSectionWidget::ChunkSectionWidget(QWidget *parent) : QWidget(parent) {
     //    this->resize(this->width(), this->width());
 }

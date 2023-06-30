@@ -3,9 +3,9 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QIcon>
+#include <QImage>
 
 #include "asynclevelloader.h"
-#include "lrucache.h"
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
@@ -35,6 +35,4 @@ int main(int argc, char *argv[]) {
     w.show();
 
     return a.exec();
-
-    return 0;
 }
