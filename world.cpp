@@ -3,23 +3,23 @@
 #include <QVector3D>
 #include <QtDebug>
 #include <algorithm>
-#include <array>
+
 #include <cmath>
 
 #include "asynclevelloader.h"
 #include "color.h"
+#include <QPainter>
 
 namespace {
     QVector<QRgb> biome_color_table{};
-
     QVector<QRgb> height_color_table{};
 
-// terrain
+    QColor EMPTY_COLOR_TABLE[2]{QColor(20, 20, 20), QColor(40, 40, 40)};
 
-    QVector<QRgb> block_color_table{};
-    std::unordered_map<std::string, int> block_color_index;
+    QImage *empty_image_{nullptr};
 
-    QImage *EMPTY_IMAGE{nullptr};
+//    QImage *EMPTY_IMAGE{nullptr};
+
 
     QImage *SLIME_IMAGE{nullptr};
 
@@ -58,9 +58,9 @@ namespace {
 
 world::world() {
     initBiomeColorTable();
-    this->top_biome_image_cache_ = new QCache<bl::chunk_pos, QImage>(16384);
-    this->height_image_cache_ = new QCache<bl::chunk_pos, QImage>(16384);
-    this->top_terrain_image_cache_ = new QCache<bl::chunk_pos, QImage>(16384);
+    this->top_biome_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
+    this->height_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
+    this->top_terrain_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
 }
 
 QFuture<bl::chunk *> world::getChunkDirect(const bl::chunk_pos &p) { return this->level_loader_.getChunkDirect(p); }
@@ -84,124 +84,53 @@ void world::close() {
 }
 
 QImage *world::topBiome(const region_pos &p) {
-    if (!this->loaded_) return EMPTY_IMAGE;
+    if (!this->loaded_) return EMPTY_IMAGE();
     auto *img = this->top_biome_image_cache_->operator[](p);
     if (img) return img;  // hit
 
     bool null_region{false};
     auto *region = this->level_loader_.getRegion(p, null_region);
     if (null_region) {
-        return EMPTY_IMAGE;
+        return EMPTY_IMAGE();
     }
 
-    if (region) {
-        auto *image = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_Indexed8);
-        image->setColorTable(biome_color_table);
-        image->fill(0);
-        for (int rw = 0; rw < cfg::RW; rw++) {
-            for (int rh = 0; rh < cfg::RW; rh++) {
-                if (region->chunks_[rw][rh]) {
-                    for (int i = 0; i < 16; i++) {
-                        for (int j = 0; j < 16; j++) {
-                            int idx = static_cast<int>(region->chunks_[rw][rh]->get_top_biome(i, j));
-                            if (idx >= 0 && idx < biome_color_table.size()) {
-                                image->setPixel(16 * rw + i, 16 * rh + j, idx);
-                            }
-                        }
-                    }
-                } else {
-                }
-            }
-        }
-
-        // only cache non-empty chunk
+    if (region && region->biome_bake_image_) {
+        auto *image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+        memcpy(image->bits(), region->biome_bake_image_->bits(), image->byteCount());
         this->top_biome_image_cache_->insert(p, image);
         return image;
+
     } else {
-        return EMPTY_IMAGE;
+        return EMPTY_IMAGE();
     }
 }
 
 QImage *world::topBlock(const region_pos &p) {
-    if (!this->loaded_) return EMPTY_IMAGE;
+    if (!this->loaded_) return EMPTY_IMAGE();
     auto *img = this->top_terrain_image_cache_->operator[](p);
     if (img) return img;  // hit
 
     bool null_region{false};
     auto *region = this->level_loader_.getRegion(p, null_region);
     if (null_region) {
-        return EMPTY_IMAGE;
+        return EMPTY_IMAGE();
     }
 
-    if (region) {
-        auto *image = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_RGB888);
-        image->setColorTable(block_color_table);
-        image->fill(1);
-        for (int rw = 0; rw < cfg::RW; rw++) {
-            for (int rh = 0; rh < cfg::RW; rh++) {
-                if (region->chunks_[rw][rh]) {
-                    for (int i = 0; i < 16; i++) {
-                        for (int j = 0; j < 16; j++) {
-                            auto *raw = region->chunks_[rw][rh]->get_top_block_raw(i, j);
-                            if (!raw) {
-                                image->setPixel(i + rw * 16, j + rh * 16, 0);
-                            } else {
-                                auto index = block_color_index[raw->to_raw()];
-                                //                                qDebug() << "Index is " << index;
-
-                                if (index < block_color_table.size() && index >= 0) {
-                                    image->setPixel(i + rw * 16, j + rh * 16, index);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+    if (region && region->terrain_bake_image_) {
+        auto *image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+        memcpy(image->bits(), region->terrain_bake_image_->bits(), image->byteCount());
         this->top_terrain_image_cache_->insert(p, image);
         return image;
     } else {
-        return EMPTY_IMAGE;
+        return EMPTY_IMAGE();
     }
 }
 
 QImage *world::height(const region_pos &p) {
-    return EMPTY_IMAGE;
-    //    if (!this->loadered_) return EMPTY_IMAGE;
-
-    //    auto *img = this->height_image_cache_->operator[](p);
-    //    if (img) return img;  // hit
-
-    //    bool null_chunk{false};
-    //    auto *ch = this->level_loader_.get(p, null_chunk);
-    //    if (null_chunk) {
-    //        return EMPTY_IMAGE;
-    //    }
-
-    //    if (ch) {
-    //        auto *image = new QImage(16, 16, QImage::Format_Indexed8);
-    //        image->setColorTable(height_color_table);
-    //        for (int i = 0; i < 16; i++) {
-    //            for (int j = 0; j < 16; j++) {
-    //                int idx = ch->get_height(i, j);
-    //                if (idx < 0) {
-    //                    qDebug() << "small idx" << idx;
-    //                }
-    //                if (idx >= 0 && idx < height_color_table.size()) {
-    //                    image->setPixel(i, j, idx);
-    //                }
-    //            }
-    //        }
-    //        // only cache non empty chunk
-    //        this->height_image_cache_->insert(p, image);
-    //        return image;
-    //    } else {
-    //        return EMPTY_IMAGE;
-    //    }
+    return EMPTY_IMAGE();
 }
 
-QImage *world::slimeChunk(const bl::chunk_pos &p) { return p.is_slime() ? SLIME_IMAGE : EMPTY_IMAGE; }
+QImage *world::slimeChunk(const bl::chunk_pos &p) { return p.is_slime() ? SLIME_IMAGE : EMPTY_IMAGE(); }
 
 void world::initBiomeColorTable() {
     bl::init_biome_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome.json)");
@@ -218,13 +147,13 @@ void world::initBiomeColorTable() {
     for (int i = 0; i < 384; i++) {
         height_color_table[i] = ViridisColorMap(i / 384.0);
     }
+
     // empty
-    EMPTY_IMAGE = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_Indexed8);
-    EMPTY_IMAGE->setColor(0, qRgba(20, 20, 20, 255));
-    EMPTY_IMAGE->setColor(1, qRgba(40, 40, 40, 255));
-    for (int i = 0; i < 16 * cfg::RW; i++) {
-        for (int j = 0; j < 16 * cfg::RW; j++) {
-            EMPTY_IMAGE->setPixel(i, j, (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2);
+    empty_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    const int BW = cfg::RW << 4;
+    for (int i = 0; i < BW; i++) {
+        for (int j = 0; j < BW; j++) {
+            empty_image_->setPixelColor(i, j, EMPTY_COLOR_TABLE[(i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2]);
         }
     }
 
@@ -232,15 +161,9 @@ void world::initBiomeColorTable() {
     SLIME_IMAGE = new QImage(16, 16, QImage::Format_Indexed8);
     SLIME_IMAGE->setColor(0, qRgb(87, 157, 66));
     SLIME_IMAGE->fill(0);
-
-    // terrain color table
-    auto &t = bl::get_block_color_table();
-    block_color_table.resize(t.size());
-
-    size_t n = 0;
-    for (auto &kv: t) {
-        block_color_index[kv.first] = n;
-        block_color_table[n] = qRgb(kv.second.r, kv.second.g, kv.second.b);
-        n++;
-    }
 }
+
+QImage *world::EMPTY_IMAGE() {
+    return empty_image_;
+}
+

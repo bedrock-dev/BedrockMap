@@ -9,11 +9,16 @@
 #include "qdebug.h"
 #include "world.h"
 
+namespace {
+    QColor EMPTY_COLOR_TABLE[2]{QColor(20, 20, 20), QColor(40, 40, 40)};
+
+}
+
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(4);
     for (int i = 0; i < 3; i++) {
-        this->region_cache_.push_back(new QCache<region_pos, chunk_region>(2048));
-        this->invalid_cache_.push_back(new QCache<region_pos, char>(16384));
+        this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
+        this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
     }
 }
 
@@ -26,7 +31,6 @@ chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty) {
         return nullptr;
     }
 
-
     // chunk cache
     auto *region = this->region_cache_[p.dim]->operator[](p);
     if (region) {
@@ -38,7 +42,7 @@ chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty) {
         return nullptr;
     }
 
-    auto *task = new LoadChunkTask(&this->level_, p);
+    auto *task = new LoadRegionTask(&this->level_, p);
     connect(task, SIGNAL(finish(int, int, int, chunk_region * )), this,
             SLOT(handle_task_finished_task(int, int, int, chunk_region * )));
     this->insert_region_to_queue(p);
@@ -69,7 +73,7 @@ void AsyncLevelLoader::handle_task_finished_task(int x, int z, int dim, chunk_re
 
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 
-void LoadChunkTask::run() {
+void LoadRegionTask::run() {
     auto *region = new chunk_region();
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
@@ -78,6 +82,39 @@ void LoadChunkTask::run() {
                 region->chunks_[i][j] = this->level_->get_chunk(p);
             } catch (std::exception &e) {
                 region->chunks_[i][j] = nullptr;
+            }
+        }
+    }
+
+    if (region->valid()) { //尝试烘焙
+        region->biome_bake_image_ = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_RGBA8888);
+        region->terrain_bake_image_ = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_RGBA8888);
+
+        for (int rw = 0; rw < cfg::RW; rw++) {
+            for (int rh = 0; rh < cfg::RW; rh++) {
+                if (region->chunks_[rw][rh]) {
+                    for (int i = 0; i < 16; i++) {
+                        for (int j = 0; j < 16; j++) {
+                            auto b = bl::get_biome_color(region->chunks_[rw][rh]->get_top_biome(i, j));
+                            region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                                     QColor(b.r, b.g, b.b));
+                            auto c = region->chunks_[rw][rh]->get_top_block_color(i, j);
+                            region->terrain_bake_image_->setPixelColor(i + (rw << 4), j + (rh << 4),
+                                                                       QColor(c.r, c.g, c.b, c.a));
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < 16; i++) {
+                        for (int j = 0; j < 16; j++) {
+                            const int x = i + (rw << 4);
+                            const int y = j + (rh << 4);
+                            region->terrain_bake_image_->setPixelColor(x, y, EMPTY_COLOR_TABLE[
+                                    (x / (cfg::RW * 8) + y / (cfg::RW * 8)) % 2]);
+                            region->biome_bake_image_->setPixelColor(x, y, EMPTY_COLOR_TABLE[
+                                    (x / (cfg::RW * 8) + y / (cfg::RW * 8)) % 2]);
+                        }
+                    }
+                }
             }
         }
     }
@@ -127,6 +164,8 @@ chunk_region::~chunk_region() {
             delete chunks_[i][j];
         }
     }
+    delete terrain_bake_image_;
+    delete biome_bake_image_;
 }
 
 bool chunk_region::valid() const {

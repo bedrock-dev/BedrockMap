@@ -148,7 +148,6 @@ void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
 
 void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
     item->setExpanded(true);
-    //    ui->tree_widget->setItemWidget(item, column, newTreeItemEditWidget("key", "value"));
 }
 
 void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {

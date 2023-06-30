@@ -38,25 +38,25 @@ void MapWidget::showContextMenu(const QPoint &p) {
     QMenu contextMenu(tr("Context menu"), this);
 
     // for area
-    QAction rmchunkAction("删除区块", this);
-    //    rmchunkAction.setEnabled();
+    QAction removeChunkAction("删除区块", this);
+    //    rmChunkAction.setEnabled();
     QAction saveImageAction("存为图片", this);
     QAction clearAreaAction("取消选中", this);
     QAction focusOnAction("聚焦", this);
 
     // for single chunk
     auto pos = this->getCursorBlockPos();
-    QAction copyPostion("复制坐标  " + QString("%1 , %2").arg(QString::number(pos.x), QString::number(pos.z)), this);
+    QAction copyPosition("复制坐标  " + QString("%1 , %2").arg(QString::number(pos.x), QString::number(pos.z)), this);
     QAction copyTpCmd("复制TP指令  " + QString("tp %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)), this);
     QAction openInChunkEditor("在区块编辑器中打开", this);
     connect(&openInChunkEditor, SIGNAL(triggered()), this, SLOT(openChunkEditor()));
 
     if (this->has_selected_ && area.contains(p)) {
-        contextMenu.addAction(&rmchunkAction);
+        contextMenu.addAction(&removeChunkAction);
         contextMenu.addAction(&saveImageAction);
         contextMenu.addAction(&clearAreaAction);
     } else {
-        contextMenu.addAction(&copyPostion);
+        contextMenu.addAction(&copyPosition);
         contextMenu.addAction(&copyTpCmd);
         contextMenu.addAction(&openInChunkEditor);
     }
@@ -134,7 +134,7 @@ bl::block_pos MapWidget::getCursorBlockPos() {
 }
 
 void MapWidget::saveImage(const QRect &rect) {
-    QMessageBox::information(NULL, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
+    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
 }
 
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
@@ -212,7 +212,8 @@ void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter, const bl::ch
     if (q) painter->drawImage(QRectF(start.x(), start.y(), 16 * this->bw_, 16 * this->bw_), *q, QRect(0, 0, 16, 16));
 }
 
-void MapWidget::drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
+void
+MapWidget::drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
     if (img)
         p->drawImage(QRectF(start.x(), start.y(), 16 * this->bw_ * cfg::RW, 16 * this->bw_ * cfg::RW), *img,
                      QRect(0, 0, 16 * cfg::RW, 16 * cfg::RW));

@@ -16,18 +16,48 @@
 class AsyncLevelLoader;
 
 struct chunk_region {
-    std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_;
+    std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_{};
 
     ~chunk_region();
 
-    bool valid() const;
+    QImage *terrain_bake_image_{nullptr};
+    QImage *biome_bake_image_{nullptr};
+
+    [[nodiscard]] bool valid() const;
 };
 
-class LoadChunkTask : public QObject, public QRunnable {
+template<typename T>
+class TaskBuffer {
+public:
+    bool contains(const T &t) {
+        bool exist{false};
+        {
+            std::lock_guard<std::mutex> lk(this->mu_);
+            exist = this->buffer_.count(t) > 0;
+        }
+        return exist;
+    }
+
+    void add(const T &t) {
+        std::lock_guard<std::mutex> kl(this->mu_);
+        this->buffer_.insert(t);
+    }
+
+    void remove(const T &t) {
+        std::lock_guard<std::mutex> kl(this->mu_);
+        this->buffer_.erase(t);
+
+    }
+
+    std::mutex mu_;
+    std::unordered_set<T> buffer_;
+};
+
+class LoadRegionTask : public QObject, public QRunnable {
 Q_OBJECT
 
 public:
-    explicit LoadChunkTask(bl::bedrock_level *level, const bl::chunk_pos &pos)
+    explicit LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos)
             : QRunnable(), level_(level), pos_(pos) {}
 
     void run() override;

@@ -15,7 +15,7 @@
 #include "bedrock_level.h"
 #include "color.h"
 #include "config.h"
-// data soruce
+// data source
 namespace bl {
 
     inline uint qHash(const bl::chunk_pos &key, uint seed) {
@@ -28,11 +28,16 @@ namespace bl {
 
 }  // namespace bl
 
+
 class world {
 public:
     world();
 
+
+    static QImage *EMPTY_IMAGE();
+
     inline bool is_open() const { return this->loaded_; }
+
 
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
 
@@ -72,6 +77,9 @@ private:
 
     AsyncLevelLoader level_loader_;
     bool loaded_{false};
+
+
+    QThreadPool image_bake_pool_;
 
     // thread pool
 };
