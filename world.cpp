@@ -128,6 +128,7 @@ std::vector<bl::vec3> world::getActorList(const bl::chunk_pos &p) {
     if (null_region) {
         return {};
     }
+
     if (region) {
         auto *layer = LayerCacheInfo::fromRegion(region);
         this->layer_cache_->insert(p, layer);

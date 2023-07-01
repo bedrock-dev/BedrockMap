@@ -38,14 +38,14 @@ chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty, cons
     }
 
     // not in cache but in queue
-    if (this->region_in_queue(p)) {
+    if (this->processing_.contains(p)) {
         return nullptr;
     }
 
     auto *task = new LoadRegionTask(&this->level_, p, filter);
     connect(task, SIGNAL(finish(int, int, int, chunk_region * )), this,
             SLOT(handle_task_finished_task(int, int, int, chunk_region * )));
-    this->insert_region_to_queue(p);
+    this->processing_.add(p);
     this->pool_.start(task);
     return nullptr;
 }
@@ -68,7 +68,7 @@ void AsyncLevelLoader::handle_task_finished_task(int x, int z, int dim, chunk_re
     } else {
         this->region_cache_[dim]->insert(bl::chunk_pos{x, z, dim}, region);
     }
-    this->remove_region_from_queue(bl::chunk_pos{x, z, dim});
+    this->processing_.remove(bl::chunk_pos{x, z, dim});
 }
 
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
@@ -162,24 +162,6 @@ void LoadRegionTask::run() {
     emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region);
 }
 
-bool AsyncLevelLoader::region_in_queue(const bl::chunk_pos &p) {
-    bool exist{false};
-    {
-        std::lock_guard<std::mutex> l(this->m_);
-        exist = this->processing_.count(p) > 0;
-    }
-    return exist;
-}
-
-void AsyncLevelLoader::insert_region_to_queue(const bl::chunk_pos &pos) {
-    std::lock_guard<std::mutex> l(this->m_);
-    this->processing_.insert(pos);
-}
-
-void AsyncLevelLoader::remove_region_from_queue(const bl::chunk_pos &pos) {
-    std::lock_guard<std::mutex> l(this->m_);
-    this->processing_.erase(pos);
-}
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
@@ -206,6 +188,20 @@ void AsyncLevelLoader::clear_all_cache() {
         cache->clear();
     }
 
+}
+
+QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::chunk_pos &max) {
+    auto directChunkReader = [&](const bl::chunk_pos &min, const bl::chunk_pos &max) {
+        int res = 0;
+        for (int i = min.x; i <= max.x; i++) {
+            for (int j = min.z; j <= max.z; j++) {
+                bl::chunk_pos cp{i, j, min.dim};
+                this->level_.remove_chunk(cp);
+            }
+        }
+        return true;
+    };
+    return QtConcurrent::run(directChunkReader, min, max);
 }
 
 chunk_region::~chunk_region() {

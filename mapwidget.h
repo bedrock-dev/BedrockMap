@@ -102,6 +102,7 @@ signals:
 
 public slots:
 
+
     void asyncRefresh();
 
     // https://stackoverflow.com/questions/24254006/rightclick-event-in-qt-to-open-a-context-menu
@@ -116,6 +117,9 @@ public slots:
 
     void openChunkEditor();
 
+    inline void clear_select() { this->has_selected_ = false; }
+
+    void delete_chunks();
 
 private:
     // for debug

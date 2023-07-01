@@ -39,6 +39,7 @@ struct LayerCacheInfo {
     QImage *biome{nullptr};
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
     std::vector<bl::vec3> actor_list;
+
     static LayerCacheInfo *fromRegion(chunk_region *r);
 
 
@@ -56,6 +57,8 @@ public:
 
 
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
+
+    AsyncLevelLoader &getLevelLoader() { return this->level_loader_; }
 
     bool init(const std::string &level_path);
 

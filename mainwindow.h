@@ -10,6 +10,7 @@
 
 #include "chunkeditorwidget.h"
 #include "mapwidget.h"
+#include  <QFutureWatcher>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -35,6 +36,10 @@ public slots:
     // public
 
     void openChunkEditor(const bl::chunk_pos &p);
+
+    void deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max);
+
+    void handle_chunk_delete_finished();
 
 private slots:
 
@@ -70,7 +75,8 @@ private slots:
 
     void on_actor_layer_btn_clicked();
 
-   private:
+
+private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
@@ -82,6 +88,10 @@ private slots:
     world world_;
 
     bool write_mode_{false};
+
+    //watcher
+    QFutureWatcher<bool> delete_chunks_watcher_;
+
 };
 
 #endif  // MAINWINDOW_H

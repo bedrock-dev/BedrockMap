@@ -89,7 +89,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->x_edit->setMaximumWidth(160);
     ui->z_edit->setMaximumWidth(160);
 
-    // ui->chunk_edit_widget->setVisible(false);
+
+    //watcher
+
+    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::handle_chunk_delete_finished);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -107,7 +111,7 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         return;
     }
     // add a watcher
-    auto *chunk = this->world_.getChunkDirect(p).result();
+    auto *chunk = this->world_.getLevelLoader().getChunkDirect(p).result();
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
     } else {
@@ -206,3 +210,21 @@ void MainWindow::on_layer_slider_valueChanged(int value) {
 void MainWindow::on_slime_layer_btn_clicked() { this->map_->toggleSlime(); }
 
 void MainWindow::on_actor_layer_btn_clicked() { this->map_->toggleActor(); }
+
+void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
+    if (!this->world_.is_open()) {
+        QMessageBox::information(nullptr, "警告", "还没有打开世界", QMessageBox::Yes, QMessageBox::Yes);
+        return;
+    }
+    if (!this->write_mode_) {
+        QMessageBox::information(nullptr, "警告", "当前为只读模式，无法删除区块", QMessageBox::Yes, QMessageBox::Yes);
+        return;
+    }
+    auto future = this->world_.getLevelLoader().dropChunk(min, max);
+    this->delete_chunks_watcher_.setFuture(future);
+}
+
+void MainWindow::handle_chunk_delete_finished() {
+    QMessageBox::information(nullptr, "警告", "区块删除成功", QMessageBox::Yes, QMessageBox::Yes);
+    this->world_.clear_all_cache();
+}

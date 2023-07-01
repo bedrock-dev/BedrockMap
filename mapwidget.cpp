@@ -37,11 +37,13 @@ void MapWidget::showContextMenu(const QPoint &p) {
     QMenu contextMenu(tr("Context menu"), this);
     if (this->has_selected_ && area.contains(p)) {
         QAction removeChunkAction("删除区块", this);
-        QAction saveImageAction("存为图片", this);
         QAction clearAreaAction("取消选中", this);
+        connect(&clearAreaAction, SIGNAL(triggered()), this, SLOT(clear_select()));
+        connect(&removeChunkAction, SIGNAL(triggered()), this, SLOT(delete_chunks()));
+
         contextMenu.addAction(&removeChunkAction);
-        contextMenu.addAction(&saveImageAction);
         contextMenu.addAction(&clearAreaAction);
+        contextMenu.exec(mapToGlobal(p));
     } else {
         auto pos = this->getCursorBlockPos();
         // for single chunk
@@ -99,7 +101,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
             //刚开始拖动
             this->dragging_ = true;
             if (this->CTRL_pressed_) {
-//                this->has_selected_ = true;
+                this->has_selected_ = true;
                 this->select_min_ = this->getCursorBlockPos().to_chunk_pos();
             }
         }
@@ -380,4 +382,13 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
 void MapWidget::saveImage(bool full_screen) {
     QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
 }
+
+void MapWidget::delete_chunks() {
+    this->select_max_.dim = this->dim_type_;
+    this->select_min_.dim = this->dim_type_;
+    this->mw_->deleteChunks(this->select_min_, this->select_max_);
+
+}
+
+
 

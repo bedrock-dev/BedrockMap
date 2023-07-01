@@ -46,6 +46,20 @@ public:
         return exist;
     }
 
+    size_t size() {
+        size_t sz = 0;
+        {
+            std::lock_guard<std::mutex> kl(this->mu_);
+            sz = this->buffer_.size();
+        }
+        return sz;
+    }
+
+    void clear() {
+        std::lock_guard<std::mutex> kl(this->mu_);
+        this->buffer_.clear();
+    }
+
     void add(const T &t) {
         std::lock_guard<std::mutex> kl(this->mu_);
         this->buffer_.insert(t);
@@ -103,6 +117,8 @@ public:
 public:
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
 
+    QFuture<bool> dropChunk(const bl::chunk_pos &min, const ::bl::chunk_pos &max);
+
 public slots:
 
     void handle_task_finished_task(int x, int z, int dim, chunk_region *chunk);
@@ -113,25 +129,15 @@ public:
     std::vector<QString> debug_info();
 
 private:
-    // processing
-    bool region_in_queue(const bl::chunk_pos &p);
-
-    void insert_region_to_queue(const bl::chunk_pos &pos);
-
-    void remove_region_from_queue(const bl::chunk_pos &pos);
-
-private:
     std::atomic_bool loaded_{false};
 
     bl::bedrock_level level_;
     std::mutex m_;
 
-    std::unordered_set<region_pos> processing_;
-
+//    std::unordered_set<region_pos> processing_;
+    TaskBuffer<region_pos> processing_;
     std::vector<QCache<region_pos, chunk_region> *> region_cache_;
-
     std::vector<QCache<region_pos, char> *> invalid_cache_;
-
     QThreadPool pool_;
 };
 
