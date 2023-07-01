@@ -14,13 +14,15 @@
 
 class MainWindow;
 
+
 class MapWidget : public QWidget {
 Q_OBJECT
 
 public:
-    enum LayerType {
-        Biome = 0, Terrain = 1, Slime = 2, Height = 3
+    enum MainRenderType {
+        Biome = 0, Terrain = 1, Height = 2
     };
+
 
     enum DimType {
         OverWorld = 0, Nether = 1, TheEnd = 2
@@ -62,8 +64,8 @@ public:
         this->update();
     }
 
-    inline void changeLayer(LayerType layer) {
-        this->layer_type_ = layer;
+    inline void changeLayer(MainRenderType layer) {
+        this->main_render_type_ = layer;
         this->update();
     }
 
@@ -83,7 +85,12 @@ public:
         this->update();
     }
 
-    void saveImage(const QRect &rect);
+    inline void toggleSlime() {
+        this->draw_slime_chunk_ = !this->draw_slime_chunk_;
+    }
+
+
+    void saveImage(bool full);
 
 signals:
 
@@ -104,6 +111,7 @@ public slots:
     }
 
     void openChunkEditor();
+
 
 private:
     // for debug
@@ -136,6 +144,7 @@ private:
 
     void drawSelectArea(QPaintEvent *event, QPainter *p);
 
+
     QRect getRenderSelectArea();
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
 
@@ -144,7 +153,7 @@ private:
 signals:
 
 private:
-    // bl::chunk_pos spawn{0, 0};  // orgin 处要会绘制的区块坐标
+    // bl::chunk_pos spawn{0, 0};  // origin 处要会绘制的区块坐标
 
     // select area
     bl::chunk_pos select_min_;
@@ -160,15 +169,19 @@ private:
     // render control
     QRect camera_{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
     DimType dim_type_{DimType::OverWorld};
-    LayerType layer_type_{LayerType::Biome};
+    MainRenderType main_render_type_{MainRenderType::Biome};
     QTimer *sync_refresh_timer_;
+    //extra layer
+    bool draw_slime_chunk_{false};
+
 
     int bw_{6};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
     bool render_grid_{true};
     bool render_text_{true};
     bool render_debug_{false};
-    // function control
+
 };
+
 
 #endif  // MAPWIDGET_H

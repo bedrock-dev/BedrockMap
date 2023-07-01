@@ -6,6 +6,10 @@
 #include "chunksectionwidget.h"
 #include "nbtwidget.h"
 #include "ui_chunkeditorwidget.h"
+#include <QToolTip>
+#include <QMouseEvent>
+
+
 ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget) {
     ui->setupUi(this);
     // terrain tab
@@ -22,9 +26,11 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new 
     ui->actor_tab->layout()->addWidget(this->actor_editor_);
     ui->pt_tab->layout()->addWidget(this->pending_tick_editor_);
     ui->block_actor_tab->layout()->addWidget(this->block_entity_editor_);
+    this->setMouseTracking(true);
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
+
 
 void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     if (chunk) {
@@ -34,11 +40,11 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         this->chunk_section_->set_chunk(chunk);
         this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
         this->chunk_section_->setYLevel(0);
-        qDebug() << "read baseic data";
+        qDebug() << "read basic data";
         this->pending_tick_editor_->load_new_data(chunk_->pending_ticks());
         this->block_entity_editor_->load_new_data(chunk_->block_entities());
     } else {
-        QMessageBox::information(NULL, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
+        QMessageBox::information(nullptr, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
     }
 }
 
@@ -62,3 +68,14 @@ void ChunkEditorWidget::on_terrain_goto_level_btn_clicked() {
     auto y = ui->terrain_level_edit->text().toInt();
     this->chunk_section_->setYLevel(y);
 }
+
+void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        showInfoPopMenu();
+    }
+}
+
+void ChunkEditorWidget::showInfoPopMenu() {
+}
+
+

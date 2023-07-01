@@ -9,20 +9,16 @@
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
-    QFile stylesheet(":/res/Diffnes.qss");
+    QFile stylesheet(":/res/MaterialDark.qss");
     stylesheet.open(QFile::ReadOnly);
     QString setSheet = QLatin1String(stylesheet.readAll());
-
     QApplication a(argc, argv);
-
-    MainWindow w;
-    //    w.setStyleSheet(setSheet);
-
     QFont f = a.font();
     f.setFamily("微软雅黑");
     f.setPointSize(10);
     a.setFont(f);
-
+    MainWindow w;
+    //    w.setStyleSheet(setSheet);
     auto const rec = QApplication::desktop()->screenGeometry();
     auto const height = std::max(static_cast<int>(rec.height() * 0.667), 720);
     auto const width = std::max(static_cast<int>(rec.width() * 0.667), 1368);

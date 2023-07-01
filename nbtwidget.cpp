@@ -112,8 +112,9 @@ void NbtWidget::on_load_btn_clicked() {
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data) {
     //    for (auto &nbt : this->nbts_) delete nbt;
-
-    this->nbts_ = data;
+    for (auto &nbt: data) {
+        this->nbts_.push_back(dynamic_cast<bl::palette::compound_tag *>(nbt->copy()));
+    }
     //自动刷新
     this->refreshDataView();
 }

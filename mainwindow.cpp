@@ -19,15 +19,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->map_ = new MapWidget(this, nullptr);
     this->map_->gotoBlockPos(0, 0);
     this->chunk_editor_widget_ = new ChunkEditorWidget();
-    ui->map_visual_layout->insertWidget(1, this->map_, 10);
-    ui->splitter->replaceWidget(1, this->chunk_editor_widget_);
+    ui->map_visual_layout->addWidget(this->map_);
+    //    ui->map_widget->addW(1, this->map_, 10);
+    ui->splitter->replaceWidget(2, this->chunk_editor_widget_);
+    ui->splitter->setStretchFactor(0, 2);
+    ui->splitter->setStretchFactor(1, 5);
+    ui->splitter->setStretchFactor(2, 2);
 
     // layer btn
-    this->layer_btns_ = {{MapWidget::LayerType::Biome,   ui->biome_layer_btn},
-                         {MapWidget::LayerType::Terrain, ui->terrain_layer_btn},
-
-                         {MapWidget::LayerType::Height,  ui->height_layer_btn},
-                         {MapWidget::LayerType::Slime,   ui->slime_layer_btn}};
+    this->layer_btns_ = {{MapWidget::MainRenderType::Biome,   ui->biome_layer_btn},
+                         {MapWidget::MainRenderType::Terrain, ui->terrain_layer_btn},
+                         {MapWidget::MainRenderType::Height,  ui->height_layer_btn}
+    };
 
     for (auto &kv: this->layer_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
@@ -51,6 +54,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 x.second->setEnabled(x.first != kv.first);
             }
             this->map_->changeDimension(kv.first);
+            switch (kv.first) {
+                case MapWidget::DimType::OverWorld:
+                    ui->layer_slider->setRange(-64, 319);
+                    break;
+                case MapWidget::Nether:
+                    ui->layer_slider->setRange(0, 127);
+                    break;
+                case MapWidget::TheEnd:
+                    ui->layer_slider->setRange(0, 255);
+                    break;
+            }
         });
     }
 
@@ -61,9 +75,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_open, SIGNAL(triggered()), this, SLOT(open_level()));
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(close_level()));
     connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
-
     connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
-
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
 
     // init stat
@@ -91,7 +103,7 @@ void MainWindow::updateXZEdit(int x, int z) {
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
     if (!this->world_.is_open()) {
-        QMessageBox::information(NULL, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
+        QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
     // add a watcher
@@ -99,7 +111,7 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
     auto *chunk = this->world_.getChunkDirect(p).result();
     qDebug() << "read chunk success fully";
     if (!chunk) {
-        QMessageBox::information(NULL, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
+        QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
     } else {
         this->chunk_editor_widget_->setVisible(true);
         this->chunk_editor_widget_->load_chunk_data(chunk);
@@ -124,11 +136,20 @@ void MainWindow::open_level() {
     }
 
     if (!this->world_.init(root.toStdString())) {
-        QMessageBox::information(NULL, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
+        QMessageBox::information(nullptr, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
+    } else {
+        this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " +
+                             this->world_.level().dat().level_name().c_str());
+
     }
+
+
 }
 
-void MainWindow::close_level() { this->world_.close(); }
+void MainWindow::close_level() {
+    this->world_.close();
+    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
+}
 
 void MainWindow::close_and_exit() {
     this->world_.close();
@@ -145,7 +166,7 @@ void MainWindow::toggle_chunk_edit_view() {
 void MainWindow::toggle_full_map_mode() {
     this->full_map_mode_ = !full_map_mode_;
 
-    ui->map_toolbar_wdiget->setVisible(!full_map_mode_);
+    ui->control_panel_widget->setVisible(!full_map_mode_);
     ui->map_top_toolbar_widget->setVisible(!full_map_mode_);
     ui->map_buttom_toolbar_widget->setVisible(!full_map_mode_);
     if (this->full_map_mode_) {
@@ -158,7 +179,9 @@ void MainWindow::toggle_full_map_mode() {
 
 void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
 
-void MainWindow::on_screenshot_btn_clicked() { this->map_->saveImage(QRect{0, 0, 1, 1}); }
+void MainWindow::on_screenshot_btn_clicked() {
+    this->map_->saveImage(true);
+}
 
 void MainWindow::openNBTEditor() {
     auto *w = new NbtWidget();
@@ -168,3 +191,18 @@ void MainWindow::openNBTEditor() {
     w->setGeometry(QRect(g.x() + ext, g.y() + ext, g.width() - ext * 2, g.height() - ext * 2));
     w->show();
 }
+
+void MainWindow::on_refresh_cache_btn_clicked() {
+    //collect filter;
+    RenderFilter f;
+    f.enable_layer_ = ui->enable_layer_checkbox->isChecked();
+    f.layer_ = ui->layer_slider->value();
+    world_.setFilter(f);
+    this->world_.clear_all_cache();
+}
+
+void MainWindow::on_layer_slider_valueChanged(int value) {
+    ui->layer_label->setText(QString::number(ui->layer_slider->value()));
+}
+
+void MainWindow::on_slime_layer_btn_clicked() { this->map_->toggleSlime(); }

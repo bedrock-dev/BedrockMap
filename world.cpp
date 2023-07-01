@@ -10,6 +10,7 @@
 #include "color.h"
 #include <QPainter>
 
+
 namespace {
     QVector<QRgb> biome_color_table{};
     QVector<QRgb> height_color_table{};
@@ -19,7 +20,6 @@ namespace {
     QImage *empty_image_{nullptr};
 
 //    QImage *EMPTY_IMAGE{nullptr};
-
 
     QImage *SLIME_IMAGE{nullptr};
 
@@ -58,9 +58,8 @@ namespace {
 
 world::world() {
     initBiomeColorTable();
-    this->top_biome_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
-    this->height_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
-    this->top_terrain_image_cache_ = new QCache<bl::chunk_pos, QImage>(cfg::LAYER_IMAGE_CACHE_SIZE);
+    this->layer_cache_ = new QCache<bl::chunk_pos, LayerCacheInfo>(cfg::LAYER_IMAGE_CACHE_SIZE);
+
 }
 
 QFuture<bl::chunk *> world::getChunkDirect(const bl::chunk_pos &p) { return this->level_loader_.getChunkDirect(p); }
@@ -76,29 +75,25 @@ void world::close() {
         return;
     }
 
-    this->top_biome_image_cache_->clear();
-    this->height_image_cache_->clear();
-    this->top_terrain_image_cache_->clear();
+    this->layer_cache_->clear();
     this->loaded_ = false;
     this->level_loader_.close();
 }
 
 QImage *world::topBiome(const region_pos &p) {
-    if (!this->loaded_) return EMPTY_IMAGE();
-    auto *img = this->top_biome_image_cache_->operator[](p);
-    if (img) return img;  // hit
-
+    if (!this->loaded_ || !this->layer_cache_) return EMPTY_IMAGE();
+    auto *info = this->layer_cache_->operator[](p);
+    if (info) return info->biome;  // hit
     bool null_region{false};
-    auto *region = this->level_loader_.getRegion(p, null_region);
+    auto *region = this->level_loader_.getRegion(p, null_region, &this->render_filter_);
     if (null_region) {
         return EMPTY_IMAGE();
     }
 
-    if (region && region->biome_bake_image_) {
-        auto *image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-        memcpy(image->bits(), region->biome_bake_image_->bits(), image->byteCount());
-        this->top_biome_image_cache_->insert(p, image);
-        return image;
+    if (region) {
+        auto *layer = LayerCacheInfo::fromRegion(region);
+        this->layer_cache_->insert(p, layer);
+        return layer->biome;
 
     } else {
         return EMPTY_IMAGE();
@@ -106,21 +101,19 @@ QImage *world::topBiome(const region_pos &p) {
 }
 
 QImage *world::topBlock(const region_pos &p) {
-    if (!this->loaded_) return EMPTY_IMAGE();
-    auto *img = this->top_terrain_image_cache_->operator[](p);
-    if (img) return img;  // hit
-
+    if (!this->loaded_ || !this->layer_cache_) return EMPTY_IMAGE();
+    auto *info = this->layer_cache_->operator[](p);
+    if (info) return info->terrain;
     bool null_region{false};
-    auto *region = this->level_loader_.getRegion(p, null_region);
+    auto *region = this->level_loader_.getRegion(p, null_region, &this->render_filter_);
     if (null_region) {
         return EMPTY_IMAGE();
     }
 
-    if (region && region->terrain_bake_image_) {
-        auto *image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-        memcpy(image->bits(), region->terrain_bake_image_->bits(), image->byteCount());
-        this->top_terrain_image_cache_->insert(p, image);
-        return image;
+    if (region) {
+        auto *layer = LayerCacheInfo::fromRegion(region);
+        this->layer_cache_->insert(p, layer);
+        return layer->terrain;
     } else {
         return EMPTY_IMAGE();
     }
@@ -130,7 +123,8 @@ QImage *world::height(const region_pos &p) {
     return EMPTY_IMAGE();
 }
 
-QImage *world::slimeChunk(const bl::chunk_pos &p) { return p.is_slime() ? SLIME_IMAGE : EMPTY_IMAGE(); }
+//覆盖即可
+QImage *world::slimeChunk(const bl::chunk_pos &p) { return p.is_slime() ? SLIME_IMAGE : nullptr; }
 
 void world::initBiomeColorTable() {
     bl::init_biome_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome.json)");
@@ -153,17 +147,33 @@ void world::initBiomeColorTable() {
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
-            empty_image_->setPixelColor(i, j, EMPTY_COLOR_TABLE[(i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2]);
+            const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
+            const int idx = (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2;
+            empty_image_->setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
         }
     }
 
     // slime
     SLIME_IMAGE = new QImage(16, 16, QImage::Format_Indexed8);
-    SLIME_IMAGE->setColor(0, qRgb(87, 157, 66));
+    SLIME_IMAGE->setColor(0, qRgba(87, 157, 66, 100));
     SLIME_IMAGE->fill(0);
 }
 
 QImage *world::EMPTY_IMAGE() {
     return empty_image_;
+}
+
+void world::clear_all_cache() {
+    this->layer_cache_->clear();
+    this->level_loader_.clear_all_cache();
+}
+
+LayerCacheInfo *LayerCacheInfo::fromRegion(chunk_region *r) {
+    if (!r)return nullptr;
+    auto *biome_image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    memcpy(biome_image->bits(), r->biome_bake_image_->bits(), biome_image->byteCount());
+    auto *terrain_image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    memcpy(terrain_image->bits(), r->terrain_bake_image_->bits(), biome_image->byteCount());
+    return new LayerCacheInfo{terrain_image, biome_image, r->tips_info_};
 }
 

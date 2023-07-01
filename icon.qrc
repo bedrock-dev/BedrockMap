@@ -17,5 +17,12 @@
         <file>res/nbt/TAG_Long_Array.ico</file>
         <file>res/nbt/TAG_Short.ico</file>
         <file>res/nbt/TAG_String.ico</file>
+        <file>res/MaterialDark.qss</file>
+        <file>res/Ubuntu.qss</file>
+        <file>res/ExcelOffice.qss</file>
+        <file>res/Geoo.qss</file>
+        <file>res/Toolery.qss</file>
+        <file>res/Genetive.qss</file>
+        <file>res/Mixchat.qss</file>
     </qresource>
 </RCC>

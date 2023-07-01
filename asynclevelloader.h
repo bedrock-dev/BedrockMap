@@ -15,15 +15,19 @@
 
 class AsyncLevelLoader;
 
+class RenderFilter;
+
+struct BlockTipsInfo {
+    std::string block_name;
+    bl::biome biome;
+};
+
 struct chunk_region {
-    std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_{};
-
     ~chunk_region();
-
+    std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
     QImage *terrain_bake_image_{nullptr};
     QImage *biome_bake_image_{nullptr};
-
-    [[nodiscard]] bool valid() const;
+    bool valid{false};
 };
 
 template<typename T>
@@ -49,6 +53,8 @@ public:
 
     }
 
+    bl::bedrock_level *level() { return this->level_; }
+
     std::mutex mu_;
     std::unordered_set<T> buffer_;
 };
@@ -57,8 +63,9 @@ class LoadRegionTask : public QObject, public QRunnable {
 Q_OBJECT
 
 public:
-    explicit LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos)
-            : QRunnable(), level_(level), pos_(pos) {}
+    explicit LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const RenderFilter *filter)
+            : QRunnable(), level_(level), pos_(pos), filter_(filter) {
+    }
 
     void run() override;
 
@@ -69,7 +76,9 @@ signals:
 private:
     bl::bedrock_level *level_;
     region_pos pos_;
+    const RenderFilter *filter_;
 };
+
 
 class AsyncLevelLoader : public QObject {
 Q_OBJECT
@@ -77,11 +86,15 @@ Q_OBJECT
 public:
     AsyncLevelLoader();
 
-    chunk_region *getRegion(const region_pos &p, bool &empty);
+    chunk_region *getRegion(const region_pos &p, bool &empty, const RenderFilter *filter);
+
+    void clear_all_cache();
 
     bool init(const std::string &path);
 
     void close();
+
+    bl::bedrock_level &level() { return this->level_; }
 
 public:
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);

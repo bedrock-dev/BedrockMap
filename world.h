@@ -28,6 +28,22 @@ namespace bl {
 
 }  // namespace bl
 
+struct RenderFilter {
+    bool enable_layer_{false};
+    int layer_ = {0};
+};
+
+
+struct LayerCacheInfo {
+    QImage *terrain{nullptr};
+    QImage *biome{nullptr};
+    std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
+
+    static LayerCacheInfo *fromRegion(chunk_region *r);
+
+
+};
+
 
 class world {
 public:
@@ -45,6 +61,8 @@ public:
 
     void close();
 
+    inline void setFilter(const RenderFilter &filter) { this->render_filter_ = filter; }
+
     QImage *topBiome(const region_pos &p);
 
     QImage *topBlock(const region_pos &p);
@@ -57,29 +75,34 @@ public:
         if (!this->loaded_) return {};
         auto r = this->level_loader_.debug_info();
         r.push_back(
-                QString("Top biome image cache: %1/%2")
-                        .arg(QString::number(top_biome_image_cache_->totalCost()),
-                             QString::number(top_biome_image_cache_->maxCost())));
-        r.push_back(QString("Height image cache: %1/%2")
-                            .arg(QString::number(height_image_cache_->totalCost()),
-                                 QString::number(height_image_cache_->maxCost())));
+                QString("layer image cache: %1/%2")
+                        .arg(QString::number(layer_cache_->totalCost()),
+                             QString::number(layer_cache_->maxCost())));
         return r;
+    }
+
+
+    void clear_all_cache();
+
+    bl::bedrock_level &level() { return this->level_loader_.level(); }
+
+    BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim) {
+        auto cp = p.to_chunk_pos();
+        cp.dim = dim;
+        auto region_pos = cfg::c2r(cp);
+        auto *info = this->layer_cache_->operator[](region_pos);
+        if (!info)return BlockTipsInfo{};
+        auto bp = region_pos.get_min_pos();
+        return info->info_[p.x - bp.x][p.z - bp.z];
     }
 
 private:
     static void initBiomeColorTable();
 
-    QCache<bl::chunk_pos, QImage> *top_biome_image_cache_;
-
-    QCache<bl::chunk_pos, QImage> *top_terrain_image_cache_;
-
-    QCache<bl::chunk_pos, QImage> *height_image_cache_;
-
+    QCache<bl::chunk_pos, LayerCacheInfo> *layer_cache_;
     AsyncLevelLoader level_loader_;
     bool loaded_{false};
-
-
-    QThreadPool image_bake_pool_;
+    RenderFilter render_filter_;
 
     // thread pool
 };

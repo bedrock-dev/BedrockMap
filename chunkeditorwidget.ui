@@ -37,15 +37,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLineEdit" name="x_edit"/>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="z_edit"/>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="dim_edit"/>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButton">
        <property name="text">
         <string>加载数据</string>
@@ -64,7 +55,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
@@ -74,7 +65,17 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QLineEdit" name="terrain_level_edit"/>
+          <widget class="QLineEdit" name="terrain_level_edit">
+           <property name="maximumSize">
+            <size>
+             <width>400</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="maxLength">
+            <number>4</number>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QSlider" name="terrain_level_slider">
@@ -86,7 +87,7 @@
          <item>
           <widget class="QPushButton" name="terrain_goto_level_btn">
            <property name="text">
-            <string>PushButton</string>
+            <string>确定</string>
            </property>
           </widget>
          </item>
@@ -111,6 +112,16 @@
        <string>计划刻</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_5"/>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>3D</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QOpenGLWidget" name="openGLWidget"/>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

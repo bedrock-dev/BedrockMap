@@ -1,0 +1,244 @@
+/*Copyright (c) DevSec Studio. All rights reserved.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*-----QWidget-----*/
+QWidget
+{
+    color: #aaa;
+    background-color: #323232;
+
+}
+
+
+/*-----QLabel-----*/
+QLabel
+{
+	background-color: transparent;
+	color: #fff;
+
+}
+
+
+/*-----QMenuBar-----*/
+QMenuBar 
+{
+    background-color: #323232;
+
+}
+
+
+QMenuBar::item
+{
+    background: transparent;
+
+}
+
+
+QMenuBar::item:selected
+{
+    background: #444;
+
+}
+
+
+QMenuBar::item:pressed
+{
+    border: 1px solid #000;
+    background-color: #444;
+    margin-bottom:-1px;
+    padding-bottom:1px;
+
+}
+
+
+/*-----QMenu-----*/
+QMenu
+{
+    background-color: #444;
+    border: 1px solid #222;
+    padding: 4px;
+    padding-right: 0px;
+
+}
+
+
+QMenu::item
+{
+    background-color: transparent;
+    padding: 2px 20px 2px 20px;
+
+}
+
+
+QMenu::item:disabled
+{
+    color: #555;
+    background-color: transparent;
+    padding: 2px 20px 2px 20px;
+
+}
+
+
+QMenu::item:selected
+{
+    background-color: #55aaff;
+    color: #fff;
+
+}
+
+
+/*-----QToolTip-----*/
+QToolTip
+{
+    border: 1px solid #222;
+    background-color: #333;
+    color: #aaa;
+
+}
+
+
+/*-----QToolButton-----*/
+QToolButton
+{
+    color: #b1b1b1;
+    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #565656, stop: 0.1 #525252, stop: 0.5 #4e4e4e, stop: 0.9 #4a4a4a, stop: 1 #464646);
+    border-width: 1px;
+    border-color: #1e1e1e;
+    border-style: solid;
+	margin-right: 2px;
+	padding: 3px;
+
+}
+
+
+QToolButton:pressed
+{
+    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2d2d2d, stop: 0.1 #2b2b2b, stop: 0.5 #292929, stop: 0.9 #282828, stop: 1 #252525);
+
+}
+
+
+QToolButton:checked
+{
+    background-color: gray;
+
+}
+
+/*-----QLineEdit-----*/
+QLineEdit{
+	background-color: #fff;
+	color: #000;
+	selection-color: #fff;
+	selection-background-color: #507098;
+
+}
+
+
+/*-----QTreeView-----*/
+QTreeView 
+{
+	background-color: #434343;
+    border: 0.5px solid rgba(108,108,108,75);
+
+}
+
+
+QTreeView::item, 
+QTreeView::branch 
+{
+    background: transparent;
+    color: #DDD;
+
+}
+
+
+QTreeView::item:hover, 
+QTreeView::branch:hover 
+{
+    background-color: #55aaff;
+    color: #DDD;
+
+}
+
+
+QTreeView::item:selected, 
+QTreeView::branch:selected 
+{
+    background-color: #55aaff;
+    color: #fff;
+
+}
+
+
+/*-----QScrollBar-----*/
+QScrollBar:horizontal 
+{
+    background-color: #333;
+    height: 8px;
+    margin: 0px;
+    padding: 0px;
+
+}
+
+
+QScrollBar::handle:horizontal 
+{
+    border: 1px solid #111;
+    background-color: #535353;
+
+}
+
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal 
+{
+    width: 0px;
+    background-color: transparent;
+
+}
+
+
+QScrollBar:vertical 
+{
+    background-color: #333;
+    width: 8px;
+    margin: 0;
+
+}
+
+
+QScrollBar::handle:vertical 
+{
+    border: 1px solid #111;
+    background-color: #535353;
+
+}
+
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical 
+{
+    height: 0px;
+    background-color: transparent;
+
+}
+

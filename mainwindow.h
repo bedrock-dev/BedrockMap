@@ -62,9 +62,15 @@ private slots:
 
     void openNBTEditor();
 
+    void on_refresh_cache_btn_clicked();
+
+    void on_layer_slider_valueChanged(int value);
+
+    void on_slime_layer_btn_clicked();
+
 private:
     Ui::MainWindow *ui;
-    std::unordered_map<MapWidget::LayerType, QPushButton *> layer_btns_;
+    std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
 
     bool full_map_mode_{false};

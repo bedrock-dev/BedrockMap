@@ -24,7 +24,13 @@ public:
 
     void load_chunk_data(bl::chunk *chunk);
 
+    void mousePressEvent(QMouseEvent *event) override;
+
+
 private slots:
+
+    void showInfoPopMenu();
+
 
     void on_close_btn_clicked();
 

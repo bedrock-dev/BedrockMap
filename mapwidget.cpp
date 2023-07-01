@@ -34,54 +34,48 @@ void MapWidget::asyncRefresh() { this->update(); }
 
 void MapWidget::showContextMenu(const QPoint &p) {
     auto area = this->getRenderSelectArea();
-
     QMenu contextMenu(tr("Context menu"), this);
-
-    // for area
-    QAction removeChunkAction("删除区块", this);
-    //    rmChunkAction.setEnabled();
-    QAction saveImageAction("存为图片", this);
-    QAction clearAreaAction("取消选中", this);
-    QAction focusOnAction("聚焦", this);
-
-    // for single chunk
-    auto pos = this->getCursorBlockPos();
-    QAction copyPosition("复制坐标  " + QString("%1 , %2").arg(QString::number(pos.x), QString::number(pos.z)), this);
-    QAction copyTpCmd("复制TP指令  " + QString("tp %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)), this);
-    QAction openInChunkEditor("在区块编辑器中打开", this);
-    connect(&openInChunkEditor, SIGNAL(triggered()), this, SLOT(openChunkEditor()));
-
     if (this->has_selected_ && area.contains(p)) {
+        QAction removeChunkAction("删除区块", this);
+        QAction saveImageAction("存为图片", this);
+        QAction clearAreaAction("取消选中", this);
         contextMenu.addAction(&removeChunkAction);
         contextMenu.addAction(&saveImageAction);
         contextMenu.addAction(&clearAreaAction);
     } else {
-        contextMenu.addAction(&copyPosition);
-        contextMenu.addAction(&copyTpCmd);
+        auto pos = this->getCursorBlockPos();
+        // for single chunk
+        auto blockInfo = this->mw_->get_world()->getBlockTips(pos, static_cast<int>(this->dim_type_));
+        QAction copyBlockName("Copy block name: " + QString(blockInfo.block_name.c_str()), this);
+        QAction copyBiomeName("Copy biome ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
+        QAction copyTpCommand(
+                "Copy tp command: " + QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)),
+                this);
+        QAction openInChunkEditor("Open in chunk editor", this);
+        connect(&openInChunkEditor, SIGNAL(triggered()), this, SLOT(openChunkEditor()));
+        contextMenu.addAction(&copyBlockName);
+        contextMenu.addAction(&copyBiomeName);
         contextMenu.addAction(&openInChunkEditor);
+        contextMenu.exec(mapToGlobal(p));
     }
-    connect(&focusOnAction, SIGNAL(triggered()), this, SLOT(focusOnCursor()));
-    contextMenu.exec(mapToGlobal(p));
 }
 
 void MapWidget::paintEvent(QPaintEvent *event) {
     QPainter p(this);
 
-    switch (this->layer_type_) {
+    switch (this->main_render_type_) {
         case MapWidget::Biome:
             drawBiome(event, &p);
             break;
         case MapWidget::Terrain:
             drawTerrain(event, &p);
             break;
-        case MapWidget::Slime:
-            drawSlimeChunks(event, &p);
-            break;
         case MapWidget::Height:
             drawHeight(event, &p);
             break;
     }
 
+    if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
     if (render_grid_) this->drawGrid(event, &p);
     if (render_text_) this->drawChunkPos(event, &p);
     if (render_debug_) this->drawDebugWindow(event, &p);
@@ -104,7 +98,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
             //刚开始拖动
             this->dragging_ = true;
             if (this->CTRL_pressed_) {
-                this->has_selected_ = true;
+//                this->has_selected_ = true;
                 this->select_min_ = this->getCursorBlockPos().to_chunk_pos();
             }
         }
@@ -133,9 +127,6 @@ bl::block_pos MapWidget::getCursorBlockPos() {
     return bl::block_pos{x, 0, y};
 }
 
-void MapWidget::saveImage(const QRect &rect) {
-    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
-}
 
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
@@ -177,15 +168,7 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
-void MapWidget::drawDebugWindow(QPaintEvent *evet, QPainter *painter) {
-    const int regionWidth = (this->bw_ * cfg::RW) << 4;
-
-    QPen pen(QColor(230, 0, 0));
-    painter->setPen(pen);
-
-    this->foreachRegionInCamera([this, painter, regionWidth](const bl::chunk_pos &cp, const QPoint &point) {
-        painter->drawRect(QRect(point.x(), point.y(), regionWidth, regionWidth));
-    });
+void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
 
     QFont font("Consolas", 8);
     auto dbgInfo = this->mw_->get_world()->debug_info();
@@ -248,16 +231,14 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     //细区块边界线
     QPen pen;
-    pen.setColor(QColor(250, 250, 250));
+    pen.setColor(QColor(255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY));
     pen.setWidth(1);
     painter->setPen(pen);
-
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
         if (this->bw_ >= 4) painter->drawRect(QRectF(p.x(), p.y(), this->bw_ * 16, this->bw_ * 16));
     });
 
     //粗经纬线
-    pen.setColor(QColor(20, 20, 20));
     //根据bw计算几个区块合一起
 
     pen.setWidth(4);
@@ -318,6 +299,7 @@ void MapWidget::drawChunkPos(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
+
         this->drawOneChunk(event, painter, ch, p, this->mw_->get_world()->slimeChunk(ch));
     });
 }
@@ -376,4 +358,8 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
     auto minChunk = bl::chunk_pos{(renderX - origin_.x()) / CHUNK_WIDTH, (renderY - origin_.y()) / CHUNK_WIDTH, dim};
     auto maxChunk = bl::chunk_pos{minChunk.x + chunk_w - 1, minChunk.z + chunk_h - 1, dim};
     return {minChunk, maxChunk, renderRange};
+}
+
+void MapWidget::saveImage(bool full_screen) {
+    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
 }
