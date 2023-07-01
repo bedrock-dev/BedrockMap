@@ -75,6 +75,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
             break;
     }
 
+    if (draw_actors_)this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
     if (render_grid_) this->drawGrid(event, &p);
     if (render_text_) this->drawChunkPos(event, &p);
@@ -234,8 +235,9 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     pen.setColor(QColor(255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY));
     pen.setWidth(1);
     painter->setPen(pen);
+    painter->setBrush(QBrush(QColor(0, 0, 0, 0)));
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-        if (this->bw_ >= 4) painter->drawRect(QRectF(p.x(), p.y(), this->bw_ * 16, this->bw_ * 16));
+        if (this->bw_ >= 4) painter->drawRect(QRect(p.x(), p.y(), this->bw_ * 16, this->bw_ * 16));
     });
 
     //粗经纬线
@@ -316,7 +318,22 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         auto height = this->mw_->get_world()->topBlock(ch);
         this->drawRegion(event, painter, ch, p, height);
     });
+
 }
+
+void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
+    QPen pen(QColor(20, 20, 20));
+    painter->setBrush(QBrush(QColor(255, 10, 10)));
+    this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
+        auto actors = this->mw_->get_world()->getActorList(ch);
+        for (auto &actor: actors) {
+            float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
+            float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
+            painter->drawEllipse(QRectF(x - 3.0, y - 3.0, 6.0, 6.0));
+        }
+    });
+}
+
 
 void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
@@ -363,3 +380,4 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
 void MapWidget::saveImage(bool full_screen) {
     QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
 }
+

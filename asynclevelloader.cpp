@@ -133,6 +133,15 @@ void LoadRegionTask::run() {
                                     QColor(block_color.r, block_color.g, block_color.b, block_color.a));
                         }
                     }
+                    //load actors
+                    auto &actors = chunk->get_actor_list();
+                    for (auto &ac: actors) {
+                        auto *actor = this->level_->load_actor(ac);
+                        if (actor) {
+                            region->actors_[actor->identifier()].push_back(actor->pos());
+                        }
+                        delete actor;
+                    }
                 } else {
                     for (int i = 0; i < 16; i++) {
                         for (int j = 0; j < 16; j++) {
@@ -150,7 +159,6 @@ void LoadRegionTask::run() {
             }
         }
     }
-
     emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region);
 }
 

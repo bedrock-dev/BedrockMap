@@ -119,6 +119,24 @@ QImage *world::topBlock(const region_pos &p) {
     }
 }
 
+std::vector<bl::vec3> world::getActorList(const bl::chunk_pos &p) {
+    if (!this->loaded_ || !this->layer_cache_) return {};
+    auto *info = this->layer_cache_->operator[](p);
+    if (info) return info->actor_list;
+    bool null_region{false};
+    auto *region = this->level_loader_.getRegion(p, null_region, &this->render_filter_);
+    if (null_region) {
+        return {};
+    }
+    if (region) {
+        auto *layer = LayerCacheInfo::fromRegion(region);
+        this->layer_cache_->insert(p, layer);
+        return layer->actor_list;
+    } else {
+        return {};
+    }
+}
+
 QImage *world::height(const region_pos &p) {
     return EMPTY_IMAGE();
 }
@@ -168,12 +186,20 @@ void world::clear_all_cache() {
     this->level_loader_.clear_all_cache();
 }
 
+
 LayerCacheInfo *LayerCacheInfo::fromRegion(chunk_region *r) {
     if (!r)return nullptr;
     auto *biome_image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
     memcpy(biome_image->bits(), r->biome_bake_image_->bits(), biome_image->byteCount());
     auto *terrain_image = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
     memcpy(terrain_image->bits(), r->terrain_bake_image_->bits(), biome_image->byteCount());
-    return new LayerCacheInfo{terrain_image, biome_image, r->tips_info_};
+
+    auto *res = new LayerCacheInfo{terrain_image, biome_image, r->tips_info_};
+    for (auto &lv: r->actors_) {
+        for (auto &pos: lv.second) {
+            res->actor_list.push_back(pos);
+        }
+    }
+    return res;
 }
 

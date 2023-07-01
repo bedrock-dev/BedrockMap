@@ -16,7 +16,6 @@ class NbtWidget;
 
 class ChunkEditorWidget : public QWidget {
 Q_OBJECT
-
 public:
     explicit ChunkEditorWidget(QWidget *parent = nullptr);
 
@@ -37,6 +36,8 @@ private slots:
     void on_terrain_level_slider_valueChanged(int value);
 
     void on_terrain_goto_level_btn_clicked();
+
+    void on_locate_btn_clicked();
 
 private:
     void refreshData();

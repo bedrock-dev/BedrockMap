@@ -89,6 +89,10 @@ public:
         this->draw_slime_chunk_ = !this->draw_slime_chunk_;
     }
 
+    inline void toggleActor() {
+        this->draw_actors_ = !this->draw_actors_;
+    }
+
 
     void saveImage(bool full);
 
@@ -142,6 +146,8 @@ private:
 
     void drawHeight(QPaintEvent *event, QPainter *p);
 
+    void drawActors(QPaintEvent *event, QPainter *p);
+
     void drawSelectArea(QPaintEvent *event, QPainter *p);
 
 
@@ -173,7 +179,7 @@ private:
     QTimer *sync_refresh_timer_;
     //extra layer
     bool draw_slime_chunk_{false};
-
+    bool draw_actors_{false};
 
     int bw_{6};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标

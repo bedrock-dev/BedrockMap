@@ -107,9 +107,7 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         return;
     }
     // add a watcher
-    qDebug() << "try read chunk";
     auto *chunk = this->world_.getChunkDirect(p).result();
-    qDebug() << "read chunk success fully";
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
     } else {
@@ -206,3 +204,5 @@ void MainWindow::on_layer_slider_valueChanged(int value) {
 }
 
 void MainWindow::on_slime_layer_btn_clicked() { this->map_->toggleSlime(); }
+
+void MainWindow::on_actor_layer_btn_clicked() { this->map_->toggleActor(); }

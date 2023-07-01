@@ -37,6 +37,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="locate_btn">
+       <property name="text">
+        <string>定位</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton">
        <property name="text">
         <string>加载数据</string>

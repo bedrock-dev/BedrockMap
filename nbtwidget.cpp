@@ -159,3 +159,7 @@ void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {
         item->setText(0, key + ": " + value);
     }
 }
+
+void NbtWidget::hideLoadDataBtn() {
+    ui->load_btn->setVisible(false);
+}

@@ -38,7 +38,7 @@ struct LayerCacheInfo {
     QImage *terrain{nullptr};
     QImage *biome{nullptr};
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
-
+    std::vector<bl::vec3> actor_list;
     static LayerCacheInfo *fromRegion(chunk_region *r);
 
 
@@ -70,6 +70,8 @@ public:
     QImage *height(const region_pos &p);
 
     QImage *slimeChunk(const bl::chunk_pos &p);
+
+    std::vector<bl::vec3> getActorList(const bl::chunk_pos &p);
 
     std::vector<QString> debug_info() {
         if (!this->loaded_) return {};
@@ -103,8 +105,8 @@ private:
     AsyncLevelLoader level_loader_;
     bool loaded_{false};
     RenderFilter render_filter_;
-
     // thread pool
+
 };
 
 #endif  // WORLD_H

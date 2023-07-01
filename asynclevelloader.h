@@ -12,6 +12,8 @@
 
 #include "bedrock_level.h"
 #include "config.h"
+#include <unordered_set>
+#include <vector>
 
 class AsyncLevelLoader;
 
@@ -24,10 +26,12 @@ struct BlockTipsInfo {
 
 struct chunk_region {
     ~chunk_region();
+
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
     QImage *terrain_bake_image_{nullptr};
     QImage *biome_bake_image_{nullptr};
     bool valid{false};
+    std::unordered_map<std::string, std::vector<bl::vec3>> actors_;
 };
 
 template<typename T>

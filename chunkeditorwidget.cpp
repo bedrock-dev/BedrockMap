@@ -19,10 +19,16 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new 
     ui->terrain_level_slider->setRange(-64, 319);
     ui->terrain_level_slider->setSingleStep(1);
     ui->terrain_level_edit->setText("0");
+
     // actor tab
     this->actor_editor_ = new NbtWidget();
     this->pending_tick_editor_ = new NbtWidget();
     this->block_entity_editor_ = new NbtWidget();
+
+    this->actor_editor_->hideLoadDataBtn();
+    this->pending_tick_editor_->hideLoadDataBtn();
+    this->block_entity_editor_->hideLoadDataBtn();
+
     ui->actor_tab->layout()->addWidget(this->actor_editor_);
     ui->pt_tab->layout()->addWidget(this->pending_tick_editor_);
     ui->block_actor_tab->layout()->addWidget(this->block_entity_editor_);
@@ -40,7 +46,8 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         this->chunk_section_->set_chunk(chunk);
         this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
         this->chunk_section_->setYLevel(0);
-        qDebug() << "read basic data";
+        qDebug() << "read basic data" << "pt size is " << chunk->pending_ticks().size() << "  be size is"
+                 << chunk->block_entities().size();
         this->pending_tick_editor_->load_new_data(chunk_->pending_ticks());
         this->block_entity_editor_->load_new_data(chunk_->block_entities());
     } else {
@@ -75,7 +82,6 @@ void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
     }
 }
 
-void ChunkEditorWidget::showInfoPopMenu() {
-}
+void ChunkEditorWidget::showInfoPopMenu() {}
 
-
+void ChunkEditorWidget::on_locate_btn_clicked() {}

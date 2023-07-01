@@ -22,6 +22,8 @@ public:
 
     void load_new_data(const std::vector<bl::palette::compound_tag *> &data);
 
+    void hideLoadDataBtn();
+
 private slots:
 
     void on_load_btn_clicked();

@@ -204,6 +204,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="actor_layer_btn">
+          <property name="text">
+           <string>实体</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="debug_checkbox">
           <property name="text">
            <string>调试</string>
@@ -345,7 +352,7 @@
      <x>0</x>
      <y>0</y>
      <width>796</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">

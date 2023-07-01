@@ -68,7 +68,9 @@ private slots:
 
     void on_slime_layer_btn_clicked();
 
-private:
+    void on_actor_layer_btn_clicked();
+
+   private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
