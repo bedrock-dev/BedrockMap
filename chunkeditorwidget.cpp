@@ -48,8 +48,8 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         this->chunk_section_->setYLevel(0);
         qDebug() << "read basic data" << "pt size is " << chunk->pending_ticks().size() << "  be size is"
                  << chunk->block_entities().size();
-        this->pending_tick_editor_->load_new_data(chunk_->pending_ticks());
-        this->block_entity_editor_->load_new_data(chunk_->block_entities());
+        //  this->pending_tick_editor_->load_new_data(chunk_->pending_ticks());
+        // this->block_entity_editor_->load_new_data(chunk_->block_entities());
     } else {
         QMessageBox::information(nullptr, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
     }
@@ -84,4 +84,5 @@ void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
 
 void ChunkEditorWidget::showInfoPopMenu() {}
 
-void ChunkEditorWidget::on_locate_btn_clicked() {}
+void ChunkEditorWidget::on_locate_btn_clicked() {
+}

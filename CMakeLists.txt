@@ -51,8 +51,11 @@ set(PROJECT_SOURCES
         nbtwidget.cpp
         nbtwidget.ui
         config.h
-        #        taskbuffer.cpp
-        #        taskbuffer.h
+#        treeitem.cpp
+#        treeitem.h
+#        treemodel.cpp
+#        treemodel.h
+
         )
 
 add_executable(BedrockMap ${PROJECT_SOURCES})
