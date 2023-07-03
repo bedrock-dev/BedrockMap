@@ -179,7 +179,7 @@ private:
     // render control
     QRect camera_{0, 0, width(), height()};  //需要绘制的范围，后面设置成和widget等大即可
     DimType dim_type_{DimType::OverWorld};
-    MainRenderType main_render_type_{MainRenderType::Biome};
+    MainRenderType main_render_type_{MainRenderType::Terrain};
     QTimer *sync_refresh_timer_;
     //extra layer
     bool draw_slime_chunk_{false};
@@ -188,9 +188,8 @@ private:
     int bw_{6};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
     bool render_grid_{true};
-    bool render_text_{true};
+    bool render_text_{false};
     bool render_debug_{false};
-
 
 };
 

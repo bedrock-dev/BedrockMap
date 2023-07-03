@@ -98,20 +98,9 @@ void NbtWidget::on_load_btn_clicked() {
         QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
-    this->load_new_data(palette, [](const bl::palette::compound_tag *) { return QString(); });
-
+    this->load_new_data(palette, [](const bl::palette::compound_tag *) { return QString(); }, {});
 }
 
-
-//void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data) {
-//
-//    //    for (auto &nbt : this->nbts_) delete nbt;
-//    for (auto &nbt: data) {
-//        ui->list_widget->addItem(new NBTListListItem(dynamic_cast<bl::palette::compound_tag *>(nbt->copy())));
-//    }
-//    //自动刷新
-//    this->refreshDataView();
-//}
 
 void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
     if (!root) {
@@ -274,13 +263,14 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
-                              const std::function<QString(bl::palette::compound_tag *)> &namer) {
+                              const std::function<QString(bl::palette::compound_tag *)> &namer,
+                              const std::vector<std::string> &default_labels) {
     ui->list_widget->clear();
     ui->tree_widget->clear();
     for (int i = 0; i < data.size(); i++) {
         auto *it = new NBTListItem();
         it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
-        it->default_label = QString::number(i);
+        it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
         it->namer_ = namer;
         it->refreshText();
         ui->list_widget->addItem(it);

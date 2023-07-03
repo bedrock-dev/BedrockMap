@@ -12,6 +12,10 @@
 #include "mapwidget.h"
 #include  <QFutureWatcher>
 #include "nbtwidget.h"
+#include <QDialog>
+
+#include <QMessageBox>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -42,6 +46,8 @@ public slots:
 
     void handle_chunk_delete_finished();
 
+    void handle_level_open_finished();
+
 private slots:
 
     void on_goto_btn_clicked();
@@ -50,9 +56,9 @@ private slots:
 
     void on_text_checkbox_stateChanged(int arg1);
 
-    void open_level();
+    void openLevel();
 
-    void close_level();
+    void closeLevel();
 
     void close_and_exit();
 
@@ -78,7 +84,7 @@ private slots:
 
     void on_global_nbt_checkbox_stateChanged(int arg1);
 
-   private:
+private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
@@ -93,11 +99,16 @@ private slots:
 
     //watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
+    QFutureWatcher<bool> open_level_watcher_;
 
     //global nbt editors
     NbtWidget *level_dat_editor_;
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
+
+    QDialog *open_level_dialog_{nullptr};
+
+    //dialogs
 };
 
 #endif  // MAINWINDOW_H

@@ -34,8 +34,8 @@ struct NBTListItem : public QListWidgetItem {
 
 
     void refreshText() {
-        auto label = this->namer_(root_);
-        label = label.size() == 0 ? default_label : label;
+        auto dyn = this->namer_(root_);
+        auto label = dyn.size() == 0 ? default_label : dyn;
         this->setText(label);
     }
 
@@ -59,7 +59,9 @@ public:
     ~NbtWidget() override;
 
     void load_new_data(const std::vector<bl::palette::compound_tag *> &data,
-                       const std::function<QString(bl::palette::compound_tag *)> &namer);
+                       const std::function<QString(bl::palette::compound_tag *)> &namer,
+                       const std::vector<std::string> &default_labels);
+
 
     void hideLoadDataBtn();
 
@@ -81,7 +83,6 @@ private slots:
 
     void prepareListWidgetMenu(const QPoint &pos);
 
-
     void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
     void on_multi_select_checkbox_stateChanged(int arg1);
@@ -97,7 +98,6 @@ private:
     //不存数据，只引用数据
 //    std::vector<bl::palette::compound_tag *> nbts_;
     Ui::NbtWidget *ui;
-    std::function<QString(bl::palette::compound_tag *, int index)> list_label_generator_;
     bool modify_allowed_{false};
 };
 

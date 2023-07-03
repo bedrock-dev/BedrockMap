@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>593</height>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,31 @@
   </property>
   <widget class="QWidget" name="central_widget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QPushButton" name="open_level_btn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>200</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 48pt;
+border: none;
+background-color: rgba(255, 255, 255, 0);
+margin: 300px;</string>
+      </property>
+      <property name="text">
+       <string>未打开存档</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QSplitter" name="splitter_2">
       <property name="orientation">
@@ -556,19 +581,6 @@
        </layout>
       </widget>
      </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>775</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
     </item>
    </layout>
   </widget>

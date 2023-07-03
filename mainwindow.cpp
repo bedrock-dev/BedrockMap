@@ -6,10 +6,13 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QtDebug>
+#include <QtConcurrent>
+
 
 #include "./ui_mainwindow.h"
 #include "mapwidget.h"
 #include "nbtwidget.h"
+#include "palette.h"
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {}
 
@@ -20,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->map_->gotoBlockPos(0, 0);
     this->chunk_editor_widget_ = new ChunkEditorWidget();
     ui->map_visual_layout->addWidget(this->map_);
-    //    ui->map_widget->addW(1, this->map_, 10);
     ui->splitter->replaceWidget(2, this->chunk_editor_widget_);
     ui->splitter->setStretchFactor(0, 2);
     ui->splitter->setStretchFactor(1, 5);
@@ -72,17 +74,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this->map_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
 
     // menu actions
-    connect(ui->action_open, SIGNAL(triggered()), this, SLOT(open_level()));
-    connect(ui->action_close, SIGNAL(triggered()), this, SLOT(close_level()));
+    connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
+    connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
     connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
     connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
 
     // init stat
-    ui->biome_layer_btn->setEnabled(false);
+    ui->biome_layer_btn->setEnabled(true);
+    ui->terrain_layer_btn->setEnabled(false);
     ui->overwrold_btn->setEnabled(false);
     ui->grid_checkbox->setChecked(true);
-    ui->text_checkbox->setChecked(true);
+    ui->text_checkbox->setChecked(false);
     ui->debug_checkbox->setChecked(false);
 
     // debug
@@ -95,6 +98,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
             &MainWindow::handle_chunk_delete_finished);
 
+    connect(&this->open_level_watcher_, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::handle_level_open_finished);
 
     //editor
     this->level_dat_editor_ = new NbtWidget();
@@ -109,9 +114,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->splitter_2->setStretchFactor(1, 3);
     ui->splitter_2->setStretchFactor(2, 2);
-    ui->global_nbt_pannel->setVisible(false);
-}
 
+    //init state
+    // ui->ope ->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    ui->splitter_2->setVisible(false);
+    QObject::connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
+}
 
 MainWindow::~MainWindow() { delete ui; }
 
@@ -147,27 +155,35 @@ void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_->enableGri
 
 void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_->enableText(arg1 > 0); }
 
-void MainWindow::open_level() {
+void MainWindow::openLevel() {
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"), "/home",
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (root.size() == 0) {
         return;
     }
 
-    if (!this->world_.init(root.toStdString())) {
-        QMessageBox::information(nullptr, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
-    } else {
-        this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " +
-                             this->world_.level().dat().level_name().c_str());
-
-    }
-
-
+    ui->open_level_btn->setText(QString("正在打开 ") + root);
+    auto future = QtConcurrent::run([this](const QString &path) {
+        try {
+            auto res = this->world_.init(path.toStdString());
+            if (!res) {
+                return false;
+            }
+            this->world_.level().load_global_data();
+            return true;
+        } catch (std::exception &e) {
+            return false;
+        }
+    }, root);
+    this->open_level_watcher_.setFuture(future);
 }
 
-void MainWindow::close_level() {
+void MainWindow::closeLevel() {
     this->world_.close();
     this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
+    ui->splitter_2->setVisible(false);
+    ui->open_level_btn->setVisible(true);
+    ui->open_level_btn->setText("未打开存档");
 }
 
 void MainWindow::close_and_exit() {
@@ -239,6 +255,7 @@ void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max
     }
     auto future = this->world_.getLevelLoader().dropChunk(min, max);
     this->delete_chunks_watcher_.setFuture(future);
+
 }
 
 void MainWindow::handle_chunk_delete_finished() {
@@ -247,3 +264,48 @@ void MainWindow::handle_chunk_delete_finished() {
 }
 
 void MainWindow::on_global_nbt_checkbox_stateChanged(int arg1) { ui->global_nbt_pannel->setVisible(arg1 > 0); }
+
+void MainWindow::handle_level_open_finished() {
+
+    auto res = this->open_level_watcher_.result();
+    if (!res) {
+        QMessageBox::warning(nullptr, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
+        ui->open_level_btn->setText("未打开存档");
+    } else {
+        this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " +
+                             this->world_.level().dat().level_name().c_str());
+
+        auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->world_.getLevelLoader().level().dat().root());
+        this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
+        // load players
+        auto &player_list = this->world_.level().player_list();
+        std::vector<bl::palette::compound_tag *> players;
+        std::vector<std::string> keys;
+        for (auto &kv: player_list) {
+            keys.emplace_back(kv.first);
+            players.push_back(kv.second); //内部会复制数据，这里就不用复制了
+        }
+        this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys);
+
+        //load villages
+        std::vector<bl::palette::compound_tag *> vss;
+        std::vector<std::string> village_keys;
+        auto &village_list = this->world_.level().village_list();
+        for (auto &kv: village_list) {
+            int index = 0;
+            for (auto &p: kv.second) {
+                if (p) {
+                    village_keys.push_back(kv.first + "_" + std::to_string(index));
+                    vss.push_back(dynamic_cast<bl::palette::compound_tag *>(p));
+                }
+                index++;
+            }
+        }
+        this->village_editor_->load_new_data(vss, [&](auto *) { return QString(); }, village_keys);
+        ui->splitter_2->setVisible(true);
+        ui->open_level_btn->setVisible(false);
+        ui->global_nbt_pannel->setVisible(false);
+    }
+}
+
+
