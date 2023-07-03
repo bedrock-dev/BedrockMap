@@ -94,7 +94,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
             &MainWindow::handle_chunk_delete_finished);
+
+
+    //editor
+    this->level_dat_editor_ = new NbtWidget();
+    level_dat_editor_->hideLoadDataBtn();
+    this->player_editor_ = new NbtWidget();
+    player_editor_->hideLoadDataBtn();
+    this->village_editor_ = new NbtWidget();
+    village_editor_->hideLoadDataBtn();
+    ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
+    ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
+    ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
+
+    ui->splitter_2->setStretchFactor(1, 3);
+    ui->splitter_2->setStretchFactor(2, 2);
+    ui->global_nbt_pannel->setVisible(false);
 }
+
 
 MainWindow::~MainWindow() { delete ui; }
 
@@ -228,3 +245,5 @@ void MainWindow::handle_chunk_delete_finished() {
     QMessageBox::information(nullptr, "警告", "区块删除成功", QMessageBox::Yes, QMessageBox::Yes);
     this->world_.clear_all_cache();
 }
+
+void MainWindow::on_global_nbt_checkbox_stateChanged(int arg1) { ui->global_nbt_pannel->setVisible(arg1 > 0); }

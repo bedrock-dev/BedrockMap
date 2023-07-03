@@ -300,7 +300,7 @@
            <item>
             <widget class="QCheckBox" name="debug_checkbox">
              <property name="text">
-              <string>调试</string>
+              <string>地图调试</string>
              </property>
             </widget>
            </item>
@@ -308,6 +308,13 @@
             <widget class="QCheckBox" name="enable_chunk_edit_check_box">
              <property name="text">
               <string>数据修改</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="global_nbt_checkbox">
+             <property name="text">
+              <string>全局NBT窗口</string>
              </property>
             </widget>
            </item>
@@ -417,27 +424,132 @@
         <layout class="QVBoxLayout" name="empty_layout"/>
        </widget>
       </widget>
-      <widget class="QWidget" name="verticalLayoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout">
+      <widget class="QWidget" name="global_nbt_pannel" native="true">
+       <layout class="QVBoxLayout" name="global_nbt_layout">
         <item>
-         <widget class="QTabWidget" name="tabWidget">
+         <widget class="QTabWidget" name="global_nbt_layout_2">
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="tab">
+          <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
             <string>世界元数据</string>
            </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="level_dat_empty_widget" native="true"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_3">
+                <property name="text">
+                 <string>保存</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
-          <widget class="QWidget" name="tab_2">
+          <widget class="QWidget" name="player_tab">
            <attribute name="title">
             <string>玩家</string>
            </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="player_empty_widget" native="true"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_4">
+                <property name="text">
+                 <string>保存</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
-          <widget class="QWidget" name="tab_3">
+          <widget class="QWidget" name="village_tab">
            <attribute name="title">
             <string>村庄</string>
            </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="village_empty_widget" native="true"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_5">
+                <property name="text">
+                 <string>保存</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>

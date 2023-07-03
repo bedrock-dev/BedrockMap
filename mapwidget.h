@@ -8,7 +8,7 @@
 #include <QtDebug>
 #include <array>
 #include <tuple>
-
+#include "nbtwidget.h"
 #include "bedrock_key.h"
 #include "world.h"
 
@@ -190,6 +190,7 @@ private:
     bool render_grid_{true};
     bool render_text_{true};
     bool render_debug_{false};
+
 
 };
 

@@ -11,6 +11,7 @@
 #include "chunkeditorwidget.h"
 #include "mapwidget.h"
 #include  <QFutureWatcher>
+#include "nbtwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -75,8 +76,9 @@ private slots:
 
     void on_actor_layer_btn_clicked();
 
+    void on_global_nbt_checkbox_stateChanged(int arg1);
 
-private:
+   private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
@@ -92,6 +94,10 @@ private:
     //watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
 
+    //global nbt editors
+    NbtWidget *level_dat_editor_;
+    NbtWidget *player_editor_;
+    NbtWidget *village_editor_;
 };
 
 #endif  // MAINWINDOW_H
