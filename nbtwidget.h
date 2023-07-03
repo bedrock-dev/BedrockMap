@@ -84,7 +84,11 @@ private slots:
 
     void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-    void on_save_current_clicked();
+    void on_multi_select_checkbox_stateChanged(int arg1);
+
+    void on_modify_checkbox_stateChanged(int arg1);
+
+    void exportNBTs(bool selectOnly);
 
 private:
     void loadNBTItem(bl::palette::compound_tag *root);
@@ -94,6 +98,7 @@ private:
 //    std::vector<bl::palette::compound_tag *> nbts_;
     Ui::NbtWidget *ui;
     std::function<QString(bl::palette::compound_tag *, int index)> list_label_generator_;
+    bool modify_allowed_{false};
 };
 
 #endif  // NBTWIDGET_H

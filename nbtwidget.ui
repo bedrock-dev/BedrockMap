@@ -17,6 +17,20 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
+      <widget class="QPushButton" name="load_btn">
+       <property name="text">
+        <string>加载</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save_btn">
+       <property name="text">
+        <string>另存为</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -30,23 +44,16 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="load_btn">
+      <widget class="QCheckBox" name="multi_select_checkbox">
        <property name="text">
-        <string>加载</string>
+        <string>多选</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="save_current">
+      <widget class="QCheckBox" name="modify_checkbox">
        <property name="text">
-        <string>存储当前</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="save_btn">
-       <property name="text">
-        <string>另存为</string>
+        <string>数据修改</string>
        </property>
       </widget>
      </item>

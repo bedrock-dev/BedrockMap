@@ -12,12 +12,10 @@ ChunkSectionWidget::ChunkSectionWidget(QWidget *parent) : QWidget(parent) {
 void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
     if (!this->ch_) return;
     QPainter p(this);
-    qDebug() << "Paint" << this->width() << " " << this->height();
     const int bw = this->get_block_pix();
     const int cw = bw << 4;
     int x_start = (this->width() - cw) >> 1;
     int z_start = 10;
-
     auto biomes = this->ch_->get_biome_y(this->y_level_);
 
     QPen pen(QColor(100, 100, 100));
