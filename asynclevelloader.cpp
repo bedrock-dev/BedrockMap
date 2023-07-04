@@ -248,7 +248,37 @@ bool AsyncLevelLoader::modifyPlayerList(
 
 
 bool AsyncLevelLoader::modifyVillageList(
-        const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list) { return false; }
+        const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &new_village_list) {
+    if (!this->loaded_)return false;
+    leveldb::WriteBatch batch;
+    for (auto &kv: this->level_.village_list().data()) {
+        const auto uuid = kv.first;
+        auto it = new_village_list.find(uuid);
+        if (it == new_village_list.end()) { //新的村庄表找不到这个了，直接把四个key全删了
+            for (int i = 0; i < 4; i++) {
+                bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
+                batch.Delete(key.to_raw());
+            }
+            continue;
+        }
+        //还有这个key的
+        for (int i = 0; i < 4; i++) {
+            bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
+            if (!it->second[i]) { //空指针，也是直接删除
+                batch.Delete(key.to_raw());
+            } else { //还在的，直接覆盖
+                batch.Put(key.to_raw(), it->second[i]->to_raw());
+            }
+        }
+    }
+
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    if (s.ok()) {
+        this->level_.village_list().reset(new_village_list);
+        return true;
+    }
+    return false;
+}
 
 bool AsyncLevelLoader::modifyChunkBlockEntities(const std::vector<bl::palette::compound_tag *> &bes) { return false; }
 

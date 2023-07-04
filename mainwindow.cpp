@@ -14,6 +14,18 @@
 #include "nbtwidget.h"
 #include "palette.h"
 
+
+namespace {
+    void WARN(const QString &msg) {
+        QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
+
+    void INFO(const QString &msg) {
+        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
+
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event) {}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -312,27 +324,42 @@ void MainWindow::on_save_leveldat_btn_clicked() {
     if (nbts.size() == 1 && nbts[0]) {
         this->world_.getLevelLoader().modifyLeveldat(nbts[0]);
         this->refreshTitle();
-        QMessageBox::information(nullptr, "信息", "保存level.dat文件成功", QMessageBox::Yes, QMessageBox::Yes);
+        INFO("成功保存level.dat文件");
     } else {
-        QMessageBox::warning(nullptr, "警告", "无法保存level.dat文件", QMessageBox::Yes, QMessageBox::Yes);
+        INFO("无法保存level.dat文件");
     }
 }
 
-void MainWindow::on_save_village_btn_clicked() {}
+void MainWindow::on_save_village_btn_clicked() {
+
+    std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> vs;
+    this->village_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
+        auto village_key = bl::village_key::parse("VILLAGE_" + key);
+        if (!village_key.valid()) {
+            qDebug() << "Invalid village  key " << ("VILLAGE_" + key).c_str();
+            return;
+        }
+        vs[village_key.uuid][static_cast<int>(village_key.type)] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
+    });
+    if (this->world_.getLevelLoader().modifyVillageList(vs)) {
+        INFO("成功保存村庄数据");
+    } else {
+        INFO("无法保存村庄数据");
+    }
+}
 
 void MainWindow::on_save_players_btn_clicked() {
     std::unordered_map<std::string, bl::palette::compound_tag *> newList;
     this->player_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
         newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
     });
+
     if (this->world_.getLevelLoader().modifyPlayerList(newList)) {
-        QMessageBox::information(nullptr, "信息", "成功保存玩家数据", QMessageBox::Yes, QMessageBox::Yes);
+        INFO("已成功保存玩家数据");
     } else {
-        QMessageBox::warning(nullptr, "警告", "无法保存玩家数据", QMessageBox::Yes, QMessageBox::Yes);
+        WARN("无法保存玩家数据");
     }
 }
-
-
 
 void MainWindow::refreshTitle() {
     auto levelName = QString();
