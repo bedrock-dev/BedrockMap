@@ -79,6 +79,8 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     connect(ui->tree_widget, &QTreeWidget::customContextMenuRequested, this, &NbtWidget::prepareTreeWidgetMenu);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
 
+    this->refreshLabel();
+
 }
 
 NbtWidget::~NbtWidget() { delete ui; }
@@ -117,10 +119,10 @@ void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
 
 void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
     this->loadNBTItem(dynamic_cast<NBTListItem *>(item)->root_);
+    this->refreshLabel();
 }
 
 void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) { //NOLINT
-
     using namespace bl::palette;
     auto *it = dynamic_cast<NBTTreeItem *>(item);
     if (!it || !it->root_)return;
@@ -168,7 +170,7 @@ void NbtWidget::hideLoadDataBtn() {
 }
 
 void NbtWidget::on_save_btn_clicked() {
-    this->exportNBTs(false);
+    this->saveNBTs(false);
 }
 
 void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
@@ -185,7 +187,6 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
 
 void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 
-
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
 
         auto *removeAction = new QAction("删除", this);
@@ -199,40 +200,42 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
             auto *item = this->ui->list_widget->currentItem();
             ui->list_widget->removeItemWidget(item);
+            this->refreshLabel();
             delete item;
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) {
-            this->exportNBTs(true);
+            this->saveNBTs(true);
+
         });
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
-        auto *removeAll = new QAction("删除所有", this);
+
         auto *removeSelect = new QAction("删除选中", this);
         auto *unselectAll = new QAction("全不选", this);
         auto *exportAction = new QAction("导出选中", this);
-        QObject::connect(removeAll, &QAction::triggered, [this, pos](bool) {
-            this->ui->list_widget->clear();
-        });
+
         QObject::connect(removeSelect, &QAction::triggered, [this, pos](bool) {
             for (auto &item: ui->list_widget->selectedItems()) {
                 ui->list_widget->removeItemWidget(item);
                 delete item;
+                this->refreshLabel();
             }
         });
 
         QObject::connect(unselectAll, &QAction::triggered, [this, pos](bool) {
             ui->list_widget->clearSelection();
+            this->refreshLabel();
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) {
-            this->exportNBTs(true);
+            this->saveNBTs(true);
         });
 
 
         QMenu menu(this);
         if (modify_allowed_) {
             menu.addAction(removeSelect);
-            menu.addAction(removeAll);
         }
+
         menu.addAction(unselectAll);
         menu.addAction(exportAction);
         menu.exec(ui->list_widget->mapToGlobal(pos));
@@ -272,9 +275,10 @@ void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &da
         it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
         it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
         it->namer_ = namer;
-        it->refreshText();
+        it->setText(it->getLabel());
         ui->list_widget->addItem(it);
     }
+    this->refreshLabel();
 }
 
 void NbtWidget::on_multi_select_checkbox_stateChanged(int arg1) {
@@ -284,30 +288,88 @@ void NbtWidget::on_multi_select_checkbox_stateChanged(int arg1) {
         ui->list_widget->setSelectionMode(QAbstractItemView::SingleSelection);
         ui->list_widget->clearSelection();
     }
+    this->refreshLabel();
 }
 
 void NbtWidget::on_modify_checkbox_stateChanged(int arg1) {
     modify_allowed_ = arg1 > 0;
+    this->refreshLabel();
 }
 
-void NbtWidget::exportNBTs(bool selectOnly) {
+void NbtWidget::saveNBTs(bool selectOnly) {
     // save
     auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
                                                  "C:/Users/xhy/Desktop/",
                                                  tr("NBT files (*.*)"));
-
     if (fileName.size() == 0)return;
     std::string res;
     if (selectOnly) {
         for (auto &item: ui->list_widget->selectedItems()) {
-            res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
+            if (!item->isHidden())
+                res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
         }
     } else {
         for (int i = 0; i < ui->list_widget->count(); ++i) {
-            res += dynamic_cast<NBTListItem *>(ui->list_widget->item(i))->root_->to_raw();
+            auto *item = ui->list_widget->item(i);
+            if (!item->isHidden())
+                res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
         }
     }
 
     bl::utils::write_file(fileName.toStdString(), res.data(), res.size());
 
 }
+
+std::string NbtWidget::getCurrentPaletteRaw() {
+    std::string res;
+    for (int i = 0; i < ui->list_widget->count(); ++i) {
+        res += dynamic_cast<NBTListItem *>(ui->list_widget->item(i))->root_->to_raw();
+    }
+
+    return res;
+}
+
+std::vector<bl::palette::compound_tag *> NbtWidget::getPaletteCopy() {
+    std::vector<bl::palette::compound_tag *> res;
+    for (int i = 0; i < ui->list_widget->count(); ++i) {
+        res.push_back(dynamic_cast<bl::palette::compound_tag *> (   dynamic_cast<NBTListItem *>(ui->list_widget->item(
+                i))->root_->copy()));
+    }
+
+    return res;
+}
+
+void NbtWidget::foreachItem(const std::function<void(const std::string &, bl::palette::compound_tag *)> &func) {
+    for (int i = 0; i < ui->list_widget->count(); ++i) {
+        auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i));
+        if (item) {
+            func(item->getLabel().toStdString(), item->root_);
+        }
+    }
+}
+
+void NbtWidget::on_search_edit_textEdited(const QString &arg1) {
+    ui->list_widget->clearSelection();
+    for (int i = 0; i < ui->list_widget->count(); ++i) {
+        auto *item = ui->list_widget->item(i);
+        item->setHidden(!item->text().contains(arg1));
+    }
+    this->refreshLabel();
+}
+
+void NbtWidget::refreshLabel() {
+    int selected = 0;
+    int notHidden = 0;
+    for (int i = 0; i < ui->list_widget->count(); ++i) {
+        auto *item = ui->list_widget->item(i);
+        if (!item)continue;
+        if (!item->isHidden()) {
+            notHidden++;
+        }
+        if (item->isSelected())selected++;
+    }
+    ui->item_num_label->setText(
+            QString("共 %1 项，已选中 %2 项").arg(QString::number(notHidden), QString::number(selected)));
+}
+
+void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }

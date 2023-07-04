@@ -272,13 +272,11 @@ void MainWindow::handle_level_open_finished() {
         QMessageBox::warning(nullptr, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
         ui->open_level_btn->setText("未打开存档");
     } else {
-        this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " +
-                             this->world_.level().dat().level_name().c_str());
-
+        this->refreshTitle();
         auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->world_.getLevelLoader().level().dat().root());
         this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
         // load players
-        auto &player_list = this->world_.level().player_list();
+        auto &player_list = this->world_.level().player_list().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
         for (auto &kv: player_list) {
@@ -290,12 +288,13 @@ void MainWindow::handle_level_open_finished() {
         //load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
-        auto &village_list = this->world_.level().village_list();
+        auto &village_list = this->world_.level().village_list().data();
         for (auto &kv: village_list) {
             int index = 0;
             for (auto &p: kv.second) {
                 if (p) {
-                    village_keys.push_back(kv.first + "_" + std::to_string(index));
+                    village_keys.push_back(kv.first + "_" + bl::village_key::village_key_type_to_str(
+                            static_cast<bl::village_key::key_type>(index)));
                     vss.push_back(dynamic_cast<bl::palette::compound_tag *>(p));
                 }
                 index++;
@@ -308,4 +307,36 @@ void MainWindow::handle_level_open_finished() {
     }
 }
 
+void MainWindow::on_save_leveldat_btn_clicked() {
+    auto nbts = this->level_dat_editor_->getPaletteCopy();
+    if (nbts.size() == 1 && nbts[0]) {
+        this->world_.getLevelLoader().modifyLeveldat(nbts[0]);
+        this->refreshTitle();
+        QMessageBox::information(nullptr, "信息", "保存level.dat文件成功", QMessageBox::Yes, QMessageBox::Yes);
+    } else {
+        QMessageBox::warning(nullptr, "警告", "无法保存level.dat文件", QMessageBox::Yes, QMessageBox::Yes);
+    }
+}
 
+void MainWindow::on_save_village_btn_clicked() {}
+
+void MainWindow::on_save_players_btn_clicked() {
+    std::unordered_map<std::string, bl::palette::compound_tag *> newList;
+    this->player_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
+        newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
+    });
+    if (this->world_.getLevelLoader().modifyPlayerList(newList)) {
+        QMessageBox::information(nullptr, "信息", "成功保存玩家数据", QMessageBox::Yes, QMessageBox::Yes);
+    } else {
+        QMessageBox::warning(nullptr, "警告", "无法保存玩家数据", QMessageBox::Yes, QMessageBox::Yes);
+    }
+}
+
+
+
+void MainWindow::refreshTitle() {
+    auto levelName = QString();
+    if (world_.is_open())
+        levelName = this->world_.level().dat().level_name().c_str();
+    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " + levelName);
+}

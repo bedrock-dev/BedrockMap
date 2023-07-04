@@ -48,6 +48,8 @@ public slots:
 
     void handle_level_open_finished();
 
+    void refreshTitle();
+
 private slots:
 
     void on_goto_btn_clicked();
@@ -83,6 +85,12 @@ private slots:
     void on_actor_layer_btn_clicked();
 
     void on_global_nbt_checkbox_stateChanged(int arg1);
+
+    void on_save_leveldat_btn_clicked();
+
+    void on_save_village_btn_clicked();
+
+    void on_save_players_btn_clicked();
 
 private:
     Ui::MainWindow *ui;

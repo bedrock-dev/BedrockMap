@@ -55,7 +55,6 @@ public:
 
     inline bool is_open() const { return this->loaded_; }
 
-
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
 
     AsyncLevelLoader &getLevelLoader() { return this->level_loader_; }

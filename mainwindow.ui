@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>618</height>
+    <width>938</width>
+    <height>1218</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,7 @@
        <bool>false</bool>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 48pt;
+       <string notr="true">font: 32pt;
 border: none;
 background-color: rgba(255, 255, 255, 0);
 margin: 300px;</string>
@@ -454,7 +454,7 @@ margin: 300px;</string>
         <item>
          <widget class="QTabWidget" name="global_nbt_layout_2">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
@@ -472,6 +472,12 @@ margin: 300px;</string>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="leftMargin">
+               <number>12</number>
+              </property>
+              <property name="rightMargin">
+               <number>12</number>
+              </property>
               <item>
                <spacer name="horizontalSpacer_3">
                 <property name="orientation">
@@ -486,9 +492,9 @@ margin: 300px;</string>
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="save_leveldat_btn">
                 <property name="text">
-                 <string>保存</string>
+                 <string>保存level.dat文件</string>
                 </property>
                </widget>
               </item>
@@ -512,6 +518,12 @@ margin: 300px;</string>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="leftMargin">
+               <number>12</number>
+              </property>
+              <property name="rightMargin">
+               <number>12</number>
+              </property>
               <item>
                <spacer name="horizontalSpacer_4">
                 <property name="orientation">
@@ -526,9 +538,9 @@ margin: 300px;</string>
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="save_players_btn">
                 <property name="text">
-                 <string>保存</string>
+                 <string>保存玩家数据</string>
                 </property>
                </widget>
               </item>
@@ -552,6 +564,12 @@ margin: 300px;</string>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="leftMargin">
+               <number>12</number>
+              </property>
+              <property name="rightMargin">
+               <number>12</number>
+              </property>
               <item>
                <spacer name="horizontalSpacer_5">
                 <property name="orientation">
@@ -566,9 +584,9 @@ margin: 300px;</string>
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_5">
+               <widget class="QPushButton" name="save_village_btn">
                 <property name="text">
-                 <string>保存</string>
+                 <string>保存村庄数据</string>
                 </property>
                </widget>
               </item>
@@ -589,7 +607,7 @@ margin: 300px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>796</width>
+     <width>938</width>
      <height>21</height>
     </rect>
    </property>

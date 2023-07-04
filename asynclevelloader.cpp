@@ -8,6 +8,7 @@
 #include "config.h"
 #include "qdebug.h"
 #include "world.h"
+#include "leveldb/write_batch.h"
 
 namespace {
     //  QColor EMPTY_COLOR_TABLE[2]{QColor(20, 20, 20), QColor(40, 40, 40)};
@@ -128,9 +129,21 @@ void LoadRegionTask::run() {
                             region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                      QColor(biome_color.r, biome_color.g,
                                                                             biome_color.b));
-                            region->terrain_bake_image_->setPixelColor(
-                                    i + (rw << 4), j + (rh << 4),
-                                    QColor(block_color.r, block_color.g, block_color.b, block_color.a));
+
+                            auto terrain_color = QColor(block_color.r, block_color.g, block_color.b, block_color.a);
+
+//
+//                            const int LEVEL = 64;
+//                            const double factor = 1.2;
+//                            auto [min_y, _] = chunk->get_pos().get_y_range();
+//                            int diff = (int) ((chunk->get_height(i, j) + min_y - LEVEL) * factor);
+//                            if (diff > 0) {
+//                                terrain_color = terrain_color.dark(100 + diff);
+//                            } else {
+//                                terrain_color = terrain_color.light(100 - diff);
+//                            }
+
+                            region->terrain_bake_image_->setPixelColor(i + (rw << 4), j + (rh << 4), terrain_color);
                         }
                     }
                     //load actors
@@ -203,6 +216,46 @@ QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::ch
     };
     return QtConcurrent::run(directChunkReader, min, max);
 }
+
+bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
+    if (!this->loaded_)return false;
+    level_.dat().set_nbt(nbt);
+    auto raw = level_.dat().to_raw();
+    bl::utils::write_file(level_.root_path() + "/" + bl::bedrock_level::LEVEL_DATA, raw.data(), raw.size());
+    return true;
+}
+
+bool AsyncLevelLoader::modifyPlayerList(
+        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_list) {
+    if (!this->loaded_)return false;
+    //先写入磁盘再修改内存
+    leveldb::WriteBatch batch;
+    for (auto &kv: this->level_.player_list().data()) {
+        if (!new_list.count(kv.first)) {
+            batch.Delete(kv.first);
+        } else { //put
+            //可以检查不一样的才修改，不过没啥必要
+            batch.Put(kv.first, kv.second->to_raw());
+        }
+    }
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    if (s.ok()) {
+        this->level_.player_list().reset(new_list);
+        return true;
+    }
+    return false;
+}
+
+
+bool AsyncLevelLoader::modifyVillageList(
+        const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list) { return false; }
+
+bool AsyncLevelLoader::modifyChunkBlockEntities(const std::vector<bl::palette::compound_tag *> &bes) { return false; }
+
+bool AsyncLevelLoader::modifyChunkPendingTicks(const std::vector<bl::palette::compound_tag *> &bes) { return false; }
+
+bool AsyncLevelLoader::modifyChunkActors(
+        const std::unordered_map<std::string, bl::palette::compound_tag *> &bes) { return false; }
 
 chunk_region::~chunk_region() {
     delete terrain_bake_image_;

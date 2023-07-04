@@ -15,18 +15,21 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="nbt_edit_toolbar">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <item>
-      <widget class="QPushButton" name="load_btn">
+      <widget class="QLabel" name="item_num_label">
        <property name="text">
-        <string>加载</string>
+        <string>共1项</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="save_btn">
+      <widget class="QLineEdit" name="search_edit">
        <property name="text">
-        <string>另存为</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -42,6 +45,20 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="load_btn">
+       <property name="text">
+        <string>加载</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save_btn">
+       <property name="text">
+        <string>另存为</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="multi_select_checkbox">

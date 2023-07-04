@@ -9,11 +9,12 @@
 #include <mutex>
 #include <unordered_set>
 #include <vector>
-
+#include <array>
 #include "bedrock_level.h"
 #include "config.h"
 #include <unordered_set>
 #include <vector>
+#include "palette.h"
 
 class AsyncLevelLoader;
 
@@ -118,6 +119,26 @@ public:
     QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
 
     QFuture<bool> dropChunk(const bl::chunk_pos &min, const ::bl::chunk_pos &max);
+
+    //TODO 修改Level.dat并持久化
+    bool modifyLeveldat(bl::palette::compound_tag *nbt);
+
+    //TODO: 修改玩家信息并持久化
+    bool
+    modifyPlayerList(const std::unordered_map<std::string, bl::palette::compound_tag *> &player_list);
+
+    //TODO: 修改村庄信息并持久化
+    bool modifyVillageList(
+            const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list);
+
+    //TODO: 修改方块实体并持久化
+    bool modifyChunkBlockEntities(const std::vector<bl::palette::compound_tag *> &bes);
+
+    //TODO: 修改计划刻并持久化
+    bool modifyChunkPendingTicks(const std::vector<bl::palette::compound_tag *> &bes);
+
+    //TODO: 修改实体并持久化
+    bool modifyChunkActors(const std::unordered_map<std::string, bl::palette::compound_tag *> &bes);
 
 public slots:
 

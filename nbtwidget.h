@@ -33,10 +33,9 @@ public:
 struct NBTListItem : public QListWidgetItem {
 
 
-    void refreshText() {
+    QString getLabel() {
         auto dyn = this->namer_(root_);
-        auto label = dyn.size() == 0 ? default_label : dyn;
-        this->setText(label);
+        return dyn.size() == 0 ? default_label : dyn;
     }
 
     bl::palette::compound_tag *root_{nullptr};
@@ -62,9 +61,15 @@ public:
                        const std::function<QString(bl::palette::compound_tag *)> &namer,
                        const std::vector<std::string> &default_labels);
 
-
     void hideLoadDataBtn();
 
+    std::string getCurrentPaletteRaw();
+
+    std::vector<bl::palette::compound_tag *> getPaletteCopy();
+
+    void foreachItem(const std::function<void(const std::string &label, bl::palette::compound_tag *data)> &func);
+
+    void refreshLabel();
 
 private slots:
 
@@ -89,9 +94,14 @@ private slots:
 
     void on_modify_checkbox_stateChanged(int arg1);
 
-    void exportNBTs(bool selectOnly);
+    void saveNBTs(bool selectOnly);
 
-private:
+
+    void on_search_edit_textEdited(const QString &arg1);
+
+    void on_list_widget_itemSelectionChanged();
+
+   private:
     void loadNBTItem(bl::palette::compound_tag *root);
 
 private:
