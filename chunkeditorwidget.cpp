@@ -8,13 +8,27 @@
 #include "ui_chunkeditorwidget.h"
 #include <QToolTip>
 #include <QMouseEvent>
+#include "mainwindow.h"
+
+namespace {
+    void WARN(const QString &msg) {
+        QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
+
+    void INFO(const QString &msg) {
+        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
+
+}
 
 
-ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget) {
+ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget),
+                                                                        mw_(mw) {
     ui->setupUi(this);
     // terrain tab
     ui->base_info_label->setText("无数据");
     this->chunk_section_ = new ChunkSectionWidget();
+
     ui->terrain_tab->layout()->addWidget(this->chunk_section_);
     ui->terrain_level_slider->setRange(-64, 319);
     ui->terrain_level_slider->setSingleStep(1);
@@ -24,15 +38,15 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent) : QWidget(parent), ui(new 
     this->actor_editor_ = new NbtWidget();
     this->pending_tick_editor_ = new NbtWidget();
     this->block_entity_editor_ = new NbtWidget();
-
     this->actor_editor_->hideLoadDataBtn();
     this->pending_tick_editor_->hideLoadDataBtn();
     this->block_entity_editor_->hideLoadDataBtn();
 
-    ui->actor_tab->layout()->addWidget(this->actor_editor_);
-    ui->pt_tab->layout()->addWidget(this->pending_tick_editor_);
-    ui->block_actor_tab->layout()->addWidget(this->block_entity_editor_);
-    this->setMouseTracking(true);
+    //
+
+    ui->block_actor_tab->layout()->replaceWidget(ui->empty_block_actor_editor_widget, this->block_entity_editor_);
+    ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_editor_);
+    ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
@@ -40,7 +54,6 @@ ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
 
 void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     if (chunk) {
-        delete this->chunk_;
         this->chunk_ = chunk;
         this->refreshData();
         this->chunk_section_->set_chunk(chunk);
@@ -112,5 +125,32 @@ void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
 
 void ChunkEditorWidget::showInfoPopMenu() {}
 
-void ChunkEditorWidget::on_locate_btn_clicked() {
+
+void ChunkEditorWidget::on_save_actor_btn_clicked() {}
+
+void ChunkEditorWidget::on_save_block_actor_btn_clicked() {
+    if (this->mw_->get_world()->getLevelLoader().
+            modifyChunkBlockEntities(this->chunk_->get_pos(),
+                                     this->block_entity_editor_->getCurrentPaletteRaw())) {
+        INFO("写入方块实体数据成功");
+    } else {
+        WARN("写入方块实体数据失败");
+    }
 }
+
+void ChunkEditorWidget::on_save_pt_btn_clicked() {
+    if (this->mw_->get_world()->getLevelLoader().
+            modifyChunkPendingTicks(this->chunk_->get_pos(),
+                                    this->pending_tick_editor_->getCurrentPaletteRaw())) {
+        INFO("写入计划刻数据成功");
+    } else {
+        WARN("写入计划刻数据失败");
+
+    }
+
+}
+
+void ChunkEditorWidget::clearAll() {
+}
+
+

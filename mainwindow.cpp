@@ -7,8 +7,8 @@
 #include <QSplitter>
 #include <QtDebug>
 #include <QtConcurrent>
-
-
+#include <QDesktopWidget>
+#include <QStandardPaths>
 #include "./ui_mainwindow.h"
 #include "mapwidget.h"
 #include "nbtwidget.h"
@@ -24,6 +24,15 @@ namespace {
         QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
     }
 
+    QRect centerMainWindowGeometry(double rate) {
+        //finished adjust size
+        auto const rec = QApplication::desktop()->screenGeometry();
+        auto const height = static_cast<int>(rec.height() * rate);
+        auto const width = static_cast<int>(rec.width() * rate);
+        return {(rec.width() - width) / 2, (rec.height() - height) / 2, width, height};
+    }
+
+
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {}
@@ -33,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     this->map_ = new MapWidget(this, nullptr);
     this->map_->gotoBlockPos(0, 0);
-    this->chunk_editor_widget_ = new ChunkEditorWidget();
+    this->chunk_editor_widget_ = new ChunkEditorWidget(this);
     ui->map_visual_layout->addWidget(this->map_);
     ui->splitter->replaceWidget(2, this->chunk_editor_widget_);
     ui->splitter->setStretchFactor(0, 2);
@@ -103,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // debug
     ui->x_edit->setMaximumWidth(160);
     ui->z_edit->setMaximumWidth(160);
-
+    ui->layer_slider->setRange(-64, 319);
 
     //watcher
 
@@ -127,10 +136,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->splitter_2->setStretchFactor(1, 3);
     ui->splitter_2->setStretchFactor(2, 2);
 
-    //init state
-    // ui->ope ->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     ui->splitter_2->setVisible(false);
     QObject::connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
+
+    this->setGeometry(centerMainWindowGeometry(0.4));
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -168,13 +177,14 @@ void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_->enableGri
 void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_->enableText(arg1 > 0); }
 
 void MainWindow::openLevel() {
-    QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"), "/home",
+    QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
+                                                     R"(C:\Users\xhy\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds)",
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (root.size() == 0) {
         return;
     }
 
-    ui->open_level_btn->setText(QString("正在打开 ") + root);
+    ui->open_level_btn->setText(QString("正在打开\n") + root);
     auto future = QtConcurrent::run([this](const QString &path) {
         try {
             auto res = this->world_.init(path.toStdString());
@@ -316,6 +326,14 @@ void MainWindow::handle_level_open_finished() {
         ui->splitter_2->setVisible(true);
         ui->open_level_btn->setVisible(false);
         ui->global_nbt_pannel->setVisible(false);
+
+
+        this->setWindowState(Qt::WindowMaximized);
+        auto sp = this->world_.level().dat().spawn_position();
+        qDebug() << sp.x << "  " << sp.z;
+        ui->x_edit->setText(QString::number(sp.x));
+        ui->z_edit->setText(QString::number(sp.z));
+        this->map_->gotoBlockPos(sp.x, sp.z);
     }
 }
 
@@ -366,4 +384,5 @@ void MainWindow::refreshTitle() {
     if (world_.is_open())
         levelName = this->world_.level().dat().level_name().c_str();
     this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " + levelName);
+
 }

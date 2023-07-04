@@ -38,8 +38,8 @@ public:
 public slots:
 
     void updateXZEdit(int x, int z);
-    // public
 
+    // public
     void openChunkEditor(const bl::chunk_pos &p);
 
     void deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max);

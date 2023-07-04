@@ -14,10 +14,12 @@ class ChunkSectionWidget;
 
 class NbtWidget;
 
+class MainWindow;
+
 class ChunkEditorWidget : public QWidget {
 Q_OBJECT
 public:
-    explicit ChunkEditorWidget(QWidget *parent = nullptr);
+    explicit ChunkEditorWidget(MainWindow *mw, QWidget *parent = nullptr);
 
     ~ChunkEditorWidget() override;
 
@@ -30,15 +32,19 @@ private slots:
 
     void showInfoPopMenu();
 
-
     void on_close_btn_clicked();
 
     void on_terrain_level_slider_valueChanged(int value);
 
     void on_terrain_goto_level_btn_clicked();
 
-    void on_locate_btn_clicked();
+    void on_save_actor_btn_clicked();
 
+    void on_save_block_actor_btn_clicked();
+
+    void on_save_pt_btn_clicked();
+
+    void clearAll();
 private:
     void refreshData();
 
@@ -53,6 +59,8 @@ private:
     int y_level{0};
 
     bl::chunk *chunk_{nullptr};
+
+    MainWindow *mw_;
 };
 
 #endif  // CHUNKEDITORWIDGET_H

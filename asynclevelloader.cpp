@@ -280,12 +280,27 @@ bool AsyncLevelLoader::modifyVillageList(
     return false;
 }
 
-bool AsyncLevelLoader::modifyChunkBlockEntities(const std::vector<bl::palette::compound_tag *> &bes) { return false; }
+bool AsyncLevelLoader::modifyChunkBlockEntities(const bl::chunk_pos &cp,
+                                                const std::string &raw) {
+    bl::chunk_key key{bl::chunk_key::BlockEntity, cp, -1};
+    auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
+    return s.ok();
 
-bool AsyncLevelLoader::modifyChunkPendingTicks(const std::vector<bl::palette::compound_tag *> &bes) { return false; }
+}
+
+bool AsyncLevelLoader::modifyChunkPendingTicks(const bl::chunk_pos &cp,
+                                               const std::string &raw) {
+    bl::chunk_key key{bl::chunk_key::PendingTicks, cp, -1};
+    auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
+    return s.ok();
+}
 
 bool AsyncLevelLoader::modifyChunkActors(
-        const std::unordered_map<std::string, bl::palette::compound_tag *> &bes) { return false; }
+        const bl::chunk_pos &cp,
+        const std::unordered_map<std::string, bl::palette::compound_tag *> &bes) {
+    //TODO
+    return true;
+}
 
 chunk_region::~chunk_region() {
     delete terrain_bake_image_;

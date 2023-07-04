@@ -268,8 +268,14 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                               const std::function<QString(bl::palette::compound_tag *)> &namer,
                               const std::vector<std::string> &default_labels) {
-    ui->list_widget->clear();
+
     ui->tree_widget->clear();
+    ui->list_widget->clear();
+    /*  for (int i = 0; i < ui->list_widget->count(); ++i) *
+          auto *item = dynamic_cast<NBTListItem *>( ui->list_widget->item(i));
+          delete item->root_;
+      }
+      */
     for (int i = 0; i < data.size(); i++) {
         auto *it = new NBTListItem();
         it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());

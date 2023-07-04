@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>938</width>
-    <height>1218</height>
+    <width>762</width>
+    <height>997</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,13 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="central_widget">
+   <property name="styleSheet">
+    <string notr="true">background-image:  url(:/res/bg.jpg);</string>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <widget class="QPushButton" name="open_level_btn">
@@ -33,10 +39,10 @@
        <bool>false</bool>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 32pt;
+       <string notr="true">font: 28pt;
 border: none;
 background-color: rgba(255, 255, 255, 0);
-margin: 300px;</string>
+margin: 100px;</string>
       </property>
       <property name="text">
        <string>未打开存档</string>
@@ -375,13 +381,13 @@ margin: 300px;</string>
              <number>0</number>
             </property>
             <property name="topMargin">
-             <number>6</number>
+             <number>2</number>
             </property>
             <property name="rightMargin">
              <number>0</number>
             </property>
             <property name="bottomMargin">
-             <number>6</number>
+             <number>2</number>
             </property>
             <item>
              <widget class="QPushButton" name="screenshot_btn">
@@ -607,8 +613,8 @@ margin: 300px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>938</width>
-     <height>21</height>
+     <width>762</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">

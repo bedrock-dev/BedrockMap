@@ -24,5 +24,6 @@
         <file>res/Toolery.qss</file>
         <file>res/Genetive.qss</file>
         <file>res/Mixchat.qss</file>
+        <file>res/bg.jpg</file>
     </qresource>
 </RCC>

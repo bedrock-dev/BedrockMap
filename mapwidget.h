@@ -185,12 +185,11 @@ private:
     bool draw_slime_chunk_{false};
     bool draw_actors_{false};
 
-    int bw_{6};            //每个方块需要几个像素
+    int bw_{2};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
     bool render_grid_{true};
     bool render_text_{false};
     bool render_debug_{false};
-
 };
 
 

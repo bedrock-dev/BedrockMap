@@ -182,7 +182,6 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
     for (auto &i: dbgInfo) {
         max_len = std::max(max_len, i.size());
     }
-
     painter->fillRect(QRectF(0, 0, max_len * font_width + 20, dbgInfo.size() * font_height + 20),
                       QBrush(QColor(255, 255, 255, 150)));
     painter->setFont(font);
@@ -234,7 +233,7 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     //细区块边界线
     QPen pen;
-    pen.setColor(QColor(255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY, 255 - cfg::BG_GRAY));
+    pen.setColor(QColor(200 - cfg::BG_GRAY, 200 - cfg::BG_GRAY, 200 - cfg::BG_GRAY));
     pen.setWidth(1);
     painter->setPen(pen);
     painter->setBrush(QBrush(QColor(0, 0, 0, 0)));
