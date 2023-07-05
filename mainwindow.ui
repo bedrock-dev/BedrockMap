@@ -21,7 +21,7 @@
   </property>
   <widget class="QWidget" name="central_widget">
    <property name="styleSheet">
-    <string notr="true">background-image:  url(:/res/bg.jpg);</string>
+    <string notr="true">background:url(:/res/bg.jpg);</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
@@ -460,7 +460,7 @@ margin: 100px;</string>
         <item>
          <widget class="QTabWidget" name="global_nbt_layout_2">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
@@ -614,7 +614,7 @@ margin: 100px;</string>
      <x>0</x>
      <y>0</y>
      <width>762</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">

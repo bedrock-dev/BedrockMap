@@ -37,6 +37,9 @@ public:
 
 public slots:
 
+
+    inline bool enable_write() const { return this->write_mode_; }
+
     void updateXZEdit(int x, int z);
 
     // public
@@ -68,7 +71,7 @@ private slots:
 
     void toggle_chunk_edit_view();
 
-    void toggle_full_map_mode();
+//    void toggle_full_map_mode();
 
     void on_enable_chunk_edit_check_box_stateChanged(int arg1);
 

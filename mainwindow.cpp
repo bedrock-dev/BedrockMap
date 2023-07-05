@@ -13,7 +13,7 @@
 #include "mapwidget.h"
 #include "nbtwidget.h"
 #include "palette.h"
-
+#include <QDir>
 
 namespace {
     void WARN(const QString &msg) {
@@ -31,7 +31,6 @@ namespace {
         auto const width = static_cast<int>(rec.width() * rate);
         return {(rec.width() - width) / 2, (rec.height() - height) / 2, width, height};
     }
-
 
 }
 
@@ -97,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // menu actions
     connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
-    connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
+//    connect(ui->action_full_map, SIGNAL(triggered()), this, SLOT(toggle_full_map_mode()));
     connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
 
@@ -147,8 +146,9 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::updateXZEdit(int x, int z) {
     bl::block_pos bp{x, 0, z};
     auto cp = bp.to_chunk_pos();
-    ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z) + " in [" + QString::number(cp.x) + "," +
-                                 QString::number(cp.z) + "]");
+    ui->block_pos_label->setText(
+            QString::number(x) + "," + QString::number(z) + "  /  [" + QString::number(cp.x) + "," +
+            QString::number(cp.z) + "]");
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
@@ -177,8 +177,13 @@ void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_->enableGri
 void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_->enableText(arg1 > 0); }
 
 void MainWindow::openLevel() {
+
+    if (this->world_.is_open())this->world_.close();
+
+    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
+                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
-                                                     R"(C:\Users\xhy\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftWorlds)",
+                                                     path,
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (root.size() == 0) {
         return;
@@ -220,19 +225,20 @@ void MainWindow::toggle_chunk_edit_view() {
     this->chunk_editor_widget_->setVisible(!x);
 }
 
-void MainWindow::toggle_full_map_mode() {
-    this->full_map_mode_ = !full_map_mode_;
 
-    ui->control_panel_widget->setVisible(!full_map_mode_);
-    ui->map_top_toolbar_widget->setVisible(!full_map_mode_);
-    ui->map_buttom_toolbar_widget->setVisible(!full_map_mode_);
-    if (this->full_map_mode_) {
-        this->chunk_edit_widget_hided_ = this->chunk_editor_widget_->isVisible();
-        this->chunk_editor_widget_->setVisible(false);
-    } else {
-        this->chunk_editor_widget_->setVisible(this->chunk_edit_widget_hided_);
-    }
-}
+//void MainWindow::toggle_full_map_mode() {
+//    this->full_map_mode_ = !full_map_mode_;
+//
+//    ui->control_panel_widget->setVisible(!full_map_mode_);
+//    ui->map_top_toolbar_widget->setVisible(!full_map_mode_);
+//    ui->map_buttom_toolbar_widget->setVisible(!full_map_mode_);
+//    if (this->full_map_mode_) {
+//        this->chunk_edit_widget_hided_ = this->chunk_editor_widget_->isVisible();
+//        this->chunk_editor_widget_->setVisible(false);
+//    } else {
+//        this->chunk_editor_widget_->setVisible(this->chunk_edit_widget_hided_);
+//    }
+//}
 
 void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
 
@@ -277,7 +283,6 @@ void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max
     }
     auto future = this->world_.getLevelLoader().dropChunk(min, max);
     this->delete_chunks_watcher_.setFuture(future);
-
 }
 
 void MainWindow::handle_chunk_delete_finished() {
@@ -338,6 +343,11 @@ void MainWindow::handle_level_open_finished() {
 }
 
 void MainWindow::on_save_leveldat_btn_clicked() {
+    if (!this->write_mode_) {
+        WARN("未开启写模式");
+        return;
+    }
+
     auto nbts = this->level_dat_editor_->getPaletteCopy();
     if (nbts.size() == 1 && nbts[0]) {
         this->world_.getLevelLoader().modifyLeveldat(nbts[0]);
@@ -349,6 +359,10 @@ void MainWindow::on_save_leveldat_btn_clicked() {
 }
 
 void MainWindow::on_save_village_btn_clicked() {
+    if (!this->write_mode_) {
+        WARN("未开启写模式");
+        return;
+    }
 
     std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> vs;
     this->village_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
@@ -367,6 +381,10 @@ void MainWindow::on_save_village_btn_clicked() {
 }
 
 void MainWindow::on_save_players_btn_clicked() {
+    if (!this->write_mode_) {
+        WARN("未开启写模式");
+        return;
+    }
     std::unordered_map<std::string, bl::palette::compound_tag *> newList;
     this->player_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
         newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());

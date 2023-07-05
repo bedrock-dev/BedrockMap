@@ -126,9 +126,21 @@ void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
 void ChunkEditorWidget::showInfoPopMenu() {}
 
 
-void ChunkEditorWidget::on_save_actor_btn_clicked() {}
+void ChunkEditorWidget::on_save_actor_btn_clicked() {
+
+    if (!this->mw_->enable_write()) {
+        WARN("未开启写模式");
+        return;
+    }
+
+}
 
 void ChunkEditorWidget::on_save_block_actor_btn_clicked() {
+    if (!this->mw_->enable_write()) {
+        WARN("未开启写模式");
+        return;
+    }
+
     if (this->mw_->get_world()->getLevelLoader().
             modifyChunkBlockEntities(this->chunk_->get_pos(),
                                      this->block_entity_editor_->getCurrentPaletteRaw())) {
@@ -138,16 +150,20 @@ void ChunkEditorWidget::on_save_block_actor_btn_clicked() {
     }
 }
 
+
 void ChunkEditorWidget::on_save_pt_btn_clicked() {
+    if (!this->mw_->enable_write()) {
+        WARN("未开启写模式");
+        return;
+    }
+
     if (this->mw_->get_world()->getLevelLoader().
             modifyChunkPendingTicks(this->chunk_->get_pos(),
                                     this->pending_tick_editor_->getCurrentPaletteRaw())) {
         INFO("写入计划刻数据成功");
     } else {
         WARN("写入计划刻数据失败");
-
     }
-
 }
 
 void ChunkEditorWidget::clearAll() {

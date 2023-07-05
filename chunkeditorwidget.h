@@ -27,7 +27,6 @@ public:
 
     void mousePressEvent(QMouseEvent *event) override;
 
-
 private slots:
 
     void showInfoPopMenu();
@@ -45,6 +44,7 @@ private slots:
     void on_save_pt_btn_clicked();
 
     void clearAll();
+
 private:
     void refreshData();
 
