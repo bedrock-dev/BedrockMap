@@ -51,10 +51,12 @@ set(PROJECT_SOURCES
         nbtwidget.cpp
         nbtwidget.ui
         config.h
-#        treeitem.cpp
-#        treeitem.h
-#        treemodel.cpp
-#        treemodel.h
+        #        treeitem.cpp
+        #        treeitem.h
+        #        treemodel.cpp
+        #        treemodel.h
+        iconmanager.cpp
+        iconmanager.h
 
         )
 

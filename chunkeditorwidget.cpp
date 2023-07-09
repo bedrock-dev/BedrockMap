@@ -101,7 +101,7 @@ void ChunkEditorWidget::on_close_btn_clicked() { this->setVisible(false); }
 void ChunkEditorWidget::refreshData() {
     if (!this->chunk_) return;
     ui->base_info_label->setText(this->chunk_->get_pos().to_string().c_str());
-    auto [miny, maxy] = this->chunk_->get_pos().get_y_range();
+    auto [miny, maxy] = this->chunk_->get_pos().get_y_range(this->chunk_->get_version());
     ui->terrain_level_slider->setRange(miny, maxy);
 }
 

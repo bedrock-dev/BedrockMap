@@ -111,9 +111,8 @@ void LoadRegionTask::run() {
                             std::string block_name;
                             auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
 
-                            //分两种情况
                             if (filter_->enable_layer_) {
-                                auto [min_y, max_y] = this->pos_.get_y_range();
+                                auto [min_y, max_y] = this->pos_.get_y_range(chunk->get_version());
                                 if (filter_->layer_ >= min_y && filter_->layer_ <= max_y) {
                                     tips.biome = chunk->get_biome(i, filter_->layer_, j);
                                     tips.block_name = chunk->get_block(i, filter_->layer_, j).name;
@@ -121,32 +120,20 @@ void LoadRegionTask::run() {
                                 }
                             } else {
                                 tips.biome = chunk->get_top_biome(i, j);
-                                tips.block_name = chunk->get_top_block(i, j).name;
+//                                tips.block_name = chunk->get_top_block(i, j).name;
                                 block_color = chunk->get_top_block_color(i, j);
                             }
-
                             auto biome_color = bl::get_biome_color(tips.biome);
                             region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                      QColor(biome_color.r, biome_color.g,
                                                                             biome_color.b));
 
                             auto terrain_color = QColor(block_color.r, block_color.g, block_color.b, block_color.a);
-
-//
-//                            const int LEVEL = 64;
-//                            const double factor = 1.2;
-//                            auto [min_y, _] = chunk->get_pos().get_y_range();
-//                            int diff = (int) ((chunk->get_height(i, j) + min_y - LEVEL) * factor);
-//                            if (diff > 0) {
-//                                terrain_color = terrain_color.dark(100 + diff);
-//                            } else {
-//                                terrain_color = terrain_color.light(100 - diff);
-//                            }
-
                             region->terrain_bake_image_->setPixelColor(i + (rw << 4), j + (rh << 4), terrain_color);
+
                         }
                     }
-                    //load actors
+//                    load actors
                     auto &actors = chunk->get_actor_list();
                     for (auto &ac: actors) {
                         auto *actor = this->level_->load_actor(ac);
@@ -155,6 +142,7 @@ void LoadRegionTask::run() {
                         }
                         delete actor;
                     }
+
                 } else {
                     for (int i = 0; i < 16; i++) {
                         for (int j = 0; j < 16; j++) {
@@ -174,7 +162,6 @@ void LoadRegionTask::run() {
     }
     emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region);
 }
-
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;

@@ -10,6 +10,8 @@
 #include "color.h"
 #include <QPainter>
 
+#include "iconmanager.h"
+
 
 namespace {
     QVector<QRgb> biome_color_table{};
@@ -119,10 +121,12 @@ QImage *world::topBlock(const region_pos &p) {
     }
 }
 
-std::vector<bl::vec3> world::getActorList(const bl::chunk_pos &p) {
+
+std::unordered_map<QImage *, std::vector<bl::vec3>>
+world::getActorList(const bl::chunk_pos &p) {
     if (!this->loaded_ || !this->layer_cache_) return {};
     auto *info = this->layer_cache_->operator[](p);
-    if (info) return info->actor_list;
+    if (info) return info->actor_list_;
     bool null_region{false};
     auto *region = this->level_loader_.getRegion(p, null_region, &this->render_filter_);
     if (null_region) {
@@ -132,7 +136,7 @@ std::vector<bl::vec3> world::getActorList(const bl::chunk_pos &p) {
     if (region) {
         auto *layer = LayerCacheInfo::fromRegion(region);
         this->layer_cache_->insert(p, layer);
-        return layer->actor_list;
+        return layer->actor_list_;
     } else {
         return {};
     }
@@ -149,7 +153,7 @@ void world::initBiomeColorTable() {
     bl::init_biome_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome.json)");
     bl::init_block_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\block.json)");
 
-    biome_color_table.resize(bl::biome::LEN + 1);
+    biome_color_table.resize(256);
 
     for (int i = 0; i < bl::biome::none; i++) {
         auto color = bl::get_biome_color(static_cast<bl::biome>(i));
@@ -196,11 +200,13 @@ LayerCacheInfo *LayerCacheInfo::fromRegion(chunk_region *r) {
     memcpy(terrain_image->bits(), r->terrain_bake_image_->bits(), biome_image->byteCount());
 
     auto *res = new LayerCacheInfo{terrain_image, biome_image, r->tips_info_};
-    for (auto &lv: r->actors_) {
-        for (auto &pos: lv.second) {
-            res->actor_list.push_back(pos);
-        }
+    for (auto &kv: r->actors_) {
+        if (kv.first == "minecraft:item")continue;
+        auto key = QString(kv.first.c_str()).replace("minecraft:", "");
+        auto *icon = ActorImage(key.toLower());
+        res->actor_list_[icon] = kv.second;
     }
     return res;
 }
+
 

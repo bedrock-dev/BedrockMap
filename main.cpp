@@ -7,11 +7,10 @@
 
 #include "asynclevelloader.h"
 #include "mainwindow.h"
+#include "iconmanager.h"
 
 int main(int argc, char *argv[]) {
-    QFile stylesheet(":/res/MaterialDark.qss");
-    stylesheet.open(QFile::ReadOnly);
-    auto setSheet = QLatin1String(stylesheet.readAll());
+    InitIcons();
     QApplication a(argc, argv);
     QFont f = a.font();
     f.setFamily("微软雅黑");

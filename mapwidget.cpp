@@ -125,8 +125,8 @@ bl::block_pos MapWidget::getCursorBlockPos() {
     int rx = cursor.x() - render.x();
     int ry = cursor.y() - render.y();
 
-    int x = rx / (this->bw_) + mi.get_min_pos().x;
-    int y = ry / (this->bw_) + mi.get_min_pos().z;
+    int x = rx / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).x;
+    int y = ry / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).z;
     return bl::block_pos{x, 0, y};
 }
 
@@ -327,10 +327,16 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
         auto actors = this->mw_->get_world()->getActorList(ch);
-        for (auto &actor: actors) {
-            float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
-            float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
-            painter->drawEllipse(QRectF(x - 3.0, y - 3.0, 6.0, 6.0));
+        for (auto &kv: actors) {
+            if (!kv.first)continue;
+            for (auto &actor: kv.second) {
+                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
+                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
+                const int W = 16;
+                painter->fillRect(QRectF(x - W - 2, y - W - 2, (W + 2) * 2, (W + 2) * 2),
+                                  QBrush(QColor(255, 255, 255, 160)));
+                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 16, 16));
+            }
         }
     });
 }

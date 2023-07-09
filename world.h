@@ -38,7 +38,8 @@ struct LayerCacheInfo {
     QImage *terrain{nullptr};
     QImage *biome{nullptr};
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
-    std::vector<bl::vec3> actor_list;
+    std::unordered_map<QImage *, std::vector<bl::vec3>> actor_list_;
+
 
     static LayerCacheInfo *fromRegion(chunk_region *r);
 
@@ -73,7 +74,8 @@ public:
 
     QImage *slimeChunk(const bl::chunk_pos &p);
 
-    std::vector<bl::vec3> getActorList(const bl::chunk_pos &p);
+
+    std::unordered_map<QImage *, std::vector<bl::vec3>> getActorList(const bl::chunk_pos &p);
 
     std::vector<QString> debug_info() {
         if (!this->loaded_) return {};
@@ -96,7 +98,7 @@ public:
         auto region_pos = cfg::c2r(cp);
         auto *info = this->layer_cache_->operator[](region_pos);
         if (!info)return BlockTipsInfo{};
-        auto bp = region_pos.get_min_pos();
+        auto bp = region_pos.get_min_pos(bl::ChunkVersion::New);
         return info->info_[p.x - bp.x][p.z - bp.z];
     }
 
