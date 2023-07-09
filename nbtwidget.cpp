@@ -71,6 +71,7 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     f.setPointSize(10);
     ui->list_widget->setFont(f);
     ui->tree_widget->setFont(f);
+
     ui->tree_widget->setHeaderHidden(true);
     ui->tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->list_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -267,20 +268,21 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                               const std::function<QString(bl::palette::compound_tag *)> &namer,
-                              const std::vector<std::string> &default_labels) {
+                              const std::vector<std::string> &default_labels,
+                              const std::vector<QImage *> &icons
+) {
 
     ui->tree_widget->clear();
     ui->list_widget->clear();
-    /*  for (int i = 0; i < ui->list_widget->count(); ++i) *
-          auto *item = dynamic_cast<NBTListItem *>( ui->list_widget->item(i));
-          delete item->root_;
-      }
-      */
+    bool needIcon{icons.size() == data.size()};
     for (int i = 0; i < data.size(); i++) {
         auto *it = new NBTListItem();
         it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
         it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
         it->namer_ = namer;
+        if (needIcon) {
+            it->setIcon(QPixmap::fromImage(*icons[i]));
+        }
         it->setText(it->getLabel());
         ui->list_widget->addItem(it);
     }
@@ -379,3 +381,5 @@ void NbtWidget::refreshLabel() {
 }
 
 void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }
+
+

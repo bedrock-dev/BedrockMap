@@ -14,6 +14,7 @@
 #include "nbtwidget.h"
 #include "palette.h"
 #include <QDir>
+#include "iconmanager.h"
 
 namespace {
     void WARN(const QString &msg) {
@@ -303,19 +304,25 @@ void MainWindow::handle_level_open_finished() {
         auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->world_.getLevelLoader().level().dat().root());
         this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
         // load players
+
+
         auto &player_list = this->world_.level().player_list().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
+        std::vector<QImage *> icon_players;
         for (auto &kv: player_list) {
+            icon_players.push_back(VillagerIcon(bl::village_key::PLAYERS));
             keys.emplace_back(kv.first);
             players.push_back(kv.second); //内部会复制数据，这里就不用复制了
         }
-        this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys);
+        this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys, icon_players);
 
         //load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
         auto &village_list = this->world_.level().village_list().data();
+
+        std::vector<QImage *> icons;
         for (auto &kv: village_list) {
             int index = 0;
             for (auto &p: kv.second) {
@@ -323,11 +330,13 @@ void MainWindow::handle_level_open_finished() {
                     village_keys.push_back(kv.first + "_" + bl::village_key::village_key_type_to_str(
                             static_cast<bl::village_key::key_type>(index)));
                     vss.push_back(dynamic_cast<bl::palette::compound_tag *>(p));
+                    icons.push_back(VillagerIcon(static_cast<bl::village_key::key_type>(index)));
                 }
                 index++;
             }
         }
-        this->village_editor_->load_new_data(vss, [&](auto *) { return QString(); }, village_keys);
+
+        this->village_editor_->load_new_data(vss, [&](auto *) { return QString(); }, village_keys, icons);
         ui->splitter_2->setVisible(true);
         ui->open_level_btn->setVisible(false);
         ui->global_nbt_pannel->setVisible(false);

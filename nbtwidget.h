@@ -59,7 +59,8 @@ public:
 
     void load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                        const std::function<QString(bl::palette::compound_tag *)> &namer,
-                       const std::vector<std::string> &default_labels);
+                       const std::vector<std::string> &default_labels,
+                       const std::vector<QImage *> &icons = {});
 
     void hideLoadDataBtn();
 
@@ -101,7 +102,7 @@ private slots:
 
     void on_list_widget_itemSelectionChanged();
 
-   private:
+private:
     void loadNBTItem(bl::palette::compound_tag *root);
 
 private:

@@ -111,7 +111,6 @@
         <file>res/entity/vex.png</file>
         <file>res/entity/vulture.png</file>
         <file>res/entity/warden.png</file>
-        <file>res/entity/what.png</file>
         <file>res/entity/witch.png</file>
         <file>res/entity/wither.png</file>
         <file>res/entity/wolf.png</file>
@@ -139,5 +138,10 @@
         <file>res/entity/trader_llama.png</file>
         <file>res/entity/wandering_trader.png</file>
         <file>res/entity/zombie.png</file>
+        <file>res/what.png</file>
+        <file>res/village_dwellers.png</file>
+        <file>res/village_info.png</file>
+        <file>res/village_player.png</file>
+        <file>res/village_poi.png</file>
     </qresource>
 </RCC>
