@@ -14,6 +14,8 @@
 #include "palette.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
+#include <climits>
+#include <QInputDialog>
 
 namespace {
 
@@ -55,7 +57,7 @@ namespace {
             }
         } else {
             item->setText(0, item->getRawText());
-            item->setFlags(item->flags() | Qt::ItemIsEditable);
+//            item->setFlags(item->flags() | Qt::ItemIsEditable);
         }
 
         return item;
@@ -121,48 +123,6 @@ void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
 void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
     this->loadNBTItem(dynamic_cast<NBTListItem *>(item)->root_);
     this->refreshLabel();
-}
-
-void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) { //NOLINT
-    using namespace bl::palette;
-    auto *it = dynamic_cast<NBTTreeItem *>(item);
-    if (!it || !it->root_)return;
-    if (it->text(0) == it->getRawText())return;
-    if (it->prevent_item_change_event) {
-        it->prevent_item_change_event = false;
-        return;
-    }
-    switch (it->root_->type()) {
-        case Byte:
-            dynamic_cast<byte_tag *>( it->root_)->value = static_cast<uint8_t>(item->text(0).toInt());
-            break;
-        case Short:
-            dynamic_cast<short_tag *>( it->root_)->value = item->text(0).toShort();
-            break;
-        case Int:
-            dynamic_cast<int_tag *>( it->root_)->value = item->text(0).toInt();
-            break;
-        case Long:
-            dynamic_cast<long_tag *>( it->root_)->value = item->text(0).toLong();
-            break;
-        case Float:
-            dynamic_cast<float_tag *>( it->root_)->value = item->text(0).toFloat();
-            break;
-        case Double:
-            dynamic_cast<double_tag *>( it->root_)->value = item->text(0).toDouble();
-            break;
-        case String:
-            dynamic_cast<string_tag *>( it->root_)->value = item->text(0).toStdString();
-            break;
-        case List:
-        case Compound:
-        case LEN:
-        case End:
-            break;
-    }
-
-    it->prevent_item_change_event = true;
-    it->setText(0, it->getRawText());
 }
 
 
@@ -246,25 +206,95 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 
 
 void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
-//    auto *it = dynamic_cast<NBTTreeItem *>(item);
-//    if (!it || !it->root_) { //正常来说不会出现
-//        QMessageBox::information(nullptr, "信息", "当前nbt已损坏", QMessageBox::Yes, QMessageBox::Yes);
-//        return;
-//    }
-//
-//    if (it->root_->type() == bl::palette::tag_type::Compound ||
-//        it->root_->type() == bl::palette::tag_type::List
-//            ) {
-//        if (item->isExpanded()) {
-//            ui->tree_widget->collapseItem(item);
-//        } else {
-//            ui->tree_widget->expandItem(item);
-//        }
-//    } else {
-//        it->setText(0, it->root_->value_string().c_str());
-//    }
-}
+    using namespace bl::palette;
 
+    auto *it = dynamic_cast<NBTTreeItem *>(item);
+    if (!it || !it->root_) { //正常来说不会出现
+        QMessageBox::information(nullptr, "信息", "当前nbt已损坏", QMessageBox::Yes, QMessageBox::Yes);
+        return;
+    }
+    auto t = it->root_->type();
+    if (t == bl::palette::Compound || t == bl::palette::List) {
+        if (it->isExpanded()) {
+            ui->tree_widget->expandItem(it);
+        } else {
+            ui->tree_widget->collapseItem(it);
+        }
+        return;
+    }
+
+    QInputDialog d;
+    d.setLabelText(it->root_->key().c_str());
+    d.setOkButtonText("确定");
+    d.setCancelButtonText("取消");
+    d.resize(600, 400);
+
+    auto *r = it->root_;
+    if (t == bl::palette::String) {
+        d.setWindowTitle("编辑字符串");
+        d.setTextValue(it->root_->value_string().c_str());
+        d.setInputMode(QInputDialog::InputMode::TextInput);
+    } else if (t == Float || t == Double) {
+
+        if (t == Float) {
+            d.setDoubleRange(std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+            d.setDoubleValue(dynamic_cast<float_tag *>(r)->value);
+        } else {
+            d.setDoubleRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
+            d.setDoubleValue(dynamic_cast<double_tag *>(r)->value);
+        }
+        d.setWindowTitle("编辑浮点数");
+        d.setInputMode(QInputDialog::InputMode::DoubleInput);
+
+        d.setDoubleDecimals(10);
+    } else {
+        d.setWindowTitle("编辑整数");
+        d.setInputMode(QInputDialog::InputMode::IntInput);
+        int min{INT32_MIN};
+        int max{INT32_MAX};
+        if (t == bl::palette::Byte) {
+            min = 0; //后面可能要改成符号数
+            max = 255;
+        } else if (t == bl::palette::Short) {
+            min = INT16_MIN;
+            max = INT16_MAX;
+        }
+        d.setIntRange(min, max);
+        d.setIntValue(QString(r->value_string().c_str()).toInt());
+    }
+    auto ok = d.exec();
+    if (!ok)return;
+
+    switch (it->root_->type()) {
+        case Byte:
+            dynamic_cast<byte_tag *>(r)->value = static_cast<uint8_t>(d.intValue());
+            break;
+        case Short:
+            dynamic_cast<short_tag *>(r)->value = static_cast<int16_t>(d.intValue());
+            break;
+        case Int:
+            dynamic_cast<int_tag *>(r)->value = static_cast<int32_t>(d.intValue());
+            break;
+        case Long:
+            dynamic_cast<long_tag *>(r)->value = static_cast<int64_t>(d.intValue());
+            break;
+        case Float:
+            dynamic_cast<float_tag *>(r)->value = static_cast<float >(d.doubleValue());
+            break;
+        case Double:
+            dynamic_cast<double_tag *>(r)->value = static_cast<double >(d.doubleValue());
+            break;
+        case String:
+            dynamic_cast<string_tag *>(r)->value = d.textValue().toStdString();
+            break;
+        case List:
+        case Compound:
+        case LEN:
+        case End:
+            break;
+    }
+    it->setText(0, it->getRawText());
+}
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                               const std::function<QString(bl::palette::compound_tag *)> &namer,

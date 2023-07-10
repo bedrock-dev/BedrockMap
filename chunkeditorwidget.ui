@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -38,6 +41,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="locate_btn">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>定位</string>
        </property>
@@ -45,6 +54,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>加载数据</string>
        </property>
@@ -52,6 +67,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="close_btn">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>关闭</string>
        </property>
@@ -62,7 +83,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
@@ -75,7 +96,7 @@
           <widget class="QLineEdit" name="terrain_level_edit">
            <property name="maximumSize">
             <size>
-             <width>400</width>
+             <width>100</width>
              <height>16777215</height>
             </size>
            </property>
@@ -93,6 +114,12 @@
          </item>
          <item>
           <widget class="QPushButton" name="terrain_goto_level_btn">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>确定</string>
            </property>

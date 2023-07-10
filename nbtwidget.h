@@ -80,9 +80,6 @@ private slots:
 
 //    void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-    void on_tree_widget_itemChanged(QTreeWidgetItem *item, int column);
-
-
     void on_save_btn_clicked();
 
     void prepareTreeWidgetMenu(const QPoint &pos);

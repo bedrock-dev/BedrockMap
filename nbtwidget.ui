@@ -28,6 +28,12 @@
      </item>
      <item>
       <widget class="QLineEdit" name="search_edit">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -48,6 +54,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="load_btn">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>加载</string>
        </property>
@@ -55,6 +67,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="save_btn">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="text">
         <string>另存为</string>
        </property>
@@ -62,6 +80,12 @@
      </item>
      <item>
       <widget class="QCheckBox" name="multi_select_checkbox">
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+       </property>
        <property name="text">
         <string>多选</string>
        </property>
@@ -69,6 +93,12 @@
      </item>
      <item>
       <widget class="QCheckBox" name="modify_checkbox">
+       <property name="styleSheet">
+        <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+       </property>
        <property name="text">
         <string>数据修改</string>
        </property>

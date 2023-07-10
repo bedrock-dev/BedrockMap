@@ -58,6 +58,9 @@ set(PROJECT_SOURCES
         iconmanager.cpp
         iconmanager.h
 
+        qdarkstyle/dark/style.qrc
+        qdarkstyle/light/style.qrc
+
         )
 
 add_executable(BedrockMap ${PROJECT_SOURCES})

@@ -133,14 +133,10 @@ void LoadRegionTask::run() {
 
                         }
                     }
-//                    load actors
-                    auto &actors = chunk->get_actor_list();
-                    for (auto &ac: actors) {
-                        auto *actor = this->level_->load_actor(ac);
-                        if (actor) {
-                            region->actors_[actor->identifier()].push_back(actor->pos());
-                        }
-                        delete actor;
+
+
+                    for (auto &ac: chunk->entities()) {
+                        region->actors_[ac->identifier()].push_back(ac->pos());
                     }
 
                 } else {

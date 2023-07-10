@@ -27,18 +27,18 @@ namespace {
             return nullptr;
         }
 
-        auto *masked = new QImage(20, 20, QImage::Format_RGBA8888);
+        auto *masked = new QImage(18, 18, QImage::Format_RGBA8888);
         auto conv = [](int x, int z, QImage *mask, const QImage *origin) {
-            int cx = x - 2;
-            int cz = z - 2;
+            int cx = x - 1;
+            int cz = z - 1;
 
 
             if (cx >= 0 && cx < 16 && cz >= 0 && cz < 16 && origin->pixelColor(cx, cz).alpha() != 0) {
                 mask->setPixelColor(x, z, origin->pixelColor(cx, cz).rgba());
             } else {
                 int alpha{0};
-                for (int i = -2; i <= 2; i++) {
-                    for (int j = -2; j <= 2; j++) {
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
 //                        范围内有像素
                         int nx = cx + i;
                         int nz = cz + j;
@@ -50,8 +50,8 @@ namespace {
                 mask->setPixelColor(x, z, QColor(255, 255, 255, alpha));
             }
         };
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 20; j++) {
+        for (int i = 0; i < 18; i++) {
+            for (int j = 0; j < 18; j++) {
                 conv(i, j, masked, &img);
             }
         }

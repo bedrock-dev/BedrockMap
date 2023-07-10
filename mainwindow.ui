@@ -21,7 +21,7 @@
   </property>
   <widget class="QWidget" name="central_widget">
    <property name="styleSheet">
-    <string notr="true">background:url(:/res/bg.jpg);</string>
+    <string notr="true"/>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
@@ -39,10 +39,8 @@
        <bool>false</bool>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 28pt;
-border: none;
-background-color: rgba(255, 255, 255, 0);
-margin: 100px;</string>
+       <string notr="true">background-color: rgba(255, 255, 255, 0);
+border: none</string>
       </property>
       <property name="text">
        <string>未打开存档</string>
@@ -59,6 +57,12 @@ margin: 100px;</string>
         <enum>Qt::Horizontal</enum>
        </property>
        <widget class="QWidget" name="control_panel_widget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
@@ -79,6 +83,12 @@ margin: 100px;</string>
            </property>
            <item>
             <widget class="QCheckBox" name="grid_checkbox">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+             </property>
              <property name="text">
               <string>网格</string>
              </property>
@@ -86,6 +96,12 @@ margin: 100px;</string>
            </item>
            <item>
             <widget class="QCheckBox" name="text_checkbox">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+             </property>
              <property name="text">
               <string>文本</string>
              </property>
@@ -225,6 +241,12 @@ margin: 100px;</string>
              </property>
              <item>
               <widget class="QCheckBox" name="enable_layer_checkbox">
+               <property name="styleSheet">
+                <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+               </property>
                <property name="text">
                 <string>选层</string>
                </property>
@@ -330,6 +352,12 @@ margin: 100px;</string>
            </item>
            <item>
             <widget class="QCheckBox" name="debug_checkbox">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+             </property>
              <property name="text">
               <string>地图调试</string>
              </property>
@@ -337,6 +365,12 @@ margin: 100px;</string>
            </item>
            <item>
             <widget class="QCheckBox" name="enable_chunk_edit_check_box">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+             </property>
              <property name="text">
               <string>数据修改</string>
              </property>
@@ -344,6 +378,12 @@ margin: 100px;</string>
            </item>
            <item>
             <widget class="QCheckBox" name="global_nbt_checkbox">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+             </property>
              <property name="text">
               <string>全局NBT窗口</string>
              </property>
@@ -367,7 +407,7 @@ margin: 100px;</string>
         </layout>
        </widget>
        <widget class="QWidget" name="map_widget" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,10">
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,40">
          <item>
           <widget class="QWidget" name="map_buttom_toolbar_widget" native="true">
            <property name="autoFillBackground">
@@ -391,6 +431,12 @@ margin: 100px;</string>
             </property>
             <item>
              <widget class="QPushButton" name="screenshot_btn">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="text">
                <string>截图</string>
               </property>
@@ -438,6 +484,12 @@ margin: 100px;</string>
             </item>
             <item>
              <widget class="QPushButton" name="goto_btn">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="text">
                <string>前往</string>
               </property>
@@ -452,7 +504,7 @@ margin: 100px;</string>
         </layout>
        </widget>
        <widget class="QWidget" name="verticalLayoutWidget_2">
-        <layout class="QVBoxLayout" name="empty_layout"/>
+        <layout class="QVBoxLayout" name="empty_chunk_editor_layout"/>
        </widget>
       </widget>
       <widget class="QWidget" name="global_nbt_pannel" native="true">
@@ -481,8 +533,14 @@ margin: 100px;</string>
               <property name="leftMargin">
                <number>12</number>
               </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
               <property name="rightMargin">
-               <number>12</number>
+               <number>14</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_3">
@@ -499,6 +557,12 @@ margin: 100px;</string>
               </item>
               <item>
                <widget class="QPushButton" name="save_leveldat_btn">
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>保存level.dat文件</string>
                 </property>
@@ -527,8 +591,14 @@ margin: 100px;</string>
               <property name="leftMargin">
                <number>12</number>
               </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
               <property name="rightMargin">
-               <number>12</number>
+               <number>14</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_4">
@@ -545,6 +615,12 @@ margin: 100px;</string>
               </item>
               <item>
                <widget class="QPushButton" name="save_players_btn">
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>保存玩家数据</string>
                 </property>
@@ -573,8 +649,14 @@ margin: 100px;</string>
               <property name="leftMargin">
                <number>12</number>
               </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
               <property name="rightMargin">
-               <number>12</number>
+               <number>14</number>
+              </property>
+              <property name="bottomMargin">
+               <number>6</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_5">
@@ -591,6 +673,12 @@ margin: 100px;</string>
               </item>
               <item>
                <widget class="QPushButton" name="save_village_btn">
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>保存村庄数据</string>
                 </property>
