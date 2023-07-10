@@ -152,5 +152,40 @@
         <file>res/entity/leash_knot.png</file>
         <file>res/entity/magma_cube.png</file>
         <file>res/entity/wither_skeleton.png</file>
+        <file>res/block_actor/beacon.png</file>
+        <file>res/block_actor/bee-nest.png</file>
+        <file>res/block_actor/bell.png</file>
+        <file>res/block_actor/campfire.png</file>
+        <file>res/block_actor/chest.png</file>
+        <file>res/block_actor/dispenser.png</file>
+        <file>res/block_actor/furnace.png</file>
+        <file>res/block_actor/hopper.png</file>
+        <file>res/block_actor/jigsaw.png</file>
+        <file>res/block_actor/lectern.png</file>
+        <file>res/block_actor/lodestone.png</file>
+        <file>res/block_actor/piston.png</file>
+        <file>res/block_actor/sand.png</file>
+        <file>res/block_actor/spore-blossom.png</file>
+        <file>res/block_actor/banner.png</file>
+        <file>res/block_actor/bed.png</file>
+        <file>res/block_actor/brewingstand.png</file>
+        <file>res/block_actor/commandblock.png</file>
+        <file>res/block_actor/comparator.png</file>
+        <file>res/block_actor/conduit.png</file>
+        <file>res/block_actor/daylighdetector.png</file>
+        <file>res/block_actor/endgateway.png</file>
+        <file>res/block_actor/jukebox.png</file>
+        <file>res/block_actor/movingblock.png</file>
+        <file>res/block_actor/netherreactorcore.png</file>
+        <file>res/block_actor/sculksensor.png</file>
+        <file>res/block_actor/shulkerbox.png</file>
+        <file>res/block_actor/sign.png</file>
+        <file>res/block_actor/skeletonskull.png</file>
+        <file>res/block_actor/enchanttable.png</file>
+        <file>res/block_actor/barrel.png</file>
+        <file>res/block_actor/calibratedsculksensor.png</file>
+        <file>res/block_actor/flowerpot.png</file>
+        <file>res/block_actor/pistonarm.png</file>
+        <file>res/block_actor/mobspawner.png</file>
     </qresource>
 </RCC>

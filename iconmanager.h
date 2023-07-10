@@ -19,10 +19,7 @@ QImage *PlayerIcon();
 
 QImage *VillagerIcon(bl::village_key::key_type t);
 
-QImage *PoiIcon();
-
-QImage *BlockActorIcon(const std::string &key);
-
+QImage *BlockActorIcon(const QString &key);
 
 #endif //BEDROCKMAP_ICONMANAGER_H
 

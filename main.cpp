@@ -13,7 +13,7 @@
 int main(int argc, char *argv[]) {
     InitIcons();
     QApplication a(argc, argv);
-    QFile f(":/qdarkstyle/light/style.qss");
+    QFile f(":/qdarkstyle/dark/style.qss");
     if (!f.exists()) {
         printf("Unable to set stylesheet, file not found\n");
     } else {

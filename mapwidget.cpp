@@ -16,13 +16,13 @@
 #include <QRgb>
 #include <QVector>
 #include <cmath>
+#include <QFontMetrics>
 
 #include "color.h"
 #include "config.h"
 #include "mainwindow.h"
 
 namespace {
-
 // QImage biomeChunkImage;
 
 }  // namespace
@@ -48,18 +48,33 @@ void MapWidget::showContextMenu(const QPoint &p) {
         auto pos = this->getCursorBlockPos();
         // for single chunk
         auto blockInfo = this->mw_->get_world()->getBlockTips(pos, static_cast<int>(this->dim_type_));
-        QAction copyBlockName("Copy block name: " + QString(blockInfo.block_name.c_str()), this);
-        QAction copyBiomeName("Copy biome ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
+        QAction copyBlockName("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
+        QAction copyBiomeName("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
+        QAction copyHeight("复制高度信息: " + QString::number(blockInfo.height), this);
         QAction copyTpCommand(
-                "Copy tp command: " + QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)),
+                "复制TP命令: " + QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)),
                 this);
-        QAction openInChunkEditor("Open in chunk editor", this);
+        QAction openInChunkEditor("在区块编辑器中打开", this);
         connect(&openInChunkEditor, SIGNAL(triggered()), this, SLOT(openChunkEditor()));
         contextMenu.addAction(&copyBlockName);
         contextMenu.addAction(&copyBiomeName);
+        contextMenu.addAction(&copyHeight);
         contextMenu.addAction(&openInChunkEditor);
         contextMenu.exec(mapToGlobal(p));
     }
+}
+
+bl::block_pos MapWidget::getCursorBlockPos() {
+    auto cursor = this->mapFromGlobal(QCursor::pos());
+
+    auto [mi, ma, render] = this->getRenderRange(this->camera_);
+
+    int rx = cursor.x() - render.x();
+    int ry = cursor.y() - render.y();
+
+    int x = rx / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).x;
+    int y = ry / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).z;
+    return bl::block_pos{x, 0, y};
 }
 
 void MapWidget::paintEvent(QPaintEvent *event) {
@@ -80,80 +95,52 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     if (draw_actors_)this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
     if (render_grid_) this->drawGrid(event, &p);
-    if (render_text_) this->drawChunkPos(event, &p);
+    if (render_text_) this->drawChunkPosText(event, &p);
     if (render_debug_) this->drawDebugWindow(event, &p);
     this->drawSelectArea(event, &p);
 }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
     static QPoint lastMove;
-
     if (event->buttons() & Qt::LeftButton) {
         if (this->dragging_) {
-            //按住了ctrl
-            if (this->CTRL_pressed_) {
-                this->select_max_ = this->getCursorBlockPos().to_chunk_pos();
-            } else {
-                //没有按住就滑动
-                this->origin_ += QPoint{event->x() - lastMove.x(), event->y() - lastMove.y()};
-            }
+            this->origin_ += QPoint{event->x() - lastMove.x(), event->y() - lastMove.y()};
+            this->update();
         } else {
-            //刚开始拖动
             this->dragging_ = true;
-            if (this->CTRL_pressed_) {
-                this->has_selected_ = true;
-                this->select_min_ = this->getCursorBlockPos().to_chunk_pos();
-            }
         }
         lastMove = {event->x(), event->y()};
-        this->update();
-
+    } else if (event->buttons() & Qt::MiddleButton) {
+        if (!selecting_) {
+            this->select_min_ = getCursorBlockPos().to_chunk_pos();
+            this->selecting_ = true;
+            this->has_selected_ = true;
+        } else {
+            this->select_max_ = getCursorBlockPos().to_chunk_pos();
+        }
     } else if (event->buttons() & Qt::RightButton) {
-        // nothing
-        // todo: Select
+        //pass
     } else {
         auto p = this->getCursorBlockPos();
         emit this->mouseMove(p.x, p.z);
     }
 }
 
-bl::block_pos MapWidget::getCursorBlockPos() {
-    auto cursor = this->mapFromGlobal(QCursor::pos());
-
-    auto [mi, ma, render] = this->getRenderRange(this->camera_);
-
-    int rx = cursor.x() - render.x();
-    int ry = cursor.y() - render.y();
-
-    int x = rx / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).x;
-    int y = ry / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).z;
-    return bl::block_pos{x, 0, y};
-}
-
 
 void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->dragging_ = false;
+    } else if (event->button() == Qt::MiddleButton) {
+        this->selecting_ = false;
     }
 }
 
 void MapWidget::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::RightButton) {
+    if (event->buttons() & Qt::RightButton) {
         this->showContextMenu(this->mapFromGlobal(QCursor::pos()));
     }
 }
 
-void MapWidget::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Control) {
-        CTRL_pressed_ = true;
-    }
-}
-
-void MapWidget::keyReleaseEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Control) {
-        CTRL_pressed_ = false;
-    }
-}
 
 void MapWidget::wheelEvent(QWheelEvent *event) {
     auto angle = event->angleDelta().y();
@@ -166,28 +153,30 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
 
     auto cursor = this->mapFromGlobal(QCursor::pos());
     double ratio = this->bw_ * 1.0 / lastBW;
-    this->origin_.setX((this->origin_.x() - cursor.x()) * ratio + cursor.x());
-    this->origin_.setY((this->origin_.y() - cursor.y()) * ratio + cursor.y());
+    this->origin_.setX(static_cast<int>((this->origin_.x() - cursor.x()) * ratio + cursor.x()));
+    this->origin_.setY(static_cast<int>((this->origin_.y() - cursor.y()) * ratio + cursor.y()));
     this->update();
 }
 
 void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
 
     QFont font("Consolas", 8);
+    QFontMetrics fm(font);
     auto dbgInfo = this->mw_->get_world()->debug_info();
-    const int font_height = 24;
-    const int font_width = 12;
 
     int max_len = 1;
+
     for (auto &i: dbgInfo) {
-        max_len = std::max(max_len, i.size());
+        max_len = std::max(max_len, fm.width(i));
     }
-    painter->fillRect(QRectF(0, 0, max_len * font_width + 20, dbgInfo.size() * font_height + 20),
+
+    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * dbgInfo.size())),
                       QBrush(QColor(255, 255, 255, 150)));
     painter->setFont(font);
+    painter->setPen(QPen(QColor(0, 0, 0)));
     int i = 0;
     for (auto &s: dbgInfo) {
-        painter->drawText(QPoint(10, i * font_height + 20), s);
+        painter->drawText(QPoint(5, i * fm.height()), s);
         i++;
     }
 }
@@ -283,18 +272,18 @@ QRect MapWidget::getRenderSelectArea() {
     return x;
 }
 
-void MapWidget::drawChunkPos(QPaintEvent *event, QPainter *painter) {
-    QFont font("Consolas", 10);
+void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
+    QFont font("Consolas", 8);
+    QFontMetrics fm(font);
     painter->setFont(font);
     QPen pen;
     painter->setPen(pen);
-    const int DIG = std::max(1, 32 / this->bw_);
 
-    this->forEachChunkInCamera([event, this, painter, DIG, &pen](const bl::chunk_pos &ch, const QPoint &p) {
+    this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
         if ((ch.x % 16 == 0 && ch.z % 16 == 0) || this->bw_ >= 8) {
             auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
-            auto rect = QRect{p.x() + 2, p.y() + 2, text.size() * 16, 40};
-            painter->fillRect(rect, QBrush(QColor(255, 255, 255, 140)));
+            auto rect = QRect{p.x() + 2, p.y() + 2, fm.width(text) + 4, fm.height() + 4};
+            painter->fillRect(rect, QBrush(QColor(255, 255, 255, 90)));
             painter->drawText(rect, Qt::AlignCenter, text);
         }
     });
@@ -302,7 +291,6 @@ void MapWidget::drawChunkPos(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-
         this->drawOneChunk(event, painter, ch, p, this->mw_->get_world()->slimeChunk(ch));
     });
 }

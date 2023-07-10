@@ -23,7 +23,6 @@ public:
         Biome = 0, Terrain = 1, Height = 2
     };
 
-
     enum DimType {
         OverWorld = 0, Nether = 1, TheEnd = 2
     };
@@ -40,15 +39,12 @@ public:
 
     void paintEvent(QPaintEvent *event) override;
 
+    //mouse event
     void mouseMoveEvent(QMouseEvent *event) override;
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
     void mousePressEvent(QMouseEvent *event) override;
-
-    void keyPressEvent(QKeyEvent *event) override;
-
-    void keyReleaseEvent(QKeyEvent *event) override;
 
     void wheelEvent(QWheelEvent *event) override;
 
@@ -140,7 +136,7 @@ private:
 
     void drawGrid(QPaintEvent *event, QPainter *p);
 
-    void drawChunkPos(QPaintEvent *event, QPainter *p);
+    void drawChunkPosText(QPaintEvent *event, QPainter *painter);
 
     void drawSlimeChunks(QPaintEvent *event, QPainter *p);
 
@@ -172,7 +168,7 @@ private:
 
     // operation control
     bool dragging_{false};
-    bool CTRL_pressed_{false};
+    bool selecting_{false};
     //
 
     MainWindow *mw_{nullptr};

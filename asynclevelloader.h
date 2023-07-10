@@ -23,6 +23,7 @@ class RenderFilter;
 struct BlockTipsInfo {
     std::string block_name;
     bl::biome biome;
+    int height;
 };
 
 struct chunk_region {

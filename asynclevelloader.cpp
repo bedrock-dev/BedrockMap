@@ -98,9 +98,10 @@ void LoadRegionTask::run() {
         }
     }
 
+    const auto IMG_WIDTH = cfg::RW << 4;
     if (region->valid) {  //尝试烘焙
-        region->biome_bake_image_ = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_RGBA8888);
-        region->terrain_bake_image_ = new QImage(16 * cfg::RW, 16 * cfg::RW, QImage::Format_RGBA8888);
+        region->biome_bake_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+        region->terrain_bake_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
                 auto *chunk = chunks_[rw][rh];
@@ -114,15 +115,18 @@ void LoadRegionTask::run() {
                             if (filter_->enable_layer_) {
                                 auto [min_y, max_y] = this->pos_.get_y_range(chunk->get_version());
                                 if (filter_->layer_ >= min_y && filter_->layer_ <= max_y) {
+                                    tips.height = filter_->layer_;
                                     tips.biome = chunk->get_biome(i, filter_->layer_, j);
                                     tips.block_name = chunk->get_block(i, filter_->layer_, j).name;
                                     block_color = chunk->get_block_color(i, filter_->layer_, j);
                                 }
                             } else {
+                                tips.height = chunk->get_height(i, j);
                                 tips.biome = chunk->get_top_biome(i, j);
                                 tips.block_name = chunk->get_top_block(i, j).name;
                                 block_color = chunk->get_top_block_color(i, j);
                             }
+
                             auto biome_color = bl::get_biome_color(tips.biome);
                             region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                      QColor(biome_color.r, biome_color.g,
@@ -130,10 +134,8 @@ void LoadRegionTask::run() {
 
                             auto terrain_color = QColor(block_color.r, block_color.g, block_color.b, block_color.a);
                             region->terrain_bake_image_->setPixelColor(i + (rw << 4), j + (rh << 4), terrain_color);
-
                         }
                     }
-
 
                     for (auto &ac: chunk->entities()) {
                         region->actors_[ac->identifier()].push_back(ac->pos());
@@ -144,6 +146,8 @@ void LoadRegionTask::run() {
                         for (int j = 0; j < 16; j++) {
                             const int x = i + (rw << 4);
                             const int y = j + (rh << 4);
+                            auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
+                            tips.height = -128;
                             const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
                             int index = (x / (cfg::RW * 8) + y / (cfg::RW * 8)) % 2;
                             region->terrain_bake_image_->setPixelColor(x, y,
@@ -152,8 +156,40 @@ void LoadRegionTask::run() {
                         }
                     }
                 }
-                delete chunk;
             }
+        }
+    }
+
+    //烘焙
+    const int SHADOW = 120;
+    for (int i = 0; i < IMG_WIDTH; i++) {
+        for (int j = 0; j < IMG_WIDTH; j++) {
+            auto current_height = region->tips_info_[i][j].height;
+            if (current_height == -128)continue;
+            int sum = current_height * 2;
+            if (i == 0 && j != 0) {
+                sum = region->tips_info_[i][j - 1].height * 2;
+            } else if (i != 0 && j == 0) {
+                sum = region->tips_info_[i - 1][j].height * 2;
+            } else if (i != 0 && j != 0) {
+                sum = region->tips_info_[i][j - 1].height + region->tips_info_[i - 1][j].height;
+            }
+
+
+            if (current_height * 2 > sum) {
+                region->terrain_bake_image_->setPixelColor(i, j,
+                                                           region->terrain_bake_image_->pixelColor(i, j).light(SHADOW));
+            } else if (current_height * 2 < sum) {
+                region->terrain_bake_image_->setPixelColor(i, j,
+                                                           region->terrain_bake_image_->pixelColor(i, j).dark(SHADOW));
+            }
+        }
+    }
+
+
+    for (auto &chs: chunks_) {
+        for (auto &ch: chs) {
+            delete ch;
         }
     }
     emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region);

@@ -26,8 +26,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow {
 Q_OBJECT
 
-    virtual void keyPressEvent(QKeyEvent *event) override;
-
 public:
     MainWindow(QWidget *parent = nullptr);
 

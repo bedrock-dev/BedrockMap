@@ -1,14 +1,15 @@
 #include "chunkeditorwidget.h"
 
 #include <QMessageBox>
+#include <QMouseEvent>
+#include <QToolTip>
 #include <QtDebug>
 
 #include "chunksectionwidget.h"
+#include "iconmanager.h"
+#include "mainwindow.h"
 #include "nbtwidget.h"
 #include "ui_chunkeditorwidget.h"
-#include <QToolTip>
-#include <QMouseEvent>
-#include "mainwindow.h"
 
 namespace {
     void WARN(const QString &msg) {
@@ -59,38 +60,55 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         this->chunk_section_->set_chunk(chunk);
         this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
         this->chunk_section_->setYLevel(0);
-        this->block_entity_editor_->load_new_data(chunk_->block_entities(),
-                                                  [](bl::palette::compound_tag *nbt) {
-                                                      using namespace bl::palette;
-                                                      if (!nbt) return QString();
-                                                      auto id_tag = nbt->get("id");
-                                                      QString name = "unknown";
-                                                      if (id_tag && id_tag->type() == tag_type::String) {
-                                                          name = dynamic_cast<string_tag *>(id_tag)->value.c_str();
-                                                      }
 
-                                                      QString x = "#";
-                                                      QString y = "#";
-                                                      QString z = "#";
-                                                      auto x_tag = nbt->get("x");
-                                                      auto y_tag = nbt->get("y");
-                                                      auto z_tag = nbt->get("z");
-                                                      if (x_tag && x_tag->type() == tag_type::Int) {
-                                                          x = QString::number(dynamic_cast<int_tag *>(x_tag)->value);
-                                                      }
+        auto block_entity_namer = [](bl::palette::compound_tag *nbt) {
+            using namespace bl::palette;
+            if (!nbt) return QString();
+            auto id_tag = nbt->get("id");
+            QString name = "unknown";
+            if (id_tag && id_tag->type() == tag_type::String) {
+                name = dynamic_cast<string_tag *>(id_tag)->value.c_str();
+            }
 
-                                                      if (y_tag && y_tag->type() == tag_type::Int) {
-                                                          y = QString::number(dynamic_cast<int_tag *>(y_tag)->value);
-                                                      }
+            return name;
 
-                                                      if (z_tag && z_tag->type() == tag_type::Int) {
-                                                          z = QString::number(dynamic_cast<int_tag *>(z_tag)->value);
-                                                      }
-                                                      return name + "[" + x + "," + y + "," + z + "]";
-                                                  }, {});
+//            QString x = "#";
 
-        this->pending_tick_editor_->load_new_data(chunk_->pending_ticks(),
-                                                  [](auto *nbt) { return QString(); }, {});
+//            QString y = "#";
+//            QString z = "#";
+//            auto x_tag = nbt->get("x");
+//            auto y_tag = nbt->get("y");
+//            auto z_tag = nbt->get("z");
+//            if (x_tag && x_tag->type() == tag_type::Int) {
+//                x = QString::number(dynamic_cast<int_tag *>(x_tag)->value);
+//            }
+//
+//            if (y_tag && y_tag->type() == tag_type::Int) {
+//                y = QString::number(dynamic_cast<int_tag *>(y_tag)->value);
+//            }
+//
+//            if (z_tag && z_tag->type() == tag_type::Int) {
+//                z = QString::number(dynamic_cast<int_tag *>(z_tag)->value);
+//            }
+//            return name + "[" + x + "," + y + "," + z + "]";
+        };
+
+        auto bes = chunk_->block_entities();
+        std::vector<QImage *> icons;
+        for (auto &b: bes) {
+            auto id_tag = b->get("id");
+            QString name = "unknown";
+            if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
+                name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
+            }
+            icons.push_back(BlockActorIcon(name.toLower().replace("minecraft:", "")));
+        }
+
+        this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, icons);
+
+        // pt
+        this->pending_tick_editor_->load_new_data(chunk_->pending_ticks(), [](auto *nbt) { return QString(); }, {});
+
     } else {
         QMessageBox::information(nullptr, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
     }

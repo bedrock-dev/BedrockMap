@@ -66,8 +66,8 @@ namespace {
 
 NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->setupUi(this);
-    ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 5);
+    ui->splitter->setStretchFactor(0, 2);
+    ui->splitter->setStretchFactor(1, 3);
     QFont f;
     f.setFamily("JetBrainsMono NFM");
     f.setPointSize(10);
@@ -99,11 +99,17 @@ void NbtWidget::on_load_btn_clicked() {
         return;
     }
     auto palette = bl::palette::read_palette_to_end(data.data(), data.size());
+
     if (palette.empty()) {
         QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
-    this->load_new_data(palette, [](const bl::palette::compound_tag *) { return QString(); }, {});
+    std::vector<std::string> default_labels;
+    for (int i = 0; i < palette.size(); i++) {
+        default_labels.push_back(std::to_string(i));
+    }
+    this->load_new_data(palette, [](const bl::palette::compound_tag *) { return QString(); }, default_labels, {});
+    for (auto &p: palette)delete p;
 }
 
 
@@ -228,14 +234,13 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     d.setOkButtonText("确定");
     d.setCancelButtonText("取消");
     d.resize(600, 400);
-
+    d.setWindowIcon(it->icon(0));
     auto *r = it->root_;
     if (t == bl::palette::String) {
         d.setWindowTitle("编辑字符串");
         d.setTextValue(it->root_->value_string().c_str());
         d.setInputMode(QInputDialog::InputMode::TextInput);
     } else if (t == Float || t == Double) {
-
         if (t == Float) {
             d.setDoubleRange(std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
             d.setDoubleValue(dynamic_cast<float_tag *>(r)->value);
@@ -406,8 +411,7 @@ void NbtWidget::refreshLabel() {
         }
         if (item->isSelected())selected++;
     }
-    ui->item_num_label->setText(
-            QString("共 %1 项，已选中 %2 项").arg(QString::number(notHidden), QString::number(selected)));
+    ui->item_num_label->setText(QString("%1 / %2").arg(QString::number(notHidden), QString::number(selected)));
 }
 
 void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }

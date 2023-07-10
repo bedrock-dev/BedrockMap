@@ -18,39 +18,33 @@
 #include "palette.h"
 
 namespace {
-void WARN(const QString &msg) { QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes); }
+    void WARN(const QString &msg) { QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes); }
 
-void INFO(const QString &msg) { QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes); }
+    void INFO(const QString &msg) {
+        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
 
-QRect centerMainWindowGeometry(double rate) {
-    // finished adjust size
-    auto const rec = QApplication::desktop()->screenGeometry();
-    auto const height = static_cast<int>(rec.height() * rate);
-    auto const width = static_cast<int>(rec.width() * rate);
-    return {(rec.width() - width) / 2, (rec.height() - height) / 2, width, height};
-}
+    QRect centerMainWindowGeometry(double rate) {
+        // finished adjust size
+        auto const rec = QApplication::desktop()->screenGeometry();
+        auto const height = static_cast<int>(rec.height() * rate);
+        auto const width = static_cast<int>(rec.width() * rate);
+        return {(rec.width() - width) / 2, (rec.height() - height) / 2, width, height};
+    }
 
 }  // namespace
 
-void MainWindow::keyPressEvent(QKeyEvent *event) {}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
     this->map_ = new MapWidget(this, nullptr);
     this->map_->gotoBlockPos(0, 0);
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
     ui->map_visual_layout->addWidget(this->map_);
-
-    //    ui->splitter->replaceWidget(2, this->chunk_editor_widget_);
     ui->empty_chunk_editor_layout->addWidget(this->chunk_editor_widget_);
-    //    QVBoxLayout *l = new QVBoxLayout();
-    //    l->addWidget(this->chunk_editor_widget_);
-
-    //    ui->empty_chunk_editor_widget->setLayout(l);
-    ui->splitter->setStretchFactor(0, 2);
+    ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 5);
-    ui->splitter->setStretchFactor(2, 2);
+    this->chunk_editor_widget_->setVisible(false);
 
     // layer btn
     this->layer_btns_ = {{MapWidget::MainRenderType::Biome,   ui->biome_layer_btn},

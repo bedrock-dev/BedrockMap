@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>762</width>
-    <height>997</height>
+    <width>776</width>
+    <height>622</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -64,6 +64,21 @@ border: none</string>
          </size>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
            <property name="spacing">
@@ -110,6 +125,13 @@ border: none</string>
           </layout>
          </item>
          <item>
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QVBoxLayout" name="layer_layout">
            <property name="leftMargin">
             <number>0</number>
@@ -125,16 +147,6 @@ border: none</string>
              <property name="topMargin">
               <number>0</number>
              </property>
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="styleSheet">
-                <string notr="true">font: 12pt;</string>
-               </property>
-               <property name="text">
-                <string>层显示</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </item>
            <item>
@@ -278,6 +290,13 @@ border: none</string>
           </layout>
          </item>
          <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QVBoxLayout" name="object_layout">
            <property name="topMargin">
             <number>20</number>
@@ -285,16 +304,6 @@ border: none</string>
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QLabel" name="label_3">
-             <property name="styleSheet">
-              <string notr="true">font: 12pt;</string>
-             </property>
-             <property name="text">
-              <string>对象显示</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <layout class="QGridLayout" name="gridLayout">
              <property name="topMargin">
@@ -336,20 +345,17 @@ border: none</string>
           </layout>
          </item>
          <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QVBoxLayout" name="setting_layout">
            <property name="topMargin">
             <number>20</number>
            </property>
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="styleSheet">
-              <string notr="true">font: 12pt;</string>
-             </property>
-             <property name="text">
-              <string>设置</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="debug_checkbox">
              <property name="styleSheet">
@@ -408,6 +414,21 @@ border: none</string>
        </widget>
        <widget class="QWidget" name="map_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,40">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
          <item>
           <widget class="QWidget" name="map_buttom_toolbar_widget" native="true">
            <property name="autoFillBackground">
@@ -470,7 +491,14 @@ border: none</string>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="z_edit"/>
+             <widget class="QLineEdit" name="z_edit">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="cursor_pos_label">
@@ -480,7 +508,14 @@ border: none</string>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="x_edit"/>
+             <widget class="QLineEdit" name="x_edit">
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="goto_btn">
@@ -504,43 +539,89 @@ border: none</string>
         </layout>
        </widget>
        <widget class="QWidget" name="verticalLayoutWidget_2">
-        <layout class="QVBoxLayout" name="empty_chunk_editor_layout"/>
+        <layout class="QVBoxLayout" name="empty_chunk_editor_layout">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+        </layout>
        </widget>
       </widget>
       <widget class="QWidget" name="global_nbt_pannel" native="true">
        <layout class="QVBoxLayout" name="global_nbt_layout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>4</number>
+        </property>
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="rightMargin">
+         <number>4</number>
+        </property>
+        <property name="bottomMargin">
+         <number>4</number>
+        </property>
         <item>
          <widget class="QTabWidget" name="global_nbt_layout_2">
+          <property name="tabPosition">
+           <enum>QTabWidget::West</enum>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
-            <string>世界元数据</string>
+            <string>基本</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_5">
+            <property name="spacing">
+             <number>4</number>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
             <property name="topMargin">
-             <number>0</number>
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
             </property>
             <property name="bottomMargin">
-             <number>0</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QWidget" name="level_dat_empty_widget" native="true"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
+              <property name="spacing">
+               <number>4</number>
+              </property>
               <property name="leftMargin">
-               <number>12</number>
+               <number>4</number>
               </property>
               <property name="topMargin">
-               <number>2</number>
+               <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>14</number>
+               <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>6</number>
+               <number>4</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_3">
@@ -577,28 +658,40 @@ border: none</string>
             <string>玩家</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_7">
+            <property name="spacing">
+             <number>4</number>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
             <property name="topMargin">
-             <number>0</number>
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
             </property>
             <property name="bottomMargin">
-             <number>0</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QWidget" name="player_empty_widget" native="true"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="spacing">
+               <number>4</number>
+              </property>
               <property name="leftMargin">
-               <number>12</number>
+               <number>4</number>
               </property>
               <property name="topMargin">
-               <number>2</number>
+               <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>14</number>
+               <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>6</number>
+               <number>4</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_4">
@@ -635,28 +728,40 @@ border: none</string>
             <string>村庄</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_8">
+            <property name="spacing">
+             <number>4</number>
+            </property>
+            <property name="leftMargin">
+             <number>4</number>
+            </property>
             <property name="topMargin">
-             <number>0</number>
+             <number>4</number>
+            </property>
+            <property name="rightMargin">
+             <number>4</number>
             </property>
             <property name="bottomMargin">
-             <number>0</number>
+             <number>4</number>
             </property>
             <item>
              <widget class="QWidget" name="village_empty_widget" native="true"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="spacing">
+               <number>4</number>
+              </property>
               <property name="leftMargin">
-               <number>12</number>
+               <number>4</number>
               </property>
               <property name="topMargin">
-               <number>2</number>
+               <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>14</number>
+               <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>6</number>
+               <number>4</number>
               </property>
               <item>
                <spacer name="horizontalSpacer_5">
@@ -701,7 +806,7 @@ border: none</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>762</width>
+     <width>776</width>
      <height>21</height>
     </rect>
    </property>

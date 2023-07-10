@@ -12,7 +12,7 @@
 
 namespace {
     QMap<QString, QImage *> actor_img_pool;
-    QMap<QString, QImage *> block_actor_icon_pool;
+    QMap<QString, QImage *> block_actor_img_pool;
     QImage *unknown_img;
 
 
@@ -59,8 +59,20 @@ namespace {
         return masked;
     }
 
+    QImage *scale(QImage &img) {
+        auto *res = new QImage(img.width() * 2, img.height() * 2, QImage::Format_RGBA8888);
+        for (int i = 0; i < img.width(); i++) {
+            for (int j = 0; j < img.height(); j++) {
+                auto c = img.pixelColor(i, j);
+                res->setPixelColor(i * 2, j * 2, c);
+                res->setPixelColor(i * 2 + 1, j * 2, c);
+                res->setPixelColor(i * 2, j * 2 + 1, c);
+                res->setPixelColor(i * 2 + 1, j * 2 + 1, c);
+            }
+        }
+        return res;
+    }  // namespace
 }
-
 
 void InitIcons() {
     QDirIterator it(":/res/entity", QDirIterator::Subdirectories);
@@ -71,42 +83,31 @@ void InitIcons() {
         if (masked) {
             actor_img_pool[key] = masked;
         }
-
     }
 
-    //villages
-    /*
-     *    <file>res/village_dwellers.png</file>
-        <file>res/village_info.png</file>
-        <file>res/village_player.png</file>
-        <file>res/village_poi.png</file>
-
-     */
     village_dwellers = new QImage(":/res/village_dwellers.png");
     village_players = new QImage(":/res/village_player.png");
     village_info = new QImage(":/res/village_info.png");
     village_poi = new QImage(":/res/village_poi.png");
     unknown_img = new QImage(":/res/what.png");
 
-    //    QDirIterator it2(":/res/block", QDirIterator::Subdirectories);
-    //
-    //    while (it.hasNext()) {
-    //        auto *img = new QImage(it.next());
-    //        auto key = it.fileName().replace(".png", "");
-    //        qDebug() << key;
-    //        actor_img_pool[key] = img;
-    //    }
-    //
-    //    unknown_img = new QImage(":/res/what.png");
+    QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
+    while (it2.hasNext()) {
+        auto img = QImage(it2.next());
+        auto key = it2.fileName().replace(".png", "");
+        qDebug() << key;
+        block_actor_img_pool[key] = scale(img);
+    }
 }
 
-QImage *PlayerIcon() {
-    return nullptr;
-}
+QImage *PlayerIcon() { return nullptr; }
 
-
-QImage *BlockActorIcon(const std::string &key) {
-    return nullptr;
+QImage *BlockActorIcon(const QString &key) {
+    auto it = block_actor_img_pool.find(key);
+    if (it == block_actor_img_pool.end()) {
+        qDebug() << " unknown key " << key;
+    }
+    return it == block_actor_img_pool.end() ? unknown_img : it.value();
 }
 
 QImage *ActorImage(const QString &key) {
@@ -132,4 +133,3 @@ QImage *VillagerIcon(bl::village_key::key_type t) {
             return unknown_img;
     }
 }
-
