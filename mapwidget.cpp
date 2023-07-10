@@ -332,10 +332,12 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
             for (auto &actor: kv.second) {
                 float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
                 float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
-                const int W = 16;
-                painter->fillRect(QRectF(x - W - 2, y - W - 2, (W + 2) * 2, (W + 2) * 2),
-                                  QBrush(QColor(255, 255, 255, 160)));
-                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 16, 16));
+                const int W = 20;
+                //                painter->fillRect(QRectF(x - W - 2, y - W - 2, (W + 2) * 2, (W + 2) * 2),
+//                                  QBrush(QColor(255, 255, 255, 160)));
+//
+
+                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 20, 20));
             }
         }
     });

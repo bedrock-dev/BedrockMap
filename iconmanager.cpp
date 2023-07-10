@@ -22,15 +22,56 @@ namespace {
     QImage *village_info;
     QImage *village_dwellers;
 
+    QImage *addMask(const QImage &img) {
+        if (img.size() != QSize(16, 16)) {
+            return nullptr;
+        }
+
+        auto *masked = new QImage(20, 20, QImage::Format_RGBA8888);
+        auto conv = [](int x, int z, QImage *mask, const QImage *origin) {
+            int cx = x - 2;
+            int cz = z - 2;
+
+
+            if (cx >= 0 && cx < 16 && cz >= 0 && cz < 16 && origin->pixelColor(cx, cz).alpha() != 0) {
+                mask->setPixelColor(x, z, origin->pixelColor(cx, cz).rgba());
+            } else {
+                int alpha{0};
+                for (int i = -2; i <= 2; i++) {
+                    for (int j = -2; j <= 2; j++) {
+//                        范围内有像素
+                        int nx = cx + i;
+                        int nz = cz + j;
+                        if (nx >= 0 && nx < 16 && nz >= 0 && nz < 16 && origin->pixelColor(nx, nz).alpha() != 0) {
+                            alpha = 220;
+                        }
+                    }
+                }
+                mask->setPixelColor(x, z, QColor(255, 255, 255, alpha));
+            }
+        };
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                conv(i, j, masked, &img);
+            }
+        }
+
+        return masked;
+    }
+
 }
 
 
 void InitIcons() {
     QDirIterator it(":/res/entity", QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        auto *img = new QImage(it.next());
+        auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
-        actor_img_pool[key] = img;
+        auto masked = addMask(img);
+        if (masked) {
+            actor_img_pool[key] = masked;
+        }
+
     }
 
     //villages

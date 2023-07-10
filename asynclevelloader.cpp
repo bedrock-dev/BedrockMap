@@ -120,7 +120,7 @@ void LoadRegionTask::run() {
                                 }
                             } else {
                                 tips.biome = chunk->get_top_biome(i, j);
-//                                tips.block_name = chunk->get_top_block(i, j).name;
+                                tips.block_name = chunk->get_top_block(i, j).name;
                                 block_color = chunk->get_top_block_color(i, j);
                             }
                             auto biome_color = bl::get_biome_color(tips.biome);
