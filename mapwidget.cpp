@@ -53,18 +53,20 @@ void MapWidget::showContextMenu(const QPoint &p) {
     } else {
         auto pos = this->getCursorBlockPos();
         // for single chunk
-        auto blockInfo = this->mw_->get_world()->getBlockTips(pos, static_cast<int>(this->dim_type_));
+        auto blockInfo = this->mw_->levelLoader()->getBlockTips(pos, this->dim_type_);
+
         //block name
+
         QAction copyBlockNameAction("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
         connect(&copyBlockNameAction, &QAction::triggered, this, [cb, &blockInfo] {
             cb->setText(blockInfo.block_name.c_str());
         });
-//biome
+        //biome
         QAction copyBiomeAction("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
         connect(&copyBiomeAction, &QAction::triggered, this, [cb, &blockInfo] {
             cb->setText(QString::number(static_cast<int>(blockInfo.biome)));
         });
-//height
+        //height
         QAction copyHeightAction("复制高度信息: " + QString::number(blockInfo.height), this);
         connect(&copyHeightAction, &QAction::triggered, this, [cb, &blockInfo] {
             cb->setText(QString::number(blockInfo.height));
@@ -171,10 +173,17 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 void MapWidget::wheelEvent(QWheelEvent *event) {
     auto angle = event->angleDelta().y();
     auto lastBW = this->bw_;
-    if (angle > 0 && this->bw_ < 64) {
-        this->bw_++;
+    if (angle > 0) {
+        auto nb = static_cast<int>(this->bw_ * cfg::ZOOM_SPEED);
+        if (nb == this->bw_) nb = bw_ + 1;
+        if (nb > 64) nb = 64;
+        this->bw_ = nb;
+
     } else if (angle < 0 && this->bw_ > 1) {
-        this->bw_--;
+        auto nb = static_cast<int>(this->bw_ / cfg::ZOOM_SPEED);
+        if (nb == this->bw_) nb = bw_ - 1;
+        if (nb < 1) nb = 1;
+        this->bw_ = nb;
     }
 
     auto cursor = this->mapFromGlobal(QCursor::pos());
@@ -188,32 +197,25 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
 
     QFont font("Consolas", 8);
     QFontMetrics fm(font);
-    auto dbgInfo = this->mw_->get_world()->debug_info();
-
+    auto dbgInfo = this->mw_->levelLoader()->debugInfo();
     int max_len = 1;
-
     for (auto &i: dbgInfo) {
         max_len = std::max(max_len, fm.width(i));
     }
 
-    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * dbgInfo.size())),
+    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * (dbgInfo.size() + 1))),
                       QBrush(QColor(255, 255, 255, 150)));
     painter->setFont(font);
     painter->setPen(QPen(QColor(0, 0, 0)));
     int i = 0;
     for (auto &s: dbgInfo) {
-        painter->drawText(QPoint(5, i * fm.height()), s);
+        painter->drawText(QPoint(5, (i + 1) * fm.height()), s);
         i++;
     }
 }
 
-void MapWidget::drawOneChunk(QPaintEvent *event, QPainter *painter, const bl::chunk_pos &pos, const QPoint &start,
-                             QImage *q) const {
-    if (q) painter->drawImage(QRectF(start.x(), start.y(), 16 * this->bw_, 16 * this->bw_), *q, QRect(0, 0, 16, 16));
-}
-
 void
-MapWidget::drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
+MapWidget::drawRegion(QPaintEvent *e, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
     if (img)
         p->drawImage(QRectF(start.x(), start.y(), 16 * this->bw_ * cfg::RW, 16 * this->bw_ * cfg::RW), *img,
                      QRect(0, 0, 16 * cfg::RW, 16 * cfg::RW));
@@ -232,7 +234,6 @@ void MapWidget::forEachChunkInCamera(const std::function<void(const bl::chunk_po
 
 void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos &, const QPoint &)> &f) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
-
     auto reginMin = cfg::c2r(minChunk);
     auto regionMax = cfg::c2r(maxChunk);
 
@@ -321,24 +322,25 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
  * @param painter
  */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
-    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-        this->drawOneChunk(event, painter, ch, p, this->mw_->get_world()->slimeChunk(ch));
+    this->foreachRegionInCamera([event, this, painter](const region_pos &rp, const QPoint &p) {
+        auto top = this->mw_->levelLoader()->bakedSlimeChunkImage(rp);
+        this->drawRegion(event, painter, rp, p, top);
     });
 }
 
 void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
-    this->foreachRegionInCamera([event, this, painter](const region_pos &ch, const QPoint &p) {
-        auto top = this->mw_->get_world()->topBiome(ch);
-        this->drawRegion(event, painter, ch, p, top);
+    this->foreachRegionInCamera([event, this, painter](const region_pos &rp, const QPoint &p) {
+        auto top = this->mw_->levelLoader()->bakedBiomeImage(rp);
+        this->drawRegion(event, painter, rp, p, top);
     });
+
 }
 
 void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
-    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-        auto height = this->mw_->get_world()->topBlock(ch);
-        this->drawRegion(event, painter, ch, p, height);
+    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp, const QPoint &p) {
+        auto height = this->mw_->levelLoader()->bakedTerrainImage(rp);
+        this->drawRegion(event, painter, rp, p, height);
     });
-
 }
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
@@ -360,8 +362,8 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
             p->setPen(QPen(QColor(0, 223, 162), 3));
             p->setBrush(QBrush(QColor(0, 223, 162, 50)));
             p->drawRect(rec);
-            p->setPen(QPen(QColor(255, 255, 255)));
-            p->drawText(x, z + (int) fm.height() + 2, i.key());
+//            p->setPen(QPen(QColor(255, 255, 255)));
+//            p->drawText(x, z + (int) fm.height() + 2, i.key());
         }
     }
 }
@@ -370,23 +372,23 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-        auto actors = this->mw_->get_world()->getActorList(ch);
-        for (auto &kv: actors) {
-            if (!kv.first)continue;
-            for (auto &actor: kv.second) {
-                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
-                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
-                const int W = 18;
-                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
-            }
-        }
+//        auto actors = this->mw_->get_world()->getActorList(ch);
+//        for (auto &kv: actors) {
+//            if (!kv.first)continue;
+//            for (auto &actor: kv.second) {
+//                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
+//                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
+//                const int W = 18;
+//                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
+//            }
+//        }
     });
 }
 
 void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-        auto height = this->mw_->get_world()->height(ch);
-        this->drawOneChunk(event, painter, ch, p, height);
+//        auto height = this->mw_->get_world()->height(ch);
+//        this->drawOneChunk(event, painter, ch, p, height);
     });
 }
 
@@ -398,15 +400,12 @@ void MapWidget::gotoBlockPos(int x, int z) {
     this->update();
 }
 
-//void MapWidget::openChunkEditor() {
-//
-//}
 
 std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
     //需要的参数
     // origin  焦点原点在什么地方
     // bw 像素宽度
-    const int CHUNK_WIDTH = 16 * this->bw_;
+    const int CHUNK_WIDTH = this->bw_ << 4;
     int renderX = (camera.x() - origin_.x()) / CHUNK_WIDTH * CHUNK_WIDTH + origin_.x();
     int renderY = (camera.y() - origin_.y()) / CHUNK_WIDTH * CHUNK_WIDTH + origin_.y();
     if (renderX >= camera.x()) renderX -= CHUNK_WIDTH;

@@ -9,9 +9,11 @@
 #include "asynclevelloader.h"
 #include "iconmanager.h"
 #include "mainwindow.h"
+#include "config.h"
 
 int main(int argc, char *argv[]) {
     InitIcons();
+    cfg::initColorTable();
     QApplication a(argc, argv);
     QFile f(":/qdarkstyle/dark/style.qss");
     if (!f.exists()) {

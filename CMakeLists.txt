@@ -37,11 +37,10 @@ set(PROJECT_SOURCES
         mainwindow.ui
         mapwidget.h
         mapwidget.cpp
-        world.h
-        world.cpp
+
+
         asynclevelloader.h
         asynclevelloader.cpp
-        icon.qrc
         chunkeditorwidget.h
         chunkeditorwidget.cpp
         chunkeditorwidget.ui
@@ -51,16 +50,13 @@ set(PROJECT_SOURCES
         nbtwidget.cpp
         nbtwidget.ui
         config.h
-        #        treeitem.cpp
-        #        treeitem.h
-        #        treemodel.cpp
-        #        treemodel.h
+        config.cpp
         iconmanager.cpp
         iconmanager.h
-
+        
         qdarkstyle/dark/style.qrc
         qdarkstyle/light/style.qrc
-
+        icon.qrc
         )
 
 add_executable(BedrockMap ${PROJECT_SOURCES})

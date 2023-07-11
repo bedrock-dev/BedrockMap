@@ -13,9 +13,8 @@
 #include  <QFutureWatcher>
 #include "nbtwidget.h"
 #include <QDialog>
-
+#include "asynclevelloader.h"
 #include <QMessageBox>
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -31,7 +30,8 @@ public:
 
     ~MainWindow();
 
-    inline world *get_world() { return &this->world_; }
+
+    AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
 public slots:
 
@@ -104,11 +104,11 @@ private:
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
 
-    bool full_map_mode_{false};
-    bool chunk_edit_widget_hided_{true};
-    MapWidget *map_;
+
+    MapWidget *map_widget_;
     ChunkEditorWidget *chunk_editor_widget_;
-    world world_;
+    //data source
+    AsyncLevelLoader *level_loader_{nullptr};
 
     bool write_mode_{false};
 

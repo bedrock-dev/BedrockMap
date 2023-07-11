@@ -10,7 +10,7 @@
 #include <tuple>
 #include "nbtwidget.h"
 #include "bedrock_key.h"
-#include "world.h"
+#include "asynclevelloader.h"
 
 class MainWindow;
 
@@ -120,8 +120,7 @@ private:
     void drawDebugWindow(QPaintEvent *event, QPainter *p);
 
     // draw chunk help
-    void
-    drawOneChunk(QPaintEvent *event, QPainter *p, const bl::chunk_pos &pos, const QPoint &start, QImage *img) const;
+//    void drawOneChunk(QPaintEvent *event, QPainter *p, const bl::chunk_pos &pos, const QPoint &start, QImage *img) const;
 
     void drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const;
 

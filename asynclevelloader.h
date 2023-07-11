@@ -17,13 +17,27 @@
 #include "palette.h"
 
 class AsyncLevelLoader;
+namespace bl {
 
-class RenderFilter;
+    inline uint qHash(const bl::chunk_pos &key, uint seed) {
+        uint hash = 3241;
+        hash = 3457689L * hash + key.x;
+        hash = 8734625L * hash + key.z;
+        hash = 2873465L * hash + key.dim;
+        return hash;
+    }
+}  // namespace bl
+
+struct RenderFilter {
+    bool enable_layer_{false};
+    int layer_ = {0};
+};
+
 
 struct BlockTipsInfo {
-    std::string block_name;
-    bl::biome biome;
-    int height;
+    std::string block_name{"unknown"};
+    bl::biome biome{bl::none};
+    int height{-128};
 };
 
 struct chunk_region {
@@ -36,6 +50,18 @@ struct chunk_region {
     std::unordered_map<std::string, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
+
+
+//struct LayerCacheInfo {
+//    QImage *terrain{nullptr};
+//    QImage *biome{nullptr};
+//    std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
+//    std::unordered_map<QImage *, std::vector<bl::vec3>> actor_list_;
+//
+//    static LayerCacheInfo *fromRegion(chunk_region *r);
+//
+//};
+
 
 template<typename T>
 class TaskBuffer {
@@ -107,9 +133,7 @@ Q_OBJECT
 public:
     AsyncLevelLoader();
 
-    chunk_region *getRegion(const region_pos &p, bool &empty, const RenderFilter *filter);
-
-    void clear_all_cache();
+    void clearAllCache();
 
     bool open(const std::string &path);
 
@@ -117,9 +141,26 @@ public:
 
     bl::bedrock_level &level() { return this->level_; }
 
+    inline bool isOpen() const { return this->loaded_; }
+
 public:
+
+    /*region cache*/
+    QImage *bakedBiomeImage(const region_pos &rp);
+
+    QImage *bakedTerrainImage(const region_pos &rp);
+
+    QImage *bakedHeightImage(const region_pos &rp);
+
+    QImage *bakedSlimeChunkImage(const region_pos &rp);
+
+    BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
+
+
+    /*Modify*/
     bl::chunk *getChunkDirect(const bl::chunk_pos &p);
 
+    //modify
     QFuture<bool> dropChunk(const bl::chunk_pos &min, const ::bl::chunk_pos &max);
 
     bool modifyLeveldat(bl::palette::compound_tag *nbt);
@@ -139,50 +180,27 @@ public:
     modifyChunkActors(const bl::chunk_pos &cp,
                       const std::unordered_map<std::string, bl::palette::compound_tag *> &actors);
 
-public slots:
-
-    void handle_task_finished_task(int x, int z, int dim, chunk_region *chunk);
-
 public:
     ~AsyncLevelLoader() override;
 
-    std::vector<QString> debug_info();
+    std::vector<QString> debugInfo();
+
+private:
+
+    chunk_region *tryGetRegion(const region_pos &p, bool &empty);
 
 private:
     std::atomic_bool loaded_{false};
-
     bl::bedrock_level level_;
-    std::mutex m_;
-
-//    std::unordered_set<region_pos> processing_;
     TaskBuffer<region_pos> processing_;
     std::vector<QCache<region_pos, chunk_region> *> region_cache_;
     std::vector<QCache<region_pos, char> *> invalid_cache_;
+    //主要是缓存图像，计算不是重点
+    QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
+    RenderFilter bake_filter;
+
 };
 
-inline std::vector<QString> AsyncLevelLoader::debug_info() {
-    std::vector<QString> res;
-
-    res.emplace_back("Chunk data cache:");
-
-    for (int i = 0; i < 3; i++) {
-        res.push_back(QString(" - [%1]: %2/%3")
-                              .arg(QString::number(i), QString::number(this->region_cache_[i]->totalCost()),
-                                   QString::number(this->region_cache_[i]->maxCost())));
-    }
-
-    res.emplace_back("Null chunk cache:");
-    for (int i = 0; i < 3; i++) {
-        res.push_back(QString(" - [%1]: %2/%3")
-                              .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
-                                   QString::number(this->invalid_cache_[i]->maxCost())));
-    }
-    res.emplace_back("Background thread pool:");
-    res.push_back(QString(" - Read threads: %1").arg(QString::number(4)));
-    res.push_back(QString(" - Task queue size %1").arg(QString::number(this->processing_.size())));
-
-    return res;
-}
 
 #endif // ASYNCLEVELLOADER_H

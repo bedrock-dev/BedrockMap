@@ -102,11 +102,11 @@ private:
     static void initBiomeColorTable();
 
     QCache<bl::chunk_pos, LayerCacheInfo> *layer_cache_;
+
     AsyncLevelLoader level_loader_;
     bool loaded_{false};
     RenderFilter render_filter_;
     // thread pool
-
 };
 
 #endif  // WORLD_H

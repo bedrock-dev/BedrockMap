@@ -152,7 +152,7 @@ void ChunkEditorWidget::on_save_block_actor_btn_clicked() {
         return;
     }
 
-    if (this->mw_->get_world()->getLevelLoader().
+    if (this->mw_->levelLoader()->
             modifyChunkBlockEntities(this->chunk_->get_pos(),
                                      this->block_entity_editor_->getCurrentPaletteRaw())) {
         INFO("写入方块实体数据成功");
@@ -168,7 +168,7 @@ void ChunkEditorWidget::on_save_pt_btn_clicked() {
         return;
     }
 
-    if (this->mw_->get_world()->getLevelLoader().
+    if (this->mw_->levelLoader()->
             modifyChunkPendingTicks(this->chunk_->get_pos(),
                                     this->pending_tick_editor_->getCurrentPaletteRaw())) {
         INFO("写入计划刻数据成功");

@@ -37,10 +37,13 @@ namespace {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    this->map_ = new MapWidget(this, nullptr);
-    this->map_->gotoBlockPos(0, 0);
+    //level loader
+    this->level_loader_ = new AsyncLevelLoader();
+    //map widget
+    this->map_widget_ = new MapWidget(this, nullptr);
+    this->map_widget_->gotoBlockPos(0, 0);
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
-    ui->map_visual_layout->addWidget(this->map_);
+    ui->map_visual_layout->addWidget(this->map_widget_);
     ui->empty_chunk_editor_layout->addWidget(this->chunk_editor_widget_);
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
@@ -58,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             for (auto &x: this->layer_btns_) {
                 x.second->setEnabled(x.first != kv.first);
             }
-            this->map_->changeLayer(kv.first);
+            this->map_widget_->changeLayer(kv.first);
         });
     }
 
@@ -74,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             for (auto &x: this->dim_btns_) {
                 x.second->setEnabled(x.first != kv.first);
             }
-            this->map_->changeDimension(kv.first);
+            this->map_widget_->changeDimension(kv.first);
             switch (kv.first) {
                 case MapWidget::DimType::OverWorld:
                     ui->layer_slider->setRange(-64, 319);
@@ -90,7 +93,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Label and edit
-    connect(this->map_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
+    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
 
     // menu actions
     connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
@@ -151,14 +154,14 @@ void MainWindow::updateXZEdit(int x, int z) {
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
-    if (!this->world_.is_open()) {
+    if (!this->level_loader_->isOpen()) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
 
     // add a watcher
     qDebug() << "Load: " << p.to_string().c_str();
-    auto chunk = this->world_.getLevelLoader().getChunkDirect(p);
+    auto chunk = this->level_loader_->getChunkDirect(p);
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
     } else {
@@ -170,17 +173,16 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
 void MainWindow::on_goto_btn_clicked() {
     int x = ui->x_edit->text().toInt();
     int z = ui->z_edit->text().toInt();
-    this->map_->gotoBlockPos(x, z);
+    this->map_widget_->gotoBlockPos(x, z);
 }
 
-void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_->enableGrid(arg1 > 0); }
+void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_widget_->enableGrid(arg1 > 0); }
 
-void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_->enableText(arg1 > 0); }
+void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_widget_->enableText(arg1 > 0); }
 
 void MainWindow::openLevel() {
 
-    if (this->world_.is_open())this->world_.close();
-
+    if (this->level_loader_->isOpen())this->level_loader_->close();
     auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
                 "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
@@ -193,11 +195,11 @@ void MainWindow::openLevel() {
     ui->open_level_btn->setText(QString("正在打开\n") + root);
     auto future = QtConcurrent::run([this](const QString &path) {
         try {
-            auto res = this->world_.open(path.toStdString());
+            auto res = this->level_loader_->open(path.toStdString());
             if (!res) {
                 return false;
             }
-            this->world_.level().load_global_data();
+            this->level_loader_->level().load_global_data();
             return true;
         } catch (std::exception &e) {
             return false;
@@ -207,7 +209,7 @@ void MainWindow::openLevel() {
 }
 
 void MainWindow::closeLevel() {
-    this->world_.close();
+    this->level_loader_->close();
     this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
     ui->splitter_2->setVisible(false);
     ui->open_level_btn->setVisible(true);
@@ -215,11 +217,11 @@ void MainWindow::closeLevel() {
 }
 
 void MainWindow::close_and_exit() {
-    this->world_.close();
+    this->level_loader_->close();
     this->close();
 }
 
-void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_->enableDebug(arg1 > 0); }
+void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_widget_->enableDebug(arg1 > 0); }
 
 void MainWindow::toggle_chunk_edit_view() {
     auto x = this->chunk_editor_widget_->isVisible();
@@ -227,24 +229,10 @@ void MainWindow::toggle_chunk_edit_view() {
 }
 
 
-//void MainWindow::toggle_full_map_mode() {
-//    this->full_map_mode_ = !full_map_mode_;
-//
-//    ui->control_panel_widget->setVisible(!full_map_mode_);
-//    ui->map_top_toolbar_widget->setVisible(!full_map_mode_);
-//    ui->map_buttom_toolbar_widget->setVisible(!full_map_mode_);
-//    if (this->full_map_mode_) {
-//        this->chunk_edit_widget_hided_ = this->chunk_editor_widget_->isVisible();
-//        this->chunk_editor_widget_->setVisible(false);
-//    } else {
-//        this->chunk_editor_widget_->setVisible(this->chunk_edit_widget_hided_);
-//    }
-//}
-
 void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
 
 void MainWindow::on_screenshot_btn_clicked() {
-    this->map_->saveImage(true);
+    this->map_widget_->saveImage(true);
 }
 
 void MainWindow::openNBTEditor() {
@@ -261,20 +249,21 @@ void MainWindow::on_refresh_cache_btn_clicked() {
     RenderFilter f;
     f.enable_layer_ = ui->enable_layer_checkbox->isChecked();
     f.layer_ = ui->layer_slider->value();
-    world_.setFilter(f);
-    this->world_.clear_all_cache();
+//    world_.setFilter(f);
+
+    this->level_loader_->clearAllCache();
 }
 
 void MainWindow::on_layer_slider_valueChanged(int value) {
     ui->layer_label->setText(QString::number(ui->layer_slider->value()));
 }
 
-void MainWindow::on_slime_layer_btn_clicked() { this->map_->toggleSlime(); }
+void MainWindow::on_slime_layer_btn_clicked() { this->map_widget_->toggleSlime(); }
 
-void MainWindow::on_actor_layer_btn_clicked() { this->map_->toggleActor(); }
+void MainWindow::on_actor_layer_btn_clicked() { this->map_widget_->toggleActor(); }
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
-    if (!this->world_.is_open()) {
+    if (!this->level_loader_->isOpen()) {
         QMessageBox::information(nullptr, "警告", "还没有打开世界", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
@@ -282,13 +271,14 @@ void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max
         QMessageBox::information(nullptr, "警告", "当前为只读模式，无法删除区块", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
-    auto future = this->world_.getLevelLoader().dropChunk(min, max);
+    auto future = this->level_loader_->dropChunk(min, max);
     this->delete_chunks_watcher_.setFuture(future);
 }
 
 void MainWindow::handle_chunk_delete_finished() {
     QMessageBox::information(nullptr, "警告", "区块删除成功", QMessageBox::Yes, QMessageBox::Yes);
-    this->world_.clear_all_cache();
+//    this->world_.clear_all_cache();
+
 }
 
 void MainWindow::on_global_nbt_checkbox_stateChanged(int arg1) { ui->global_nbt_pannel->setVisible(arg1 > 0); }
@@ -301,12 +291,12 @@ void MainWindow::handle_level_open_finished() {
         ui->open_level_btn->setText("未打开存档");
     } else {
         this->refreshTitle();
-        auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->world_.getLevelLoader().level().dat().root());
+        auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
         this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
         // load players
 
 
-        auto &player_list = this->world_.level().player_list().data();
+        auto &player_list = this->level_loader_->level().player_list().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
         std::vector<QImage *> icon_players;
@@ -320,7 +310,7 @@ void MainWindow::handle_level_open_finished() {
         //load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
-        auto &village_list = this->world_.level().village_list().data();
+        auto &village_list = this->level_loader_->level().village_list().data();
         this->collect_villages(village_list);
         std::vector<QImage *> icons;
         for (auto &kv: village_list) {
@@ -343,11 +333,11 @@ void MainWindow::handle_level_open_finished() {
 
 
         this->setWindowState(Qt::WindowMaximized);
-        auto sp = this->world_.level().dat().spawn_position();
+        auto sp = this->level_loader_->level().dat().spawn_position();
         qDebug() << sp.x << "  " << sp.z;
         ui->x_edit->setText(QString::number(sp.x));
         ui->z_edit->setText(QString::number(sp.z));
-        this->map_->gotoBlockPos(sp.x, sp.z);
+        this->map_widget_->gotoBlockPos(sp.x, sp.z);
     }
 }
 
@@ -359,7 +349,7 @@ void MainWindow::on_save_leveldat_btn_clicked() {
 
     auto nbts = this->level_dat_editor_->getPaletteCopy();
     if (nbts.size() == 1 && nbts[0]) {
-        this->world_.getLevelLoader().modifyLeveldat(nbts[0]);
+        this->level_loader_->modifyLeveldat(nbts[0]);
         this->refreshTitle();
         INFO("成功保存level.dat文件");
     } else {
@@ -382,7 +372,7 @@ void MainWindow::on_save_village_btn_clicked() {
         }
         vs[village_key.uuid][static_cast<int>(village_key.type)] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
     });
-    if (this->world_.getLevelLoader().modifyVillageList(vs)) {
+    if (this->level_loader_->modifyVillageList(vs)) {
         INFO("成功保存村庄数据");
     } else {
         INFO("无法保存村庄数据");
@@ -399,7 +389,7 @@ void MainWindow::on_save_players_btn_clicked() {
         newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
     });
 
-    if (this->world_.getLevelLoader().modifyPlayerList(newList)) {
+    if (this->level_loader_->modifyPlayerList(newList)) {
         INFO("已成功保存玩家数据");
     } else {
         WARN("无法保存玩家数据");
@@ -408,8 +398,8 @@ void MainWindow::on_save_players_btn_clicked() {
 
 void MainWindow::refreshTitle() {
     auto levelName = QString();
-    if (world_.is_open())
-        levelName = this->world_.level().dat().level_name().c_str();
+    if (this->level_loader_->isOpen())
+        levelName = this->level_loader_->level().dat().level_name().c_str();
     this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " + levelName);
 }
 
@@ -433,4 +423,5 @@ MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl
         }
     }
 }
+
 

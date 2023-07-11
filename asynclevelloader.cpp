@@ -7,24 +7,19 @@
 
 #include "config.h"
 #include "qdebug.h"
-#include "world.h"
 #include "leveldb/write_batch.h"
 
-namespace {
-    //  QColor EMPTY_COLOR_TABLE[2]{QColor(20, 20, 20), QColor(40, 40, 40)};
-
-}
-
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(8);
+    this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
         this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
     }
+    this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     this->level_.set_cache(false);
 }
 
-chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty, const RenderFilter *filter) {
+chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     empty = false;
     if (!this->loaded_) return nullptr;
     auto *invalid = this->invalid_cache_[p.dim]->operator[](p);
@@ -32,45 +27,31 @@ chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty, cons
         empty = true;
         return nullptr;
     }
-
     // chunk cache
     auto *region = this->region_cache_[p.dim]->operator[](p);
-    if (region) {
-        return region;
-    }
-
+    if (region) return region;
     // not in cache but in queue
-    if (this->processing_.contains(p)) {
-        return nullptr;
-    }
-
-    auto *task = new LoadRegionTask(&this->level_, p, filter);
-    connect(task, SIGNAL(finish(int, int, int, chunk_region * )), this,
-            SLOT(handle_task_finished_task(int, int, int, chunk_region * )));
+    if (this->processing_.contains(p)) return nullptr;
+    auto *task = new LoadRegionTask(&this->level_, p, &this->bake_filter);
+    connect(task, &LoadRegionTask::finish, this, [this](int x, int z, int dim, chunk_region *region) {
+        if (!region || (!region->valid)) {
+            this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
+            delete region;
+        } else {
+            this->region_cache_[dim]->insert(bl::chunk_pos(x, z, dim), region);
+        }
+        this->processing_.remove(bl::chunk_pos{x, z, dim});
+    });
     this->processing_.add(p);
     this->pool_.start(task);
     return nullptr;
 }
 
+
 bool AsyncLevelLoader::open(const std::string &path) {
     this->level_.set_cache(false);
-    auto res = this->level_.open(path);
-    if (res) {
-        this->loaded_ = true;
-    }
-    return res;
-}
-
-void AsyncLevelLoader::handle_task_finished_task(int x, int z, int dim, chunk_region *region) {
-    if (!region) {
-        this->invalid_cache_[dim]->insert(bl::chunk_pos{x, z, dim}, new char(0));
-    } else if (!region->valid) {
-        this->invalid_cache_[dim]->insert(bl::chunk_pos{x, z, dim}, new char(0));
-        delete region;
-    } else {
-        this->region_cache_[dim]->insert(bl::chunk_pos{x, z, dim}, region);
-    }
-    this->processing_.remove(bl::chunk_pos{x, z, dim});
+    this->loaded_ = this->level_.open(path);
+    return this->loaded_;
 }
 
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
@@ -216,7 +197,7 @@ bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
 }
 
 
-void AsyncLevelLoader::clear_all_cache() {
+void AsyncLevelLoader::clearAllCache() {
     this->pool_.clear(); //取消所有任务
     this->processing_.clear();
     for (auto &cache: this->region_cache_) {
@@ -328,5 +309,94 @@ chunk_region::~chunk_region() {
     delete terrain_bake_image_;
     delete biome_bake_image_;
 }
+
+std::vector<QString> AsyncLevelLoader::debugInfo() {
+    std::vector<QString> res;
+    res.emplace_back("Region cache:");
+    for (int i = 0; i < 3; i++) {
+        res.push_back(QString(" - [%1]: %2/%3")
+                              .arg(QString::number(i), QString::number(this->region_cache_[i]->totalCost()),
+                                   QString::number(this->region_cache_[i]->maxCost())));
+    }
+    res.emplace_back("Null region cache:");
+    for (int i = 0; i < 3; i++) {
+        res.push_back(QString(" - [%1]: %2/%3")
+                              .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
+                                   QString::number(this->invalid_cache_[i]->maxCost())));
+
+    }
+
+    res.push_back(QString("Slime Chunk cache: %2/%3")
+                          .arg(QString::number(this->slime_chunk_cache_->totalCost()),
+                               QString::number(this->slime_chunk_cache_->maxCost())));
+
+    res.emplace_back("Background thread pool:");
+    res.push_back(QString(" - Total threads: %1").arg(QString::number(cfg::THREAD_NUM)));
+    res.push_back(QString(" - Background tasks %1").arg(QString::number(this->processing_.size())));
+
+    return res;
+}
+
+QImage *AsyncLevelLoader::bakedTerrainImage(const region_pos &rp) {
+    if (!this->loaded_) return cfg::BACKGROUND_IMAGE();
+    bool null_region{false};
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region)return cfg::BACKGROUND_IMAGE();
+    return region ? region->terrain_bake_image_ : cfg::BACKGROUND_IMAGE();
+}
+
+QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
+    if (!this->loaded_) return cfg::BACKGROUND_IMAGE();
+    bool null_region{false};
+
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region) return cfg::BACKGROUND_IMAGE();
+
+    return region ? region->biome_bake_image_ : cfg::BACKGROUND_IMAGE();
+
+}
+
+BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
+    if (!this->loaded_)return {};
+    auto cp = p.to_chunk_pos();
+    cp.dim = dim;
+    auto rp = cfg::c2r(cp);
+    bool null_region{false};
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region)return {};
+    auto &info = region->tips_info_;
+    auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
+    return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
+}
+
+QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
+    return cfg::BACKGROUND_IMAGE();
+}
+
+QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
+    if (rp.dim != 0)return cfg::EMPTY_IMAGE();
+    auto *img = this->slime_chunk_cache_->operator[](rp);
+    if (img) {
+        return img;
+    }
+    auto *res = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    for (int rw = 0; rw < cfg::RW; rw++) {
+        for (int rh = 0; rh < cfg::RW; rh++) {
+            bl::chunk_pos cp(rp.x + rw, rp.z + rh, rp.dim);
+            auto color = cp.is_slime() ? QColor(162, 255, 134, 100) : QColor(0, 0, 0, 0);
+            for (int i = 0; i < 16; i++) {
+                for (int j = 0; j < 16; j++) {
+                    res->setPixelColor((rw << 4) + i, (rh << 4) + j, color);
+                }
+            }
+        }
+    }
+
+    this->slime_chunk_cache_->insert(rp, res);
+    return res;
+}
+
+
+
 
 
