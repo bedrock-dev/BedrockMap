@@ -122,7 +122,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
             break;
     }
 
-//    if (draw_villages_)
+    this->drawHSAs(event, &p);
     this->drawVillages(event, &p);
     if (draw_actors_)this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
@@ -341,13 +341,14 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         auto height = this->mw_->levelLoader()->bakedTerrainImage(rp);
         this->drawRegion(event, painter, rp, p, height);
     });
+
 }
+
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
 
     QFont f("Consolas", 6);
     p->setFont(f);
-    QFontMetricsF fm(f);
     auto &vs = this->mw_->get_villages();
     auto c = this->getRenderRange(this->camera_);
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
@@ -368,20 +369,52 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
     }
 }
 
+void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
+    /**
+     *   NetherFortress = 1,
+        SwampHut = 2,
+        OceanMonument = 3,
+        PillagerOutpost = 5,
+     */
+    QColor colors[]{QColor(0, 0, 0, 0),
+                    QColor(0, 223, 162, 255), //1
+                    QColor(255, 0, 96, 255), //2
+                    QColor(246, 250, 112, 255), //3
+                    QColor(0, 0, 0, 0), //
+                    QColor(0, 121, 255, 255), //5
+                    QColor(0, 0, 0, 0),
+    };
+    this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp, const QPoint &p) {
+        auto hss = this->mw_->levelLoader()->getHSAs(rp);
+        for (auto &hsa: hss) {
+            int x = (hsa.min_pos.x - rp.x * 16) * this->bw_ + p.x();
+            int y = (hsa.min_pos.z - rp.z * 16) * this->bw_ + p.y();
+            auto outlineColor = colors[static_cast<int>(hsa.type)];
+            painter->setPen(QPen(outlineColor, 3));
+            auto rect = QRect(x, y,
+                              abs(hsa.max_pos.x - hsa.min_pos.x) * this->bw_,
+                              abs(hsa.max_pos.z - hsa.min_pos.z) * this->bw_);
+            painter->drawRect(rect);
+            outlineColor.setAlpha(100);
+            painter->fillRect(rect, QBrush(outlineColor));
+        }
+    });
+}
+
 void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-//        auto actors = this->mw_->get_world()->getActorList(ch);
-//        for (auto &kv: actors) {
-//            if (!kv.first)continue;
-//            for (auto &actor: kv.second) {
-//                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
-//                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
-//                const int W = 18;
-//                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
-//            }
-//        }
+        auto actors = this->mw_->levelLoader()->getActorList(ch);
+        for (auto &kv: actors) {
+            if (!kv.first)continue;
+            for (auto &actor: kv.second) {
+                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
+                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
+                const int W = 18;
+                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
+            }
+        }
     });
 }
 
@@ -443,6 +476,8 @@ void MapWidget::delete_chunks() {
     this->select_min_.dim = this->dim_type_;
     this->mw_->deleteChunks(this->select_min_, this->select_max_);
 }
+
+
 
 
 

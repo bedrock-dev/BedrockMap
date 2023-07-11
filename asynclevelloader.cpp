@@ -4,7 +4,7 @@
 #include <QtConcurrent>
 #include <chrono>
 #include <thread>
-
+#include "iconmanager.h"
 #include "config.h"
 #include "qdebug.h"
 #include "leveldb/write_batch.h"
@@ -120,9 +120,12 @@ void LoadRegionTask::run() {
                     }
 
                     for (auto &ac: chunk->entities()) {
-                        region->actors_[ac->identifier()].push_back(ac->pos());
+                        auto key = QString(ac->identifier().c_str()).replace("minecraft:", "");
+                        if (key != "item")
+                            region->actors_[ActorImage(key)].push_back(ac->pos());
                     }
-
+                    auto hss = chunk->HSAs();
+                    region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
                 } else {
                     for (int i = 0; i < 16; i++) {
                         for (int j = 0; j < 16; j++) {
@@ -353,7 +356,23 @@ QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
     if (null_region) return cfg::BACKGROUND_IMAGE();
 
     return region ? region->biome_bake_image_ : cfg::BACKGROUND_IMAGE();
+}
 
+std::unordered_map<QImage *, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos &rp) {
+    if (!this->loaded_) return {};
+    bool null_region{false};
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region || (!region)) return {};
+    return region->actors_;
+
+}
+
+std::vector<bl::hardcoded_spawn_area> AsyncLevelLoader::getHSAs(const region_pos &rp) {
+    if (!this->loaded_)return {};
+    bool null_region{false};
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region || (!region)) return {};
+    return region->HSAs_;
 }
 
 BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
@@ -368,6 +387,7 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
     return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
 }
+
 
 QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
     return cfg::BACKGROUND_IMAGE();
@@ -395,6 +415,10 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     this->slime_chunk_cache_->insert(rp, res);
     return res;
 }
+
+
+
+
 
 
 

@@ -144,7 +144,11 @@ private:
 
     void drawActors(QPaintEvent *event, QPainter *p);
 
+    void drawHSAs(QPaintEvent *event, QPainter *p);
+
+
     void drawSelectArea(QPaintEvent *event, QPainter *p);
+
 
     void drawVillages(QPaintEvent *event, QPainter *p);
 

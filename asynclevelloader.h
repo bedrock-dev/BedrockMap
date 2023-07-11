@@ -47,7 +47,7 @@ struct chunk_region {
     QImage *terrain_bake_image_{nullptr};
     QImage *biome_bake_image_{nullptr};
     bool valid{false};
-    std::unordered_map<std::string, std::vector<bl::vec3>> actors_;
+    std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
 
@@ -155,6 +155,10 @@ public:
     QImage *bakedSlimeChunkImage(const region_pos &rp);
 
     BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
+
+    std::unordered_map<QImage *, std::vector<bl::vec3>> getActorList(const region_pos &rp);
+
+    std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos &rp);
 
 
     /*Modify*/
