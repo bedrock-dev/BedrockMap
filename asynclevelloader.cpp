@@ -21,6 +21,7 @@ AsyncLevelLoader::AsyncLevelLoader() {
         this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
     }
+    this->level_.set_cache(false);
 }
 
 chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty, const RenderFilter *filter) {
@@ -51,7 +52,7 @@ chunk_region *AsyncLevelLoader::getRegion(const region_pos &p, bool &empty, cons
     return nullptr;
 }
 
-bool AsyncLevelLoader::init(const std::string &path) {
+bool AsyncLevelLoader::open(const std::string &path) {
     this->level_.set_cache(false);
     auto res = this->level_.open(path);
     if (res) {
@@ -161,7 +162,7 @@ void LoadRegionTask::run() {
     }
 
     //烘焙
-    const int SHADOW = 120;
+    const int SHADOW = 130;
     for (int i = 0; i < IMG_WIDTH; i++) {
         for (int j = 0; j < IMG_WIDTH; j++) {
             auto current_height = region->tips_info_[i][j].height;
@@ -175,13 +176,14 @@ void LoadRegionTask::run() {
                 sum = region->tips_info_[i][j - 1].height + region->tips_info_[i - 1][j].height;
             }
 
-
             if (current_height * 2 > sum) {
                 region->terrain_bake_image_->setPixelColor(i, j,
-                                                           region->terrain_bake_image_->pixelColor(i, j).light(SHADOW));
+                                                           region->terrain_bake_image_->pixelColor(i, j).lighter(
+                                                                   SHADOW));
             } else if (current_height * 2 < sum) {
                 region->terrain_bake_image_->setPixelColor(i, j,
-                                                           region->terrain_bake_image_->pixelColor(i, j).dark(SHADOW));
+                                                           region->terrain_bake_image_->pixelColor(i, j).darker(
+                                                                   SHADOW));
             }
         }
     }
@@ -205,13 +207,14 @@ void AsyncLevelLoader::close() {
     for (auto &c: this->region_cache_) c->clear();
 }
 
-QFuture<bl::chunk *> AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
-    auto directChunkReader = [&](const bl::chunk_pos &chunk_pos) {
-        auto *p = this->level_.get_chunk(chunk_pos);
-        return p;
-    };
-    return QtConcurrent::run(directChunkReader, p);
+bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
+    return this->level_.get_chunk(p);
+//    auto directChunkReader = [&](const bl::chunk_pos &chunk_pos) {
+//        return this->level_.get_chunk(chunk_pos);
+//    };
+//    return QtConcurrent::run(directChunkReader, p);
 }
+
 
 void AsyncLevelLoader::clear_all_cache() {
     this->pool_.clear(); //取消所有任务

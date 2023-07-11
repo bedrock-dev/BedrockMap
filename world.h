@@ -40,9 +40,7 @@ struct LayerCacheInfo {
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
     std::unordered_map<QImage *, std::vector<bl::vec3>> actor_list_;
 
-
     static LayerCacheInfo *fromRegion(chunk_region *r);
-
 
 };
 
@@ -56,11 +54,9 @@ public:
 
     inline bool is_open() const { return this->loaded_; }
 
-    QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
-
     AsyncLevelLoader &getLevelLoader() { return this->level_loader_; }
 
-    bool init(const std::string &level_path);
+    bool open(const std::string &level_path);
 
     void close();
 

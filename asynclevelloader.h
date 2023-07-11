@@ -34,6 +34,7 @@ struct chunk_region {
     QImage *biome_bake_image_{nullptr};
     bool valid{false};
     std::unordered_map<std::string, std::vector<bl::vec3>> actors_;
+    std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
 
 template<typename T>
@@ -110,14 +111,14 @@ public:
 
     void clear_all_cache();
 
-    bool init(const std::string &path);
+    bool open(const std::string &path);
 
     void close();
 
     bl::bedrock_level &level() { return this->level_; }
 
 public:
-    QFuture<bl::chunk *> getChunkDirect(const bl::chunk_pos &p);
+    bl::chunk *getChunkDirect(const bl::chunk_pos &p);
 
     QFuture<bool> dropChunk(const bl::chunk_pos &min, const ::bl::chunk_pos &max);
 

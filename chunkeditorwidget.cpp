@@ -55,8 +55,9 @@ ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
 
 void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     if (chunk) {
+        delete this->chunk_;
         this->chunk_ = chunk;
-        this->refreshData();
+        this->refreshBasicData();
         this->chunk_section_->set_chunk(chunk);
         this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
         this->chunk_section_->setYLevel(0);
@@ -69,46 +70,38 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
             if (id_tag && id_tag->type() == tag_type::String) {
                 name = dynamic_cast<string_tag *>(id_tag)->value.c_str();
             }
-
             return name;
-
-//            QString x = "#";
-
-//            QString y = "#";
-//            QString z = "#";
-//            auto x_tag = nbt->get("x");
-//            auto y_tag = nbt->get("y");
-//            auto z_tag = nbt->get("z");
-//            if (x_tag && x_tag->type() == tag_type::Int) {
-//                x = QString::number(dynamic_cast<int_tag *>(x_tag)->value);
-//            }
-//
-//            if (y_tag && y_tag->type() == tag_type::Int) {
-//                y = QString::number(dynamic_cast<int_tag *>(y_tag)->value);
-//            }
-//
-//            if (z_tag && z_tag->type() == tag_type::Int) {
-//                z = QString::number(dynamic_cast<int_tag *>(z_tag)->value);
-//            }
-//            return name + "[" + x + "," + y + "," + z + "]";
         };
 
         auto bes = chunk_->block_entities();
-        std::vector<QImage *> icons;
+        std::vector<QImage *> be_icons;
         for (auto &b: bes) {
             auto id_tag = b->get("id");
             QString name = "unknown";
             if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
                 name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
             }
-            icons.push_back(BlockActorIcon(name.toLower().replace("minecraft:", "")));
+            be_icons.push_back(BlockActorIcon(name.toLower().replace("minecraft:", "")));
         }
 
-        this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, icons);
+        this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, be_icons);
 
         // pt
         this->pending_tick_editor_->load_new_data(chunk_->pending_ticks(), [](auto *nbt) { return QString(); }, {});
 
+        auto actors = chunk_->entities();
+        qDebug() << "Actor numbers: " << actors.size();
+        std::vector<QImage *> actor_icons;
+        std::vector<std::string> actor_default_labels;
+        std::vector<bl::palette::compound_tag *> actor_palettes;
+        for (auto &b: actors) {
+            auto id = QString(b->identifier().c_str()).replace("minecraft:", "");
+            actor_icons.push_back(EntityIcon(id));
+            actor_palettes.push_back(b->root());
+            actor_default_labels.push_back(id.toStdString());
+        }
+        this->actor_editor_->load_new_data(actor_palettes, [](auto *) { return QString(); }, actor_default_labels,
+                                           actor_icons);
     } else {
         QMessageBox::information(nullptr, "警告", "这是一个空区块", QMessageBox::Yes, QMessageBox::Yes);
     }
@@ -116,7 +109,7 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
 
 void ChunkEditorWidget::on_close_btn_clicked() { this->setVisible(false); }
 
-void ChunkEditorWidget::refreshData() {
+void ChunkEditorWidget::refreshBasicData() {
     if (!this->chunk_) return;
     ui->base_info_label->setText(this->chunk_->get_pos().to_string().c_str());
     auto [miny, maxy] = this->chunk_->get_pos().get_y_range(this->chunk_->get_version());

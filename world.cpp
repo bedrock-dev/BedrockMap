@@ -64,13 +64,13 @@ world::world() {
 
 }
 
-QFuture<bl::chunk *> world::getChunkDirect(const bl::chunk_pos &p) { return this->level_loader_.getChunkDirect(p); }
 
-bool world::init(const std::string &level_path) {
-    auto r = this->level_loader_.init(level_path);
+bool world::open(const std::string &level_path) {
+    auto r = this->level_loader_.open(level_path);
     this->loaded_ = r;
     return r;
 }
+
 
 void world::close() {
     if (!this->loaded_) {

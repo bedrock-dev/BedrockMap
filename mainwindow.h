@@ -35,7 +35,6 @@ public:
 
 public slots:
 
-
     inline bool enable_write() const { return this->write_mode_; }
 
     void updateXZEdit(int x, int z);
@@ -50,6 +49,8 @@ public slots:
     void handle_level_open_finished();
 
     void refreshTitle();
+
+    inline QMap<QString, QRect> &get_villages() { return this->villages_; }
 
 private slots:
 
@@ -93,6 +94,11 @@ private slots:
 
     void on_save_players_btn_clicked();
 
+
+    //
+    void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
+
+
 private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
@@ -117,6 +123,8 @@ private:
 
     QDialog *open_level_dialog_{nullptr};
 
+    //global data
+    QMap<QString, QRect> villages_;
     //dialogs
 };
 

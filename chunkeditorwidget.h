@@ -46,7 +46,7 @@ private slots:
     void clearAll();
 
 private:
-    void refreshData();
+    void refreshBasicData();
 
 private:
     ChunkSectionWidget *chunk_section_{nullptr};

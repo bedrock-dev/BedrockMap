@@ -44,11 +44,7 @@ public:
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
-    void mousePressEvent(QMouseEvent *event) override;
-
     void wheelEvent(QWheelEvent *event) override;
-
-    // void mouseDoubleClickEvent(QMouseEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
 
@@ -89,6 +85,9 @@ public:
         this->draw_actors_ = !this->draw_actors_;
     }
 
+    inline void toggleVillage() {
+        this->draw_villages_ = !this->draw_villages_;
+    }
 
     void saveImage(bool full);
 
@@ -111,9 +110,7 @@ public slots:
         gotoBlockPos(p.x, p.z);
     }
 
-    void openChunkEditor();
-
-    inline void clear_select() { this->has_selected_ = false; }
+//    void openChunkEditor();
 
     void delete_chunks();
 
@@ -150,6 +147,7 @@ private:
 
     void drawSelectArea(QPaintEvent *event, QPainter *p);
 
+    void drawVillages(QPaintEvent *event, QPainter *p);
 
     QRect getRenderSelectArea();
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
@@ -159,8 +157,10 @@ private:
 signals:
 
 private:
-    // bl::chunk_pos spawn{0, 0};  // origin 处要会绘制的区块坐标
+    //objects
 
+
+    // bl::chunk_pos spawn{0, 0};  // origin 处要会绘制的区块坐标
     // select area
     bl::chunk_pos select_min_;
     bl::chunk_pos select_max_;
@@ -180,12 +180,16 @@ private:
     //extra layer
     bool draw_slime_chunk_{false};
     bool draw_actors_{false};
+    bool draw_villages_{false};
+
 
     int bw_{2};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
     bool render_grid_{true};
     bool render_text_{false};
     bool render_debug_{false};
+
+    //village info
 };
 
 

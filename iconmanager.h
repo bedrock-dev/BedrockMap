@@ -10,8 +10,6 @@
 
 void InitIcons();
 
-QImage *GetActorIcon(const std::string &key);
-
 QImage *ActorImage(const QString &key);
 
 
@@ -20,6 +18,8 @@ QImage *PlayerIcon();
 QImage *VillagerIcon(bl::village_key::key_type t);
 
 QImage *BlockActorIcon(const QString &key);
+
+QImage *EntityIcon(const QString &key);
 
 #endif //BEDROCKMAP_ICONMANAGER_H
 

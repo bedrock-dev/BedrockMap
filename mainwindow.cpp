@@ -43,7 +43,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->map_visual_layout->addWidget(this->map_);
     ui->empty_chunk_editor_layout->addWidget(this->chunk_editor_widget_);
     ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 5);
+    ui->splitter->setStretchFactor(1, 3);
+
     this->chunk_editor_widget_->setVisible(false);
 
     // layer btn
@@ -154,8 +155,10 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
+
     // add a watcher
-    auto *chunk = this->world_.getLevelLoader().getChunkDirect(p).result();
+    qDebug() << "Load: " << p.to_string().c_str();
+    auto chunk = this->world_.getLevelLoader().getChunkDirect(p);
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
     } else {
@@ -190,7 +193,7 @@ void MainWindow::openLevel() {
     ui->open_level_btn->setText(QString("正在打开\n") + root);
     auto future = QtConcurrent::run([this](const QString &path) {
         try {
-            auto res = this->world_.init(path.toStdString());
+            auto res = this->world_.open(path.toStdString());
             if (!res) {
                 return false;
             }
@@ -318,7 +321,7 @@ void MainWindow::handle_level_open_finished() {
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
         auto &village_list = this->world_.level().village_list().data();
-
+        this->collect_villages(village_list);
         std::vector<QImage *> icons;
         for (auto &kv: village_list) {
             int index = 0;
@@ -408,5 +411,26 @@ void MainWindow::refreshTitle() {
     if (world_.is_open())
         levelName = this->world_.level().dat().level_name().c_str();
     this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " + levelName);
-
 }
+
+void
+MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
+
+
+    for (auto kv: vs) {
+        auto *nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
+        if (!nbt)continue;
+        auto x0 = dynamic_cast<bl::palette::int_tag *>(nbt->get("X0"));
+        auto z0 = dynamic_cast<bl::palette::int_tag *>(nbt->get("Z0"));
+        auto x1 = dynamic_cast<bl::palette::int_tag *>(nbt->get("X1"));
+        auto z1 = dynamic_cast<bl::palette::int_tag *>(nbt->get("Z1"));
+        if (x0 && z0 && x1 && z1) {
+            this->villages_.insert(kv.first.c_str(),
+                                   QRect(std::min(x0->value, x1->value), std::min(z0->value, z1->value),
+                                         std::abs(x0->value - x1->value),
+                                         std::abs(z0->value - z1->value)
+                                   ));
+        }
+    }
+}
+

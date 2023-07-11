@@ -1,5 +1,5 @@
 #include "mapwidget.h"
-
+#include <QFileDialog>
 #include <QAction>
 #include <QApplication>
 #include <QBrush>
@@ -15,6 +15,7 @@
 #include <QRectF>
 #include <QRgb>
 #include <QVector>
+#include  <QClipboard>
 #include <cmath>
 #include <QFontMetrics>
 
@@ -33,32 +34,59 @@ void MapWidget::resizeEvent(QResizeEvent *event) {
 void MapWidget::asyncRefresh() { this->update(); }
 
 void MapWidget::showContextMenu(const QPoint &p) {
+    auto *cb = QApplication::clipboard();
     auto area = this->getRenderSelectArea();
-    QMenu contextMenu(tr("Context menu"), this);
+    QMenu contextMenu(this);
     if (this->has_selected_ && area.contains(p)) {
         QAction removeChunkAction("删除区块", this);
         QAction clearAreaAction("取消选中", this);
-        connect(&clearAreaAction, SIGNAL(triggered()), this, SLOT(clear_select()));
+        QAction screenShotAction("另存为图像", this);
+        connect(&clearAreaAction, &QAction::triggered, this, [this] { this->has_selected_ = false; });
         connect(&removeChunkAction, SIGNAL(triggered()), this, SLOT(delete_chunks()));
-
-        contextMenu.addAction(&removeChunkAction);
+        connect(&screenShotAction, &QAction::triggered, this, [this] {
+            this->saveImage(false);
+        });
         contextMenu.addAction(&clearAreaAction);
+        contextMenu.addAction(&screenShotAction);
+        contextMenu.addAction(&removeChunkAction);
         contextMenu.exec(mapToGlobal(p));
     } else {
         auto pos = this->getCursorBlockPos();
         // for single chunk
         auto blockInfo = this->mw_->get_world()->getBlockTips(pos, static_cast<int>(this->dim_type_));
-        QAction copyBlockName("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
-        QAction copyBiomeName("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
-        QAction copyHeight("复制高度信息: " + QString::number(blockInfo.height), this);
-        QAction copyTpCommand(
-                "复制TP命令: " + QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z)),
-                this);
+        //block name
+        QAction copyBlockNameAction("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
+        connect(&copyBlockNameAction, &QAction::triggered, this, [cb, &blockInfo] {
+            cb->setText(blockInfo.block_name.c_str());
+        });
+//biome
+        QAction copyBiomeAction("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
+        connect(&copyBiomeAction, &QAction::triggered, this, [cb, &blockInfo] {
+            cb->setText(QString::number(static_cast<int>(blockInfo.biome)));
+        });
+//height
+        QAction copyHeightAction("复制高度信息: " + QString::number(blockInfo.height), this);
+        connect(&copyHeightAction, &QAction::triggered, this, [cb, &blockInfo] {
+            cb->setText(QString::number(blockInfo.height));
+        });
+        auto tpCmd = QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z));
+        QAction copyTpCommandAction("复制TP命令: " + tpCmd, this);
+        connect(&copyTpCommandAction, &QAction::triggered, this, [cb, &tpCmd] {
+            cb->setText(tpCmd);
+        });
+
+        //chunk editor
         QAction openInChunkEditor("在区块编辑器中打开", this);
-        connect(&openInChunkEditor, SIGNAL(triggered()), this, SLOT(openChunkEditor()));
-        contextMenu.addAction(&copyBlockName);
-        contextMenu.addAction(&copyBiomeName);
-        contextMenu.addAction(&copyHeight);
+        connect(&openInChunkEditor, &QAction::triggered, this, [pos, this] {
+            auto cp = pos.to_chunk_pos();
+            cp.dim = static_cast<int>(this->dim_type_);
+            this->mw_->openChunkEditor(cp);
+        });
+
+        contextMenu.addAction(&copyBlockNameAction);
+        contextMenu.addAction(&copyBiomeAction);
+        contextMenu.addAction(&copyHeightAction);
+        contextMenu.addAction(&copyTpCommandAction);
         contextMenu.addAction(&openInChunkEditor);
         contextMenu.exec(mapToGlobal(p));
     }
@@ -92,6 +120,8 @@ void MapWidget::paintEvent(QPaintEvent *event) {
             break;
     }
 
+//    if (draw_villages_)
+    this->drawVillages(event, &p);
     if (draw_actors_)this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
     if (render_grid_) this->drawGrid(event, &p);
@@ -132,11 +162,7 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
         this->dragging_ = false;
     } else if (event->button() == Qt::MiddleButton) {
         this->selecting_ = false;
-    }
-}
-
-void MapWidget::mousePressEvent(QMouseEvent *event) {
-    if (event->buttons() & Qt::RightButton) {
+    } else if (event->button() == Qt::RightButton) {
         this->showContextMenu(this->mapFromGlobal(QCursor::pos()));
     }
 }
@@ -276,19 +302,24 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     QFont font("Consolas", 8);
     QFontMetrics fm(font);
     painter->setFont(font);
-    QPen pen;
+    QPen pen(QColor(255, 255, 255));
     painter->setPen(pen);
 
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
         if ((ch.x % 16 == 0 && ch.z % 16 == 0) || this->bw_ >= 8) {
             auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
             auto rect = QRect{p.x() + 2, p.y() + 2, fm.width(text) + 4, fm.height() + 4};
-            painter->fillRect(rect, QBrush(QColor(255, 255, 255, 90)));
+            painter->fillRect(rect, QBrush(QColor(22, 22, 22, 90)));
             painter->drawText(rect, Qt::AlignCenter, text);
         }
     });
 }
 
+/**
+ * 重写这里，采用缓存机制
+ * @param event
+ * @param painter
+ */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
         this->drawOneChunk(event, painter, ch, p, this->mw_->get_world()->slimeChunk(ch));
@@ -310,6 +341,31 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
 
 }
 
+void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
+
+    QFont f("Consolas", 6);
+    p->setFont(f);
+    QFontMetricsF fm(f);
+    auto &vs = this->mw_->get_villages();
+    auto c = this->getRenderRange(this->camera_);
+    auto [mi, ma, render] = this->getRenderRange(this->camera_);
+    for (auto i = vs.cbegin(), end = vs.cend(); i != end; ++i) {
+//        auto uuid = i.key();
+        auto rect = i.value();
+        auto min = rect.topLeft();
+        auto x = (min.x() - mi.get_min_pos(bl::New).x) * this->bw_ + render.x();
+        auto z = (min.y() - mi.get_min_pos(bl::New).z) * this->bw_ + render.y();
+        auto rec = QRect(x, z, rect.width() * bw_, rect.height() * bw_);
+        if (rect.intersects(this->camera_)) {
+            p->setPen(QPen(QColor(0, 223, 162), 3));
+            p->setBrush(QBrush(QColor(0, 223, 162, 50)));
+            p->drawRect(rec);
+            p->setPen(QPen(QColor(255, 255, 255)));
+            p->drawText(x, z + (int) fm.height() + 2, i.key());
+        }
+    }
+}
+
 void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
@@ -321,16 +377,11 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
                 float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
                 float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
                 const int W = 18;
-                //                painter->fillRect(QRectF(x - W - 2, y - W - 2, (W + 2) * 2, (W + 2) * 2),
-//                                  QBrush(QColor(255, 255, 255, 160)));
-//
-
                 painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
             }
         }
     });
 }
-
 
 void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
@@ -347,11 +398,9 @@ void MapWidget::gotoBlockPos(int x, int z) {
     this->update();
 }
 
-void MapWidget::openChunkEditor() {
-    auto cp = this->getCursorBlockPos().to_chunk_pos();
-    cp.dim = static_cast<int>(this->dim_type_);
-    return this->mw_->openChunkEditor(cp);
-}
+//void MapWidget::openChunkEditor() {
+//
+//}
 
 std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
     //需要的参数
@@ -375,15 +424,28 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
 }
 
 void MapWidget::saveImage(bool full_screen) {
-    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
+    QPixmap img;
+    if (!full_screen) {
+        this->has_selected_ = false;
+        this->update();
+        img = this->grab(this->getRenderSelectArea());
+    } else {
+        img = this->grab();
+    }
+    auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                 "/home/jana/untitled.png",
+                                                 tr("Images (*.png *.xpm *.jpg)"));
+    if (fileName.isEmpty())return;
+    img.save(fileName);
 }
 
 void MapWidget::delete_chunks() {
     this->select_max_.dim = this->dim_type_;
     this->select_min_.dim = this->dim_type_;
     this->mw_->deleteChunks(this->select_min_, this->select_max_);
-
 }
+
+
 
 
 

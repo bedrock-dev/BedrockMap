@@ -12,7 +12,8 @@
 
 namespace {
     QMap<QString, QImage *> actor_img_pool;
-    QMap<QString, QImage *> block_actor_img_pool;
+    QMap<QString, QImage *> block_actor_icon_pool;
+    QMap<QString, QImage *> entity_icon_pool;
     QImage *unknown_img;
 
 
@@ -80,6 +81,8 @@ void InitIcons() {
         auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
         auto masked = addMask(img);
+        auto scaled = scale(img);
+        entity_icon_pool[key] = scaled;
         if (masked) {
             actor_img_pool[key] = masked;
         }
@@ -96,18 +99,18 @@ void InitIcons() {
         auto img = QImage(it2.next());
         auto key = it2.fileName().replace(".png", "");
         qDebug() << key;
-        block_actor_img_pool[key] = scale(img);
+        block_actor_icon_pool[key] = scale(img);
     }
 }
 
 QImage *PlayerIcon() { return nullptr; }
 
 QImage *BlockActorIcon(const QString &key) {
-    auto it = block_actor_img_pool.find(key);
-    if (it == block_actor_img_pool.end()) {
+    auto it = block_actor_icon_pool.find(key);
+    if (it == block_actor_icon_pool.end()) {
         qDebug() << " unknown key " << key;
     }
-    return it == block_actor_img_pool.end() ? unknown_img : it.value();
+    return it == block_actor_icon_pool.end() ? unknown_img : it.value();
 }
 
 QImage *ActorImage(const QString &key) {
@@ -117,6 +120,7 @@ QImage *ActorImage(const QString &key) {
     }
 
     return it == actor_img_pool.end() ? unknown_img : it.value();
+
 }
 
 QImage *VillagerIcon(bl::village_key::key_type t) {
@@ -132,4 +136,12 @@ QImage *VillagerIcon(bl::village_key::key_type t) {
         case bl::village_key::Unknown:
             return unknown_img;
     }
+}
+
+QImage *EntityIcon(const QString &key) {
+    auto it = entity_icon_pool.find(key);
+    if (it == entity_icon_pool.end()) {
+        qDebug() << " unknown key " << key;
+    }
+    return it == entity_icon_pool.end() ? unknown_img : it.value();
 }
