@@ -45,6 +45,7 @@ private slots:
 
     void clearAll();
 
+
 private:
     void refreshBasicData();
 

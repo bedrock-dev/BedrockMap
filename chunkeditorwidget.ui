@@ -96,7 +96,7 @@
           <widget class="QLineEdit" name="terrain_level_edit">
            <property name="maximumSize">
             <size>
-             <width>60</width>
+             <width>90</width>
              <height>16777215</height>
             </size>
            </property>

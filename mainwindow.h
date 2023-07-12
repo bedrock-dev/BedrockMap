@@ -15,6 +15,7 @@
 #include <QDialog>
 #include "asynclevelloader.h"
 #include <QMessageBox>
+#include "renderfilterdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -52,6 +53,8 @@ public slots:
 
     inline QMap<QString, QRect> &get_villages() { return this->villages_; }
 
+    void applyFilter();
+
 private slots:
 
     void on_goto_btn_clicked();
@@ -68,7 +71,7 @@ private slots:
 
     void on_debug_checkbox_stateChanged(int arg1);
 
-    void toggle_chunk_edit_view();
+//    void toggle_chunk_edit_view();
 
 //    void toggle_full_map_mode();
 
@@ -77,10 +80,6 @@ private slots:
     void on_screenshot_btn_clicked();
 
     void openNBTEditor();
-
-    void on_refresh_cache_btn_clicked();
-
-    void on_layer_slider_valueChanged(int value);
 
     void on_slime_layer_btn_clicked();
 
@@ -98,6 +97,11 @@ private slots:
     //
     void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
 
+    void on_village_layer_btn_clicked();
+
+    void on_hsa_layer_btn_clicked();
+
+    void on_edit_filter_btn_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -121,11 +125,12 @@ private:
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
 
-    QDialog *open_level_dialog_{nullptr};
 
     //global data
     QMap<QString, QRect> villages_;
-    //dialogs
+    //filter
+    RenderFilterDialog render_filter_dialog_{this};
 };
+
 
 #endif  // MAINWINDOW_H

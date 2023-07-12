@@ -85,9 +85,9 @@ public:
         this->draw_actors_ = !this->draw_actors_;
     }
 
-    inline void toggleVillage() {
-        this->draw_villages_ = !this->draw_villages_;
-    }
+    inline void toggleVillage() { this->draw_villages_ = !this->draw_villages_; }
+
+    inline void toggleHSAs() { this->draw_HSA_ = !this->draw_HSA_; }
 
     void saveImage(bool full);
 
@@ -184,7 +184,7 @@ private:
     bool draw_slime_chunk_{false};
     bool draw_actors_{false};
     bool draw_villages_{false};
-
+    bool draw_HSA_{false};
 
     int bw_{2};            //每个方块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
@@ -192,7 +192,7 @@ private:
     bool render_text_{false};
     bool render_debug_{false};
 
-    //village info
+    // village info
 };
 
 

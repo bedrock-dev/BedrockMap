@@ -68,6 +68,7 @@ public:
 
     std::vector<bl::palette::compound_tag *> getPaletteCopy();
 
+
     void foreachItem(const std::function<void(const std::string &label, bl::palette::compound_tag *data)> &func);
 
     void refreshLabel();

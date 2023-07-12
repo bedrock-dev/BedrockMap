@@ -179,10 +179,7 @@ public:
 
     bool modifyChunkPendingTicks(const bl::chunk_pos &cp, const std::string &raw);
 
-    //TODO: 修改实体并持久化
-    bool
-    modifyChunkActors(const bl::chunk_pos &cp,
-                      const std::unordered_map<std::string, bl::palette::compound_tag *> &actors);
+    bool modifyChunkActors(bl::chunk *ch, const std::vector<bl::actor *> &actors);
 
 public:
     ~AsyncLevelLoader() override;

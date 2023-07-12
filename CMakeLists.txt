@@ -53,9 +53,18 @@ set(PROJECT_SOURCES
         config.cpp
         iconmanager.cpp
         iconmanager.h
-        
-        qdarkstyle/dark/style.qrc
-        qdarkstyle/light/style.qrc
+
+        aboutdialog.h
+        aboutdialog.cpp
+        aboutdialog.ui
+
+
+        renderfilterdialog.h
+        renderfilterdialog.cpp
+        renderfilterdialog.ui
+
+
+        breeze/breeze.qrc
         icon.qrc
         )
 

@@ -121,10 +121,9 @@ void MapWidget::paintEvent(QPaintEvent *event) {
             drawHeight(event, &p);
             break;
     }
-
-    this->drawHSAs(event, &p);
-    this->drawVillages(event, &p);
-    if (draw_actors_)this->drawActors(event, &p);
+    if (draw_HSA_) this->drawHSAs(event, &p);
+    if (draw_villages_) this->drawVillages(event, &p);
+    if (draw_actors_) this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
     if (render_grid_) this->drawGrid(event, &p);
     if (render_text_) this->drawChunkPosText(event, &p);
@@ -282,7 +281,9 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawSelectArea(QPaintEvent *event, QPainter *p) {
     if (!this->has_selected_) return;
-    p->fillRect(getRenderSelectArea(), QBrush(QColor(135, 206, 235, 200)));
+    p->setPen(QPen(QColor(218, 255, 251), 6, Qt::DashLine));
+    p->setBrush(QBrush(QColor(218, 255, 251, 100)));
+    p->drawRect(getRenderSelectArea());
 }
 
 QRect MapWidget::getRenderSelectArea() {
@@ -341,14 +342,10 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         auto height = this->mw_->levelLoader()->bakedTerrainImage(rp);
         this->drawRegion(event, painter, rp, p, height);
     });
-
 }
 
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
-
-    QFont f("Consolas", 6);
-    p->setFont(f);
     auto &vs = this->mw_->get_villages();
     auto c = this->getRenderRange(this->camera_);
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
@@ -363,25 +360,18 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
             p->setPen(QPen(QColor(0, 223, 162), 3));
             p->setBrush(QBrush(QColor(0, 223, 162, 50)));
             p->drawRect(rec);
-//            p->setPen(QPen(QColor(255, 255, 255)));
-//            p->drawText(x, z + (int) fm.height() + 2, i.key());
+
         }
     }
 }
 
 void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
-    /**
-     *   NetherFortress = 1,
-        SwampHut = 2,
-        OceanMonument = 3,
-        PillagerOutpost = 5,
-     */
     QColor colors[]{QColor(0, 0, 0, 0),
-                    QColor(0, 223, 162, 255), //1
-                    QColor(255, 0, 96, 255), //2
-                    QColor(246, 250, 112, 255), //3
+                    QColor(0, 223, 162, 255), //1NetherFortress
+                    QColor(255, 0, 96, 255), //2SwampHut
+                    QColor(246, 250, 112, 255), //3OceanMonument
                     QColor(0, 0, 0, 0), //
-                    QColor(0, 121, 255, 255), //5
+                    QColor(0, 121, 255, 255), //5PillagerOutpost
                     QColor(0, 0, 0, 0),
     };
     this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp, const QPoint &p) {
@@ -466,7 +456,7 @@ void MapWidget::saveImage(bool full_screen) {
     }
     auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
                                                  "/home/jana/untitled.png",
-                                                 tr("Images (*.png *.xpm *.jpg)"));
+                                                 tr("Images (*.png *.jpg)"));
     if (fileName.isEmpty())return;
     img.save(fileName);
 }

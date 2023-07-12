@@ -107,7 +107,9 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     }
 }
 
-void ChunkEditorWidget::on_close_btn_clicked() { this->setVisible(false); }
+void ChunkEditorWidget::on_close_btn_clicked() {
+    this->setVisible(true);
+}
 
 void ChunkEditorWidget::refreshBasicData() {
     if (!this->chunk_) return;
@@ -138,12 +140,28 @@ void ChunkEditorWidget::showInfoPopMenu() {}
 
 
 void ChunkEditorWidget::on_save_actor_btn_clicked() {
-
     if (!this->mw_->enable_write()) {
         WARN("未开启写模式");
         return;
     }
+    auto palettes = this->actor_editor_->getPaletteCopy();
+    std::vector<bl::actor *> actors;
+    for (auto &pa: palettes) {
+        if (!pa)continue;
+        auto *a = new bl::actor;
+        if (a->load_from_nbt(pa)) {
+            actors.push_back(a);
+        }
+    }
 
+    auto res = this->mw_->levelLoader()->modifyChunkActors(this->chunk_, actors);
+    for (auto &p: palettes)delete p;
+    for (auto &ac: actors)delete ac;
+    if (res) {
+        INFO("写入实体数据成功");
+    } else {
+        WARN("写入实体数据失败");
+    }
 }
 
 void ChunkEditorWidget::on_save_block_actor_btn_clicked() {

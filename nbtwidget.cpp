@@ -66,7 +66,7 @@ namespace {
 
 NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->setupUi(this);
-    ui->splitter->setStretchFactor(0, 2);
+    ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 3);
     QFont f;
     f.setFamily("JetBrainsMono NFM");
@@ -81,7 +81,6 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     //right menu
     connect(ui->tree_widget, &QTreeWidget::customContextMenuRequested, this, &NbtWidget::prepareTreeWidgetMenu);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
-
     this->refreshLabel();
 
 }
@@ -182,6 +181,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         auto *exportAction = new QAction("导出选中", this);
 
         QObject::connect(removeSelect, &QAction::triggered, [this, pos](bool) {
+            if (!this->modify_allowed_)return;
             for (auto &item: ui->list_widget->selectedItems()) {
                 ui->list_widget->removeItemWidget(item);
                 delete item;
@@ -213,7 +213,6 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 
 void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
     using namespace bl::palette;
-
     auto *it = dynamic_cast<NBTTreeItem *>(item);
     if (!it || !it->root_) { //正常来说不会出现
         QMessageBox::information(nullptr, "信息", "当前nbt已损坏", QMessageBox::Yes, QMessageBox::Yes);
@@ -228,7 +227,7 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         }
         return;
     }
-
+    if (!this->modify_allowed_)return;
     QInputDialog d;
     d.setLabelText(it->root_->key().c_str());
     d.setOkButtonText("确定");
@@ -378,9 +377,9 @@ std::vector<bl::palette::compound_tag *> NbtWidget::getPaletteCopy() {
         res.push_back(dynamic_cast<bl::palette::compound_tag *> (   dynamic_cast<NBTListItem *>(ui->list_widget->item(
                 i))->root_->copy()));
     }
-
     return res;
 }
+
 
 void NbtWidget::foreachItem(const std::function<void(const std::string &, bl::palette::compound_tag *)> &func) {
     for (int i = 0; i < ui->list_widget->count(); ++i) {
@@ -415,5 +414,7 @@ void NbtWidget::refreshLabel() {
 }
 
 void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }
+
+
 
 

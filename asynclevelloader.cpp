@@ -183,12 +183,13 @@ void LoadRegionTask::run() {
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
+
     this->loaded_ = false;    //阻止UI层请求数据
     this->processing_.clear();  //队列清除
     this->pool_.clear();        //清除所有任务
     this->pool_.waitForDone();  //等待当前任务完成
     this->level_.close();  //关闭存档
-    for (auto &c: this->region_cache_) c->clear();
+    this->clearAllCache();
 }
 
 bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
@@ -207,6 +208,9 @@ void AsyncLevelLoader::clearAllCache() {
         cache->clear();
     }
 
+    for (auto cache: this->invalid_cache_) {
+        cache->clear();
+    }
 }
 
 QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::chunk_pos &max) {
@@ -302,10 +306,47 @@ bool AsyncLevelLoader::modifyChunkPendingTicks(const bl::chunk_pos &cp,
 }
 
 bool AsyncLevelLoader::modifyChunkActors(
-        const bl::chunk_pos &cp,
-        const std::unordered_map<std::string, bl::palette::compound_tag *> &bes) {
-    //TODO
-    return true;
+        bl::chunk *ch,
+        const std::vector<bl::actor *> &acs) {
+    //不同的区块不用的算法
+    if (!ch) return false;
+    if (ch->get_version() == bl::Old) {
+//        直接写入
+        std::string raw;
+        for (auto &p: acs)
+            raw += p->root()->to_raw();
+        bl::chunk_key key{bl::chunk_key::Entity, ch->get_pos()};
+        auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
+        return s.ok();
+    }
+
+
+    std::unordered_map<std::string, bl::actor *> actor_map;
+    for (auto ac: acs) {
+        actor_map[ac->uid_raw()] = ac;
+    }
+    //new versions
+    //获取所有的实体以及uid
+    leveldb::WriteBatch batch;
+    auto es = ch->entities();
+    for (auto cur: es) {
+        if (!actor_map.count(cur->uid_raw())) {
+            batch.Delete("actorprefix" + cur->uid_raw());
+        }
+    }
+
+    //写入新的实体
+    std::string digest;
+    for (auto &ac: actor_map) {
+        batch.Put("actorprefix" + ac.first, ac.second->root()->to_raw());
+        digest += ac.first;
+    }
+
+    //写入摘要
+    bl::actor_digest_key adk{ch->get_pos()};
+    batch.Put(adk.to_raw(), digest);
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    return s.ok();
 }
 
 chunk_region::~chunk_region() {

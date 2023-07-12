@@ -32,10 +32,22 @@
    <item>
     <layout class="QHBoxLayout" name="nbt_edit_toolbar">
      <property name="spacing">
-      <number>10</number>
+      <number>4</number>
      </property>
      <item>
       <widget class="QLabel" name="item_num_label">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>共1项</string>
        </property>
@@ -51,7 +63,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>120</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -90,7 +102,7 @@
       <widget class="QPushButton" name="save_btn">
        <property name="minimumSize">
         <size>
-         <width>60</width>
+         <width>100</width>
          <height>0</height>
         </size>
        </property>
