@@ -44,4 +44,12 @@ QImage *cfg::EMPTY_IMAGE() {
     return empty_img_;
 }
 
+QImage *cfg::BACKGROUND_IMAGE_COPY() {
+    auto *img = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    if (bg_img_)
+        memcpy(img->bits(), bg_img_->bits(), img->byteCount());
+    return img;
+}
+
+
 

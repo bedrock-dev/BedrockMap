@@ -1,5 +1,9 @@
 #include "renderfilterdialog.h"
 #include "ui_renderfilterdialog.h"
+#include "asynclevelloader.h"
+#include "iconmanager.h"
+#include <QColor>
+#include "color.h"
 
 RenderFilterDialog::RenderFilterDialog(QWidget *parent) :
         QDialog(parent),
@@ -45,13 +49,11 @@ void RenderFilterDialog::collectFilerData() {
 
     auto blocks = ui->block_text_edit->toPlainText().trimmed().split(",");
     auto biomes = ui->biome_text_edit->toPlainText().trimmed().split(",");
-    qDebug() << "biomes size: " << biomes;
     auto actors = ui->actor_text_edit->toPlainText().trimmed().split(",");
 
     this->filter_.blocks_list_.clear();
     this->filter_.biomes_list_.clear();
     this->filter_.actors_list_.clear();
-
 
     for (const auto &b: blocks) {
         auto s = b.trimmed();
@@ -74,4 +76,103 @@ void RenderFilterDialog::on_current_layer_lineedit_textEdited(const QString &arg
 
 void RenderFilterDialog::on_layer_slider_valueChanged(int value) {
     ui->current_layer_lineedit->setText(QString::number(value));
+}
+
+
+void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *region) const {
+    if (!ch)return;
+
+    auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
+    if (this->enable_layer_) { //有层，直接显示层数据
+        if (this->layer > maxy || this->layer < miny)return;
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
+                auto name = QString(ch->get_block(i, this->layer, j).name.c_str()).replace("minecraft:", "");
+                if ((this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
+                    auto c = ch->get_block_color(i, this->layer, j);
+                    region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                               QColor(c.r, c.g, c.b, c.a));
+                    tips.height = this->layer;
+                    tips.block_name = name.toStdString();
+                }
+            }
+        }
+    } else {
+        //无层，从上往下寻找白名单方块
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                int y = ch->get_height(i, j);
+                while (y >= miny) {
+                    auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
+                    auto name = QString(ch->get_block(i, y, j).name.c_str()).replace("minecraft:", "");
+                    if (name != "unknown" &&
+                        (this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
+                        auto c = ch->get_block_color(i, y, j);
+                        region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                                   QColor(c.r, c.g, c.b, c.a));
+                        tips.height = y;
+                        tips.block_name = name.toStdString();
+                        break;
+                    }
+                    y--;
+                }
+            }
+        }
+    }
+
+
+}
+
+void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *region) const {
+    if (!ch)return;
+
+    auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
+    if (this->enable_layer_) { //有层，直接显示层数据
+        if (this->layer > maxy || this->layer < miny)return;
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
+                auto biome = ch->get_biome(i, this->layer, j);
+
+                if ((this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_) {
+                    auto c = bl::get_biome_color(biome);
+                    region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                             QColor(c.r, c.g, c.b, c.a));
+                    tips.biome = biome;
+                }
+            }
+        }
+    } else {
+        //无层，从上往下寻找白名单方块
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                int y = ch->get_height(i, j);
+                while (y >= miny) {
+                    auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
+                    auto biome = ch->get_biome(i, y, j);
+                    if (y != bl::none &&
+                        (this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_) {
+                        auto c = bl::get_biome_color(biome);
+                        region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                                 QColor(c.r, c.g, c.b, c.a));
+                        tips.biome = biome;
+                        break;
+                    }
+                    y--;
+                }
+            }
+        }
+    }
+}
+
+void MapFilter::bakeChunkActors(bl::chunk *ch, chunk_region *region) const {
+    if (!ch)return;
+    auto entities = ch->entities();
+    for (auto &e: entities) {
+        auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
+        if ((this->actors_list_.count(key.toStdString()) == 0) == this->actor_black_mode_) {
+            region->actors_[ActorImage(key)].push_back(e->pos());
+        }
+    }
 }

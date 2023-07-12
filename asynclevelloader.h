@@ -15,6 +15,7 @@
 #include <unordered_set>
 #include <vector>
 #include "palette.h"
+#include "renderfilterdialog.h"
 
 class AsyncLevelLoader;
 namespace bl {
@@ -28,11 +29,6 @@ namespace bl {
     }
 }  // namespace bl
 
-struct RenderFilter {
-    bool enable_layer_{false};
-    int layer_ = {0};
-};
-
 
 struct BlockTipsInfo {
     std::string block_name{"unknown"};
@@ -44,23 +40,13 @@ struct chunk_region {
     ~chunk_region();
 
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
+    std::array<std::array<bool, cfg::RW>, cfg::RW> chunk_bit_map_;
     QImage *terrain_bake_image_{nullptr};
     QImage *biome_bake_image_{nullptr};
     bool valid{false};
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
-
-
-//struct LayerCacheInfo {
-//    QImage *terrain{nullptr};
-//    QImage *biome{nullptr};
-//    std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> info_;
-//    std::unordered_map<QImage *, std::vector<bl::vec3>> actor_list_;
-//
-//    static LayerCacheInfo *fromRegion(chunk_region *r);
-//
-//};
 
 
 template<typename T>
@@ -110,7 +96,7 @@ class LoadRegionTask : public QObject, public QRunnable {
 Q_OBJECT
 
 public:
-    explicit LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const RenderFilter *filter)
+    explicit LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const MapFilter *filter)
             : QRunnable(), level_(level), pos_(pos), filter_(filter) {
     }
 
@@ -123,7 +109,7 @@ signals:
 private:
     bl::bedrock_level *level_;
     region_pos pos_;
-    const RenderFilter *filter_;
+    const MapFilter *filter_;
 };
 
 
@@ -142,6 +128,8 @@ public:
     bl::bedrock_level &level() { return this->level_; }
 
     inline bool isOpen() const { return this->loaded_; }
+
+    void setFilter(const MapFilter &f) { this->map_filter_ = f; }
 
 public:
 
@@ -199,8 +187,7 @@ private:
     //主要是缓存图像，计算不是重点
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
-    RenderFilter bake_filter;
-
+    MapFilter map_filter_;
 };
 
 

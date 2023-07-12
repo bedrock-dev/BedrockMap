@@ -412,8 +412,6 @@ void MainWindow::refreshTitle() {
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
-
-
     for (auto kv: vs) {
         auto *nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
         if (!nbt)continue;
@@ -434,8 +432,11 @@ MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl
 void MainWindow::on_edit_filter_btn_clicked() {
     this->render_filter_dialog_.fillInUI();
     this->render_filter_dialog_.exec();
+
 }
 
 void MainWindow::applyFilter() {
     this->render_filter_dialog_.collectFilerData();
+    this->level_loader_->setFilter(this->render_filter_dialog_.getFilter());
+    this->level_loader_->clearAllCache();
 }

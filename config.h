@@ -17,7 +17,7 @@ namespace cfg {
 
     constexpr int REGION_CACHE_SIZE = 4096;
     constexpr int EMPTY_REGION_CACHE_SIZE = 16384;
-    constexpr int THREAD_NUM = 4;
+    constexpr int THREAD_NUM = 8;
 
     constexpr int BG_GRAY = 20;
 
@@ -35,6 +35,8 @@ namespace cfg {
     QImage *BACKGROUND_IMAGE();
 
     QImage *EMPTY_IMAGE();
+
+    QImage *BACKGROUND_IMAGE_COPY();
 
 }  // namespace cfg
 

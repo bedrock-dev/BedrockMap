@@ -32,7 +32,7 @@ chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     if (region) return region;
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
-    auto *task = new LoadRegionTask(&this->level_, p, &this->bake_filter);
+    auto *task = new LoadRegionTask(&this->level_, p, &this->map_filter_);
     connect(task, &LoadRegionTask::finish, this, [this](int x, int z, int dim, chunk_region *region) {
         if (!region || (!region->valid)) {
             this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
@@ -82,65 +82,22 @@ void LoadRegionTask::run() {
 
     const auto IMG_WIDTH = cfg::RW << 4;
     if (region->valid) {  //尝试烘焙
-        region->biome_bake_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-        region->terrain_bake_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+
+        region->terrain_bake_image_ = cfg::BACKGROUND_IMAGE_COPY();
+        region->biome_bake_image_ = cfg::BACKGROUND_IMAGE_COPY();
+
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
                 auto *chunk = chunks_[rw][rh];
+                region->chunk_bit_map_[rw][rh] = chunk != nullptr;
+                this->filter_->bakeChunkTerrain(chunk, rw, rh, region);
+                this->filter_->bakeChunkBiome(chunk, rw, rh, region);
+                this->filter_->bakeChunkActors(chunk, region);
                 if (chunk) {
-                    for (int i = 0; i < 16; i++) {
-                        for (int j = 0; j < 16; j++) {
-                            bl::color block_color{};
-                            std::string block_name;
-                            auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-
-                            if (filter_->enable_layer_) {
-                                auto [min_y, max_y] = this->pos_.get_y_range(chunk->get_version());
-                                if (filter_->layer_ >= min_y && filter_->layer_ <= max_y) {
-                                    tips.height = filter_->layer_;
-                                    tips.biome = chunk->get_biome(i, filter_->layer_, j);
-                                    tips.block_name = chunk->get_block(i, filter_->layer_, j).name;
-                                    block_color = chunk->get_block_color(i, filter_->layer_, j);
-                                }
-                            } else {
-                                tips.height = chunk->get_height(i, j);
-                                tips.biome = chunk->get_top_biome(i, j);
-                                tips.block_name = chunk->get_top_block(i, j).name;
-                                block_color = chunk->get_top_block_color(i, j);
-                            }
-
-                            auto biome_color = bl::get_biome_color(tips.biome);
-                            region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-                                                                     QColor(biome_color.r, biome_color.g,
-                                                                            biome_color.b));
-
-                            auto terrain_color = QColor(block_color.r, block_color.g, block_color.b, block_color.a);
-                            region->terrain_bake_image_->setPixelColor(i + (rw << 4), j + (rh << 4), terrain_color);
-                        }
-                    }
-
-                    for (auto &ac: chunk->entities()) {
-                        auto key = QString(ac->identifier().c_str()).replace("minecraft:", "");
-                        if (key != "item")
-                            region->actors_[ActorImage(key)].push_back(ac->pos());
-                    }
                     auto hss = chunk->HSAs();
                     region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
-                } else {
-                    for (int i = 0; i < 16; i++) {
-                        for (int j = 0; j < 16; j++) {
-                            const int x = i + (rw << 4);
-                            const int y = j + (rh << 4);
-                            auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-                            tips.height = -128;
-                            const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
-                            int index = (x / (cfg::RW * 8) + y / (cfg::RW * 8)) % 2;
-                            region->terrain_bake_image_->setPixelColor(x, y,
-                                                                       QColor(arr[index], arr[index], arr[index]));
-                            region->biome_bake_image_->setPixelColor(x, y, QColor(arr[index], arr[index], arr[index]));
-                        }
-                    }
                 }
+
             }
         }
     }
@@ -161,13 +118,11 @@ void LoadRegionTask::run() {
             }
 
             if (current_height * 2 > sum) {
-                region->terrain_bake_image_->setPixelColor(i, j,
-                                                           region->terrain_bake_image_->pixelColor(i, j).lighter(
-                                                                   SHADOW));
+                region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).lighter(
+                        SHADOW));
             } else if (current_height * 2 < sum) {
-                region->terrain_bake_image_->setPixelColor(i, j,
-                                                           region->terrain_bake_image_->pixelColor(i, j).darker(
-                                                                   SHADOW));
+                region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).darker(
+                        SHADOW));
             }
         }
     }
