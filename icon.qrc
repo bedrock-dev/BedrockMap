@@ -54,7 +54,6 @@
         <file>res/entity/fox.png</file>
         <file>res/entity/frog.png</file>
         <file>res/entity/ghast.png</file>
-        <file>res/entity/glare.png</file>
         <file>res/entity/goat.png</file>
         <file>res/entity/guardian.png</file>
         <file>res/entity/herobrine.png</file>
@@ -66,7 +65,6 @@
         <file>res/entity/jellie.png</file>
         <file>res/entity/johnny.png</file>
         <file>res/entity/kai.png</file>
-        <file>res/entity/kebab.png</file>
         <file>res/entity/leatherworker.png</file>
         <file>res/entity/librarian.png</file>
         <file>res/entity/lightning.png</file>
@@ -105,7 +103,6 @@
         <file>res/entity/strider.png</file>
         <file>res/entity/sunny.png</file>
         <file>res/entity/tadpole.png</file>
-        <file>res/entity/termite.png</file>
         <file>res/entity/toast.png</file>
         <file>res/entity/turtle.png</file>
         <file>res/entity/vex.png</file>
@@ -115,7 +112,6 @@
         <file>res/entity/wither.png</file>
         <file>res/entity/wolf.png</file>
         <file>res/entity/zoglin.png</file>
-        <file>res/entity/zuri.png</file>
         <file>res/entity/chest_minecart.png</file>
         <file>res/entity/xp_orb.png</file>
         <file>.gitignore</file>
@@ -172,7 +168,6 @@
         <file>res/block_actor/commandblock.png</file>
         <file>res/block_actor/comparator.png</file>
         <file>res/block_actor/conduit.png</file>
-        <file>res/block_actor/daylighdetector.png</file>
         <file>res/block_actor/endgateway.png</file>
         <file>res/block_actor/jukebox.png</file>
         <file>res/block_actor/movingblock.png</file>
@@ -187,5 +182,15 @@
         <file>res/block_actor/flowerpot.png</file>
         <file>res/block_actor/pistonarm.png</file>
         <file>res/block_actor/mobspawner.png</file>
+        <file>res/about.md</file>
+        <file>res/filter.png</file>
+        <file>res/entity/item.png</file>
+        <file>res/entity/pillager.png</file>
+        <file>res/block_actor/blastfurnace.png</file>
+        <file>res/block_actor/daylightdetector.png</file>
+        <file>res/block_actor/dropper.png</file>
+        <file>res/block_actor/enderchest.png</file>
+        <file>res/block_actor/itemframe.png</file>
+        <file>res/block_actor/smoker.png</file>
     </qresource>
 </RCC>

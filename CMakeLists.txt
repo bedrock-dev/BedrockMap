@@ -17,7 +17,6 @@ set(BEDROCK_LEVEL_ROOT "C:/Users/xhy/dev/bedrock-level")
 set(BEDROCK_LIBS
         ${BEDROCK_LEVEL_ROOT}/.build-debug/libbedrock-level.a
         ${BEDROCK_LEVEL_ROOT}/libs/libleveldb.a
-        ${BEDROCK_LEVEL_ROOT}/.build-debug/libnbt-cpp.a
         ${BEDROCK_LEVEL_ROOT}/libs/libz.a
         )
 include_directories(

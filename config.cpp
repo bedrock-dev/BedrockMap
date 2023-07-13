@@ -18,11 +18,10 @@ region_pos cfg::c2r(const bl::chunk_pos &ch) {
 }
 
 void cfg::initColorTable() {
-    bl::init_biome_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome.json)");
-    bl::init_block_color_palette_from_file(R"(C:\Users\xhy\dev\bedrock-level\data\colors\block.json)");
+    bl::init_biome_color_palette_from_file("biome.json");
+    bl::init_block_color_palette_from_file("block.json");
 
-
-    //init image
+    // init image
     bg_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
     empty_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
     const int BW = cfg::RW << 4;

@@ -108,7 +108,7 @@ QImage *PlayerIcon() { return nullptr; }
 QImage *BlockActorIcon(const QString &key) {
     auto it = block_actor_icon_pool.find(key);
     if (it == block_actor_icon_pool.end()) {
-        qDebug() << " unknown key " << key;
+        qDebug() << " unknown block actor key " << key;
     }
     return it == block_actor_icon_pool.end() ? unknown_img : it.value();
 }
@@ -116,7 +116,7 @@ QImage *BlockActorIcon(const QString &key) {
 QImage *ActorImage(const QString &key) {
     auto it = actor_img_pool.find(key);
     if (it == actor_img_pool.end()) {
-        qDebug() << " unknown key " << key;
+        qDebug() << " unknown actor image key " << key;
     }
 
     return it == actor_img_pool.end() ? unknown_img : it.value();

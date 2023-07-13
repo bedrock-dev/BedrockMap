@@ -27,10 +27,9 @@ class MainWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
 
-    ~MainWindow();
-
+    ~MainWindow() override;
 
     AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
@@ -71,10 +70,6 @@ private slots:
 
     void on_debug_checkbox_stateChanged(int arg1);
 
-//    void toggle_chunk_edit_view();
-
-//    void toggle_full_map_mode();
-
     void on_enable_chunk_edit_check_box_stateChanged(int arg1);
 
     void on_screenshot_btn_clicked();
@@ -94,14 +89,16 @@ private slots:
     void on_save_players_btn_clicked();
 
 
-    //
-    void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
-
     void on_village_layer_btn_clicked();
 
     void on_hsa_layer_btn_clicked();
 
     void on_edit_filter_btn_clicked();
+
+    void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
+
+
+    void resetToInitUI();
 
 private:
     Ui::MainWindow *ui;
@@ -118,15 +115,13 @@ private:
 
     //watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
-    QFutureWatcher<bool> open_level_watcher_;
-
+    QFutureWatcher<bool> load_global_data_watcher_;
     //global nbt editors
     NbtWidget *level_dat_editor_;
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
 
-
-    //global data
+    // global data
     QMap<QString, QRect> villages_;
     //filter
     RenderFilterDialog render_filter_dialog_{this};

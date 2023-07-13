@@ -22,15 +22,19 @@ namespace {
     QString nbtTagIconName(bl::palette::tag_type t) {
         using namespace bl::palette;
         std::unordered_map<tag_type, std::string> names{
-                {tag_type::Int,      "Int"},
-                {tag_type::Byte,     "Byte"},
-                {tag_type::Compound, "Compound"},
-                {tag_type::Double,   "Double"},
-                {tag_type::Float,    "Float"},
-                {tag_type::List,     "List"},
-                {tag_type::Long,     "Long"},
-                {tag_type::Short,    "Short"},
-                {tag_type::String,   "String"}};
+                {tag_type::Int,       "Int"},
+                {tag_type::Byte,      "Byte"},
+                {tag_type::Compound,  "Compound"},
+                {tag_type::Double,    "Double"},
+                {tag_type::Float,     "Float"},
+                {tag_type::List,      "List"},
+                {tag_type::Long,      "Long"},
+                {tag_type::Short,     "Short"},
+                {tag_type::String,    "String"},
+                {tag_type::ByteArray, "Byte_Array"},
+                {tag_type::IntArray,  "Int_Array"},
+                {tag_type::LongArray, "Long_Array"},
+        };
         auto it = names.find(t);
         if (it == names.end()) return ":/res/nbt/Tag_End.ico";
         return QString(":/res/nbt/TAG_") + it->second.c_str() + ".ico";
@@ -57,7 +61,6 @@ namespace {
             }
         } else {
             item->setText(0, item->getRawText());
-//            item->setFlags(item->flags() | Qt::ItemIsEditable);
         }
 
         return item;
@@ -227,7 +230,12 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         }
         return;
     }
+    if (t == ByteArray || t == LongArray || t == IntArray) {
+        return;
+    }
+
     if (!this->modify_allowed_)return;
+
     QInputDialog d;
     d.setLabelText(it->root_->key().c_str());
     d.setOkButtonText("确定");
@@ -257,8 +265,8 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         int min{INT32_MIN};
         int max{INT32_MAX};
         if (t == bl::palette::Byte) {
-            min = 0; //后面可能要改成符号数
-            max = 255;
+            min = -128;
+            max = 127;
         } else if (t == bl::palette::Short) {
             min = INT16_MIN;
             max = INT16_MAX;
@@ -271,7 +279,7 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 
     switch (it->root_->type()) {
         case Byte:
-            dynamic_cast<byte_tag *>(r)->value = static_cast<uint8_t>(d.intValue());
+            dynamic_cast<byte_tag *>(r)->value = static_cast<int8_t>(d.intValue());
             break;
         case Short:
             dynamic_cast<short_tag *>(r)->value = static_cast<int16_t>(d.intValue());
@@ -293,12 +301,15 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
             break;
         case List:
         case Compound:
-        case LEN:
         case End:
+        case ByteArray:
+        case IntArray:
+        case LongArray:
             break;
     }
     it->setText(0, it->getRawText());
 }
+
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                               const std::function<QString(bl::palette::compound_tag *)> &namer,

@@ -40,19 +40,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     //level loader
     this->level_loader_ = new AsyncLevelLoader();
-    //map widget
+    //init and insert map widget
     this->map_widget_ = new MapWidget(this, nullptr);
     this->map_widget_->gotoBlockPos(0, 0);
-    this->chunk_editor_widget_ = new ChunkEditorWidget(this);
     ui->map_visual_layout->addWidget(this->map_widget_);
-    ui->splitter->addWidget(this->chunk_editor_widget_);
-    ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 3);
-    ui->splitter->setStretchFactor(2, 1);
+    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
 
-    this->chunk_editor_widget_->setVisible(false);
 
-    // layer btn
+    //init chunk editor layout
+    this->chunk_editor_widget_ = new ChunkEditorWidget(this);
+    ui->map_splitter->addWidget(this->chunk_editor_widget_);
+    ui->map_splitter->setStretchFactor(0, 1);
+    ui->map_splitter->setStretchFactor(1, 3);
+    ui->map_splitter->setStretchFactor(2, 1);
+
+
+    //basic layer btns group
     this->layer_btns_ = {{MapWidget::MainRenderType::Biome,   ui->biome_layer_btn},
                          {MapWidget::MainRenderType::Terrain, ui->terrain_layer_btn},
                          {MapWidget::MainRenderType::Height,  ui->height_layer_btn}
@@ -67,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         });
     }
 
-    // Dimension Btn
+    // dimension btns group
     this->dim_btns_ = {
             {MapWidget::DimType::OverWorld, ui->overwrold_btn},
             {MapWidget::DimType::Nether,    ui->nether_btn},
@@ -80,23 +83,27 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 x.second->setEnabled(x.first != kv.first);
             }
             this->map_widget_->changeDimension(kv.first);
-            //            switch (kv.first) {
-            //                case MapWidget::DimType::OverWorld:
-            //                    ui->layer_slider->setRange(-64, 319);
-            //                    break;
-            //                case MapWidget::Nether:
-            //                    ui->layer_slider->setRange(0, 127);
-            //                    break;
-            //                case MapWidget::TheEnd:
-            //                    ui->layer_slider->setRange(0, 255);
-            //                    break;
-            //            }
         });
     }
 
     // Label and edit
-    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
 
+
+    //global editor
+    this->level_dat_editor_ = new NbtWidget();
+    level_dat_editor_->hideLoadDataBtn();
+    this->player_editor_ = new NbtWidget();
+    player_editor_->hideLoadDataBtn();
+    this->village_editor_ = new NbtWidget();
+    village_editor_->hideLoadDataBtn();
+    ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
+    ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
+    ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
+    ui->main_splitter->setStretchFactor(0, 3);
+    ui->main_splitter->setStretchFactor(1, 2);
+
+    connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
+    connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
     // menu actions
     connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
@@ -104,56 +111,50 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
     connect(ui->action_about, &QAction::triggered, this, []() { AboutDialog().exec(); });
 
-    // init stat
+    // watcher
+    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::handle_chunk_delete_finished);
+    connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::handle_level_open_finished);
+
+    //reset UI
+    this->resetToInitUI();
+}
+
+void MainWindow::resetToInitUI() {
+    //main_splitter: 分割按钮 +  主要UI
+    //map_splitter: 分割按钮面板 + 地图 + 区块编辑器
+
+    ui->main_splitter->setVisible(false);
+
+    //全局nbt panel的状态
+    ui->global_nbt_pannel->setVisible(false);
+    this->village_editor_->setVisible(false);
+    this->player_editor_->setVisible(false);
+    ui->save_players_btn->setVisible(false);
+    ui->save_village_btn->setVisible(false);
+    ui->player_nbt_loading_label->setVisible(true);
+    ui->village_nbt_loading_label->setVisible(true);
+
+    //checkbox and btns
     ui->biome_layer_btn->setEnabled(true);
     ui->terrain_layer_btn->setEnabled(false);
     ui->overwrold_btn->setEnabled(false);
     ui->grid_checkbox->setChecked(true);
     ui->text_checkbox->setChecked(false);
     ui->debug_checkbox->setChecked(false);
-
-    // debug
-    ui->x_edit->setMaximumWidth(160);
-    ui->z_edit->setMaximumWidth(160);
-
-    // watcher
-
-    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
-            &MainWindow::handle_chunk_delete_finished);
-    connect(&this->open_level_watcher_, &QFutureWatcher<bool>::finished, this,
-            &MainWindow::handle_level_open_finished);
-
-    //editor
-    this->level_dat_editor_ = new NbtWidget();
-    level_dat_editor_->hideLoadDataBtn();
-    this->player_editor_ = new NbtWidget();
-    player_editor_->hideLoadDataBtn();
-    this->village_editor_ = new NbtWidget();
-    village_editor_->hideLoadDataBtn();
-
-    ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
-    ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
-    ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
-
-    ui->splitter_2->setStretchFactor(1, 3);
-    ui->splitter_2->setStretchFactor(2, 2);
-    ui->splitter_2->setVisible(false);
-    QObject::connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
-
-
-    connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
-
-    this->setGeometry(centerMainWindowGeometry(0.5));
+    ui->global_nbt_checkbox->setChecked(false);
+    this->chunk_editor_widget_->setVisible(false);
+    ui->open_level_btn->setText("未打开存档");
+    ui->open_level_btn->setVisible(true);
+    this->setGeometry(centerMainWindowGeometry(0.7));
+    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::updateXZEdit(int x, int z) {
-    bl::block_pos bp{x, 0, z};
-    auto cp = bp.to_chunk_pos();
-    ui->block_pos_label->setText(
-            QString::number(x) + "," + QString::number(z) + "  /  [" + QString::number(cp.x) + "," +
-            QString::number(cp.z) + "]");
+    ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z));
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
@@ -161,7 +162,6 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
-
     // add a watcher
     qDebug() << "Load: " << p.to_string().c_str();
     auto chunk = this->level_loader_->getChunkDirect(p);
@@ -195,31 +195,50 @@ void MainWindow::openLevel() {
     if (root.size() == 0) {
         return;
     }
-
+    qDebug() << "Level root path is " << root;
     ui->open_level_btn->setText(QString("正在打开\n") + root);
     ui->open_level_btn->setEnabled(false);
-    auto future = QtConcurrent::run([this](const QString &path) {
-        try {
-            auto res = this->level_loader_->open(path.toStdString());
-            if (!res) {
-                return false;
-            }
-            this->level_loader_->level().load_global_data();
-            return true;
-        } catch (std::exception &e) {
-            return false;
-        }
-    }, root);
-    this->open_level_watcher_.setFuture(future);
+    auto res = this->level_loader_->open(root.toStdString());
+
+    if (!res) {
+        this->level_loader_->close();
+        WARN("无法打开存档,请确认这是一个合法的存档根目录");
+        this->resetToInitUI();
+        return;
+    }
+
+    //打开了存档
+    this->refreshTitle();                       //刷新标题
+    ui->main_splitter->setVisible(true);        //显示GUI
+    ui->open_level_btn->setVisible(false);      //隐藏窗口
+    //设置出生点坐标
+    auto sp = this->level_loader_->level().dat().spawn_position();
+    ui->x_edit->setText(QString::number(sp.x));
+    ui->z_edit->setText(QString::number(sp.z));
+    this->map_widget_->gotoBlockPos(sp.x, sp.z);
+    //写入level.dat数据
+    auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
+    this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
+    qDebug() << "Loading global data in background thread";
+    //后台加载全局数据
+    auto future = QtConcurrent::run(
+            [this](const QString &path) {
+                try {
+                    this->level_loader_->level().load_global_data();
+                    return true;
+                } catch (std::exception &e) {
+                    return false;
+                }
+            },
+            root);
+    this->load_global_data_watcher_.setFuture(future);
 }
 
 void MainWindow::closeLevel() {
     this->level_loader_->close();
-    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
-    ui->splitter_2->setVisible(false);
-    ui->open_level_btn->setVisible(true);
-    ui->open_level_btn->setText("未打开存档");
-    ui->global_nbt_checkbox->setChecked(false);
+    this->resetToInitUI();
+
+
 }
 
 void MainWindow::close_and_exit() {
@@ -228,11 +247,6 @@ void MainWindow::close_and_exit() {
 }
 
 void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_widget_->enableDebug(arg1 > 0); }
-
-//void MainWindow::toggle_chunk_edit_view() {
-//    auto x = this->chunk_editor_widget_->isVisible();
-//    this->chunk_editor_widget_->setVisible(!x);
-//}
 
 
 void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
@@ -250,16 +264,6 @@ void MainWindow::openNBTEditor() {
     w->show();
 }
 
-// void MainWindow::on_refresh_cache_btn_clicked() {
-//    //collect filter;
-//    RenderFilter f;
-//    //    f.enable_layer_ = ui->enable_layer_checkbox->isChecked();
-//    //    f.layer_ = ui->layer_slider->value();
-
-//    //    world_.setFilter(f);
-
-//    this->level_loader_->clearAllCache();
-//}
 
 void MainWindow::on_slime_layer_btn_clicked() { this->map_widget_->toggleSlime(); }
 
@@ -292,17 +296,12 @@ void MainWindow::on_global_nbt_checkbox_stateChanged(int arg1) { ui->global_nbt_
 
 void MainWindow::handle_level_open_finished() {
 
-    auto res = this->open_level_watcher_.result();
+    auto res = this->load_global_data_watcher_.result();
     if (!res) {
-        QMessageBox::warning(nullptr, "警告", "无法打开存档", QMessageBox::Yes, QMessageBox::Yes);
-        ui->open_level_btn->setText("未打开存档");
+        qDebug() << "Load global data failed";
+        WARN("无法加载全局NBT数据，但是你仍然可以查看地图和区块数据");
     } else {
-        this->refreshTitle();
-        auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
-        this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
         // load players
-
-
         auto &player_list = this->level_loader_->level().player_list().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
@@ -313,8 +312,8 @@ void MainWindow::handle_level_open_finished() {
             players.push_back(kv.second); //内部会复制数据，这里就不用复制了
         }
         this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys, icon_players);
-
-        //load villages
+        qDebug() << "Load player data finished";
+        // load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
         auto &village_list = this->level_loader_->level().village_list().data();
@@ -333,18 +332,17 @@ void MainWindow::handle_level_open_finished() {
             }
         }
 
-        this->village_editor_->load_new_data(vss, [&](auto *) { return QString(); }, village_keys, icons);
-        ui->splitter_2->setVisible(true);
-        ui->open_level_btn->setVisible(false);
-        ui->global_nbt_pannel->setVisible(false);
-
-        this->setWindowState(Qt::WindowMaximized);
-        auto sp = this->level_loader_->level().dat().spawn_position();
-        qDebug() << sp.x << "  " << sp.z;
-        ui->x_edit->setText(QString::number(sp.x));
-        ui->z_edit->setText(QString::number(sp.z));
-        this->map_widget_->gotoBlockPos(sp.x, sp.z);
+        this->village_editor_->load_new_data(
+                vss, [&](auto *) { return QString(); }, village_keys, icons);
+        qDebug() << "Load village data finished";
     }
+    this->village_editor_->setVisible(true);
+    this->player_editor_->setVisible(true);
+    ui->save_players_btn->setVisible(true);
+    ui->save_village_btn->setVisible(true);
+    ui->player_nbt_loading_label->setVisible(false);
+    ui->village_nbt_loading_label->setVisible(false);
+    //打开完成了设置为可用（虽然）
     ui->open_level_btn->setEnabled(true);
 }
 
@@ -440,3 +438,5 @@ void MainWindow::applyFilter() {
     this->level_loader_->setFilter(this->render_filter_dialog_.getFilter());
     this->level_loader_->clearAllCache();
 }
+
+

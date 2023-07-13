@@ -83,7 +83,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
@@ -175,23 +175,6 @@
         <widget class="QPushButton" name="save_pt_btn">
          <property name="text">
           <string>保存计划刻数据</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>3D</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QOpenGLWidget" name="openGLWidget"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_5">
-         <property name="text">
-          <string>导出为模型</string>
          </property>
         </widget>
        </item>

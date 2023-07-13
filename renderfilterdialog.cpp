@@ -88,11 +88,12 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-                auto name = QString(ch->get_block(i, this->layer, j).name.c_str()).replace("minecraft:", "");
+                auto block = ch->get_block(i, this->layer, j);
+                auto name = QString(block.name.c_str()).replace("minecraft:", "");
                 if ((this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-                    auto c = ch->get_block_color(i, this->layer, j);
                     region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-                                                               QColor(c.r, c.g, c.b, c.a));
+                                                               QColor(block.color.r, block.color.g, block.color.b,
+                                                                      block.color.a));
                     tips.height = this->layer;
                     tips.block_name = name.toStdString();
                 }
@@ -102,15 +103,17 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
         //无层，从上往下寻找白名单方块
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int y = ch->get_height(i, j);
+                int y = ch->get_height(i, j) + 1;
                 while (y >= miny) {
                     auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-                    auto name = QString(ch->get_block(i, y, j).name.c_str()).replace("minecraft:", "");
+                    auto block = ch->get_block(i, y, j);
+                    auto name = QString(block.name.c_str()).replace("minecraft:", "");
                     if (name != "unknown" &&
                         (this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-                        auto c = ch->get_block_color(i, y, j);
                         region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-                                                                   QColor(c.r, c.g, c.b, c.a));
+                                                                   QColor(block.color.r,
+                                                                          block.color.g, block.color.b,
+                                                                          block.color.a));
                         tips.height = y;
                         tips.block_name = name.toStdString();
                         break;
@@ -120,8 +123,6 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
             }
         }
     }
-
-
 }
 
 void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *region) const {

@@ -138,7 +138,6 @@ void LoadRegionTask::run() {
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
-
     this->loaded_ = false;    //阻止UI层请求数据
     this->processing_.clear();  //队列清除
     this->pool_.clear();        //清除所有任务

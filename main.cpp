@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     InitIcons();
     cfg::initColorTable();
     QApplication a(argc, argv);
-    QFile f(":/dark/stylesheet.qss");
+    QFile f(":/light/stylesheet.qss");
     if (!f.exists()) {
         printf("Unable to set stylesheet, file not found\n");
     } else {
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     }
     QFont font = a.font();
     font.setFamily("微软雅黑");
-    font.setPointSize(10);
+    font.setPointSize(8);
     a.setFont(font);
 
     MainWindow w;
