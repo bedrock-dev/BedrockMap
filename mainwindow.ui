@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1262</width>
-    <height>778</height>
+    <width>942</width>
+    <height>1213</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
 border: none;
 font-size: 30px;
 font: 36pt;
-margin: 100px;</string>
+margin: 20px;</string>
       </property>
       <property name="text">
        <string>未打开存档</string>
@@ -62,13 +62,13 @@ margin: 100px;</string>
        <widget class="QWidget" name="control_panel_widget" native="true">
         <property name="minimumSize">
          <size>
-          <width>400</width>
+          <width>80</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>600</width>
+          <width>80</width>
           <height>16777215</height>
          </size>
         </property>
@@ -89,35 +89,13 @@ margin: 100px;</string>
           <number>4</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
+          <layout class="QVBoxLayout" name="verticalLayout">
            <property name="spacing">
             <number>10</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
            <property name="topMargin">
-            <number>0</number>
+            <number>10</number>
            </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QCheckBox" name="grid_checkbox">
-             <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-             </property>
-             <property name="text">
-              <string>网格</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="text_checkbox">
              <property name="styleSheet">
@@ -127,183 +105,338 @@ margin: 100px;</string>
 }</string>
              </property>
              <property name="text">
-              <string>文本</string>
+              <string/>
              </property>
             </widget>
            </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="layer_layout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>20</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <property name="topMargin">
-              <number>0</number>
+            <widget class="QCheckBox" name="grid_checkbox">
+             <property name="styleSheet">
+              <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
              </property>
-            </layout>
-           </item>
-           <item>
-            <widget class="QWidget" name="map_top_toolbar_widget" native="true">
-             <layout class="QHBoxLayout" name="hor_toolbar_layout">
-              <property name="spacing">
-               <number>10</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QPushButton" name="overwrold_btn">
-                <property name="styleSheet">
-                 <string notr="true"/>
-                </property>
-                <property name="text">
-                 <string>主世界</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="nether_btn">
-                <property name="text">
-                 <string>下界</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="theend_btn">
-                <property name="text">
-                 <string>末地</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <property name="spacing">
-              <number>10</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QPushButton" name="terrain_layer_btn">
-               <property name="text">
-                <string>地形</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="biome_layer_btn">
-               <property name="text">
-                <string>群系</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="height_layer_btn">
-               <property name="text">
-                <string>高度</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="object_layout">
-           <property name="topMargin">
-            <number>20</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <layout class="QGridLayout" name="gridLayout">
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="spacing">
-              <number>10</number>
-             </property>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="slime_layer_btn">
-               <property name="text">
-                <string>史莱姆</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QPushButton" name="village_layer_btn">
-               <property name="text">
-                <string>村庄</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QPushButton" name="hsa_layer_btn">
-               <property name="text">
-                <string>HSA</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QPushButton" name="actor_layer_btn">
-               <property name="text">
-                <string>实体</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <property name="topMargin">
-            <number>20</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="edit_filter_btn">
              <property name="text">
-              <string>编辑过滤器</string>
+              <string/>
              </property>
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="dimen_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="theend_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>1</width>
+               <height>1</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="nether_btn">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="sizeIncrement">
+              <size>
+               <width>10</width>
+               <height>10</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">
+</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>54</width>
+               <height>54</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="overwrold_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>54</width>
+               <height>64</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="layer_layout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="biome_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>54</width>
+               <height>54</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="terrain_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>54</width>
+               <height>54</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="height_layer_btn">
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>54</width>
+               <height>54</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="obj">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="village_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string>A</string>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>18</width>
+               <height>16</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="actor_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>S</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="slime_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>HSA</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="hsa_layer_btn">
+             <property name="minimumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>64</width>
+               <height>64</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Vill</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="edit_filter_btn">
+           <property name="minimumSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>64</width>
+             <height>64</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Filt</string>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="setting_layout">
            <property name="topMargin">
-            <number>20</number>
+            <number>10</number>
            </property>
            <item>
             <widget class="QCheckBox" name="debug_checkbox">
@@ -314,7 +447,7 @@ margin: 100px;</string>
 }</string>
              </property>
              <property name="text">
-              <string>地图调试窗口</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -327,7 +460,7 @@ margin: 100px;</string>
 }</string>
              </property>
              <property name="text">
-              <string>允许修改存档</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -340,7 +473,7 @@ margin: 100px;</string>
 }</string>
              </property>
              <property name="text">
-              <string>全局NBT窗口</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -547,7 +680,7 @@ margin: 100px;</string>
            <enum>QTabWidget::West</enum>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
@@ -792,7 +925,7 @@ margin: 100px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1262</width>
+     <width>942</width>
      <height>21</height>
     </rect>
    </property>

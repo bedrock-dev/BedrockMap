@@ -173,7 +173,6 @@
         <file>res/block_actor/flowerpot.png</file>
         <file>res/block_actor/pistonarm.png</file>
         <file>res/block_actor/mobspawner.png</file>
-        <file>res/about.md</file>
         <file>res/entity/item.png</file>
         <file>res/entity/pillager.png</file>
         <file>res/block_actor/blastfurnace.png</file>
@@ -205,5 +204,14 @@
         <file>res/village/info.png</file>
         <file>res/village/players.png</file>
         <file>res/village/poi.png</file>
+        <file>res/fonts/SourceHanSansCN-Normal.otf</file>
+        <file>res/fonts/JetBrainsMono-Regular.ttf</file>
+        <file>res/ui/nether.png</file>
+        <file>res/ui/overworld.png</file>
+        <file>res/ui/theend.png</file>
+        <file>res/ui/biome.png</file>
+        <file>res/ui/height.png</file>
+        <file>res/ui/map.png</file>
+        <file>res/main.qss</file>
     </qresource>
 </RCC>

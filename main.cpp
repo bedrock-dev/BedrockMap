@@ -3,19 +3,17 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDesktopWidget>
+#include <QFontDatabase>
 #include <QIcon>
 #include <QImage>
 
 #include "asynclevelloader.h"
+#include "config.h"
 #include "iconmanager.h"
 #include "mainwindow.h"
-#include "config.h"
-
 
 void setupTheme(QApplication &a) {
-
-    if (cfg::COLOR_THEME != "dark" && cfg::COLOR_THEME != "light")return;
-    auto theme_path = ":/dark/stylesheet.qss";
+    auto theme_path = ":/light/stylesheet.qss";
     QFile f(theme_path);
     if (!f.exists()) {
         qWarning("Unable to set stylesheet, file not found");
@@ -26,16 +24,33 @@ void setupTheme(QApplication &a) {
     }
 }
 
+void setupFont(QApplication &a) {
+    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
+    if (id == -1) {
+        qWarning() << "Can not load font";
+    }
+    id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
+    if (id == -1) {
+        qWarning() << "Can not load font";
+    }
+
+    QFontDatabase db;
+    //  foreach (const QString &s, db.families()) { qDebug() << s; }
+
+    QFont font;
+    font.setFamily("Source Han Sans CN Normal");
+    font.setPointSize(10);
+    a.setFont(font);
+}
+
 int main(int argc, char *argv[]) {
     InitIcons();
     cfg::initConfig();
     cfg::initColorTable();
     QApplication a(argc, argv);
     setupTheme(a);
-    QFont font;
-    font.setFamily("微软雅黑");
-    font.setPointSize(10);
-    a.setFont(font);
+    setupFont(a);
+
     MainWindow w;
     w.setWindowTitle("LevelMap v0.1");
     QIcon icon(":/res/icon.png");  // 图标文件的资源路径
