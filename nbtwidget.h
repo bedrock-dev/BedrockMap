@@ -50,7 +50,6 @@ struct NBTListItem : public QListWidgetItem {
 
 //自身会持有数据，所以每次加载数据会析构之前的并复制一份
 class NbtWidget : public QWidget {
-
 Q_OBJECT
 public:
     explicit NbtWidget(QWidget *parent = nullptr);
@@ -72,6 +71,8 @@ public:
     void foreachItem(const std::function<void(const std::string &label, bl::palette::compound_tag *data)> &func);
 
     void refreshLabel();
+
+    void clearData();
 
 private slots:
 
@@ -105,7 +106,6 @@ private:
 
 private:
     //不存数据，只引用数据
-//    std::vector<bl::palette::compound_tag *> nbts_;
     Ui::NbtWidget *ui;
     bool modify_allowed_{false};
 };

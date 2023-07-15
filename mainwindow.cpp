@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QPalette>
+#include <QPixmap>
 #include <QSplitter>
 #include <QStandardPaths>
 #include <QtConcurrent>
@@ -147,11 +149,15 @@ void MainWindow::resetToInitUI() {
     this->chunk_editor_widget_->setVisible(false);
     ui->open_level_btn->setText("未打开存档");
     ui->open_level_btn->setVisible(true);
+    ui->open_level_btn->setEnabled(true);
     this->setGeometry(centerMainWindowGeometry(0.7));
-    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION));
+    this->setWindowTitle(QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()));
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() {
+    this->closeLevel();
+    delete ui;
+}
 
 void MainWindow::updateXZEdit(int x, int z) {
     ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z));
@@ -185,8 +191,7 @@ void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_widget_->en
 void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_widget_->enableText(arg1 > 0); }
 
 void MainWindow::openLevel() {
-
-    if (this->level_loader_->isOpen())this->level_loader_->close();
+    if (!this->closeLevel())return;
     auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
                 "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
@@ -196,10 +201,9 @@ void MainWindow::openLevel() {
         return;
     }
     qDebug() << "Level root path is " << root;
-    ui->open_level_btn->setText(QString("正在打开\n") + root);
+    ui->open_level_btn->setText("正在打开...");
     ui->open_level_btn->setEnabled(false);
     auto res = this->level_loader_->open(root.toStdString());
-
     if (!res) {
         this->level_loader_->close();
         WARN("无法打开存档,请确认这是一个合法的存档根目录");
@@ -234,15 +238,28 @@ void MainWindow::openLevel() {
     this->load_global_data_watcher_.setFuture(future);
 }
 
-void MainWindow::closeLevel() {
+bool MainWindow::closeLevel() {
+    //cancel background task
+    if (!this->level_loader_->isOpen())return true;
+    if (this->load_global_data_watcher_.isRunning()) {
+        WARN("为防止存档损坏，请等待背景任务完成再执行该操作");
+        return false;
+    }
     this->level_loader_->close();
+    //free spaces
+    this->chunk_editor_widget_->clearData();
+    this->village_editor_->clearData();
+    this->player_editor_->clearData();
+    this->level_dat_editor_->clearData();
+    this->villages_.clear();
     this->resetToInitUI();
-
-
+    return true;
 }
 
 void MainWindow::close_and_exit() {
-    this->level_loader_->close();
+    if (!this->closeLevel()) {
+        return;
+    }
     this->close();
 }
 
@@ -405,7 +422,8 @@ void MainWindow::refreshTitle() {
     auto levelName = QString();
     if (this->level_loader_->isOpen())
         levelName = this->level_loader_->level().dat().level_name().c_str();
-    this->setWindowTitle(QString(cfg::SOFTWARE_NAME) + " " + QString(cfg::SOFTWARE_VERSION) + " - " + levelName);
+    this->setWindowTitle(
+            QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()) + " - " + levelName);
 }
 
 void
@@ -439,4 +457,17 @@ void MainWindow::applyFilter() {
     this->level_loader_->clearAllCache();
 }
 
+#include <QPainter>
 
+void MainWindow::paintEvent(QPaintEvent *event) {
+    if (this->levelLoader()->isOpen()) return;
+    auto sz = this->size();
+    const int w = static_cast<int>(std::min(sz.width(), sz.height()) * 1.2);
+    QPainter p(this);
+    int x = logoPos.x * sz.width();
+    int z = logoPos.y * sz.height();
+    p.translate(x, z);
+    p.rotate(logoPos.angle);
+    p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
+    QMainWindow::paintEvent(event);
+}

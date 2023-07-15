@@ -3,37 +3,52 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QDialog>
+#include <QFutureWatcher>
 #include <QKeyEvent>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QPainter>
 #include <QPushButton>
 #include <unordered_map>
 
+#include "asynclevelloader.h"
 #include "chunkeditorwidget.h"
 #include "mapwidget.h"
-#include  <QFutureWatcher>
 #include "nbtwidget.h"
-#include <QDialog>
-#include "asynclevelloader.h"
-#include <QMessageBox>
 #include "renderfilterdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
+
+struct LogoPos {
+    int angle{0};
+    double x{0.5};
+    double y{0.5};
+
+    LogoPos() {
+        srand(time(nullptr));
+        angle = rand() % 360;
+        x = ((rand() % 100) / 100.0) * 0.6 + 0.2;
+        y = ((rand() % 100) / 100.0) * 0.6 + 0.2;
+        qDebug() << angle << " " << x << " " << y;
+    }
+};
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     ~MainWindow() override;
 
     AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
-public slots:
+   public slots:
 
     inline bool enable_write() const { return this->write_mode_; }
 
@@ -54,7 +69,9 @@ public slots:
 
     void applyFilter();
 
-private slots:
+   protected:
+    void paintEvent(QPaintEvent *event) override;
+   private slots:
 
     void on_goto_btn_clicked();
 
@@ -64,7 +81,7 @@ private slots:
 
     void openLevel();
 
-    void closeLevel();
+    bool closeLevel();
 
     void close_and_exit();
 
@@ -88,7 +105,6 @@ private slots:
 
     void on_save_players_btn_clicked();
 
-
     void on_village_layer_btn_clicked();
 
     void on_hsa_layer_btn_clicked();
@@ -97,35 +113,35 @@ private slots:
 
     void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
 
-
     void resetToInitUI();
 
-private:
+   private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
 
-
     MapWidget *map_widget_;
     ChunkEditorWidget *chunk_editor_widget_;
-    //data source
+    // data source
     AsyncLevelLoader *level_loader_{nullptr};
 
     bool write_mode_{false};
 
-    //watcher
+    // watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
     QFutureWatcher<bool> load_global_data_watcher_;
-    //global nbt editors
+
+    // global nbt editors
     NbtWidget *level_dat_editor_;
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
 
     // global data
     QMap<QString, QRect> villages_;
-    //filter
+    // filter
     RenderFilterDialog render_filter_dialog_{this};
-};
+    LogoPos logoPos{};
 
+};
 
 #endif  // MAINWINDOW_H

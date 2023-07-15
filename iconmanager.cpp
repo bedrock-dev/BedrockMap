@@ -60,7 +60,7 @@ namespace {
         return masked;
     }
 
-    QImage *scale(QImage &img) {
+    QImage *scale(const QImage &img) {
         auto *res = new QImage(img.width() * 2, img.height() * 2, QImage::Format_RGBA8888);
         for (int i = 0; i < img.width(); i++) {
             for (int j = 0; j < img.height(); j++) {
@@ -88,17 +88,15 @@ void InitIcons() {
         }
     }
 
-    village_dwellers = new QImage(":/res/village_dwellers.png");
-    village_players = new QImage(":/res/village_player.png");
-    village_info = new QImage(":/res/village_info.png");
-    village_poi = new QImage(":/res/village_poi.png");
+    village_dwellers = scale(QImage(":/res/village/dwellers.png"));
+    village_players = scale(QImage(":/res/village/players.png"));
+    village_info = scale(QImage(":/res/village/info.png"));
+    village_poi = scale(QImage(":/res/village/poi.png"));
     unknown_img = new QImage(":/res/what.png");
-
     QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
     while (it2.hasNext()) {
         auto img = QImage(it2.next());
         auto key = it2.fileName().replace(".png", "");
-        qDebug() << key;
         block_actor_icon_pool[key] = scale(img);
     }
 }

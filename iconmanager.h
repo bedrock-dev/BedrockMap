@@ -21,5 +21,4 @@ QImage *BlockActorIcon(const QString &key);
 
 QImage *EntityIcon(const QString &key);
 
-#endif //BEDROCKMAP_ICONMANAGER_H
-
+#endif  // BEDROCKMAP_ICONMANAGER_H

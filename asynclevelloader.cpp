@@ -10,7 +10,7 @@
 #include "leveldb/write_batch.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
+    this->pool_.setMaxThreadCount(8);
     for (int i = 0; i < 3; i++) {
         this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
@@ -47,7 +47,6 @@ chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     return nullptr;
 }
 
-
 bool AsyncLevelLoader::open(const std::string &path) {
     this->level_.set_cache(false);
     this->loaded_ = this->level_.open(path);
@@ -67,7 +66,7 @@ void LoadRegionTask::run() {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
             try {
-                chunks_[i][j] = this->level_->get_chunk(p);
+                chunks_[i][j] = this->level_->get_chunk(p, true);
             } catch (std::exception &e) {
                 chunks_[i][j] = nullptr;
             }
@@ -138,10 +137,13 @@ void LoadRegionTask::run() {
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
+    qInfo() << "Try close level";
+
     this->loaded_ = false;    //阻止UI层请求数据
     this->processing_.clear();  //队列清除
     this->pool_.clear();        //清除所有任务
     this->pool_.waitForDone();  //等待当前任务完成
+    qInfo() << "Clear work pool";
     this->level_.close();  //关闭存档
     this->clearAllCache();
 }
@@ -165,6 +167,7 @@ void AsyncLevelLoader::clearAllCache() {
     for (auto cache: this->invalid_cache_) {
         cache->clear();
     }
+    this->slime_chunk_cache_->clear();
 }
 
 QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::chunk_pos &max) {

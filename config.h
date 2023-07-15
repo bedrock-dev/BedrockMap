@@ -10,34 +10,37 @@
 
 typedef bl::chunk_pos region_pos;
 
-namespace cfg {
+struct cfg {
 
-    constexpr uint8_t RW = 4u;  //(1<<w)
+    static constexpr uint8_t RW = 4u;  //(1<<w)
+    static constexpr int BG_GRAY = 20;
+
     static_assert((RW & (RW - 1)) == 0, "Invalid Render region width");
 
-    constexpr int REGION_CACHE_SIZE = 4096;
-    constexpr int EMPTY_REGION_CACHE_SIZE = 16384;
-    constexpr int THREAD_NUM = 8;
+    const static std::string SOFTWARE_NAME;
 
-    constexpr int BG_GRAY = 20;
+    const static std::string SOFTWARE_VERSION;
 
-    constexpr auto ZOOM_SPEED = 1.15;
+    //下面是可配置的
+    static int REGION_CACHE_SIZE;
+    static int EMPTY_REGION_CACHE_SIZE;
+    static int THREAD_NUM;
+    static float ZOOM_SPEED;
+    static std::string COLOR_THEME;
 
-    const char SOFTWARE_NAME[] = "Bedrock Map";
+    static region_pos c2r(const bl::chunk_pos &ch);
 
-    const char SOFTWARE_VERSION[] = "v0.1";
+    static void initColorTable();
 
+    static void initConfig();
 
-    region_pos c2r(const bl::chunk_pos &ch);
+    static QImage *BACKGROUND_IMAGE();
 
-    void initColorTable();
+    static QImage *EMPTY_IMAGE();
 
-    QImage *BACKGROUND_IMAGE();
+    static QImage *BACKGROUND_IMAGE_COPY();
 
-    QImage *EMPTY_IMAGE();
-
-    QImage *BACKGROUND_IMAGE_COPY();
-
-}  // namespace cfg
+    static QImage *BG();
+};
 
 #endif  // CONFIG_H

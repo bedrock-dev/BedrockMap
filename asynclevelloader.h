@@ -180,7 +180,7 @@ private:
 
 private:
     std::atomic_bool loaded_{false};
-    bl::bedrock_level level_;
+    bl::bedrock_level level_{};
     TaskBuffer<region_pos> processing_;
     std::vector<QCache<region_pos, chunk_region> *> region_cache_;
     std::vector<QCache<region_pos, char> *> invalid_cache_;

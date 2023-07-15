@@ -55,7 +55,7 @@ ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
 
 void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     if (chunk) {
-        delete this->chunk_;
+        this->clearData();
         this->chunk_ = chunk;
         this->refreshBasicData();
         this->chunk_section_->set_chunk(chunk);
@@ -195,7 +195,13 @@ void ChunkEditorWidget::on_save_pt_btn_clicked() {
     }
 }
 
-void ChunkEditorWidget::clearAll() {
+
+void ChunkEditorWidget::clearData() {
+    this->actor_editor_->clearData();
+    this->block_entity_editor_->clearData();
+    this->pending_tick_editor_->clearData();
+    delete this->chunk_;
+    this->chunk_ = nullptr;
 }
 
 

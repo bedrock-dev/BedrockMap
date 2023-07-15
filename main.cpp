@@ -11,26 +11,34 @@
 #include "mainwindow.h"
 #include "config.h"
 
-int main(int argc, char *argv[]) {
-    InitIcons();
-    cfg::initColorTable();
-    QApplication a(argc, argv);
-    QFile f(":/light/stylesheet.qss");
+
+void setupTheme(QApplication &a) {
+
+    if (cfg::COLOR_THEME != "dark" && cfg::COLOR_THEME != "light")return;
+    auto theme_path = ":/dark/stylesheet.qss";
+    QFile f(theme_path);
     if (!f.exists()) {
-        printf("Unable to set stylesheet, file not found\n");
+        qWarning("Unable to set stylesheet, file not found");
     } else {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
         a.setStyleSheet(ts.readAll());
     }
-    QFont font = a.font();
-    font.setFamily("微软雅黑");
-    font.setPointSize(8);
-    a.setFont(font);
+}
 
+int main(int argc, char *argv[]) {
+    InitIcons();
+    cfg::initConfig();
+    cfg::initColorTable();
+    QApplication a(argc, argv);
+    setupTheme(a);
+    QFont font;
+    font.setFamily("微软雅黑");
+    font.setPointSize(10);
+    a.setFont(font);
     MainWindow w;
     w.setWindowTitle("LevelMap v0.1");
-    QIcon icon(":/res/map.ico");  // 图标文件的资源路径
+    QIcon icon(":/res/icon.png");  // 图标文件的资源路径
     w.setWindowIcon(icon);        // 设置窗口图标
     w.show();
     return a.exec();

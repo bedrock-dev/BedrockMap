@@ -12,6 +12,7 @@ RenderFilterDialog::RenderFilterDialog(QWidget *parent) :
     this->setWindowTitle("配置地图过滤器");
     ui->layer_slider->setSingleStep(1);
     ui->layer_slider->setRange(-63, 319);
+    this->setWindowIcon(QIcon(":/res/filter_editor.png"));
 }
 
 RenderFilterDialog::~RenderFilterDialog() {
@@ -135,7 +136,6 @@ void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *regi
             for (int j = 0; j < 16; j++) {
                 auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
                 auto biome = ch->get_biome(i, this->layer, j);
-
                 if ((this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_) {
                     auto c = bl::get_biome_color(biome);
                     region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
@@ -152,7 +152,7 @@ void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *regi
                 while (y >= miny) {
                     auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
                     auto biome = ch->get_biome(i, y, j);
-                    if (y != bl::none &&
+                    if (biome != bl::none &&
                         (this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_) {
                         auto c = bl::get_biome_color(biome);
                         region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,

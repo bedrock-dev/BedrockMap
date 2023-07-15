@@ -84,11 +84,16 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     //right menu
     connect(ui->tree_widget, &QTreeWidget::customContextMenuRequested, this, &NbtWidget::prepareTreeWidgetMenu);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
-    this->refreshLabel();
 
+    this->setWindowIcon(QIcon(":/res/nbt_editor.png"));
+
+    this->refreshLabel();
 }
 
-NbtWidget::~NbtWidget() { delete ui; }
+NbtWidget::~NbtWidget() {
+    delete ui;
+    this->clearData();
+}
 
 void NbtWidget::on_load_btn_clicked() {
     auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
@@ -178,7 +183,6 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         });
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
-
         auto *removeSelect = new QAction("删除选中", this);
         auto *unselectAll = new QAction("全不选", this);
         auto *exportAction = new QAction("导出选中", this);
@@ -199,7 +203,6 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) {
             this->saveNBTs(true);
         });
-
 
         QMenu menu(this);
         if (modify_allowed_) {
@@ -316,9 +319,7 @@ void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &da
                               const std::vector<std::string> &default_labels,
                               const std::vector<QImage *> &icons
 ) {
-
-    ui->tree_widget->clear();
-    ui->list_widget->clear();
+    this->clearData();
     bool needIcon{icons.size() == data.size()};
     for (int i = 0; i < data.size(); i++) {
         auto *it = new NBTListItem();
@@ -425,6 +426,12 @@ void NbtWidget::refreshLabel() {
 }
 
 void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }
+
+void NbtWidget::clearData() {
+    ui->list_widget->clear();
+    ui->tree_widget->clear();
+
+}
 
 
 

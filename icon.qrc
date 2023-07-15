@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>res/map.ico</file>
         <file>res/nbt/TAG_Byte.ico</file>
         <file>res/nbt/TAG_Byte_Array.ico</file>
         <file>res/nbt/TAG_Byte_bool.ico</file>
@@ -22,7 +21,6 @@
         <file>res/entity/armorer.png</file>
         <file>res/entity/arrow.png</file>
         <file>res/entity/axolotl.png</file>
-        <file>res/entity/baiji.png</file>
         <file>res/entity/barnacle.png</file>
         <file>res/entity/bat.png</file>
         <file>res/entity/bee.png</file>
@@ -38,15 +36,12 @@
         <file>res/entity/cod.png</file>
         <file>res/entity/cow.png</file>
         <file>res/entity/creeper.png</file>
-        <file>res/entity/crystal.png</file>
-        <file>res/entity/deer.png</file>
         <file>res/entity/dolphin.png</file>
         <file>res/entity/donkey.png</file>
         <file>res/entity/drowned.png</file>
         <file>res/entity/efe.png</file>
         <file>res/entity/enderman.png</file>
         <file>res/entity/endermite.png</file>
-        <file>res/entity/evoker.png</file>
         <file>res/entity/farmer.png</file>
         <file>res/entity/firefly.png</file>
         <file>res/entity/fisherman.png</file>
@@ -135,10 +130,6 @@
         <file>res/entity/wandering_trader.png</file>
         <file>res/entity/zombie.png</file>
         <file>res/what.png</file>
-        <file>res/village_dwellers.png</file>
-        <file>res/village_info.png</file>
-        <file>res/village_player.png</file>
-        <file>res/village_poi.png</file>
         <file>res/entity/cave_spider.png</file>
         <file>res/entity/elder_guardian.png</file>
         <file>res/entity/painting.png</file>
@@ -183,7 +174,6 @@
         <file>res/block_actor/pistonarm.png</file>
         <file>res/block_actor/mobspawner.png</file>
         <file>res/about.md</file>
-        <file>res/filter.png</file>
         <file>res/entity/item.png</file>
         <file>res/entity/pillager.png</file>
         <file>res/block_actor/blastfurnace.png</file>
@@ -192,5 +182,28 @@
         <file>res/block_actor/enderchest.png</file>
         <file>res/block_actor/itemframe.png</file>
         <file>res/block_actor/smoker.png</file>
+        <file>res/entity/tropicalfish.png</file>
+        <file>res/entity/wither_skull.png</file>
+        <file>res/entity/wither_skull_dangerous.png</file>
+        <file>res/entity/command_block_minecart.png</file>
+        <file>res/entity/fireworks_rocket.png</file>
+        <file>res/entity/panda.png</file>
+        <file>res/entity/tnt.png</file>
+        <file>res/entity/tnt_minecart.png</file>
+        <file>res/entity/chest_boat.png</file>
+        <file>res/entity/ender_crystal.png</file>
+        <file>res/entity/evocation_illager.png</file>
+        <file>res/entity/shulker_bullet.png</file>
+        <file>res/entity/fireball.png</file>
+        <file>res/entity/ice_bomb.png</file>
+        <file>res/entity/player.png</file>
+        <file>res/entity/small_fireball.png</file>
+        <file>res/filter_editor.png</file>
+        <file>res/icon.png</file>
+        <file>res/nbt_editor.png</file>
+        <file>res/village/dwellers.png</file>
+        <file>res/village/info.png</file>
+        <file>res/village/players.png</file>
+        <file>res/village/poi.png</file>
     </qresource>
 </RCC>

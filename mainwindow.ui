@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1207</width>
-    <height>683</height>
+    <width>1262</width>
+    <height>778</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,10 @@
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgba(255, 255, 255, 0);
-border: none</string>
+border: none;
+font-size: 30px;
+font: 36pt;
+margin: 100px;</string>
       </property>
       <property name="text">
        <string>未打开存档</string>
@@ -458,15 +461,18 @@ border: none</string>
              <widget class="QLineEdit" name="z_edit">
               <property name="minimumSize">
                <size>
-                <width>60</width>
+                <width>90</width>
                 <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>60</width>
+                <width>120</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -481,15 +487,18 @@ border: none</string>
              <widget class="QLineEdit" name="x_edit">
               <property name="minimumSize">
                <size>
-                <width>60</width>
+                <width>90</width>
                 <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>60</width>
+                <width>120</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -783,7 +792,7 @@ border: none</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1207</width>
+     <width>1262</width>
      <height>21</height>
     </rect>
    </property>
@@ -829,15 +838,12 @@ border: none</string>
     <string>关闭</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+C</string>
+    <string>Ctrl+F</string>
    </property>
   </action>
   <action name="action_exit">
    <property name="text">
     <string>退出</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="actionhelp">

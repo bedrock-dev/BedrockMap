@@ -3,13 +3,26 @@
 //
 #include "config.h"
 #include "color.h"
+#include "json/json.hpp"
+#include <QtDebug>
+#include <fstream>
+
 
 namespace {
-
     QImage *bg_img_{nullptr};
     QImage *empty_img_{nullptr};
+    QImage *bg_{nullptr};
+}  // namespace
 
-}
+
+
+int cfg::REGION_CACHE_SIZE = 4096;
+int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
+int cfg::THREAD_NUM = 8;
+std::string  cfg::COLOR_THEME = "light";
+const std::string  cfg::SOFTWARE_NAME = "BedrockMap";
+const std::string  cfg::SOFTWARE_VERSION = "v0.1";
+float cfg::ZOOM_SPEED = 1.2;
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
     auto cx = ch.x < 0 ? ch.x - cfg::RW + 1 : ch.x;
@@ -33,6 +46,24 @@ void cfg::initColorTable() {
             empty_img_->setPixelColor(i, j, QColor(0, 0, 0, 0));
         }
     }
+
+    bg_ = new QImage(8, 8, QImage::Format_RGBA8888);
+    bg_->fill(QColor(0, 0, 0, 0));
+    std::vector<std::string> fills{
+            "XXXXXXXX",  //
+            "XXXXXXXX",  //
+            "X  XX  X",  //
+            "X  XX  X",  //
+            "XXX  XXX",  //
+            "XX    XX",  //
+            "XX    XX",  //
+            "XX XX XX",  //
+    };
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (fills[i][j] == ' ') bg_->setPixelColor(i, j, QColor(31, 138, 112, 160));
+        }
+    }
 }
 
 QImage *cfg::BACKGROUND_IMAGE() {
@@ -50,5 +81,52 @@ QImage *cfg::BACKGROUND_IMAGE_COPY() {
     return img;
 }
 
+QImage *cfg::BG() { return bg_; }
 
+void cfg::initConfig() {
+    std::string cfg_path;
+#ifdef  QT_DEBUG
+    cfg_path = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
+#else
+    cfg_path = "config.json";
+#endif
 
+    qDebug() << "Configuration path is " << cfg_path.c_str();
+
+    try {
+
+        nlohmann::json j;
+        std::ifstream f(cfg_path);
+        if (!f.is_open()) {
+            qWarning() << "Can not find config file.";
+        } else {
+            f >> j;
+            COLOR_THEME = j["theme"].get<std::string>();
+            REGION_CACHE_SIZE = j["region_cache_size"].get<int>();
+            EMPTY_REGION_CACHE_SIZE = j["empty_region_cache_size"].get<int>();
+            THREAD_NUM = j["background_thread_number"].get<int>();
+        }
+
+    } catch (std::exception &e) {
+        qWarning() << "Invalid config file format" << e.what();
+    }
+    qInfo() << "Region cache size: " << REGION_CACHE_SIZE;
+    qInfo() << "Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
+    qInfo() << "Background thread number: " << THREAD_NUM;
+    qInfo() << "Theme: " << COLOR_THEME.c_str();
+
+    if (REGION_CACHE_SIZE < 128) {
+        REGION_CACHE_SIZE = 128;
+        qWarning() << "Invalid  Region cache size, reset it to 128";
+    }
+
+    if (EMPTY_REGION_CACHE_SIZE < 4096) {
+        EMPTY_REGION_CACHE_SIZE = 4096;
+        qWarning() << "Invalid Region cache size, reset it to 4096";
+    }
+
+    if (THREAD_NUM < 1) {
+        THREAD_NUM = 1;
+        qWarning() << "Invalid background thread number, reset it to 1";
+    }
+}
