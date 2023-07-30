@@ -73,7 +73,7 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->splitter->setStretchFactor(1, 3);
     QFont f;
     f.setFamily("JetBrains Mono");
-    f.setPointSize(10);
+    f.setPointSize(8);
     ui->list_widget->setFont(f);
     ui->tree_widget->setFont(f);
 

@@ -20,16 +20,16 @@ void setupTheme(QApplication &a) {
     } else {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
-        a.setStyleSheet(ts.readAll());
+        //        a.setStyleSheet(ts.readAll());
     }
 }
 
 void setupFont(QApplication &a) {
-    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
-    if (id == -1) {
-        qWarning() << "Can not load font";
-    }
-    id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
+//    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
+//    if (id == -1) {
+//        qWarning() << "Can not load font";
+//    }
+    auto id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
     if (id == -1) {
         qWarning() << "Can not load font";
     }
@@ -38,8 +38,9 @@ void setupFont(QApplication &a) {
     //  foreach (const QString &s, db.families()) { qDebug() << s; }
 
     QFont font;
-    font.setFamily("Source Han Sans CN Normal");
-    font.setPointSize(10);
+    // font.setFamily("Source Han Sans CN Normal");
+    font.setFamily("微软雅黑");
+    //    font.setPointSize(8);
     a.setFont(font);
 }
 

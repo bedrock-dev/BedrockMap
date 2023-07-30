@@ -126,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 void MainWindow::resetToInitUI() {
     //main_splitter: 分割按钮 +  主要UI
     //map_splitter: 分割按钮面板 + 地图 + 区块编辑器
-
+    ui->map_buttom_toolbar_widget->setVisible(false);
     ui->main_splitter->setVisible(false);
 
     //全局nbt panel的状态
@@ -471,3 +471,11 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
     QMainWindow::paintEvent(event);
 }
+
+void MainWindow::on_grid_btn_clicked() { this->map_widget_->toggleGrid(); }
+
+void MainWindow::on_coord_btn_clicked() { this->map_widget_->toggleCoords(); }
+
+void MainWindow::on_debug_btn_clicked() { this->map_widget_->toggleDebug(); }
+
+void MainWindow::on_glbal_data_btn_clicked() { ui->global_nbt_pannel->setVisible(!ui->global_nbt_pannel->isVisible()); }

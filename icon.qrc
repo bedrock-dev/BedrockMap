@@ -213,5 +213,14 @@
         <file>res/ui/height.png</file>
         <file>res/ui/map.png</file>
         <file>res/main.qss</file>
+        <file>res/ui/actor.png</file>
+        <file>res/ui/coord.png</file>
+        <file>res/ui/debug.png</file>
+        <file>res/ui/global_nbt.png</file>
+        <file>res/ui/grid.png</file>
+        <file>res/ui/hsa.png</file>
+        <file>res/ui/slime.png</file>
+        <file>res/ui/village.png</file>
+        <file>res/ui/write.png</file>
     </qresource>
 </RCC>

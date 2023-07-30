@@ -115,6 +115,14 @@ class MainWindow : public QMainWindow {
 
     void resetToInitUI();
 
+    void on_grid_btn_clicked();
+
+    void on_coord_btn_clicked();
+
+    void on_debug_btn_clicked();
+
+    void on_glbal_data_btn_clicked();
+
    private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;

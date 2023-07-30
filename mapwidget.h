@@ -80,18 +80,20 @@ public:
     inline void toggleSlime() {
         this->draw_slime_chunk_ = !this->draw_slime_chunk_;
     }
+    inline void toggleGrid() { this->render_grid_ = !this->render_grid_; }
+    inline void toggleCoords() { this->render_text_ = !this->render_text_; }
 
-    inline void toggleActor() {
-        this->draw_actors_ = !this->draw_actors_;
-    }
+    inline void toggleActor() { this->draw_actors_ = !this->draw_actors_; }
 
     inline void toggleVillage() { this->draw_villages_ = !this->draw_villages_; }
 
     inline void toggleHSAs() { this->draw_HSA_ = !this->draw_HSA_; }
 
+    inline void toggleDebug() { this->render_debug_ = !this->render_debug_; }
+
     void saveImage(bool full);
 
-signals:
+   signals:
 
     void mouseMove(int x, int z); //NOLINT
 

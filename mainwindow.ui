@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>942</width>
-    <height>1213</height>
+    <width>1191</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,6 +24,21 @@
     <string notr="true"/>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <property name="spacing">
+     <number>2</number>
+    </property>
+    <property name="leftMargin">
+     <number>4</number>
+    </property>
+    <property name="topMargin">
+     <number>4</number>
+    </property>
+    <property name="rightMargin">
+     <number>4</number>
+    </property>
+    <property name="bottomMargin">
+     <number>4</number>
+    </property>
     <item>
      <widget class="QPushButton" name="open_level_btn">
       <property name="enabled">
@@ -59,28 +74,31 @@ margin: 20px;</string>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="handleWidth">
+        <number>2</number>
+       </property>
        <widget class="QWidget" name="control_panel_widget" native="true">
         <property name="minimumSize">
          <size>
-          <width>80</width>
+          <width>0</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>80</width>
+          <width>44</width>
           <height>16777215</height>
          </size>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <property name="spacing">
-          <number>4</number>
+          <number>2</number>
          </property>
          <property name="leftMargin">
           <number>4</number>
          </property>
          <property name="topMargin">
-          <number>4</number>
+          <number>0</number>
          </property>
          <property name="rightMargin">
           <number>4</number>
@@ -91,34 +109,84 @@ margin: 20px;</string>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <property name="spacing">
-            <number>10</number>
+            <number>0</number>
            </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <item>
-            <widget class="QCheckBox" name="text_checkbox">
+            <widget class="QPushButton" name="grid_btn">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>显示网格</string>
+             </property>
+             <property name="statusTip">
+              <string/>
+             </property>
+             <property name="whatsThis">
+              <string/>
+             </property>
              <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
+              <string notr="true">qproperty-icon: url(:/res/ui/grid.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="grid_checkbox">
+            <widget class="QPushButton" name="coord_btn">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>显示坐标</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
+              <string notr="true">qproperty-icon: url(:/res/ui/coord.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -133,29 +201,33 @@ margin: 20px;</string>
             <number>10</number>
            </property>
            <item>
-            <widget class="QPushButton" name="theend_btn">
+            <widget class="QPushButton" name="overwrold_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>主世界</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/overworld.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>1</width>
-               <height>1</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
@@ -170,61 +242,68 @@ margin: 20px;</string>
              </property>
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="sizeIncrement">
               <size>
-               <width>10</width>
-               <height>10</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>下界</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true">
-</string>
+              <string notr="true">qproperty-icon: url(:/res/ui/nether.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>54</width>
-               <height>54</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="overwrold_btn">
+            <widget class="QPushButton" name="theend_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>末地</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/theend.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>54</width>
-               <height>64</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
@@ -237,82 +316,106 @@ margin: 20px;</string>
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <item>
-            <widget class="QPushButton" name="biome_layer_btn">
+            <widget class="QPushButton" name="terrain_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>地图</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/map.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>54</width>
-               <height>54</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="terrain_layer_btn">
+            <widget class="QPushButton" name="biome_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>群系</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/biome.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>54</width>
-               <height>54</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="height_layer_btn">
-             <property name="maximumSize">
+             <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="sizeIncrement">
+              <size>
+               <width>-1</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>高度</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/height.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>54</width>
-               <height>54</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
@@ -325,32 +428,36 @@ margin: 20px;</string>
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <item>
-            <widget class="QPushButton" name="village_layer_btn">
+            <widget class="QPushButton" name="slime_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>0</width>
-               <height>0</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>史莱姆区块</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true"/>
+              <string notr="true">qproperty-icon: url(:/res/ui/slime.png);
+border:none;</string>
              </property>
              <property name="text">
-              <string>A</string>
+              <string/>
              </property>
              <property name="iconSize">
               <size>
-               <width>18</width>
-               <height>16</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
             </widget>
@@ -359,37 +466,63 @@ margin: 20px;</string>
             <widget class="QPushButton" name="actor_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>实体</string>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">qproperty-icon: url(:/res/ui/actor.png);
+border:none;</string>
+             </property>
              <property name="text">
-              <string>S</string>
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="slime_layer_btn">
+            <widget class="QPushButton" name="village_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>村庄</string>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">qproperty-icon: url(:/res/ui/village.png);
+border:none;</string>
+             </property>
              <property name="text">
-              <string>HSA</string>
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -397,18 +530,31 @@ margin: 20px;</string>
             <widget class="QPushButton" name="hsa_layer_btn">
              <property name="minimumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>64</width>
-               <height>64</height>
+               <width>40</width>
+               <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>HSA</string>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">qproperty-icon: url(:/res/ui/hsa.png);
+border:none;</string>
+             </property>
              <property name="text">
-              <string>Vill</string>
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -418,62 +564,97 @@ margin: 20px;</string>
           <widget class="QPushButton" name="edit_filter_btn">
            <property name="minimumSize">
             <size>
-             <width>64</width>
-             <height>64</height>
+             <width>40</width>
+             <height>40</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>64</width>
-             <height>64</height>
+             <width>40</width>
+             <height>40</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>过滤器</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">qproperty-icon: url(:/res/filter_editor.png);
+border:none;</string>
+           </property>
            <property name="text">
-            <string>Filt</string>
+            <string/>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
            </property>
           </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="setting_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <item>
-            <widget class="QCheckBox" name="debug_checkbox">
+            <widget class="QPushButton" name="debug_btn">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
+              <string notr="true">qproperty-icon: url(:/res/ui/debug.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="enable_chunk_edit_check_box">
+            <widget class="QPushButton" name="glbal_data_btn">
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
              <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
+              <string notr="true">qproperty-icon: url(:/res/ui/global_nbt.png);
+border:none;</string>
              </property>
              <property name="text">
               <string/>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="global_nbt_checkbox">
-             <property name="styleSheet">
-              <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-             </property>
-             <property name="text">
-              <string/>
+             <property name="iconSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -497,13 +678,13 @@ margin: 20px;</string>
        <widget class="QWidget" name="map_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,40">
          <property name="spacing">
-          <number>4</number>
+          <number>0</number>
          </property>
          <property name="leftMargin">
           <number>4</number>
          </property>
          <property name="topMargin">
-          <number>4</number>
+          <number>0</number>
          </property>
          <property name="rightMargin">
           <number>4</number>
@@ -548,6 +729,71 @@ margin: 20px;</string>
               </property>
               <property name="text">
                <string>截图</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="text_checkbox">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="grid_checkbox">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="debug_checkbox">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="enable_chunk_edit_check_box">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="global_nbt_checkbox">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox::indicator {
+     width: 28px;
+     height: 28px;
+}</string>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -925,8 +1171,8 @@ margin: 20px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>942</width>
-     <height>21</height>
+     <width>1191</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">
