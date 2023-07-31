@@ -44,7 +44,7 @@ void MapWidget::showContextMenu(const QPoint &p) {
         QAction screenShotAction("另存为图像", this);
         connect(&clearAreaAction, &QAction::triggered, this, [this] { this->has_selected_ = false; });
         connect(&removeChunkAction, SIGNAL(triggered()), this, SLOT(delete_chunks()));
-        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImage(false); });
+        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImageAction(false); });
 
         contextMenu.addAction(&clearAreaAction);
         contextMenu.addAction(&screenShotAction);
@@ -53,14 +53,15 @@ void MapWidget::showContextMenu(const QPoint &p) {
     } else {
         auto pos = this->getCursorBlockPos();
         // for single chunk
+        QAction gotoAction("前往坐标", this);
+        connect(&gotoAction, &QAction::triggered, this, [this] { this->gotoPositionAction(); });
         auto blockInfo = this->mw_->levelLoader()->getBlockTips(pos, this->dim_type_);
-
         //block name
-
         QAction copyBlockNameAction("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
         connect(&copyBlockNameAction, &QAction::triggered, this, [cb, &blockInfo] {
             cb->setText(blockInfo.block_name.c_str());
         });
+
         //biome
         QAction copyBiomeAction("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
         connect(&copyBiomeAction, &QAction::triggered, this, [cb, &blockInfo] {
@@ -78,7 +79,7 @@ void MapWidget::showContextMenu(const QPoint &p) {
         });
 
         QAction screenShotAction("另存为图像", this);
-        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImage(true); });
+        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImageAction(true); });
 
         //chunk editor
         QAction openInChunkEditor("在区块编辑器中打开", this);
@@ -88,10 +89,10 @@ void MapWidget::showContextMenu(const QPoint &p) {
             this->mw_->openChunkEditor(cp);
         });
 
-
+        contextMenu.addAction(&gotoAction);
         contextMenu.addAction(&copyBlockNameAction);
-        contextMenu.addAction(&copyBiomeAction);
-        contextMenu.addAction(&copyHeightAction);
+//        contextMenu.addAction(&copyBiomeAction);
+//        contextMenu.addAction(&copyHeightAction);
         contextMenu.addAction(&copyTpCommandAction);
         contextMenu.addAction(&screenShotAction);
         contextMenu.addAction(&openInChunkEditor);
@@ -101,12 +102,9 @@ void MapWidget::showContextMenu(const QPoint &p) {
 
 bl::block_pos MapWidget::getCursorBlockPos() {
     auto cursor = this->mapFromGlobal(QCursor::pos());
-
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
-
     int rx = cursor.x() - render.x();
     int ry = cursor.y() - render.y();
-
     int x = rx / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).x;
     int y = ry / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).z;
     return bl::block_pos{x, 0, y};
@@ -114,7 +112,6 @@ bl::block_pos MapWidget::getCursorBlockPos() {
 
 void MapWidget::paintEvent(QPaintEvent *event) {
     QPainter p(this);
-
     switch (this->main_render_type_) {
         case MapWidget::Biome:
             drawBiome(event, &p);
@@ -197,26 +194,6 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
-void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
-
-    QFont font("Consolas", 8);
-    QFontMetrics fm(font);
-    auto dbgInfo = this->mw_->levelLoader()->debugInfo();
-    int max_len = 1;
-    for (auto &i: dbgInfo) {
-        max_len = std::max(max_len, fm.width(i));
-    }
-
-    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * (dbgInfo.size() + 1))),
-                      QBrush(QColor(255, 255, 255, 150)));
-    painter->setFont(font);
-    painter->setPen(QPen(QColor(0, 0, 0)));
-    int i = 0;
-    for (auto &s: dbgInfo) {
-        painter->drawText(QPoint(5, (i + 1) * fm.height()), s);
-        i++;
-    }
-}
 
 void
 MapWidget::drawRegion(QPaintEvent *e, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
@@ -306,7 +283,7 @@ QRect MapWidget::getRenderSelectArea() {
 }
 
 void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
-    QFont font("Consolas", 8);
+    QFont font("JetBrains Mono", 8);
     QFontMetrics fm(font);
     painter->setFont(font);
     QPen pen(QColor(255, 255, 255));
@@ -320,6 +297,25 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
             painter->drawText(rect, Qt::AlignCenter, text);
         }
     });
+}
+
+void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
+    QFont font("JetBrains Mono", 6);
+    QFontMetrics fm(font);
+    auto dbgInfo = this->mw_->levelLoader()->debugInfo();
+    int max_len = 1;
+    for (auto &i: dbgInfo) {
+        max_len = std::max(max_len, fm.width(i));
+    }
+    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * (dbgInfo.size() + 1))),
+                      QBrush(QColor(22, 22, 22, 90)));
+    painter->setFont(font);
+    painter->setPen(QPen(QColor(255, 255, 255)));
+    int i = 0;
+    for (auto &s: dbgInfo) {
+        painter->drawText(QPoint(5, (i + 1) * fm.height()), s);
+        i++;
+    }
 }
 
 /**
@@ -451,11 +447,13 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
 }
 
 
-void MapWidget::saveImage(bool full_screen) {
+void MapWidget::saveImageAction(bool full_screen) {
 
     bool ok;
-    int i = QInputDialog::getInt(this, tr("另存为图像"),
+    int i = QInputDialog::getInt(this, tr("另存为"),
                                  tr("设置缩放比例"), 1, 1, 16, 1, &ok);
+
+
     if (!ok)return;
     QPixmap img;
     if (!full_screen) {
@@ -477,6 +475,39 @@ void MapWidget::delete_chunks() {
     this->select_max_.dim = this->dim_type_;
     this->select_min_.dim = this->dim_type_;
     this->mw_->deleteChunks(this->select_min_, this->select_max_);
+}
+
+#include <QFormLayout>
+#include <QDialogButtonBox>
+
+//https://www.cnblogs.com/grandyang/p/6263929.html
+void MapWidget::gotoPositionAction() {
+    //后面可能需要两个输入框
+    QDialog dialog(this);
+    dialog.setMinimumWidth(300);
+
+    dialog.setWindowTitle("前往坐标");
+
+    QFormLayout form(&dialog);
+    auto *x_edit = new QLineEdit(&dialog);
+    auto *z_edit = new QLineEdit(&dialog);
+    x_edit->setText("0");
+    z_edit->setText("0");
+    x_edit->setValidator(new QIntValidator());
+    z_edit->setValidator(new QIntValidator());
+
+    form.addRow(QString("X: "), x_edit);
+    form.addRow(QString("Z: "), z_edit);
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, SIGNAL(accepted()), &dialog, SLOT(accept()));
+    QObject::connect(&buttonBox, SIGNAL(rejected()), &dialog, SLOT(reject()));
+    if (dialog.exec() == QDialog::Accepted) {
+        auto x = x_edit->text().toInt();
+        auto z = z_edit->text().toInt();
+        this->gotoBlockPos(x, z);
+    }
 }
 
 

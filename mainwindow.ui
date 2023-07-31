@@ -1096,6 +1096,8 @@ border:none;</string>
     <addaction name="action_modify"/>
     <addaction name="action_settings"/>
     <addaction name="action_NBT"/>
+    <addaction name="separator"/>
+    <addaction name="action_debug"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -1163,7 +1165,12 @@ border:none;</string>
   </action>
   <action name="action_modify">
    <property name="text">
-    <string>允许修改存档</string>
+    <string>修改存档</string>
+   </property>
+  </action>
+  <action name="action_debug">
+   <property name="text">
+    <string>调试窗口</string>
    </property>
   </action>
  </widget>

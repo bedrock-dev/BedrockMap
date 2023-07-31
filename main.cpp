@@ -20,7 +20,7 @@ void setupTheme(QApplication &a) {
     } else {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
-        //        a.setStyleSheet(ts.readAll());
+        a.setStyleSheet(ts.readAll());
     }
 }
 
@@ -29,6 +29,7 @@ void setupFont(QApplication &a) {
 //    if (id == -1) {
 //        qWarning() << "Can not load font";
 //    }
+
     auto id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
     if (id == -1) {
         qWarning() << "Can not load font";
@@ -36,13 +37,13 @@ void setupFont(QApplication &a) {
 
     QFontDatabase db;
     //  foreach (const QString &s, db.families()) { qDebug() << s; }
-
     QFont font;
     // font.setFamily("Source Han Sans CN Normal");
     font.setFamily("微软雅黑");
     //    font.setPointSize(8);
     a.setFont(font);
 }
+
 
 int main(int argc, char *argv[]) {
     InitIcons();

@@ -120,19 +120,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
     connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
-
     connect(ui->action_about, &QAction::triggered, this, []() { AboutDialog().exec(); });
 
-    ui->action_modify->setCheckable(true);
 
+    //modify
+    ui->action_modify->setCheckable(true);
     connect(ui->action_modify, &QAction::triggered, this, [this]() {
         auto checked = this->ui->action_modify->isChecked();
         this->ui->action_modify->setChecked(checked);
         this->write_mode_ = checked;
     });
 
+    //debug
+    ui->action_debug->setCheckable(true);
+    connect(ui->action_debug, &QAction::triggered, this, [this]() {
+        auto checked = this->ui->action_debug->isChecked();
+        this->ui->action_debug->setChecked(checked);
+        this->map_widget_->setDrawDebug(checked);
+    });
+
+
     // watcher
-    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_chunk_delete_finished);
+    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
+            &MainWindow::handle_chunk_delete_finished);
     connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this,
             &MainWindow::handle_level_open_finished);
 
@@ -154,7 +164,6 @@ void MainWindow::resetToInitUI() {
     ui->save_village_btn->setVisible(false);
     ui->player_nbt_loading_label->setVisible(true);
     ui->village_nbt_loading_label->setVisible(true);
-
     //checkbox and btns
     updateButtonBackground(ui->overwrold_btn, true);
     updateButtonBackground(ui->terrain_layer_btn, true);
@@ -276,7 +285,7 @@ void MainWindow::close_and_exit() {
 
 
 void MainWindow::on_screenshot_btn_clicked() {
-    this->map_widget_->saveImage(true);
+    this->map_widget_->saveImageAction(true);
 }
 
 void MainWindow::openNBTEditor() {
@@ -479,7 +488,9 @@ void MainWindow::on_coord_btn_clicked() {
     updateButtonBackground(ui->coord_btn, r);
 }
 
-void MainWindow::on_global_data_btn_clicked() { ui->global_nbt_pannel->setVisible(!ui->global_nbt_pannel->isVisible()); }
+void MainWindow::on_global_data_btn_clicked() {
+    ui->global_nbt_pannel->setVisible(!ui->global_nbt_pannel->isVisible());
+}
 
 void MainWindow::on_slime_layer_btn_clicked() {
     auto r = this->map_widget_->toggleSlime();

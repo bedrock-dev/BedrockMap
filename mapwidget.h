@@ -91,13 +91,20 @@ public:
         return this->draw_HSA_;
     }
 
-    inline bool toggleDebug() {
-        this->draw_debug_window_ = !this->draw_debug_window_;
-        return this->draw_debug_window_;
+//    inline bool toggleDebug() {
+//        this->draw_debug_window_ = !this->draw_debug_window_;
+//        return this->draw_debug_window_;
+//    }
+
+    inline void setDrawDebug(bool enable) {
+        this->draw_debug_window_ = enable;
     }
 
     //生成图片
-    void saveImage(bool full_screen);
+    void saveImageAction(bool full_screen);
+
+    //前往坐标
+    void gotoPositionAction();
 
 signals:
 
@@ -118,7 +125,6 @@ public slots:
         gotoBlockPos(p.x, p.z);
     }
 
-//    void openChunkEditor();
 
     void delete_chunks();
 
@@ -126,9 +132,6 @@ private:
     // for debug
 
     void drawDebugWindow(QPaintEvent *event, QPainter *p);
-
-    // draw chunk help
-//    void drawOneChunk(QPaintEvent *event, QPainter *p, const bl::chunk_pos &pos, const QPoint &start, QImage *img) const;
 
     void drawRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const;
 
@@ -156,7 +159,6 @@ private:
 
 
     void drawSelectArea(QPaintEvent *event, QPainter *p);
-
 
     void drawVillages(QPaintEvent *event, QPainter *p);
 
