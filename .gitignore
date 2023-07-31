@@ -72,4 +72,4 @@ Thumbs.db
 *.exe
 cmake-build-debug
 .idea
-build
+build/*
