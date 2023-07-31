@@ -198,7 +198,7 @@ border:none;</string>
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>6</number>
            </property>
            <item>
             <widget class="QPushButton" name="overwrold_btn">
@@ -316,7 +316,7 @@ border:none;</string>
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>0</number>
+            <number>6</number>
            </property>
            <item>
             <widget class="QPushButton" name="terrain_layer_btn">
@@ -428,7 +428,7 @@ border:none;</string>
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>0</number>
+            <number>6</number>
            </property>
            <item>
             <widget class="QPushButton" name="slime_layer_btn">
@@ -561,47 +561,15 @@ border:none;</string>
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="edit_filter_btn">
-           <property name="minimumSize">
-            <size>
-             <width>40</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>40</width>
-             <height>40</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>过滤器</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">qproperty-icon: url(:/res/filter_editor.png);
-border:none;</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
           <layout class="QVBoxLayout" name="setting_layout">
            <property name="spacing">
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>0</number>
+            <number>6</number>
            </property>
            <item>
-            <widget class="QPushButton" name="debug_btn">
+            <widget class="QPushButton" name="edit_filter_btn">
              <property name="minimumSize">
               <size>
                <width>40</width>
@@ -614,8 +582,11 @@ border:none;</string>
                <height>40</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>过滤器</string>
+             </property>
              <property name="styleSheet">
-              <string notr="true">qproperty-icon: url(:/res/ui/debug.png);
+              <string notr="true">qproperty-icon: url(:/res/ui/filter.png);
 border:none;</string>
              </property>
              <property name="text">
@@ -630,7 +601,7 @@ border:none;</string>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="glbal_data_btn">
+            <widget class="QPushButton" name="global_data_btn">
              <property name="minimumSize">
               <size>
                <width>40</width>
@@ -729,71 +700,6 @@ border:none;</string>
               </property>
               <property name="text">
                <string>截图</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="text_checkbox">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="grid_checkbox">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="debug_checkbox">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enable_chunk_edit_check_box">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="global_nbt_checkbox">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-              </property>
-              <property name="text">
-               <string/>
               </property>
              </widget>
             </item>
@@ -1187,7 +1093,7 @@ border:none;</string>
     <property name="title">
      <string>工具</string>
     </property>
-    <addaction name="action_full_map"/>
+    <addaction name="action_modify"/>
     <addaction name="action_settings"/>
     <addaction name="action_NBT"/>
    </widget>
@@ -1253,6 +1159,11 @@ border:none;</string>
   <action name="action_NBT">
    <property name="text">
     <string>NBT编辑器</string>
+   </property>
+  </action>
+  <action name="action_modify">
+   <property name="text">
+    <string>允许修改存档</string>
    </property>
   </action>
  </widget>

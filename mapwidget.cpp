@@ -18,7 +18,7 @@
 #include  <QClipboard>
 #include <cmath>
 #include <QFontMetrics>
-
+#include  <QInputDialog>
 #include "color.h"
 #include "config.h"
 #include "mainwindow.h"
@@ -33,6 +33,7 @@ void MapWidget::resizeEvent(QResizeEvent *event) {
 
 void MapWidget::asyncRefresh() { this->update(); }
 
+//显示右键菜单
 void MapWidget::showContextMenu(const QPoint &p) {
     auto *cb = QApplication::clipboard();
     auto area = this->getRenderSelectArea();
@@ -43,9 +44,8 @@ void MapWidget::showContextMenu(const QPoint &p) {
         QAction screenShotAction("另存为图像", this);
         connect(&clearAreaAction, &QAction::triggered, this, [this] { this->has_selected_ = false; });
         connect(&removeChunkAction, SIGNAL(triggered()), this, SLOT(delete_chunks()));
-        connect(&screenShotAction, &QAction::triggered, this, [this] {
-            this->saveImage(false);
-        });
+        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImage(false); });
+
         contextMenu.addAction(&clearAreaAction);
         contextMenu.addAction(&screenShotAction);
         contextMenu.addAction(&removeChunkAction);
@@ -77,6 +77,9 @@ void MapWidget::showContextMenu(const QPoint &p) {
             cb->setText(tpCmd);
         });
 
+        QAction screenShotAction("另存为图像", this);
+        connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImage(true); });
+
         //chunk editor
         QAction openInChunkEditor("在区块编辑器中打开", this);
         connect(&openInChunkEditor, &QAction::triggered, this, [pos, this] {
@@ -85,10 +88,12 @@ void MapWidget::showContextMenu(const QPoint &p) {
             this->mw_->openChunkEditor(cp);
         });
 
+
         contextMenu.addAction(&copyBlockNameAction);
         contextMenu.addAction(&copyBiomeAction);
         contextMenu.addAction(&copyHeightAction);
         contextMenu.addAction(&copyTpCommandAction);
+        contextMenu.addAction(&screenShotAction);
         contextMenu.addAction(&openInChunkEditor);
         contextMenu.exec(mapToGlobal(p));
     }
@@ -125,9 +130,9 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     if (draw_villages_) this->drawVillages(event, &p);
     if (draw_actors_) this->drawActors(event, &p);
     if (draw_slime_chunk_)this->drawSlimeChunks(event, &p);
-    if (render_grid_) this->drawGrid(event, &p);
-    if (render_text_) this->drawChunkPosText(event, &p);
-    if (render_debug_) this->drawDebugWindow(event, &p);
+    if (draw_grid_) this->drawGrid(event, &p);
+    if (draw_coords_) this->drawChunkPosText(event, &p);
+    if (draw_debug_window_) this->drawDebugWindow(event, &p);
     this->drawSelectArea(event, &p);
 }
 
@@ -445,7 +450,13 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
     return {minChunk, maxChunk, renderRange};
 }
 
+
 void MapWidget::saveImage(bool full_screen) {
+
+    bool ok;
+    int i = QInputDialog::getInt(this, tr("另存为图像"),
+                                 tr("设置缩放比例"), 1, 1, 16, 1, &ok);
+    if (!ok)return;
     QPixmap img;
     if (!full_screen) {
         this->has_selected_ = false;
@@ -454,11 +465,12 @@ void MapWidget::saveImage(bool full_screen) {
     } else {
         img = this->grab();
     }
+    auto new_img = img.scaled(img.width() * i, img.height() * i);
     auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
                                                  "/home/jana/untitled.png",
                                                  tr("Images (*.png *.jpg)"));
     if (fileName.isEmpty())return;
-    img.save(fileName);
+    new_img.save(fileName);
 }
 
 void MapWidget::delete_chunks() {

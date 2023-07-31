@@ -1,0 +1,3 @@
+C:/Users/xhy/dev/Qt/BedrockMap/build/CMakeFiles/BedrockMap.dir
+C:/Users/xhy/dev/Qt/BedrockMap/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/xhy/dev/Qt/BedrockMap/build/CMakeFiles/ZERO_CHECK.dir

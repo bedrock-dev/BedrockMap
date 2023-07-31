@@ -222,5 +222,6 @@
         <file>res/ui/slime.png</file>
         <file>res/ui/village.png</file>
         <file>res/ui/write.png</file>
+        <file>res/ui/filter.png</file>
     </qresource>
 </RCC>

@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 struct LogoPos {
@@ -36,19 +36,20 @@ struct LogoPos {
         qDebug() << angle << " " << x << " " << y;
     }
 };
+
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     ~MainWindow() override;
 
     AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
-   public slots:
+public slots:
 
     inline bool enable_write() const { return this->write_mode_; }
 
@@ -69,25 +70,19 @@ class MainWindow : public QMainWindow {
 
     void applyFilter();
 
-   protected:
+protected:
     void paintEvent(QPaintEvent *event) override;
-   private slots:
+
+
+private slots:
 
     void on_goto_btn_clicked();
-
-    void on_grid_checkbox_stateChanged(int arg1);
-
-    void on_text_checkbox_stateChanged(int arg1);
 
     void openLevel();
 
     bool closeLevel();
 
     void close_and_exit();
-
-    void on_debug_checkbox_stateChanged(int arg1);
-
-    void on_enable_chunk_edit_check_box_stateChanged(int arg1);
 
     void on_screenshot_btn_clicked();
 
@@ -96,8 +91,6 @@ class MainWindow : public QMainWindow {
     void on_slime_layer_btn_clicked();
 
     void on_actor_layer_btn_clicked();
-
-    void on_global_nbt_checkbox_stateChanged(int arg1);
 
     void on_save_leveldat_btn_clicked();
 
@@ -111,7 +104,6 @@ class MainWindow : public QMainWindow {
 
     void on_edit_filter_btn_clicked();
 
-    void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
 
     void resetToInitUI();
 
@@ -119,11 +111,14 @@ class MainWindow : public QMainWindow {
 
     void on_coord_btn_clicked();
 
-    void on_debug_btn_clicked();
+    void on_global_data_btn_clicked();
 
-    void on_glbal_data_btn_clicked();
+    void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
 
-   private:
+private:
+    QString getStaticTitle();
+
+private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;
@@ -149,7 +144,6 @@ class MainWindow : public QMainWindow {
     // filter
     RenderFilterDialog render_filter_dialog_{this};
     LogoPos logoPos{};
-
 };
 
 #endif  // MAINWINDOW_H

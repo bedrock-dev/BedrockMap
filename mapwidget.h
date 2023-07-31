@@ -61,39 +61,45 @@ public:
         this->update();
     }
 
-    inline void enableGrid(bool able) {
-        qDebug() << able;
-        this->render_grid_ = able;
-        this->update();
-    }
-
-    inline void enableText(bool able) {
-        this->render_text_ = able;
-        this->update();
-    }
-
-    inline void enableDebug(bool able) {
-        this->render_debug_ = able;
-        this->update();
-    }
-
-    inline void toggleSlime() {
+    inline bool toggleSlime() {
         this->draw_slime_chunk_ = !this->draw_slime_chunk_;
+        return this->draw_slime_chunk_;
     }
-    inline void toggleGrid() { this->render_grid_ = !this->render_grid_; }
-    inline void toggleCoords() { this->render_text_ = !this->render_text_; }
 
-    inline void toggleActor() { this->draw_actors_ = !this->draw_actors_; }
+    inline bool toggleGrid() {
+        this->draw_grid_ = !this->draw_grid_;
+        return this->draw_grid_;
+    }
 
-    inline void toggleVillage() { this->draw_villages_ = !this->draw_villages_; }
+    inline bool toggleCoords() {
+        this->draw_coords_ = !this->draw_coords_;
+        return this->draw_coords_;
+    }
 
-    inline void toggleHSAs() { this->draw_HSA_ = !this->draw_HSA_; }
+    inline bool toggleActor() {
+        this->draw_actors_ = !this->draw_actors_;
+        return this->draw_actors_;
+    }
 
-    inline void toggleDebug() { this->render_debug_ = !this->render_debug_; }
+    inline bool toggleVillage() {
+        this->draw_villages_ = !this->draw_villages_;
+        return this->draw_villages_;
+    }
 
-    void saveImage(bool full);
+    inline bool toggleHSAs() {
+        this->draw_HSA_ = !this->draw_HSA_;
+        return this->draw_HSA_;
+    }
 
-   signals:
+    inline bool toggleDebug() {
+        this->draw_debug_window_ = !this->draw_debug_window_;
+        return this->draw_debug_window_;
+    }
+
+    //生成图片
+    void saveImage(bool full_screen);
+
+signals:
 
     void mouseMove(int x, int z); //NOLINT
 
@@ -189,10 +195,10 @@ private:
     bool draw_HSA_{false};
 
     int bw_{2};            //每个方块需要几个像素
-    QPoint origin_{0, 0};  //记录区块0,0相对widget左上角的坐标
-    bool render_grid_{true};
-    bool render_text_{false};
-    bool render_debug_{false};
+    QPoint origin_{0, 0};  //记录区块0,0的左上角相对widget左上角的坐标
+    bool draw_grid_{true};
+    bool draw_coords_{false};
+    bool draw_debug_window_{false};
 
     // village info
 };

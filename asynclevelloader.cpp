@@ -138,7 +138,6 @@ void LoadRegionTask::run() {
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
     qInfo() << "Try close level";
-
     this->loaded_ = false;    //阻止UI层请求数据
     this->processing_.clear();  //队列清除
     this->pool_.clear();        //清除所有任务
@@ -154,6 +153,7 @@ bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
 //        return this->level_.get_chunk(chunk_pos);
 //    };
 //    return QtConcurrent::run(directChunkReader, p);
+
 }
 
 
@@ -409,7 +409,6 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
             }
         }
     }
-
     this->slime_chunk_cache_->insert(rp, res);
     return res;
 }

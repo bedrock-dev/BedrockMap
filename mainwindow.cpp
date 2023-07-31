@@ -36,6 +36,15 @@ namespace {
         return {(rec.width() - width) / 2, (rec.height() - height) / 2, width, height};
     }
 
+    void updateButtonBackground(QPushButton *btn, bool enable) {
+        auto color = enable ? QColor(180, 180, 180, 200) : QColor(255, 255, 255, 0);
+        QPalette pal = btn->palette();
+        pal.setColor(QPalette::Button, color);
+        btn->setAutoFillBackground(true);
+        btn->setPalette(pal);
+        btn->update();
+    }
+
 }  // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -66,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     for (auto &kv: this->layer_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
             for (auto &x: this->layer_btns_) {
-                x.second->setEnabled(x.first != kv.first);
+                updateButtonBackground(x.second, x.first == kv.first);
             }
             this->map_widget_->changeLayer(kv.first);
         });
@@ -82,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     for (auto &kv: this->dim_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
             for (auto &x: this->dim_btns_) {
-                x.second->setEnabled(x.first != kv.first);
+                updateButtonBackground(x.second, x.first == kv.first);
             }
             this->map_widget_->changeDimension(kv.first);
         });
@@ -111,11 +120,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
     connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
+
     connect(ui->action_about, &QAction::triggered, this, []() { AboutDialog().exec(); });
 
+    ui->action_modify->setCheckable(true);
+
+    connect(ui->action_modify, &QAction::triggered, this, [this]() {
+        auto checked = this->ui->action_modify->isChecked();
+        this->ui->action_modify->setChecked(checked);
+        this->write_mode_ = checked;
+    });
+
     // watcher
-    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this,
-            &MainWindow::handle_chunk_delete_finished);
+    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_chunk_delete_finished);
     connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this,
             &MainWindow::handle_level_open_finished);
 
@@ -139,19 +156,16 @@ void MainWindow::resetToInitUI() {
     ui->village_nbt_loading_label->setVisible(true);
 
     //checkbox and btns
-    ui->biome_layer_btn->setEnabled(true);
-    ui->terrain_layer_btn->setEnabled(false);
-    ui->overwrold_btn->setEnabled(false);
-    ui->grid_checkbox->setChecked(true);
-    ui->text_checkbox->setChecked(false);
-    ui->debug_checkbox->setChecked(false);
-    ui->global_nbt_checkbox->setChecked(false);
+    updateButtonBackground(ui->overwrold_btn, true);
+    updateButtonBackground(ui->terrain_layer_btn, true);
+    updateButtonBackground(ui->grid_btn, true);
+
     this->chunk_editor_widget_->setVisible(false);
     ui->open_level_btn->setText("未打开存档");
     ui->open_level_btn->setVisible(true);
     ui->open_level_btn->setEnabled(true);
     this->setGeometry(centerMainWindowGeometry(0.7));
-    this->setWindowTitle(QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()));
+    this->setWindowTitle(this->getStaticTitle());
 }
 
 MainWindow::~MainWindow() {
@@ -160,7 +174,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::updateXZEdit(int x, int z) {
-    ui->block_pos_label->setText(QString::number(x) + "," + QString::number(z));
+    this->setWindowTitle(this->getStaticTitle() + " @  [" + QString::number(x) + ", " + QString::number(z) + "]");
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
@@ -186,9 +200,6 @@ void MainWindow::on_goto_btn_clicked() {
     this->map_widget_->gotoBlockPos(x, z);
 }
 
-void MainWindow::on_grid_checkbox_stateChanged(int arg1) { this->map_widget_->enableGrid(arg1 > 0); }
-
-void MainWindow::on_text_checkbox_stateChanged(int arg1) { this->map_widget_->enableText(arg1 > 0); }
 
 void MainWindow::openLevel() {
     if (!this->closeLevel())return;
@@ -263,10 +274,6 @@ void MainWindow::close_and_exit() {
     this->close();
 }
 
-void MainWindow::on_debug_checkbox_stateChanged(int arg1) { this->map_widget_->enableDebug(arg1 > 0); }
-
-
-void MainWindow::on_enable_chunk_edit_check_box_stateChanged(int arg1) { this->write_mode_ = arg1 > 0; }
 
 void MainWindow::on_screenshot_btn_clicked() {
     this->map_widget_->saveImage(true);
@@ -281,14 +288,6 @@ void MainWindow::openNBTEditor() {
     w->show();
 }
 
-
-void MainWindow::on_slime_layer_btn_clicked() { this->map_widget_->toggleSlime(); }
-
-void MainWindow::on_actor_layer_btn_clicked() { this->map_widget_->toggleActor(); }
-
-void MainWindow::on_village_layer_btn_clicked() { this->map_widget_->toggleVillage(); }
-
-void MainWindow::on_hsa_layer_btn_clicked() { this->map_widget_->toggleHSAs(); }
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
     if (!this->level_loader_->isOpen()) {
@@ -308,8 +307,6 @@ void MainWindow::handle_chunk_delete_finished() {
     this->level_loader_->clearAllCache();
 }
 
-
-void MainWindow::on_global_nbt_checkbox_stateChanged(int arg1) { ui->global_nbt_pannel->setVisible(arg1 > 0); }
 
 void MainWindow::handle_level_open_finished() {
 
@@ -422,9 +419,9 @@ void MainWindow::refreshTitle() {
     auto levelName = QString();
     if (this->level_loader_->isOpen())
         levelName = this->level_loader_->level().dat().level_name().c_str();
-    this->setWindowTitle(
-            QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()) + " - " + levelName);
+    this->setWindowTitle(this->getStaticTitle());
 }
+
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
@@ -448,7 +445,6 @@ MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl
 void MainWindow::on_edit_filter_btn_clicked() {
     this->render_filter_dialog_.fillInUI();
     this->render_filter_dialog_.exec();
-
 }
 
 void MainWindow::applyFilter() {
@@ -464,18 +460,53 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     auto sz = this->size();
     const int w = static_cast<int>(std::min(sz.width(), sz.height()) * 1.2);
     QPainter p(this);
-    int x = logoPos.x * sz.width();
-    int z = logoPos.y * sz.height();
+    int x = static_cast<int>(logoPos.x * sz.width());
+    int z = static_cast<int>( logoPos.y * sz.height());
     p.translate(x, z);
     p.rotate(logoPos.angle);
     p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
     QMainWindow::paintEvent(event);
 }
 
-void MainWindow::on_grid_btn_clicked() { this->map_widget_->toggleGrid(); }
+void MainWindow::on_grid_btn_clicked() {
 
-void MainWindow::on_coord_btn_clicked() { this->map_widget_->toggleCoords(); }
+    auto r = this->map_widget_->toggleGrid();
+    updateButtonBackground(ui->grid_btn, r);
+}
 
-void MainWindow::on_debug_btn_clicked() { this->map_widget_->toggleDebug(); }
+void MainWindow::on_coord_btn_clicked() {
+    auto r = this->map_widget_->toggleCoords();
+    updateButtonBackground(ui->coord_btn, r);
+}
 
-void MainWindow::on_glbal_data_btn_clicked() { ui->global_nbt_pannel->setVisible(!ui->global_nbt_pannel->isVisible()); }
+void MainWindow::on_global_data_btn_clicked() { ui->global_nbt_pannel->setVisible(!ui->global_nbt_pannel->isVisible()); }
+
+void MainWindow::on_slime_layer_btn_clicked() {
+    auto r = this->map_widget_->toggleSlime();
+    updateButtonBackground(ui->slime_layer_btn, r);
+}
+
+void MainWindow::on_actor_layer_btn_clicked() {
+    auto r = this->map_widget_->toggleActor();
+    updateButtonBackground(ui->actor_layer_btn, r);
+}
+
+void MainWindow::on_village_layer_btn_clicked() {
+    auto r = this->map_widget_->toggleVillage();
+    updateButtonBackground(ui->village_layer_btn, r);
+}
+
+void MainWindow::on_hsa_layer_btn_clicked() {
+    auto r = this->map_widget_->toggleHSAs();
+    updateButtonBackground(ui->hsa_layer_btn, r);
+}
+
+QString MainWindow::getStaticTitle() {
+    auto software_str = cfg::SOFTWARE_NAME + " " + cfg::SOFTWARE_VERSION;
+    std::string level_name;
+    if (this->level_loader_->isOpen()) {
+        level_name = this->level_loader_->level().dat().level_name();
+    }
+    return {(software_str + " " + level_name).c_str()};
+}
+
