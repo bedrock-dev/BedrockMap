@@ -12,6 +12,8 @@
 #include <QStandardPaths>
 #include <QtConcurrent>
 #include <QtDebug>
+#include <exception>
+
 
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
@@ -211,7 +213,7 @@ void MainWindow::on_goto_btn_clicked() {
 
 
 void MainWindow::openLevel() {
-    if (!this->closeLevel())return;
+    this->closeLevel();
     auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
                 "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
@@ -232,23 +234,36 @@ void MainWindow::openLevel() {
     }
 
     //打开了存档
-    this->refreshTitle();                       //刷新标题
+    this->setWindowTitle(getStaticTitle());                      //刷新标题
     ui->main_splitter->setVisible(true);        //显示GUI
     ui->open_level_btn->setVisible(false);      //隐藏窗口
     //设置出生点坐标
     auto sp = this->level_loader_->level().dat().spawn_position();
-    ui->x_edit->setText(QString::number(sp.x));
-    ui->z_edit->setText(QString::number(sp.z));
     this->map_widget_->gotoBlockPos(sp.x, sp.z);
     //写入level.dat数据
     auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
     this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
     qDebug() << "Loading global data in background thread";
     //后台加载全局数据
+    this->loading_global_data_ = true;
     auto future = QtConcurrent::run(
             [this](const QString &path) {
                 try {
-                    this->level_loader_->level().load_global_data();
+                    this->level_loader_->level().foreach_global_keys(
+                            [this](const std::string &key, const std::string &value) {
+                                if (!this->loading_global_data_) {
+                                    throw std::logic_error("EXIT"); //手动中止
+                                }
+                                if (key.find("player") != std::string::npos) {
+                                    this->level_loader_->level().player_list().append_player(key, value);
+                                } else {
+                                    bl::village_key vk = bl::village_key::parse(key);
+                                    if (vk.valid()) {
+                                        this->level_loader_->level().village_list().append_village(vk, value);
+                                    }
+                                }
+                            });
+                    X:
                     return true;
                 } catch (std::exception &e) {
                     return false;
@@ -261,10 +276,8 @@ void MainWindow::openLevel() {
 bool MainWindow::closeLevel() {
     //cancel background task
     if (!this->level_loader_->isOpen())return true;
-    if (this->load_global_data_watcher_.isRunning()) {
-        WARN("为防止存档损坏，请等待背景任务完成再执行该操作");
-        return false;
-    }
+    this->loading_global_data_ = false;
+    this->load_global_data_watcher_.waitForFinished();
     this->level_loader_->close();
     //free spaces
     this->chunk_editor_widget_->clearData();
@@ -277,9 +290,7 @@ bool MainWindow::closeLevel() {
 }
 
 void MainWindow::close_and_exit() {
-    if (!this->closeLevel()) {
-        return;
-    }
+    this->closeLevel();
     this->close();
 }
 
@@ -321,6 +332,10 @@ void MainWindow::handle_level_open_finished() {
 
     auto res = this->load_global_data_watcher_.result();
     if (!res) {
+        if (!this->loading_global_data_) { //说明是主动停止的
+            qDebug() << "Stop loading global data (by user)";
+            return;
+        }
         qDebug() << "Load global data failed";
         WARN("无法加载全局NBT数据，但是你仍然可以查看地图和区块数据");
     } else {
@@ -378,7 +393,8 @@ void MainWindow::on_save_leveldat_btn_clicked() {
     auto nbts = this->level_dat_editor_->getPaletteCopy();
     if (nbts.size() == 1 && nbts[0]) {
         this->level_loader_->modifyLeveldat(nbts[0]);
-        this->refreshTitle();
+        this->setWindowTitle(getStaticTitle());
+
         INFO("成功保存level.dat文件");
     } else {
         INFO("无法保存level.dat文件");
@@ -422,13 +438,6 @@ void MainWindow::on_save_players_btn_clicked() {
     } else {
         WARN("无法保存玩家数据");
     }
-}
-
-void MainWindow::refreshTitle() {
-    auto levelName = QString();
-    if (this->level_loader_->isOpen())
-        levelName = this->level_loader_->level().dat().level_name().c_str();
-    this->setWindowTitle(this->getStaticTitle());
 }
 
 

@@ -20,9 +20,10 @@ void setupTheme(QApplication &a) {
     } else {
         f.open(QFile::ReadOnly | QFile::Text);
         QTextStream ts(&f);
-        a.setStyleSheet(ts.readAll());
+//        a.setStyleSheet(ts.readAll());
     }
 }
+
 
 void setupFont(QApplication &a) {
 //    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");

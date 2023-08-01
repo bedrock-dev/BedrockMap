@@ -64,7 +64,6 @@ public slots:
 
     void handle_level_open_finished();
 
-    void refreshTitle();
 
     inline QMap<QString, QRect> &get_villages() { return this->villages_; }
 
@@ -144,6 +143,9 @@ private:
     // filter
     RenderFilterDialog render_filter_dialog_{this};
     LogoPos logoPos{};
+
+    //loading global data?
+    std::atomic_bool loading_global_data_{false};
 };
 
 #endif  // MAINWINDOW_H
