@@ -14,7 +14,6 @@
 #include <QPen>
 #include <QRectF>
 #include <QRgb>
-#include <QVector>
 #include  <QClipboard>
 #include <cmath>
 #include <QFontMetrics>
@@ -23,10 +22,6 @@
 #include "config.h"
 #include "mainwindow.h"
 
-namespace {
-// QImage biomeChunkImage;
-
-}  // namespace
 void MapWidget::resizeEvent(QResizeEvent *event) {
     this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10);
 }
@@ -145,11 +140,11 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
         lastMove = {event->x(), event->y()};
     } else if (event->buttons() & Qt::MiddleButton) {
         if (!selecting_) {
-            this->select_min_ = getCursorBlockPos().to_chunk_pos();
+            this->select_pos_1_ = getCursorBlockPos().to_chunk_pos();
             this->selecting_ = true;
             this->has_selected_ = true;
         } else {
-            this->select_max_ = getCursorBlockPos().to_chunk_pos();
+            this->select_pos_2_ = getCursorBlockPos().to_chunk_pos();
         }
     } else if (event->buttons() & Qt::RightButton) {
         //pass
@@ -165,6 +160,8 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
         this->dragging_ = false;
     } else if (event->button() == Qt::MiddleButton) {
         this->selecting_ = false;
+        qDebug() << "Selection: " << this->select_pos_1_.to_string().c_str() << " ~~ "
+                 << this->select_pos_2_.to_string().c_str();
     } else if (event->button() == Qt::RightButton) {
         this->showContextMenu(this->mapFromGlobal(QCursor::pos()));
     }
@@ -240,7 +237,6 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
 
     //粗经纬线
     //根据bw计算几个区块合一起
-
     pen.setWidth(4);
     painter->setPen(pen);
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
@@ -271,11 +267,11 @@ void MapWidget::drawSelectArea(QPaintEvent *event, QPainter *p) {
 QRect MapWidget::getRenderSelectArea() {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
 
-    auto minX = std::min(this->select_min_.x, this->select_max_.x);
-    auto minZ = std::min(this->select_min_.z, this->select_max_.z);
+    auto minX = std::min(this->select_pos_1_.x, this->select_pos_2_.x);
+    auto minZ = std::min(this->select_pos_1_.z, this->select_pos_2_.z);
 
-    auto maxX = std::max(this->select_min_.x, this->select_max_.x);
-    auto maxZ = std::max(this->select_min_.z, this->select_max_.z);
+    auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
+    auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
 
     QRect x((minX - minChunk.x) * bw_ * 16 + renderRange.x(), (minZ - minChunk.z) * bw_ * 16 + renderRange.y(),
             (maxX - minX + 1) * bw_ * 16, (maxZ - minZ + 1) * bw_ * 16);
@@ -472,9 +468,12 @@ void MapWidget::saveImageAction(bool full_screen) {
 }
 
 void MapWidget::delete_chunks() {
-    this->select_max_.dim = this->dim_type_;
-    this->select_min_.dim = this->dim_type_;
-    this->mw_->deleteChunks(this->select_min_, this->select_max_);
+
+    auto minX = std::min(this->select_pos_1_.x, this->select_pos_2_.x);
+    auto minZ = std::min(this->select_pos_1_.z, this->select_pos_2_.z);
+    auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
+    auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
+    this->mw_->deleteChunks(bl::chunk_pos(minX, minZ, this->dim_type_), bl::chunk_pos(maxX, maxZ, this->dim_type_));
 }
 
 #include <QFormLayout>

@@ -189,6 +189,8 @@ void MainWindow::updateXZEdit(int x, int z) {
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
+    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
+    return;
     if (!this->level_loader_->isOpen()) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;

@@ -91,11 +91,6 @@ public:
         return this->draw_HSA_;
     }
 
-//    inline bool toggleDebug() {
-//        this->draw_debug_window_ = !this->draw_debug_window_;
-//        return this->draw_debug_window_;
-//    }
-
     inline void setDrawDebug(bool enable) {
         this->draw_debug_window_ = enable;
     }
@@ -175,8 +170,8 @@ private:
 
     // bl::chunk_pos spawn{0, 0};  // origin 处要会绘制的区块坐标
     // select area
-    bl::chunk_pos select_min_;
-    bl::chunk_pos select_max_;
+    bl::chunk_pos select_pos_1_;
+    bl::chunk_pos select_pos_2_;
     bool has_selected_{false};
 
     // operation control
