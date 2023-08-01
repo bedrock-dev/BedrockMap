@@ -90,7 +90,6 @@ void cfg::initConfig() {
 #else
     cfg_path = "config.json";
 #endif
-
     qDebug() << "Configuration path is " << cfg_path.c_str();
 
     try {

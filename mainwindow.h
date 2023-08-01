@@ -75,8 +75,6 @@ protected:
 
 private slots:
 
-    void on_goto_btn_clicked();
-
     void openLevel();
 
     bool closeLevel();

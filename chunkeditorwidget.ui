@@ -53,19 +53,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>加载数据</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="close_btn">
        <property name="minimumSize">
         <size>
@@ -83,7 +70,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">

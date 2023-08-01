@@ -24,7 +24,6 @@ void setupTheme(QApplication &a) {
     }
 }
 
-
 void setupFont(QApplication &a) {
 //    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
 //    if (id == -1) {

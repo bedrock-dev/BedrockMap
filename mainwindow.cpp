@@ -14,7 +14,6 @@
 #include <QtDebug>
 #include <exception>
 
-
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "iconmanager.h"
@@ -59,16 +58,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->map_visual_layout->addWidget(this->map_widget_);
     connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
 
-
-    //init chunk editor layout
+    // init chunk editor layout
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
+    this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
     ui->map_splitter->addWidget(this->chunk_editor_widget_);
-    ui->map_splitter->setStretchFactor(0, 1);
-    ui->map_splitter->setStretchFactor(1, 3);
+
+    ui->map_splitter->setStretchFactor(1, 1);
+    ui->map_splitter->setStretchFactor(1, 10);
     ui->map_splitter->setStretchFactor(2, 1);
 
-
-    //basic layer btns group
+    // basic layer btns group
     this->layer_btns_ = {{MapWidget::MainRenderType::Biome,   ui->biome_layer_btn},
                          {MapWidget::MainRenderType::Terrain, ui->terrain_layer_btn},
                          {MapWidget::MainRenderType::Height,  ui->height_layer_btn}
@@ -155,7 +154,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 void MainWindow::resetToInitUI() {
     //main_splitter: 分割按钮 +  主要UI
     //map_splitter: 分割按钮面板 + 地图 + 区块编辑器
-    ui->map_buttom_toolbar_widget->setVisible(false);
     ui->main_splitter->setVisible(false);
 
     //全局nbt panel的状态
@@ -189,14 +187,12 @@ void MainWindow::updateXZEdit(int x, int z) {
 }
 
 void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
-    QMessageBox::information(nullptr, "警告", "开发中", QMessageBox::Yes, QMessageBox::Yes);
-    return;
     if (!this->level_loader_->isOpen()) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
     // add a watcher
-    qDebug() << "Load: " << p.to_string().c_str();
+    qDebug() << "Try load chunk: " << p.to_string().c_str();
     auto chunk = this->level_loader_->getChunkDirect(p);
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
@@ -206,18 +202,13 @@ void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
     }
 }
 
-
-void MainWindow::on_goto_btn_clicked() {
-    int x = ui->x_edit->text().toInt();
-    int z = ui->z_edit->text().toInt();
-    this->map_widget_->gotoBlockPos(x, z);
-}
-
-
 void MainWindow::openLevel() {
     this->closeLevel();
-    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
-                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
+//    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
+//                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
+//
+//
+    auto path = QString("D:\\MC\\saves");
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
                                                      path,
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -265,7 +256,6 @@ void MainWindow::openLevel() {
                                     }
                                 }
                             });
-                    X:
                     return true;
                 } catch (std::exception &e) {
                     return false;

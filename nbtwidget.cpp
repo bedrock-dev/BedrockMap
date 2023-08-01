@@ -70,13 +70,11 @@ namespace {
 NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->setupUi(this);
     ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 3);
+    ui->splitter->setStretchFactor(1, 2);
     QFont f;
     f.setFamily("JetBrains Mono");
-    f.setPointSize(8);
     ui->list_widget->setFont(f);
     ui->tree_widget->setFont(f);
-
     ui->tree_widget->setHeaderHidden(true);
     ui->tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->list_widget->setContextMenuPolicy(Qt::CustomContextMenu);
