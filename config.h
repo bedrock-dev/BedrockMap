@@ -27,6 +27,8 @@ struct cfg {
     static int THREAD_NUM;
     static float ZOOM_SPEED;
     static std::string COLOR_THEME;
+//配置文件
+    static std::string CONFIG_FILE_PATH;
 
     static region_pos c2r(const bl::chunk_pos &ch);
 

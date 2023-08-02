@@ -13,7 +13,7 @@
 #include <QtConcurrent>
 #include <QtDebug>
 #include <exception>
-
+#include <QDesktopServices>
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "iconmanager.h"
@@ -123,6 +123,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
     connect(ui->action_about, &QAction::triggered, this, []() { AboutDialog().exec(); });
 
+    connect(ui->action_settings, &QAction::triggered, this, []() {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str()));
+    });
 
     //modify
     ui->action_modify->setCheckable(true);
@@ -466,16 +469,16 @@ void MainWindow::applyFilter() {
 #include <QPainter>
 
 void MainWindow::paintEvent(QPaintEvent *event) {
-    if (this->levelLoader()->isOpen()) return;
-    auto sz = this->size();
-    const int w = static_cast<int>(std::min(sz.width(), sz.height()) * 1.2);
-    QPainter p(this);
-    int x = static_cast<int>(logoPos.x * sz.width());
-    int z = static_cast<int>( logoPos.y * sz.height());
-    p.translate(x, z);
-    p.rotate(logoPos.angle);
-    p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
-    QMainWindow::paintEvent(event);
+//    if (this->levelLoader()->isOpen()) return;
+//    auto sz = this->size();
+//    const int w = static_cast<int>(std::min(sz.width(), sz.height()) * 1.2);
+//    QPainter p(this);
+//    int x = static_cast<int>(logoPos.x * sz.width());
+//    int z = static_cast<int>( logoPos.y * sz.height());
+//    p.translate(x, z);
+//    p.rotate(logoPos.angle);
+//    p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
+//    QMainWindow::paintEvent(event);
 }
 
 void MainWindow::on_grid_btn_clicked() {

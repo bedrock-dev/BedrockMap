@@ -22,6 +22,7 @@ int cfg::THREAD_NUM = 8;
 std::string  cfg::COLOR_THEME = "light";
 const std::string  cfg::SOFTWARE_NAME = "BedrockMap";
 const std::string  cfg::SOFTWARE_VERSION = "v0.1";
+std::string  cfg::CONFIG_FILE_PATH = "config.json";
 float cfg::ZOOM_SPEED = 1.2;
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
@@ -84,18 +85,14 @@ QImage *cfg::BACKGROUND_IMAGE_COPY() {
 QImage *cfg::BG() { return bg_; }
 
 void cfg::initConfig() {
-    std::string cfg_path;
 #ifdef  QT_DEBUG
-    cfg_path = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
-#else
-    cfg_path = "config.json";
+    CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
 #endif
-    qDebug() << "Configuration path is " << cfg_path.c_str();
-
+    qDebug() << "Configuration path is " << CONFIG_FILE_PATH.c_str();
     try {
 
         nlohmann::json j;
-        std::ifstream f(cfg_path);
+        std::ifstream f(CONFIG_FILE_PATH);
         if (!f.is_open()) {
             qWarning() << "Can not find config file.";
         } else {
