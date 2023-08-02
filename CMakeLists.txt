@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_CXX_FLAGS -utf8)
 # include bedrock-lib from absolute path
 set(BEDROCK_LEVEL_ROOT "C:/Users/xhy/dev/bedrock-level")
 set(BEDROCK_LIBS

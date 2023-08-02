@@ -86,8 +86,8 @@ void MapWidget::showContextMenu(const QPoint &p) {
 
         contextMenu.addAction(&gotoAction);
         contextMenu.addAction(&copyBlockNameAction);
-//        contextMenu.addAction(&copyBiomeAction);
-//        contextMenu.addAction(&copyHeightAction);
+        contextMenu.addAction(&copyBiomeAction);
+        contextMenu.addAction(&copyHeightAction);
         contextMenu.addAction(&copyTpCommandAction);
         contextMenu.addAction(&screenShotAction);
         contextMenu.addAction(&openInChunkEditor);

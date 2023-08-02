@@ -11,6 +11,7 @@
 #include "config.h"
 #include "iconmanager.h"
 #include "mainwindow.h"
+#include  <QTextCodec>
 
 void setupTheme(QApplication &a) {
     auto theme_path = ":/light/stylesheet.qss";
@@ -25,6 +26,9 @@ void setupTheme(QApplication &a) {
 }
 
 void setupFont(QApplication &a) {
+//    auto *codec = QTextCodec::codecForName("GBK");//或者"GBK",不分大小写
+//    QTextCodec::setCodecForLocale(codec);
+//
 //    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
 //    if (id == -1) {
 //        qWarning() << "Can not load font";

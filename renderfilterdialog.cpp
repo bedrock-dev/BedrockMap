@@ -104,7 +104,7 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
         //无层，从上往下寻找白名单方块
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int y = ch->get_height(i, j) + 1;
+                int y = ch->get_height(i, j);
                 while (y >= miny) {
                     auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
                     auto block = ch->get_block(i, y, j);
@@ -148,7 +148,7 @@ void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *regi
         //无层，从上往下寻找白名单方块
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int y = ch->get_height(i, j);
+                int y = ch->get_height(i, j) + 2;
                 while (y >= miny) {
                     auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
                     auto biome = ch->get_biome(i, y, j);
