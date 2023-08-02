@@ -22,7 +22,6 @@ namespace {
 
 }
 
-
 ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget),
                                                                         mw_(mw) {
     ui->setupUi(this);
@@ -50,19 +49,18 @@ ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(
     ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
 }
 
-ChunkEditorWidget::~ChunkEditorWidget() { delete ui; }
-
+ChunkEditorWidget::~ChunkEditorWidget() {
+    this->clearData();
+    delete ui;
+}
 
 void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     assert(chunk);
     this->clearData();
     this->chunk_ = chunk;
     this->refreshBasicData();
-
     //setup chunk section
-//    this->chunk_section_->set_chunk(chunk);
-//    this->chunk_section_->setDrawType(ChunkSectionWidget::DrawType::Biome);
-//    this->chunk_section_->setYLevel(0);
+    this->chunk_section_->load_data(this->chunk_);
     qDebug() << "Load block actor data";
     auto block_entity_namer = [](bl::palette::compound_tag *nbt) {
         using namespace bl::palette;
@@ -114,8 +112,15 @@ void ChunkEditorWidget::on_close_btn_clicked() {
 void ChunkEditorWidget::refreshBasicData() {
     qDebug() << "Refresh basic data";
     if (!this->chunk_) return;
-    ui->base_info_label->setText(this->chunk_->get_pos().to_string().c_str());
     auto [miny, maxy] = this->chunk_->get_pos().get_y_range(this->chunk_->get_version());
+    auto cp = this->chunk_->get_pos();
+
+    auto label = QString("%1, %2 / [%3 ~ %4]").arg(QString::number(cp.x),
+                                                   QString::number(cp.z),
+                                                   QString::number(miny),
+                                                   QString::number(maxy)
+    );
+    ui->base_info_label->setText(label);
     ui->terrain_level_slider->setRange(miny, maxy);
 }
 
@@ -128,6 +133,11 @@ void ChunkEditorWidget::on_terrain_level_slider_valueChanged(int value) {
 void ChunkEditorWidget::on_terrain_goto_level_btn_clicked() {
     if (!this->chunk_) return;
     auto y = ui->terrain_level_edit->text().toInt();
+    auto [miny, maxy] = this->chunk_->get_pos().get_y_range(this->chunk_->get_version());
+    if (y > maxy) y = maxy;
+    if (y < miny) y = miny;
+    ui->terrain_level_edit->setText(QString::number(y));
+    ui->terrain_level_slider->setValue(y);
     this->chunk_section_->setYLevel(y);
 }
 

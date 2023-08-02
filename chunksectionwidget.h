@@ -5,12 +5,15 @@
 
 #include "chunk.h"
 
+struct TerrainData {
+    std::string block_palette{};
+    bl::color block_color{0, 0, 0, 255};
+    bl::biome biome{bl::none};
+};
+
 class ChunkSectionWidget : public QWidget {
 Q_OBJECT
 public:
-    enum DrawType {
-        Biome, Terrain
-    };
 
     explicit ChunkSectionWidget(QWidget *parent = nullptr);
 
@@ -18,26 +21,33 @@ public:
 
     void resizeEvent(QResizeEvent *event) override;
 
-    void setDrawType(DrawType t) {
-        this->dt_ = t;
-        this->update();
-    }
-
-    void setYLevel(int y) {
+    inline void setYLevel(int y) {
         this->y_level_ = y;
         this->update();
     }
 
-    void set_chunk(bl::chunk *ch) { this->ch_ = ch; }
+    void load_data(bl::chunk *ch);
+
 
     int get_block_pix();
+
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+
+    void showContextMenu(const QPoint &p);
+
+
+private:
+
+    inline std::array<std::array<TerrainData, 16>, 16> &get_layer_data(int y) {
+        return this->data_[y + 64];
+    }
 
 
 signals:
 private:
-    DrawType dt_{Biome};
     int y_level_{0};
-    bl::chunk *ch_{nullptr};
+    std::array<std::array<std::array<TerrainData, 16>, 16>, 384> data_;
 };
 
 #endif // CHUNKSECTIONWIDGET_H
