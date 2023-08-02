@@ -89,8 +89,9 @@ void LoadRegionTask::run() {
             for (int rh = 0; rh < cfg::RW; rh++) {
                 auto *chunk = chunks_[rw][rh];
                 region->chunk_bit_map_[rw][rh] = chunk != nullptr;
-                this->filter_->bakeChunkTerrain(chunk, rw, rh, region);
+                //下面两个不要换位置(需要获取群系信息才能给水和草地变色)
                 this->filter_->bakeChunkBiome(chunk, rw, rh, region);
+                this->filter_->bakeChunkTerrain(chunk, rw, rh, region);
                 this->filter_->bakeChunkActors(chunk, region);
                 if (chunk) {
                     auto hss = chunk->HSAs();

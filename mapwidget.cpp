@@ -58,10 +58,11 @@ void MapWidget::showContextMenu(const QPoint &p) {
         });
 
         //biome
-        QAction copyBiomeAction("复制群系ID: " + QString::number(static_cast<int>(blockInfo.biome)), this);
+        QAction copyBiomeAction(("复制群系名称: " + bl::get_biome_name(blockInfo.biome)).c_str(), this);
         connect(&copyBiomeAction, &QAction::triggered, this, [cb, &blockInfo] {
-            cb->setText(QString::number(static_cast<int>(blockInfo.biome)));
+            cb->setText(bl::get_biome_name(blockInfo.biome).c_str());
         });
+
         //height
         QAction copyHeightAction("复制高度信息: " + QString::number(blockInfo.height), this);
         connect(&copyHeightAction, &QAction::triggered, this, [cb, &blockInfo] {

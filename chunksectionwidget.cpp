@@ -125,13 +125,12 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
             QString::number(this->y_level_),
             QString::number(rz)
     );
-    auto biomeString = QString::number(data.biome);
+    auto biomeString = QString(bl::get_biome_name(data.biome).c_str());
     auto paletteString = QString(data.block_palette.c_str());
 
-
-    QAction posAction("Position: " + posString, this);
-    QAction blockPaletteAction(("Palette: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
-    QAction biomeAction("Biome: " + biomeString, this);
+    QAction posAction("坐标: " + posString, this);
+    QAction blockPaletteAction(("方块: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
+    QAction biomeAction("群系: " + biomeString, this);
 
     auto *cb = QApplication::clipboard();
 
