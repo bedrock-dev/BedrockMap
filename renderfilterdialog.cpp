@@ -92,8 +92,7 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
                 auto block = ch->get_block(i, this->layer, j);
                 auto name = QString(block.name.c_str()).replace("minecraft:", "");
                 if ((this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-
-
+                    block.color = bl::blend_color_with_biome(block.name, block.color, tips.biome);
                     region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                QColor(block.color.r, block.color.g, block.color.b,
                                                                       block.color.a));
@@ -113,9 +112,7 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
                     auto name = QString(block.name.c_str()).replace("minecraft:", "");
                     if (name != "unknown" &&
                         (this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-                        if (name == "water") {
-                            block.color = bl::get_water_color(block.color, tips.biome);
-                        }
+                        block.color = bl::blend_color_with_biome(block.name, block.color, tips.biome);
                         region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                    QColor(block.color.r,
                                                                           block.color.g, block.color.b,

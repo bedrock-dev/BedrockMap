@@ -22,7 +22,15 @@ int cfg::THREAD_NUM = 8;
 std::string  cfg::COLOR_THEME = "light";
 const std::string  cfg::SOFTWARE_NAME = "BedrockMap";
 const std::string  cfg::SOFTWARE_VERSION = "v0.1";
-std::string  cfg::CONFIG_FILE_PATH = "config.json";
+#ifdef  QT_DEBUG
+const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
+const std::string cfg::BLOCK_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\block_color.json)";
+const std::string cfg::BIOME_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome_color.json)";
+#else
+const std::string cfg::CONFIG_FILE_PATH = "config.json";
+const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
+const std::string cfg::BIOME_FILE_PATH = "biome_color.json";
+#endif
 float cfg::ZOOM_SPEED = 1.2;
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
@@ -32,8 +40,11 @@ region_pos cfg::c2r(const bl::chunk_pos &ch) {
 }
 
 void cfg::initColorTable() {
-    bl::init_biome_color_palette_from_file("biome.json");
-    bl::init_block_color_palette_from_file("block.json");
+    qDebug() << "Block color path is: " << BLOCK_FILE_PATH.c_str();
+    qDebug() << "Biome color path is: " << BIOME_FILE_PATH.c_str();
+
+    bl::init_biome_color_palette_from_file(cfg::BIOME_FILE_PATH);
+    bl::init_block_color_palette_from_file(cfg::BLOCK_FILE_PATH);
 
     // init image
     bg_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
@@ -85,10 +96,9 @@ QImage *cfg::BACKGROUND_IMAGE_COPY() {
 QImage *cfg::BG() { return bg_; }
 
 void cfg::initConfig() {
-#ifdef  QT_DEBUG
-    CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
-#endif
+
     qDebug() << "Configuration path is " << CONFIG_FILE_PATH.c_str();
+
     try {
 
         nlohmann::json j;

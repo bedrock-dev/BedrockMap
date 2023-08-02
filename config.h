@@ -28,7 +28,10 @@ struct cfg {
     static float ZOOM_SPEED;
     static std::string COLOR_THEME;
 //配置文件
-    static std::string CONFIG_FILE_PATH;
+    const static std::string CONFIG_FILE_PATH;
+//颜色文件
+    const static std::string BLOCK_FILE_PATH;
+    const static std::string BIOME_FILE_PATH;
 
     static region_pos c2r(const bl::chunk_pos &ch);
 
