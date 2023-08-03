@@ -380,8 +380,8 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
             auto outlineColor = colors[static_cast<int>(hsa.type)];
             painter->setPen(QPen(outlineColor, 3));
             auto rect = QRect(x, y,
-                              abs(hsa.max_pos.x - hsa.min_pos.x) * this->bw_,
-                              abs(hsa.max_pos.z - hsa.min_pos.z) * this->bw_);
+                              abs(hsa.max_pos.x - hsa.min_pos.x + 1) * this->bw_,
+                              abs(hsa.max_pos.z - hsa.min_pos.z + 1) * this->bw_);
             painter->drawRect(rect);
             outlineColor.setAlpha(100);
             painter->fillRect(rect, QBrush(outlineColor));

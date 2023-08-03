@@ -21,8 +21,8 @@ int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::THREAD_NUM = 8;
 std::string  cfg::COLOR_THEME = "light";
 const std::string  cfg::SOFTWARE_NAME = "BedrockMap";
-const std::string  cfg::SOFTWARE_VERSION = "v0.1";
-#ifdef  QT_DEBUG
+const std::string cfg::SOFTWARE_VERSION = "v0.1.5";
+#ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
 const std::string cfg::BLOCK_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\block_color.json)";
 const std::string cfg::BIOME_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome_color.json)";
