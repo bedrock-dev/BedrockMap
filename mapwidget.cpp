@@ -21,6 +21,8 @@
 #include "color.h"
 #include "config.h"
 #include "mainwindow.h"
+#include <QFormLayout>
+#include <QDialogButtonBox>
 
 void MapWidget::resizeEvent(QResizeEvent *event) {
     this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10);
@@ -242,13 +244,16 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     painter->setPen(pen);
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
 
-    auto alignedMinChunkPos = bl::chunk_pos{minChunk.x / 16 * 16, minChunk.z / 16 * 16, 0};
+
+    auto alignedMinChunkPos = bl::chunk_pos{minChunk.x / cfg::GRID_WIDTH * cfg::GRID_WIDTH,
+                                            minChunk.z / cfg::GRID_WIDTH * cfg::GRID_WIDTH, 0};
+
     //纵轴线起始x坐标
     int xStart = (alignedMinChunkPos.x - minChunk.x) * this->bw_ * 16 + renderRange.x();
     //横轴线起始x坐标
     int yStart = (alignedMinChunkPos.z - minChunk.z) * this->bw_ * 16 + renderRange.y();
 
-    const int step = 16 * 16 * this->bw_;
+    const int step = cfg::GRID_WIDTH * 16 * this->bw_;
 
     for (int i = xStart; i <= renderRange.width() + renderRange.x(); i += step) {
         painter->drawLine(QLine(i, 0, i, this->height()));
@@ -287,7 +292,7 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     painter->setPen(pen);
 
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-        if ((ch.x % 16 == 0 && ch.z % 16 == 0) || this->bw_ >= 8) {
+        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->bw_ >= 8) {
             auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
             auto rect = QRect{p.x() + 2, p.y() + 2, fm.width(text) + 4, fm.height() + 4};
             painter->fillRect(rect, QBrush(QColor(22, 22, 22, 90)));
@@ -477,8 +482,6 @@ void MapWidget::delete_chunks() {
     this->mw_->deleteChunks(bl::chunk_pos(minX, minZ, this->dim_type_), bl::chunk_pos(maxX, maxZ, this->dim_type_));
 }
 
-#include <QFormLayout>
-#include <QDialogButtonBox>
 
 //https://www.cnblogs.com/grandyang/p/6263929.html
 void MapWidget::gotoPositionAction() {

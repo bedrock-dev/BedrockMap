@@ -15,6 +15,9 @@ struct cfg {
     static constexpr uint8_t RW = 4u;  //(1<<w)
     static constexpr int BG_GRAY = 20;
 
+    static constexpr int GRID_WIDTH = 32;
+
+
     static_assert((RW & (RW - 1)) == 0, "Invalid Render region width");
 
     const static std::string SOFTWARE_NAME;

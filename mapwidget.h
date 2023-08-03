@@ -197,7 +197,7 @@ private:
     bool draw_coords_{false};
     bool draw_debug_window_{false};
 
-    // village info
+    //GRID
 };
 
 
