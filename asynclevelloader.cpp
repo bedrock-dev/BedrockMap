@@ -103,7 +103,6 @@ void LoadRegionTask::run() {
     }
 
     //烘焙
-    const int SHADOW = 130;
     for (int i = 0; i < IMG_WIDTH; i++) {
         for (int j = 0; j < IMG_WIDTH; j++) {
             auto current_height = region->tips_info_[i][j].height;
@@ -119,10 +118,10 @@ void LoadRegionTask::run() {
 
             if (current_height * 2 > sum) {
                 region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).lighter(
-                        SHADOW));
+                        cfg::SHADOW_LEVEL));
             } else if (current_height * 2 < sum) {
                 region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).darker(
-                        SHADOW));
+                        cfg::SHADOW_LEVEL));
             }
         }
     }
@@ -381,7 +380,7 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     auto rp = cfg::c2r(cp);
     bool null_region{false};
     auto *region = this->tryGetRegion(rp, null_region);
-    if (null_region)return {};
+    if (null_region || (!region))return {};
     auto &info = region->tips_info_;
     auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
     return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];

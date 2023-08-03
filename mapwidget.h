@@ -124,6 +124,10 @@ public slots:
     void delete_chunks();
 
 private:
+
+    inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
+
+private:
     // for debug
 
     void drawDebugWindow(QPaintEvent *event, QPainter *p);
@@ -191,13 +195,12 @@ private:
     bool draw_villages_{false};
     bool draw_HSA_{false};
 
-    int bw_{2};            //每个方块需要几个像素
+    int cw_{32};            //每个区块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0的左上角相对widget左上角的坐标
     bool draw_grid_{true};
     bool draw_coords_{false};
     bool draw_debug_window_{false};
-
-    //GRID
+    //多方块一个像素的模式
 };
 
 

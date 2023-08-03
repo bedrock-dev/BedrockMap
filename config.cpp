@@ -14,14 +14,23 @@ namespace {
     QImage *bg_{nullptr};
 }  // namespace
 
-
-
-int cfg::REGION_CACHE_SIZE = 4096;
-int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
-int cfg::THREAD_NUM = 8;
-std::string  cfg::COLOR_THEME = "light";
+//软件基本信息
 const std::string  cfg::SOFTWARE_NAME = "BedrockMap";
 const std::string cfg::SOFTWARE_VERSION = "v0.1.5";
+//不可配置的
+const int cfg::BG_GRAY = 20;
+const int cfg::GRID_WIDTH = 32;
+
+//配置文件下面是可配置的
+int cfg::SHADOW_LEVEL = 128;
+float cfg::ZOOM_SPEED = 1.2;
+int cfg::THREAD_NUM = 8;
+int cfg::REGION_CACHE_SIZE = 4096;
+int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
+int cfg::MINIMUM_SCALE_LEVEL = 4;
+int cfg::MAXIMUM_SCALE_LEVEL = 1024;
+std::string  cfg::COLOR_THEME = "dark";
+
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
 const std::string cfg::BLOCK_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\block_color.json)";
@@ -31,7 +40,6 @@ const std::string cfg::CONFIG_FILE_PATH = "config.json";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
 const std::string cfg::BIOME_FILE_PATH = "biome_color.json";
 #endif
-float cfg::ZOOM_SPEED = 1.2;
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
     auto cx = ch.x < 0 ? ch.x - cfg::RW + 1 : ch.x;
@@ -105,34 +113,47 @@ void cfg::initConfig() {
         std::ifstream f(CONFIG_FILE_PATH);
         if (!f.is_open()) {
             qWarning() << "Can not find config file.";
-        } else {
+        } else {/*
+ *  "terrain_shadow_level": 150,
+  "theme": "dark",
+  "region_width": 8,
+  "region_cache_size": 4096,
+  "empty_region_cache_size": 16384,
+  "background_thread_number": 8,
+  "minimum_scale_level": 4,
+  "maximum_scale_level": 1024,
+  "zoom_speed": 1.2
+
+ *
+ * */
             f >> j;
-            COLOR_THEME = j["theme"].get<std::string>();
+            cfg::SHADOW_LEVEL = j["terrain_shadow_level"].get<int>();
+            cfg::COLOR_THEME = j["theme"].get<std::string>();
             REGION_CACHE_SIZE = j["region_cache_size"].get<int>();
             EMPTY_REGION_CACHE_SIZE = j["empty_region_cache_size"].get<int>();
             THREAD_NUM = j["background_thread_number"].get<int>();
+            cfg::MINIMUM_SCALE_LEVEL = j["minimum_scale_level"].get<int>();
+            cfg::MAXIMUM_SCALE_LEVEL = j["maximum_scale_level"].get<int>();
+            cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
         }
 
     } catch (std::exception &e) {
         qWarning() << "Invalid config file format" << e.what();
     }
-    qInfo() << "Region cache size: " << REGION_CACHE_SIZE;
-    qInfo() << "Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
-    qInfo() << "Background thread number: " << THREAD_NUM;
-    qInfo() << "Theme: " << COLOR_THEME.c_str();
-
-    if (REGION_CACHE_SIZE < 128) {
-        REGION_CACHE_SIZE = 128;
-        qWarning() << "Invalid  Region cache size, reset it to 128";
-    }
-
-    if (EMPTY_REGION_CACHE_SIZE < 4096) {
-        EMPTY_REGION_CACHE_SIZE = 4096;
-        qWarning() << "Invalid Region cache size, reset it to 4096";
-    }
-
     if (THREAD_NUM < 1) {
         THREAD_NUM = 1;
         qWarning() << "Invalid background thread number, reset it to 1";
     }
+
+
+    qInfo() << "Shadow level: " << cfg::SHADOW_LEVEL;
+    qInfo() << "Theme: " << COLOR_THEME.c_str();
+    qInfo() << "Region cache size: " << REGION_CACHE_SIZE;
+    qInfo() << "Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
+    qInfo() << "Background thread number: " << THREAD_NUM;
+    qInfo() << "Minimum scale level: " << MINIMUM_SCALE_LEVEL;
+    qInfo() << "Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
+    qInfo() << "Zoom speed: " << ZOOM_SPEED;
+    qInfo() << "Render render Width" << cfg::RW;
+
 }

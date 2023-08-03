@@ -103,8 +103,8 @@ bl::block_pos MapWidget::getCursorBlockPos() {
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
     int rx = cursor.x() - render.x();
     int ry = cursor.y() - render.y();
-    int x = rx / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).x;
-    int y = ry / (this->bw_) + mi.get_min_pos(bl::ChunkVersion::New).z;
+    int x = static_cast<int>( rx / (this->BW())) + mi.get_min_pos(bl::ChunkVersion::New).x;
+    int y = static_cast<int>(ry / (this->BW())) + mi.get_min_pos(bl::ChunkVersion::New).z;
     return bl::block_pos{x, 0, y};
 }
 
@@ -173,22 +173,22 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 void MapWidget::wheelEvent(QWheelEvent *event) {
     auto angle = event->angleDelta().y();
-    auto lastBW = this->bw_;
-    if (angle > 0) {
-        auto nb = static_cast<int>(this->bw_ * cfg::ZOOM_SPEED);
-        if (nb == this->bw_) nb = bw_ + 1;
-        if (nb > 64) nb = 64;
-        this->bw_ = nb;
 
-    } else if (angle < 0 && this->bw_ > 1) {
-        auto nb = static_cast<int>(this->bw_ / cfg::ZOOM_SPEED);
-        if (nb == this->bw_) nb = bw_ - 1;
-        if (nb < 1) nb = 1;
-        this->bw_ = nb;
+    auto lastCW = this->cw_;
+    if (angle > 0) {
+        auto ncw = static_cast<int>( static_cast<qreal>(this->cw_) * cfg::ZOOM_SPEED);
+        if (ncw == this->cw_) ncw = cw_ + 1;
+        if (ncw > cfg::MAXIMUM_SCALE_LEVEL) ncw = cfg::MAXIMUM_SCALE_LEVEL;
+        this->cw_ = ncw;
+    } else if (angle < 0) {
+        auto ncw = static_cast<int>(static_cast<qreal>(this->cw_) / cfg::ZOOM_SPEED);
+        if (ncw == this->cw_) ncw = cw_ - 1;
+        if (ncw < cfg::MINIMUM_SCALE_LEVEL) ncw = cfg::MINIMUM_SCALE_LEVEL;
+        this->cw_ = ncw;
     }
 
     auto cursor = this->mapFromGlobal(QCursor::pos());
-    double ratio = this->bw_ * 1.0 / lastBW;
+    double ratio = this->cw_ * 1.0 / lastCW;
     this->origin_.setX(static_cast<int>((this->origin_.x() - cursor.x()) * ratio + cursor.x()));
     this->origin_.setY(static_cast<int>((this->origin_.y() - cursor.y()) * ratio + cursor.y()));
     this->update();
@@ -198,16 +198,16 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
 void
 MapWidget::drawRegion(QPaintEvent *e, QPainter *p, const region_pos &pos, const QPoint &start, QImage *img) const {
     if (img)
-        p->drawImage(QRectF(start.x(), start.y(), 16 * this->bw_ * cfg::RW, 16 * this->bw_ * cfg::RW), *img,
-                     QRect(0, 0, 16 * cfg::RW, 16 * cfg::RW));
+        p->drawImage(QRectF(start.x(), start.y(), this->cw_ * cfg::RW, this->cw_ * cfg::RW), *img,
+                     QRect(0, 0, cfg::RW << 4, cfg::RW << 4));
 }
 
 void MapWidget::forEachChunkInCamera(const std::function<void(const bl::chunk_pos &, const QPoint &)> &f) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
     for (int i = minChunk.x; i <= maxChunk.x; i += 1) {
         for (int j = minChunk.z; j <= maxChunk.z; j += 1) {
-            int x = (i - minChunk.x) * bw_ * 16 + renderRange.x();
-            int y = (j - minChunk.z) * bw_ * 16 + renderRange.y();
+            int x = (i - minChunk.x) * cw_ + renderRange.x();
+            int y = (j - minChunk.z) * cw_ + renderRange.y();
             f({i, j, minChunk.dim}, {x, y});
         }
     }
@@ -220,8 +220,8 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 
     for (int i = reginMin.x; i <= regionMax.x; i += cfg::RW) {
         for (int j = reginMin.z; j <= regionMax.z; j += cfg::RW) {
-            int x = (i - minChunk.x) * bw_ * 16 + renderRange.x();
-            int y = (j - minChunk.z) * bw_ * 16 + renderRange.y();
+            int x = (i - minChunk.x) * cw_ + renderRange.x();
+            int y = (j - minChunk.z) * cw_ + renderRange.y();
             f({i, j, minChunk.dim}, {x, y});
         }
     }
@@ -235,12 +235,12 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     painter->setPen(pen);
     painter->setBrush(QBrush(QColor(0, 0, 0, 0)));
     this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-        if (this->bw_ >= 4) painter->drawRect(QRect(p.x(), p.y(), this->bw_ * 16, this->bw_ * 16));
+        if (this->cw_ >= 64) painter->drawRect(QRect(p.x(), p.y(), this->cw_, this->cw_));
     });
 
     //粗经纬线
     //根据bw计算几个区块合一起
-    pen.setWidth(4);
+    pen.setWidth(3);
     painter->setPen(pen);
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
 
@@ -249,11 +249,11 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
                                             minChunk.z / cfg::GRID_WIDTH * cfg::GRID_WIDTH, 0};
 
     //纵轴线起始x坐标
-    int xStart = (alignedMinChunkPos.x - minChunk.x) * this->bw_ * 16 + renderRange.x();
+    int xStart = (alignedMinChunkPos.x - minChunk.x) * this->cw_ + renderRange.x();
     //横轴线起始x坐标
-    int yStart = (alignedMinChunkPos.z - minChunk.z) * this->bw_ * 16 + renderRange.y();
+    int yStart = (alignedMinChunkPos.z - minChunk.z) * this->cw_ + renderRange.y();
 
-    const int step = cfg::GRID_WIDTH * 16 * this->bw_;
+    const int step = cfg::GRID_WIDTH * this->cw_;
 
     for (int i = xStart; i <= renderRange.width() + renderRange.x(); i += step) {
         painter->drawLine(QLine(i, 0, i, this->height()));
@@ -279,8 +279,8 @@ QRect MapWidget::getRenderSelectArea() {
     auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
     auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
 
-    QRect x((minX - minChunk.x) * bw_ * 16 + renderRange.x(), (minZ - minChunk.z) * bw_ * 16 + renderRange.y(),
-            (maxX - minX + 1) * bw_ * 16, (maxZ - minZ + 1) * bw_ * 16);
+    QRect x((minX - minChunk.x) * cw_ + renderRange.x(), (minZ - minChunk.z) * cw_ + renderRange.y(),
+            (maxX - minX + 1) * cw_, (maxZ - minZ + 1) * cw_);
     return x;
 }
 
@@ -292,7 +292,7 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     painter->setPen(pen);
 
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->bw_ >= 8) {
+        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->cw_ >= 256) {
             auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
             auto rect = QRect{p.x() + 2, p.y() + 2, fm.width(text) + 4, fm.height() + 4};
             painter->fillRect(rect, QBrush(QColor(22, 22, 22, 90)));
@@ -356,9 +356,9 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
 //        auto uuid = i.key();
         auto rect = i.value();
         auto min = rect.topLeft();
-        auto x = (min.x() - mi.get_min_pos(bl::New).x) * this->bw_ + render.x();
-        auto z = (min.y() - mi.get_min_pos(bl::New).z) * this->bw_ + render.y();
-        auto rec = QRect(x, z, rect.width() * bw_, rect.height() * bw_);
+        auto x = (min.x() - mi.get_min_pos(bl::New).x) * this->BW() + render.x();
+        auto z = (min.y() - mi.get_min_pos(bl::New).z) * this->BW() + render.y();
+        auto rec = QRect(x, z, rect.width() * BW(), rect.height() * BW());
         if (rect.intersects(this->camera_)) {
             p->setPen(QPen(QColor(0, 223, 162), 3));
             p->setBrush(QBrush(QColor(0, 223, 162, 50)));
@@ -380,13 +380,13 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
     this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp, const QPoint &p) {
         auto hss = this->mw_->levelLoader()->getHSAs(rp);
         for (auto &hsa: hss) {
-            int x = (hsa.min_pos.x - rp.x * 16) * this->bw_ + p.x();
-            int y = (hsa.min_pos.z - rp.z * 16) * this->bw_ + p.y();
+            int x = (hsa.min_pos.x - rp.x * 16) * this->BW() + p.x();
+            int y = (hsa.min_pos.z - rp.z * 16) * this->BW() + p.y();
             auto outlineColor = colors[static_cast<int>(hsa.type)];
             painter->setPen(QPen(outlineColor, 3));
             auto rect = QRect(x, y,
-                              abs(hsa.max_pos.x - hsa.min_pos.x + 1) * this->bw_,
-                              abs(hsa.max_pos.z - hsa.min_pos.z + 1) * this->bw_);
+                              abs(hsa.max_pos.x - hsa.min_pos.x + 1) * this->BW(),
+                              abs(hsa.max_pos.z - hsa.min_pos.z + 1) * this->BW());
             painter->drawRect(rect);
             outlineColor.setAlpha(100);
             painter->fillRect(rect, QBrush(outlineColor));
@@ -402,8 +402,8 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
         for (auto &kv: actors) {
             if (!kv.first)continue;
             for (auto &actor: kv.second) {
-                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->bw_ + (float) p.x();
-                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->bw_ + (float) p.y();
+                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->BW() + (float) p.x();
+                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->BW() + (float) p.y();
                 const int W = 18;
                 painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
             }
@@ -422,7 +422,7 @@ void MapWidget::gotoBlockPos(int x, int z) {
     int px = this->camera_.width() / 2;
     int py = this->camera_.height() / 2;
     //坐标换算
-    this->origin_ = {px - x * this->bw_, py - z * this->bw_};
+    this->origin_ = {px - x * this->cw_, py - z * this->cw_};
     this->update();
 }
 
@@ -431,7 +431,7 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
     //需要的参数
     // origin  焦点原点在什么地方
     // bw 像素宽度
-    const int CHUNK_WIDTH = this->bw_ << 4;
+    const int CHUNK_WIDTH = this->cw_;
     int renderX = (camera.x() - origin_.x()) / CHUNK_WIDTH * CHUNK_WIDTH + origin_.x();
     int renderY = (camera.y() - origin_.y()) / CHUNK_WIDTH * CHUNK_WIDTH + origin_.y();
     if (renderX >= camera.x()) renderX -= CHUNK_WIDTH;

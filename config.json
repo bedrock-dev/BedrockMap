@@ -1,7 +1,10 @@
 {
-  "terrain_shadow_level": 150,
+  "terrain_shadow_level": 130,
   "theme": "dark",
   "region_cache_size": 4096,
   "empty_region_cache_size": 16384,
-  "background_thread_number": 8
+  "background_thread_number": 8,
+  "minimum_scale_level": 4,
+  "maximum_scale_level": 1024,
+  "zoom_speed": 1.2
 }

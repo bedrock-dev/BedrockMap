@@ -12,25 +12,30 @@ typedef bl::chunk_pos region_pos;
 
 struct cfg {
 
-    static constexpr uint8_t RW = 4u;  //(1<<w)
-    static constexpr int BG_GRAY = 20;
 
-    static constexpr int GRID_WIDTH = 32;
-
-
-    static_assert((RW & (RW - 1)) == 0, "Invalid Render region width");
-
+    //软件基本信息
     const static std::string SOFTWARE_NAME;
-
     const static std::string SOFTWARE_VERSION;
 
-    //下面是可配置的
+    //不可配置的
+    const static int BG_GRAY;
+    const static int GRID_WIDTH;
+
+    //配置文件下面是可配置的
+    static int SHADOW_LEVEL;
+    static float ZOOM_SPEED;
+    static int THREAD_NUM;
     static int REGION_CACHE_SIZE;
     static int EMPTY_REGION_CACHE_SIZE;
-    static int THREAD_NUM;
-    static float ZOOM_SPEED;
+    static int MINIMUM_SCALE_LEVEL;
+    static int MAXIMUM_SCALE_LEVEL;
+    static constexpr uint8_t RW = 8u;  //(1<<w)
+
+    //其他配置(不对外开放接口)
+
+
+    //配置文件
     static std::string COLOR_THEME;
-//配置文件
     const static std::string CONFIG_FILE_PATH;
 //颜色文件
     const static std::string BLOCK_FILE_PATH;
