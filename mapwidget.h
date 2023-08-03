@@ -101,6 +101,13 @@ public:
     //前往坐标
     void gotoPositionAction();
 
+    inline void selectChunk(const bl::chunk_pos &p) { this->opened_chunk_ = true, this->opened_chunk_pos_ = p; }
+
+    inline void unselectChunk() {
+        qDebug() << "Unselected";
+        this->opened_chunk_ = false;
+    }
+
 signals:
 
     void mouseMove(int x, int z); //NOLINT
@@ -156,10 +163,12 @@ private:
 
     void drawHSAs(QPaintEvent *event, QPainter *p);
 
-
     void drawSelectArea(QPaintEvent *event, QPainter *p);
 
     void drawVillages(QPaintEvent *event, QPainter *p);
+
+    void drawMarkers(QPaintEvent *event, QPainter *p);
+
 
     QRect getRenderSelectArea();
     //给定窗口，计算该区域内需要渲染的所有区块的坐标数据以及渲染范围的坐标
@@ -200,7 +209,11 @@ private:
     bool draw_grid_{true};
     bool draw_coords_{false};
     bool draw_debug_window_{false};
-    //多方块一个像素的模式
+
+
+    //opened chunk
+    bool opened_chunk_{false};
+    bl::chunk_pos opened_chunk_pos_;
 };
 
 

@@ -31,7 +31,6 @@ public:
 
 private slots:
 
-    void showInfoPopMenu();
 
     void on_close_btn_clicked();
 
@@ -45,8 +44,9 @@ private slots:
 
     void on_save_pt_btn_clicked();
 
+    void on_locate_btn_clicked();
 
-private:
+   private:
     void refreshBasicData();
 
 private:

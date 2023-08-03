@@ -84,6 +84,7 @@ void MapWidget::showContextMenu(const QPoint &p) {
         connect(&openInChunkEditor, &QAction::triggered, this, [pos, this] {
             auto cp = pos.to_chunk_pos();
             cp.dim = static_cast<int>(this->dim_type_);
+            this->selectChunk(cp);
             this->mw_->openChunkEditor(cp);
         });
 
@@ -129,6 +130,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     if (draw_coords_) this->drawChunkPosText(event, &p);
     if (draw_debug_window_) this->drawDebugWindow(event, &p);
     this->drawSelectArea(event, &p);
+    this->drawMarkers(event, &p);
 }
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -422,10 +424,9 @@ void MapWidget::gotoBlockPos(int x, int z) {
     int px = this->camera_.width() / 2;
     int py = this->camera_.height() / 2;
     //坐标换算
-    this->origin_ = {px - x * this->cw_, py - z * this->cw_};
+    this->origin_ = {px - static_cast<int>(x * BW()), static_cast<int>(py - z * BW())};
     this->update();
 }
-
 
 std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
     //需要的参数
@@ -448,9 +449,7 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
     return {minChunk, maxChunk, renderRange};
 }
 
-
 void MapWidget::saveImageAction(bool full_screen) {
-
     bool ok;
     int i = QInputDialog::getInt(this, tr("另存为"),
                                  tr("设置缩放比例"), 1, 1, 16, 1, &ok);
@@ -488,7 +487,6 @@ void MapWidget::gotoPositionAction() {
     //后面可能需要两个输入框
     QDialog dialog(this);
     dialog.setMinimumWidth(300);
-
     dialog.setWindowTitle("前往坐标");
 
     QFormLayout form(&dialog);
@@ -510,6 +508,19 @@ void MapWidget::gotoPositionAction() {
         auto x = x_edit->text().toInt();
         auto z = z_edit->text().toInt();
         this->gotoBlockPos(x, z);
+    }
+}
+
+void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
+    if (this->opened_chunk_ && this->opened_chunk_pos_.dim == this->dim_type_) {
+        auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
+        int x = (this->opened_chunk_pos_.x - minChunk.x) * this->cw_ + renderRange.x();
+        int y = (this->opened_chunk_pos_.z - minChunk.z) * this->cw_ + renderRange.y();
+        int line_width = std::max(1, static_cast<int>(BW() * 2));
+        QPen pen(QColor(34, 166, 153, 250), line_width);
+        painter->setPen(pen);
+        painter->drawRect(
+                QRect(x, y, this->cw_, this->cw_));
     }
 }
 

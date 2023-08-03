@@ -49,6 +49,8 @@ public:
 
     AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
+    MapWidget *mapWidget() { return this->map_widget_; }
+
 public slots:
 
     inline bool enable_write() const { return this->write_mode_; }
@@ -135,6 +137,7 @@ private:
     NbtWidget *level_dat_editor_;
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
+    NbtWidget *map_item_editor_;
 
     // global data
     QMap<QString, QRect> villages_;

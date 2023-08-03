@@ -51,6 +51,7 @@ ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(
 
 ChunkEditorWidget::~ChunkEditorWidget() {
     this->clearData();
+    this->mw_->mapWidget()->unselectChunk();
     delete ui;
 }
 
@@ -106,6 +107,8 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
 }
 
 void ChunkEditorWidget::on_close_btn_clicked() {
+    this->clearData();
+    this->mw_->mapWidget()->unselectChunk();
     this->setVisible(false);
 }
 
@@ -143,11 +146,8 @@ void ChunkEditorWidget::on_terrain_goto_level_btn_clicked() {
 
 void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        showInfoPopMenu();
     }
 }
-
-void ChunkEditorWidget::showInfoPopMenu() {}
 
 
 void ChunkEditorWidget::on_save_actor_btn_clicked() {
@@ -216,4 +216,8 @@ void ChunkEditorWidget::clearData() {
     this->chunk_ = nullptr;
 }
 
-
+void ChunkEditorWidget::on_locate_btn_clicked() {
+    if (!this->chunk_) return;
+    auto pos = this->chunk_->get_pos();
+    this->mw_->mapWidget()->gotoBlockPos(pos.x * 16 + 8, pos.z * 16 + 8);
+}

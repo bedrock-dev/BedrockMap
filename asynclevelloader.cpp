@@ -401,7 +401,7 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     for (int rw = 0; rw < cfg::RW; rw++) {
         for (int rh = 0; rh < cfg::RW; rh++) {
             bl::chunk_pos cp(rp.x + rw, rp.z + rh, rp.dim);
-            auto color = cp.is_slime() ? QColor(162, 255, 134, 100) : QColor(0, 0, 0, 0);
+            auto color = cp.is_slime() ? QColor(29, 145, 44, 190) : QColor(0, 0, 0, 0);
             for (int i = 0; i < 16; i++) {
                 for (int j = 0; j < 16; j++) {
                     res->setPixelColor((rw << 4) + i, (rh << 4) + j, color);
