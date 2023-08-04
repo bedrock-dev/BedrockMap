@@ -137,7 +137,7 @@ private:
     NbtWidget *level_dat_editor_;
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
-    NbtWidget *map_item_editor_;
+    NbtWidget *other_nbt_editor_;
 
     // global data
     QMap<QString, QRect> villages_;

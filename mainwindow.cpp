@@ -108,13 +108,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     player_editor_->hideLoadDataBtn();
     this->village_editor_ = new NbtWidget();
     village_editor_->hideLoadDataBtn();
-    this->map_item_editor_ = new NbtWidget();
-    map_item_editor_->hideLoadDataBtn();
+    this->other_nbt_editor_ = new NbtWidget();
+    other_nbt_editor_->hideLoadDataBtn();
 
     ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
     ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
     ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
-    ui->other_tab->layout()->replaceWidget(ui->other_empty_widget, map_item_editor_);
+    ui->other_tab->layout()->replaceWidget(ui->other_empty_widget, other_nbt_editor_);
 
     ui->main_splitter->setStretchFactor(0, 3);
     ui->main_splitter->setStretchFactor(1, 2);
@@ -168,7 +168,7 @@ void MainWindow::resetToInitUI() {
     ui->global_nbt_pannel->setVisible(false);
     this->village_editor_->setVisible(false);
     this->player_editor_->setVisible(false);
-    this->map_item_editor_->setVisible(false);
+    this->other_nbt_editor_->setVisible(false);
     ui->save_players_btn->setVisible(false);
     ui->save_village_btn->setVisible(false);
     ui->save_other_btn->setVisible(false);
@@ -183,7 +183,7 @@ void MainWindow::resetToInitUI() {
     ui->open_level_btn->setText("未打开存档");
     ui->open_level_btn->setVisible(true);
     ui->open_level_btn->setEnabled(true);
-    this->setGeometry(centerMainWindowGeometry(0.7));
+    this->setGeometry(centerMainWindowGeometry(0.8));
     this->setWindowTitle(this->getStaticTitle());
 }
 
@@ -261,8 +261,17 @@ void MainWindow::openLevel() {
                                 }
                                 if (key.find("player") != std::string::npos) {
                                     this->level_loader_->level().player_data().append_nbt(key, value);
-                                } else if (key.find("map") == 0 || key == "portals" || key == "scoreboard") {
-                                    this->levelLoader()->level().map_item_data().append_nbt(key, value);
+                                } else if (key == "portals"
+                                           || key == "scoreboard"
+                                           || key == "AutonomousEntities"
+                                           || key == "BiomeData"
+                                           || key == "Nether"
+                                           || key == "Overworld"
+                                           || key == "TheEnd"
+                                           || key == "schedulerWT"
+                                           || key == "mobevents"
+                                        ) {
+                                    this->levelLoader()->level().other_item_data().append_nbt(key, value);
                                 } else {
                                     bl::village_key vk = bl::village_key::parse(key);
                                     if (vk.valid()) {
@@ -290,7 +299,7 @@ bool MainWindow::closeLevel() {
     this->village_editor_->clearData();
     this->player_editor_->clearData();
     this->level_dat_editor_->clearData();
-    this->map_item_editor_->clearData();
+    this->other_nbt_editor_->clearData();
     this->villages_.clear();
     this->resetToInitUI();
     return true;
@@ -360,7 +369,7 @@ void MainWindow::handle_level_open_finished() {
         qDebug() << "Load player data finished";
 
         //load map items
-        auto &map_item_list = this->level_loader_->level().map_item_data().data();
+        auto &map_item_list = this->level_loader_->level().other_item_data().data();
         std::vector<bl::palette::compound_tag *> map_items;
         std::vector<std::string> map_keys;
         std::vector<QImage *> map_item_icons;
@@ -369,9 +378,9 @@ void MainWindow::handle_level_open_finished() {
             map_keys.emplace_back(kv.first);
             map_items.push_back(kv.second); //内部会复制数据，这里就不用复制了
         }
-        this->map_item_editor_->load_new_data(map_items, [&](auto *) { return QString(); }, map_keys, map_item_icons);
+        this->other_nbt_editor_->load_new_data(map_items, [&](auto *) { return QString(); }, map_keys, map_item_icons);
 
-        qDebug() << "Load map item data finished";
+        qDebug() << "Load other data finished";
         // load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
@@ -398,7 +407,7 @@ void MainWindow::handle_level_open_finished() {
 
     }
     this->village_editor_->setVisible(true);
-    this->map_item_editor_->setVisible(true);
+    this->other_nbt_editor_->setVisible(true);
     this->player_editor_->setVisible(true);
     ui->save_players_btn->setVisible(true);
     ui->save_village_btn->setVisible(true);

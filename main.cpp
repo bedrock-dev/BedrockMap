@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     setupFont(a);
 
     MainWindow w;
-    w.setWindowTitle("LevelMap v0.1");
+    w.setWindowTitle(cfg::VERSION_STRING());
     QIcon icon(":/res/icon.png");  // 图标文件的资源路径
     w.setWindowIcon(icon);        // 设置窗口图标
     w.show();

@@ -54,6 +54,8 @@ struct cfg {
     static QImage *BACKGROUND_IMAGE_COPY();
 
     static QImage *BG();
+
+    static QString VERSION_STRING();
 };
 
 #endif  // CONFIG_H

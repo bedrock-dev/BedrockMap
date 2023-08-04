@@ -157,3 +157,7 @@ void cfg::initConfig() {
     qInfo() << "Render render Width" << cfg::RW;
 
 }
+
+QString cfg::VERSION_STRING() {
+    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
+}
