@@ -1045,7 +1045,7 @@ border:none;</string>
     <addaction name="action_modify"/>
     <addaction name="action_debug"/>
     <addaction name="separator"/>
-    <addaction name="action"/>
+    <addaction name="action_map_item"/>
     <addaction name="action_NBT"/>
     <addaction name="separator"/>
     <addaction name="action_settings"/>
@@ -1124,7 +1124,7 @@ border:none;</string>
     <string>调试窗口</string>
    </property>
   </action>
-  <action name="action">
+  <action name="action_map_item">
    <property name="text">
     <string>地图编辑器</string>
    </property>

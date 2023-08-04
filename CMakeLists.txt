@@ -62,8 +62,11 @@ set(PROJECT_SOURCES
         renderfilterdialog.cpp
         renderfilterdialog.ui
 
+        mapitemeditor.h
+        mapitemeditor.cpp
+        mapitemeditor.ui
 
-        breeze/breeze.qrc
+
         icon.qrc
         )
 

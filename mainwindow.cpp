@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 
+#include <QDesktopServices>
 #include <QDesktopWidget>
 #include <QDialog>
 #include <QDir>
@@ -13,10 +14,11 @@
 #include <QtConcurrent>
 #include <QtDebug>
 #include <exception>
-#include <QDesktopServices>
+
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "iconmanager.h"
+#include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "nbtwidget.h"
 #include "palette.h"
@@ -128,11 +130,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
     connect(ui->action_about, &QAction::triggered, this, []() { AboutDialog().exec(); });
 
-    connect(ui->action_settings, &QAction::triggered, this, []() {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str()));
-    });
+    connect(ui->action_settings, &QAction::triggered, this,
+            []() { QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str())); });
 
-    //modify
+    connect(ui->action_map_item, &QAction::triggered, this, [this]() { openMapItemEditor(); });
+
+    // modify
     ui->action_modify->setCheckable(true);
     connect(ui->action_modify, &QAction::triggered, this, [this]() {
         auto checked = this->ui->action_modify->isChecked();
@@ -185,6 +188,7 @@ void MainWindow::resetToInitUI() {
     ui->open_level_btn->setEnabled(true);
     this->setGeometry(centerMainWindowGeometry(0.8));
     this->setWindowTitle(this->getStaticTitle());
+    this->global_data_loaded_ = false;
 }
 
 MainWindow::~MainWindow() {
@@ -325,6 +329,18 @@ void MainWindow::openNBTEditor() {
     w->show();
 }
 
+void MainWindow::openMapItemEditor() {
+    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
+        WARN("请打开存档且等待全局数据加载完成后再打开");
+        return;
+    }
+    auto *w = new MapItemEditor();
+    auto g = this->geometry();
+    const int ext = 100;
+    w->setWindowTitle("MapItem editor");
+    w->setGeometry(QRect(g.x() + ext * 2, g.y() + ext, g.width() - ext * 4, g.height() - ext * 2));
+    w->show();
+}
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
     if (!this->level_loader_->isOpen()) {
@@ -418,6 +434,7 @@ void MainWindow::handle_level_open_finished() {
     ui->other_nbt_loading_label->setVisible(false);
 //打开完成了设置为可用（虽然）
     ui->open_level_btn->setEnabled(true);
+    this->global_data_loaded_ = true;
 }
 
 void MainWindow::on_save_leveldat_btn_clicked() {

@@ -87,6 +87,8 @@ private slots:
 
     void openNBTEditor();
 
+    void openMapItemEditor();
+
     void on_slime_layer_btn_clicked();
 
     void on_actor_layer_btn_clicked();
@@ -116,7 +118,7 @@ private slots:
 
     void on_save_other_btn_clicked();
 
-   private:
+private:
     QString getStaticTitle();
 
 private:
@@ -149,6 +151,7 @@ private:
 
     //loading global data?
     std::atomic_bool loading_global_data_{false};
+    std::atomic_bool global_data_loaded_{false};
 };
 
 #endif  // MAINWINDOW_H
