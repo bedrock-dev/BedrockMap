@@ -362,7 +362,7 @@ void MainWindow::handle_level_open_finished() {
         std::vector<std::string> keys;
         std::vector<QImage *> icon_players;
         for (auto &kv: player_list) {
-            icon_players.push_back(VillagerIcon(bl::village_key::PLAYERS));
+            icon_players.push_back(PlayerNBTIcon());
             keys.emplace_back(kv.first);
             players.push_back(kv.second); //内部会复制数据，这里就不用复制了
         }
@@ -375,7 +375,7 @@ void MainWindow::handle_level_open_finished() {
         std::vector<std::string> map_keys;
         std::vector<QImage *> map_item_icons;
         for (auto &kv: map_item_list) {
-            map_item_icons.push_back(VillagerIcon(bl::village_key::PLAYERS));
+            map_item_icons.push_back(OtherNBTIcon());
             map_keys.emplace_back(kv.first);
             map_items.push_back(kv.second); //内部会复制数据，这里就不用复制了
         }
@@ -395,7 +395,7 @@ void MainWindow::handle_level_open_finished() {
                     village_keys.push_back(kv.first + "_" + bl::village_key::village_key_type_to_str(
                             static_cast<bl::village_key::key_type>(index)));
                     vss.push_back(dynamic_cast<bl::palette::compound_tag *>(p));
-                    icons.push_back(VillagerIcon(static_cast<bl::village_key::key_type>(index)));
+                    icons.push_back(VillageNBTIcon(static_cast<bl::village_key::key_type>(index)));
                 }
                 index++;
             }

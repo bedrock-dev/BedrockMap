@@ -16,12 +16,13 @@ namespace {
     QMap<QString, QImage *> entity_icon_pool;
     QImage *unknown_img;
 
-
     //villages
-    QImage *village_players;
-    QImage *village_poi;
-    QImage *village_info;
-    QImage *village_dwellers;
+    QImage *village_players_nbt;
+    QImage *village_poi_nbt;
+    QImage *village_info_nbt;
+    QImage *village_dwellers_nbt;
+    QImage *other_nbt;
+    QImage *player_nbt;
 
     QImage *addMask(const QImage &img) {
         if (img.size() != QSize(16, 16)) {
@@ -88,11 +89,14 @@ void InitIcons() {
         }
     }
 
-    village_dwellers = scale(QImage(":/res/village/dwellers.png"));
-    village_players = scale(QImage(":/res/village/players.png"));
-    village_info = scale(QImage(":/res/village/info.png"));
-    village_poi = scale(QImage(":/res/village/poi.png"));
+    village_dwellers_nbt = scale(QImage(":/res/village/dwellers.png"));
+    village_players_nbt = scale(QImage(":/res/village/players.png"));
+    village_info_nbt = scale(QImage(":/res/village/info.png"));
+    village_poi_nbt = scale(QImage(":/res/village/poi.png"));
     unknown_img = new QImage(":/res/what.png");
+    player_nbt = scale(QImage(":/res/village/info.png"));
+    other_nbt = scale(QImage(":/res/village/info.png"));
+
     QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
     while (it2.hasNext()) {
         auto img = QImage(it2.next());
@@ -101,9 +105,9 @@ void InitIcons() {
     }
 }
 
-QImage *PlayerIcon() { return nullptr; }
+QImage *OtherNBTIcon() { return other_nbt; }
 
-QImage *BlockActorIcon(const QString &key) {
+QImage *BlockActorNBTIcon(const QString &key) {
     auto it = block_actor_icon_pool.find(key);
     if (it == block_actor_icon_pool.end()) {
         qDebug() << " unknown block actor key " << key;
@@ -121,25 +125,29 @@ QImage *ActorImage(const QString &key) {
 
 }
 
-QImage *VillagerIcon(bl::village_key::key_type t) {
+
+QImage *VillageNBTIcon(bl::village_key::key_type t) {
     switch (t) {
         case bl::village_key::INFO:
-            return village_info;
+            return village_info_nbt;
         case bl::village_key::DWELLERS:
-            return village_dwellers;
+            return village_dwellers_nbt;
         case bl::village_key::PLAYERS:
-            return village_players;
+            return village_players_nbt;
         case bl::village_key::POI:
-            return village_poi;
+            return village_poi_nbt;
         case bl::village_key::Unknown:
             return unknown_img;
     }
+    return unknown_img;
 }
 
-QImage *EntityIcon(const QString &key) {
+QImage *EntityNBTIcon(const QString &key) {
     auto it = entity_icon_pool.find(key);
     if (it == entity_icon_pool.end()) {
         qDebug() << " unknown key " << key;
     }
     return it == entity_icon_pool.end() ? unknown_img : it.value();
 }
+
+QImage *PlayerNBTIcon() { return player_nbt; }

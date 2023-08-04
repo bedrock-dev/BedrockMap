@@ -162,7 +162,6 @@ public:
 
     bool modifyOtherItemList(const std::unordered_map<std::string, bl::palette::compound_tag *> &item_list);
 
-
     bool modifyVillageList(
             const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list);
 

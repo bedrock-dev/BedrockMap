@@ -82,7 +82,7 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
             name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
         }
-        be_icons.push_back(BlockActorIcon(name.toLower().replace("minecraft:", "")));
+        be_icons.push_back(BlockActorNBTIcon(name.toLower().replace("minecraft:", "")));
     }
 
     this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, be_icons);
@@ -97,7 +97,7 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     std::vector<bl::palette::compound_tag *> actor_palettes;
     for (auto &b: actors) {
         auto id = QString(b->identifier().c_str()).replace("minecraft:", "");
-        actor_icons.push_back(EntityIcon(id));
+        actor_icons.push_back(EntityNBTIcon(id));
         actor_palettes.push_back(b->root());
         actor_default_labels.push_back(id.toStdString());
     }

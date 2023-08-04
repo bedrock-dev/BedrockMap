@@ -13,12 +13,15 @@ void InitIcons();
 QImage *ActorImage(const QString &key);
 
 
-QImage *PlayerIcon();
+QImage *OtherNBTIcon();
 
-QImage *VillagerIcon(bl::village_key::key_type t);
+QImage *PlayerNBTIcon();
 
-QImage *BlockActorIcon(const QString &key);
 
-QImage *EntityIcon(const QString &key);
+QImage *VillageNBTIcon(bl::village_key::key_type t);
+
+QImage *BlockActorNBTIcon(const QString &key);
+
+QImage *EntityNBTIcon(const QString &key);
 
 #endif  // BEDROCKMAP_ICONMANAGER_H
