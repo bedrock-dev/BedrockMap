@@ -32,7 +32,6 @@ public:
 
 struct NBTListItem : public QListWidgetItem {
 
-
     QString getLabel() {
         auto dyn = this->namer_(root_);
         return dyn.size() == 0 ? default_label : dyn;
@@ -61,6 +60,10 @@ public:
                        const std::vector<std::string> &default_labels,
                        const std::vector<QImage *> &icons = {});
 
+    void
+    setExtraLoadEvent(
+            const std::function<void(bl::palette::compound_tag *)> &event) { this->extra_load_event_ = event; }
+
     void hideLoadDataBtn();
 
     std::string getCurrentPaletteRaw();
@@ -79,8 +82,6 @@ private slots:
     void on_load_btn_clicked();
 
     void on_list_widget_itemDoubleClicked(QListWidgetItem *item);
-
-//    void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
     void on_save_btn_clicked();
 
@@ -108,6 +109,7 @@ private:
     //不存数据，只引用数据
     Ui::NbtWidget *ui;
     bool modify_allowed_{false};
+    std::function<void(bl::palette::compound_tag *)> extra_load_event_{[](const bl::palette::compound_tag *) {}};
 };
 
 #endif  // NBTWIDGET_H

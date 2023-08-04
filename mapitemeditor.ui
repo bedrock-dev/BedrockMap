@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>450</width>
+    <height>381</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,54 +19,17 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QListView" name="listView">
-      <property name="maximumSize">
+     <widget class="QWidget" name="image_widget" native="true">
+      <property name="minimumSize">
        <size>
         <width>300</width>
-        <height>16777215</height>
+        <height>0</height>
        </size>
       </property>
-     </widget>
-     <widget class="QWidget" name="verticalLayoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="topMargin">
-        <number>0</number>
+        <number>10</number>
        </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>MAP</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QPushButton" name="export_map_btn">
-           <property name="text">
-            <string>导出图像</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="repace_map_btn">
-           <property name="text">
-            <string>替换图像</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_map_btn">
-         <property name="text">
-          <string>保存当前地图数据</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
@@ -79,6 +42,31 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="export_map_btn">
+           <property name="text">
+            <string>导出图像</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="change_map_btn">
+           <property name="text">
+            <string>修改图像</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="save_map_btn">
+         <property name="text">
+          <string>保存所有修改</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -110,6 +110,7 @@ void NbtWidget::on_load_btn_clicked() {
         return;
     }
     std::vector<std::string> default_labels;
+    default_labels.reserve(palette.size());
     for (int i = 0; i < palette.size(); i++) {
         default_labels.push_back(std::to_string(i));
     }
@@ -123,6 +124,7 @@ void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
         QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
+    this->extra_load_event_(root);
     ui->tree_widget->clear();
     int max_col = 0;
     auto *top = nbt2QTreeItem(root, 1, max_col);

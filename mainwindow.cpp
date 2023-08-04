@@ -277,6 +277,8 @@ void MainWindow::openLevel() {
                                            || key == "mobevents"
                                         ) {
                                     this->levelLoader()->level().other_item_data().append_nbt(key, value);
+                                } else if (key.find("map_") == 0) {
+                                    this->levelLoader()->level().map_item_data().append_nbt(key, value);
                                 } else {
                                     bl::village_key vk = bl::village_key::parse(key);
                                     if (vk.valid()) {
@@ -335,6 +337,7 @@ void MainWindow::openMapItemEditor() {
         return;
     }
     auto *w = new MapItemEditor();
+    w->load_map_data(this->level_loader_->level().map_item_data());
     auto g = this->geometry();
     const int ext = 100;
     w->setWindowTitle("MapItem editor");
