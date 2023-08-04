@@ -647,7 +647,7 @@ border:none;</string>
         </layout>
        </widget>
        <widget class="QWidget" name="map_widget" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="40">
+        <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -692,7 +692,7 @@ border:none;</string>
            <enum>QTabWidget::West</enum>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
@@ -786,6 +786,9 @@ border:none;</string>
             </property>
             <item>
              <widget class="QLabel" name="player_nbt_loading_label">
+              <property name="styleSheet">
+               <string notr="true">font-size: 30px;</string>
+              </property>
               <property name="text">
                <string>玩家数据正在后台加载中</string>
               </property>
@@ -866,6 +869,9 @@ border:none;</string>
             </property>
             <item>
              <widget class="QLabel" name="village_nbt_loading_label">
+              <property name="styleSheet">
+               <string notr="true">font-size: 30px;</string>
+              </property>
               <property name="text">
                <string>村庄数据正在后台加载中</string>
               </property>
@@ -924,9 +930,9 @@ border:none;</string>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="map_item_tab">
+          <widget class="QWidget" name="other_tab">
            <attribute name="title">
-            <string>地图</string>
+            <string>其他</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
@@ -945,9 +951,12 @@ border:none;</string>
              <number>4</number>
             </property>
             <item>
-             <widget class="QLabel" name="map_item_nbt_loading_label">
+             <widget class="QLabel" name="other_nbt_loading_label">
+              <property name="styleSheet">
+               <string notr="true">font-size: 30px;</string>
+              </property>
               <property name="text">
-               <string>地图数据正在后台加载中</string>
+               <string>其他数据正在后台加载中</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -955,7 +964,7 @@ border:none;</string>
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="map_item_empty_widget" native="true"/>
+             <widget class="QWidget" name="other_empty_widget" native="true"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -988,7 +997,7 @@ border:none;</string>
                </spacer>
               </item>
               <item>
-               <widget class="QPushButton" name="save_map_item_btn">
+               <widget class="QPushButton" name="save_other_btn">
                 <property name="minimumSize">
                  <size>
                   <width>300</width>

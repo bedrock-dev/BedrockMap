@@ -58,7 +58,7 @@ public slots:
     void updateXZEdit(int x, int z);
 
     // public
-    void openChunkEditor(const bl::chunk_pos &p);
+    bool openChunkEditor(const bl::chunk_pos &p);
 
     void deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max);
 

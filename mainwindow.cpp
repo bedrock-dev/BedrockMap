@@ -114,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
     ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
     ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
-    ui->map_item_tab->layout()->replaceWidget(ui->map_item_empty_widget, map_item_editor_);
+    ui->other_tab->layout()->replaceWidget(ui->other_empty_widget, map_item_editor_);
 
     ui->main_splitter->setStretchFactor(0, 3);
     ui->main_splitter->setStretchFactor(1, 2);
@@ -171,7 +171,7 @@ void MainWindow::resetToInitUI() {
     this->map_item_editor_->setVisible(false);
     ui->save_players_btn->setVisible(false);
     ui->save_village_btn->setVisible(false);
-    ui->save_map_item_btn->setVisible(false);
+    ui->save_other_btn->setVisible(false);
     ui->player_nbt_loading_label->setVisible(true);
     ui->village_nbt_loading_label->setVisible(true);
     //checkbox and btns
@@ -196,19 +196,21 @@ void MainWindow::updateXZEdit(int x, int z) {
     this->setWindowTitle(this->getStaticTitle() + " @  [" + QString::number(x) + ", " + QString::number(z) + "]");
 }
 
-void MainWindow::openChunkEditor(const bl::chunk_pos &p) {
+bool MainWindow::openChunkEditor(const bl::chunk_pos &p) {
     if (!this->level_loader_->isOpen()) {
         QMessageBox::information(nullptr, "警告", "未打开存档", QMessageBox::Yes, QMessageBox::Yes);
-        return;
+        return false;
     }
     // add a watcher
     qDebug() << "Try load chunk: " << p.to_string().c_str();
     auto chunk = this->level_loader_->getChunkDirect(p);
     if (!chunk) {
         QMessageBox::information(nullptr, "警告", "无法打开区块数据", QMessageBox::Yes, QMessageBox::Yes);
+        return false;
     } else {
         this->chunk_editor_widget_->setVisible(true);
         this->chunk_editor_widget_->load_chunk_data(chunk);
+        return true;
     }
 }
 
@@ -258,13 +260,13 @@ void MainWindow::openLevel() {
                                     throw std::logic_error("EXIT"); //手动中止
                                 }
                                 if (key.find("player") != std::string::npos) {
-                                    this->level_loader_->level().player_list().append_player(key, value);
-                                } else if (key.find("map_") == 0) {
-                                    this->level_loader_->level().map_item_list().append_map_item(key, value);
+                                    this->level_loader_->level().player_data().append_nbt(key, value);
+                                } else if (key.find("map") == 0 || key == "portals" || key == "scoreboard") {
+                                    this->levelLoader()->level().map_item_data().append_nbt(key, value);
                                 } else {
                                     bl::village_key vk = bl::village_key::parse(key);
                                     if (vk.valid()) {
-                                        this->level_loader_->level().village_list().append_village(vk, value);
+                                        this->level_loader_->level().village_data().append_village(vk, value);
                                     }
                                 }
                             });
@@ -345,7 +347,7 @@ void MainWindow::handle_level_open_finished() {
         WARN("无法加载全局NBT数据，但是你仍然可以查看地图和区块数据");
     } else {
         // load players
-        auto &player_list = this->level_loader_->level().player_list().data();
+        auto &player_list = this->level_loader_->level().player_data().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
         std::vector<QImage *> icon_players;
@@ -358,7 +360,7 @@ void MainWindow::handle_level_open_finished() {
         qDebug() << "Load player data finished";
 
         //load map items
-        auto &map_item_list = this->level_loader_->level().map_item_list().data();
+        auto &map_item_list = this->level_loader_->level().map_item_data().data();
         std::vector<bl::palette::compound_tag *> map_items;
         std::vector<std::string> map_keys;
         std::vector<QImage *> map_item_icons;
@@ -373,7 +375,7 @@ void MainWindow::handle_level_open_finished() {
         // load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
-        auto &village_list = this->level_loader_->level().village_list().data();
+        auto &village_list = this->level_loader_->level().village_data().data();
         this->collect_villages(village_list);
         std::vector<QImage *> icons;
         for (auto &kv: village_list) {
@@ -400,10 +402,10 @@ void MainWindow::handle_level_open_finished() {
     this->player_editor_->setVisible(true);
     ui->save_players_btn->setVisible(true);
     ui->save_village_btn->setVisible(true);
-    ui->save_map_item_btn->setVisible(true);
+    ui->save_other_btn->setVisible(true);
     ui->player_nbt_loading_label->setVisible(false);
     ui->village_nbt_loading_label->setVisible(false);
-    ui->map_item_nbt_loading_label->setVisible(false);
+    ui->other_nbt_loading_label->setVisible(false);
     //打开完成了设置为可用（虽然）
     ui->open_level_btn->setEnabled(true);
 }

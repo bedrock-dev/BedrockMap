@@ -84,8 +84,9 @@ void MapWidget::showContextMenu(const QPoint &p) {
         connect(&openInChunkEditor, &QAction::triggered, this, [pos, this] {
             auto cp = pos.to_chunk_pos();
             cp.dim = static_cast<int>(this->dim_type_);
-            this->selectChunk(cp);
-            this->mw_->openChunkEditor(cp);
+            if (this->mw_->openChunkEditor(cp)) {
+                this->selectChunk(cp);
+            }
         });
 
         contextMenu.addAction(&gotoAction);
@@ -516,11 +517,14 @@ void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
         auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
         int x = (this->opened_chunk_pos_.x - minChunk.x) * this->cw_ + renderRange.x();
         int y = (this->opened_chunk_pos_.z - minChunk.z) * this->cw_ + renderRange.y();
+
         int line_width = std::max(1, static_cast<int>(BW() * 2));
         QPen pen(QColor(34, 166, 153, 250), line_width);
+        pen.setJoinStyle(Qt::MiterJoin);
         painter->setPen(pen);
         painter->drawRect(
-                QRect(x, y, this->cw_, this->cw_));
+                QRect(x - static_cast<int>(BW()), y - static_cast<int>(BW()), this->cw_ + BW() * 2,
+                      this->cw_ + BW() * 2));
     }
 }
 

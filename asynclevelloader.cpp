@@ -197,7 +197,7 @@ bool AsyncLevelLoader::modifyPlayerList(
     if (!this->loaded_)return false;
     //先写入磁盘再修改内存
     leveldb::WriteBatch batch;
-    for (auto &kv: this->level_.player_list().data()) {
+    for (auto &kv : this->level_.player_data().data()) {
         if (!new_list.count(kv.first)) {
             batch.Delete(kv.first);
         } else { //put
@@ -207,7 +207,7 @@ bool AsyncLevelLoader::modifyPlayerList(
     }
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
     if (s.ok()) {
-        this->level_.player_list().reset(new_list);
+        this->level_.player_data().reset(new_list);
         return true;
     }
     return false;
@@ -218,7 +218,7 @@ bool AsyncLevelLoader::modifyVillageList(
         const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &new_village_list) {
     if (!this->loaded_)return false;
     leveldb::WriteBatch batch;
-    for (auto &kv: this->level_.village_list().data()) {
+    for (auto &kv : this->level_.village_data().data()) {
         const auto uuid = kv.first;
         auto it = new_village_list.find(uuid);
         if (it == new_village_list.end()) { //新的村庄表找不到这个了，直接把四个key全删了
@@ -241,7 +241,7 @@ bool AsyncLevelLoader::modifyVillageList(
 
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
     if (s.ok()) {
-        this->level_.village_list().reset(new_village_list);
+        this->level_.village_data().reset(new_village_list);
         return true;
     }
     return false;
