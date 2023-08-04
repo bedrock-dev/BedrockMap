@@ -114,7 +114,9 @@ private slots:
 
     void collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs);
 
-private:
+    void on_save_other_btn_clicked();
+
+   private:
     QString getStaticTitle();
 
 private:

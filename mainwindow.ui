@@ -692,7 +692,7 @@ border:none;</string>
            <enum>QTabWidget::West</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="level_dat_tab">
            <attribute name="title">
@@ -1005,7 +1005,7 @@ border:none;</string>
                  </size>
                 </property>
                 <property name="text">
-                 <string>保存地图数据</string>
+                 <string>保存其他数据</string>
                 </property>
                </widget>
               </item>

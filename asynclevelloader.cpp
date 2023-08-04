@@ -192,12 +192,13 @@ bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
     return true;
 }
 
+
 bool AsyncLevelLoader::modifyPlayerList(
         const std::unordered_map<std::string, bl::palette::compound_tag *> &new_list) {
     if (!this->loaded_)return false;
     //先写入磁盘再修改内存
     leveldb::WriteBatch batch;
-    for (auto &kv : this->level_.player_data().data()) {
+    for (auto &kv: this->level_.player_data().data()) {
         if (!new_list.count(kv.first)) {
             batch.Delete(kv.first);
         } else { //put
@@ -214,11 +215,35 @@ bool AsyncLevelLoader::modifyPlayerList(
 }
 
 
+bool
+AsyncLevelLoader::modifyOtherItemList(
+        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_item_list) {
+    if (!this->loaded_)return false;
+    //先写入磁盘再修改内存
+    leveldb::WriteBatch batch;
+    for (auto &kv: this->level_.other_item_data().data()) {
+        if (!new_item_list.count(kv.first)) {
+            batch.Delete(kv.first);
+        } else { //put
+            //可以检查不一样的才修改，不过没啥必要
+            batch.Put(kv.first, kv.second->to_raw());
+        }
+    }
+
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    if (s.ok()) {
+        this->level_.other_item_data().reset(new_item_list);
+        return true;
+    }
+    return false;
+
+}
+
 bool AsyncLevelLoader::modifyVillageList(
         const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &new_village_list) {
     if (!this->loaded_)return false;
     leveldb::WriteBatch batch;
-    for (auto &kv : this->level_.village_data().data()) {
+    for (auto &kv: this->level_.village_data().data()) {
         const auto uuid = kv.first;
         auto it = new_village_list.find(uuid);
         if (it == new_village_list.end()) { //新的村庄表找不到这个了，直接把四个key全删了

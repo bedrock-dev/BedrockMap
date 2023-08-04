@@ -216,11 +216,12 @@ bool MainWindow::openChunkEditor(const bl::chunk_pos &p) {
 
 void MainWindow::openLevel() {
     this->closeLevel();
-//    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
-//                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
-//
-//
+#ifdef  QT_DEBUG
     auto path = QString("D:\\MC\\saves");
+#elif
+    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
+       "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
+#endif
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
                                                      path,
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -238,18 +239,18 @@ void MainWindow::openLevel() {
         return;
     }
 
-    //打开了存档
+//打开了存档
     this->setWindowTitle(getStaticTitle());                      //刷新标题
     ui->main_splitter->setVisible(true);        //显示GUI
     ui->open_level_btn->setVisible(false);      //隐藏窗口
-    //设置出生点坐标
+//设置出生点坐标
     auto sp = this->level_loader_->level().dat().spawn_position();
     this->map_widget_->gotoBlockPos(sp.x, sp.z);
-    //写入level.dat数据
+//写入level.dat数据
     auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
     this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
     qDebug() << "Loading global data in background thread";
-    //后台加载全局数据
+//后台加载全局数据
     this->loading_global_data_ = true;
     auto future = QtConcurrent::run(
             [this](const QString &path) {
@@ -289,12 +290,12 @@ void MainWindow::openLevel() {
 }
 
 bool MainWindow::closeLevel() {
-    //cancel background task
+//cancel background task
     if (!this->level_loader_->isOpen())return true;
     this->loading_global_data_ = false;
     this->load_global_data_watcher_.waitForFinished();
     this->level_loader_->close();
-    //free spaces
+//free spaces
     this->chunk_editor_widget_->clearData();
     this->village_editor_->clearData();
     this->player_editor_->clearData();
@@ -355,7 +356,7 @@ void MainWindow::handle_level_open_finished() {
         qDebug() << "Load global data failed";
         WARN("无法加载全局NBT数据，但是你仍然可以查看地图和区块数据");
     } else {
-        // load players
+// load players
         auto &player_list = this->level_loader_->level().player_data().data();
         std::vector<bl::palette::compound_tag *> players;
         std::vector<std::string> keys;
@@ -368,7 +369,7 @@ void MainWindow::handle_level_open_finished() {
         this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys, icon_players);
         qDebug() << "Load player data finished";
 
-        //load map items
+//load map items
         auto &map_item_list = this->level_loader_->level().other_item_data().data();
         std::vector<bl::palette::compound_tag *> map_items;
         std::vector<std::string> map_keys;
@@ -381,7 +382,7 @@ void MainWindow::handle_level_open_finished() {
         this->other_nbt_editor_->load_new_data(map_items, [&](auto *) { return QString(); }, map_keys, map_item_icons);
 
         qDebug() << "Load other data finished";
-        // load villages
+// load villages
         std::vector<bl::palette::compound_tag *> vss;
         std::vector<std::string> village_keys;
         auto &village_list = this->level_loader_->level().village_data().data();
@@ -415,7 +416,7 @@ void MainWindow::handle_level_open_finished() {
     ui->player_nbt_loading_label->setVisible(false);
     ui->village_nbt_loading_label->setVisible(false);
     ui->other_nbt_loading_label->setVisible(false);
-    //打开完成了设置为可用（虽然）
+//打开完成了设置为可用（虽然）
     ui->open_level_btn->setEnabled(true);
 }
 
@@ -475,6 +476,23 @@ void MainWindow::on_save_players_btn_clicked() {
     }
 }
 
+void MainWindow::on_save_other_btn_clicked() {
+    if (!this->write_mode_) {
+        WARN("未开启写模式");
+        return;
+    }
+    std::unordered_map<std::string, bl::palette::compound_tag *> newList;
+    this->other_nbt_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
+        newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
+    });
+
+    if (this->level_loader_->modifyOtherItemList(newList)) {
+        INFO("已成功保存NBT数据");
+    } else {
+        WARN("无法保存NBT数据");
+    }
+
+}
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
@@ -564,4 +582,3 @@ QString MainWindow::getStaticTitle() {
     }
     return {(software_str + " " + level_name).c_str()};
 }
-
