@@ -22,8 +22,14 @@ public:
 
     void paintEvent(QPaintEvent *event) override;
 
-private:
+   private slots:
+    void on_export_map_btn_clicked();
 
+    void on_change_map_btn_clicked();
+
+    void on_save_map_btn_clicked();
+
+   private:
     NbtWidget *map_nbt_editor_{nullptr};
     Ui::MapItemEditor *ui;
     QImage img;

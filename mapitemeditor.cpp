@@ -1,6 +1,19 @@
 #include "mapitemeditor.h"
 #include "ui_mapitemeditor.h"
 #include <QPainter>
+#include <QInputDialog>
+#include <QFileDialog>
+#include <QMessageBox>
+
+
+namespace {
+    void WARN(const QString &msg) { QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes); }
+
+    void INFO(const QString &msg) {
+        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
+    }
+
+}
 
 MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent),
                                                 ui(new Ui::MapItemEditor) {
@@ -57,5 +70,37 @@ void MapItemEditor::paintEvent(QPaintEvent *event) {
     painter.drawImage(QRect{start_x, start_y, MAP_WIDTH, MAP_WIDTH}, img, QRect(0, 0, 128, 128));
 }
 
+void MapItemEditor::on_export_map_btn_clicked() {
+
+    bool ok;
+    int i = QInputDialog::getInt(this, tr("另存为"),
+                                 tr("设置缩放比例"), 1, 1, 16, 1, &ok);
 
 
+    if (!ok)return;
+
+    auto new_img = img.scaled(img.width() * i, img.height() * i);
+    auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                 "/home/jana/untitled.png",
+                                                 tr("Images (*.png *.jpg)"));
+    if (fileName.isEmpty())return;
+    new_img.save(fileName);
+}
+
+void MapItemEditor::on_change_map_btn_clicked() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "/home",
+                                                    tr("Images (*.png *.jpg)"));
+    QImage new_img(fileName);
+    if (new_img.width() != new_img.height()) {
+        WARN("图片的长宽不一致,将会进行自动拉伸");
+        return;
+    }
+
+    auto scale_img = new_img.scaled(this->img.width(), this->img.height());
+    this->img = scale_img;
+    //TODO 写入图数据
+    this->update();
+}
+
+void MapItemEditor::on_save_map_btn_clicked() {}
