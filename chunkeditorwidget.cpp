@@ -75,6 +75,8 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
         be_icons.push_back(BlockActorNBTIcon(name.toLower().replace("minecraft:", "")));
     }
 
+
+
     this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, be_icons);
 
     qDebug() << "Load pending tick data";

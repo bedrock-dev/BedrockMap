@@ -1,19 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>res/nbt/TAG_Byte.ico</file>
-        <file>res/nbt/TAG_Byte_Array.ico</file>
-        <file>res/nbt/TAG_Byte_bool.ico</file>
-        <file>res/nbt/TAG_Compound.ico</file>
-        <file>res/nbt/TAG_Double.ico</file>
-        <file>res/nbt/TAG_End.ico</file>
-        <file>res/nbt/TAG_Float.ico</file>
-        <file>res/nbt/TAG_Int.ico</file>
-        <file>res/nbt/TAG_Int_Array.ico</file>
-        <file>res/nbt/TAG_List.ico</file>
-        <file>res/nbt/TAG_Long.ico</file>
-        <file>res/nbt/TAG_Long_Array.ico</file>
-        <file>res/nbt/TAG_Short.ico</file>
-        <file>res/nbt/TAG_String.ico</file>
         <file>res/entity/agent.png</file>
         <file>res/entity/alex.png</file>
         <file>res/entity/allay.png</file>
@@ -223,5 +209,19 @@
         <file>res/ui/village.png</file>
         <file>res/ui/write.png</file>
         <file>res/ui/filter.png</file>
+        <file>res/nbt/TAG_Byte.png</file>
+        <file>res/nbt/TAG_Byte_Array.png</file>
+        <file>res/nbt/TAG_Byte_bool.png</file>
+        <file>res/nbt/TAG_Compound.png</file>
+        <file>res/nbt/TAG_Double.png</file>
+        <file>res/nbt/TAG_End.png</file>
+        <file>res/nbt/TAG_Float.png</file>
+        <file>res/nbt/TAG_Int.png</file>
+        <file>res/nbt/TAG_Int_Array.png</file>
+        <file>res/nbt/TAG_List.png</file>
+        <file>res/nbt/TAG_Long.png</file>
+        <file>res/nbt/TAG_Long_Array.png</file>
+        <file>res/nbt/TAG_Short.png</file>
+        <file>res/nbt/TAG_String.png</file>
     </qresource>
 </RCC>

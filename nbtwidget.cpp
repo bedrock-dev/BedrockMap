@@ -3,39 +3,21 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QPair>
 #include <QString>
 #include <QTreeWidgetItem>
 #include <QtDebug>
+
+#include "config.h"
+#include "iconmanager.h"
+#include "msg.h"
 #include "palette.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
-#include "msg.h"
-#include <QInputDialog>
 
 namespace {
-
-    QString nbtTagIconName(bl::palette::tag_type t) {
-        using namespace bl::palette;
-        std::unordered_map<tag_type, std::string> names{
-                {tag_type::Int,       "Int"},
-                {tag_type::Byte,      "Byte"},
-                {tag_type::Compound,  "Compound"},
-                {tag_type::Double,    "Double"},
-                {tag_type::Float,     "Float"},
-                {tag_type::List,      "List"},
-                {tag_type::Long,      "Long"},
-                {tag_type::Short,     "Short"},
-                {tag_type::String,    "String"},
-                {tag_type::ByteArray, "Byte_Array"},
-                {tag_type::IntArray,  "Int_Array"},
-                {tag_type::LongArray, "Long_Array"},
-        };
-        auto it = names.find(t);
-        if (it == names.end()) return ":/res/nbt/Tag_End.ico";
-        return QString(":/res/nbt/TAG_") + it->second.c_str() + ".ico";
-    }
 
     NBTTreeItem *nbt2QTreeItem(bl::palette::abstract_tag *t, int index, int &ma) {
         ma = std::max(ma, index);
@@ -43,7 +25,7 @@ namespace {
         if (!t) return nullptr;
         auto *item = new NBTTreeItem();
         item->root_ = t;
-        item->setIcon(0, QIcon(nbtTagIconName(t->type())));
+        item->setIcon(0, QIcon(QPixmap::fromImage(*TagIcon(t->type()))));
         if (t->type() == bl::palette::tag_type::Compound) {
             item->setText(0, t->key().c_str());
             auto *ct = dynamic_cast<bl::palette::compound_tag *>(t);

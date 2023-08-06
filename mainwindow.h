@@ -39,7 +39,6 @@ struct LogoPos {
 };
 
 struct GlobalNBTLoadResult {
-    bool success{false};
     bl::village_data villageData;
     bl::general_kv_nbts playerData;
     bl::general_kv_nbts mapData;
@@ -76,7 +75,6 @@ public slots:
     void handle_chunk_delete_finished();
 
     void handle_level_open_finished();
-
 
     inline QMap<QString, QRect> &get_villages() { return this->villages_; }
 
@@ -129,6 +127,8 @@ private slots:
 
     void on_save_other_btn_clicked();
 
+    void prepareGlobalData(GlobalNBTLoadResult *result);
+
 private:
     QString getStaticTitle();
 
@@ -146,7 +146,7 @@ private:
 
     // watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
-    QFutureWatcher<GlobalNBTLoadResult *> load_global_data_watcher_;
+    QFutureWatcher<bool> load_global_data_watcher_;
 
     // global nbt editors
     NbtWidget *level_dat_editor_;

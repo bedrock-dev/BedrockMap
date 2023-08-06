@@ -5,8 +5,10 @@
 #ifndef BEDROCKMAP_ICONMANAGER_H
 #define BEDROCKMAP_ICONMANAGER_H
 
-#include "bedrock_key.h"
 #include <QImage>
+
+#include "bedrock_key.h"
+#include "palette.h"
 
 void InitIcons();
 
@@ -17,6 +19,7 @@ QImage *OtherNBTIcon();
 
 QImage *PlayerNBTIcon();
 
+QImage *TagIcon(bl::palette::tag_type t);
 
 QImage *VillageNBTIcon(bl::village_key::key_type t);
 

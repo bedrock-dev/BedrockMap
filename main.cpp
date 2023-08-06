@@ -49,7 +49,6 @@ void setupFont(QApplication &a) {
     a.setFont(font);
 }
 
-
 int main(int argc, char *argv[]) {
     InitIcons();
     cfg::initConfig();
@@ -60,8 +59,8 @@ int main(int argc, char *argv[]) {
 
     MainWindow w;
     w.setWindowTitle(cfg::VERSION_STRING());
-    QIcon icon(":/res/icon.png");  // 图标文件的资源路径
-    w.setWindowIcon(icon);        // 设置窗口图标
+    QIcon icon(QPixmap::fromImage(QImage(":/res/icon.png")));  // 图标文件的资源路径
+    w.setWindowIcon(icon);                                     // 设置窗口图标
     w.show();
     return a.exec();
 }

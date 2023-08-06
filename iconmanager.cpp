@@ -3,17 +3,21 @@
 //
 
 #include "iconmanager.h"
-#include <unordered_map>
+
 #include <QDir>
 #include <QDirIterator>
-#include <QtDebug>
-#include <QString>
 #include <QMap>
+#include <QString>
+#include <QtDebug>
+#include <iostream>
+#include <unordered_map>
 
 namespace {
     QMap<QString, QImage *> actor_img_pool;
     QMap<QString, QImage *> block_actor_icon_pool;
+    QMap<QString, QImage *> tag_icon_pool;
     QMap<QString, QImage *> entity_icon_pool;
+
     QImage *unknown_img;
 
     //villages
@@ -103,6 +107,14 @@ void InitIcons() {
         auto key = it2.fileName().replace(".png", "");
         block_actor_icon_pool[key] = scale(img);
     }
+
+    QDirIterator it3(":/res/nbt/", QDirIterator::Subdirectories);
+    while (it3.hasNext()) {
+        auto img = QImage(it3.next());
+        auto key = it3.fileName().replace(".png", "").replace("TAG_", "");
+        qDebug() << "NBT Icon: " << key;
+        tag_icon_pool[key] = scale(img);
+    }
 }
 
 QImage *OtherNBTIcon() { return other_nbt; }
@@ -151,3 +163,25 @@ QImage *EntityNBTIcon(const QString &key) {
 }
 
 QImage *PlayerNBTIcon() { return player_nbt; }
+
+QImage *TagIcon(bl::palette::tag_type t) {
+    using namespace bl::palette;
+    std::unordered_map<tag_type, std::string> names{
+        {tag_type::Int, "Int"},
+        {tag_type::Byte, "Byte"},
+        {tag_type::Compound, "Compound"},
+        {tag_type::Double, "Double"},
+        {tag_type::Float, "Float"},
+        {tag_type::List, "List"},
+        {tag_type::Long, "Long"},
+        {tag_type::Short, "Short"},
+        {tag_type::String, "String"},
+        {tag_type::ByteArray, "Byte_Array"},
+        {tag_type::IntArray, "Int_Array"},
+        {tag_type::LongArray, "Long_Array"},
+        {tag_type::End, "End"},
+    };
+
+    auto it = tag_icon_pool.find(QString(names[t].c_str()));
+    return it == tag_icon_pool.end() ? unknown_img : it.value();
+}
