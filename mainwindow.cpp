@@ -219,12 +219,12 @@ bool MainWindow::openChunkEditor(const bl::chunk_pos &p) {
 
 void MainWindow::openLevel() {
     this->closeLevel();
-#ifdef  QT_DEBUG
-    auto path = QString("D:\\MC\\saves");
-#elif
+//#ifdef  QT_DEBUG
+//    auto path = QString("D:\\MC\\saves");
+//#elif
     auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
-       "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
-#endif
+                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
+//#endif
     QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"),
                                                      path,
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);

@@ -9,9 +9,11 @@
 
 
 namespace {
-    QImage *bg_img_{nullptr};
-    QImage *empty_img_{nullptr};
+
     QImage *bg_{nullptr};
+    QImage *unloaded_region_image_{nullptr}; //未加载的区域
+    QImage *null_region_image_{nullptr}; //确定没有有效区块的空区域
+    QImage *transparent_region_img_{nullptr};
 }  // namespace
 
 //软件基本信息
@@ -56,53 +58,64 @@ void cfg::initColorTable() {
     bl::init_block_color_palette_from_file(cfg::BLOCK_FILE_PATH);
 
     // init image
-    bg_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-    empty_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+
+    unloaded_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    null_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+
+    transparent_region_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
+    const int BW = cfg::RW << 4;
+    for (int i = 0; i < BW; i++) {
+        for (int j = 0; j < BW; j++) {
+            const int arr1[2]{128, 148};
+            const int arr2[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
+            const int idx = (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2;
+            assert(unloaded_region_image_);
+            unloaded_region_image_->setPixelColor(i, j, QColor(arr1[idx], arr1[idx], arr1[idx]));
+            null_region_image_->setPixelColor(i, j, QColor(arr2[idx], arr2[idx], arr2[idx]));
+            transparent_region_img_->setPixelColor(i, j, QColor(0, 0, 0, 0));
+        }
+    }
+
+//    bg_ = new QImage(8, 8, QImage::Format_RGBA8888);
+//    bg_->fill(QColor(0, 0, 0, 0));
+//    std::vector<std::string> fills{
+//            "XXXXXXXX",  //
+//            "XXXXXXXX",  //
+//            "X  XX  X",  //
+//            "X  XX  X",  //
+//            "XXX  XXX",  //
+//            "XX    XX",  //
+//            "XX    XX",  //
+//            "XX XX XX",  //
+//    };
+//    for (int i = 0; i < 8; i++) {
+//        for (int j = 0; j < 8; j++) {
+//            if (fills[i][j] == ' ') bg_->setPixelColor(i, j, QColor(31, 138, 112, 160));
+//        }
+//    }
+}
+
+QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW> &bitmap) {
+    auto *res = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
             const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
             const int idx = (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2;
-            bg_img_->setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
-            empty_img_->setPixelColor(i, j, QColor(0, 0, 0, 0));
+
+            if (!bitmap[i / 16][j / 16]) {
+                res->setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
+            } else {
+                res->setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
+            }
         }
     }
-
-    bg_ = new QImage(8, 8, QImage::Format_RGBA8888);
-    bg_->fill(QColor(0, 0, 0, 0));
-    std::vector<std::string> fills{
-            "XXXXXXXX",  //
-            "XXXXXXXX",  //
-            "X  XX  X",  //
-            "X  XX  X",  //
-            "XXX  XXX",  //
-            "XX    XX",  //
-            "XX    XX",  //
-            "XX XX XX",  //
-    };
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            if (fills[i][j] == ' ') bg_->setPixelColor(i, j, QColor(31, 138, 112, 160));
-        }
-    }
+    return res;
 }
 
-QImage *cfg::BACKGROUND_IMAGE() {
-    return bg_img_;
-}
 
-QImage *cfg::EMPTY_IMAGE() {
-    return empty_img_;
-}
+QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 
-QImage *cfg::BACKGROUND_IMAGE_COPY() {
-    auto *img = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-    if (bg_img_)
-        memcpy(img->bits(), bg_img_->bits(), img->byteCount());
-    return img;
-}
-
-QImage *cfg::BG() { return bg_; }
 
 void cfg::initConfig() {
 
@@ -114,19 +127,7 @@ void cfg::initConfig() {
         std::ifstream f(CONFIG_FILE_PATH);
         if (!f.is_open()) {
             qWarning() << "Can not find config file.";
-        } else {/*
- *  "terrain_shadow_level": 150,
-  "theme": "dark",
-  "region_width": 8,
-  "region_cache_size": 4096,
-  "empty_region_cache_size": 16384,
-  "background_thread_number": 8,
-  "minimum_scale_level": 4,
-  "maximum_scale_level": 1024,
-  "zoom_speed": 1.2
-
- *
- * */
+        } else {
             f >> j;
             cfg::SHADOW_LEVEL = j["terrain_shadow_level"].get<int>();
             cfg::COLOR_THEME = j["theme"].get<std::string>();
@@ -164,3 +165,17 @@ void cfg::initConfig() {
 QString cfg::VERSION_STRING() {
     return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
 }
+
+QImage *cfg::EMPTY_REGION_IMAGE() {
+    return transparent_region_img_;
+}
+
+QImage *cfg::NULL_REGION_IMAGE() {
+    return null_region_image_;
+}
+
+
+
+
+
+

@@ -106,22 +106,28 @@ void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *re
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 int y = ch->get_height(i, j);
+                bool found{false};
+                auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
                 while (y >= miny) {
-                    auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-                    auto block = ch->get_block(i, y, j);
-                    auto name = QString(block.name.c_str()).replace("minecraft:", "");
-                    if (name != "unknown" &&
-                        (this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-                        block.color = bl::blend_color_with_biome(block.name, block.color, tips.biome);
-                        region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-                                                                   QColor(block.color.r,
-                                                                          block.color.g, block.color.b,
-                                                                          block.color.a));
-                        tips.height = y;
-                        tips.block_name = name.toStdString();
+                    auto b = ch->get_block(i, y, j);
+                    if (b.name != "minecraft:unknown" &&
+                        (this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
+                        found = true;
                         break;
                     }
                     y--;
+                }
+                tips.height = y;
+                auto info = ch->get_block(i, y, j);
+                if (found) {
+                    info.color = bl::blend_color_with_biome(info.name, info.color, tips.biome);
+                    region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
+                                                               QColor(info.color.r,
+                                                                      info.color.g, info.color.b,
+                                                                      info.color.a));
+                    tips.block_name = QString(info.name.c_str()).replace("minecraft:", "").toStdString();
+                } else {
+                    tips.block_name = "void";
                 }
             }
         }
@@ -142,6 +148,7 @@ void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *regi
                     auto c = bl::get_biome_color(biome);
                     region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                              QColor(c.r, c.g, c.b, c.a));
+
                     tips.biome = biome;
                 }
             }
@@ -159,6 +166,8 @@ void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *regi
                         auto c = bl::get_biome_color(biome);
                         region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
                                                                  QColor(c.r, c.g, c.b, c.a));
+
+
                         tips.biome = biome;
                         break;
                     }

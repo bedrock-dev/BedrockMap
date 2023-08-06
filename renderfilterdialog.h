@@ -18,7 +18,7 @@ struct chunk_region;
 
 struct MapFilter {
     std::unordered_set<int> biomes_list_{255};
-    std::unordered_set<std::string> blocks_list_{"air"};
+    std::unordered_set<std::string> blocks_list_{"minecraft:air"};
     std::unordered_set<std::string> actors_list_{"item"};
     int layer{64};
     bool enable_layer_{false};

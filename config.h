@@ -48,13 +48,13 @@ struct cfg {
 
     static void initConfig();
 
-    static QImage *BACKGROUND_IMAGE();
+    static QImage *INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW> &bitmap);
 
-    static QImage *EMPTY_IMAGE();
+    static QImage *UNLOADED_REGION_IMAGE();
 
-    static QImage *BACKGROUND_IMAGE_COPY();
+    static QImage *NULL_REGION_IMAGE();
 
-    static QImage *BG();
+    static QImage *EMPTY_REGION_IMAGE();
 
     static QString VERSION_STRING();
 };

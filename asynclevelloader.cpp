@@ -86,13 +86,23 @@ void LoadRegionTask::run() {
     const auto IMG_WIDTH = cfg::RW << 4;
     if (region->valid) {  //尝试烘焙
 
-        region->terrain_bake_image_ = cfg::BACKGROUND_IMAGE_COPY();
-        region->biome_bake_image_ = cfg::BACKGROUND_IMAGE_COPY();
 
+        //build bit map
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
                 auto *chunk = chunks_[rw][rh];
                 region->chunk_bit_map_[rw][rh] = chunk != nullptr;
+            }
+        }
+
+        //init bg
+        region->terrain_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
+        region->biome_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
+
+        //darw blocks
+        for (int rw = 0; rw < cfg::RW; rw++) {
+            for (int rh = 0; rh < cfg::RW; rh++) {
+                auto *chunk = chunks_[rw][rh];
                 //下面两个不要换位置(需要获取群系信息才能给水和草地变色)
                 this->filter_->bakeChunkBiome(chunk, rw, rh, region);
                 this->filter_->bakeChunkTerrain(chunk, rw, rh, region);
@@ -385,21 +395,20 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
 }
 
 QImage *AsyncLevelLoader::bakedTerrainImage(const region_pos &rp) {
-    if (!this->loaded_) return cfg::BACKGROUND_IMAGE();
+    if (!this->loaded_) return cfg::UNLOADED_REGION_IMAGE();
     bool null_region{false};
     auto *region = this->tryGetRegion(rp, null_region);
-    if (null_region)return cfg::BACKGROUND_IMAGE();
-    return region ? region->terrain_bake_image_ : cfg::BACKGROUND_IMAGE();
+    if (null_region)return cfg::NULL_REGION_IMAGE();
+    return region ? region->terrain_bake_image_ : cfg::UNLOADED_REGION_IMAGE();
 }
 
 QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
-    if (!this->loaded_) return cfg::BACKGROUND_IMAGE();
+    if (!this->loaded_) return cfg::UNLOADED_REGION_IMAGE();
     bool null_region{false};
 
     auto *region = this->tryGetRegion(rp, null_region);
-    if (null_region) return cfg::BACKGROUND_IMAGE();
-
-    return region ? region->biome_bake_image_ : cfg::BACKGROUND_IMAGE();
+    if (null_region) return cfg::NULL_REGION_IMAGE();
+    return region ? region->biome_bake_image_ : cfg::UNLOADED_REGION_IMAGE();
 }
 
 std::unordered_map<QImage *, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos &rp) {
@@ -434,11 +443,11 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
 
 
 QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
-    return cfg::BACKGROUND_IMAGE();
+    return cfg::UNLOADED_REGION_IMAGE();
 }
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
-    if (rp.dim != 0)return cfg::EMPTY_IMAGE();
+    if (rp.dim != 0)return cfg::EMPTY_REGION_IMAGE();
     auto *img = this->slime_chunk_cache_->operator[](rp);
     if (img) {
         return img;
