@@ -10,12 +10,14 @@
 MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent),
                                                 ui(new Ui::MapItemEditor) {
     ui->setupUi(this);
+    this->setWindowTitle("Map Item Editor");
     this->map_nbt_editor_ = new NbtWidget();
     this->map_nbt_editor_->hideLoadDataBtn();
     ui->splitter->insertWidget(0, this->map_nbt_editor_);
     ui->splitter->setStretchFactor(0, 2);
     ui->splitter->setStretchFactor(1, 1);
     this->img = QImage(128, 128, QImage::Format_RGBA8888);
+    img.fill(QColor(0, 0, 0, 0));
     this->map_nbt_editor_->setExtraLoadEvent([this](bl::palette::compound_tag *root) {
         if (!root)return;
         auto *color_tag = dynamic_cast<bl::palette::byte_array_tag *>(root->get("colors"));
@@ -41,14 +43,14 @@ MapItemEditor::~MapItemEditor() {
 }
 
 void MapItemEditor::load_map_data(const bl::general_kv_nbts &data) {
-    std::vector<bl::palette::compound_tag *> tags;
-    std::vector<std::string> labels;
+    std::vector<NBTListItem *> items;
     for (auto &kv: data.data()) {
-        tags.push_back(dynamic_cast<bl::palette::compound_tag *>( kv.second->copy()));
-        labels.push_back(kv.first);
-    }
 
-    this->map_nbt_editor_->load_new_data(tags, [](const bl::palette::compound_tag *) { return ""; }, labels, {});
+        auto *it = NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>( kv.second->copy()), kv.first.c_str(),
+                                     kv.first.c_str());
+        items.push_back(it);
+    }
+    this->map_nbt_editor_->loadNewData(items);
 }
 
 void MapItemEditor::paintEvent(QPaintEvent *event) {

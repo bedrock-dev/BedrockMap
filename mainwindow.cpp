@@ -113,8 +113,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
     ui->other_tab->layout()->replaceWidget(ui->other_empty_widget, other_nbt_editor_);
 
+
     ui->main_splitter->setStretchFactor(0, 3);
     ui->main_splitter->setStretchFactor(1, 2);
+
+
+    this->map_item_editor_ = new MapItemEditor();
+
 
     connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
     connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
@@ -154,6 +159,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             &MainWindow::handle_level_open_finished);
 
     //reset UI
+
+
     this->resetToInitUI();
 }
 
@@ -329,17 +336,15 @@ void MainWindow::openNBTEditor() {
 }
 
 void MainWindow::openMapItemEditor() {
-    //    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
-//        WARN("请打开存档且等待全局数据加载完成后再打开");
-//        return;
-//    }
-//    auto *w = new MapItemEditor();
-//    w->load_map_data(this->level_loader_->level().map_item_data());
-//    auto g = this->geometry();
-//    const int ext = 100;
-//    w->setWindowTitle("MapItem editor");
-//    w->setGeometry(QRect(g.x() + ext * 2, g.y() + ext, g.width() - ext * 4, g.height() - ext * 2));
-//    w->show();
+    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
+        WARN("请打开存档且等待全局数据加载完成后再打开");
+        return;
+    }
+
+    const int ext = 100;
+    auto g = this->geometry();
+    this->map_item_editor_->setGeometry(QRect(g.x() + ext * 2, g.y() + ext, g.width() - ext * 4, g.height() - ext * 2));
+    this->map_item_editor_->show();
 }
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
@@ -416,6 +421,8 @@ void MainWindow::handle_level_open_finished() {
         }
         this->village_editor_->loadNewData(villNBTList);
         qDebug() << "Load village data finished";
+        //load map data
+        this->map_item_editor_->load_map_data(res->mapData);
     }
 
     this->village_editor_->setVisible(true);

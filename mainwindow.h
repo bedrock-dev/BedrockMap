@@ -17,6 +17,7 @@
 #include "mapwidget.h"
 #include "nbtwidget.h"
 #include "renderfilterdialog.h"
+#include "mapitemeditor.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -86,7 +87,7 @@ protected:
 
 
 private slots:
-    
+
     void openLevel();
 
     bool closeLevel();
@@ -152,6 +153,8 @@ private:
     NbtWidget *player_editor_;
     NbtWidget *village_editor_;
     NbtWidget *other_nbt_editor_;
+
+    MapItemEditor *map_item_editor_;
 
     // global data
     QMap<QString, QRect> villages_;
