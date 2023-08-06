@@ -5,10 +5,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "msg.h"
+#include "mainwindow.h"
 
 
-MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent),
-                                                ui(new Ui::MapItemEditor) {
+MapItemEditor::MapItemEditor(MainWindow *mw, QWidget *parent) : QWidget(parent),
+                                                                mw_(mw),
+                                                                ui(new Ui::MapItemEditor) {
     ui->setupUi(this);
     this->setWindowTitle("Map Item Editor");
     this->map_nbt_editor_ = new NbtWidget();
@@ -82,9 +84,15 @@ void MapItemEditor::on_export_map_btn_clicked() {
 }
 
 void MapItemEditor::on_change_map_btn_clicked() {
+
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     "/home",
                                                     tr("Images (*.png *.jpg)"));
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+
     QImage new_img(fileName);
     if (new_img.width() != new_img.height()) {
         WARN("图片的长宽不一致,将会进行自动拉伸");
@@ -94,7 +102,24 @@ void MapItemEditor::on_change_map_btn_clicked() {
     auto scale_img = new_img.scaled(this->img.width(), this->img.height());
     this->img = scale_img;
     //TODO 写入图数据
+    auto *it = this->map_nbt_editor_->openedItem();
+    if (!it || !it->root_)return;
+    auto *color_tag = dynamic_cast<bl::palette::byte_array_tag *>(it->root_->get("colors"));
+    for (int i = 0; i < 128; i++) {
+        for (int j = 0; j < 128; j++) {
+            const int n = (i * 128 + j) * 4;
+            auto c = this->img.pixelColor(i, j);
+            color_tag->value[n] = (int8_t) c.red();
+            color_tag->value[n + 1] = (int8_t) c.green();
+            color_tag->value[n + 2] = (int8_t) c.blue();
+        }
+    }
+    this->map_nbt_editor_->putModifyCache(it->raw_key.toStdString(), it->root_->to_raw());
     this->update();
 }
 
-void MapItemEditor::on_save_map_btn_clicked() {}
+void MapItemEditor::on_save_map_btn_clicked() {
+    if (!CHECK_CONDITION(this->mw_->enable_write(), "未开启写模式"))return;
+    CHECK_DATA_SAVE(this->mw_->levelLoader()->modifyDBGlobal(this->map_nbt_editor_->getModifyCache()));
+    this->map_nbt_editor_->clearModifyCache();
+}

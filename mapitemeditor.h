@@ -10,11 +10,13 @@ namespace Ui {
     class MapItemEditor;
 }
 
+class MainWindow;
+
 class MapItemEditor : public QWidget {
 Q_OBJECT
 
 public:
-    explicit MapItemEditor(QWidget *parent = nullptr);
+    explicit MapItemEditor(MainWindow *mw, QWidget *parent = nullptr);
 
     ~MapItemEditor() override;
 
@@ -33,6 +35,7 @@ private slots:
 private:
     NbtWidget *map_nbt_editor_{nullptr};
     Ui::MapItemEditor *ui;
+    MainWindow *mw_{nullptr};
     QImage img;
 };
 

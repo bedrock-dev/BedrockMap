@@ -9,6 +9,7 @@
 #include "palette.h"
 #include <QMenu>
 
+
 namespace Ui {
     class NbtWidget;
 }
@@ -65,7 +66,6 @@ public:
 
     ~NbtWidget() override;
 
-    inline void clearModifyCache() { this->modified_cache_.clear(); };
 
     [[deprecated("old function")]] void load_new_data(
             const std::vector<compound_tag *> &data,
@@ -94,6 +94,14 @@ public:
     void clearData();
 
     const std::unordered_map<std::string, std::string> &getModifyCache() { return this->modified_cache_; }
+
+    void putModifyCache(const std::string &key, const std::string &value);
+
+    inline void clearModifyCache() { this->modified_cache_.clear(); };
+
+    inline NBTListItem *openedItem() { return this->current_opened_; }
+
+    inline bool modifyAllowed() const { return this->modify_allowed_; }
 
 private slots:
 

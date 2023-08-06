@@ -165,8 +165,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
             auto *nbtItem = dynamic_cast <NBTListItem *>(this->ui->list_widget->currentItem());
             if (nbtItem == this->current_opened_) ui->tree_widget->clear();
-            this->modified_cache_[nbtItem->raw_key.toStdString()] = std::string();
-            qDebug() << "Remove key: " << nbtItem->raw_key;
+            this->putModifyCache(nbtItem->raw_key.toStdString(), "");
             ui->list_widget->removeItemWidget(nbtItem);
             this->refreshLabel();
             delete nbtItem;
@@ -185,11 +184,9 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             if (!this->modify_allowed_)return;
             for (auto &item: ui->list_widget->selectedItems()) {
                 auto *nbtItem = dynamic_cast<NBTListItem *>(item);
-
                 //防止闪退
                 if (nbtItem == this->current_opened_) ui->tree_widget->clear();
-                this->modified_cache_[nbtItem->raw_key.toStdString()] = std::string();
-                qDebug() << "Remove key: " << nbtItem->raw_key;
+                this->putModifyCache(nbtItem->raw_key.toStdString(), "");
                 ui->list_widget->removeItemWidget(item);
                 delete item;
                 this->refreshLabel();
@@ -311,8 +308,8 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         case LongArray:
             break;
     }
-    this->modified_cache_[this->current_opened_->raw_key.toStdString()] = this->current_opened_->root_->to_raw();
-    qDebug() << "Change NBT item : [" << this->current_opened_->raw_key << "]";
+
+    this->putModifyCache(this->current_opened_->raw_key.toStdString(), this->current_opened_->root_->to_raw());
     it->setText(0, it->getRawText());
 }
 
@@ -448,5 +445,12 @@ NbtWidget::~NbtWidget() {
     this->clearData();
 }
 
-
+void NbtWidget::putModifyCache(const std::string &key, const std::string &value) {
+    this->modified_cache_[key] = value;
+    if (value.empty()) {
+        qDebug() << "Delete key: " << key.c_str();
+    } else {
+        qDebug() << "Modify key: " << key.c_str() << " -> Data[" << value.size() << "]";
+    }
+}
 

@@ -117,10 +117,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->main_splitter->setStretchFactor(0, 3);
     ui->main_splitter->setStretchFactor(1, 2);
 
-
-    this->map_item_editor_ = new MapItemEditor();
-
-
+    this->map_item_editor_ = new MapItemEditor(this);
     connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
     connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
     // menu actions
