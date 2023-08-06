@@ -3,19 +3,15 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QHBoxLayout>
-#include <QLineEdit>
 #include <QMessageBox>
 #include <QPair>
 #include <QString>
 #include <QTreeWidgetItem>
-#include <QVariant>
 #include <QtDebug>
-#include <QItemSelectionModel>
 #include "palette.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
 #include "msg.h"
-#include <climits>
 #include <QInputDialog>
 
 namespace {
@@ -66,6 +62,9 @@ namespace {
 
         return item;
     }
+
+    NBTListItem *TN(QListWidgetItem *i) { return dynamic_cast<NBTListItem *>(i); }
+
 }  // namespace
 
 NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
@@ -108,35 +107,38 @@ void NbtWidget::on_load_btn_clicked() {
         return;
     }
 
-    std::vector<std::string> default_labels;
-    default_labels.reserve(palette.size());
-    for (int i = 0; i < palette.size(); i++) {
-        default_labels.push_back(std::to_string(i));
+    size_t i = 0;
+    std::vector<NBTListItem *> items;
+    for (auto *nbt: palette) {
+        items.push_back(NBTListItem::from(nbt, QString::number(i)));
+        i++;
     }
-    this->load_new_data(palette, [](const bl::palette::compound_tag *) { return QString(); }, default_labels, {});
-    for (auto &p: palette)delete p;
+    this->loadNewData(items);
 }
 
-
-void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
-    if (!root) {
-        QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
-        return;
-    }
+void NbtWidget::openNBTItem(bl::palette::compound_tag *root) {
+    assert(root);
     this->extra_load_event_(root);
     ui->tree_widget->clear();
     int max_col = 0;
     ui->tree_widget->setColumnCount(1);
     auto *top = nbt2QTreeItem(root, 1, max_col);
     ui->tree_widget->addTopLevelItem(top);
+    //only expand the top level
     ui->tree_widget->expandItem(top);
 }
 
 void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
-    this->loadNBTItem(dynamic_cast<NBTListItem *>(item)->root_);
+    auto *nbtItem = TN(item);
+    if (!nbtItem) {
+        QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
+        return;
+    }
+    this->current_select_key_ = nbtItem->raw_key;
+    qDebug() << "Select NBT item : [" << this->current_select_key_ << "] -> " << nbtItem->getLabel();
+    this->openNBTItem(nbtItem->root_);
     this->refreshLabel();
 }
-
 
 void NbtWidget::hideLoadDataBtn() {
     ui->load_btn->setVisible(false);
@@ -146,12 +148,12 @@ void NbtWidget::on_save_btn_clicked() {
     this->saveNBTs(false);
 }
 
+
 void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {}
 
 void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
-
+    //单选模式
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
-
         auto *removeAction = new QAction("删除", this);
         auto *exportAction = new QAction("导出选中", this);
         QMenu menu(this);
@@ -161,17 +163,19 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         }
 
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
-            auto *item = this->ui->list_widget->currentItem();
+            auto *item = dynamic_cast <NBTListItem *>(this->ui->list_widget->currentItem());
+            this->modified_cache_[item->root_->key()] = std::string();
+            qDebug() << "Remove key: " << item->root_->key().c_str();
             ui->list_widget->removeItemWidget(item);
             this->refreshLabel();
             delete item;
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) {
             this->saveNBTs(true);
-
         });
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
+        //多选模式
         auto *removeSelect = new QAction("删除选中", this);
         auto *unselectAll = new QAction("全不选", this);
         auto *exportAction = new QAction("导出选中", this);
@@ -179,6 +183,9 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(removeSelect, &QAction::triggered, [this, pos](bool) {
             if (!this->modify_allowed_)return;
             for (auto &item: ui->list_widget->selectedItems()) {
+                auto *nbtItem = dynamic_cast<NBTListItem *>(item);
+                this->modified_cache_[nbtItem->root_->key()] = std::string();
+                qDebug() << "Remove key: " << nbtItem->root_->key().c_str();
                 ui->list_widget->removeItemWidget(item);
                 delete item;
                 this->refreshLabel();
@@ -299,9 +306,10 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         case LongArray:
             break;
     }
+    this->modified_cache_[it->root_->key()] = it->root_->to_raw();
+    qDebug() << "Change NBT item : [" << this->current_select_key_ << "]";
     it->setText(0, it->getRawText());
 }
-
 
 void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                               const std::function<QString(bl::palette::compound_tag *)> &namer,
@@ -320,6 +328,15 @@ void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &da
         }
         it->setText(it->getLabel());
         ui->list_widget->addItem(it);
+    }
+    this->refreshLabel();
+}
+
+
+void NbtWidget::loadNewData(const std::vector<NBTListItem *> &items) {
+    this->clearData();
+    for (auto *item: items) {
+        ui->list_widget->addItem(item);
     }
     this->refreshLabel();
 }

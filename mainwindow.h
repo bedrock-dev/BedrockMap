@@ -37,6 +37,16 @@ struct LogoPos {
     }
 };
 
+struct GlobalNBTLoadResult {
+    bool success{false};
+    bl::village_data villageData;
+    bl::general_kv_nbts playerData;
+    bl::general_kv_nbts mapData;
+    bl::general_kv_nbts otherData;
+};
+
+
+
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
@@ -135,7 +145,7 @@ private:
 
     // watcher
     QFutureWatcher<bool> delete_chunks_watcher_;
-    QFutureWatcher<bool> load_global_data_watcher_;
+    QFutureWatcher<GlobalNBTLoadResult *> load_global_data_watcher_;
 
     // global nbt editors
     NbtWidget *level_dat_editor_;
@@ -152,6 +162,9 @@ private:
     //loading global data?
     std::atomic_bool loading_global_data_{false};
     std::atomic_bool global_data_loaded_{false};
+
+    //
 };
+
 
 #endif  // MAINWINDOW_H

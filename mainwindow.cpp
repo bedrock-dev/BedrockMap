@@ -54,8 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     this->map_widget_ = new MapWidget(this, nullptr);
     this->map_widget_->gotoBlockPos(0, 0);
     ui->map_visual_layout->addWidget(this->map_widget_);
-    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
-
+    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int))); //NOLINT
     // init chunk editor layout
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
     this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
@@ -248,20 +247,23 @@ void MainWindow::openLevel() {
     this->map_widget_->gotoBlockPos(sp.x, sp.z);
 //写入level.dat数据
     auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
-    this->level_dat_editor_->load_new_data({ld}, [](auto *) { return "level.dat"; }, {});
+    this->level_dat_editor_->loadNewData(
+            {NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
     qDebug() << "Loading global data in background thread";
 //后台加载全局数据
     this->loading_global_data_ = true;
     auto future = QtConcurrent::run(
-            [this](const QString &path) {
+            [this](const QString &path) -> GlobalNBTLoadResult * {
+                auto *result = new GlobalNBTLoadResult();
                 try {
                     this->level_loader_->level().foreach_global_keys(
-                            [this](const std::string &key, const std::string &value) {
+                            [this, result]
+                                    (const std::string &key, const std::string &value) {
                                 if (!this->loading_global_data_) {
                                     throw std::logic_error("EXIT"); //手动中止
                                 }
                                 if (key.find("player") != std::string::npos) {
-                                    this->level_loader_->level().player_data().append_nbt(key, value);
+                                    result->playerData.append_nbt(key, value);
                                 } else if (key == "portals"
                                            || key == "scoreboard"
                                            || key == "AutonomousEntities"
@@ -272,26 +274,25 @@ void MainWindow::openLevel() {
                                            || key == "schedulerWT"
                                            || key == "mobevents"
                                         ) {
-                                    this->levelLoader()->level().other_item_data().append_nbt(key, value);
+                                    result->otherData.append_nbt(key, value);
                                 } else if (key.find("map_") == 0) {
-                                    this->levelLoader()->level().map_item_data().append_nbt(key, value);
+                                    result->mapData.append_nbt(key, value);
                                 } else {
                                     bl::village_key vk = bl::village_key::parse(key);
                                     if (vk.valid()) {
-                                        this->level_loader_->level().village_data().append_village(vk, value);
+                                        result->villageData.append_village(vk, value);
                                     }
                                 }
                             });
-                    return true;
-                } catch (std::exception &e) {
-                    return false;
-                }
+                    result->success = true;
+                } catch (std::exception &e) { result->success = false; }
+                return result;
             },
             root);
     this->load_global_data_watcher_.setFuture(future);
 }
 
-bool MainWindow::closeLevel() {
+bool MainWindow::closeLevel() { //NOLINT
 //cancel background task
     if (!this->level_loader_->isOpen())return true;
     this->loading_global_data_ = false;
@@ -328,17 +329,18 @@ void MainWindow::openNBTEditor() {
 }
 
 void MainWindow::openMapItemEditor() {
-    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
-        WARN("请打开存档且等待全局数据加载完成后再打开");
-        return;
-    }
-    auto *w = new MapItemEditor();
-    w->load_map_data(this->level_loader_->level().map_item_data());
-    auto g = this->geometry();
-    const int ext = 100;
-    w->setWindowTitle("MapItem editor");
-    w->setGeometry(QRect(g.x() + ext * 2, g.y() + ext, g.width() - ext * 4, g.height() - ext * 2));
-    w->show();
+
+    //    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
+//        WARN("请打开存档且等待全局数据加载完成后再打开");
+//        return;
+//    }
+//    auto *w = new MapItemEditor();
+//    w->load_map_data(this->level_loader_->level().map_item_data());
+//    auto g = this->geometry();
+//    const int ext = 100;
+//    w->setWindowTitle("MapItem editor");
+//    w->setGeometry(QRect(g.x() + ext * 2, g.y() + ext, g.width() - ext * 4, g.height() - ext * 2));
+//    w->show();
 }
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
@@ -363,7 +365,7 @@ void MainWindow::handle_chunk_delete_finished() {
 void MainWindow::handle_level_open_finished() {
 
     auto res = this->load_global_data_watcher_.result();
-    if (!res) {
+    if (!res || !res->success) {
         if (!this->loading_global_data_) { //说明是主动停止的
             qDebug() << "Stop loading global data (by user)";
             return;
@@ -372,56 +374,51 @@ void MainWindow::handle_level_open_finished() {
         WARN("无法加载全局NBT数据，但是你仍然可以查看地图和区块数据");
     } else {
 // load players
-        auto &player_list = this->level_loader_->level().player_data().data();
-        std::vector<bl::palette::compound_tag *> players;
-        std::vector<std::string> keys;
-        std::vector<QImage *> icon_players;
-        for (auto &kv: player_list) {
-            icon_players.push_back(PlayerNBTIcon());
-            keys.emplace_back(kv.first);
-            players.push_back(kv.second); //内部会复制数据，这里就不用复制了
+        auto &playerData = res->playerData.data();
+        std::vector<NBTListItem *> playerNBTList;
+        for (auto &kv: playerData) {
+            auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()),
+                                           kv.first.c_str(), kv.first.c_str());
+            item->setIcon(QIcon(QPixmap::fromImage(*PlayerNBTIcon())));
+            playerNBTList.push_back(item);
         }
-        this->player_editor_->load_new_data(players, [&](auto *) { return QString(); }, keys, icon_players);
+
+        this->player_editor_->loadNewData(playerNBTList);
         qDebug() << "Load player data finished";
 
-//load map items
-        auto &map_item_list = this->level_loader_->level().other_item_data().data();
-        std::vector<bl::palette::compound_tag *> map_items;
-        std::vector<std::string> map_keys;
-        std::vector<QImage *> map_item_icons;
-        for (auto &kv: map_item_list) {
-            map_item_icons.push_back(OtherNBTIcon());
-            map_keys.emplace_back(kv.first);
-            map_items.push_back(kv.second); //内部会复制数据，这里就不用复制了
+//load other items
+        auto &otherData = res->otherData.data();
+        std::vector<NBTListItem *> otherNBTList;
+        for (auto &kv: otherData) {
+            auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()),
+                                           kv.first.c_str(), kv.first.c_str());
+            item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
+            otherNBTList.push_back(item);
         }
-        this->other_nbt_editor_->load_new_data(map_items, [&](auto *) { return QString(); }, map_keys, map_item_icons);
-
+        this->other_nbt_editor_->loadNewData(otherNBTList);
         qDebug() << "Load other data finished";
 // load villages
-        std::vector<bl::palette::compound_tag *> vss;
-        std::vector<std::string> village_keys;
-        auto &village_list = this->level_loader_->level().village_data().data();
-        this->collect_villages(village_list);
-        std::vector<QImage *> icons;
-        for (auto &kv: village_list) {
+        auto &villData = res->villageData.data();
+        std::vector<NBTListItem *> villNBTList;
+        for (auto &kv: villData) {
             int index = 0;
             for (auto &p: kv.second) {
                 if (p) {
-                    village_keys.push_back(kv.first + "_" + bl::village_key::village_key_type_to_str(
-                            static_cast<bl::village_key::key_type>(index)));
-                    vss.push_back(dynamic_cast<bl::palette::compound_tag *>(p));
-                    icons.push_back(VillageNBTIcon(static_cast<bl::village_key::key_type>(index)));
+                    auto key = kv.first + "_" +
+                               bl::village_key::village_key_type_to_str(static_cast<bl::village_key::key_type>(index));
+                    auto *item = NBTListItem::from(
+                            dynamic_cast<compound_tag *>(p->copy()), key.c_str(), key.c_str());
+                    item->setIcon(
+                            QIcon(QPixmap::fromImage(*VillageNBTIcon(static_cast<bl::village_key::key_type>(index)))));
+                    villNBTList.push_back(item);
                 }
                 index++;
             }
         }
-
-        this->village_editor_->load_new_data(
-                vss, [&](auto *) { return QString(); }, village_keys, icons);
+        this->village_editor_->loadNewData(villNBTList);
         qDebug() << "Load village data finished";
-
-
     }
+
     this->village_editor_->setVisible(true);
     this->other_nbt_editor_->setVisible(true);
     this->player_editor_->setVisible(true);
@@ -475,6 +472,7 @@ void MainWindow::on_save_village_btn_clicked() {
     }
 }
 
+
 void MainWindow::on_save_players_btn_clicked() {
     if (!this->write_mode_) {
         WARN("未开启写模式");
@@ -507,8 +505,8 @@ void MainWindow::on_save_other_btn_clicked() {
     } else {
         WARN("无法保存NBT数据");
     }
-
 }
+
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
@@ -556,7 +554,6 @@ void MainWindow::paintEvent(QPaintEvent *event) {
 }
 
 void MainWindow::on_grid_btn_clicked() {
-
     auto r = this->map_widget_->toggleGrid();
     updateButtonBackground(ui->grid_btn, r);
 }

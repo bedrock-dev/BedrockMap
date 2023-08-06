@@ -16,8 +16,12 @@ AsyncLevelLoader::AsyncLevelLoader() {
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
+    /**
+     * 不要相信bedrock_level的任何数据，不在库内做任何长期的缓存
+     */
     this->level_.set_cache(false);
 }
+
 
 chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     empty = false;
@@ -192,6 +196,21 @@ bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
     return true;
 }
 
+
+bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies) {
+    if (!this->loaded_)return false;
+    //TODO会导致内存中的存档数据和磁盘中的不匹配
+    leveldb::WriteBatch batch;
+    for (auto &kv: modifies) {
+        if (kv.second.empty()) {
+            batch.Delete(kv.first);
+        } else {
+            batch.Put(kv.first, kv.second);
+        }
+    }
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    return true;
+}
 
 bool AsyncLevelLoader::modifyPlayerList(
         const std::unordered_map<std::string, bl::palette::compound_tag *> &new_list) {
@@ -437,6 +456,8 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     this->slime_chunk_cache_->insert(rp, res);
     return res;
 }
+
+
 
 
 
