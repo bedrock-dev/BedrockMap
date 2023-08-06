@@ -329,7 +329,6 @@ void MainWindow::openNBTEditor() {
 }
 
 void MainWindow::openMapItemEditor() {
-
     //    if (!this->level_loader_->isOpen() || !this->global_data_loaded_) {
 //        WARN("请打开存档且等待全局数据加载完成后再打开");
 //        return;
@@ -407,7 +406,7 @@ void MainWindow::handle_level_open_finished() {
                     auto key = kv.first + "_" +
                                bl::village_key::village_key_type_to_str(static_cast<bl::village_key::key_type>(index));
                     auto *item = NBTListItem::from(
-                            dynamic_cast<compound_tag *>(p->copy()), key.c_str(), key.c_str());
+                            dynamic_cast<compound_tag *>(p->copy()), key.c_str(), ("VILLAGE_" + key).c_str());
                     item->setIcon(
                             QIcon(QPixmap::fromImage(*VillageNBTIcon(static_cast<bl::village_key::key_type>(index)))));
                     villNBTList.push_back(item);
@@ -434,16 +433,11 @@ void MainWindow::handle_level_open_finished() {
 }
 
 void MainWindow::on_save_leveldat_btn_clicked() {
-    if (!this->write_mode_) {
-        WARN("未开启写模式");
-        return;
-    }
-
+    if (!CHECK_CONDITION(this->write_mode_, "未开启写模式"))return;
     auto nbts = this->level_dat_editor_->getPaletteCopy();
     if (nbts.size() == 1 && nbts[0]) {
         this->level_loader_->modifyLeveldat(nbts[0]);
         this->setWindowTitle(getStaticTitle());
-
         INFO("成功保存level.dat文件");
     } else {
         INFO("无法保存level.dat文件");
@@ -451,62 +445,23 @@ void MainWindow::on_save_leveldat_btn_clicked() {
 }
 
 void MainWindow::on_save_village_btn_clicked() {
-    if (!this->write_mode_) {
-        WARN("未开启写模式");
-        return;
-    }
-
-    std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> vs;
-    this->village_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
-        auto village_key = bl::village_key::parse("VILLAGE_" + key);
-        if (!village_key.valid()) {
-            qDebug() << "Invalid village  key " << ("VILLAGE_" + key).c_str();
-            return;
-        }
-        vs[village_key.uuid][static_cast<int>(village_key.type)] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
-    });
-    if (this->level_loader_->modifyVillageList(vs)) {
-        INFO("成功保存村庄数据");
-    } else {
-        INFO("无法保存村庄数据");
-    }
+    if (!CHECK_CONDITION(this->write_mode_, "未开启写模式"))return;
+    CHECK_DATA_SAVE(this->level_loader_->modifyDBGlobal(this->village_editor_->getModifyCache()));
+    this->village_editor_->clearModifyCache();
 }
 
-
 void MainWindow::on_save_players_btn_clicked() {
-    if (!this->write_mode_) {
-        WARN("未开启写模式");
-        return;
-    }
-    std::unordered_map<std::string, bl::palette::compound_tag *> newList;
-    this->player_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
-        newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
-    });
+    if (!CHECK_CONDITION(this->write_mode_, "未开启写模式"))return;
+    CHECK_DATA_SAVE(this->level_loader_->modifyDBGlobal(this->player_editor_->getModifyCache()));
+    this->player_editor_->clearModifyCache();
 
-    if (this->level_loader_->modifyPlayerList(newList)) {
-        INFO("已成功保存玩家数据");
-    } else {
-        WARN("无法保存玩家数据");
-    }
 }
 
 void MainWindow::on_save_other_btn_clicked() {
-    if (!this->write_mode_) {
-        WARN("未开启写模式");
-        return;
-    }
-    std::unordered_map<std::string, bl::palette::compound_tag *> newList;
-    this->other_nbt_editor_->foreachItem([&](const std::string &key, bl::palette::compound_tag *root) {
-        newList[key] = dynamic_cast<bl::palette::compound_tag *>(root->copy());
-    });
-
-    if (this->level_loader_->modifyOtherItemList(newList)) {
-        INFO("已成功保存NBT数据");
-    } else {
-        WARN("无法保存NBT数据");
-    }
+    if (!CHECK_CONDITION(this->write_mode_, "未开启写模式"))return;
+    CHECK_DATA_SAVE(this->level_loader_->modifyDBGlobal(this->other_nbt_editor_->getModifyCache()));
+    this->other_nbt_editor_->clearModifyCache();
 }
-
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
@@ -588,10 +543,11 @@ void MainWindow::on_hsa_layer_btn_clicked() {
 }
 
 QString MainWindow::getStaticTitle() {
-    auto software_str = cfg::SOFTWARE_NAME + " " + cfg::SOFTWARE_VERSION;
     std::string level_name;
     if (this->level_loader_->isOpen()) {
         level_name = this->level_loader_->level().dat().level_name();
     }
-    return {(software_str + " " + level_name).c_str()};
+    return cfg::VERSION_STRING() + " " + level_name.c_str();
 }
+
+

@@ -383,13 +383,14 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
     this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp, const QPoint &p) {
         auto hss = this->mw_->levelLoader()->getHSAs(rp);
         for (auto &hsa: hss) {
-            int x = (hsa.min_pos.x - rp.x * 16) * this->BW() + p.x();
-            int y = (hsa.min_pos.z - rp.z * 16) * this->BW() + p.y();
+            int x = static_cast<int>((hsa.min_pos.x - rp.x * 16) * this->BW()) + p.x();
+            int y = static_cast<int> ((hsa.min_pos.z - rp.z * 16) * this->BW()) + p.y();
             auto outlineColor = colors[static_cast<int>(hsa.type)];
             painter->setPen(QPen(outlineColor, 3));
             auto rect = QRect(x, y,
-                              abs(hsa.max_pos.x - hsa.min_pos.x + 1) * this->BW(),
-                              abs(hsa.max_pos.z - hsa.min_pos.z + 1) * this->BW());
+                              static_cast<int>(abs(hsa.max_pos.x - hsa.min_pos.x + 1) * this->BW()),
+                              static_cast<int>(abs(hsa.max_pos.z - hsa.min_pos.z + 1) * this->BW())
+            );
             painter->drawRect(rect);
             outlineColor.setAlpha(100);
             painter->fillRect(rect, QBrush(outlineColor));

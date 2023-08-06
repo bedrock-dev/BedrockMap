@@ -203,9 +203,11 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
     leveldb::WriteBatch batch;
     for (auto &kv: modifies) {
         if (kv.second.empty()) {
+            qDebug() << "delete key: " << kv.first.c_str();
             batch.Delete(kv.first);
         } else {
             batch.Put(kv.first, kv.second);
+            qDebug() << "Put key: " << kv.first.c_str();
         }
     }
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);

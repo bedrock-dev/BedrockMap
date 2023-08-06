@@ -86,7 +86,7 @@ protected:
 
 
 private slots:
-
+    
     void openLevel();
 
     bool closeLevel();

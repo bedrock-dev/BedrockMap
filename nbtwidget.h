@@ -59,8 +59,6 @@ struct NBTListItem : public QListWidgetItem {
 
 //自身会持有数据，所以每次加载数据会析构之前的并复制一份
 class NbtWidget : public QWidget {
-
-
 Q_OBJECT
 public:
     explicit NbtWidget(QWidget *parent = nullptr);
@@ -95,6 +93,8 @@ public:
 
     void clearData();
 
+    const std::unordered_map<std::string, std::string> &getModifyCache() { return this->modified_cache_; }
+
 private slots:
 
     void on_load_btn_clicked();
@@ -108,7 +108,6 @@ private slots:
     void prepareListWidgetMenu(const QPoint &pos);
 
     void saveNBTs(bool selectOnly);
-
 
     void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
@@ -130,7 +129,8 @@ private:
     bool modify_allowed_{false};
     std::function<void(compound_tag *)> extra_load_event_{[](const compound_tag *) {}};
     std::unordered_map<std::string, std::string> modified_cache_;
-    QString current_select_key_;
+    NBTListItem *current_opened_{nullptr};
 };
+
 
 #endif  // NBTWIDGET_H

@@ -134,8 +134,8 @@ void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
         QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
         return;
     }
-    this->current_select_key_ = nbtItem->raw_key;
-    qDebug() << "Select NBT item : [" << this->current_select_key_ << "] -> " << nbtItem->getLabel();
+    this->current_opened_ = nbtItem;
+    qDebug() << "Select NBT item : [" << this->current_opened_->raw_key << "] -> " << nbtItem->getLabel();
     this->openNBTItem(nbtItem->root_);
     this->refreshLabel();
 }
@@ -163,12 +163,13 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         }
 
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
-            auto *item = dynamic_cast <NBTListItem *>(this->ui->list_widget->currentItem());
-            this->modified_cache_[item->root_->key()] = std::string();
-            qDebug() << "Remove key: " << item->root_->key().c_str();
-            ui->list_widget->removeItemWidget(item);
+            auto *nbtItem = dynamic_cast <NBTListItem *>(this->ui->list_widget->currentItem());
+            if (nbtItem == this->current_opened_) ui->tree_widget->clear();
+            this->modified_cache_[nbtItem->raw_key.toStdString()] = std::string();
+            qDebug() << "Remove key: " << nbtItem->raw_key;
+            ui->list_widget->removeItemWidget(nbtItem);
             this->refreshLabel();
-            delete item;
+            delete nbtItem;
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) {
             this->saveNBTs(true);
@@ -184,8 +185,11 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             if (!this->modify_allowed_)return;
             for (auto &item: ui->list_widget->selectedItems()) {
                 auto *nbtItem = dynamic_cast<NBTListItem *>(item);
-                this->modified_cache_[nbtItem->root_->key()] = std::string();
-                qDebug() << "Remove key: " << nbtItem->root_->key().c_str();
+
+                //防止闪退
+                if (nbtItem == this->current_opened_) ui->tree_widget->clear();
+                this->modified_cache_[nbtItem->raw_key.toStdString()] = std::string();
+                qDebug() << "Remove key: " << nbtItem->raw_key;
                 ui->list_widget->removeItemWidget(item);
                 delete item;
                 this->refreshLabel();
@@ -234,6 +238,7 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     }
 
     if (!this->modify_allowed_)return;
+    if (!this->current_opened_)return;
 
     QInputDialog d;
     d.setLabelText(it->root_->key().c_str());
@@ -306,8 +311,8 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
         case LongArray:
             break;
     }
-    this->modified_cache_[it->root_->key()] = it->root_->to_raw();
-    qDebug() << "Change NBT item : [" << this->current_select_key_ << "]";
+    this->modified_cache_[this->current_opened_->raw_key.toStdString()] = this->current_opened_->root_->to_raw();
+    qDebug() << "Change NBT item : [" << this->current_opened_->raw_key << "]";
     it->setText(0, it->getRawText());
 }
 
