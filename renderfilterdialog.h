@@ -42,7 +42,7 @@ public:
 
 
 public:
-    ~RenderFilterDialog();
+    ~RenderFilterDialog() override;
 
     void setFilter(const MapFilter &f) {
         this->filter_ = f;

@@ -29,8 +29,9 @@ struct cfg {
     static int EMPTY_REGION_CACHE_SIZE;
     static int MINIMUM_SCALE_LEVEL;
     static int MAXIMUM_SCALE_LEVEL;
-    static constexpr uint8_t RW = 8u;  //(1<<w)
+    static int FONT_SIZE;
 
+    static constexpr uint8_t RW = 8u;  //(1<<w)
     //其他配置(不对外开放接口)
 
 

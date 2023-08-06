@@ -30,6 +30,7 @@ int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
 std::string  cfg::COLOR_THEME = "dark";
+int cfg::FONT_SIZE = 10;
 
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
@@ -135,6 +136,7 @@ void cfg::initConfig() {
             cfg::MINIMUM_SCALE_LEVEL = j["minimum_scale_level"].get<int>();
             cfg::MAXIMUM_SCALE_LEVEL = j["maximum_scale_level"].get<int>();
             cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
+            cfg::FONT_SIZE = j["font-size"].get<int>();
         }
 
     } catch (std::exception &e) {
@@ -153,6 +155,7 @@ void cfg::initConfig() {
     qInfo() << "Background thread number: " << THREAD_NUM;
     qInfo() << "Minimum scale level: " << MINIMUM_SCALE_LEVEL;
     qInfo() << "Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
+    qInfo() << "Font size: " << FONT_SIZE;
     qInfo() << "Zoom speed: " << ZOOM_SPEED;
     qInfo() << "Render render Width" << cfg::RW;
 

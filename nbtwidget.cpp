@@ -14,6 +14,7 @@
 #include "palette.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
+#include "msg.h"
 #include <climits>
 #include <QInputDialog>
 
@@ -78,20 +79,15 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->tree_widget->setHeaderHidden(true);
     ui->tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->list_widget->setContextMenuPolicy(Qt::CustomContextMenu);
-
     //right menu
     connect(ui->tree_widget, &QTreeWidget::customContextMenuRequested, this, &NbtWidget::prepareTreeWidgetMenu);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
 
     this->setWindowIcon(QIcon(":/res/nbt_editor.png"));
-
     this->refreshLabel();
+    this->clearModifyCache();
 }
 
-NbtWidget::~NbtWidget() {
-    delete ui;
-    this->clearData();
-}
 
 void NbtWidget::on_load_btn_clicked() {
     auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
@@ -100,15 +96,18 @@ void NbtWidget::on_load_btn_clicked() {
     if (fileName.isEmpty()) return;
     auto data = bl::utils::read_file(fileName.toStdString());
     if (data.empty()) {
-        QMessageBox::information(nullptr, "警告", "无法打开文件", QMessageBox::Yes, QMessageBox::Yes);
+        WARN("无法打开文件");
         return;
     }
+
     auto palette = bl::palette::read_palette_to_end(data.data(), data.size());
 
     if (palette.empty()) {
-        QMessageBox::information(nullptr, "警告", "空的nbt数据", QMessageBox::Yes, QMessageBox::Yes);
+        QMessageBox::information(nullptr, "警告", "无法解析NBT数据(请确定是基岩版格式)", QMessageBox::Yes,
+                                 QMessageBox::Yes);
         return;
     }
+
     std::vector<std::string> default_labels;
     default_labels.reserve(palette.size());
     for (int i = 0; i < palette.size(); i++) {
@@ -127,10 +126,10 @@ void NbtWidget::loadNBTItem(bl::palette::compound_tag *root) {
     this->extra_load_event_(root);
     ui->tree_widget->clear();
     int max_col = 0;
-    auto *top = nbt2QTreeItem(root, 1, max_col);
     ui->tree_widget->setColumnCount(1);
+    auto *top = nbt2QTreeItem(root, 1, max_col);
     ui->tree_widget->addTopLevelItem(top);
-    ui->tree_widget->expandAll();
+    ui->tree_widget->expandItem(top);
 }
 
 void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
@@ -147,17 +146,7 @@ void NbtWidget::on_save_btn_clicked() {
     this->saveNBTs(false);
 }
 
-void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
-//    QTreeWidgetItem *nd = this->ui->tree_widget->itemAt(pos);
-//    auto *modify = new QAction("修改值", this);
-//    auto *remove = new QAction("删除表项", this);
-//    QMenu menu(this);
-//    menu.addAction(remove);
-//    menu.addAction(modify);
-//
-//    menu.exec(ui->tree_widget->mapToGlobal(pos));
-
-}
+void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {}
 
 void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 
@@ -430,9 +419,12 @@ void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }
 void NbtWidget::clearData() {
     ui->list_widget->clear();
     ui->tree_widget->clear();
-
 }
 
+NbtWidget::~NbtWidget() {
+    delete ui;
+    this->clearData();
+}
 
 
 

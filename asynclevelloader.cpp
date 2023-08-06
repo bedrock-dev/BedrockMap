@@ -10,7 +10,7 @@
 #include "leveldb/write_batch.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(8);
+    this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
         this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));

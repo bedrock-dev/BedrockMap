@@ -17,19 +17,15 @@ namespace Ui {
 //不持有数据
 class NBTTreeItem : public QTreeWidgetItem {
 public:
-
     [[nodiscard]] inline QString getRawText() const {
         if (!root_)return ":";
         return QString() + root_->key().c_str() + ": " + root_->value_string().c_str();
     }
 
     bl::palette::abstract_tag *root_{nullptr};
-
-
-    bool prevent_item_change_event{false};
 };
-//持有数据
 
+//持有数据
 struct NBTListItem : public QListWidgetItem {
 
     QString getLabel() {
@@ -55,13 +51,14 @@ public:
 
     ~NbtWidget() override;
 
+    inline void clearModifyCache() { this->modified_cache_.clear(); };
+
     void load_new_data(const std::vector<bl::palette::compound_tag *> &data,
                        const std::function<QString(bl::palette::compound_tag *)> &namer,
                        const std::vector<std::string> &default_labels,
                        const std::vector<QImage *> &icons = {});
 
-    void
-    setExtraLoadEvent(
+    void setExtraLoadEvent(
             const std::function<void(bl::palette::compound_tag *)> &event) { this->extra_load_event_ = event; }
 
     void hideLoadDataBtn();
@@ -89,13 +86,14 @@ private slots:
 
     void prepareListWidgetMenu(const QPoint &pos);
 
+    void saveNBTs(bool selectOnly);
+
+
     void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
     void on_multi_select_checkbox_stateChanged(int arg1);
 
     void on_modify_checkbox_stateChanged(int arg1);
-
-    void saveNBTs(bool selectOnly);
 
 
     void on_search_edit_textEdited(const QString &arg1);
@@ -110,6 +108,8 @@ private:
     Ui::NbtWidget *ui;
     bool modify_allowed_{false};
     std::function<void(bl::palette::compound_tag *)> extra_load_event_{[](const bl::palette::compound_tag *) {}};
+
+    std::unordered_map<std::string, std::string> modified_cache_;
 };
 
 #endif  // NBTWIDGET_H

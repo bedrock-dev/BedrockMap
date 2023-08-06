@@ -1,5 +1,5 @@
 #include "chunkeditorwidget.h"
-
+#include "msg.h"
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QToolTip>
@@ -11,16 +11,6 @@
 #include "nbtwidget.h"
 #include "ui_chunkeditorwidget.h"
 
-namespace {
-    void WARN(const QString &msg) {
-        QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes);
-    }
-
-    void INFO(const QString &msg) {
-        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
-    }
-
-}
 
 ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget),
                                                                         mw_(mw) {
@@ -221,3 +211,4 @@ void ChunkEditorWidget::on_locate_btn_clicked() {
     auto pos = this->chunk_->get_pos();
     this->mw_->mapWidget()->gotoBlockPos(pos.x * 16 + 8, pos.z * 16 + 8);
 }
+

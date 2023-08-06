@@ -14,15 +14,15 @@
 #include  <QTextCodec>
 
 void setupTheme(QApplication &a) {
-    auto theme_path = ":/light/stylesheet.qss";
-    QFile f(theme_path);
-    if (!f.exists()) {
-        qWarning("Unable to set stylesheet, file not found");
-    } else {
-        f.open(QFile::ReadOnly | QFile::Text);
-        QTextStream ts(&f);
-//        a.setStyleSheet(ts.readAll());
-    }
+//    auto theme_path = ":/light/stylesheet.qss";
+//    QFile f(theme_path);
+//    if (!f.exists()) {
+//        qWarning("Unable to set stylesheet, file not found");
+//    } else {
+//        f.open(QFile::ReadOnly | QFile::Text);
+//        QTextStream ts(&f);
+////        a.setStyleSheet(ts.readAll());
+//    }
 }
 
 void setupFont(QApplication &a) {
@@ -42,6 +42,7 @@ void setupFont(QApplication &a) {
     QFontDatabase db;
     //  foreach (const QString &s, db.families()) { qDebug() << s; }
     QFont font;
+    font.setPointSize(cfg::FONT_SIZE);
     // font.setFamily("Source Han Sans CN Normal");
     font.setFamily("微软雅黑");
     //    font.setPointSize(8);

@@ -23,13 +23,10 @@
 #include "nbtwidget.h"
 #include "palette.h"
 #include "renderfilterdialog.h"
+#include "msg.h"
 
 namespace {
-    void WARN(const QString &msg) { QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes); }
 
-    void INFO(const QString &msg) {
-        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
-    }
 
     QRect centerMainWindowGeometry(double rate) {
         // finished adjust size
@@ -47,7 +44,6 @@ namespace {
         btn->setPalette(pal);
         btn->update();
     }
-
 }  // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {

@@ -4,16 +4,8 @@
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "msg.h"
 
-
-namespace {
-    void WARN(const QString &msg) { QMessageBox::warning(nullptr, "警告", msg, QMessageBox::Yes, QMessageBox::Yes); }
-
-    void INFO(const QString &msg) {
-        QMessageBox::information(nullptr, "信息", msg, QMessageBox::Yes, QMessageBox::Yes);
-    }
-
-}
 
 MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent),
                                                 ui(new Ui::MapItemEditor) {

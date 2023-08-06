@@ -46,7 +46,8 @@ private slots:
 
     void on_locate_btn_clicked();
 
-   private:
+
+private:
     void refreshBasicData();
 
 private:
