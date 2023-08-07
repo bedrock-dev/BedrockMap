@@ -11,7 +11,21 @@
 #include "config.h"
 #include "iconmanager.h"
 #include "mainwindow.h"
+#include <chrono>
+#include <filesystem>
 #include  <QTextCodec>
+
+QString LOG_FILE_NAME;
+
+void setupLog() {
+    namespace fs = std::filesystem;
+    if (!fs::exists("./logs")) {
+        fs::create_directory("./logs");
+    }
+    const auto p1 = std::chrono::system_clock::now();
+    LOG_FILE_NAME = "./logs/" + QString::number(std::chrono::duration_cast<std::chrono::seconds>(
+            p1.time_since_epoch()).count()) + ".log";
+}
 
 void setupTheme(QApplication &a) {
 //    auto theme_path = ":/light/stylesheet.qss";
@@ -40,11 +54,15 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext &, const QString 
         case QtFatalMsg:
             txt = QString("Fatal: %1").arg(msg);
             abort();
+        case QtInfoMsg:
+            txt = QString("Info: %1").arg(msg);
+            break;
     }
-    QFile outFile("log");
+    QFile outFile(LOG_FILE_NAME);
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     ts << txt << endl;
+    ts.flush();
 }
 
 void setupFont(QApplication &a) {
@@ -60,6 +78,7 @@ void setupFont(QApplication &a) {
 }
 
 int main(int argc, char *argv[]) {
+    setupLog();
     qInstallMessageHandler(myMessageHandler);
     InitIcons();
     cfg::initConfig();
