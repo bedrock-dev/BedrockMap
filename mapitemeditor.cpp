@@ -41,6 +41,7 @@ MapItemEditor::MapItemEditor(MainWindow *mw, QWidget *parent) : QWidget(parent),
 
 
 MapItemEditor::~MapItemEditor() {
+    this->clearData();
     delete ui;
 }
 

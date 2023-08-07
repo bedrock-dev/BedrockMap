@@ -28,7 +28,7 @@ include_directories(
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Concurrent REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent REQUIRED)
 
-set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.qrc")
+set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
 set(PROJECT_SOURCES
         main.cpp
@@ -66,9 +66,10 @@ set(PROJECT_SOURCES
         mapitemeditor.h
         mapitemeditor.cpp
         mapitemeditor.ui
+        icon.qrc
         msg.h
         msg.cpp
-        )
+)
 
 add_executable(BedrockMap ${PROJECT_SOURCES} ${APP_ICON_RESOURCE_WINDOWS})
 

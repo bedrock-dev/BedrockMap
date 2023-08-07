@@ -24,6 +24,8 @@ public:
 
     void paintEvent(QPaintEvent *event) override;
 
+    void clearData() { this->map_nbt_editor_->clearData(); }
+
 private slots:
 
     void on_export_map_btn_clicked();

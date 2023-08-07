@@ -14,7 +14,7 @@ namespace bl {
     class chunk;
 }
 
-struct chunk_region;
+struct ChunkRegion;
 
 struct MapFilter {
     std::unordered_set<int> biomes_list_{255};
@@ -26,11 +26,11 @@ struct MapFilter {
     bool block_black_mode_{true};
     bool actor_black_mode_{true};
 
-    void bakeChunkTerrain(bl::chunk *ch, int rw, int rh, chunk_region *region) const;
+    void bakeChunkTerrain(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
-    void bakeChunkBiome(bl::chunk *ch, int rw, int rh, chunk_region *region) const;
+    void bakeChunkBiome(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
-    void bakeChunkActors(bl::chunk *ch, chunk_region *region) const;
+    void bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const;
 
 };
 

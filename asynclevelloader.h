@@ -16,6 +16,7 @@
 #include <vector>
 #include "palette.h"
 #include "renderfilterdialog.h"
+#include <deque>
 
 class AsyncLevelLoader;
 namespace bl {
@@ -31,13 +32,13 @@ namespace bl {
 
 
 struct BlockTipsInfo {
-    std::string block_name{"unknown"};
+    std::string block_name{"?"};
     bl::biome biome{bl::none};
-    int height{-128};
+    int16_t height{-128};
 };
 
-struct chunk_region {
-    ~chunk_region();
+struct ChunkRegion {
+    ~ChunkRegion();
 
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
     std::array<std::array<bool, cfg::RW>, cfg::RW> chunk_bit_map_;
@@ -46,6 +47,16 @@ struct chunk_region {
     bool valid{false};
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;
+};
+
+
+struct RegionTimer {
+    std::deque<int64_t> values;
+
+    [[nodiscard]] int64_t mean() const;
+
+    void push(int64_t value);
+
 };
 
 
@@ -104,7 +115,9 @@ public:
 
 signals:
 
-    void finish(int x, int z, int dim, chunk_region *group); //NOLINT
+    void
+    finish(int x, int z, int dim, ChunkRegion *region,
+           long long load_time, long long render_time); //NO_LINT
 
 private:
     bl::bedrock_level *level_;
@@ -191,18 +204,23 @@ public:
 
 private:
 
-    chunk_region *tryGetRegion(const region_pos &p, bool &empty);
+    ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
+
 
 private:
     std::atomic_bool loaded_{false};
     bl::bedrock_level level_{};
     TaskBuffer<region_pos> processing_;
-    std::vector<QCache<region_pos, chunk_region> *> region_cache_;
+    std::vector<QCache<region_pos, ChunkRegion> *> region_cache_;
     std::vector<QCache<region_pos, char> *> invalid_cache_;
     //主要是缓存图像，计算不是重点
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;
+
+    RegionTimer region_load_timer_;
+    RegionTimer region_render_timer_;
+
 };
 
 

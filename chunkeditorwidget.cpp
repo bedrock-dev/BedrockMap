@@ -76,7 +76,6 @@ void ChunkEditorWidget::load_chunk_data(bl::chunk *chunk) {
     }
 
 
-
     this->block_entity_editor_->load_new_data(chunk_->block_entities(), block_entity_namer, {}, be_icons);
 
     qDebug() << "Load pending tick data";

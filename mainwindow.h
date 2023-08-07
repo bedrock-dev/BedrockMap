@@ -34,7 +34,6 @@ struct LogoPos {
         angle = rand() % 360;
         x = ((rand() % 100) / 100.0) * 0.6 + 0.2;
         y = ((rand() % 100) / 100.0) * 0.6 + 0.2;
-        qDebug() << angle << " " << x << " " << y;
     }
 };
 
@@ -127,7 +126,7 @@ private slots:
 
     void on_save_other_btn_clicked();
 
-    void prepareGlobalData(GlobalNBTLoadResult *result);
+    void prepareGlobalData(GlobalNBTLoadResult &result);
 
 private:
     QString getStaticTitle();

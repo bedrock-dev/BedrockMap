@@ -258,35 +258,35 @@ void MainWindow::openLevel() {
     this->loading_global_data_ = true;
     auto future = QtConcurrent::run(
             [this](const QString &path) -> bool {
-                auto *result = new GlobalNBTLoadResult();
+                auto result = GlobalNBTLoadResult();
                 try {
-                    this->level_loader_->level().foreach_global_keys(
-                            [this, result]
-                                    (const std::string &key, const std::string &value) {
-                                if (!this->loading_global_data_) {
-                                    throw std::logic_error("EXIT"); //手动中止
-                                }
-                                if (key.find("player") != std::string::npos) {
-                                    result->playerData.append_nbt(key, value);
-                                } else if (key == "portals"
-                                           || key == "scoreboard"
-                                           || key == "AutonomousEntities"
-                                           || key == "BiomeData"
-                                           || key == "Nether"
-                                           || key == "Overworld"
-                                           || key == "TheEnd"
-                                           || key == "schedulerWT"
-                                           || key == "mobevents"
-                                        ) {
-                                    result->otherData.append_nbt(key, value);
-                                } else if (key.find("map_") == 0) {
-                                    result->mapData.append_nbt(key, value);
-                                } else {
-                                    bl::village_key vk = bl::village_key::parse(key);
-                                    if (vk.valid()) result->villageData.append_village(vk, value);
-
-                                }
-                            });
+//                    this->level_loader_->level().foreach_global_keys(
+//                            [this, &result]
+//                                    (const std::string &key, const std::string &value) {
+//                                if (!this->loading_global_data_) {
+//                                    throw std::logic_error("EXIT"); //手动中止
+//                                }
+//                                if (key.find("player") != std::string::npos) {
+//                                    result.playerData.append_nbt(key, value);
+//                                } else if (key == "portals"
+//                                           || key == "scoreboard"
+//                                           || key == "AutonomousEntities"
+//                                           || key == "BiomeData"
+//                                           || key == "Nether"
+//                                           || key == "Overworld"
+//                                           || key == "TheEnd"
+//                                           || key == "schedulerWT"
+//                                           || key == "mobevents"
+//                                        ) {
+//                                    result.otherData.append_nbt(key, value);
+//                                } else if (key.find("map_") == 0) {
+//                                    result.mapData.append_nbt(key, value);
+//                                } else {
+//                                    bl::village_key vk = bl::village_key::parse(key);
+//                                    if (vk.valid()) result.villageData.append_village(vk, value);
+//
+//                                }
+//                            });
                     this->prepareGlobalData(result);
                     return true;
                 } catch (std::exception &e) {
@@ -311,6 +311,7 @@ bool MainWindow::closeLevel() { //NOLINT
     this->player_editor_->clearData();
     this->level_dat_editor_->clearData();
     this->other_nbt_editor_->clearData();
+    this->map_item_editor_->clearData();
     this->villages_.clear();
     this->resetToInitUI();
     return true;
@@ -365,9 +366,9 @@ void MainWindow::handle_chunk_delete_finished() {
     this->level_loader_->clearAllCache();
 }
 
-void MainWindow::prepareGlobalData(GlobalNBTLoadResult *res) {
+void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
     // load players
-    auto &playerData = res->playerData.data();
+    auto &playerData = res.playerData.data();
     std::vector<NBTListItem *> playerNBTList;
     for (auto &kv: playerData) {
         auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()),
@@ -379,7 +380,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult *res) {
     this->player_editor_->loadNewData(playerNBTList);
     qDebug() << "Load player data finished";
 //load other items
-    auto &otherData = res->otherData.data();
+    auto &otherData = res.otherData.data();
     std::vector<NBTListItem *> otherNBTList;
     for (auto &kv: otherData) {
         auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()),
@@ -391,7 +392,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult *res) {
     qDebug() << "Load other data finished";
 
 // load villages
-    auto &villData = res->villageData.data();
+    auto &villData = res.villageData.data();
     std::vector<NBTListItem *> villNBTList;
     for (auto &kv: villData) {
         int index = 0;
@@ -411,7 +412,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult *res) {
     this->village_editor_->loadNewData(villNBTList);
     qDebug() << "Load village data finished";
     //load map data
-    this->map_item_editor_->load_map_data(res->mapData);
+    this->map_item_editor_->load_map_data(res.mapData);
 }
 
 void MainWindow::handle_level_open_finished() {

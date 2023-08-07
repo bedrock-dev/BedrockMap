@@ -12,7 +12,7 @@
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
-        this->region_cache_.push_back(new QCache<region_pos, chunk_region>(cfg::REGION_CACHE_SIZE));
+        this->region_cache_.push_back(new QCache<region_pos, ChunkRegion>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
@@ -23,7 +23,7 @@ AsyncLevelLoader::AsyncLevelLoader() {
 }
 
 
-chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
+ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     empty = false;
     if (!this->loaded_) return nullptr;
     auto *invalid = this->invalid_cache_[p.dim]->operator[](p);
@@ -37,7 +37,16 @@ chunk_region *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
     auto *task = new LoadRegionTask(&this->level_, p, &this->map_filter_);
-    connect(task, &LoadRegionTask::finish, this, [this](int x, int z, int dim, chunk_region *region) {
+    connect(task, &LoadRegionTask::finish, this, [this](int x, int z, int dim, ChunkRegion *region,
+                                                        long long load_time,
+                                                        long long render_time
+    ) {
+
+        //timer
+        this->region_load_timer_.push(load_time);
+        this->region_render_timer_.push(render_time);
+
+
         if (!region || (!region->valid)) {
             this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
             delete region;
@@ -60,12 +69,15 @@ bool AsyncLevelLoader::open(const std::string &path) {
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 
 void LoadRegionTask::run() {
-    auto *region = new chunk_region();
+#ifdef  QT_DEBUG
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+#endif
+
+    auto *region = new ChunkRegion();
     std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_{};
     for (auto &line: chunks_) {
         std::fill(line.begin(), line.end(), nullptr);
     }
-
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
@@ -77,6 +89,11 @@ void LoadRegionTask::run() {
         }
     }
 
+#ifdef  QT_DEBUG
+    std::chrono::steady_clock::time_point load_end = std::chrono::steady_clock::now();
+#endif
+
+
     for (auto &line: chunks_) {
         for (auto &ch: line) {
             if (ch && ch->loaded()) region->valid = true;
@@ -85,8 +102,6 @@ void LoadRegionTask::run() {
 
     const auto IMG_WIDTH = cfg::RW << 4;
     if (region->valid) {  //尝试烘焙
-
-
         //build bit map
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
@@ -111,7 +126,6 @@ void LoadRegionTask::run() {
                     auto hss = chunk->HSAs();
                     region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
                 }
-
             }
         }
     }
@@ -136,17 +150,27 @@ void LoadRegionTask::run() {
             } else if (current_height * 2 < sum) {
                 region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).darker(
                         cfg::SHADOW_LEVEL));
+
+
             }
         }
     }
-
 
     for (auto &chs: chunks_) {
         for (auto &ch: chs) {
             delete ch;
         }
     }
-    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region);
+#ifdef QT_DEBUG
+    std::chrono::steady_clock::time_point total_end = std::chrono::steady_clock::now();
+    auto load_time = std::chrono::duration_cast<std::chrono::microseconds>(load_end - begin).count();
+    auto render_time = std::chrono::duration_cast<std::chrono::microseconds>(total_end - load_end).count();
+#else
+    auto load_time = -1;
+    auto render_time = -1;
+#endif
+
+    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region, load_time, render_time);
 }
 
 void AsyncLevelLoader::close() {
@@ -163,17 +187,10 @@ void AsyncLevelLoader::close() {
 
 bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
     return this->level_.get_chunk(p);
-//    auto directChunkReader = [&](const bl::chunk_pos &chunk_pos) {
-//        return this->level_.get_chunk(chunk_pos);
-//    };
-//    return QtConcurrent::run(directChunkReader, p);
-
 }
 
-
 void AsyncLevelLoader::clearAllCache() {
-    this->pool_.clear(); //取消所有任务
-    this->processing_.clear();
+    qDebug() << "Clear cache";
     for (auto &cache: this->region_cache_) {
         cache->clear();
     }
@@ -362,7 +379,8 @@ bool AsyncLevelLoader::modifyChunkActors(
     return s.ok();
 }
 
-chunk_region::~chunk_region() {
+ChunkRegion::~ChunkRegion() {
+    //注意：这里不是释放Actor的资源是预期行为(全局资源)
     delete terrain_bake_image_;
     delete biome_bake_image_;
 }
@@ -390,7 +408,12 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
     res.emplace_back("Background thread pool:");
     res.push_back(QString(" - Total threads: %1").arg(QString::number(cfg::THREAD_NUM)));
     res.push_back(QString(" - Background tasks %1").arg(QString::number(this->processing_.size())));
-
+    res.push_back(QString("Region timer: %1 ms:").arg(QString::number(
+            static_cast<double >(this->region_render_timer_.mean() + this->region_load_timer_.mean()) / 1000.0)));
+    res.push_back(QString(" - Region Load: %1 ms").arg(QString::number(
+            static_cast<double >(this->region_load_timer_.mean()) / 1000.0)));
+    res.push_back(QString(" - Region Render: %1 ms").arg(QString::number(
+            static_cast<double >( this->region_render_timer_.mean()) / 1000.0)));
     return res;
 }
 
@@ -469,12 +492,16 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
 }
 
 
+int64_t RegionTimer::mean() const {
+    return this->values.empty() ? 0
+                                : std::accumulate(values.begin(), values.end(), 0ll) /
+                                  static_cast<int64_t>(values.size());
+}
 
+void RegionTimer::push(int64_t value) {
+    this->values.push_back(value);
+    if (this->values.size() > 10) {
+        this->values.pop_front();
+    }
 
-
-
-
-
-
-
-
+}

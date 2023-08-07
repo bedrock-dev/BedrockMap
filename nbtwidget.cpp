@@ -419,6 +419,8 @@ void NbtWidget::on_list_widget_itemSelectionChanged() { this->refreshLabel(); }
 void NbtWidget::clearData() {
     ui->list_widget->clear();
     ui->tree_widget->clear();
+    this->current_opened_ = nullptr;
+    this->clearModifyCache();
 }
 
 NbtWidget::~NbtWidget() {

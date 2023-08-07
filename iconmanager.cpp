@@ -98,7 +98,7 @@ void InitIcons() {
     village_info_nbt = scale(QImage(":/res/village/info.png"));
     village_poi_nbt = scale(QImage(":/res/village/poi.png"));
     unknown_img = new QImage(":/res/what.png");
-    player_nbt = scale(QImage(":/res/village/info.png"));
+    player_nbt = scale(QImage(":/res/village/players.png"));
     other_nbt = scale(QImage(":/res/village/info.png"));
 
     QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
@@ -112,7 +112,7 @@ void InitIcons() {
     while (it3.hasNext()) {
         auto img = QImage(it3.next());
         auto key = it3.fileName().replace(".png", "").replace("TAG_", "");
-        qDebug() << "NBT Icon: " << key;
+//        qDebug() << "NBT Icon: " << key;
         tag_icon_pool[key] = scale(img);
     }
 }
@@ -167,19 +167,19 @@ QImage *PlayerNBTIcon() { return player_nbt; }
 QImage *TagIcon(bl::palette::tag_type t) {
     using namespace bl::palette;
     std::unordered_map<tag_type, std::string> names{
-        {tag_type::Int, "Int"},
-        {tag_type::Byte, "Byte"},
-        {tag_type::Compound, "Compound"},
-        {tag_type::Double, "Double"},
-        {tag_type::Float, "Float"},
-        {tag_type::List, "List"},
-        {tag_type::Long, "Long"},
-        {tag_type::Short, "Short"},
-        {tag_type::String, "String"},
-        {tag_type::ByteArray, "Byte_Array"},
-        {tag_type::IntArray, "Int_Array"},
-        {tag_type::LongArray, "Long_Array"},
-        {tag_type::End, "End"},
+            {tag_type::Int,       "Int"},
+            {tag_type::Byte,      "Byte"},
+            {tag_type::Compound,  "Compound"},
+            {tag_type::Double,    "Double"},
+            {tag_type::Float,     "Float"},
+            {tag_type::List,      "List"},
+            {tag_type::Long,      "Long"},
+            {tag_type::Short,     "Short"},
+            {tag_type::String,    "String"},
+            {tag_type::ByteArray, "Byte_Array"},
+            {tag_type::IntArray,  "Int_Array"},
+            {tag_type::LongArray, "Long_Array"},
+            {tag_type::End,       "End"},
     };
 
     auto it = tag_icon_pool.find(QString(names[t].c_str()));

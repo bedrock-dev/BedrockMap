@@ -132,7 +132,7 @@ public slots:
 
 private:
 
-    inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
+    [[nodiscard]] inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
 
 private:
     // for debug
@@ -175,6 +175,8 @@ private:
 
     std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(const QRect &camera);
 
+    ~MapWidget() override;
+
 signals:
 
 private:
@@ -204,7 +206,7 @@ private:
     bool draw_villages_{false};
     bool draw_HSA_{false};
 
-    int cw_{32};            //每个区块需要几个像素
+    int cw_{8};            //每个区块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0的左上角相对widget左上角的坐标
     bool draw_grid_{true};
     bool draw_coords_{false};

@@ -1,4 +1,14 @@
+
+#ifdef  WIN32
+// clang-format off
+#include <Windows.h>
+#include <Psapi.h>
+#include <Pdh.h>
+// clang-format on
+#endif
+
 #include "mapwidget.h"
+
 #include <QFileDialog>
 #include <QAction>
 #include <QApplication>
@@ -23,6 +33,19 @@
 #include "mainwindow.h"
 #include <QFormLayout>
 #include <QDialogButtonBox>
+
+namespace {
+
+    double getMemUsage() {
+#ifdef WIN32
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *) &pmc, sizeof(pmc));
+        return static_cast<double >(pmc.WorkingSetSize >> 20);
+#else
+        return 0;
+#endif
+    }
+}
 
 void MapWidget::resizeEvent(QResizeEvent *event) {
     this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10);
@@ -308,6 +331,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
     QFont font("JetBrains Mono", 6);
     QFontMetrics fm(font);
     auto dbgInfo = this->mw_->levelLoader()->debugInfo();
+    dbgInfo.push_back(QString("Memory usage: %1 MiB").arg(QString::number(getMemUsage())));
     int max_len = 1;
     for (auto &i: dbgInfo) {
         max_len = std::max(max_len, fm.width(i));
@@ -527,6 +551,10 @@ void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
                 QRect(x - static_cast<int>(BW()), y - static_cast<int>(BW()), this->cw_ + BW() * 2,
                       this->cw_ + BW() * 2));
     }
+}
+
+MapWidget::~MapWidget() {
+    delete this->sync_refresh_timer_;
 }
 
 
