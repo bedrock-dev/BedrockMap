@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="icon.qrc">
+    <normaloff>:/res/ui/global_nbt.png</normaloff>:/res/ui/global_nbt.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,8">
    <property name="spacing">
     <number>4</number>
@@ -168,6 +172,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

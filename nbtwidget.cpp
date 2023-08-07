@@ -64,7 +64,6 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     connect(ui->tree_widget, &QTreeWidget::customContextMenuRequested, this, &NbtWidget::prepareTreeWidgetMenu);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
 
-    this->setWindowIcon(QIcon(":/res/nbt_editor.png"));
     this->refreshLabel();
     this->clearModifyCache();
 }

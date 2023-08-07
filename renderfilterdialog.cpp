@@ -12,7 +12,6 @@ RenderFilterDialog::RenderFilterDialog(QWidget *parent) :
     this->setWindowTitle("配置地图过滤器");
     ui->layer_slider->setSingleStep(1);
     ui->layer_slider->setRange(-63, 319);
-    this->setWindowIcon(QIcon(":/res/filter_editor.png"));
 }
 
 RenderFilterDialog::~RenderFilterDialog() {

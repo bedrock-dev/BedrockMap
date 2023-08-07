@@ -183,9 +183,6 @@
         <file>res/entity/ice_bomb.png</file>
         <file>res/entity/player.png</file>
         <file>res/entity/small_fireball.png</file>
-        <file>res/filter_editor.png</file>
-        <file>res/icon.png</file>
-        <file>res/nbt_editor.png</file>
         <file>res/village/dwellers.png</file>
         <file>res/village/info.png</file>
         <file>res/village/players.png</file>
@@ -198,7 +195,6 @@
         <file>res/ui/biome.png</file>
         <file>res/ui/height.png</file>
         <file>res/ui/map.png</file>
-        <file>res/main.qss</file>
         <file>res/ui/actor.png</file>
         <file>res/ui/coord.png</file>
         <file>res/ui/debug.png</file>
@@ -207,7 +203,6 @@
         <file>res/ui/hsa.png</file>
         <file>res/ui/slime.png</file>
         <file>res/ui/village.png</file>
-        <file>res/ui/write.png</file>
         <file>res/ui/filter.png</file>
         <file>res/nbt/TAG_Byte.png</file>
         <file>res/nbt/TAG_Byte_Array.png</file>
@@ -223,5 +218,6 @@
         <file>res/nbt/TAG_Long_Array.png</file>
         <file>res/nbt/TAG_Short.png</file>
         <file>res/nbt/TAG_String.png</file>
+        <file>res/ui/icon.png</file>
     </qresource>
 </RCC>

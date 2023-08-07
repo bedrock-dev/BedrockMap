@@ -25,42 +25,50 @@ void setupTheme(QApplication &a) {
 //    }
 }
 
-void setupFont(QApplication &a) {
-//    auto *codec = QTextCodec::codecForName("GBK");//或者"GBK",不分大小写
-//    QTextCodec::setCodecForLocale(codec);
-//
-//    int id = QFontDatabase::addApplicationFont(":/res/fonts/SourceHanSansCN-Normal.otf");
-//    if (id == -1) {
-//        qWarning() << "Can not load font";
-//    }
+void myMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg) {
+    QString txt;
+    switch (type) {
+        case QtDebugMsg:
+            txt = QString("Debug: %1").arg(msg);
+            break;
+        case QtWarningMsg:
+            txt = QString("Warning: %1").arg(msg);
+            break;
+        case QtCriticalMsg:
+            txt = QString("Critical: %1").arg(msg);
+            break;
+        case QtFatalMsg:
+            txt = QString("Fatal: %1").arg(msg);
+            abort();
+    }
+    QFile outFile("log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt << endl;
+}
 
+void setupFont(QApplication &a) {
     auto id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
     if (id == -1) {
         qWarning() << "Can not load font";
     }
 
-    QFontDatabase db;
-    //  foreach (const QString &s, db.families()) { qDebug() << s; }
     QFont font;
     font.setPointSize(cfg::FONT_SIZE);
-    // font.setFamily("Source Han Sans CN Normal");
     font.setFamily("微软雅黑");
-    //    font.setPointSize(8);
     a.setFont(font);
 }
 
 int main(int argc, char *argv[]) {
+    qInstallMessageHandler(myMessageHandler);
     InitIcons();
     cfg::initConfig();
     cfg::initColorTable();
     QApplication a(argc, argv);
     setupTheme(a);
     setupFont(a);
-
     MainWindow w;
     w.setWindowTitle(cfg::VERSION_STRING());
-    QIcon icon(QPixmap::fromImage(QImage(":/res/icon.png")));  // 图标文件的资源路径
-    w.setWindowIcon(icon);                                     // 设置窗口图标
     w.show();
     return a.exec();
 }

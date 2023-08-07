@@ -2,22 +2,32 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1191</width>
-    <height>1000</height>
+    <width>652</width>
+    <height>885</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icon.qrc">
+    <normaloff>:/res/ui/icon.png</normaloff>:/res/ui/icon.png</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="central_widget">
    <property name="styleSheet">
@@ -1026,7 +1036,7 @@ border:none;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1191</width>
+     <width>652</width>
      <height>25</height>
     </rect>
    </property>
@@ -1130,6 +1140,8 @@ border:none;</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

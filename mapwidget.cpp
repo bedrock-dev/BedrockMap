@@ -295,8 +295,8 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     painter->setPen(pen);
 
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->cw_ >= 256) {
-            auto text = QString("%1,%2").arg(QString::number(ch.x), QString::number(ch.z));
+        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->cw_ >= 128) {
+            auto text = QString("%1,%2").arg(QString::number(ch.x << 4), QString::number(ch.z << 4));
             auto rect = QRect{p.x() + 2, p.y() + 2, fm.width(text) + 4, fm.height() + 4};
             painter->fillRect(rect, QBrush(QColor(22, 22, 22, 90)));
             painter->drawText(rect, Qt::AlignCenter, text);
