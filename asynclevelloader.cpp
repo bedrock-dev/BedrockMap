@@ -74,18 +74,12 @@ void LoadRegionTask::run() {
 #endif
 
     auto *region = new ChunkRegion();
-    std::array<std::array<bl::chunk *, cfg::RW>, cfg::RW> chunks_{};
-    for (auto &line: chunks_) {
-        std::fill(line.begin(), line.end(), nullptr);
-    }
+    using chunk_ptr = bl::chunk *;
+    bl::chunk *chunks_[cfg::RW * cfg::RW]{nullptr};
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-//            try {
-            chunks_[i][j] = this->level_->get_chunk(p, true);
-//            } catch (std::exception &e) {
-//                chunks_[i][j] = nullptr;
-//            }
+            chunks_[i * cfg::RW + j] = this->level_->get_chunk(p, true);
         }
     }
 
@@ -94,18 +88,20 @@ void LoadRegionTask::run() {
 #endif
 
 
-    for (auto &line: chunks_) {
-        for (auto &ch: line) {
-            if (ch && ch->loaded()) region->valid = true;
+    for (auto &chunk: chunks_) {
+        if (chunk && chunk->loaded()) {
+            region->valid = true;
+            break;
         }
     }
+
 
     const auto IMG_WIDTH = cfg::RW << 4;
     if (region->valid) {  //尝试烘焙
         //build bit map
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
-                auto *chunk = chunks_[rw][rh];
+                auto *chunk = chunks_[rw * cfg::RW + rh];
                 region->chunk_bit_map_[rw][rh] = chunk != nullptr;
             }
         }
@@ -118,7 +114,7 @@ void LoadRegionTask::run() {
         //draw blocks
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
-                auto *chunk = chunks_[rw][rh];
+                auto *chunk = chunks_[rw * cfg::RW + rh];
                 this->filter_->renderImages(chunk, rw, rh, region);
                 this->filter_->bakeChunkActors(chunk, region);
                 if (chunk) {
@@ -154,18 +150,13 @@ void LoadRegionTask::run() {
                     region->terrain_bake_image_->setPixelColor(i, j,
                                                                region->terrain_bake_image_->pixelColor(i, j).darker(
                                                                        cfg::SHADOW_LEVEL));
-
-
                 }
             }
         }
     }
 
-    for (auto &chs: chunks_) {
-        for (auto &ch: chs) {
-            delete ch;
-        }
-    }
+    for (auto ch: chunks_)delete ch;
+
 #ifdef QT_DEBUG
     std::chrono::steady_clock::time_point total_end = std::chrono::steady_clock::now();
     auto load_time = std::chrono::duration_cast<std::chrono::microseconds>(load_end - begin).count();

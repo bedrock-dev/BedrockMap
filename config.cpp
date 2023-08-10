@@ -110,10 +110,8 @@ QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW
             }
         }
     }
-    res->fill(QColor(cfg::BG_GRAY));
     return res;
 }
-
 
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 

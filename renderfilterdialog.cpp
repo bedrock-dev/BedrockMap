@@ -135,10 +135,8 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
                                                                  QColor(biome_color.r, biome_color.g, biome_color.b,
                                                                         biome_color.a));
                     }
-
                     tips.block_name = info.name;
                     tips.biome = biome;
-
                 } else {
                     tips.biome = bl::none;
                     tips.block_name = "void";
