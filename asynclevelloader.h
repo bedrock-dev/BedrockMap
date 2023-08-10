@@ -44,11 +44,11 @@ struct ChunkRegion {
     std::array<std::array<bool, cfg::RW>, cfg::RW> chunk_bit_map_;
     QImage *terrain_bake_image_{nullptr};
     QImage *biome_bake_image_{nullptr};
+    QImage *height_bake_image_{nullptr};
     bool valid{false};
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
-
 
 struct RegionTimer {
     std::deque<int64_t> values;

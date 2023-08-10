@@ -30,10 +30,10 @@ struct cfg {
     static int MINIMUM_SCALE_LEVEL;
     static int MAXIMUM_SCALE_LEVEL;
     static int FONT_SIZE;
+    static bool FANCY_TERRAIN_RENDER;
 
-    static constexpr uint8_t RW = 8u;  //(1<<w)
+    static constexpr uint8_t RW = 16u;  //(1<<w)
     //其他配置(不对外开放接口)
-
 
     //配置文件
     static std::string COLOR_THEME;

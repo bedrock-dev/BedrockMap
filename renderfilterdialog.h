@@ -17,8 +17,8 @@ namespace bl {
 struct ChunkRegion;
 
 struct MapFilter {
-    std::unordered_set<int> biomes_list_{255};
-    std::unordered_set<std::string> blocks_list_{"minecraft:air"};
+    std::unordered_set<int> biomes_list_{};
+    std::unordered_set<std::string> blocks_list_{"minecraft:air", "minecraft:unknown"};
     std::unordered_set<std::string> actors_list_{"item"};
     int layer{64};
     bool enable_layer_{false};
@@ -26,11 +26,17 @@ struct MapFilter {
     bool block_black_mode_{true};
     bool actor_black_mode_{true};
 
-    void bakeChunkTerrain(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
-    void bakeChunkBiome(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
+    void renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
+
+
+//    void bakeChunkTerrain(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
+
+//    void bakeChunkBiome(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
     void bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const;
+
+    // void bakeChunkHeight(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
 };
 

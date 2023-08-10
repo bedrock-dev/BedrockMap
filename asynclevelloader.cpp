@@ -4,6 +4,7 @@
 #include <QtConcurrent>
 #include <chrono>
 #include <thread>
+#include <QtDebug>
 #include "iconmanager.h"
 #include "config.h"
 #include "qdebug.h"
@@ -41,7 +42,6 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
                                                         long long load_time,
                                                         long long render_time
     ) {
-
         //timer
         this->region_load_timer_.push(load_time);
         this->region_render_timer_.push(render_time);
@@ -81,11 +81,11 @@ void LoadRegionTask::run() {
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            try {
-                chunks_[i][j] = this->level_->get_chunk(p, true);
-            } catch (std::exception &e) {
-                chunks_[i][j] = nullptr;
-            }
+//            try {
+            chunks_[i][j] = this->level_->get_chunk(p, true);
+//            } catch (std::exception &e) {
+//                chunks_[i][j] = nullptr;
+//            }
         }
     }
 
@@ -113,14 +113,13 @@ void LoadRegionTask::run() {
         //init bg
         region->terrain_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
         region->biome_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
+        region->height_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
 
-        //darw blocks
+        //draw blocks
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {
                 auto *chunk = chunks_[rw][rh];
-                //下面两个不要换位置(需要获取群系信息才能给水和草地变色)
-                this->filter_->bakeChunkBiome(chunk, rw, rh, region);
-                this->filter_->bakeChunkTerrain(chunk, rw, rh, region);
+                this->filter_->renderImages(chunk, rw, rh, region);
                 this->filter_->bakeChunkActors(chunk, region);
                 if (chunk) {
                     auto hss = chunk->HSAs();
@@ -131,27 +130,33 @@ void LoadRegionTask::run() {
     }
 
     //烘焙
-    for (int i = 0; i < IMG_WIDTH; i++) {
-        for (int j = 0; j < IMG_WIDTH; j++) {
-            auto current_height = region->tips_info_[i][j].height;
-            if (current_height == -128)continue;
-            int sum = current_height * 2;
-            if (i == 0 && j != 0) {
-                sum = region->tips_info_[i][j - 1].height * 2;
-            } else if (i != 0 && j == 0) {
-                sum = region->tips_info_[i - 1][j].height * 2;
-            } else if (i != 0 && j != 0) {
-                sum = region->tips_info_[i][j - 1].height + region->tips_info_[i - 1][j].height;
-            }
-
-            if (current_height * 2 > sum) {
-                region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).lighter(
-                        cfg::SHADOW_LEVEL));
-            } else if (current_height * 2 < sum) {
-                region->terrain_bake_image_->setPixelColor(i, j, region->terrain_bake_image_->pixelColor(i, j).darker(
-                        cfg::SHADOW_LEVEL));
 
 
+    if (cfg::FANCY_TERRAIN_RENDER) {
+        for (int i = 0; i < IMG_WIDTH; i++) {
+            for (int j = 0; j < IMG_WIDTH; j++) {
+                auto current_height = region->tips_info_[i][j].height;
+                if (current_height == -128)continue;
+                int sum = current_height * 2;
+                if (i == 0 && j != 0) {
+                    sum = region->tips_info_[i][j - 1].height * 2;
+                } else if (i != 0 && j == 0) {
+                    sum = region->tips_info_[i - 1][j].height * 2;
+                } else if (i != 0 && j != 0) {
+                    sum = region->tips_info_[i][j - 1].height + region->tips_info_[i - 1][j].height;
+                }
+
+                if (current_height * 2 > sum) {
+                    region->terrain_bake_image_->setPixelColor(i, j,
+                                                               region->terrain_bake_image_->pixelColor(i, j).lighter(
+                                                                       cfg::SHADOW_LEVEL));
+                } else if (current_height * 2 < sum) {
+                    region->terrain_bake_image_->setPixelColor(i, j,
+                                                               region->terrain_bake_image_->pixelColor(i, j).darker(
+                                                                       cfg::SHADOW_LEVEL));
+
+
+                }
             }
         }
     }
@@ -383,6 +388,7 @@ ChunkRegion::~ChunkRegion() {
     //注意：这里不是释放Actor的资源是预期行为(全局资源)
     delete terrain_bake_image_;
     delete biome_bake_image_;
+    delete height_bake_image_;
 }
 
 std::vector<QString> AsyncLevelLoader::debugInfo() {
@@ -407,6 +413,9 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
 
     res.emplace_back("Background thread pool:");
     res.push_back(QString(" - Total threads: %1").arg(QString::number(cfg::THREAD_NUM)));
+
+
+#ifdef  QT_DEBUG
     res.push_back(QString(" - Background tasks %1").arg(QString::number(this->processing_.size())));
     res.push_back(QString("Region timer: %1 ms:").arg(QString::number(
             static_cast<double >(this->region_render_timer_.mean() + this->region_load_timer_.mean()) / 1000.0)));
@@ -414,6 +423,7 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
             static_cast<double >(this->region_load_timer_.mean()) / 1000.0)));
     res.push_back(QString(" - Region Render: %1 ms").arg(QString::number(
             static_cast<double >( this->region_render_timer_.mean()) / 1000.0)));
+#endif
     return res;
 }
 
@@ -432,6 +442,14 @@ QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
     auto *region = this->tryGetRegion(rp, null_region);
     if (null_region) return cfg::NULL_REGION_IMAGE();
     return region ? region->biome_bake_image_ : cfg::UNLOADED_REGION_IMAGE();
+}
+
+QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
+    if (!this->loaded_) return cfg::UNLOADED_REGION_IMAGE();
+    bool null_region{false};
+    auto *region = this->tryGetRegion(rp, null_region);
+    if (null_region) return cfg::NULL_REGION_IMAGE();
+    return region ? region->height_bake_image_ : cfg::UNLOADED_REGION_IMAGE();
 }
 
 std::unordered_map<QImage *, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos &rp) {
@@ -464,10 +482,6 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
 }
 
-
-QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
-    return cfg::UNLOADED_REGION_IMAGE();
-}
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     if (rp.dim != 0)return cfg::EMPTY_REGION_IMAGE();

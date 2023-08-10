@@ -83,13 +83,15 @@ void MapWidget::showContextMenu(const QPoint &p) {
         });
 
         //biome
-        QAction copyBiomeAction(("复制群系名称: " + bl::get_biome_name(blockInfo.biome)).c_str(), this);
+//        QAction copyBiomeAction(("复制群系名称: " + bl::get_biome_name(blockInfo.biome)).c_str(), this);
+        QAction copyBiomeAction(("复制群系名称: " + QString::number(blockInfo.biome)), this);
         connect(&copyBiomeAction, &QAction::triggered, this, [cb, &blockInfo] {
-            cb->setText(bl::get_biome_name(blockInfo.biome).c_str());
+//            cb->setText(bl::get_biome_name(blockInfo.biome).c_str());
         });
 
         //height
         QAction copyHeightAction("复制高度信息: " + QString::number(blockInfo.height), this);
+
         connect(&copyHeightAction, &QAction::triggered, this, [cb, &blockInfo] {
             cb->setText(QString::number(blockInfo.height));
         });
@@ -369,7 +371,14 @@ void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp, const QPoint &p) {
-        auto height = this->mw_->levelLoader()->bakedTerrainImage(rp);
+        auto terrain = this->mw_->levelLoader()->bakedTerrainImage(rp);
+        this->drawRegion(event, painter, rp, p, terrain);
+    });
+}
+
+void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
+    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp, const QPoint &p) {
+        auto height = this->mw_->levelLoader()->bakedHeightImage(rp);
         this->drawRegion(event, painter, rp, p, height);
     });
 }
@@ -436,13 +445,6 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
                 painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
             }
         }
-    });
-}
-
-void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
-    this->forEachChunkInCamera([event, this, painter](const bl::chunk_pos &ch, const QPoint &p) {
-//        auto height = this->mw_->get_world()->height(ch);
-//        this->drawOneChunk(event, painter, ch, p, height);
     });
 }
 

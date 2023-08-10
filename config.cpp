@@ -31,6 +31,7 @@ int cfg::REGION_CACHE_SIZE = 4096;
 int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
+bool cfg::FANCY_TERRAIN_RENDER = true;
 std::string  cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
 
@@ -109,6 +110,7 @@ QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW
             }
         }
     }
+    res->fill(QColor(cfg::BG_GRAY));
     return res;
 }
 
@@ -136,7 +138,8 @@ void cfg::initConfig() {
             cfg::MINIMUM_SCALE_LEVEL = j["minimum_scale_level"].get<int>();
             cfg::MAXIMUM_SCALE_LEVEL = j["maximum_scale_level"].get<int>();
             cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
-            cfg::FONT_SIZE = j["font-size"].get<int>();
+            cfg::FONT_SIZE = j["font_size"].get<int>();
+            cfg::FANCY_TERRAIN_RENDER = j["fancy_terrain_render"].get<bool>();
         }
 
     } catch (std::exception &e) {
