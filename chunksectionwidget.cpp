@@ -85,12 +85,13 @@ void ChunkSectionWidget::load_data(bl::chunk *ch) {
             for (int z = 0; z < 16; z++) {
                 auto &data = this->get_layer_data(y)[x][z];
                 data.biome = ch->get_biome(x, y, z);
-
                 auto *raw = ch->get_block_raw(x, y, z);
+                auto info = ch->get_block(x, y, z);
+                data.block_name = info.name;
+                data.block_color = bl::blend_color_with_biome(data.block_name, info.color, data.biome);
                 if (raw) {
                     data.block_palette = raw->to_readable_string();
                 }
-                data.block_color = ch->get_block_color(x, y, z);
             }
         }
     }
@@ -127,9 +128,11 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     );
     auto biomeString = QString(bl::get_biome_name(data.biome).c_str());
     auto paletteString = QString(data.block_palette.c_str());
+    auto blockNameString = QString(data.block_name.c_str());
 
     QAction posAction("坐标: " + posString, this);
-    QAction blockPaletteAction(("方块: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
+    QAction blockNameAction("方块名称: " + blockNameString, this);
+    QAction blockPaletteAction(("Palette: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
     QAction biomeAction("群系: " + biomeString, this);
 
     auto *cb = QApplication::clipboard();
@@ -137,15 +140,22 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     connect(&posAction, &QAction::triggered, this, [cb, &posString] {
         cb->setText(posString);
     });
+
     connect(&blockPaletteAction, &QAction::triggered, this, [cb, &paletteString] {
         cb->setText(paletteString);
     });
+    connect(&blockNameAction, &QAction::triggered, this, [cb, &blockNameString] {
+        cb->setText(blockNameString);
+    });
+
     connect(&biomeAction, &QAction::triggered, this, [cb, &biomeString] {
         cb->setText(biomeString);
     });
 
     contextMenu.addAction(&posAction);
+    contextMenu.addAction(&blockNameAction);
     contextMenu.addAction(&blockPaletteAction);
     contextMenu.addAction(&biomeAction);
+
     contextMenu.exec(mapToGlobal(p));
 }

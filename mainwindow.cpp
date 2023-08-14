@@ -57,9 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int))); //NOLINT
     // init chunk editor layout
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
-    this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
     ui->map_splitter->addWidget(this->chunk_editor_widget_);
-
     ui->map_splitter->setStretchFactor(1, 1);
     ui->map_splitter->setStretchFactor(1, 10);
     ui->map_splitter->setStretchFactor(2, 1);
@@ -185,7 +183,8 @@ void MainWindow::resetToInitUI() {
     ui->open_level_btn->setText("未打开存档");
     ui->open_level_btn->setVisible(true);
     ui->open_level_btn->setEnabled(true);
-    this->setGeometry(centerMainWindowGeometry(0.8));
+    this->setGeometry(centerMainWindowGeometry(0.6));
+    this->chunk_editor_widget_->setMaximumWidth(this->height() / 2);
     this->setWindowTitle(this->getStaticTitle());
     this->global_data_loaded_ = false;
 }
@@ -212,7 +211,7 @@ bool MainWindow::openChunkEditor(const bl::chunk_pos &p) {
         return false;
     } else {
         this->chunk_editor_widget_->setVisible(true);
-        this->chunk_editor_widget_->load_chunk_data(chunk);
+        this->chunk_editor_widget_->loadChunkData(chunk);
         return true;
     }
 }
@@ -299,9 +298,9 @@ void MainWindow::openLevel() {
 }
 
 
-bool MainWindow::closeLevel() { //NOLINT
+void MainWindow::closeLevel() { //NOLINT
 //cancel background task
-    if (!this->level_loader_->isOpen())return true;
+    if (!this->level_loader_->isOpen())return;
     this->loading_global_data_ = false;
     this->load_global_data_watcher_.waitForFinished();
     this->level_loader_->close();
@@ -314,7 +313,6 @@ bool MainWindow::closeLevel() { //NOLINT
     this->map_item_editor_->clearData();
     this->villages_.clear();
     this->resetToInitUI();
-    return true;
 }
 
 void MainWindow::close_and_exit() {
@@ -322,10 +320,6 @@ void MainWindow::close_and_exit() {
     this->close();
 }
 
-
-void MainWindow::on_screenshot_btn_clicked() {
-    this->map_widget_->saveImageAction(true);
-}
 
 void MainWindow::openNBTEditor() {
     auto *w = new NbtWidget();
@@ -560,6 +554,10 @@ QString MainWindow::getStaticTitle() {
         level_name = this->level_loader_->level().dat().level_name();
     }
     return cfg::VERSION_STRING() + " " + level_name.c_str();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    this->chunk_editor_widget_->setMaximumWidth(this->height() / 2);
 }
 
 

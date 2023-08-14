@@ -182,7 +182,7 @@ void AsyncLevelLoader::close() {
 }
 
 bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) {
-    return this->level_.get_chunk(p);
+    return this->level_.get_chunk(p, false);
 }
 
 void AsyncLevelLoader::clearAllCache() {
@@ -222,11 +222,10 @@ bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
 
 bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies) {
     if (!this->loaded_)return false;
-    //TODO会导致内存中的存档数据和磁盘中的不匹配
     leveldb::WriteBatch batch;
     for (auto &kv: modifies) {
         if (kv.second.empty()) {
-            qDebug() << "delete key: " << kv.first.c_str();
+            qDebug() << "Delete key: " << kv.first.c_str();
             batch.Delete(kv.first);
         } else {
             batch.Put(kv.first, kv.second);
@@ -250,6 +249,8 @@ bool AsyncLevelLoader::modifyPlayerList(
             batch.Put(kv.first, kv.second->to_raw());
         }
     }
+
+
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
     if (s.ok()) {
         this->level_.player_data().reset(new_list);

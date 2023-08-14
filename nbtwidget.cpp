@@ -294,26 +294,26 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     it->setText(0, it->getRawText());
 }
 
-void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
-                              const std::function<QString(bl::palette::compound_tag *)> &namer,
-                              const std::vector<std::string> &default_labels,
-                              const std::vector<QImage *> &icons
-) {
-    this->clearData();
-    bool needIcon{icons.size() == data.size()};
-    for (int i = 0; i < data.size(); i++) {
-        auto *it = new NBTListItem();
-        it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
-        it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
-        it->namer_ = namer;
-        if (needIcon) {
-            it->setIcon(QPixmap::fromImage(*icons[i]));
-        }
-        it->setText(it->getLabel());
-        ui->list_widget->addItem(it);
-    }
-    this->refreshLabel();
-}
+//void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
+//                              const std::function<QString(bl::palette::compound_tag *)> &namer,
+//                              const std::vector<std::string> &default_labels,
+//                              const std::vector<QImage *> &icons
+//) {
+//    this->clearData();
+//    bool needIcon{icons.size() == data.size()};
+//    for (int i = 0; i < data.size(); i++) {
+//        auto *it = new NBTListItem();
+//        it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
+//        it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
+//        it->namer_ = namer;
+//        if (needIcon) {
+//            it->setIcon(QPixmap::fromImage(*icons[i]));
+//        }
+//        it->setText(it->getLabel());
+//        ui->list_widget->addItem(it);
+//    }
+//    this->refreshLabel();
+//}
 
 
 void NbtWidget::loadNewData(const std::vector<NBTListItem *> &items) {
@@ -429,7 +429,10 @@ NbtWidget::~NbtWidget() {
 }
 
 void NbtWidget::putModifyCache(const std::string &key, const std::string &value) {
-    this->modified_cache_[key] = value;
+    if (enable_modify_cache_) {
+        this->modified_cache_[key] = value;
+    };
+    //日志不受影响
     if (value.empty()) {
         qDebug() << "Delete key: " << key.c_str();
     } else {

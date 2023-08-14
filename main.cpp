@@ -79,7 +79,9 @@ void setupFont(QApplication &a) {
 
 int main(int argc, char *argv[]) {
     setupLog();
+#ifndef  QT_DEBUG
     qInstallMessageHandler(myMessageHandler);
+#endif
     InitIcons();
     cfg::initConfig();
     cfg::initColorTable();

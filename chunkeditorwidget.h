@@ -23,7 +23,7 @@ public:
 
     ~ChunkEditorWidget() override;
 
-    void load_chunk_data(bl::chunk *chunk);
+    void loadChunkData(bl::chunk *chunk);
 
     void mousePressEvent(QMouseEvent *event) override;
 
@@ -59,9 +59,9 @@ private:
 
     Ui::ChunkEditorWidget *ui;
     int y_level{0};
-
-    bl::chunk *chunk_{nullptr};
-
+//    bl::chunk *chunk_{nullptr};
+    bl::ChunkVersion cv{bl::Old};
+    bl::chunk_pos cp_;
     MainWindow *mw_;
 };
 

@@ -206,12 +206,11 @@ private:
     bool draw_villages_{false};
     bool draw_HSA_{false};
 
-    int cw_{8};            //每个区块需要几个像素
+    int cw_{32};            //每个区块需要几个像素
     QPoint origin_{0, 0};  //记录区块0,0的左上角相对widget左上角的坐标
     bool draw_grid_{true};
     bool draw_coords_{false};
     bool draw_debug_window_{false};
-
 
     //opened chunk
     bool opened_chunk_{false};

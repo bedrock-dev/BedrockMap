@@ -79,19 +79,20 @@ public slots:
 
     void applyFilter();
 
+
 protected:
     void paintEvent(QPaintEvent *event) override;
+
+    void resizeEvent(QResizeEvent *event) override;
 
 
 private slots:
 
     void openLevel();
 
-    bool closeLevel();
+    void closeLevel();
 
     void close_and_exit();
-
-    void on_screenshot_btn_clicked();
 
     void openNBTEditor();
 
@@ -112,7 +113,6 @@ private slots:
     void on_hsa_layer_btn_clicked();
 
     void on_edit_filter_btn_clicked();
-
 
     void resetToInitUI();
 

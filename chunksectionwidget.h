@@ -7,6 +7,7 @@
 
 struct TerrainData {
     std::string block_palette{};
+    std::string block_name{};
     bl::color block_color{0, 0, 0, 255};
     bl::biome biome{bl::none};
 };

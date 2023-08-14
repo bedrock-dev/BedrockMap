@@ -67,12 +67,12 @@ public:
     ~NbtWidget() override;
 
 
-    [[deprecated("old function")]] void load_new_data(
-            const std::vector<compound_tag *> &data,
-            const std::function<QString(compound_tag *)> &namer,
-            const std::vector<std::string> &default_labels,
-            const std::vector<QImage *> &icons = {}
-    );
+//    [[deprecated("old function")]] void load_new_data(
+//            const std::vector<compound_tag *> &data,
+//            const std::function<QString(compound_tag *)> &namer,
+//            const std::vector<std::string> &default_labels,
+//            const std::vector<QImage *> &icons = {}
+//    );
 
 
     void loadNewData(const std::vector<NBTListItem *> &items);
@@ -93,11 +93,18 @@ public:
 
     void clearData();
 
+
+    inline void setEnableModifyCache(bool enable) {
+        if (!enable)this->clearModifyCache();
+        this->enable_modify_cache_ = enable;
+    }
+
     const std::unordered_map<std::string, std::string> &getModifyCache() { return this->modified_cache_; }
 
     void putModifyCache(const std::string &key, const std::string &value);
 
     inline void clearModifyCache() { this->modified_cache_.clear(); };
+
 
     inline NBTListItem *openedItem() { return this->current_opened_; }
 
@@ -138,6 +145,7 @@ private:
     std::function<void(compound_tag *)> extra_load_event_{[](const compound_tag *) {}};
     std::unordered_map<std::string, std::string> modified_cache_;
     NBTListItem *current_opened_{nullptr};
+    bool enable_modify_cache_{true};
 };
 
 
