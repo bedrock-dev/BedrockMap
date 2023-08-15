@@ -51,9 +51,12 @@ ChunkEditorWidget::~ChunkEditorWidget() {
 void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
     assert(chunk);
     this->clearData();
-    this->refreshBasicData();
     this->cv = chunk->get_version();
-    //setup chunk section
+    this->cp_ = chunk->get_pos();
+    this->refreshBasicData();
+
+
+    //load data
     this->chunk_section_->load_data(chunk);
     std::vector<NBTListItem *> block_entity_items;
     auto &bes = chunk->block_entities();
@@ -86,12 +89,16 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
     this->pending_tick_editor_->loadNewData(pt_items);
     qDebug() << "Load actors";
 
+#include "palette.h"
+
     auto actors = chunk->entities();
     std::vector<NBTListItem *> actor_items;
     index = 0;
     for (auto &b: actors) {
         auto id = QString(b->identifier().c_str()).replace("minecraft:", "");
-        auto *item = NBTListItem::from(b->root(), id, QString::number(index));
+        auto *item = NBTListItem::from(
+                reinterpret_cast<bl::palette::compound_tag * >(  b->root()->copy()),
+                id, QString::number(index));
         item->setIcon(QIcon(QPixmap::fromImage(*EntityNBTIcon(id))));
         actor_items.push_back(item);
         index++;
@@ -100,8 +107,8 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
 
     this->actor_editor_->loadNewData(actor_items);
 
+    //prevent data destructor
     chunk->pending_ticks().clear();
-    chunk->entities().clear();
     chunk->block_entities().clear();
     delete chunk;
 }
@@ -148,10 +155,8 @@ void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {
 
 
 void ChunkEditorWidget::on_save_actor_btn_clicked() {
-    if (!this->mw_->enable_write()) {
-        WARN("未开启写模式");
-        return;
-    }
+    if (!CHECK_CONDITION(this->mw_->enable_write(), "未开启写模式")) return;
+
 
     auto palettes = this->actor_editor_->getPaletteCopy();
     std::vector<bl::actor *> actors;
@@ -163,15 +168,10 @@ void ChunkEditorWidget::on_save_actor_btn_clicked() {
         }
     }
 
-    auto res = false;
-    // this->mw_->levelLoader()->modifyChunkActors(this->chunk_, actors);
+    auto res = this->mw_->levelLoader()->modifyChunkActors(this->cp_, this->cv, actors);
     for (auto &p: palettes)delete p;
     for (auto &ac: actors)delete ac;
-    if (res) {
-        INFO("写入实体数据成功");
-    } else {
-        WARN("写入实体数据失败");
-    }
+    CHECK_DATA_SAVE(res);
 }
 
 void ChunkEditorWidget::on_save_block_actor_btn_clicked() {

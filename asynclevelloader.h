@@ -16,6 +16,7 @@
 #include <vector>
 #include "palette.h"
 #include "renderfilterdialog.h"
+#include "bedrock_key.h"
 #include <deque>
 
 class AsyncLevelLoader;
@@ -183,19 +184,21 @@ public:
 
     bool modifyLeveldat(bl::palette::compound_tag *nbt);
 
-    bool
-    modifyPlayerList(const std::unordered_map<std::string, bl::palette::compound_tag *> &player_list);
 
-    bool modifyOtherItemList(const std::unordered_map<std::string, bl::palette::compound_tag *> &item_list);
-
-    bool modifyVillageList(
-            const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list);
+    //    bool
+//    modifyPlayerList(const std::unordered_map<std::string, bl::palette::compound_tag *> &player_list);
+//
+//    bool modifyOtherItemList(const std::unordered_map<std::string, bl::palette::compound_tag *> &item_list);
+//
+//    bool modifyVillageList(
+//            const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &village_list);
 
     bool modifyChunkBlockEntities(const bl::chunk_pos &cp, const std::string &raw);
 
     bool modifyChunkPendingTicks(const bl::chunk_pos &cp, const std::string &raw);
 
-    bool modifyChunkActors(bl::chunk *ch, const std::vector<bl::actor *> &actors);
+    bool modifyChunkActors(const bl::chunk_pos &cp, const bl::ChunkVersion v, const std::vector<bl::actor *> &actors);
+
 
 public:
     ~AsyncLevelLoader() override;

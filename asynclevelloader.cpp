@@ -10,6 +10,16 @@
 #include "qdebug.h"
 #include "leveldb/write_batch.h"
 
+namespace {
+    namespace {
+        bool load_raw(leveldb::DB *&db, const std::string &raw_key, std::string &raw) {
+            auto r = db->Get(leveldb::ReadOptions(), raw_key, &raw);
+            return r.ok();
+        }
+    }  // namespace
+
+}
+
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
@@ -236,86 +246,6 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
     return true;
 }
 
-bool AsyncLevelLoader::modifyPlayerList(
-        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_list) {
-    if (!this->loaded_)return false;
-    //先写入磁盘再修改内存
-    leveldb::WriteBatch batch;
-    for (auto &kv: this->level_.player_data().data()) {
-        if (!new_list.count(kv.first)) {
-            batch.Delete(kv.first);
-        } else { //put
-            //可以检查不一样的才修改，不过没啥必要
-            batch.Put(kv.first, kv.second->to_raw());
-        }
-    }
-
-
-    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
-    if (s.ok()) {
-        this->level_.player_data().reset(new_list);
-        return true;
-    }
-    return false;
-}
-
-
-bool
-AsyncLevelLoader::modifyOtherItemList(
-        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_item_list) {
-    if (!this->loaded_)return false;
-    //先写入磁盘再修改内存
-    leveldb::WriteBatch batch;
-    for (auto &kv: this->level_.other_item_data().data()) {
-        if (!new_item_list.count(kv.first)) {
-            batch.Delete(kv.first);
-        } else { //put
-            //可以检查不一样的才修改，不过没啥必要
-            batch.Put(kv.first, kv.second->to_raw());
-        }
-    }
-
-    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
-    if (s.ok()) {
-        this->level_.other_item_data().reset(new_item_list);
-        return true;
-    }
-    return false;
-
-}
-
-bool AsyncLevelLoader::modifyVillageList(
-        const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &new_village_list) {
-    if (!this->loaded_)return false;
-    leveldb::WriteBatch batch;
-    for (auto &kv: this->level_.village_data().data()) {
-        const auto uuid = kv.first;
-        auto it = new_village_list.find(uuid);
-        if (it == new_village_list.end()) { //新的村庄表找不到这个了，直接把四个key全删了
-            for (int i = 0; i < 4; i++) {
-                bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
-                batch.Delete(key.to_raw());
-            }
-            continue;
-        }
-        //还有这个key的
-        for (int i = 0; i < 4; i++) {
-            bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
-            if (!it->second[i]) { //空指针，也是直接删除
-                batch.Delete(key.to_raw());
-            } else { //还在的，直接覆盖
-                batch.Put(key.to_raw(), it->second[i]->to_raw());
-            }
-        }
-    }
-
-    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
-    if (s.ok()) {
-        this->level_.village_data().reset(new_village_list);
-        return true;
-    }
-    return false;
-}
 
 bool AsyncLevelLoader::modifyChunkBlockEntities(const bl::chunk_pos &cp,
                                                 const std::string &raw) {
@@ -332,49 +262,58 @@ bool AsyncLevelLoader::modifyChunkPendingTicks(const bl::chunk_pos &cp,
     return s.ok();
 }
 
-bool AsyncLevelLoader::modifyChunkActors(
-        bl::chunk *ch,
-        const std::vector<bl::actor *> &acs) {
-    //不同的区块不用的算法
-    if (!ch) return false;
-    if (ch->get_version() == bl::Old) {
-//        直接写入
-        std::string raw;
-        for (auto &p: acs)
-            raw += p->root()->to_raw();
-        bl::chunk_key key{bl::chunk_key::Entity, ch->get_pos()};
-        auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
-        return s.ok();
-    }
+bool AsyncLevelLoader::modifyChunkActors(const bl::chunk_pos &cp, const bl::ChunkVersion v,
+                                         const std::vector<bl::actor *> &actors) {
 
+    qDebug() << cp.to_string().c_str() << "Update actors to " << actors.size();
+    //clear entities (the chunk with new format will store entities with different format)
 
-    std::unordered_map<std::string, bl::actor *> actor_map;
-    for (auto ac: acs) {
-        actor_map[ac->uid_raw()] = ac;
-    }
-    //new versions
-    //获取所有的实体以及uid
     leveldb::WriteBatch batch;
-    auto es = ch->entities();
-    for (auto cur: es) {
-        if (!actor_map.count(cur->uid_raw())) {
-            batch.Delete("actorprefix" + cur->uid_raw());
+
+    //digest key
+    bl::actor_digest_key chunk_digest_key{cp};
+    bl::chunk_key chunk_actor_key{bl::chunk_key::Entity, cp};
+
+    //1. Remove all entities with new format
+    std::string actor_digest_raw;
+    if (load_raw(this->level_.db(), chunk_digest_key.to_raw(), actor_digest_raw)) {
+        bl::actor_digest_list al;
+        al.load(actor_digest_raw);
+        for (auto &uid: al.actor_digests_) {
+            auto actor_key = "actorprefix" + uid;
+            qDebug() << "remove actor: " << actor_key.c_str();
+            batch.Delete(actor_key);
         }
     }
 
-    //写入新的实体
-    std::string digest;
-    for (auto &ac: actor_map) {
-        batch.Put("actorprefix" + ac.first, ac.second->root()->to_raw());
-        digest += ac.first;
-    }
+    batch.Delete(chunk_digest_key.to_raw());
+    //2. remove all entities with old format
+    batch.Delete(chunk_actor_key.to_raw());
 
-    //写入摘要
-    bl::actor_digest_key adk{ch->get_pos()};
-    batch.Put(adk.to_raw(), digest);
+
+    //3. if current chunk is old version, use old storage format
+    if (v == bl::Old) {
+        std::string chunk_actor_data;
+        //create palette
+        for (auto &p: actors)
+            chunk_actor_data += p->root()->to_raw();
+        batch.Put(chunk_actor_key.to_raw(), chunk_actor_data);
+    } else {
+        //4. write actors with new format
+        std::string digest;
+        for (auto &ac: actors) {
+            batch.Put("actorprefix" + ac->uid_raw(), ac->root()->to_raw());
+            digest += ac->uid_raw();
+        }
+
+        //写入摘要
+        batch.Put(chunk_digest_key.to_raw(), digest);
+
+    }
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
     return s.ok();
 }
+
 
 ChunkRegion::~ChunkRegion() {
     //注意：这里不是释放Actor的资源是预期行为(全局资源)
@@ -511,3 +450,85 @@ void RegionTimer::push(int64_t value) {
     }
 
 }
+
+
+//bool AsyncLevelLoader::modifyPlayerList(
+//        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_list) {
+//    if (!this->loaded_)return false;
+//    //先写入磁盘再修改内存
+//    leveldb::WriteBatch batch;
+//    for (auto &kv: this->level_.player_data().data()) {
+//        if (!new_list.count(kv.first)) {
+//            batch.Delete(kv.first);
+//        } else { //put
+//            //可以检查不一样的才修改，不过没啥必要
+//            batch.Put(kv.first, kv.second->to_raw());
+//        }
+//    }
+//
+//
+//    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+//    if (s.ok()) {
+//        this->level_.player_data().reset(new_list);
+//        return true;
+//    }
+//    return false;
+//}
+//
+//
+//bool
+//AsyncLevelLoader::modifyOtherItemList(
+//        const std::unordered_map<std::string, bl::palette::compound_tag *> &new_item_list) {
+//    if (!this->loaded_)return false;
+//    //先写入磁盘再修改内存
+//    leveldb::WriteBatch batch;
+//    for (auto &kv: this->level_.other_item_data().data()) {
+//        if (!new_item_list.count(kv.first)) {
+//            batch.Delete(kv.first);
+//        } else { //put
+//            //可以检查不一样的才修改，不过没啥必要
+//            batch.Put(kv.first, kv.second->to_raw());
+//        }
+//    }
+//
+//    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+//    if (s.ok()) {
+//        this->level_.other_item_data().reset(new_item_list);
+//        return true;
+//    }
+//    return false;
+//
+//}
+//
+//bool AsyncLevelLoader::modifyVillageList(
+//        const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &new_village_list) {
+//    if (!this->loaded_)return false;
+//    leveldb::WriteBatch batch;
+//    for (auto &kv: this->level_.village_data().data()) {
+//        const auto uuid = kv.first;
+//        auto it = new_village_list.find(uuid);
+//        if (it == new_village_list.end()) { //新的村庄表找不到这个了，直接把四个key全删了
+//            for (int i = 0; i < 4; i++) {
+//                bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
+//                batch.Delete(key.to_raw());
+//            }
+//            continue;
+//        }
+//        //还有这个key的
+//        for (int i = 0; i < 4; i++) {
+//            bl::village_key key{kv.first, static_cast<bl::village_key::key_type>(i)};
+//            if (!it->second[i]) { //空指针，也是直接删除
+//                batch.Delete(key.to_raw());
+//            } else { //还在的，直接覆盖
+//                batch.Put(key.to_raw(), it->second[i]->to_raw());
+//            }
+//        }
+//    }
+//
+//    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+//    if (s.ok()) {
+//        this->level_.village_data().reset(new_village_list);
+//        return true;
+//    }
+//    return false;
+//}
