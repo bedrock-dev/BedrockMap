@@ -18,10 +18,14 @@ set(BEDROCK_LIBS
         ${BEDROCK_LEVEL_ROOT}/.build/libbedrock-level.a
         ${BEDROCK_LEVEL_ROOT}/libs/libleveldb-release.a
         ${BEDROCK_LEVEL_ROOT}/libs/libz.a
-)
+        )
 include_directories(
         ${BEDROCK_LEVEL_ROOT}/src/include
         ${BEDROCK_LEVEL_ROOT}/third
+
+        ${PROJECT_SOURCE_DIR}/src/include
+        "C:\\Users\\xhy\\dev\\Qt\\BedrockMap\\build\\BedrockMap_autogen\\include"
+
 )
 
 
@@ -31,52 +35,38 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent REQUIRED)
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        mapwidget.h
-        mapwidget.cpp
 
-
-        asynclevelloader.h
-        asynclevelloader.cpp
-        chunkeditorwidget.h
-        chunkeditorwidget.cpp
-        chunkeditorwidget.ui
-        chunksectionwidget.h
-        chunksectionwidget.cpp
-        nbtwidget.h
-        nbtwidget.cpp
-        nbtwidget.ui
-        config.h
-        config.cpp
-        iconmanager.cpp
-        iconmanager.h
-
-        aboutdialog.h
-        aboutdialog.cpp
-        aboutdialog.ui
-
-
-        renderfilterdialog.h
-        renderfilterdialog.cpp
-        renderfilterdialog.ui
-
-        mapitemeditor.h
-        mapitemeditor.cpp
-        mapitemeditor.ui
+# SRC
+        ${PROJECT_SOURCE_DIR}/src/main.cpp
+        ${PROJECT_SOURCE_DIR}/src/mainwindow.cpp
+        ${PROJECT_SOURCE_DIR}/src/mapwidget.cpp
+        ${PROJECT_SOURCE_DIR}/src/asynclevelloader.cpp
+        ${PROJECT_SOURCE_DIR}/src/chunkeditorwidget.cpp
+        ${PROJECT_SOURCE_DIR}/src/chunksectionwidget.cpp
+        ${PROJECT_SOURCE_DIR}/src/nbtwidget.cpp
+        ${PROJECT_SOURCE_DIR}/src/config.cpp
+        ${PROJECT_SOURCE_DIR}/src/iconmanager.cpp
+        ${PROJECT_SOURCE_DIR}/src/aboutdialog.cpp
+        ${PROJECT_SOURCE_DIR}/src/msg.cpp
+        ${PROJECT_SOURCE_DIR}/src/mapitemeditor.cpp
+        ${PROJECT_SOURCE_DIR}/src/renderfilterdialog.cpp
+        # UI
+        
+        ${PROJECT_SOURCE_DIR}/src/chunkeditorwidget.ui
+        ${PROJECT_SOURCE_DIR}/src/nbtwidget.ui
+        ${PROJECT_SOURCE_DIR}/src/mainwindow.ui
+        ${PROJECT_SOURCE_DIR}/src/renderfilterdialog.ui
+        ${PROJECT_SOURCE_DIR}/src/mapitemeditor.ui
+        ${PROJECT_SOURCE_DIR}/src/aboutdialog.ui
         icon.qrc
-        msg.h
-        msg.cpp
-)
+        )
 
 add_executable(BedrockMap ${PROJECT_SOURCES} ${APP_ICON_RESOURCE_WINDOWS})
 
 
 target_link_libraries(BedrockMap PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Concurrent ${BEDROCK_LIBS})
 
-#set_property(TARGET BedrockMap PROPERTY WIN32_EXECUTABLE true)
+# set_property(TARGET BedrockMap PROPERTY WIN32_EXECUTABLE true)
 
 if (QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(BedrockMap)
