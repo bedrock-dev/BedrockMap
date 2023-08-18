@@ -18,6 +18,9 @@ struct cfg {
     const static int BG_GRAY;
     const static int GRID_WIDTH;
 
+
+    static constexpr uint8_t RW = 8u;  //(1<<w)
+    static constexpr uintptr_t LOW_IMG_SCALE = 4;
     // 配置文件下面是可配置的
     static int SHADOW_LEVEL;
     static float ZOOM_SPEED;
@@ -29,7 +32,8 @@ struct cfg {
     static int FONT_SIZE;
     static bool FANCY_TERRAIN_RENDER;
 
-    static constexpr uint8_t RW = 8u;  //(1<<w)
+
+
     // 其他配置(不对外开放接口)
 
     // 配置文件

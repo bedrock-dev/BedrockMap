@@ -57,9 +57,9 @@ struct RegionTimer {
     void push(int64_t value);
 };
 
-template <typename T>
+template<typename T>
 class TaskBuffer {
-   public:
+public:
     bool contains(const T &t) {
         bool exist{false};
         {
@@ -100,19 +100,20 @@ class TaskBuffer {
 };
 
 class LoadRegionTask : public QObject, public QRunnable {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const MapFilter *filter)
-        : QRunnable(), level_(level), pos_(pos), filter_(filter) {}
+            : QRunnable(), level_(level), pos_(pos), filter_(filter) {}
 
     void run() override;
 
-   signals:
+signals:
 
-    void finish(int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks);  // NO_LINT
+    void finish(int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time,
+                bl::chunk **chunks);  // NO_LINT
 
-   private:
+private:
     bl::bedrock_level *level_;
     region_pos pos_;
     const MapFilter *filter_;
@@ -131,9 +132,9 @@ class LoadRegionTask : public QObject, public QRunnable {
 // };
 
 class AsyncLevelLoader : public QObject {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     AsyncLevelLoader();
 
     void clearAllCache();
@@ -148,7 +149,7 @@ class AsyncLevelLoader : public QObject {
 
     void setFilter(const MapFilter &f) { this->map_filter_ = f; }
 
-   public:
+public:
     /*region cache*/
     QImage *bakedBiomeImage(const region_pos &rp);
 
@@ -197,15 +198,15 @@ class AsyncLevelLoader : public QObject {
 
     bool modifyChunkActors(const bl::chunk_pos &cp, bl::ChunkVersion v, const std::vector<bl::actor *> &actors);
 
-   public:
+public:
     ~AsyncLevelLoader() override;
 
     std::vector<QString> debugInfo();
 
-   private:
+private:
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
 
-   private:
+private:
     std::atomic_bool loaded_{false};
     bl::bedrock_level level_{};
     TaskBuffer<region_pos> processing_;

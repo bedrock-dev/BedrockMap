@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "BedrockMap",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "BedrockMap::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-BedrockMap-Debug-b00b5a9eaaebb7dea4c6.json",
+					"name" : "BedrockMap",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "BedrockMap_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-BedrockMap_autogen-Debug-78be0e8c39d6afa2c9be.json",
+					"name" : "BedrockMap_autogen",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/xhy/dev/Qt/BedrockMap/.build",
+		"source" : "C:/Users/xhy/dev/Qt/BedrockMap"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 5
+	}
+}

@@ -1,0 +1,4 @@
+C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/BedrockMap.dir
+C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/edit_cache.dir
+C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/rebuild_cache.dir
+C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/BedrockMap_autogen.dir

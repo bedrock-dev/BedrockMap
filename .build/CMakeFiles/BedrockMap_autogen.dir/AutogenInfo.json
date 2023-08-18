@@ -1,0 +1,236 @@
+{
+	"BUILD_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/BedrockMap_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap/.build",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap/.build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap",
+	"CMAKE_EXECUTABLE" : "C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/bin/cmake.exe",
+	"CMAKE_LIST_FILES" : 
+	[
+		"C:/Users/xhy/dev/Qt/BedrockMap/CMakeLists.txt",
+		"C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/3.26.4/CMakeSystem.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake",
+		"C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/3.26.4/CMakeCXXCompiler.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeGenericSystem.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/Windows.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/WindowsPaths.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeCXXInformation.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Compiler/GNU-CXX.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Compiler/GNU.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/Windows-GNU-CXX.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/Windows-GNU.cmake",
+		"C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/3.26.4/CMakeRCCompiler.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeRCInformation.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/Windows-windres.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/Platform/Windows-GNU-CXX-ABI.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5/Qt5ConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5/Qt5Config.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5/Qt5ConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5/Qt5Config.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5/Qt5ModuleLocation.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfig.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5GuiConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5GuiConfig.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Core/Qt5CoreConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Core/Qt5CoreConfig.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Core/Qt5CoreConfigExtras.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Core/Qt5CoreMacros.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeParseArguments.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QGifPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QICNSPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QICOPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QJpegPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QMinimalIntegrationPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QOffscreenIntegrationPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QTgaPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QTiffPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QTuioTouchPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QVirtualKeyboardPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QWbmpPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QWebGLIntegrationPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QWebpPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsDirect2DIntegrationPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QWindowsIntegrationPlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5Gui_QXdgDesktopPortalThemePlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Widgets/Qt5Widgets_QWindowsVistaStylePlugin.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Widgets/Qt5WidgetsConfigExtras.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Widgets/Qt5WidgetsMacros.cmake",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeParseArguments.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Concurrent/Qt5ConcurrentConfigVersion.cmake",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/lib/cmake/Qt5Concurrent/Qt5ConcurrentConfig.cmake",
+		"C:/Users/xhy/dev/Qt/BedrockMap/icon.qrc"
+	],
+	"CMAKE_SOURCE_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/aboutdialog.h",
+			"MU",
+			"7PH6M6IPMC/moc_aboutdialog.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/asynclevelloader.h",
+			"MU",
+			"7PH6M6IPMC/moc_asynclevelloader.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/chunkeditorwidget.h",
+			"MU",
+			"7PH6M6IPMC/moc_chunkeditorwidget.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/chunksectionwidget.h",
+			"MU",
+			"7PH6M6IPMC/moc_chunksectionwidget.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/config.h",
+			"MU",
+			"7PH6M6IPMC/moc_config.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/iconmanager.h",
+			"MU",
+			"7PH6M6IPMC/moc_iconmanager.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/mainwindow.h",
+			"MU",
+			"7PH6M6IPMC/moc_mainwindow.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/mapitemeditor.h",
+			"MU",
+			"7PH6M6IPMC/moc_mapitemeditor.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/mapwidget.h",
+			"MU",
+			"7PH6M6IPMC/moc_mapwidget.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/msg.h",
+			"MU",
+			"7PH6M6IPMC/moc_msg.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/nbtwidget.h",
+			"MU",
+			"7PH6M6IPMC/moc_nbtwidget.cpp",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/include/renderfilterdialog.h",
+			"MU",
+			"7PH6M6IPMC/moc_renderfilterdialog.cpp",
+			null
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/BedrockMap_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/BedrockMap_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : [ "QT_CONCURRENT_LIB", "QT_CORE_LIB", "QT_GUI_LIB", "QT_WIDGETS_LIB" ],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"C:/Users/xhy/dev/Qt/BedrockMap/.build",
+		"C:/Users/xhy/dev/Qt/BedrockMap",
+		"C:/Users/xhy/dev/bedrock-level/src/include",
+		"C:/Users/xhy/dev/bedrock-level/third",
+		"C:/Users/xhy/dev/Qt/BedrockMap/src/include",
+		"C:/Users/xhy/dev/Qt/BedrockMap/build/BedrockMap_autogen/include",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include/QtWidgets",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include/QtGui",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include/QtANGLE",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include/QtCore",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/mkspecs/win32-g++",
+		"C:/Qt/Qt5.12.12/5.12.12/mingw73_64/include/QtConcurrent",
+		"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++",
+		"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32",
+		"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward",
+		"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include",
+		"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed",
+		"C:/noinstall/w64devkit/x86_64-w64-mingw32/include"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : false,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"C:/noinstall/w64devkit/bin/c++.exe",
+		"-dM",
+		"-E",
+		"-c",
+		"C:/Program Files/JetBrains/CLion 2022.3/bin/cmake/win/x64/share/cmake-3.26/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/BedrockMap_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 8,
+	"PARSE_CACHE_FILE" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/BedrockMap_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/moc.exe",
+	"QT_UIC_EXECUTABLE" : "C:/Qt/Qt5.12.12/5.12.12/mingw73_64/bin/uic.exe",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 12,
+	"SETTINGS_FILE" : "C:/Users/xhy/dev/Qt/BedrockMap/.build/CMakeFiles/BedrockMap_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/aboutdialog.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/asynclevelloader.cpp", "MU", null ],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/chunkeditorwidget.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/chunksectionwidget.cpp",
+			"MU",
+			null
+		],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/config.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/iconmanager.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/main.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/mainwindow.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/mapitemeditor.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/mapwidget.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/msg.cpp", "MU", null ],
+		[ "C:/Users/xhy/dev/Qt/BedrockMap/src/nbtwidget.cpp", "MU", null ],
+		[
+			"C:/Users/xhy/dev/Qt/BedrockMap/src/renderfilterdialog.cpp",
+			"MU",
+			null
+		]
+	],
+	"UIC_OPTIONS" : [],
+	"UIC_SEARCH_PATHS" : [],
+	"UIC_SKIP" : [],
+	"UIC_UI_FILES" : [],
+	"VERBOSITY" : 0
+}

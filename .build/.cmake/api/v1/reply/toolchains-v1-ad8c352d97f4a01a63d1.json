@@ -1,0 +1,87 @@
+{
+	"kind" : "toolchains",
+	"toolchains" : 
+	[
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++",
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32",
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward",
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include",
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed",
+						"C:/noinstall/w64devkit/x86_64-w64-mingw32/include"
+					],
+					"linkDirectories" : 
+					[
+						"C:/noinstall/w64devkit/lib/gcc/x86_64-w64-mingw32/13.1.0",
+						"C:/noinstall/w64devkit/lib/gcc",
+						"C:/noinstall/w64devkit/x86_64-w64-mingw32/lib",
+						"C:/noinstall/w64devkit/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"stdc++",
+						"mingw32",
+						"gcc",
+						"moldname",
+						"mingwex",
+						"kernel32",
+						"pthread",
+						"advapi32",
+						"shell32",
+						"user32",
+						"kernel32",
+						"mingw32",
+						"gcc",
+						"moldname",
+						"mingwex",
+						"kernel32"
+					]
+				},
+				"path" : "C:/noinstall/w64devkit/bin/c++.exe",
+				"version" : "13.1.0"
+			},
+			"language" : "CXX",
+			"sourceFileExtensions" : 
+			[
+				"C",
+				"M",
+				"c++",
+				"cc",
+				"cpp",
+				"cxx",
+				"m",
+				"mm",
+				"mpp",
+				"CPP",
+				"ixx",
+				"cppm"
+			]
+		},
+		{
+			"compiler" : 
+			{
+				"implicit" : {},
+				"path" : "C:/noinstall/w64devkit/bin/windres.exe"
+			},
+			"language" : "RC",
+			"sourceFileExtensions" : 
+			[
+				"rc",
+				"RC"
+			]
+		}
+	],
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}

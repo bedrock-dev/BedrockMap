@@ -2,10 +2,8 @@
 // Created by xhy on 2023/7/11.
 //
 #include "config.h"
-
 #include <QtDebug>
 #include <fstream>
-
 #include "color.h"
 #include "json/json.hpp"
 
@@ -97,6 +95,7 @@ void cfg::initColorTable() {
     //    }
 }
 
+
 QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW> &bitmap) {
     auto *res = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
@@ -115,6 +114,7 @@ QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW
 }
 
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
+
 
 void cfg::initConfig() {
     qDebug() << "Configuration path is " << CONFIG_FILE_PATH.c_str();
@@ -136,6 +136,8 @@ void cfg::initConfig() {
             cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
             cfg::FONT_SIZE = j["font_size"].get<int>();
             cfg::FANCY_TERRAIN_RENDER = j["fancy_terrain_render"].get<bool>();
+
+
         }
 
     } catch (std::exception &e) {
@@ -158,7 +160,9 @@ void cfg::initConfig() {
     qInfo() << "Render render Width" << cfg::RW;
 }
 
-QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
+QString cfg::VERSION_STRING() {
+    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
+}
 
 QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
 
