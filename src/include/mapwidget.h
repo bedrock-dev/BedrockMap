@@ -200,7 +200,7 @@ private:
     bool draw_villages_{false};
     bool draw_HSA_{false};
 
-    int cw_{16};           // 每个区块需要几个像素
+    int cw_{64};           // 每个区块需要几个像素
     QPoint origin_{0, 0};  // 记录区块0,0的左上角相对widget左上角的坐标
     bool draw_grid_{true};
     bool draw_coords_{false};

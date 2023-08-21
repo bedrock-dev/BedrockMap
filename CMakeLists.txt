@@ -15,9 +15,9 @@ set(CMAKE_CXX_FLAGS -utf8)
 # include bedrock-lib from absolute path
 set(BEDROCK_LEVEL_ROOT "C:/Users/xhy/dev/bedrock-level")
 set(BEDROCK_LIBS
-        ${BEDROCK_LEVEL_ROOT}/.build/libbedrock-level.a
-        ${BEDROCK_LEVEL_ROOT}/libs/libleveldb-release.a
-        ${BEDROCK_LEVEL_ROOT}/libs/libz.a
+        ${BEDROCK_LEVEL_ROOT}/.release-mingw/libbedrock-level.a
+        ${BEDROCK_LEVEL_ROOT}/libs/libleveldb-mingw64.a
+        ${BEDROCK_LEVEL_ROOT}/libs/libz-mingw64.a
 )
 include_directories(
         ${BEDROCK_LEVEL_ROOT}/src/include

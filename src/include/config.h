@@ -4,7 +4,7 @@
 #include <QColor>
 #include <QImage>
 #include <cstdint>
-
+#include <bitset>
 #include "bedrock_key.h"
 
 typedef bl::chunk_pos region_pos;
@@ -20,7 +20,7 @@ struct cfg {
 
 
     static constexpr uint8_t RW = 8u;  //(1<<w)
-    static constexpr uintptr_t LOW_IMG_SCALE = 4;
+    static constexpr uintptr_t LOW_IMG_SCALE = 64;
     // 配置文件下面是可配置的
     static int SHADOW_LEVEL;
     static float ZOOM_SPEED;
@@ -49,7 +49,7 @@ struct cfg {
 
     static void initConfig();
 
-    static QImage *INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW> &bitmap);
+    static QImage INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap);
 
     static QImage *UNLOADED_REGION_IMAGE();
 

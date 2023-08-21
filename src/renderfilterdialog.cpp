@@ -13,7 +13,8 @@ namespace {
         static int max[]{319, 127, 255};
         if (height < min[dim]) height = min[dim];
         if (height > max[dim]) height = max[dim];
-        auto gray = static_cast<int>(static_cast<qreal>(height - min[dim]) / static_cast<qreal>(max[dim] - min[dim]) * 255.0);
+        auto gray = static_cast<int>(static_cast<qreal>(height - min[dim]) / static_cast<qreal>(max[dim] - min[dim]) *
+                                     255.0);
         return {255 - gray, 255 - gray, 255 - gray};
     }
 }  // namespace
@@ -36,15 +37,15 @@ void RenderFilterDialog::fillInUI() {
     ui->actor_black_box->setChecked(this->filter_.actor_black_mode_);
 
     QStringList actor_list;
-    for (const auto &actor : this->filter_.actors_list_) actor_list << actor.c_str();
+    for (const auto &actor: this->filter_.actors_list_) actor_list << actor.c_str();
     ui->actor_text_edit->setPlainText(actor_list.join(','));
 
     QStringList block_list;
-    for (const auto &block : this->filter_.blocks_list_) block_list << block.c_str();
+    for (const auto &block: this->filter_.blocks_list_) block_list << block.c_str();
     ui->block_text_edit->setPlainText(block_list.join(','));
 
     QStringList biome_list;
-    for (const auto &biome : this->filter_.biomes_list_) biome_list << QString::number(biome);
+    for (const auto &biome: this->filter_.biomes_list_) biome_list << QString::number(biome);
     ui->biome_text_edit->setPlainText(biome_list.join(','));
 }
 
@@ -63,15 +64,15 @@ void RenderFilterDialog::collectFilerData() {
     this->filter_.biomes_list_.clear();
     this->filter_.actors_list_.clear();
 
-    for (const auto &b : blocks) {
+    for (const auto &b: blocks) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.blocks_list_.insert(s.toStdString());
     }
-    for (const auto &b : biomes) {
+    for (const auto &b: biomes) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.biomes_list_.insert(s.toInt());
     }
-    for (const auto &b : actors) {
+    for (const auto &b: actors) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.actors_list_.insert(s.toStdString());
     }
@@ -81,7 +82,9 @@ void RenderFilterDialog::on_current_layer_lineedit_textEdited(const QString &arg
     ui->layer_slider->setValue(ui->current_layer_lineedit->text().toInt());
 }
 
-void RenderFilterDialog::on_layer_slider_valueChanged(int value) { ui->current_layer_lineedit->setText(QString::number(value)); }
+void RenderFilterDialog::on_layer_slider_valueChanged(int value) {
+    ui->current_layer_lineedit->setText(QString::number(value));
+}
 
 void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
     if (!ch || !region) return;
@@ -110,24 +113,28 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
 
                 tips.height = static_cast<int16_t>(y);
                 auto hc = height_to_color(tips.height, ch->get_pos().dim);
-                region->height_bake_image_->setPixelColor(X, Z, hc);
+                region->height_bake_image_.setPixelColor(X, Z, hc);
 
                 if (found) {
                     auto info = ch->get_block(i, y, j);
                     auto biome = ch->get_biome(i, y, j);
                     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
-                    region->terrain_bake_image_->setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b, info.color.a));
+                    region->terrain_bake_image_.setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b,
+                                                                           info.color.a));
 
                     if ((this->biomes_list_.count(biome) == 0) == this->biome_black_mode_) {
                         // 群系过滤(只是不显示，没有查找功能)
                         auto biome_color = bl::get_biome_color(biome);
-                        region->biome_bake_image_->setPixelColor(X, Z, QColor(biome_color.r, biome_color.g, biome_color.b, biome_color.a));
+                        region->biome_bake_image_.setPixelColor(X, Z,
+                                                                QColor(biome_color.r, biome_color.g, biome_color.b,
+                                                                       biome_color.a));
                     }
-                    tips.block_name = info.name;
+                    tips.block_name ="";
+                    //                            info.name;
                     tips.biome = biome;
                 } else {
                     tips.biome = bl::none;
-                    tips.block_name = "void";
+                    tips.block_name = "";
                 }
             }
         }
@@ -253,10 +260,11 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
 //     }
 // }
 
+
 void MapFilter::bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const {
     if (!ch) return;
     auto entities = ch->entities();
-    for (auto &e : entities) {
+    for (auto &e: entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
         if ((this->actors_list_.count(key.toStdString()) == 0) == this->actor_black_mode_) {
             region->actors_[ActorImage(key)].push_back(e->pos());

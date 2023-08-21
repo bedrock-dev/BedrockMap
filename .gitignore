@@ -72,5 +72,6 @@ Thumbs.db
 *.exe
 cmake-build-debug
 .idea
-build/*
-.cache/*
+.build
+.release
+.debug

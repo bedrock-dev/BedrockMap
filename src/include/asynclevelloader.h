@@ -11,6 +11,7 @@
 #include <mutex>
 #include <unordered_set>
 #include <vector>
+#include <bitset>
 
 #include "bedrock_key.h"
 #include "bedrock_level.h"
@@ -40,10 +41,10 @@ struct ChunkRegion {
     ~ChunkRegion();
 
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
-    std::array<std::array<bool, cfg::RW>, cfg::RW> chunk_bit_map_;
-    QImage *terrain_bake_image_{nullptr};
-    QImage *biome_bake_image_{nullptr};
-    QImage *height_bake_image_{nullptr};
+    std::bitset<cfg::RW * cfg::RW> chunk_bit_map_;
+    QImage terrain_bake_image_;
+    QImage biome_bake_image_;
+    QImage height_bake_image_;
     bool valid{false};
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
     std::vector<bl::hardcoded_spawn_area> HSAs_;

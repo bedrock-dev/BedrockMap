@@ -95,23 +95,25 @@ void cfg::initColorTable() {
     //    }
 }
 
+#include <bitset>
 
-QImage *cfg::INIT_REGION_IMG(const std::array<std::array<bool, cfg::RW>, cfg::RW> &bitmap) {
-    auto *res = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+QImage cfg::INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
+    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
             const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
             const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
-            if (!bitmap[i >> 4][j >> 4]) {
-                res->setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
+            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
+                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
             } else {
-                res->setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
+                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
             }
         }
     }
     return res;
 }
+
 
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 

@@ -48,9 +48,9 @@ struct GlobalNBTLoadResult {
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     explicit MainWindow(QWidget *parent = nullptr);
 
     ~MainWindow() override;
@@ -59,7 +59,7 @@ class MainWindow : public QMainWindow {
 
     MapWidget *mapWidget() { return this->map_widget_; }
 
-   public slots:
+public slots:
 
     inline bool enable_write() const { return this->write_mode_; }
 
@@ -78,12 +78,12 @@ class MainWindow : public QMainWindow {
 
     void applyFilter();
 
-   protected:
+protected:
     void paintEvent(QPaintEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
 
-   private slots:
+private slots:
 
     void openLevel();
 
@@ -127,10 +127,10 @@ class MainWindow : public QMainWindow {
 
     void setupShortcuts();
 
-   private:
+private:
     QString getStaticTitle();
 
-   private:
+private:
     Ui::MainWindow *ui;
     std::unordered_map<MapWidget::MainRenderType, QPushButton *> layer_btns_;
     std::unordered_map<MapWidget::DimType, QPushButton *> dim_btns_;

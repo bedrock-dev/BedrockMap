@@ -1,8 +1,8 @@
 {
   "terrain_shadow_level": 130,
   "theme": "developing",
-  "region_cache_size": 4096,
-  "empty_region_cache_size": 16384,
+  "region_cache_size": 2048,
+  "empty_region_cache_size": 8192,
   "background_thread_number": 8,
   "minimum_scale_level": 8,
   "maximum_scale_level": 1024,
