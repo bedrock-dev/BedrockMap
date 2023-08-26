@@ -31,8 +31,10 @@ int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
 bool cfg::FANCY_TERRAIN_RENDER = true;
+bool cfg::LOAD_GLOBAL_DATA = true;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
+
 
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
@@ -138,8 +140,7 @@ void cfg::initConfig() {
             cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
             cfg::FONT_SIZE = j["font_size"].get<int>();
             cfg::FANCY_TERRAIN_RENDER = j["fancy_terrain_render"].get<bool>();
-
-
+            cfg::LOAD_GLOBAL_DATA = j["load_global_data"].get<bool>();
         }
 
     } catch (std::exception &e) {
@@ -159,7 +160,8 @@ void cfg::initConfig() {
     qInfo() << "Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
     qInfo() << "Font size: " << FONT_SIZE;
     qInfo() << "Zoom speed: " << ZOOM_SPEED;
-    qInfo() << "Render render Width" << cfg::RW;
+    qInfo() << "Load Global Data: " << cfg::LOAD_GLOBAL_DATA;
+    qInfo() << "Render Region Width: " << cfg::RW;
 }
 
 QString cfg::VERSION_STRING() {

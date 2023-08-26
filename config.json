@@ -8,5 +8,6 @@
   "maximum_scale_level": 1024,
   "zoom_speed": 1.2,
   "fancy_terrain_render": true,
-  "font_size": 10
+  "font_size": 10,
+  "load_global_data": false
 }

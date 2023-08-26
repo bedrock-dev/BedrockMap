@@ -31,7 +31,7 @@ struct cfg {
     static int MAXIMUM_SCALE_LEVEL;
     static int FONT_SIZE;
     static bool FANCY_TERRAIN_RENDER;
-
+    static bool LOAD_GLOBAL_DATA;
 
 
     // 其他配置(不对外开放接口)

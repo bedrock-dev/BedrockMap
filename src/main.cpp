@@ -74,7 +74,7 @@ void setupFont(QApplication &a) {
     QFont font;
     font.setPointSize(cfg::FONT_SIZE);
     font.setFamily("微软雅黑");
-    a.setFont(font);
+    QApplication::setFont(font);
 }
 
 int main(int argc, char *argv[]) {
@@ -85,11 +85,13 @@ int main(int argc, char *argv[]) {
     InitIcons();
     cfg::initConfig();
     cfg::initColorTable();
+
+
     QApplication a(argc, argv);
     setupTheme(a);
     setupFont(a);
     MainWindow w;
     w.setWindowTitle(cfg::VERSION_STRING());
     w.show();
-    return a.exec();
+    return QApplication::exec();
 }

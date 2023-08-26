@@ -27,7 +27,7 @@
 
 namespace {
 
-    QRect centerMainWindowGeometry(double rate) {
+    [[nodiscard]] QRect centerMainWindowGeometry(double rate) {
         // finished adjust size
         auto const rec = QApplication::desktop()->screenGeometry();
         auto const height = static_cast<int>(rec.height() * rate);
@@ -181,10 +181,11 @@ void MainWindow::resetToInitUI() {
     ui->open_level_btn->setVisible(true);
     ui->open_level_btn->setEnabled(true);
     this->setGeometry(centerMainWindowGeometry(0.6));
-    this->chunk_editor_widget_->setMaximumWidth(this->height() / 2);
+    this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
     this->setWindowTitle(this->getStaticTitle());
     this->global_data_loaded_ = false;
 }
+
 
 MainWindow::~MainWindow() {
     this->closeLevel();
@@ -250,29 +251,34 @@ void MainWindow::openLevel() {
     qDebug() << "Loading global data in background thread";
     // 后台加载全局数据
     this->loading_global_data_ = true;
+
+
     auto future = QtConcurrent::run(
             [this](const QString &path) -> bool {
                 auto result = GlobalNBTLoadResult();
                 try {
-                    this->level_loader_->level().foreach_global_keys(
-                            [this, &result](const std::string &key, const std::string &value) {
-                                if (!this->loading_global_data_) {
-                                    throw std::logic_error("EXIT");  // 手动中止
-                                }
-                                if (key.find("player") != std::string::npos) {
-                                    result.playerData.append_nbt(key, value);
-                                } else if (key == "portals" || key == "scoreboard" || key == "AutonomousEntities" ||
-                                           key == "BiomeData" ||
-                                           key == "Nether" || key == "Overworld" || key == "TheEnd" ||
-                                           key == "schedulerWT" || key == "mobevents") {
-                                    result.otherData.append_nbt(key, value);
-                                } else if (key.find("map_") == 0) {
-                                    result.mapData.append_nbt(key, value);
-                                } else {
-                                    bl::village_key vk = bl::village_key::parse(key);
-                                    if (vk.valid()) result.villageData.append_village(vk, value);
-                                }
-                            });
+
+                    if (cfg::LOAD_GLOBAL_DATA) {
+                        this->level_loader_->level().foreach_global_keys(
+                                [this, &result](const std::string &key, const std::string &value) {
+                                    if (!this->loading_global_data_) {
+                                        throw std::logic_error("EXIT");  // 手动中止
+                                    }
+                                    if (key.find("player") != std::string::npos) {
+                                        result.playerData.append_nbt(key, value);
+                                    } else if (key == "portals" || key == "scoreboard" || key == "AutonomousEntities" ||
+                                               key == "BiomeData" ||
+                                               key == "Nether" || key == "Overworld" || key == "TheEnd" ||
+                                               key == "schedulerWT" || key == "mobevents") {
+                                        result.otherData.append_nbt(key, value);
+                                    } else if (key.find("map_") == 0) {
+                                        result.mapData.append_nbt(key, value);
+                                    } else {
+                                        bl::village_key vk = bl::village_key::parse(key);
+                                        if (vk.valid()) result.villageData.append_village(vk, value);
+                                    }
+                                });
+                    }
                     this->prepareGlobalData(result);
                     return true;
                 } catch (std::exception &e) {
