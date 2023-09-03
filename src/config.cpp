@@ -17,7 +17,7 @@ namespace {
 
 // 软件基本信息
 const std::string cfg::SOFTWARE_NAME = "BedrockMap";
-const std::string cfg::SOFTWARE_VERSION = "v0.3.0";
+const std::string cfg::SOFTWARE_VERSION = "v0.3.1";
 // 不可配置的
 const int cfg::BG_GRAY = 20;
 const int cfg::GRID_WIDTH = 32;
