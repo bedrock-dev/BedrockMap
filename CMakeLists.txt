@@ -25,7 +25,6 @@ include_directories(
 
         ${PROJECT_SOURCE_DIR}/src/include
         "C:\\Users\\xhy\\dev\\Qt\\BedrockMap\\build\\BedrockMap_autogen\\include"
-
 )
 
 

@@ -75,3 +75,4 @@ cmake-build-debug
 .build
 .release
 .debug
+build
