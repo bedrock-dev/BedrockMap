@@ -85,8 +85,6 @@ int main(int argc, char *argv[]) {
     InitIcons();
     cfg::initConfig();
     cfg::initColorTable();
-
-
     QApplication a(argc, argv);
     setupTheme(a);
     setupFont(a);
