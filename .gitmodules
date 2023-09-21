@@ -1,0 +1,3 @@
+[submodule "bedrock-level"]
+	path = bedrock-level
+	url = https://github.com/bedrock-dev/bedrock-level.git
