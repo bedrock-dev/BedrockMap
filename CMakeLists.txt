@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_PREFIX_PATH "C:\\Qt\\Qt5.12.12\\5.12.12\\mingw73_64")
-set(BEDROCK_LEVEL_ROOT "C:/Users/xhy/dev/bedrock-level")
+
+message(STATUS "QT ROOT is $ENV{QT_ROOT}")
+set(CMAKE_PREFIX_PATH $ENV{QT_ROOT})
+
 project(BedrockMap VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -14,18 +16,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS -utf8)
 # include bedrock-lib from absolute path
 
-
+set(BEDROCK_LEVEL_ROOT "${PROJECT_SOURCE_DIR}/bedrock-level")
 
 set(BEDROCK_LIBS
-        ${BEDROCK_LEVEL_ROOT}/.release-mingw/libbedrock-level.a
+        ${BEDROCK_LEVEL_ROOT}/build/libbedrock-level.a
         ${BEDROCK_LEVEL_ROOT}/libs/libleveldb-mingw64.a
         ${BEDROCK_LEVEL_ROOT}/libs/libz-mingw64.a
 )
+
 include_directories(
         ${BEDROCK_LEVEL_ROOT}/src/include
         ${BEDROCK_LEVEL_ROOT}/third
-
         ${PROJECT_SOURCE_DIR}/src/include
+                # for clangd
         ${CMAKE_CURRENT_BINARY_DIR}/BedrockMap_autogen/include
 )
 

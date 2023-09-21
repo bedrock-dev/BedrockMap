@@ -6,14 +6,15 @@
 #include <QFontDatabase>
 #include <QIcon>
 #include <QImage>
+#include <QTextCodec>
+#include <chrono>
+#include <filesystem>
 
 #include "asynclevelloader.h"
 #include "config.h"
 #include "iconmanager.h"
 #include "mainwindow.h"
-#include <chrono>
-#include <filesystem>
-#include  <QTextCodec>
+
 
 QString LOG_FILE_NAME;
 
@@ -23,20 +24,19 @@ void setupLog() {
         fs::create_directory("./logs");
     }
     const auto p1 = std::chrono::system_clock::now();
-    LOG_FILE_NAME = "./logs/" + QString::number(std::chrono::duration_cast<std::chrono::seconds>(
-            p1.time_since_epoch()).count()) + ".log";
+    LOG_FILE_NAME = "./logs/" + QString::number(std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count()) + ".log";
 }
 
 void setupTheme(QApplication &a) {
-//    auto theme_path = ":/light/stylesheet.qss";
-//    QFile f(theme_path);
-//    if (!f.exists()) {
-//        qWarning("Unable to set stylesheet, file not found");
-//    } else {
-//        f.open(QFile::ReadOnly | QFile::Text);
-//        QTextStream ts(&f);
-////        a.setStyleSheet(ts.readAll());
-//    }
+    //    auto theme_path = ":/light/stylesheet.qss";
+    //    QFile f(theme_path);
+    //    if (!f.exists()) {
+    //        qWarning("Unable to set stylesheet, file not found");
+    //    } else {
+    //        f.open(QFile::ReadOnly | QFile::Text);
+    //        QTextStream ts(&f);
+    ////        a.setStyleSheet(ts.readAll());
+    //    }
 }
 
 void myMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg) {
@@ -79,7 +79,7 @@ void setupFont(QApplication &a) {
 
 int main(int argc, char *argv[]) {
     setupLog();
-#ifndef  QT_DEBUG
+#ifndef QT_DEBUG
     qInstallMessageHandler(myMessageHandler);
 #endif
     InitIcons();

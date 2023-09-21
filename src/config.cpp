@@ -2,8 +2,13 @@
 // Created by xhy on 2023/7/11.
 //
 #include "config.h"
+
+#include <qnumeric.h>
+
+#include <QDir>
 #include <QtDebug>
 #include <fstream>
+
 #include "color.h"
 #include "json/json.hpp"
 
@@ -35,11 +40,10 @@ bool cfg::LOAD_GLOBAL_DATA = true;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
 
-
 #ifdef QT_DEBUG
-const std::string cfg::CONFIG_FILE_PATH = R"(C:\Users\xhy\dev\Qt\BedrockMap\config.json)";
-const std::string cfg::BLOCK_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\block_color.json)";
-const std::string cfg::BIOME_FILE_PATH = R"(C:\Users\xhy\dev\bedrock-level\data\colors\biome_color.json)";
+const std::string cfg::CONFIG_FILE_PATH = R"(config.json)";
+const std::string cfg::BLOCK_FILE_PATH = R"(./bedorck-level/data/colors/block_color.json)";
+const std::string cfg::BIOME_FILE_PATH = R"(./bedrock-level/data/colors/biome_color.json)";
 #else
 const std::string cfg::CONFIG_FILE_PATH = "config.json";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
@@ -116,12 +120,11 @@ QImage cfg::INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
     return res;
 }
 
-
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 
-
 void cfg::initConfig() {
-    qDebug() << "Configuration path is " << CONFIG_FILE_PATH.c_str();
+    qInfo() << "Current working dict: " << QDir::currentPath();
+    qInfo() << "Configuration path: " << CONFIG_FILE_PATH.c_str();
 
     try {
         nlohmann::json j;
@@ -160,13 +163,11 @@ void cfg::initConfig() {
     qInfo() << "Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
     qInfo() << "Font size: " << FONT_SIZE;
     qInfo() << "Zoom speed: " << ZOOM_SPEED;
-    qInfo() << "Load Global Data: " << cfg::LOAD_GLOBAL_DATA;
-    qInfo() << "Render Region Width: " << cfg::RW;
+    qInfo() << "Load global data: " << cfg::LOAD_GLOBAL_DATA;
+    qInfo() << "Render region width: " << cfg::RW;
 }
 
-QString cfg::VERSION_STRING() {
-    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
-}
+QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
 
 QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
 

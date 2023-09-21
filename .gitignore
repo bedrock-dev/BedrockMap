@@ -76,3 +76,5 @@ cmake-build-debug
 .release
 .debug
 build
+.cache
+logs
