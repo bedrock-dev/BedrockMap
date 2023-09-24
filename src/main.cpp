@@ -15,7 +15,6 @@
 #include "iconmanager.h"
 #include "mainwindow.h"
 
-
 QString LOG_FILE_NAME;
 
 void setupLog() {
@@ -88,8 +87,20 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     setupTheme(a);
     setupFont(a);
-    MainWindow w;
-    w.setWindowTitle(cfg::VERSION_STRING());
-    w.show();
-    return QApplication::exec();
+    if (!cfg::OPEN_NBT_EDITOR_ONLY) {
+        MainWindow w;
+        w.setWindowTitle(cfg::VERSION_STRING());
+        w.show();
+        return QApplication::exec();
+    } else {
+        auto *w = new NbtWidget();
+        const int ext = 100;
+        w->setWindowTitle("NBT Editor");
+        auto const rec = QApplication::desktop()->screenGeometry();
+        auto const height = static_cast<int>(rec.height() * 0.6);
+        auto const width = static_cast<int>(rec.width() * 0.6);
+        w->setGeometry({(rec.width() - width) / 2, (rec.height() - height) / 2, width, height});
+        w->show();
+        return QApplication::exec();
+    };
 }

@@ -72,7 +72,6 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
     }
 
     this->block_entity_editor_->loadNewData(block_entity_items);
-
     qDebug() << "Load pending tick data";
     std::vector<NBTListItem *> pt_items;
     auto &pts = chunk->pending_ticks();

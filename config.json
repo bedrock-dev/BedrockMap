@@ -9,5 +9,6 @@
   "zoom_speed": 1.2,
   "fancy_terrain_render": true,
   "font_size": 10,
-  "load_global_data": false
+  "load_global_data": false,
+  "nbt_editor_mode": false
 }

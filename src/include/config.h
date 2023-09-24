@@ -3,8 +3,9 @@
 
 #include <QColor>
 #include <QImage>
-#include <cstdint>
 #include <bitset>
+#include <cstdint>
+
 #include "bedrock_key.h"
 
 typedef bl::chunk_pos region_pos;
@@ -18,21 +19,20 @@ struct cfg {
     const static int BG_GRAY;
     const static int GRID_WIDTH;
 
-
-    static constexpr uint8_t RW = 8u;  //(1<<w)
+    static constexpr uint8_t RW = 8u;  //(1<<w) //区域d大小,一个区域由RW * RW个区块组成，且区块坐标对齐8的倍速
     static constexpr uintptr_t LOW_IMG_SCALE = 64;
     // 配置文件下面是可配置的
-    static int SHADOW_LEVEL;
-    static float ZOOM_SPEED;
-    static int THREAD_NUM;
-    static int REGION_CACHE_SIZE;
-    static int EMPTY_REGION_CACHE_SIZE;
-    static int MINIMUM_SCALE_LEVEL;
-    static int MAXIMUM_SCALE_LEVEL;
-    static int FONT_SIZE;
-    static bool FANCY_TERRAIN_RENDER;
-    static bool LOAD_GLOBAL_DATA;
-
+    static int SHADOW_LEVEL;             // 地形图的阴影等级
+    static float ZOOM_SPEED;             // 滚轮缩放苏晒
+    static int THREAD_NUM;               // 后台线程数
+    static int REGION_CACHE_SIZE;        // 区域缓存大小
+    static int EMPTY_REGION_CACHE_SIZE;  // 空区域缓存大小
+    static int MINIMUM_SCALE_LEVEL;      // 最大缩放等级
+    static int MAXIMUM_SCALE_LEVEL;      // 最小缩放等级
+    static int FONT_SIZE;                // 字体大小
+    static bool FANCY_TERRAIN_RENDER;    // 是否渲染阴影
+    static bool LOAD_GLOBAL_DATA;        // 是否加载村庄等全局数据
+    static bool OPEN_NBT_EDITOR_ONLY;
 
     // 其他配置(不对外开放接口)
 

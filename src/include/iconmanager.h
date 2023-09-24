@@ -26,4 +26,11 @@ QImage *BlockActorNBTIcon(const QString &key);
 
 QImage *EntityNBTIcon(const QString &key);
 
+// 下面是新的API
+
+struct IconManager {
+    IconManager() = delete;
+
+    static void init();
+};
 #endif  // BEDROCKMAP_ICONMANAGER_H

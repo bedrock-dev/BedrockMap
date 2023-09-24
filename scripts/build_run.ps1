@@ -1,6 +1,4 @@
-$build_dir="./build"
-# 编译
-cmake -G "MinGW Makefiles" -B  $build_dir .
+$build_dir = "./build"
 cmake --build $build_dir --config Debug -j 18 -- 
 # 运行
 Start-Process -FilePath  "./$build_dir/BedrockMap.exe"

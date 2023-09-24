@@ -61,13 +61,6 @@ class NbtWidget : public QWidget {
 
     ~NbtWidget() override;
 
-    //    [[deprecated("old function")]] void load_new_data(
-    //            const std::vector<compound_tag *> &data,
-    //            const std::function<QString(compound_tag *)> &namer,
-    //            const std::vector<std::string> &default_labels,
-    //            const std::vector<QImage *> &icons = {}
-    //    );
-
     void loadNewData(const std::vector<NBTListItem *> &items);
 
     void setExtraLoadEvent(const std::function<void(compound_tag *)> &event) { this->extra_load_event_ = event; }

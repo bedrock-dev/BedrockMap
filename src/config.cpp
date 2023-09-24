@@ -3,6 +3,7 @@
 //
 #include "config.h"
 
+#include <qglobal.h>
 #include <qnumeric.h>
 
 #include <QDir>
@@ -27,7 +28,7 @@ const std::string cfg::SOFTWARE_VERSION = "v0.3.1";
 const int cfg::BG_GRAY = 20;
 const int cfg::GRID_WIDTH = 32;
 
-// 配置文件下面是可配置的
+// 配置文件下面是可配置的(都有默认值)
 int cfg::SHADOW_LEVEL = 128;
 float cfg::ZOOM_SPEED = 1.2;
 int cfg::THREAD_NUM = 8;
@@ -37,12 +38,13 @@ int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
 bool cfg::FANCY_TERRAIN_RENDER = true;
 bool cfg::LOAD_GLOBAL_DATA = true;
+bool cfg::OPEN_NBT_EDITOR_ONLY = false;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
 
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(config.json)";
-const std::string cfg::BLOCK_FILE_PATH = R"(./bedorck-level/data/colors/block_color.json)";
+const std::string cfg::BLOCK_FILE_PATH = R"(./bedrock-level/data/colors/block_color.json)";
 const std::string cfg::BIOME_FILE_PATH = R"(./bedrock-level/data/colors/biome_color.json)";
 #else
 const std::string cfg::CONFIG_FILE_PATH = "config.json";
@@ -57,17 +59,18 @@ region_pos cfg::c2r(const bl::chunk_pos &ch) {
 }
 
 void cfg::initColorTable() {
-    qDebug() << "Block color path is: " << BLOCK_FILE_PATH.c_str();
-    qDebug() << "Biome color path is: " << BIOME_FILE_PATH.c_str();
+    if (!bl::init_biome_color_palette_from_file(cfg::BIOME_FILE_PATH)) {
+        qWarning() << "Can not load biome color file in path: " << BIOME_FILE_PATH.c_str();
+    }
 
-    bl::init_biome_color_palette_from_file(cfg::BIOME_FILE_PATH);
-    bl::init_block_color_palette_from_file(cfg::BLOCK_FILE_PATH);
+    if (!bl::init_block_color_palette_from_file(cfg::BLOCK_FILE_PATH)) {
+        qWarning() << "Can not load block color file in path: " << BLOCK_FILE_PATH.c_str();
+    }
 
     // init image
 
     unloaded_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     null_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-
     transparent_region_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
@@ -123,14 +126,13 @@ QImage cfg::INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 
 void cfg::initConfig() {
-    qInfo() << "Current working dict: " << QDir::currentPath();
-    qInfo() << "Configuration path: " << CONFIG_FILE_PATH.c_str();
-
+    qInfo() << "Current working directory: " << QDir::currentPath();
+    qInfo() << "Configuration file path: " << CONFIG_FILE_PATH.c_str();
     try {
         nlohmann::json j;
         std::ifstream f(CONFIG_FILE_PATH);
         if (!f.is_open()) {
-            qWarning() << "Can not find config file.";
+            qCritical() << "Can not find config file.";
         } else {
             f >> j;
             cfg::SHADOW_LEVEL = j["terrain_shadow_level"].get<int>();
@@ -144,27 +146,30 @@ void cfg::initConfig() {
             cfg::FONT_SIZE = j["font_size"].get<int>();
             cfg::FANCY_TERRAIN_RENDER = j["fancy_terrain_render"].get<bool>();
             cfg::LOAD_GLOBAL_DATA = j["load_global_data"].get<bool>();
+            cfg::OPEN_NBT_EDITOR_ONLY = j["nbt_editor_mode"].get<bool>();
         }
 
     } catch (std::exception &e) {
-        qWarning() << "Invalid config file format" << e.what();
+        qCritical() << "Invalid config file format" << e.what();
     }
     if (THREAD_NUM < 1) {
-        THREAD_NUM = 1;
-        qWarning() << "Invalid background thread number, reset it to 1";
+        THREAD_NUM = 2;
+        qWarning() << "Invalid background thread number, reset it to default(2)";
     }
 
-    qInfo() << "Shadow level: " << cfg::SHADOW_LEVEL;
-    qInfo() << "Theme: " << COLOR_THEME.c_str();
-    qInfo() << "Region cache size: " << REGION_CACHE_SIZE;
-    qInfo() << "Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
-    qInfo() << "Background thread number: " << THREAD_NUM;
-    qInfo() << "Minimum scale level: " << MINIMUM_SCALE_LEVEL;
-    qInfo() << "Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
-    qInfo() << "Font size: " << FONT_SIZE;
-    qInfo() << "Zoom speed: " << ZOOM_SPEED;
-    qInfo() << "Load global data: " << cfg::LOAD_GLOBAL_DATA;
-    qInfo() << "Render region width: " << cfg::RW;
+    qInfo() << "Read config finished, here are the details";
+    qInfo() << "- Shadow level: " << cfg::SHADOW_LEVEL;
+    qInfo() << "- Theme: " << COLOR_THEME.c_str();
+    qInfo() << "- Region cache size: " << REGION_CACHE_SIZE;
+    qInfo() << "- Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
+    qInfo() << "- Background thread number: " << THREAD_NUM;
+    qInfo() << "- Minimum scale level: " << MINIMUM_SCALE_LEVEL;
+    qInfo() << "- Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
+    qInfo() << "- Font size: " << FONT_SIZE;
+    qInfo() << "- Zoom speed: " << ZOOM_SPEED;
+    qInfo() << "- Load global data: " << cfg::LOAD_GLOBAL_DATA;
+    qInfo() << "- Render region width: " << cfg::RW;
+    qInfo() << "- NBT editor mode:" << cfg::OPEN_NBT_EDITOR_ONLY;
 }
 
 QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }

@@ -20,8 +20,8 @@
     ```
 3. 编译并运行BedrockMap
     ```shell
-    .\scripts\build_run.ps1
+    .\scripts\build.ps1
     ```
-注意默认编译的是开发版本，如果有打包需求请自行修改`build_run.ps1`脚本
+注意默认编译的是开发版本，如果有打包需求请自行修改`build.ps1`脚本
 
 

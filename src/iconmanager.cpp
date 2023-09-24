@@ -4,13 +4,20 @@
 
 #include "iconmanager.h"
 
+#include <qicon.h>
+#include <qimage.h>
+#include <qpixmap.h>
+
 #include <QDir>
 #include <QDirIterator>
+#include <QIcon>
 #include <QMap>
 #include <QString>
 #include <QtDebug>
 #include <iostream>
 #include <unordered_map>
+
+#include "bedrock_key.h"
 
 namespace {
     QMap<QString, QImage *> actor_img_pool;
@@ -27,6 +34,11 @@ namespace {
     QImage *village_dwellers_nbt;
     QImage *other_nbt;
     QImage *player_nbt;
+
+    std::unordered_map<bl::village_key::key_type, QIcon> &village_icon_pool() {
+        static std::unordered_map<bl::village_key::key_type, QIcon> icons_;
+        return icons_;
+    }
 
     QImage *addMask(const QImage &img) {
         if (img.size() != QSize(16, 16)) {
@@ -64,7 +76,7 @@ namespace {
         return masked;
     }
 
-    QImage *scale(const QImage &img) {
+    QImage *scale2(const QImage &img) {
         auto *res = new QImage(img.width() * 2, img.height() * 2, QImage::Format_RGBA8888);
         for (int i = 0; i < img.width(); i++) {
             for (int j = 0; j < img.height(); j++) {
@@ -85,26 +97,36 @@ void InitIcons() {
         auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
         auto masked = addMask(img);
-        auto scaled = scale(img);
+        auto scaled = scale2(img);
         entity_icon_pool[key] = scaled;
         if (masked) {
             actor_img_pool[key] = masked;
         }
     }
 
-    village_dwellers_nbt = scale(QImage(":/res/village/dwellers.png"));
-    village_players_nbt = scale(QImage(":/res/village/players.png"));
-    village_info_nbt = scale(QImage(":/res/village/info.png"));
-    village_poi_nbt = scale(QImage(":/res/village/poi.png"));
+    // village icons
+
+    // using vkt = bl::village_key::key_type;
+    // village_icon_pool()[vkt::DWELLERS] = QIcon(QPixmap::fromImage(QImage(":/res/village/dwellers.png")));
+    // village_icon_pool()[vkt::PLAYERS] = QIcon(QPixmap::fromImage(QImage(":/res/village/players.png")));
+    // village_icon_pool()[vkt::INFO] = QIcon(QPixmap::fromImage(QImage(":/res/village/info.png")));
+    // village_icon_pool()[vkt::POI] = QIcon(QPixmap::fromImage(QImage(":/res/village/poi.png")));
+    // village_icon_pool()[vkt::PLAYERS] = QIcon(QPixmap::fromImage(QImage(":/res/village/players.png")));
+
+    village_dwellers_nbt = scale2(QImage(":/res/village/dwellers.png"));
+    village_players_nbt = scale2(QImage(":/res/village/players.png"));
+    village_info_nbt = scale2(QImage(":/res/village/info.png"));
+    village_poi_nbt = scale2(QImage(":/res/village/poi.png"));
+    player_nbt = scale2(QImage(":/res/village/players.png"));
+    other_nbt = scale2(QImage(":/res/village/info.png"));
+
     unknown_img = new QImage(":/res/what.png");
-    player_nbt = scale(QImage(":/res/village/players.png"));
-    other_nbt = scale(QImage(":/res/village/info.png"));
 
     QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
     while (it2.hasNext()) {
         auto img = QImage(it2.next());
         auto key = it2.fileName().replace(".png", "");
-        block_actor_icon_pool[key] = scale(img);
+        block_actor_icon_pool[key] = scale2(img);
     }
 
     QDirIterator it3(":/res/nbt/", QDirIterator::Subdirectories);
@@ -112,9 +134,11 @@ void InitIcons() {
         auto img = QImage(it3.next());
         auto key = it3.fileName().replace(".png", "").replace("TAG_", "");
         //        qDebug() << "NBT Icon: " << key;
-        tag_icon_pool[key] = scale(img);
+        tag_icon_pool[key] = scale2(img);
     }
 }
+
+void IconManager::init() {}
 
 QImage *OtherNBTIcon() { return other_nbt; }
 
@@ -164,19 +188,19 @@ QImage *PlayerNBTIcon() { return player_nbt; }
 QImage *TagIcon(bl::palette::tag_type t) {
     using namespace bl::palette;
     std::unordered_map<tag_type, std::string> names{
-            {tag_type::Int,       "Int"},
-            {tag_type::Byte,      "Byte"},
-            {tag_type::Compound,  "Compound"},
-            {tag_type::Double,    "Double"},
-            {tag_type::Float,     "Float"},
-            {tag_type::List,      "List"},
-            {tag_type::Long,      "Long"},
-            {tag_type::Short,     "Short"},
-            {tag_type::String,    "String"},
-            {tag_type::ByteArray, "Byte_Array"},
-            {tag_type::IntArray,  "Int_Array"},
-            {tag_type::LongArray, "Long_Array"},
-            {tag_type::End,       "End"},
+        {tag_type::Int, "Int"},
+        {tag_type::Byte, "Byte"},
+        {tag_type::Compound, "Compound"},
+        {tag_type::Double, "Double"},
+        {tag_type::Float, "Float"},
+        {tag_type::List, "List"},
+        {tag_type::Long, "Long"},
+        {tag_type::Short, "Short"},
+        {tag_type::String, "String"},
+        {tag_type::ByteArray, "Byte_Array"},
+        {tag_type::IntArray, "Int_Array"},
+        {tag_type::LongArray, "Long_Array"},
+        {tag_type::End, "End"},
     };
 
     auto it = tag_icon_pool.find(QString(names[t].c_str()));
