@@ -25,7 +25,6 @@ namespace {
 const std::string cfg::SOFTWARE_NAME = "BedrockMap";
 const std::string cfg::SOFTWARE_VERSION = "v0.3.1";
 // 不可配置的
-const int cfg::BG_GRAY = 20;
 const int cfg::GRID_WIDTH = 32;
 
 // 配置文件下面是可配置的(都有默认值)
@@ -42,10 +41,11 @@ bool cfg::OPEN_NBT_EDITOR_ONLY = false;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
 
+//三个重要文件的路径，直接内置
 #ifdef QT_DEBUG
-const std::string cfg::CONFIG_FILE_PATH = R"(config.json)";
-const std::string cfg::BLOCK_FILE_PATH = R"(./bedrock-level/data/colors/block_color.json)";
-const std::string cfg::BIOME_FILE_PATH = R"(./bedrock-level/data/colors/biome_color.json)";
+const std::string cfg::CONFIG_FILE_PATH = R"(../config.json)";
+const std::string cfg::BLOCK_FILE_PATH = R"(../bedrock-level/data/colors/block_color.json)";
+const std::string cfg::BIOME_FILE_PATH = R"(../bedrock-level/data/colors/biome_color.json)";
 #else
 const std::string cfg::CONFIG_FILE_PATH = "config.json";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
@@ -76,7 +76,7 @@ void cfg::initColorTable() {
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
             const int arr1[2]{128, 148};
-            const int arr2[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
+            const int arr2[2]{20, 40};
             const int idx = (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2;
             assert(unloaded_region_image_);
             unloaded_region_image_->setPixelColor(i, j, QColor(arr1[idx], arr1[idx], arr1[idx]));
@@ -106,24 +106,6 @@ void cfg::initColorTable() {
 
 #include <bitset>
 
-QImage cfg::INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
-    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
-    const int BW = cfg::RW << 4;
-    for (int i = 0; i < BW; i++) {
-        for (int j = 0; j < BW; j++) {
-            const int arr[2]{cfg::BG_GRAY, cfg::BG_GRAY + 20};
-            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
-            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
-                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
-            } else {
-                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
-            }
-        }
-    }
-    return res;
-}
-
-QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }
 
 void cfg::initConfig() {
     qInfo() << "Current working directory: " << QDir::currentPath();
@@ -170,10 +152,33 @@ void cfg::initConfig() {
     qInfo() << "- Load global data: " << cfg::LOAD_GLOBAL_DATA;
     qInfo() << "- Render region width: " << cfg::RW;
     qInfo() << "- NBT editor mode:" << cfg::OPEN_NBT_EDITOR_ONLY;
+    qInfo() << "Reading biome and block color table...";
+    initColorTable();
 }
 
-QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
+QString cfg::VERSION_STRING() {
+    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
+}
 
 QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
 
 QImage *cfg::NULL_REGION_IMAGE() { return null_region_image_; }
+
+QImage cfg::CREATE_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
+    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+    const int BW = cfg::RW << 4;
+    for (int i = 0; i < BW; i++) {
+        for (int j = 0; j < BW; j++) {
+            const int arr[2]{20, 40};
+            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
+            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
+                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
+            } else {
+                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
+            }
+        }
+    }
+    return res;
+}
+
+QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }

@@ -251,7 +251,7 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     // 细区块边界线
     QPen pen;
-    pen.setColor(QColor(200 - cfg::BG_GRAY, 200 - cfg::BG_GRAY, 200 - cfg::BG_GRAY));
+    pen.setColor(QColor(200 - 20, 200 - 20, 200 - 20));
     pen.setWidth(1);
     painter->setPen(pen);
     painter->setBrush(QBrush(QColor(0, 0, 0, 0)));

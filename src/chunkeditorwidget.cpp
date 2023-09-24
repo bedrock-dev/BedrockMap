@@ -6,7 +6,7 @@
 #include <QtDebug>
 
 #include "chunksectionwidget.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "mainwindow.h"
 #include "msg.h"
 #include "nbtwidget.h"

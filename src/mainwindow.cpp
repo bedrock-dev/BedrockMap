@@ -17,7 +17,7 @@
 
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "msg.h"

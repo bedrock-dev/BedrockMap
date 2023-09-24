@@ -7,7 +7,7 @@
 #include <thread>
 
 #include "config.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "leveldb/write_batch.h"
 #include "qdebug.h"
 
@@ -114,9 +114,9 @@ void LoadRegionTask::run() {
         }
 
         // init bg
-        region->terrain_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
-        region->biome_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
-        region->height_bake_image_ = cfg::INIT_REGION_IMG(region->chunk_bit_map_);
+        region->terrain_bake_image_ = cfg::CREATE_REGION_IMG(region->chunk_bit_map_);
+        region->biome_bake_image_ = cfg::CREATE_REGION_IMG(region->chunk_bit_map_);
+        region->height_bake_image_ = cfg::CREATE_REGION_IMG(region->chunk_bit_map_);
 
         // draw blocks
         for (int rw = 0; rw < cfg::RW; rw++) {

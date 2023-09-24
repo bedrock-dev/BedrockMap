@@ -28,7 +28,7 @@ include_directories(
         ${BEDROCK_LEVEL_ROOT}/src/include
         ${BEDROCK_LEVEL_ROOT}/third
         ${PROJECT_SOURCE_DIR}/src/include
-                # for clangd
+        # for clangd
         ${CMAKE_CURRENT_BINARY_DIR}/BedrockMap_autogen/include
 )
 

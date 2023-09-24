@@ -4,7 +4,7 @@
 
 #include "asynclevelloader.h"
 #include "color.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "ui_renderfilterdialog.h"
 
 namespace {

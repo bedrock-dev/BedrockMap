@@ -15,13 +15,17 @@ struct cfg {
     const static std::string SOFTWARE_NAME;
     const static std::string SOFTWARE_VERSION;
 
-    // 不可配置的
-    const static int BG_GRAY;
-    const static int GRID_WIDTH;
 
+    // 不可配置的
+    // 配置文件
+    const static std::string CONFIG_FILE_PATH; //配置文件路径
+    // 颜色表文件路径
+    const static std::string BLOCK_FILE_PATH;
+    const static std::string BIOME_FILE_PATH;
     static constexpr uint8_t RW = 8u;  //(1<<w) //区域d大小,一个区域由RW * RW个区块组成，且区块坐标对齐8的倍速
-    static constexpr uintptr_t LOW_IMG_SCALE = 64;
-    // 配置文件下面是可配置的
+
+    const static int GRID_WIDTH; //地区格子宽度(单位是区块)
+    // 可配置的
     static int SHADOW_LEVEL;             // 地形图的阴影等级
     static float ZOOM_SPEED;             // 滚轮缩放苏晒
     static int THREAD_NUM;               // 后台线程数
@@ -32,16 +36,11 @@ struct cfg {
     static int FONT_SIZE;                // 字体大小
     static bool FANCY_TERRAIN_RENDER;    // 是否渲染阴影
     static bool LOAD_GLOBAL_DATA;        // 是否加载村庄等全局数据
-    static bool OPEN_NBT_EDITOR_ONLY;
-
+    static bool OPEN_NBT_EDITOR_ONLY;   //直接打开nbt编辑器
+    static std::string COLOR_THEME; //主体
     // 其他配置(不对外开放接口)
 
-    // 配置文件
-    static std::string COLOR_THEME;
-    const static std::string CONFIG_FILE_PATH;
-    // 颜色文件
-    const static std::string BLOCK_FILE_PATH;
-    const static std::string BIOME_FILE_PATH;
+
 
     static region_pos c2r(const bl::chunk_pos &ch);
 
@@ -49,7 +48,7 @@ struct cfg {
 
     static void initConfig();
 
-    static QImage INIT_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap);
+    static QImage CREATE_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap);
 
     static QImage *UNLOADED_REGION_IMAGE();
 

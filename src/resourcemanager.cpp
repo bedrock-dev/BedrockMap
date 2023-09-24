@@ -2,7 +2,7 @@
 // Created by xhy on 2023/7/8.
 //
 
-#include "iconmanager.h"
+#include "resourcemanager.h"
 
 #include <qicon.h>
 #include <qimage.h>
@@ -91,7 +91,7 @@ namespace {
     }  // namespace
 }  // namespace
 
-void InitIcons() {
+void initResources() {
     QDirIterator it(":/res/entity", QDirIterator::Subdirectories);
     while (it.hasNext()) {
         auto img = QImage(it.next());
@@ -188,19 +188,19 @@ QImage *PlayerNBTIcon() { return player_nbt; }
 QImage *TagIcon(bl::palette::tag_type t) {
     using namespace bl::palette;
     std::unordered_map<tag_type, std::string> names{
-        {tag_type::Int, "Int"},
-        {tag_type::Byte, "Byte"},
-        {tag_type::Compound, "Compound"},
-        {tag_type::Double, "Double"},
-        {tag_type::Float, "Float"},
-        {tag_type::List, "List"},
-        {tag_type::Long, "Long"},
-        {tag_type::Short, "Short"},
-        {tag_type::String, "String"},
-        {tag_type::ByteArray, "Byte_Array"},
-        {tag_type::IntArray, "Int_Array"},
-        {tag_type::LongArray, "Long_Array"},
-        {tag_type::End, "End"},
+            {tag_type::Int,       "Int"},
+            {tag_type::Byte,      "Byte"},
+            {tag_type::Compound,  "Compound"},
+            {tag_type::Double,    "Double"},
+            {tag_type::Float,     "Float"},
+            {tag_type::List,      "List"},
+            {tag_type::Long,      "Long"},
+            {tag_type::Short,     "Short"},
+            {tag_type::String,    "String"},
+            {tag_type::ByteArray, "Byte_Array"},
+            {tag_type::IntArray,  "Int_Array"},
+            {tag_type::LongArray, "Long_Array"},
+            {tag_type::End,       "End"},
     };
 
     auto it = tag_icon_pool.find(QString(names[t].c_str()));

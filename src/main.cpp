@@ -12,7 +12,7 @@
 
 #include "asynclevelloader.h"
 #include "config.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "mainwindow.h"
 
 QString LOG_FILE_NAME;
@@ -23,7 +23,9 @@ void setupLog() {
         fs::create_directory("./logs");
     }
     const auto p1 = std::chrono::system_clock::now();
-    LOG_FILE_NAME = "./logs/" + QString::number(std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count()) + ".log";
+    LOG_FILE_NAME = "./logs/" +
+                    QString::number(std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count()) +
+                    ".log";
 }
 
 void setupTheme(QApplication &a) {
@@ -81,9 +83,9 @@ int main(int argc, char *argv[]) {
 #ifndef QT_DEBUG
     qInstallMessageHandler(myMessageHandler);
 #endif
-    InitIcons();
+
+    initResources();
     cfg::initConfig();
-    cfg::initColorTable();
     QApplication a(argc, argv);
     setupTheme(a);
     setupFont(a);

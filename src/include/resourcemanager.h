@@ -2,15 +2,16 @@
 // Created by xhy on 2023/7/8.
 //
 
-#ifndef BEDROCKMAP_ICONMANAGER_H
-#define BEDROCKMAP_ICONMANAGER_H
+#ifndef BEDROCKMAP_RESOURCEMANAGER_H
+#define BEDROCKMAP_RESOURCEMANAGER_H
 
 #include <QImage>
 
 #include "bedrock_key.h"
 #include "palette.h"
 
-void InitIcons();
+
+void initResources();
 
 QImage *ActorImage(const QString &key);
 
@@ -33,4 +34,5 @@ struct IconManager {
 
     static void init();
 };
-#endif  // BEDROCKMAP_ICONMANAGER_H
+
+#endif  // BEDROCKMAP_RESOURCEMANAGER_H

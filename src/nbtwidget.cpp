@@ -11,7 +11,7 @@
 #include <QtDebug>
 
 #include "config.h"
-#include "iconmanager.h"
+#include "resourcemanager.h"
 #include "msg.h"
 #include "palette.h"
 #include "ui_nbtwidget.h"
