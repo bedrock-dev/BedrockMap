@@ -86,22 +86,69 @@ void RenderFilterDialog::on_layer_slider_valueChanged(int value) {
     ui->current_layer_lineedit->setText(QString::number(value));
 }
 
+
+/**
+ * 根据查找情况渲染一个方块的数据
+ * @param f  MapFilter 对象
+ * @param ch 区块对象
+ * @param chx 区块内x坐标
+ * @param chz 区块内z坐标
+ * @param y   y坐标
+ * @param rw  区域坐标w
+ * @param rh 区域坐标h
+ * @param region  区域数据对象
+ */
+void
+setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, int rw, int rh, ChunkRegion *region) {
+    if (!ch || !f)return;
+    const int X = (rw << 4) + chx;
+    const int Z = (rh << 4) + chz;
+    auto info = ch->get_block(chx, y, chz);
+    auto biome = ch->get_biome(chx, y, chz);
+
+
+    info.color = bl::blend_color_with_biome(info.name, info.color, biome);
+    region->terrain_bake_image_.setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b,
+                                                           info.color.a));
+
+    if ((f->biomes_list_.count(biome) == 0) == f->biome_black_mode_) {
+        // 群系过滤(只是不显示，没有查找功能)
+        auto biome_color = bl::get_biome_color(biome);
+        region->biome_bake_image_.setPixelColor(X, Z,
+                                                QColor(biome_color.r, biome_color.g, biome_color.b,
+                                                       biome_color.a));
+    }
+
+
+    //setup tips
+    auto &tips = region->tips_info_[X][Z];
+    tips.block_name = info.name;
+    tips.biome = biome;
+    tips.height = static_cast<int16_t>(y);
+}
+
+//地形，群系渲染以及坐标数据设置
 void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
     if (!ch || !region) return;
     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
     if (this->enable_layer_) {
-        // TODO
+        //选层模式
+        if (this->layer > maxy || this->layer < miny)return;
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                auto b = ch->get_block_fast(i, this->layer, j);
+                if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
+                    setRegionBlockData(this, ch, i, j, this->layer, rw, rh, region);
+                }
+            }
+        }
+
     } else {
         // 无层，从上往下寻找白名单方块
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                const int X = (rw << 4) + i;
-                const int Z = (rh << 4) + j;
-                auto &tips = region->tips_info_[X][Z];
                 int y = ch->get_height(i, j);
-
                 bool found{false};
-
                 while (y >= miny) {
                     auto b = ch->get_block_fast(i, y, j);
                     if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
@@ -110,156 +157,13 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
                     }
                     y--;
                 }
-
-                tips.height = static_cast<int16_t>(y);
-                auto hc = height_to_color(tips.height, ch->get_pos().dim);
-                region->height_bake_image_.setPixelColor(X, Z, hc);
-
                 if (found) {
-                    auto info = ch->get_block(i, y, j);
-                    auto biome = ch->get_biome(i, y, j);
-                    info.color = bl::blend_color_with_biome(info.name, info.color, biome);
-                    region->terrain_bake_image_.setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b,
-                                                                           info.color.a));
-
-                    if ((this->biomes_list_.count(biome) == 0) == this->biome_black_mode_) {
-                        // 群系过滤(只是不显示，没有查找功能)
-                        auto biome_color = bl::get_biome_color(biome);
-                        region->biome_bake_image_.setPixelColor(X, Z,
-                                                                QColor(biome_color.r, biome_color.g, biome_color.b,
-                                                                       biome_color.a));
-                    }
-                    tips.block_name ="";
-                    //                            info.name;
-                    tips.biome = biome;
-                } else {
-                    tips.biome = bl::none;
-                    tips.block_name = "";
+                    setRegionBlockData(this, ch, i, j, y, rw, rh, region);
                 }
             }
         }
     }
 }
-
-// void MapFilter::bakeChunkHeight(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
-//     if (!ch || !region)return;
-//     for (int i = 0; i < 16; i++) {
-//         for (int j = 0; j < 16; j++) {
-//             auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-//             int y = this->enable_layer_ ? this->layer : ch->get_height(i, j);
-//             region->height_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                       height_to_color(y, ch->get_pos().dim));
-//             tips.height = static_cast<int16_t>(y);
-//         }
-//     }
-// }
-//
-// void MapFilter::bakeChunkTerrain(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
-//     if (!ch || !region)return;
-//     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
-//     if (this->enable_layer_) { //有层，直接显示层数据
-//         if (this->layer > maxy || this->layer < miny)return;
-//         for (int i = 0; i < 16; i++) {
-//             for (int j = 0; j < 16; j++) {
-//                 auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-//                 auto block = ch->get_block(i, this->layer, j);
-//                 auto name = QString(block.name.c_str()).replace("minecraft:", "");
-//                 if ((this->blocks_list_.count(name.toStdString()) == 0) == this->block_black_mode_) {
-//                     block.color = bl::blend_color_with_biome(block.name, block.color, tips.biome);
-//                     region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                                QColor(block.color.r, block.color.g, block.color.b,
-//                                                                       block.color.a));
-//                     tips.height = static_cast<int16_t>(this->layer);
-//                     tips.block_name = name.toStdString();
-//                 }
-//             }
-//         }
-//     } else {
-//         //无层，从上往下寻找白名单方块
-//         for (int i = 0; i < 16; i++) {
-//             for (int j = 0; j < 16; j++) {
-//                 int y = ch->get_height(i, j);
-//                 bool found{false};
-//                 auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-//                 while (y >= miny) {
-//                     auto b = ch->get_block(i, y, j);
-//                     if (b.name != "minecraft:unknown" &&
-//                         (this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
-//                         found = true;
-//                         break;
-//                     }
-//                     y--;
-//                 }
-//                 tips.height = static_cast<int16_t>(y);
-//                 auto info = ch->get_block(i, y, j);
-//                 auto biome = ch->get_biome(i, y, j);
-//                 if (found) {
-//                     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
-//                     region->terrain_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                                QColor(info.color.r,
-//                                                                       info.color.g, info.color.b,
-//                                                                       info.color.a));
-//
-//
-//                     auto biome_color = bl::get_biome_color(biome);
-//                     region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                              QColor(biome_color.r, biome_color.g, biome_color.b,
-//                                                                     biome_color.a));
-//                     tips.block_name = info.name;
-//                     tips.biome = biome;
-//                 }
-//             }
-//         }
-//     }
-// }
-//
-// void MapFilter::bakeChunkBiome(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
-//     if (!ch || !region)return;
-//
-//     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
-//     if (this->enable_layer_) { //有层，直接显示层数据
-//         if (this->layer > maxy || this->layer < miny)return;
-//         for (int i = 0; i < 16; i++) {
-//             for (int j = 0; j < 16; j++) {
-//                 auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-//                 auto biome = ch->get_biome(i, this->layer, j);
-//                 if (
-//                         biome != bl::biome::none &&
-//                         ((this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_)
-//                         ) {
-//                     auto c = bl::get_biome_color(biome);
-//                     region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                              QColor(c.r, c.g, c.b, c.a));
-//
-//                     tips.biome = biome;
-//                 }
-//             }
-//         }
-//     } else {
-//         //无层，从上往下寻找白名单方块
-//         for (int i = 0; i < 16; i++) {
-//             for (int j = 0; j < 16; j++) {
-//                 int y = ch->get_height(i, j) + 1;
-//                 while (y >= miny) {
-//                     auto &tips = region->tips_info_[(rw << 4) + i][(rh << 4) + j];
-//                     auto biome = ch->get_biome(i, y, j);
-//                     if (biome != bl::none &&
-//                         (this->biomes_list_.count(static_cast<int>(biome)) == 0) == this->biome_black_mode_) {
-//                         auto c = bl::get_biome_color(biome);
-//                         region->biome_bake_image_->setPixelColor((rw << 4) + i, (rh << 4) + j,
-//                                                                  QColor(c.r, c.g, c.b, c.a));
-//
-//
-//                         tips.biome = biome;
-//                         break;
-//                     }
-//                     y--;
-//                 }
-//             }
-//         }
-//     }
-// }
-
 
 void MapFilter::bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const {
     if (!ch) return;

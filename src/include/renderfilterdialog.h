@@ -39,12 +39,12 @@ struct MapFilter {
 };
 
 class RenderFilterDialog : public QDialog {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     explicit RenderFilterDialog(QWidget *parent = nullptr);
 
-   public:
+public:
     ~RenderFilterDialog() override;
 
     void setFilter(const MapFilter &f) { this->filter_ = f; }
@@ -55,13 +55,13 @@ class RenderFilterDialog : public QDialog {
 
     void fillInUI();
 
-   private slots:
+private slots:
 
     void on_current_layer_lineedit_textEdited(const QString &arg1);
 
     void on_layer_slider_valueChanged(int value);
 
-   private:
+private:
     Ui::RenderFilterDialog *ui;
     MapFilter filter_;
 };
