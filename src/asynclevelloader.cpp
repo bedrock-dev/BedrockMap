@@ -407,7 +407,7 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
 #include "qrgb.h"
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
-    if (rp.dim != 0) return cfg::EMPTY_REGION_IMAGE();
+    if (rp.dim != 0) return cfg::NULL_REGION_IMAGE();
     auto *img = this->slime_chunk_cache_->operator[](rp);
     if (img) {
         return img;

@@ -15,10 +15,11 @@
 
 namespace {
 
-    QImage *bg_{nullptr};
+//    QImage *bg_{nullptr};
     QImage *unloaded_region_image_{nullptr};  // 未加载的区域
     QImage *null_region_image_{nullptr};      // 确定没有有效区块的空区域
-    QImage *transparent_region_img_{nullptr};
+    QImage *default_region_image_{nullptr};
+//    QImage *transparent_region_img_{nullptr};
 }  // namespace
 
 // 软件基本信息
@@ -26,7 +27,6 @@ const std::string cfg::SOFTWARE_NAME = "BedrockMap";
 const std::string cfg::SOFTWARE_VERSION = "v0.3.1";
 // 不可配置的
 const int cfg::GRID_WIDTH = 32;
-
 // 配置文件下面是可配置的(都有默认值)
 int cfg::SHADOW_LEVEL = 128;
 float cfg::ZOOM_SPEED = 1.2;
@@ -40,6 +40,8 @@ bool cfg::LOAD_GLOBAL_DATA = true;
 bool cfg::OPEN_NBT_EDITOR_ONLY = false;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
+//运行时可变的
+bool cfg::transparent_void = false;
 
 //三个重要文件的路径，直接内置
 #ifdef QT_DEBUG
@@ -71,17 +73,18 @@ void cfg::initColorTable() {
 
     unloaded_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     null_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-    transparent_region_img_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+    default_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
             const int arr1[2]{128, 148};
             const int arr2[2]{20, 40};
+
             const int idx = (i / (cfg::RW * 8) + j / (cfg::RW * 8)) % 2;
             assert(unloaded_region_image_);
             unloaded_region_image_->setPixelColor(i, j, QColor(arr1[idx], arr1[idx], arr1[idx]));
             null_region_image_->setPixelColor(i, j, QColor(arr2[idx], arr2[idx], arr2[idx]));
-            transparent_region_img_->setPixelColor(i, j, QColor(0, 0, 0, 0));
+            default_region_image_->setPixelColor(i, j, QColor(255 - arr2[idx], 255 - arr2[idx], 255 - arr2[idx]));
         }
     }
 
@@ -160,25 +163,32 @@ QString cfg::VERSION_STRING() {
     return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
 }
 
-QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
+//QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
+
 
 QImage *cfg::NULL_REGION_IMAGE() { return null_region_image_; }
 
 QImage cfg::CREATE_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
-    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
-    const int BW = cfg::RW << 4;
-    for (int i = 0; i < BW; i++) {
-        for (int j = 0; j < BW; j++) {
-            const int arr[2]{20, 40};
-            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
-            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
-                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
-            } else {
-                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
-            }
-        }
+    if (cfg::transparent_void) {
+        return cfg::NULL_REGION_IMAGE()->copy();
+    } else {
+        return default_region_image_->copy();
     }
-    return res;
+    //    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+//    const int BW = cfg::RW << 4;
+//    for (int i = 0; i < BW; i++) {
+//        for (int j = 0; j < BW; j++) {
+//            const int arr[2]{20, 40};
+//            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
+//
+//            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
+//                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
+//            } else {
+//                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
+//            }
+//        }
+//    }
+//    return res;
 }
 
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }

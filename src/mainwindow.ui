@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>652</width>
+    <width>1091</width>
     <height>885</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <string>MainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icon.qrc">
+   <iconset resource="../icon.qrc">
     <normaloff>:/res/ui/icon.png</normaloff>:/res/ui/icon.png</iconset>
   </property>
   <property name="autoFillBackground">
@@ -1036,8 +1036,8 @@ border:none;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>652</width>
-     <height>25</height>
+     <width>1091</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="file_menu">
@@ -1054,6 +1054,7 @@ border:none;</string>
     </property>
     <addaction name="action_modify"/>
     <addaction name="action_debug"/>
+    <addaction name="action_transparent_void"/>
     <addaction name="separator"/>
     <addaction name="action_map_item"/>
     <addaction name="action_NBT"/>
@@ -1134,9 +1135,14 @@ border:none;</string>
     <string>地图编辑器</string>
    </property>
   </action>
+  <action name="action_transparent_void">
+   <property name="text">
+    <string>透明虚空</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="icon.qrc"/>
+  <include location="../icon.qrc"/>
  </resources>
  <connections/>
 </ui>

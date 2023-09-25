@@ -37,10 +37,10 @@ struct cfg {
     static bool FANCY_TERRAIN_RENDER;    // 是否渲染阴影
     static bool LOAD_GLOBAL_DATA;        // 是否加载村庄等全局数据
     static bool OPEN_NBT_EDITOR_ONLY;   //直接打开nbt编辑器
-    static std::string COLOR_THEME; //主体
-    // 其他配置(不对外开放接口)
+    static std::string COLOR_THEME;     //主体
 
-
+    //运行时配置
+    static bool transparent_void;
 
     static region_pos c2r(const bl::chunk_pos &ch);
 
@@ -54,7 +54,7 @@ struct cfg {
 
     static QImage *NULL_REGION_IMAGE();
 
-    static QImage *EMPTY_REGION_IMAGE();
+//    static QImage *EMPTY_REGION_IMAGE();
 
     static QString VERSION_STRING();
 };
