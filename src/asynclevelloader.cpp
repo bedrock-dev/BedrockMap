@@ -84,8 +84,9 @@ void LoadRegionTask::run() {
 #endif
 
     auto *region = new ChunkRegion();
-    using chunk_ptr = bl::chunk *;
     bl::chunk *chunks_[cfg::RW * cfg::RW]{nullptr};
+
+    //读取区块数据
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
@@ -97,6 +98,7 @@ void LoadRegionTask::run() {
     std::chrono::steady_clock::time_point load_end = std::chrono::steady_clock::now();
 #endif
 
+    //如果有合法区块，当前区域就是有效的
     for (auto &chunk: chunks_) {
         if (chunk && chunk->loaded()) {
             region->valid = true;
@@ -105,6 +107,7 @@ void LoadRegionTask::run() {
     }
 
     const auto IMG_WIDTH = cfg::RW << 4;
+    //有效的才开始渲染
     if (region->valid) {  // 尝试烘焙
         for (int rw = 0; rw < cfg::RW; rw++) {
             for (int rh = 0; rh < cfg::RW; rh++) {

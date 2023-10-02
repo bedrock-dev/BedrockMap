@@ -18,8 +18,7 @@ namespace {
 //    QImage *bg_{nullptr};
     QImage *unloaded_region_image_{nullptr};  // 未加载的区域
     QImage *null_region_image_{nullptr};      // 确定没有有效区块的空区域
-    QImage *default_region_image_{nullptr};
-//    QImage *transparent_region_img_{nullptr};
+    //    QImage *transparent_region_img_{nullptr};
 }  // namespace
 
 // 软件基本信息
@@ -73,7 +72,7 @@ void cfg::initColorTable() {
 
     unloaded_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     null_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-    default_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+//    default_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
@@ -84,7 +83,8 @@ void cfg::initColorTable() {
             assert(unloaded_region_image_);
             unloaded_region_image_->setPixelColor(i, j, QColor(arr1[idx], arr1[idx], arr1[idx]));
             null_region_image_->setPixelColor(i, j, QColor(arr2[idx], arr2[idx], arr2[idx]));
-            default_region_image_->setPixelColor(i, j, QColor(255 - arr2[idx], 255 - arr2[idx], 255 - arr2[idx]));
+
+            //            default_region_image_->setPixelColor(i, j, QColor(255 - arr2[idx], 255 - arr2[idx], 255 - arr2[idx]));
         }
     }
 
@@ -169,26 +169,20 @@ QString cfg::VERSION_STRING() {
 QImage *cfg::NULL_REGION_IMAGE() { return null_region_image_; }
 
 QImage cfg::CREATE_REGION_IMG(const std::bitset<cfg::RW * cfg::RW> &bitmap) {
-    if (cfg::transparent_void) {
-        return cfg::NULL_REGION_IMAGE()->copy();
-    } else {
-        return default_region_image_->copy();
+    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+    const int BW = cfg::RW << 4;
+    for (int i = 0; i < BW; i++) {
+        for (int j = 0; j < BW; j++) {
+            const int arr[2]{20, 40};
+            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
+            if (bitmap[(i >> 4) * cfg::RW + (j >> 4)] && (!cfg::transparent_void)) {
+                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
+            } else {
+                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
+            }
+        }
     }
-    //    auto res = QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
-//    const int BW = cfg::RW << 4;
-//    for (int i = 0; i < BW; i++) {
-//        for (int j = 0; j < BW; j++) {
-//            const int arr[2]{20, 40};
-//            const int idx = (i / (cfg::RW << 3) + j / (cfg::RW << 3)) % 2;
-//
-//            if (!bitmap[(i >> 4) * cfg::RW + (j >> 4)]) {
-//                res.setPixelColor(i, j, QColor(arr[idx], arr[idx], arr[idx]));
-//            } else {
-//                res.setPixelColor(i, j, QColor(255 - arr[idx], 255 - arr[idx], 255 - arr[idx]));
-//            }
-//        }
-//    }
-//    return res;
+    return res;
 }
 
 QImage *cfg::UNLOADED_REGION_IMAGE() { return unloaded_region_image_; }

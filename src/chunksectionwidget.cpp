@@ -13,13 +13,12 @@
 namespace {
     std::string getDisplayedPalette(const std::string &value) {
         std::string res;
-        for (auto c : value) {
+        for (auto c: value) {
             if (c != '\n' && c != ' ' && c != '\r') {
                 res.push_back(c);
             }
         }
 
-        const int MAX_LEN = 32;
         if (res.size() > 32) {
             res = res.substr(0, 32) + "...";
         }
@@ -36,7 +35,6 @@ void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
     const int cw = bw << 4;
     int x_start = (this->width() - cw) >> 1;
     int z_start = 10;
-
     QPen pen(QColor(100, 100, 100));
     pen.setColor(QColor(100, 100, 100));
     for (int i = 0; i < 16; i++) {

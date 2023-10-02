@@ -119,7 +119,6 @@ setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, i
                                                        biome_color.a));
     }
 
-
     //setup tips
     auto &tips = region->tips_info_[X][Z];
     tips.block_name = info.name;
@@ -129,6 +128,8 @@ setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, i
 
 //地形，群系渲染以及坐标数据设置
 void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
+
+
     if (!ch || !region) return;
     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
     if (this->enable_layer_) {
@@ -136,6 +137,8 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
         if (this->layer > maxy || this->layer < miny)return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
+
+
                 auto b = ch->get_block_fast(i, this->layer, j);
                 if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
                     setRegionBlockData(this, ch, i, j, this->layer, rw, rh, region);
