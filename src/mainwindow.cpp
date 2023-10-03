@@ -388,6 +388,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
     // load villages
     qInfo() << "Loading village data...";
     auto &villData = res.villageData.data();
+    this->collect_villages(villData);
     std::vector<NBTListItem *> villNBTList;
     for (auto &kv: villData) {
         int index = 0;
@@ -404,6 +405,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
             index++;
         }
     }
+
     this->village_editor_->loadNewData(villNBTList);
     qInfo() << "Load village data finished";
     // load map data
@@ -468,6 +470,7 @@ void MainWindow::on_save_other_btn_clicked() {
 
 void
 MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl::palette::compound_tag *, 4>> &vs) {
+    qInfo() << "Collect " << vs.size() << " villages";
     for (auto kv: vs) {
         auto *nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
         if (!nbt) continue;
@@ -479,6 +482,7 @@ MainWindow::collect_villages(const std::unordered_map<std::string, std::array<bl
             this->villages_.insert(kv.first.c_str(),
                                    QRect(std::min(x0->value, x1->value), std::min(z0->value, z1->value),
                                          std::abs(x0->value - x1->value), std::abs(z0->value - z1->value)));
+            qDebug() << x0->value << " " << z0->value << " ~ " << x1->value << " " << z1->value;
         }
     }
 }

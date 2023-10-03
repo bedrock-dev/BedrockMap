@@ -1,5 +1,5 @@
 {
-  "terrain_shadow_level": 110,
+  "terrain_shadow_level": 135,
   "theme": "developing",
   "region_cache_size": 2048,
   "empty_region_cache_size": 8192,
@@ -9,6 +9,6 @@
   "zoom_speed": 1.2,
   "fancy_terrain_render": true,
   "font_size": 10,
-  "load_global_data": false,
+  "load_global_data": true,
   "nbt_editor_mode": false
 }

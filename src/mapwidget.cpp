@@ -378,7 +378,6 @@ void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
     auto &vs = this->mw_->get_villages();
-    auto c = this->getRenderRange(this->camera_);
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
     for (auto i = vs.cbegin(), end = vs.cend(); i != end; ++i) {
         //        auto uuid = i.key();
@@ -386,10 +385,15 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
         auto min = rect.topLeft();
         auto x = (min.x() - mi.get_min_pos(bl::New).x) * this->BW() + render.x();
         auto z = (min.y() - mi.get_min_pos(bl::New).z) * this->BW() + render.y();
-        auto rec = QRect(x, z, rect.width() * BW(), rect.height() * BW());
-        if (rect.intersects(this->camera_)) {
+        auto rec = QRect(
+                static_cast<int>(x),
+                static_cast<int>(z),
+                rect.width() * BW(),
+                rect.height() * BW()
+        );
+        if (rec.intersects(this->camera_)) {
             p->setPen(QPen(QColor(0, 223, 162), 3));
-            p->setBrush(QBrush(QColor(0, 223, 162, 50)));
+            p->setBrush(QBrush(QColor(0, 223, 162, 30)));
             p->drawRect(rec);
         }
     }
