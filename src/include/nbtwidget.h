@@ -17,7 +17,7 @@ using namespace bl::palette;
 
 // 不持有数据
 class NBTTreeItem : public QTreeWidgetItem {
-public:
+   public:
     [[nodiscard]] inline QString getRawText() const {
         if (!root_) return ":";
         return QString() + root_->key().c_str() + ": " + root_->value_string().c_str();
@@ -55,8 +55,8 @@ struct NBTListItem : public QListWidgetItem {
 
 // 自身会持有数据，所以每次加载数据会析构之前的并复制一份
 class NbtWidget : public QWidget {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     explicit NbtWidget(QWidget *parent = nullptr);
 
     ~NbtWidget() override;
@@ -92,7 +92,7 @@ public:
 
     inline bool modifyAllowed() const { return this->modify_allowed_; }
 
-private slots:
+   private slots:
 
     void on_load_btn_clicked();
 
@@ -116,10 +116,10 @@ private slots:
 
     void on_list_widget_itemSelectionChanged();
 
-private:
+   private:
     void openNBTItem(bl::palette::compound_tag *root);
 
-private:
+   private:
     // 不存数据，只引用数据
     Ui::NbtWidget *ui;
     bool modify_allowed_{false};

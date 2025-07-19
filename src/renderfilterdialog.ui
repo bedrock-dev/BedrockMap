@@ -14,7 +14,7 @@
    <string>Dialog</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icon.qrc">
+   <iconset resource="../icon.qrc">
     <normaloff>:/res/ui/filter.png</normaloff>:/res/ui/filter.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -175,7 +175,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="icon.qrc"/>
+  <include location="../icon.qrc"/>
  </resources>
  <connections>
   <connection>

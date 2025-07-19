@@ -1,5 +1,7 @@
 #include "nbtwidget.h"
 
+#include <qaction.h>
+
 #include <QFileDialog>
 #include <QFont>
 #include <QHBoxLayout>
@@ -11,9 +13,9 @@
 #include <QtDebug>
 
 #include "config.h"
-#include "resourcemanager.h"
 #include "msg.h"
 #include "palette.h"
+#include "resourcemanager.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
 
@@ -129,14 +131,18 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
         auto *removeAction = new QAction("删除", this);
         auto *exportAction = new QAction("导出选中", this);
+        auto *createAction = new QAction("新建");
         QMenu menu(this);
         menu.addAction(exportAction);
         if (modify_allowed_) {
             menu.addAction(removeAction);
+            menu.addAction(createAction);
         }
 
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
-            auto *nbtItem = dynamic_cast<NBTListItem *>(this->ui->list_widget->currentItem());
+            auto *currnet = this->ui->list_widget->currentItem();
+            if (!currnet) return;
+            auto *nbtItem = dynamic_cast<NBTListItem *>(currnet);
             if (nbtItem == this->current_opened_) ui->tree_widget->clear();
             this->putModifyCache(nbtItem->raw_key.toStdString(), "");
             ui->list_widget->removeItemWidget(nbtItem);
@@ -144,6 +150,15 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             delete nbtItem;
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) { this->saveNBTs(true); });
+        QObject::connect(createAction, &QAction::triggered, [this, pos](bool) {
+            // auto *nbtItem = dynamic_cast<NBTListItem *>(this->ui->list_widget->currentItem());
+            // if (nbtItem == this->current_opened_) ui->tree_widget->clear();
+            // this->putModifyCache(nbtItem->raw_key.toStdString(), "");
+            // ui->list_widget->removeItemWidget(nbtItem);
+            // this->refreshLabel();
+            // delete nbtItem;
+        });
+
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
         // 多选模式
@@ -153,6 +168,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 
         QObject::connect(removeSelect, &QAction::triggered, [this, pos](bool) {
             if (!this->modify_allowed_) return;
+            ui->list_widget->blockSignals(true);
             for (auto &item : ui->list_widget->selectedItems()) {
                 auto *nbtItem = dynamic_cast<NBTListItem *>(item);
                 // 防止闪退

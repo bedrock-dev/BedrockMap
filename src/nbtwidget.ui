@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icon.qrc">
+   <iconset resource="../icon.qrc">
     <normaloff>:/res/ui/global_nbt.png</normaloff>:/res/ui/global_nbt.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,8">
@@ -173,7 +173,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="icon.qrc"/>
+  <include location="../icon.qrc"/>
  </resources>
  <connections/>
 </ui>
