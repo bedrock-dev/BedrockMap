@@ -1,11 +1,14 @@
 #ifndef NBTWIDGET_H
 #define NBTWIDGET_H
 
+#include <qchar.h>
+
 #include <QAction>
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QTreeWidgetItem>
 #include <QWidget>
+#include <string>
 
 #include "palette.h"
 
@@ -18,9 +21,21 @@ using namespace bl::palette;
 // 不持有数据
 class NBTTreeItem : public QTreeWidgetItem {
    public:
-    [[nodiscard]] inline QString getRawText() const {
-        if (!root_) return ":";
-        return QString() + root_->key().c_str() + ": " + root_->value_string().c_str();
+    bool tryAddChild(bl::palette::abstract_tag *tag);
+
+    void updateLabel() {
+        if (!root_) return;
+        auto type = root_->type();
+        QString text;
+        if (type == Compound) {
+            text = dynamic_cast<compound_tag *>(root_)->key().c_str();
+        } else if (type == List) {
+            auto *list = dynamic_cast<bl::palette::list_tag *>(root_);
+            text = list->key().c_str() + QString("[%1]").arg(QString::number(list->value.size()));
+        } else {
+            text = QString() + root_->key().c_str() + ": " + root_->value_string().c_str();
+        }
+        setText(0, text);
     }
 
     bl::palette::abstract_tag *root_{nullptr};
@@ -50,6 +65,29 @@ struct NBTListItem : public QListWidgetItem {
         it->raw_key = key.isEmpty() ? default_label : key;
         it->setText(it->getLabel());
         return it;
+    }
+};
+
+struct NBTNodeUIAttr {
+    bool canRemove;  // remove current item
+    bool canModify;  // modify current value
+    bool canAdd;     // add child
+    bool canClear;   // clear all children
+    static NBTNodeUIAttr get(bl::palette::tag_type type) {
+        NBTNodeUIAttr attr{true, true, false, false};
+        if (type == bl::palette::tag_type::Compound) {
+            attr.canRemove = false;
+            attr.canAdd = true;
+            attr.canClear = true;
+        } else if (type == bl::palette::List) {
+            attr.canAdd = true;
+            attr.canClear = true;
+        } else if (type == bl::palette::End) {
+            attr.canRemove = false;
+            attr.canModify = false;
+            attr.canAdd = false;
+        }
+        return attr;
     }
 };
 
@@ -84,7 +122,9 @@ class NbtWidget : public QWidget {
 
     const std::unordered_map<std::string, std::string> &getModifyCache() { return this->modified_cache_; }
 
-    void putModifyCache(const std::string &key, const std::string &value);
+    void putModifyToCache(const std::string &key, const std::string &value);
+
+    void putRemoveToCache(const std::string &key) { putModifyToCache(key, ""); }
 
     inline void clearModifyCache() { this->modified_cache_.clear(); };
 
@@ -106,8 +146,6 @@ class NbtWidget : public QWidget {
 
     void saveNBTs(bool selectOnly);
 
-    void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-
     void on_multi_select_checkbox_stateChanged(int arg1);
 
     void on_modify_checkbox_stateChanged(int arg1);
@@ -127,6 +165,7 @@ class NbtWidget : public QWidget {
     std::unordered_map<std::string, std::string> modified_cache_;
     NBTListItem *current_opened_{nullptr};
     bool enable_modify_cache_{true};
+    std::string current_palette_path_;
 };
 
 #endif  // NBTWIDGET_H

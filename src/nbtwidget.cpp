@@ -1,6 +1,9 @@
 #include "nbtwidget.h"
 
 #include <qaction.h>
+#include <qchar.h>
+#include <qdialog.h>
+#include <qobject.h>
 
 #include <QFileDialog>
 #include <QFont>
@@ -12,8 +15,8 @@
 #include <QTreeWidgetItem>
 #include <QtDebug>
 
-#include "config.h"
 #include "msg.h"
+#include "nbtmodifydialog.h"
 #include "palette.h"
 #include "resourcemanager.h"
 #include "ui_nbtwidget.h"
@@ -27,29 +30,49 @@ namespace {
         if (!t) return nullptr;
         auto *item = new NBTTreeItem();
         item->root_ = t;
+        item->updateLabel();
         item->setIcon(0, QIcon(QPixmap::fromImage(*TagIcon(t->type()))));
         if (t->type() == bl::palette::tag_type::Compound) {
-            item->setText(0, t->key().c_str());
             auto *ct = dynamic_cast<bl::palette::compound_tag *>(t);
             for (auto &kv : ct->value) {
                 item->addChild(nbt2QTreeItem(kv.second, index + 1, ma));
             }
         } else if (t->type() == bl::palette::tag_type::List) {
             auto *ct = dynamic_cast<bl::palette::list_tag *>(t);
-            item->setText(0, t->key().c_str() + QString("[%1]").arg(QString::number(ct->value.size())));
             for (auto k : ct->value) {
                 item->addChild(nbt2QTreeItem(k, index + 1, ma));
             }
-        } else {
-            item->setText(0, item->getRawText());
         }
-
         return item;
     }
 
     NBTListItem *TN(QListWidgetItem *i) { return dynamic_cast<NBTListItem *>(i); }
 
 }  // namespace
+
+bool NBTTreeItem::tryAddChild(bl::palette::abstract_tag *tag) {
+    if (!tag || !root_) return false;
+    auto type = root_->type();
+    int max;
+    auto *item = nbt2QTreeItem(tag, 1, max);
+    if (type == tag_type::Compound) {
+        auto *cur = dynamic_cast<compound_tag *>(root_);
+        if (cur->value.count(tag->key()) > 0) {
+            delete item;
+            return false;
+        }
+        cur->put(tag);
+        this->addChild(item);
+    } else if (type == tag_type::List) {
+        auto *cur = dynamic_cast<list_tag *>(root_);
+        if (cur->push_back(tag)) {
+            this->addChild(item);
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
 
 NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->setupUi(this);
@@ -124,19 +147,136 @@ void NbtWidget::hideLoadDataBtn() { ui->load_btn->setVisible(false); }
 
 void NbtWidget::on_save_btn_clicked() { this->saveNBTs(false); }
 
-void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {}
+void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
+    if (!modify_allowed_) return;
+    auto *addAction = new QAction("新建", this);
+    auto *removeAction = new QAction("删除", this);
+    auto *modifyAction = new QAction("修改", this);
+    auto *clearAction = new QAction("清空", this);
+
+    QMenu menu(this);
+    auto *current = ui->tree_widget->currentItem();
+    if (!current) return;
+    auto *nbtItem = dynamic_cast<NBTTreeItem *>(current);
+    if (!nbtItem || !nbtItem->root_) {
+        WARN("当前NBT数据已损坏");
+        return;
+    }
+    auto type = nbtItem->root_->type();
+    auto attr = NBTNodeUIAttr::get(type);
+    if (attr.canAdd) menu.addAction(addAction);
+    if (attr.canRemove) menu.addAction(removeAction);
+    if (attr.canModify) menu.addAction(modifyAction);
+    if (attr.canClear) menu.addAction(clearAction);
+
+    QObject::connect(addAction, &QAction::triggered, [this, pos](bool) {
+        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        if (!current) return;
+        NBTModifyDialog dialog(this);
+        if (!dialog.setCreateMode(current->root_)) {
+            WARN("初始化失败");
+            return;
+        }
+        if (dialog.exec() == QDialog::Accepted) {
+            QString err;
+            auto *tag = dialog.createTagWithCurrent(err);
+            if (!tag) {
+                WARN("创建节点失败: " + err);
+            } else if (!current->tryAddChild(tag)) {
+                WARN("创建节点失败: 已存在相同key的TAG");
+            } else {
+                current->updateLabel();
+                putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+            }
+        }
+    });
+
+    QObject::connect(modifyAction, &QAction::triggered, [this, pos](bool) {
+        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        if (!current) return;
+        NBTModifyDialog dialog(this);
+        if (!dialog.setModifyMode(current->root_)) {
+            WARN("初始化失败");
+            return;
+        }
+        if (dialog.exec() == QDialog::Accepted) {
+            QString err;
+            if (!dialog.modityCurrentTag(current->root_, err)) {
+                WARN("修改节点失败： " + err);
+            } else {
+                current->updateLabel();
+                putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+            }
+        }
+    });
+
+    QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
+        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        auto parent = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem()->parent());
+        if (!parent) {
+            WARN("不能删除根节点");
+            return;
+        }
+        auto parentType = parent->root_->type();
+        if (parentType == bl::palette::Compound) {
+            auto *tag = dynamic_cast<bl::palette::compound_tag *>(parent->root_);
+            if (!tag) {
+                WARN("当前NBT数据已损坏");
+                return;
+            }
+            tag->remove(current->root_->key());
+        } else if (parentType == bl::palette::List) {
+            auto *tag = dynamic_cast<bl::palette::list_tag *>(parent->root_);
+            if (!tag) {
+                WARN("当前NBT数据已损坏");
+                return;
+            }
+            auto idx = parent->indexOfChild(current);
+            tag->remove(idx);
+            parent->updateLabel();
+        }
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+        parent->removeChild(current);
+        delete current;
+    });
+
+    QObject::connect(clearAction, &QAction::triggered, [this, pos](bool) {
+        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        if (!current) return;
+        if (current->root_->type() == bl::palette::tag_type::Compound) {
+            auto *tag = dynamic_cast<bl::palette::compound_tag *>(current->root_);
+            for (auto &kv : tag->value) {
+                delete kv.second;
+            }
+            tag->value.clear();
+        } else if (current->root_->type() == bl::palette::tag_type::List) {
+            auto *tag = dynamic_cast<bl::palette::list_tag *>(current->root_);
+            for (auto *child : tag->value) {
+                delete child;
+            }
+            tag->value.clear();
+        }
+        auto children = current->takeChildren();
+        qDeleteAll(children);
+        current->updateLabel();
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+    });
+    menu.exec(ui->tree_widget->mapToGlobal(pos));
+}
 
 void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
     // 单选模式
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
         auto *removeAction = new QAction("删除", this);
         auto *exportAction = new QAction("导出选中", this);
-        auto *createAction = new QAction("新建");
+        auto *createAction = new QAction("新建", this);
+        auto *clearAction = new QAction("清空", this);
         QMenu menu(this);
         menu.addAction(exportAction);
         if (modify_allowed_) {
             menu.addAction(removeAction);
             menu.addAction(createAction);
+            menu.addAction(clearAction);
         }
 
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
@@ -144,21 +284,38 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             if (!currnet) return;
             auto *nbtItem = dynamic_cast<NBTListItem *>(currnet);
             if (nbtItem == this->current_opened_) ui->tree_widget->clear();
-            this->putModifyCache(nbtItem->raw_key.toStdString(), "");
+            putRemoveToCache(nbtItem->raw_key.toStdString());
             ui->list_widget->removeItemWidget(nbtItem);
             this->refreshLabel();
             delete nbtItem;
         });
         QObject::connect(exportAction, &QAction::triggered, [this, pos](bool) { this->saveNBTs(true); });
         QObject::connect(createAction, &QAction::triggered, [this, pos](bool) {
-            // auto *nbtItem = dynamic_cast<NBTListItem *>(this->ui->list_widget->currentItem());
-            // if (nbtItem == this->current_opened_) ui->tree_widget->clear();
-            // this->putModifyCache(nbtItem->raw_key.toStdString(), "");
-            // ui->list_widget->removeItemWidget(nbtItem);
-            // this->refreshLabel();
-            // delete nbtItem;
+            if (!this->modify_allowed_) return;
+            // create a new NBT item and push back to the end
+            auto *nbtItem = NBTListItem::from(new bl::palette::compound_tag("New"), QString::number(ui->list_widget->count()));
+            ui->list_widget->addItem(nbtItem);
+            putModifyToCache(nbtItem->raw_key.toStdString(), nbtItem->root_->to_raw());
+            this->refreshLabel();
         });
-
+        QObject::connect(clearAction, &QAction::triggered, [this, pos](bool) {
+            if (!this->modify_allowed_) return;
+            auto reply = QMessageBox::question(this, "清空", "确定要清空所有数据吗？", QMessageBox::Yes | QMessageBox::No);
+            if (reply != QMessageBox::Yes) return;
+            ui->tree_widget->clear();
+            // clear all items in the list widget, and put them to the modify cache, free the memory
+            auto row = ui->list_widget->count();
+            for (int i = 0; i < row; ++i) {
+                auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i));
+                if (item) {
+                    putRemoveToCache(item->raw_key.toStdString());
+                } else {
+                    BL_ERROR("当前NBT数据已损坏");
+                }
+            }
+            ui->list_widget->clear();
+            this->refreshLabel();
+        });
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
         // 多选模式
@@ -173,7 +330,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
                 auto *nbtItem = dynamic_cast<NBTListItem *>(item);
                 // 防止闪退
                 if (nbtItem == this->current_opened_) ui->tree_widget->clear();
-                this->putModifyCache(nbtItem->raw_key.toStdString(), "");
+                putRemoveToCache(nbtItem->raw_key.toStdString());
                 ui->list_widget->removeItemWidget(item);
                 delete item;
                 this->refreshLabel();
@@ -196,126 +353,6 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         menu.exec(ui->list_widget->mapToGlobal(pos));
     }
 }
-
-void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
-    using namespace bl::palette;
-    auto *it = dynamic_cast<NBTTreeItem *>(item);
-    if (!it || !it->root_) {  // 正常来说不会出现
-        QMessageBox::information(nullptr, "信息", "当前nbt已损坏", QMessageBox::Yes, QMessageBox::Yes);
-        return;
-    }
-    auto t = it->root_->type();
-    if (t == bl::palette::Compound || t == bl::palette::List) {
-        if (it->isExpanded()) {
-            ui->tree_widget->expandItem(it);
-        } else {
-            ui->tree_widget->collapseItem(it);
-        }
-        return;
-    }
-    if (t == ByteArray || t == LongArray || t == IntArray) {
-        return;
-    }
-
-    if (!this->modify_allowed_) return;
-    if (!this->current_opened_) return;
-
-    QInputDialog d;
-    d.setLabelText(it->root_->key().c_str());
-    d.setOkButtonText("确定");
-    d.setCancelButtonText("取消");
-    d.resize(600, 400);
-    d.setWindowIcon(it->icon(0));
-    auto *r = it->root_;
-    if (t == bl::palette::String) {
-        d.setWindowTitle("编辑字符串");
-        d.setTextValue(it->root_->value_string().c_str());
-        d.setInputMode(QInputDialog::InputMode::TextInput);
-    } else if (t == Float || t == Double) {
-        if (t == Float) {
-            d.setDoubleRange(std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
-            d.setDoubleValue(dynamic_cast<float_tag *>(r)->value);
-        } else {
-            d.setDoubleRange(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
-            d.setDoubleValue(dynamic_cast<double_tag *>(r)->value);
-        }
-        d.setWindowTitle("编辑浮点数");
-        d.setInputMode(QInputDialog::InputMode::DoubleInput);
-
-        d.setDoubleDecimals(10);
-    } else {
-        d.setWindowTitle("编辑整数");
-        d.setInputMode(QInputDialog::InputMode::IntInput);
-        int min{INT32_MIN};
-        int max{INT32_MAX};
-        if (t == bl::palette::Byte) {
-            min = -128;
-            max = 127;
-        } else if (t == bl::palette::Short) {
-            min = INT16_MIN;
-            max = INT16_MAX;
-        }
-        d.setIntRange(min, max);
-        d.setIntValue(QString(r->value_string().c_str()).toInt());
-    }
-    auto ok = d.exec();
-    if (!ok) return;
-
-    switch (it->root_->type()) {
-        case Byte:
-            dynamic_cast<byte_tag *>(r)->value = static_cast<int8_t>(d.intValue());
-            break;
-        case Short:
-            dynamic_cast<short_tag *>(r)->value = static_cast<int16_t>(d.intValue());
-            break;
-        case Int:
-            dynamic_cast<int_tag *>(r)->value = static_cast<int32_t>(d.intValue());
-            break;
-        case Long:
-            dynamic_cast<long_tag *>(r)->value = static_cast<int64_t>(d.intValue());
-            break;
-        case Float:
-            dynamic_cast<float_tag *>(r)->value = static_cast<float>(d.doubleValue());
-            break;
-        case Double:
-            dynamic_cast<double_tag *>(r)->value = static_cast<double>(d.doubleValue());
-            break;
-        case String:
-            dynamic_cast<string_tag *>(r)->value = d.textValue().toStdString();
-            break;
-        case List:
-        case Compound:
-        case End:
-        case ByteArray:
-        case IntArray:
-        case LongArray:
-            break;
-    }
-
-    this->putModifyCache(this->current_opened_->raw_key.toStdString(), this->current_opened_->root_->to_raw());
-    it->setText(0, it->getRawText());
-}
-
-// void NbtWidget::load_new_data(const std::vector<bl::palette::compound_tag *> &data,
-//                               const std::function<QString(bl::palette::compound_tag *)> &namer,
-//                               const std::vector<std::string> &default_labels,
-//                               const std::vector<QImage *> &icons
-//) {
-//     this->clearData();
-//     bool needIcon{icons.size() == data.size()};
-//     for (int i = 0; i < data.size(); i++) {
-//         auto *it = new NBTListItem();
-//         it->root_ = dynamic_cast<bl::palette::compound_tag *>(data[i]->copy());
-//         it->default_label = i < default_labels.size() ? default_labels[i].c_str() : QString(i);
-//         it->namer_ = namer;
-//         if (needIcon) {
-//             it->setIcon(QPixmap::fromImage(*icons[i]));
-//         }
-//         it->setText(it->getLabel());
-//         ui->list_widget->addItem(it);
-//     }
-//     this->refreshLabel();
-// }
 
 void NbtWidget::loadNewData(const std::vector<NBTListItem *> &items) {
     this->clearData();
@@ -364,7 +401,6 @@ std::string NbtWidget::getCurrentPaletteRaw() {
     for (int i = 0; i < ui->list_widget->count(); ++i) {
         res += dynamic_cast<NBTListItem *>(ui->list_widget->item(i))->root_->to_raw();
     }
-
     return res;
 }
 
@@ -422,7 +458,7 @@ NbtWidget::~NbtWidget() {
     this->clearData();
 }
 
-void NbtWidget::putModifyCache(const std::string &key, const std::string &value) {
+void NbtWidget::putModifyToCache(const std::string &key, const std::string &value) {
     if (enable_modify_cache_) {
         this->modified_cache_[key] = value;
     };

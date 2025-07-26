@@ -13,6 +13,7 @@
 #include "asynclevelloader.h"
 #include "config.h"
 #include "mainwindow.h"
+#include "palette.h"
 #include "resourcemanager.h"
 
 QString LOG_FILE_NAME;
@@ -81,7 +82,6 @@ int main(int argc, char *argv[]) {
 #ifndef QT_DEBUG
     qInstallMessageHandler(myMessageHandler);
 #endif
-
     initResources();
     cfg::initConfig();
     QApplication a(argc, argv);
