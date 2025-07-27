@@ -13,7 +13,7 @@
 namespace {
     std::string getDisplayedPalette(const std::string &value) {
         std::string res;
-        for (auto c: value) {
+        for (auto c : value) {
             if (c != '\n' && c != ' ' && c != '\r') {
                 res.push_back(c);
             }

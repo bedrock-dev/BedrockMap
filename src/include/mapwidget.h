@@ -16,16 +16,12 @@
 class MainWindow;
 
 class MapWidget : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-    enum MainRenderType {
-        Biome = 0, Terrain = 1, Height = 2
-    };
+   public:
+    enum MainRenderType { Biome = 0, Terrain = 1, Height = 2 };
 
-    enum DimType {
-        OverWorld = 0, Nether = 1, TheEnd = 2
-    };
+    enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2 };
 
     MapWidget(MainWindow *w, QWidget *parent) : QWidget(parent), mw_(w) {
         this->sync_refresh_timer_ = new QTimer();
@@ -49,7 +45,7 @@ public:
 
     bl::block_pos getCursorBlockPos();
 
-public:
+   public:
     inline void changeDimension(DimType dim) {
         this->dim_type_ = dim;
         this->update();
@@ -107,11 +103,11 @@ public:
 
     void advancePos(int x, int y);
 
-signals:
+   signals:
 
     void mouseMove(int x, int z);  // NOLINT
 
-public slots:
+   public slots:
 
     void asyncRefresh();
 
@@ -127,10 +123,10 @@ public slots:
 
     void delete_chunks();
 
-private:
+   private:
     [[nodiscard]] inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
 
-private:
+   private:
     // for debug
 
     void drawDebugWindow(QPaintEvent *event, QPainter *p);
@@ -172,9 +168,9 @@ private:
 
     ~MapWidget() override;
 
-signals:
+   signals:
 
-private:
+   private:
     // objects
 
     // bl::chunk_pos spawn{0, 0};  // origin 处要会绘制的区块坐标

@@ -40,7 +40,7 @@ namespace {
     double getMemUsage() {
 #ifdef WIN32
         PROCESS_MEMORY_COUNTERS_EX pmc;
-        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *) &pmc, sizeof(pmc));
+        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
         return static_cast<double>(pmc.WorkingSetSize >> 20);
 #else
         return 0;
@@ -48,9 +48,7 @@ namespace {
     }
 }  // namespace
 
-void MapWidget::resizeEvent(QResizeEvent *event) {
-    this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10);
-}
+void MapWidget::resizeEvent(QResizeEvent *event) { this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10); }
 
 void MapWidget::asyncRefresh() { this->update(); }
 
@@ -79,8 +77,7 @@ void MapWidget::showContextMenu(const QPoint &p) {
         auto blockInfo = this->mw_->levelLoader()->getBlockTips(pos, this->dim_type_);
         // block name
         QAction copyBlockNameAction("复制方块名称: " + QString(blockInfo.block_name.c_str()), this);
-        connect(&copyBlockNameAction, &QAction::triggered, this,
-                [cb, &blockInfo] { cb->setText(blockInfo.block_name.c_str()); });
+        connect(&copyBlockNameAction, &QAction::triggered, this, [cb, &blockInfo] { cb->setText(blockInfo.block_name.c_str()); });
 
         // biome
         //        QAction copyBiomeAction(("复制群系名称: " + bl::get_biome_name(blockInfo.biome)).c_str(), this);
@@ -92,8 +89,7 @@ void MapWidget::showContextMenu(const QPoint &p) {
         // height
         QAction copyHeightAction("复制高度信息: " + QString::number(blockInfo.height), this);
 
-        connect(&copyHeightAction, &QAction::triggered, this,
-                [cb, &blockInfo] { cb->setText(QString::number(blockInfo.height)); });
+        connect(&copyHeightAction, &QAction::triggered, this, [cb, &blockInfo] { cb->setText(QString::number(blockInfo.height)); });
         auto tpCmd = QString("tp @s %1 ~ %2").arg(QString::number(pos.x), QString::number(pos.z));
         QAction copyTpCommandAction("复制TP命令: " + tpCmd, this);
         connect(&copyTpCommandAction, &QAction::triggered, this, [cb, &tpCmd] { cb->setText(tpCmd); });
@@ -187,8 +183,7 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
         this->dragging_ = false;
     } else if (event->button() == Qt::MiddleButton) {
         this->selecting_ = false;
-        qDebug() << "Selection: " << this->select_pos_1_.to_string().c_str() << " ~~ "
-                 << this->select_pos_2_.to_string().c_str();
+        qDebug() << "Selection: " << this->select_pos_1_.to_string().c_str() << " ~~ " << this->select_pos_2_.to_string().c_str();
     } else if (event->button() == Qt::RightButton) {
         this->showContextMenu(this->mapFromGlobal(QCursor::pos()));
     }
@@ -266,8 +261,7 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
 
     auto alignedMinChunkPos =
-            bl::chunk_pos{minChunk.x / cfg::GRID_WIDTH * cfg::GRID_WIDTH,
-                          minChunk.z / cfg::GRID_WIDTH * cfg::GRID_WIDTH, 0};
+        bl::chunk_pos{minChunk.x / cfg::GRID_WIDTH * cfg::GRID_WIDTH, minChunk.z / cfg::GRID_WIDTH * cfg::GRID_WIDTH, 0};
 
     // 纵轴线起始x坐标
     int xStart = (alignedMinChunkPos.x - minChunk.x) * this->cw_ + renderRange.x();
@@ -300,8 +294,7 @@ QRect MapWidget::getRenderSelectArea() {
     auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
     auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
 
-    QRect x((minX - minChunk.x) * cw_ + renderRange.x(), (minZ - minChunk.z) * cw_ + renderRange.y(),
-            (maxX - minX + 1) * cw_,
+    QRect x((minX - minChunk.x) * cw_ + renderRange.x(), (minZ - minChunk.z) * cw_ + renderRange.y(), (maxX - minX + 1) * cw_,
             (maxZ - minZ + 1) * cw_);
     return x;
 }
@@ -329,15 +322,14 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
     auto dbgInfo = this->mw_->levelLoader()->debugInfo();
     dbgInfo.push_back(QString("Memory usage: %1 MiB").arg(QString::number(getMemUsage())));
     int max_len = 1;
-    for (auto &i: dbgInfo) {
+    for (auto &i : dbgInfo) {
         max_len = std::max(max_len, fm.width(i));
     }
-    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * (dbgInfo.size() + 1))),
-                      QBrush(QColor(22, 22, 22, 90)));
+    painter->fillRect(QRectF(0, 0, max_len + 10, static_cast<qreal>(fm.height() * (dbgInfo.size() + 1))), QBrush(QColor(22, 22, 22, 90)));
     painter->setFont(font);
     painter->setPen(QPen(QColor(255, 255, 255)));
     int i = 0;
-    for (auto &s: dbgInfo) {
+    for (auto &s : dbgInfo) {
         painter->drawText(QPoint(5, (i + 1) * fm.height()), s);
         i++;
     }
@@ -385,12 +377,7 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
         auto min = rect.topLeft();
         auto x = (min.x() - mi.get_min_pos(bl::New).x) * this->BW() + render.x();
         auto z = (min.y() - mi.get_min_pos(bl::New).z) * this->BW() + render.y();
-        auto rec = QRect(
-                static_cast<int>(x),
-                static_cast<int>(z),
-                rect.width() * BW(),
-                rect.height() * BW()
-        );
+        auto rec = QRect(static_cast<int>(x), static_cast<int>(z), rect.width() * BW(), rect.height() * BW());
         if (rec.intersects(this->camera_)) {
             p->setPen(QPen(QColor(0, 223, 162), 3));
             p->setBrush(QBrush(QColor(0, 223, 162, 30)));
@@ -401,16 +388,16 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
 
 void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
     QColor colors[]{
-            QColor(0, 0, 0, 0), QColor(0, 223, 162, 255),  // 1NetherFortress
-            QColor(255, 0, 96, 255),                               // 2SwampHut
-            QColor(246, 250, 112, 255),                            // 3OceanMonument
-            QColor(0, 0, 0, 0),                                    //
-            QColor(0, 121, 255, 255),                              // 5PillagerOutpost
-            QColor(0, 0, 0, 0),
+        QColor(0, 0, 0, 0),         QColor(0, 223, 162, 255),  // 1NetherFortress
+        QColor(255, 0, 96, 255),                               // 2SwampHut
+        QColor(246, 250, 112, 255),                            // 3OceanMonument
+        QColor(0, 0, 0, 0),                                    //
+        QColor(0, 121, 255, 255),                              // 5PillagerOutpost
+        QColor(0, 0, 0, 0),
     };
     this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp, const QPoint &p) {
         auto hss = this->mw_->levelLoader()->getHSAs(rp);
-        for (auto &hsa: hss) {
+        for (auto &hsa : hss) {
             int x = static_cast<int>((hsa.min_pos.x - rp.x * 16) * this->BW()) + p.x();
             int y = static_cast<int>((hsa.min_pos.z - rp.z * 16) * this->BW()) + p.y();
             auto outlineColor = colors[static_cast<int>(hsa.type)];
@@ -429,11 +416,11 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
         auto actors = this->mw_->levelLoader()->getActorList(ch);
-        for (auto &kv: actors) {
+        for (auto &kv : actors) {
             if (!kv.first) continue;
-            for (auto &actor: kv.second) {
-                float x = (actor.x - (float) ch.x * 16.0f) * (float) this->BW() + (float) p.x();
-                float y = (actor.z - (float) ch.z * 16.0f) * (float) this->BW() + (float) p.y();
+            for (auto &actor : kv.second) {
+                float x = (actor.x - (float)ch.x * 16.0f) * (float)this->BW() + (float)p.x();
+                float y = (actor.z - (float)ch.z * 16.0f) * (float)this->BW() + (float)p.y();
                 const int W = 18;
                 painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
             }
@@ -484,8 +471,7 @@ void MapWidget::saveImageAction(bool full_screen) {
         img = this->grab();
     }
     auto new_img = img.scaled(img.width() * i, img.height() * i);
-    auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "/home/jana/untitled.png",
-                                                 tr("Images (*.png *.jpg)"));
+    auto fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "/home/jana/untitled.png", tr("Images (*.png *.jpg)"));
     if (fileName.isEmpty()) return;
     new_img.save(fileName);
 }
@@ -544,8 +530,7 @@ void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
         QPen pen(QColor(34, 166, 153, 250), line_width);
         pen.setJoinStyle(Qt::MiterJoin);
         painter->setPen(pen);
-        painter->drawRect(QRect(x - static_cast<int>(BW()), y - static_cast<int>(BW()), this->cw_ + BW() * 2,
-                                this->cw_ + BW() * 2));
+        painter->drawRect(QRect(x - static_cast<int>(BW()), y - static_cast<int>(BW()), this->cw_ + BW() * 2, this->cw_ + BW() * 2));
     }
 }
 

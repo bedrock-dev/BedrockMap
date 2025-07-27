@@ -2,9 +2,10 @@
 #define MAPITEMEDITOR_H
 
 #include <QWidget>
-#include "palette.h"
-#include "nbtwidget.h"
+
 #include "global.h"
+#include "nbtwidget.h"
+#include "palette.h"
 
 namespace Ui {
     class MapItemEditor;
@@ -13,9 +14,9 @@ namespace Ui {
 class MainWindow;
 
 class MapItemEditor : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     explicit MapItemEditor(MainWindow *mw, QWidget *parent = nullptr);
 
     ~MapItemEditor() override;
@@ -26,7 +27,7 @@ public:
 
     void clearData() { this->map_nbt_editor_->clearData(); }
 
-private slots:
+   private slots:
 
     void on_export_map_btn_clicked();
 
@@ -34,12 +35,11 @@ private slots:
 
     void on_save_map_btn_clicked();
 
-private:
+   private:
     NbtWidget *map_nbt_editor_{nullptr};
     Ui::MapItemEditor *ui;
     MainWindow *mw_{nullptr};
     QImage img;
 };
 
-
-#endif // MAPITEMEDITOR_H
+#endif  // MAPITEMEDITOR_H

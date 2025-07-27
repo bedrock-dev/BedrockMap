@@ -6,10 +6,10 @@
 #include <QtDebug>
 
 #include "chunksectionwidget.h"
-#include "resourcemanager.h"
 #include "mainwindow.h"
 #include "msg.h"
 #include "nbtwidget.h"
+#include "resourcemanager.h"
 #include "ui_chunkeditorwidget.h"
 
 ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget), mw_(mw) {

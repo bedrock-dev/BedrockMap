@@ -25,7 +25,6 @@
 #include "renderfilterdialog.h"
 #include "resourcemanager.h"
 
-
 namespace {
 
     [[nodiscard]] QRect centerMainWindowGeometry(double rate) {
@@ -57,10 +56,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));  // NOLINT
     // init chunk editor layout
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
-    ui->map_splitter->addWidget(this->chunk_editor_widget_);
-    ui->map_splitter->setStretchFactor(1, 1);
+    ui->map_splitter->setStretchFactor(0, 1);
     ui->map_splitter->setStretchFactor(1, 10);
     ui->map_splitter->setStretchFactor(2, 1);
+    ui->map_splitter->addWidget(this->chunk_editor_widget_);
 
     // basic layer btns group
 
@@ -189,7 +188,7 @@ void MainWindow::resetToInitUI() {
     ui->open_level_btn->setVisible(true);
     ui->open_level_btn->setEnabled(true);
     this->setGeometry(centerMainWindowGeometry(0.6));
-    this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
+    //   this->chunk_editor_widget_->setMaximumWidth(this->width() / 2);
     this->setWindowTitle(this->getStaticTitle());
     this->global_data_loaded_ = false;
 }
@@ -539,7 +538,9 @@ QString MainWindow::getStaticTitle() {
     return cfg::VERSION_STRING() + " " + level_name.c_str();
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event) { this->chunk_editor_widget_->setMaximumWidth(this->height() / 2); }
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    // this->chunk_editor_widget_->setMaximumWidth(this->height() / 2);
+}
 
 void MainWindow::setupShortcuts() {
     // map move

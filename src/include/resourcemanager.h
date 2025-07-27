@@ -10,7 +10,6 @@
 #include "bedrock_key.h"
 #include "palette.h"
 
-
 void initResources();
 
 QImage *ActorImage(const QString &key);
