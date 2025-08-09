@@ -9,13 +9,14 @@
 #include <QDir>
 #include <QtDebug>
 #include <fstream>
+#include <string>
 
 #include "color.h"
 #include "json/json.hpp"
 
 namespace {
 
-//    QImage *bg_{nullptr};
+    //    QImage *bg_{nullptr};
     QImage *unloaded_region_image_{nullptr};  // 未加载的区域
     QImage *null_region_image_{nullptr};      // 确定没有有效区块的空区域
     //    QImage *transparent_region_img_{nullptr};
@@ -34,15 +35,18 @@ int cfg::REGION_CACHE_SIZE = 4096;
 int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
-bool cfg::FANCY_TERRAIN_RENDER = true;
+int cfg::MAP_RENDER_STYLE = 1;
 bool cfg::LOAD_GLOBAL_DATA = true;
 bool cfg::OPEN_NBT_EDITOR_ONLY = false;
 std::string cfg::COLOR_THEME = "developing";
 int cfg::FONT_SIZE = 10;
-//运行时可变的
+std::string cfg::GRID_LINE_COLOR = "#bbbbbb";
+int cfg::ACTOR_RENDER_STYLE = 0;  // 0: 渲染每一个实体；1:一个区块内每种实体仅渲染一次
+
+// 运行时可变的
 bool cfg::transparent_void = false;
 
-//三个重要文件的路径，直接内置
+// 三个重要文件的路径，直接内置
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(../config.json)";
 const std::string cfg::BLOCK_FILE_PATH = R"(../bedrock-level/data/colors/block_color.json)";
@@ -72,7 +76,7 @@ void cfg::initColorTable() {
 
     unloaded_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     null_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGBA8888);
-//    default_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
+    //    default_region_image_ = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_RGB888);
     const int BW = cfg::RW << 4;
     for (int i = 0; i < BW; i++) {
         for (int j = 0; j < BW; j++) {
@@ -109,7 +113,6 @@ void cfg::initColorTable() {
 
 #include <bitset>
 
-
 void cfg::initConfig() {
     qInfo() << "Current working directory: " << QDir::currentPath();
     qInfo() << "Configuration file path: " << CONFIG_FILE_PATH.c_str();
@@ -129,9 +132,11 @@ void cfg::initConfig() {
             cfg::MAXIMUM_SCALE_LEVEL = j["maximum_scale_level"].get<int>();
             cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
             cfg::FONT_SIZE = j["font_size"].get<int>();
-            cfg::FANCY_TERRAIN_RENDER = j["fancy_terrain_render"].get<bool>();
+            cfg::MAP_RENDER_STYLE = j["map_render_style"].get<int>();
             cfg::LOAD_GLOBAL_DATA = j["load_global_data"].get<bool>();
             cfg::OPEN_NBT_EDITOR_ONLY = j["nbt_editor_mode"].get<bool>();
+            cfg::GRID_LINE_COLOR = j["grid_line_color"].get<std::string>();
+            cfg::ACTOR_RENDER_STYLE = j["actor_render_style"].get<int>();
         }
 
     } catch (std::exception &e) {
@@ -155,16 +160,15 @@ void cfg::initConfig() {
     qInfo() << "- Load global data: " << cfg::LOAD_GLOBAL_DATA;
     qInfo() << "- Render region width: " << cfg::RW;
     qInfo() << "- NBT editor mode:" << cfg::OPEN_NBT_EDITOR_ONLY;
+    qInfo() << "- Grid line color:" << cfg::GRID_LINE_COLOR.c_str();
+    qInfo() << "- Actor render style: " << cfg::ACTOR_RENDER_STYLE;
     qInfo() << "Reading biome and block color table...";
     initColorTable();
 }
 
-QString cfg::VERSION_STRING() {
-    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str());
-}
+QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
 
-//QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
-
+// QImage *cfg::EMPTY_REGION_IMAGE() { return transparent_region_img_; }
 
 QImage *cfg::NULL_REGION_IMAGE() { return null_region_image_; }
 

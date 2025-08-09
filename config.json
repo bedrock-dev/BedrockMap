@@ -7,8 +7,11 @@
   "minimum_scale_level": 8,
   "maximum_scale_level": 1024,
   "zoom_speed": 1.2,
-  "fancy_terrain_render": true,
+  "map_render_style": 1,
   "font_size": 10,
   "load_global_data": true,
-  "nbt_editor_mode": false
+  "nbt_editor_mode": false,
+  "grid_line_color": "#bbbbbb",
+  "actor_render_style": 1,
+  "actor_outer_line_color": ""
 }

@@ -1,4 +1,14 @@
 
+#include <qimage.h>
+
+#include <cstddef>
+#include <map>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "bedrock_key.h"
+
 #ifdef WIN32
 // clang-format off
 #include <Windows.h>
@@ -6,8 +16,6 @@
 #include <Pdh.h>
 // clang-format on
 #endif
-
-#include "mapwidget.h"
 
 #include <QAction>
 #include <QApplication>
@@ -34,6 +42,7 @@
 #include "color.h"
 #include "config.h"
 #include "mainwindow.h"
+#include "mapwidget.h"
 
 namespace {
 
@@ -246,7 +255,7 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     // 细区块边界线
     QPen pen;
-    pen.setColor(QColor(200 - 20, 200 - 20, 200 - 20));
+    pen.setColor(QColor(cfg::GRID_LINE_COLOR.c_str()));
     pen.setWidth(1);
     painter->setPen(pen);
     painter->setBrush(QBrush(QColor(0, 0, 0, 0)));
@@ -415,14 +424,34 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {
-        auto actors = this->mw_->levelLoader()->getActorList(ch);
-        for (auto &kv : actors) {
-            if (!kv.first) continue;
-            for (auto &actor : kv.second) {
-                float x = (actor.x - (float)ch.x * 16.0f) * (float)this->BW() + (float)p.x();
-                float y = (actor.z - (float)ch.z * 16.0f) * (float)this->BW() + (float)p.y();
-                const int W = 18;
-                painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
+        if (cfg::ACTOR_RENDER_STYLE == 0) {
+            auto actors = this->mw_->levelLoader()->getActorList(ch);
+            for (auto &kv : actors) {
+                if (!kv.first) continue;
+                for (auto &actor : kv.second) {
+                    auto chunk_pos = bl::block_pos(actor.x, 0, actor.z).to_chunk_pos();
+
+                    float x = (actor.x - (float)ch.x * 16.0f) * (float)this->BW() + (float)p.x();
+                    float y = (actor.z - (float)ch.z * 16.0f) * (float)this->BW() + (float)p.y();
+                    const int W = 18;
+                    painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *kv.first, QRect(0, 0, 18, 18));
+                }
+            }
+        } else {  // 仅画第一个
+            auto actorCtrs = this->mw_->levelLoader()->getActorCountList(ch);
+            for (auto &kv : actorCtrs) {
+                auto chunk_pos = kv.first;
+                auto &inChunkActors = kv.second;
+                for (auto &iav : inChunkActors) {
+                    auto img = iav.first;
+                    auto countInfo = iav.second;
+                    auto pos = countInfo.pos;
+                    auto count = countInfo.count;
+                    float x = (pos.x - (float)ch.x * 16.0f) * (float)this->BW() + (float)p.x();
+                    float y = (pos.z - (float)ch.z * 16.0f) * (float)this->BW() + (float)p.y();
+                    const int W = 18. * std::log2(count + 1);
+                    painter->drawImage(QRectF(x - W, y - W, W * 2, W * 2), *img, QRect(0, 0, 18, 18));
+                }
             }
         }
     });

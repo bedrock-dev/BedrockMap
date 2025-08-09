@@ -4,6 +4,7 @@
 
 #include "asynclevelloader.h"
 #include "color.h"
+#include "config.h"
 #include "resourcemanager.h"
 #include "ui_renderfilterdialog.h"
 
@@ -158,10 +159,20 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
 void MapFilter::bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const {
     if (!ch) return;
     auto entities = ch->entities();
+    auto mode = cfg::ACTOR_RENDER_STYLE;
     for (auto &e : entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
         if ((this->actors_list_.count(key.toStdString()) == 0) == this->actor_black_mode_) {
-            region->actors_[ActorImage(key)].push_back(e->pos());
+            if (mode == 0) {  // 每个实体都需要渲染
+                region->actors_[ActorImage(key)].push_back(e->pos());
+            } else {
+                auto chunk_pos = ch->get_pos();
+                auto &ac = region->actors_counts_[chunk_pos][ActorImage(key)];
+                ac = {
+                    e->pos(),
+                    ac.count + 1,
+                };
+            }
         }
     }
 }

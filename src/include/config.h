@@ -5,6 +5,7 @@
 #include <QImage>
 #include <bitset>
 #include <cstdint>
+#include <string>
 
 #include "bedrock_key.h"
 
@@ -33,11 +34,12 @@ struct cfg {
     static int MINIMUM_SCALE_LEVEL;      // 最大缩放等级
     static int MAXIMUM_SCALE_LEVEL;      // 最小缩放等级
     static int FONT_SIZE;                // 字体大小
-    static bool FANCY_TERRAIN_RENDER;    // 是否渲染阴影
+    static int MAP_RENDER_STYLE;         // 是否渲染阴影
     static bool LOAD_GLOBAL_DATA;        // 是否加载村庄等全局数据
     static bool OPEN_NBT_EDITOR_ONLY;    // 直接打开nbt编辑器
     static std::string COLOR_THEME;      // 主体
-
+    static std::string GRID_LINE_COLOR;  // 网格线颜色
+    static int ACTOR_RENDER_STYLE;       // 实体渲染风格
     // 运行时配置
     static bool transparent_void;
 

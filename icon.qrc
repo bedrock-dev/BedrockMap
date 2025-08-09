@@ -219,5 +219,11 @@
         <file>res/nbt/TAG_Short.png</file>
         <file>res/nbt/TAG_String.png</file>
         <file>res/ui/icon.png</file>
+        <file>res/entity/bogged.png</file>
+        <file>res/entity/breeze.png</file>
+        <file>res/entity/creaking.png</file>
+        <file>res/block_actor/crafter.png</file>
+        <file>res/block_actor/trialspawner.png</file>
+        <file>res/block_actor/vault.png</file>
     </qresource>
 </RCC>

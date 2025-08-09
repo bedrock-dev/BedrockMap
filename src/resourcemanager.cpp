@@ -64,7 +64,7 @@ namespace {
                         }
                     }
                 }
-                mask->setPixelColor(x, z, QColor(255, 255, 255, alpha));
+                mask->setPixelColor(x, z, QColor(0, 0, 0, alpha));
             }
         };
         for (int i = 0; i < 18; i++) {

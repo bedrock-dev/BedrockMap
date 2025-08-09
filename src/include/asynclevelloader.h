@@ -1,6 +1,8 @@
 #ifndef ASYNCLEVELLOADER_H
 #define ASYNCLEVELLOADER_H
 
+#include <qimage.h>
+
 #include <QCache>
 #include <QFuture>
 #include <QRunnable>
@@ -39,6 +41,10 @@ struct BlockTipsInfo {
 
 struct ChunkRegion {
     ~ChunkRegion();
+    struct ActorCount {
+        bl::vec3 pos{0, 0, 0};
+        int count{0};
+    };
 
     std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
     std::bitset<cfg::RW * cfg::RW> chunk_bit_map_;
@@ -46,7 +52,8 @@ struct ChunkRegion {
     QImage biome_bake_image_;
     QImage height_bake_image_;
     bool valid{false};
-    std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;
+    std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;             // for render mode 0
+    std::map<bl::chunk_pos, std::map<QImage *, ActorCount>> actors_counts_;  // for render mode 1
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 };
 
@@ -163,6 +170,8 @@ class AsyncLevelLoader : public QObject {
     BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
 
     std::unordered_map<QImage *, std::vector<bl::vec3>> getActorList(const region_pos &rp);
+
+    std::map<bl::chunk_pos, std::map<QImage *, ChunkRegion::ActorCount>> getActorCountList(const region_pos &rp);
 
     std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos &rp);
 

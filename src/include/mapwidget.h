@@ -6,12 +6,10 @@
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
-#include <array>
 #include <tuple>
 
-#include "asynclevelloader.h"
 #include "bedrock_key.h"
-#include "nbtwidget.h"
+#include "config.h"
 
 class MainWindow;
 
