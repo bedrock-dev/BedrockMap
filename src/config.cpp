@@ -41,7 +41,7 @@ std::string cfg::GRID_LINE_COLOR = "#bbbbbb";
 int cfg::ACTOR_RENDER_STYLE = 0;  // 0: 渲染每一个实体；1:一个区块内每种实体仅渲染一次
 int cfg::ACTOR_BORDER_WIDTH = 2;  // 图标边框宽度
 std::string cfg::ACTOR_BORDER_COLOR = "#ff000000";
-
+std::string cfg::TRANSSPARENT_VOID_COLOR = "#dddddd";
 bool cfg::transparent_void = false;
 
 // 三个重要文件的路径，直接内置
@@ -97,6 +97,7 @@ void cfg::initConfig() {
             cfg::ACTOR_RENDER_STYLE = j["actor_render_style"].get<int>();
             cfg::ACTOR_BORDER_WIDTH = j["actor_border_width"].get<int>();
             cfg::ACTOR_BORDER_COLOR = j["actor_border_color"].get<std::string>();
+            cfg::TRANSSPARENT_VOID_COLOR = j["transparent_void_color"].get<std::string>();
         }
     } catch (std::exception &e) {
         qCritical() << "Invalid config file format" << e.what();

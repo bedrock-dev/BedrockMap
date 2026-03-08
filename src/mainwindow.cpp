@@ -271,20 +271,19 @@ void MainWindow::openLevel() {
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
     BL_LOGGER("Loading global data in background thread...");
     // load data in global
-    bool full_loaded{false};
     this->loading_global_data_ = true;
     auto future = QtConcurrent::run(
-        [this, &full_loaded](const QString &path) {
+        [this](const QString &path) {
             auto result = GlobalNBTLoadResult{};
             try {
-                if (cfg::LOAD_GLOBAL_DATA) {
-                    level_loader_->loadGlobalData(result);
-                    full_loaded = true;
-                };
+                if (cfg::LOAD_GLOBAL_DATA) level_loader_->loadGlobalData(result);
+                return true;
             } catch (std::exception &e) {
+                BL_ERROR("Can not load global data %s", e.what());
+                return false;
             }
             this->prepareGlobalData(result);
-            return full_loaded;
+            return true;
         },
         root);
     this->load_global_data_watcher_.setFuture(future);

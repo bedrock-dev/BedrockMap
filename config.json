@@ -14,5 +14,6 @@
   "grid_line_color": "#bbbbbb",
   "actor_render_style": 0,
   "actor_border_width": 2,
-  "actor_border_color": "#000000"
+  "actor_border_color": "#000000",
+  "transparent_void_color": "#dddddd"
 }

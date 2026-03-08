@@ -29,22 +29,25 @@ struct cfg {
     const static int GRID_WIDTH;       // 地区格子宽度(单位是区块)
 
     // Configurable
-    static int SHADOW_LEVEL;                // 地形图的阴影等级
-    static float ZOOM_SPEED;                // 滚轮缩放苏晒
-    static int THREAD_NUM;                  // 后台线程数
-    static int REGION_CACHE_SIZE;           // 区域缓存大小
-    static int EMPTY_REGION_CACHE_SIZE;     // 空区域缓存大小
-    static int MINIMUM_SCALE_LEVEL;         // 最大缩放等级
-    static int MAXIMUM_SCALE_LEVEL;         // 最小缩放等级
-    static int FONT_SIZE;                   // 字体大小
-    static int MAP_RENDER_STYLE;            // 是否渲染阴影
-    static bool LOAD_GLOBAL_DATA;           // 是否加载村庄等全局数据
-    static bool OPEN_NBT_EDITOR_ONLY;       // 直接打开nbt编辑器
-    static std::string COLOR_THEME;         // 主体
-    static std::string GRID_LINE_COLOR;     // 网格线颜色
-    static int ACTOR_RENDER_STYLE;          // 实体渲染风格
-    static int ACTOR_BORDER_WIDTH;          // 图标边框宽度
-    static std::string ACTOR_BORDER_COLOR;  // 图标边框颜色
+    static int SHADOW_LEVEL;                     // 地形图的阴影等级
+    static float ZOOM_SPEED;                     // 滚轮缩放苏晒
+    static int THREAD_NUM;                       // 后台线程数
+    static int REGION_CACHE_SIZE;                // 区域缓存大小
+    static int EMPTY_REGION_CACHE_SIZE;          // 空区域缓存大小
+    static int MINIMUM_SCALE_LEVEL;              // 最大缩放等级
+    static int MAXIMUM_SCALE_LEVEL;              // 最小缩放等级
+    static int FONT_SIZE;                        // 字体大小
+    static int MAP_RENDER_STYLE;                 // 是否渲染阴影
+    static bool LOAD_GLOBAL_DATA;                // 是否加载村庄等全局数据
+    static bool OPEN_NBT_EDITOR_ONLY;            // 直接打开nbt编辑器
+    static std::string COLOR_THEME;              // 主题
+    static std::string GRID_LINE_COLOR;          // 网格线颜色
+    static int ACTOR_RENDER_STYLE;               // 实体渲染风格
+    static int ACTOR_BORDER_WIDTH;               // 图标边框宽度
+    static std::string ACTOR_BORDER_COLOR;       // 图标边框颜色
+    static std::string TRANSSPARENT_VOID_COLOR;  // 虚空颜色
+
+    // Configurable (not in config file, can be changed at runtime)
     static bool transparent_void;
 
     static region_pos c2r(const bl::chunk_pos &ch);
