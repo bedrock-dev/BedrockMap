@@ -44,7 +44,9 @@ class MapTile {
     // reegion that are loaded but have no valid chunk
     static QImage &NULL_REGION_TILE();
 
-    static QImage CREATE_REGION_TILE(std::bitset<cfg::RW * cfg::RW> chunk_bit_map, bool fillChunk);
+    static QImage CREATE_REGION_TILE(const std::bitset<cfg::RW * cfg::RW> &region_bit_map, bool fillChunk);
+
+    static QImage *CREATE_REGION_THUMBSNAIL(std::bitset<cfg::RW * cfg::RW> &region_bit_map);
 };
 
 #endif

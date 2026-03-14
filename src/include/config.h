@@ -34,6 +34,7 @@ struct cfg {
     static int THREAD_NUM;                       // 后台线程数
     static int REGION_CACHE_SIZE;                // 区域缓存大小
     static int EMPTY_REGION_CACHE_SIZE;          // 空区域缓存大小
+    static int THUMBNAIL_REION_CACHE_SIZE;       // 区域缩略图缓存
     static int MINIMUM_SCALE_LEVEL;              // 最大缩放等级
     static int MAXIMUM_SCALE_LEVEL;              // 最小缩放等级
     static int FONT_SIZE;                        // 字体大小

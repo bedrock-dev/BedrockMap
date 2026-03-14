@@ -128,6 +128,7 @@ class MapWidget : public QWidget {
 
    private:
     [[nodiscard]] inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
+    [[nodiscard]] inline bool thumbnailMode() const { return this->cw_ < cfg::MINIMUM_SCALE_LEVEL; }
 
    private:
     // for debug
@@ -141,7 +142,6 @@ class MapWidget : public QWidget {
     void foreachRegionInCamera(const std::function<void(const region_pos &p, const QPoint &)> &f);
 
     // function draw
-
     void drawGrid(QPaintEvent *event, QPainter *p);
 
     void drawChunkPosText(QPaintEvent *event, QPainter *painter);

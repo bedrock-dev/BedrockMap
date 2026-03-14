@@ -4,7 +4,7 @@
   "region_cache_size": 2048,
   "empty_region_cache_size": 8192,
   "background_thread_number": 8,
-  "minimum_scale_level": 8,
+  "minimum_scale_level": 16,
   "maximum_scale_level": 1024,
   "zoom_speed": 1.2,
   "map_render_style": 1,

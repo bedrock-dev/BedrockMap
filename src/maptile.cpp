@@ -35,11 +35,12 @@ QImage &MapTile::UNLOADED_REGION_TILE() {
 QImage &MapTile::NULL_REGION_TILE() {
     static auto c1 = QColor(20, 20, 20).rgb();
     static auto c2 = QColor(40, 40, 40).rgb();
+
     static QImage img = createQuadChessTile(2, c1, c2, cfg::RW << 3);
     return img;
 }
 
-QImage MapTile::CREATE_REGION_TILE(std::bitset<cfg::RW * cfg::RW> chunk_bit_map, bool fill) {
+QImage MapTile::CREATE_REGION_TILE(const std::bitset<cfg::RW * cfg::RW> &chunk_bit_map, bool fill) {
     static auto color = QColor(cfg::TRANSSPARENT_VOID_COLOR.c_str()).rgb();
     auto img = NULL_REGION_TILE().copy();
     if (fill) {
@@ -53,6 +54,22 @@ QImage MapTile::CREATE_REGION_TILE(std::bitset<cfg::RW * cfg::RW> chunk_bit_map,
                 if (chunk_bit_map[gridX * cfg::RW + gridY]) {
                     line[x] = color;
                 }
+            }
+        }
+    }
+    return img;
+}
+
+QImage *MapTile::CREATE_REGION_THUMBSNAIL(std::bitset<cfg::RW * cfg::RW> &region_bit_map) {
+    static auto c1 = QColor(20, 20, 20).rgb();
+    static auto c2 = QColor(40, 40, 40).rgb();
+    static auto color = QColor(cfg::TRANSSPARENT_VOID_COLOR.c_str()).rgb();
+    auto *img = new QImage(MapTile::createQuadChessTile(cfg::RW, c1, c2));
+    for (int y = 0; y < cfg::RW; ++y) {
+        QRgb *line = (QRgb *)img->scanLine(y);
+        for (int x = 0; x < cfg::RW; ++x) {
+            if (region_bit_map[x * cfg::RW + y]) {
+                line[x] = color;
             }
         }
     }

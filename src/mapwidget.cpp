@@ -222,7 +222,8 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     } else if (angle < 0) {
         auto ncw = static_cast<int>(static_cast<qreal>(this->cw_) / cfg::ZOOM_SPEED);
         if (ncw == this->cw_) ncw = cw_ - 1;
-        if (ncw < cfg::MINIMUM_SCALE_LEVEL) ncw = cfg::MINIMUM_SCALE_LEVEL;
+        // if (ncw < cfg::MINIMUM_SCALE_LEVEL) ncw = cfg::MINIMUM_SCALE_LEVEL;
+        if (ncw < 1) ncw = 1;
         this->cw_ = ncw;
     }
 
@@ -266,6 +267,7 @@ void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos 
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     // 细区块边界线
+    if (thumbnailMode()) return;
     QPen pen;
     pen.setColor(QColor(cfg::GRID_LINE_COLOR.c_str()));
     pen.setWidth(1);
@@ -321,12 +323,12 @@ QRect MapWidget::getRenderSelectArea() {
 }
 
 void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
+    if (thumbnailMode()) return;
     QFont font("JetBrains Mono", 8);
     QFontMetrics fm(font);
     painter->setFont(font);
     QPen pen(QColor(255, 255, 255));
     painter->setPen(pen);
-
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch, const QPoint &p) {
         if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || this->cw_ >= 128) {
             auto text = QString("%1,%2").arg(QString::number(ch.x << 4), QString::number(ch.z << 4));
@@ -362,6 +364,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
  * @param painter
  */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
+    if (thumbnailMode()) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp, const QPoint &p) {
         auto top = this->mw_->levelLoader()->bakedSlimeChunkImage(rp);
         this->drawRegion(event, painter, rp, p, top);
@@ -369,6 +372,7 @@ void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
+    if (thumbnailMode()) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp, const QPoint &p) {
         auto top = this->mw_->levelLoader()->bakedBiomeImage(rp);
         this->drawRegion(event, painter, rp, p, top);
@@ -377,12 +381,13 @@ void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp, const QPoint &p) {
-        auto terrain = this->mw_->levelLoader()->bakedTerrainImage(rp);
+        auto terrain = thumbnailMode() ? this->mw_->levelLoader()->bakeThumbnailImage(rp) : this->mw_->levelLoader()->bakedTerrainImage(rp);
         this->drawRegion(event, painter, rp, p, terrain);
     });
 }
 
 void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
+    if (thumbnailMode()) return;
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp, const QPoint &p) {
         auto height = this->mw_->levelLoader()->bakedHeightImage(rp);
         this->drawRegion(event, painter, rp, p, height);
@@ -433,6 +438,7 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
+    if (thumbnailMode()) return;
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch, const QPoint &p) {

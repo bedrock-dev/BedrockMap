@@ -1,6 +1,7 @@
 #ifndef ASYNCLEVELLOADER_H
 #define ASYNCLEVELLOADER_H
 
+#include <qcache.h>
 #include <qimage.h>
 
 #include <QCache>
@@ -53,6 +54,8 @@ class AsyncLevelLoader : public QObject {
 
     QImage *bakedHeightImage(const region_pos &rp);
 
+    QImage *bakeThumbnailImage(const region_pos &rp);
+
     QImage *bakedSlimeChunkImage(const region_pos &rp);
 
     BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
@@ -96,12 +99,19 @@ class AsyncLevelLoader : public QObject {
    private:
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
 
+    QImage *tryGetThumbnail(const region_pos &p);
+
    private:
     std::atomic_bool loaded_{false};
     bl::bedrock_level level_{};
+    // map region cache
     TaskBuffer<region_pos> processing_;
     std::vector<QCache<region_pos, ChunkRegion> *> region_cache_;
     std::vector<QCache<region_pos, char> *> invalid_cache_;
+    // map region thumbnails cache
+    TaskBuffer<region_pos> thumbbail_processing_;
+    std::vector<QCache<region_pos, QImage> *> thumbnails_cache_;
+
     // 主要是缓存图像，计算不是重点
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;

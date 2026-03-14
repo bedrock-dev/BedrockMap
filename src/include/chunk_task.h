@@ -104,12 +104,7 @@ class LoadRegionTask : public QObject, public QRunnable {
    public:
     LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const MapFilter *filter)
         : QRunnable(), level_(level), pos_(pos), filter_(filter) {}
-
     void run() override;
-
-   private:
-    void normalRun();
-    void fastRun();
 
    public:
    signals:
@@ -120,7 +115,22 @@ class LoadRegionTask : public QObject, public QRunnable {
     bl::bedrock_level *level_;
     region_pos pos_;
     const MapFilter *filter_;
-    bool fast_mode_{false};
+};
+
+class LoadThumbnailTask : public QObject, public QRunnable {
+    Q_OBJECT
+
+   public:
+    LoadThumbnailTask(bl::bedrock_level *level, const bl::chunk_pos &pos) : QRunnable(), level_(level), pos_(pos) {}
+    void run() override;
+
+   signals:
+
+    void finish(int x, int z, int dim, QImage *thumbnail);
+
+   private:
+    bl::bedrock_level *level_;
+    region_pos pos_;
 };
 
 #endif

@@ -1,19 +1,28 @@
 #include "chunk_task.h"
 
+#include <qimage.h>
+
 #include <QVector3D>
+#include <bitset>
 #include <cstdint>
 #include <string>
 #include <vector>
 
 #include "bedrock_key.h"
 #include "config.h"
+#include "include/chunk_task.h"
 #include "maptile.h"
+
+void RegionTimer::push(int64_t value) {
+    this->values.push_back(value);
+    if (this->values.size() > 10) {
+        this->values.pop_front();
+    }
+}
 
 ChunkRegion::~ChunkRegion() = default;
 
-void LoadRegionTask::run() { fast_mode_ ? fastRun() : normalRun(); }
-
-void LoadRegionTask::normalRun() {
+void LoadRegionTask::run() {
 #ifdef QT_DEBUG
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 #endif
@@ -163,8 +172,8 @@ int64_t RegionTimer::mean() const {
     return this->values.empty() ? 0 : std::accumulate(values.begin(), values.end(), 0ll) / static_cast<int64_t>(values.size());
 }
 
-void LoadRegionTask::fastRun() {
-    auto *region = new ChunkRegion();
+void LoadThumbnailTask::run() {
+    std::bitset<cfg::RW * cfg::RW> chunk_bit_map;
     for (int i = 0; i < cfg::RW; i++) {
         for (int j = 0; j < cfg::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
@@ -172,18 +181,8 @@ void LoadRegionTask::fastRun() {
             auto key2 = bl::chunk_key{bl::chunk_key::VersionNew, p}.to_raw();
             std::string value1, value2;
             bool load = this->level_->load_raw(key1, value1) || this->level_->load_raw(key2, value2);
-            region->chunk_bit_map_.set(i * cfg::RW + j, load);
-            if (load) region->valid = true;
+            chunk_bit_map.set(i * cfg::RW + j, load);
         }
     }
-    region->terrain_bake_image_ = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, true);
-    region->biome_bake_image_ = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, true);
-    region->height_bake_image_ = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, true);
-}
-
-void RegionTimer::push(int64_t value) {
-    this->values.push_back(value);
-    if (this->values.size() > 10) {
-        this->values.pop_front();
-    }
+    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, MapTile::CREATE_REGION_THUMBSNAIL(chunk_bit_map));
 }

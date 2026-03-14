@@ -1,6 +1,8 @@
 #include "asynclevelloader.h"
 
+#include <qcache.h>
 #include <qcolor.h>
+#include <qimage.h>
 #include <qobject.h>
 #include <qvector3d.h>
 
@@ -8,19 +10,23 @@
 #include <QVector3D>
 #include <QtConcurrent>
 #include <QtDebug>
+#include <cstddef>
 #include <vector>
 
 #include "bedrock_key.h"
 #include "config.h"
+#include "include/chunk_task.h"
 #include "leveldb/write_batch.h"
 #include "maptile.h"
 #include "qdebug.h"
+#include "utils.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
         this->region_cache_.push_back(new QCache<region_pos, ChunkRegion>(cfg::REGION_CACHE_SIZE));
         this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
+        this->thumbnails_cache_.push_back(new QCache<region_pos, QImage>(cfg::THUMBNAIL_REION_CACHE_SIZE));
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     /**
@@ -47,16 +53,31 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 this->region_load_timer_.push(load_time);
                 this->region_render_timer_.push(render_time);
-
                 if (!region || (!region->valid)) {
                     this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
                     delete region;
                 } else {
                     this->region_cache_[dim]->insert(bl::chunk_pos(x, z, dim), region);
                 }
-                this->processing_.remove(bl::chunk_pos{x, z, dim});
+                this->processing_.remove(bl::chunk_pos(x, z, dim));
             });
     this->processing_.add(p);
+    this->pool_.start(task);
+    return nullptr;
+}
+
+QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
+    auto *img = this->thumbnails_cache_[p.dim]->operator[](p);
+    if (img) return img;
+    if (this->thumbbail_processing_.contains(p)) return nullptr;
+    auto *task = new LoadThumbnailTask(&this->level_, p);
+    connect(task, &LoadThumbnailTask::finish, this, [this](int x, int z, int dim, QImage *img) {
+        if (img) {
+            this->thumbnails_cache_[dim]->insert(bl::chunk_pos(x, z, dim), img);
+        }
+        this->thumbbail_processing_.remove(bl::chunk_pos(x, z, dim));
+    });
+    this->thumbbail_processing_.add(p);
     this->pool_.start(task);
     return nullptr;
 }
@@ -89,6 +110,9 @@ void AsyncLevelLoader::clearAllCache() {
         cache->clear();
     }
     for (auto cache : this->invalid_cache_) {
+        cache->clear();
+    }
+    for (auto cache : this->thumbnails_cache_) {
         cache->clear();
     }
     this->slime_chunk_cache_->clear();
@@ -227,6 +251,12 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
                           .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
                                QString::number(this->invalid_cache_[i]->maxCost())));
     }
+    res.emplace_back("Thumbnail region cache:");
+    for (int i = 0; i < 3; i++) {
+        res.push_back(QString(" - [%1]: %2/%3")
+                          .arg(QString::number(i), QString::number(this->thumbnails_cache_[i]->totalCost()),
+                               QString::number(this->thumbnails_cache_[i]->maxCost())));
+    }
 
     res.push_back(QString("Slime Chunk cache: %2/%3")
                       .arg(QString::number(this->slime_chunk_cache_->totalCost()), QString::number(this->slime_chunk_cache_->maxCost())));
@@ -270,6 +300,11 @@ QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
     return region ? &region->height_bake_image_ : &MapTile::UNLOADED_REGION_TILE();
 }
 
+QImage *AsyncLevelLoader::bakeThumbnailImage(const region_pos &rp) {
+    if (!this->loaded_) return &MapTile::UNLOADED_REGION_TILE();
+    return this->tryGetThumbnail(rp);
+}
+
 std::unordered_map<QImage *, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos &rp) {
     if (!this->loaded_) return {};
     bool null_region{false};
@@ -306,8 +341,6 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
     return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
 }
-
-#include "qrgb.h"
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     if (rp.dim != 0) return &MapTile::UNLOADED_REGION_TILE();
