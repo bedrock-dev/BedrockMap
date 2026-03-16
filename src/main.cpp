@@ -71,8 +71,10 @@ void setupFont(QApplication &a) {
     }
 
     QFont font;
-    font.setPointSize(cfg::FONT_SIZE);
-    font.setFamily("微软雅黑");
+    auto sz = cfg::FONT_SIZE > 0 ? cfg::FONT_SIZE : 10;
+    auto family = !cfg::FONT_FAMILY.isEmpty() ? cfg::FONT_FAMILY : "微软雅黑";
+    font.setPointSize(sz);
+    font.setFamily(family);
     QApplication::setFont(font);
 }
 

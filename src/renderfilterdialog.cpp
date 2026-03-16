@@ -1,11 +1,14 @@
 #include "renderfilterdialog.h"
 
 #include <QColor>
+#include <cstdint>
+#include <cstdio>
 
 #include "asynclevelloader.h"
 #include "color.h"
 #include "config.h"
 #include "resourcemanager.h"
+#include "sub_chunk.h"
 #include "ui_renderfilterdialog.h"
 
 namespace {
@@ -101,8 +104,35 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     const int Z = (rh << 4) + chz;
     auto info = ch->get_block(chx, y, chz);
     auto biome = ch->get_biome(chx, y, chz);
-
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
+
+    if (cfg::TRANSPARENT_WATER && info.name == "minecraft:water") {
+        bl::block_info solid;
+        int hight = y;
+        bool found_solid = false;
+        while (hight > 0) {  // 添加边界检查
+            hight--;
+            solid = ch->get_block_fast(chx, hight, chz);
+            if (solid.name == "minecraft:unknown") break;
+            if (solid.name != "minecraft:water" && solid.name != "minecraft:air") {
+                found_solid = true;
+                break;
+            }
+        }
+        if (found_solid) {
+            solid = ch->get_block(chx, hight, chz);
+            int water_depth = y - hight;
+            const float base_opacity = 0.15f;
+            // float water_opacity = std::min(base_opacity * water_depth, 0.9f);
+            // water_opacity = std::min(0.1f * std::sqrt(water_depth), 0.9f);
+            float water_opacity = std::min(0.1f * water_depth, 0.7f);
+            info.color.r = static_cast<uint8_t>((1 - water_opacity) * solid.color.r + water_opacity * info.color.r);
+            info.color.g = static_cast<uint8_t>((1 - water_opacity) * solid.color.g + water_opacity * info.color.g);
+            info.color.b = static_cast<uint8_t>((1 - water_opacity) * solid.color.b + water_opacity * info.color.b);
+            info.name = solid.name;  // 如果你想显示为下方方块带水效果
+        }
+    }
+
     region->terrain_bake_image_.setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b, info.color.a));
 
     if ((f->biomes_list_.count(biome) == 0) == f->biome_black_mode_) {
@@ -133,7 +163,6 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
                 }
             }
         }
-
     } else {
         // 无层，从上往下寻找白名单方块
         for (int i = 0; i < 16; i++) {

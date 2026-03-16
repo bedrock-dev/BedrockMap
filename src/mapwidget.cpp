@@ -269,7 +269,7 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     // 细区块边界线
     if (thumbnailMode()) return;
     QPen pen;
-    pen.setColor(QColor(cfg::GRID_LINE_COLOR.c_str()));
+    pen.setColor(QColor(cfg::GRID_LINE_COLOR));
     pen.setWidth(1);
     painter->setPen(pen);
     painter->setBrush(QBrush(QColor(0, 0, 0, 0)));

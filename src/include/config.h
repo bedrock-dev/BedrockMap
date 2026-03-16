@@ -1,11 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <qchar.h>
 #include <qimage.h>
+#include <sys/stat.h>
 
 #include <QColor>
 #include <QImage>
-#include <bitset>
 #include <cstdint>
 #include <string>
 
@@ -29,24 +30,37 @@ struct cfg {
     const static int GRID_WIDTH;       // 地区格子宽度(单位是区块)
 
     // Configurable
-    static int SHADOW_LEVEL;                     // 地形图的阴影等级
-    static float ZOOM_SPEED;                     // 滚轮缩放苏晒
-    static int THREAD_NUM;                       // 后台线程数
-    static int REGION_CACHE_SIZE;                // 区域缓存大小
-    static int EMPTY_REGION_CACHE_SIZE;          // 空区域缓存大小
-    static int THUMBNAIL_REION_CACHE_SIZE;       // 区域缩略图缓存
-    static int MINIMUM_SCALE_LEVEL;              // 最大缩放等级
-    static int MAXIMUM_SCALE_LEVEL;              // 最小缩放等级
-    static int FONT_SIZE;                        // 字体大小
-    static int MAP_RENDER_STYLE;                 // 是否渲染阴影
-    static bool LOAD_GLOBAL_DATA;                // 是否加载村庄等全局数据
-    static bool OPEN_NBT_EDITOR_ONLY;            // 直接打开nbt编辑器
-    static std::string COLOR_THEME;              // 主题
-    static std::string GRID_LINE_COLOR;          // 网格线颜色
-    static int ACTOR_RENDER_STYLE;               // 实体渲染风格
-    static int ACTOR_BORDER_WIDTH;               // 图标边框宽度
-    static std::string ACTOR_BORDER_COLOR;       // 图标边框颜色
-    static std::string TRANSSPARENT_VOID_COLOR;  // 虚空颜色
+
+    // Gui
+    static QString FONT_FAMILY;
+    static int FONT_SIZE;
+    static QString COLOR_THEME;
+    static bool OPEN_NBT_EDITOR_ONLY;
+
+    // Map
+    static int SHADOW_LEVEL;
+    static float ZOOM_SPEED;
+    static int MINIMUM_SCALE_LEVEL;
+    static int MAXIMUM_SCALE_LEVEL;
+    static int MAP_RENDER_STYLE;
+    static QString GRID_LINE_COLOR;
+    static int ACTOR_RENDER_STYLE;
+    static int ACTOR_BORDER_WIDTH;
+    static QString ACTOR_BORDER_COLOR;
+    static QString VOID_MAP_COLOR;
+    static bool TRANSPARENT_WATER;
+
+    // Cache
+    static int THREAD_NUM;
+    static int REGION_CACHE_SIZE;
+    static int EMPTY_REGION_CACHE_SIZE;
+    static int THUMBNAIL_REION_CACHE_SIZE;
+
+    // misc
+    static bool LOAD_GLOBAL_DATA;
+
+    // debug
+    static bool LOG_OUT_MISSING_TEXTURE;
 
     // Configurable (not in config file, can be changed at runtime)
     static bool transparent_void;

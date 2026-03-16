@@ -8,14 +8,13 @@
 #include <qimage.h>
 #include <qnamespace.h>
 #include <qnumeric.h>
+#include <qsettings.h>
 
 #include <QDir>
 #include <QtDebug>
-#include <fstream>
 #include <string>
 
 #include "color.h"
-#include "json/json.hpp"
 
 // Base info
 const std::string cfg::SOFTWARE_NAME = "BedrockMap";
@@ -25,33 +24,47 @@ const std::string cfg::SOFTWARE_VERSION = "v0.5.0";
 const int cfg::GRID_WIDTH = 32;
 
 // Configurable
+// Gui
+QString cfg::FONT_FAMILY;
+int cfg::FONT_SIZE = -1;
+QString cfg::COLOR_THEME = "developing";
+bool cfg::OPEN_NBT_EDITOR_ONLY = false;
+
+// map
 int cfg::SHADOW_LEVEL = 128;
 float cfg::ZOOM_SPEED = 1.2;
+int cfg::MINIMUM_SCALE_LEVEL = 4;
+int cfg::MAXIMUM_SCALE_LEVEL = 1024;
+int cfg::MAP_RENDER_STYLE = 1;
+QString cfg::GRID_LINE_COLOR = "#bbbbbb";
+int cfg::ACTOR_RENDER_STYLE = 0;  // 0/1
+int cfg::ACTOR_BORDER_WIDTH = 2;
+QString cfg::ACTOR_BORDER_COLOR = "#ff000000";
+QString cfg::VOID_MAP_COLOR = "#dddddd";
+bool cfg::TRANSPARENT_WATER = true;
+
+// cache
 int cfg::THREAD_NUM = 8;
 int cfg::REGION_CACHE_SIZE = 4096;
 int cfg::EMPTY_REGION_CACHE_SIZE = 16384;
 int cfg::THUMBNAIL_REION_CACHE_SIZE = 65536;
-int cfg::MINIMUM_SCALE_LEVEL = 4;
-int cfg::MAXIMUM_SCALE_LEVEL = 1024;
-int cfg::MAP_RENDER_STYLE = 1;
+
+// misc
 bool cfg::LOAD_GLOBAL_DATA = true;
-bool cfg::OPEN_NBT_EDITOR_ONLY = false;
-std::string cfg::COLOR_THEME = "developing";
-int cfg::FONT_SIZE = 10;
-std::string cfg::GRID_LINE_COLOR = "#bbbbbb";
-int cfg::ACTOR_RENDER_STYLE = 0;  // 0: 渲染每一个实体；1:一个区块内每种实体仅渲染一次
-int cfg::ACTOR_BORDER_WIDTH = 2;  // 图标边框宽度
-std::string cfg::ACTOR_BORDER_COLOR = "#ff000000";
-std::string cfg::TRANSSPARENT_VOID_COLOR = "#dddddd";
+
+// debug
+bool cfg::LOG_OUT_MISSING_TEXTURE = false;
+
+// others
 bool cfg::transparent_void = false;
 
 // 三个重要文件的路径，直接内置
 #ifdef QT_DEBUG
-const std::string cfg::CONFIG_FILE_PATH = R"(../config.json)";
+const std::string cfg::CONFIG_FILE_PATH = R"(../config.ini)";
 const std::string cfg::BLOCK_FILE_PATH = R"(../bedrock-level/data/colors/block_color.json)";
 const std::string cfg::BIOME_FILE_PATH = R"(../bedrock-level/data/colors/biome_color.json)";
 #else
-const std::string cfg::CONFIG_FILE_PATH = "config.json";
+const std::string cfg::CONFIG_FILE_PATH = "config.ini";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
 const std::string cfg::BIOME_FILE_PATH = "biome_color.json";
 #endif
@@ -67,65 +80,64 @@ void cfg::initColorTable() {
         qWarning() << "Can not load biome color file in path: " << BIOME_FILE_PATH.c_str();
     }
 
-    if (!bl::init_block_color_palette_from_file(cfg::BLOCK_FILE_PATH)) {
+    if (!bl::init_block_color_from_file(cfg::BLOCK_FILE_PATH)) {
         qWarning() << "Can not load block color file in path: " << BLOCK_FILE_PATH.c_str();
     }
+
+    bl::setUseColorDebugMode(cfg::LOG_OUT_MISSING_TEXTURE);
 }
 
 void cfg::initConfig() {
     qInfo() << "Current working directory: " << QDir::currentPath();
     qInfo() << "Configuration file path: " << CONFIG_FILE_PATH.c_str();
-    try {
-        nlohmann::json j;
-        std::ifstream f(CONFIG_FILE_PATH);
-        if (!f.is_open()) {
-            qCritical() << "Can not find config file.";
-        } else {
-            f >> j;
-            cfg::SHADOW_LEVEL = j["terrain_shadow_level"].get<int>();
-            cfg::COLOR_THEME = j["theme"].get<std::string>();
-            REGION_CACHE_SIZE = j["region_cache_size"].get<int>();
-            EMPTY_REGION_CACHE_SIZE = j["empty_region_cache_size"].get<int>();
-            THREAD_NUM = j["background_thread_number"].get<int>();
-            cfg::MINIMUM_SCALE_LEVEL = j["minimum_scale_level"].get<int>();
-            cfg::MAXIMUM_SCALE_LEVEL = j["maximum_scale_level"].get<int>();
-            cfg::ZOOM_SPEED = j["zoom_speed"].get<float>();
-            cfg::FONT_SIZE = j["font_size"].get<int>();
-            cfg::MAP_RENDER_STYLE = j["map_render_style"].get<int>();
-            cfg::LOAD_GLOBAL_DATA = j["load_global_data"].get<bool>();
-            cfg::OPEN_NBT_EDITOR_ONLY = j["nbt_editor_mode"].get<bool>();
-            cfg::GRID_LINE_COLOR = j["grid_line_color"].get<std::string>();
-            cfg::ACTOR_RENDER_STYLE = j["actor_render_style"].get<int>();
-            cfg::ACTOR_BORDER_WIDTH = j["actor_border_width"].get<int>();
-            cfg::ACTOR_BORDER_COLOR = j["actor_border_color"].get<std::string>();
-            cfg::TRANSSPARENT_VOID_COLOR = j["transparent_void_color"].get<std::string>();
-        }
-    } catch (std::exception &e) {
-        qCritical() << "Invalid config file format" << e.what();
+    QSettings setting(CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
+
+    setting.beginGroup("Gui");
+    cfg::COLOR_THEME = setting.value("theme", cfg::COLOR_THEME).toString();
+    cfg::FONT_FAMILY = setting.value("font_family", cfg::FONT_FAMILY).toString();
+    cfg::FONT_SIZE = setting.value("font_size", cfg::FONT_SIZE).toInt();
+    cfg::OPEN_NBT_EDITOR_ONLY = setting.value("nbt_editor_mode", cfg::OPEN_NBT_EDITOR_ONLY).toBool();
+    setting.endGroup();
+
+    setting.beginGroup("Map");
+    cfg::SHADOW_LEVEL = setting.value("terrian_shadow_level", cfg::SHADOW_LEVEL).toInt();
+    cfg::MINIMUM_SCALE_LEVEL = setting.value("min_scale_level", cfg::MINIMUM_SCALE_LEVEL).toInt();
+    cfg::MAXIMUM_SCALE_LEVEL = setting.value("max_scale_level", cfg::MAXIMUM_SCALE_LEVEL).toInt();
+    cfg::ZOOM_SPEED = setting.value("zoom_speed", cfg::ZOOM_SPEED).toDouble();
+    cfg::MAP_RENDER_STYLE = setting.value("render_style", cfg::MAP_RENDER_STYLE).toInt();
+    cfg::GRID_LINE_COLOR = setting.value("grid_line_color", cfg::GRID_LINE_COLOR).toString();
+    cfg::ACTOR_RENDER_STYLE = setting.value("actor_render_style", cfg::ACTOR_RENDER_STYLE).toInt();
+    cfg::ACTOR_BORDER_WIDTH = setting.value("actor_border_width", cfg::ACTOR_BORDER_WIDTH).toInt();
+    cfg::ACTOR_BORDER_COLOR = setting.value("actor_border_color", cfg::ACTOR_BORDER_COLOR).toString();
+    cfg::VOID_MAP_COLOR = setting.value("void_color", cfg::VOID_MAP_COLOR).toString();
+    cfg::TRANSPARENT_WATER = setting.value("transparent_water", cfg::TRANSPARENT_WATER).toBool();
+    setting.endGroup();
+
+    setting.beginGroup("Cache");
+    cfg::REGION_CACHE_SIZE = setting.value("region_cache_size", cfg::REGION_CACHE_SIZE).toInt();
+    cfg::EMPTY_REGION_CACHE_SIZE = setting.value("empty_cache_size", cfg::EMPTY_REGION_CACHE_SIZE).toInt();
+    cfg::THREAD_NUM = setting.value("max_thread_num", cfg::THREAD_NUM).toInt();
+    setting.endGroup();
+
+    setting.beginGroup("Misc");
+    cfg::LOAD_GLOBAL_DATA = setting.value("load_global_data", cfg::LOAD_GLOBAL_DATA).toBool();
+    setting.endGroup();
+
+    setting.beginGroup("Debug");
+    cfg::LOG_OUT_MISSING_TEXTURE = setting.value("log_out_missng_texture", cfg::LOG_OUT_MISSING_TEXTURE).toBool();
+    setting.endGroup();
+
+    if (setting.status() != QSettings::NoError) {
+        qDebug() << "Settings read error:" << setting.status();
     }
+
+    qInfo() << "all keys: " << setting.allKeys().size();
+
     if (THREAD_NUM < 1) {
         THREAD_NUM = 2;
         qWarning() << "Invalid background thread number, reset it to default(2)";
     }
 
-    qInfo() << "Read config finished, here are the details";
-    qInfo() << "- Shadow level: " << cfg::SHADOW_LEVEL;
-    qInfo() << "- Theme: " << COLOR_THEME.c_str();
-    qInfo() << "- Region cache size: " << REGION_CACHE_SIZE;
-    qInfo() << "- Empty region cache size: " << EMPTY_REGION_CACHE_SIZE;
-    qInfo() << "- Background thread number: " << THREAD_NUM;
-    qInfo() << "- Minimum scale level: " << MINIMUM_SCALE_LEVEL;
-    qInfo() << "- Maximum thread number: " << MAXIMUM_SCALE_LEVEL;
-    qInfo() << "- Font size: " << FONT_SIZE;
-    qInfo() << "- Zoom speed: " << ZOOM_SPEED;
-    qInfo() << "- Load global data: " << cfg::LOAD_GLOBAL_DATA;
-    qInfo() << "- Render region width: " << cfg::RW;
-    qInfo() << "- NBT editor mode:" << cfg::OPEN_NBT_EDITOR_ONLY;
-    qInfo() << "- Grid line color:" << cfg::GRID_LINE_COLOR.c_str();
-    qInfo() << "- Actor render style: " << cfg::ACTOR_RENDER_STYLE;
-    qInfo() << "- Actor border width: " << cfg::ACTOR_BORDER_WIDTH;
-    qInfo() << "- Actor border color: " << cfg::ACTOR_BORDER_COLOR.c_str();
-    qInfo() << "Reading biome and block color table...";
     initColorTable();
 }
 

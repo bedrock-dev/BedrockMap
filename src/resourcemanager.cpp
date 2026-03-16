@@ -58,7 +58,7 @@ namespace {
                     for (int j = -bw; j <= bw; ++j) {
                         if (cx + i >= 0 && cx + i < origin->width() && cz + j >= 0 && cz + j < origin->height() &&
                             origin->pixelColor(cx + i, cz + j).alpha() != 0) {
-                            mask->setPixelColor(x, z, QColor(cfg::ACTOR_BORDER_COLOR.c_str()));
+                            mask->setPixelColor(x, z, QColor(cfg::ACTOR_BORDER_COLOR));
                             return;
                         }
                     }
