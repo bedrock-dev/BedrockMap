@@ -44,7 +44,7 @@ class AsyncLevelLoader : public QObject {
 
     void setFilter(const MapFilter &f) { this->map_filter_ = f; }
 
-    void loadGlobalData(GlobalNBTLoadResult &result);
+    void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
 
    public:
     /*region cache*/

@@ -271,12 +271,12 @@ void MainWindow::openLevel() {
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
     BL_LOGGER("Loading global data in background thread...");
     // load data in global
-    this->loading_global_data_ = true;
+    this->stop_loading_global_data_ = false;
     auto future = QtConcurrent::run(
         [this](const QString &path) {
             auto result = GlobalNBTLoadResult{};
             try {
-                if (cfg::LOAD_GLOBAL_DATA) level_loader_->loadGlobalData(result);
+                if (cfg::LOAD_GLOBAL_DATA) level_loader_->loadGlobalData(result, std::ref(this->stop_loading_global_data_));
                 return true;
             } catch (std::exception &e) {
                 BL_ERROR("Can not load global data %s", e.what());
@@ -292,10 +292,13 @@ void MainWindow::openLevel() {
 void MainWindow::closeLevel() {  // NOLINT
     // cancel background task
     if (!this->level_loader_->isOpen()) return;
-    this->loading_global_data_ = false;
+    this->stop_loading_global_data_ = true;
+    qDebug() << "Canceling global data loading...";
     this->load_global_data_watcher_.waitForFinished();
+    qDebug() << "Closing level...";
     this->level_loader_->close();
     // free spaces
+    qDebug() << "Cleaning memory...";
     this->chunk_editor_widget_->clearData();
     this->village_editor_->clearData();
     this->player_editor_->clearData();
@@ -397,7 +400,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
 void MainWindow::handle_level_open_finished() {
     auto res = this->load_global_data_watcher_.result();
     if (!res) {
-        if (!this->loading_global_data_) {  // 说明是主动停止的
+        if (this->stop_loading_global_data_) {  // 说明是主动停止的
             qDebug() << "Stop loading global data (by user)";
             return;
         }

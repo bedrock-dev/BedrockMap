@@ -49,6 +49,7 @@ struct cfg {
     static QString ACTOR_BORDER_COLOR;
     static QString VOID_MAP_COLOR;
     static bool TRANSPARENT_WATER;
+    static bool ENABLE_THUMBNAIL_MODE;
 
     // Cache
     static int THREAD_NUM;

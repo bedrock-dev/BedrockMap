@@ -215,8 +215,7 @@ class MainWindow : public QMainWindow {
     RenderFilterDialog render_filter_dialog_{this};
     LogoPos logoPos{};
 
-    // loading global data?
-    std::atomic_bool loading_global_data_{false};
+    std::atomic_bool stop_loading_global_data_{true};
     std::atomic_bool global_data_loaded_{false};
 
     // Shortcuts

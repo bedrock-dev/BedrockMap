@@ -6,7 +6,6 @@
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
-#include <cstddef>
 #include <tuple>
 
 #include "bedrock_key.h"
@@ -94,7 +93,7 @@ class MapWidget : public QWidget {
 
     void render3dAction(const bl::chunk_pos &minPos, const bl::chunk_pos &maxPos);
 
-    // 前往坐标
+    // Goto Position
     void gotoPositionAction();
 
     inline void selectChunk(const bl::chunk_pos &p) { this->opened_chunk_ = true, this->opened_chunk_pos_ = p; }
@@ -114,7 +113,6 @@ class MapWidget : public QWidget {
 
     void asyncRefresh();
 
-    // https://stackoverflow.com/questions/24254006/rightclick-event-in-qt-to-open-a-context-menu
     void showContextMenu(const QPoint &p);
 
     void gotoBlockPos(int x, int z);
@@ -128,7 +126,7 @@ class MapWidget : public QWidget {
 
    private:
     [[nodiscard]] inline qreal BW() const { return static_cast<qreal>(this->cw_) / 16.0; }
-    [[nodiscard]] inline bool thumbnailMode() const { return this->cw_ < cfg::MINIMUM_SCALE_LEVEL; }
+    [[nodiscard]] inline bool thumbnailMode() const { return cfg::ENABLE_THUMBNAIL_MODE && this->cw_ < cfg::MINIMUM_SCALE_LEVEL; }
 
    private:
     // for debug

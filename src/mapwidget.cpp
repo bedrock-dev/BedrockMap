@@ -222,8 +222,8 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     } else if (angle < 0) {
         auto ncw = static_cast<int>(static_cast<qreal>(this->cw_) / cfg::ZOOM_SPEED);
         if (ncw == this->cw_) ncw = cw_ - 1;
-        // if (ncw < cfg::MINIMUM_SCALE_LEVEL) ncw = cfg::MINIMUM_SCALE_LEVEL;
-        if (ncw < 1) ncw = 1;
+        auto minCW = cfg::ENABLE_THUMBNAIL_MODE ? 1 : cfg::MINIMUM_SCALE_LEVEL;
+        if (ncw < minCW) ncw = minCW;
         this->cw_ = ncw;
     }
 

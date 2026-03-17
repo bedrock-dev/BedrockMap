@@ -2,6 +2,7 @@
 
 #include <qcache.h>
 #include <qcolor.h>
+#include <qglobal.h>
 #include <qimage.h>
 #include <qobject.h>
 #include <qvector3d.h>
@@ -135,22 +136,39 @@ QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::ch
     return QtConcurrent::run(directChunkReader, min, max);
 }
 
-void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result) {
+void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop) {
     static const std::vector<std::string> others_keys{"portals",   "scoreboard", "AutonomousEntities", "BiomeData", "Nether",
                                                       "Overworld", "TheEnd",     "schedulerWT",        "mobevents"};
     std::string value;
+    qDebug() << "Load Global Data(Others)";
     for (auto &key : others_keys) {
         if (level_.load_raw(key, value)) {
+            if (stop) break;
             result.otherData.append_nbt(key, value);
         }
     }
-    level_.foreach_key_with_prefix("VILLAGE_", [&result](const auto &key, const auto &value) {
-        auto vk = bl::village_key::parse(key);
-        if (vk.valid()) result.villageData.append_village(vk, value);
-    });
 
-    level_.foreach_key_with_prefix("map", [&result](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); });
-    level_.foreach_key_with_prefix("player", [&result](const auto &key, const auto &value) { result.playerData.append_nbt(key, value); });
+    qDebug() << "Load Global Data(Village)";
+    level_.foreach_key_with_prefix(
+        "VILLAGE_",
+        [&result, &stop](const auto &key, const auto &value) {
+            auto vk = bl::village_key::parse(key);
+            if (vk.valid()) result.villageData.append_village(vk, value);
+        },
+        stop);
+
+    qDebug() << "Load Global Data(Map)";
+    level_.foreach_key_with_prefix(
+        "map",
+        [&result, &stop](const auto &key, const auto &value) {
+            qDebug() << "Load key: " << key.c_str();
+            result.mapData.append_nbt(key, value);
+        },
+        stop);
+
+    qDebug() << "Load Global Data(Player)";
+    level_.foreach_key_with_prefix(
+        "player", [&result, &stop](const auto &key, const auto &value) { result.playerData.append_nbt(key, value); }, stop);
 }
 
 bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {

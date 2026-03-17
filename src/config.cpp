@@ -42,6 +42,7 @@ int cfg::ACTOR_BORDER_WIDTH = 2;
 QString cfg::ACTOR_BORDER_COLOR = "#ff000000";
 QString cfg::VOID_MAP_COLOR = "#dddddd";
 bool cfg::TRANSPARENT_WATER = true;
+bool cfg::ENABLE_THUMBNAIL_MODE = true;
 
 // cache
 int cfg::THREAD_NUM = 8;
@@ -111,6 +112,7 @@ void cfg::initConfig() {
     cfg::ACTOR_BORDER_COLOR = setting.value("actor_border_color", cfg::ACTOR_BORDER_COLOR).toString();
     cfg::VOID_MAP_COLOR = setting.value("void_color", cfg::VOID_MAP_COLOR).toString();
     cfg::TRANSPARENT_WATER = setting.value("transparent_water", cfg::TRANSPARENT_WATER).toBool();
+    cfg::ENABLE_THUMBNAIL_MODE = setting.value("enable_thumbnail_mode", cfg::ENABLE_THUMBNAIL_MODE).toBool();
     setting.endGroup();
 
     setting.beginGroup("Cache");

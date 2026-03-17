@@ -60,7 +60,7 @@ QImage MapTile::CREATE_REGION_TILE(const std::bitset<cfg::RW * cfg::RW> &chunk_b
     return img;
 }
 
-QImage *MapTile::CREATE_REGION_THUMBSNAIL(std::bitset<cfg::RW * cfg::RW> &region_bit_map) {
+QImage *MapTile::CREATE_REGION_THUMBNAIL(std::bitset<cfg::RW * cfg::RW> &region_bit_map) {
     static auto c1 = QColor(20, 20, 20).rgb();
     static auto c2 = QColor(40, 40, 40).rgb();
     static auto color = QColor(cfg::VOID_MAP_COLOR).rgb();

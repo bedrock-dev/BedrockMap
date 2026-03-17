@@ -184,5 +184,5 @@ void LoadThumbnailTask::run() {
             chunk_bit_map.set(i * cfg::RW + j, load);
         }
     }
-    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, MapTile::CREATE_REGION_THUMBSNAIL(chunk_bit_map));
+    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, MapTile::CREATE_REGION_THUMBNAIL(chunk_bit_map));
 }
