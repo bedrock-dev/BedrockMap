@@ -12,6 +12,7 @@
 #include <QtConcurrent>
 #include <QtDebug>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "bedrock_key.h"
@@ -155,15 +156,23 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
             auto vk = bl::village_key::parse(key);
             if (vk.valid()) result.villageData.append_village(vk, value);
         },
-        stop);
+        stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
 
     qDebug() << "Loading Global Data(Map)";
     level_.foreach_key_with_prefix(
-        "map", [&result, &stop](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); }, stop);
+        "map_", [&result, &stop](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); }, stop,
+        cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
 
     qDebug() << "Loading Global Data(Player)";
     level_.foreach_key_with_prefix(
-        "player", [&result, &stop](const auto &key, const auto &value) { result.playerData.append_nbt(key, value); }, stop);
+        "player_",
+        [&result, &stop](const std::string &key, const std::string &value) {
+            // key with player_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
+            if (key.size() != 43) return;
+            qDebug() << "Load Placery Key: " << key.c_str();
+            result.playerData.append_nbt(key, value);
+        },
+        stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
 }
 
 bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {

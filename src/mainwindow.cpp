@@ -117,7 +117,10 @@ void MainWindow::setupMenuActions() {
         this->ui->action_debug->setChecked(checked);
         this->map_widget_->setDrawDebug(checked);
     });
-    connect(ui->action_abort_global_data_loading, &QAction::triggered, [this] { this->stop_loading_global_data_ = true; });
+    connect(ui->action_abort_global_data_loading, &QAction::triggered, [this] {
+        this->stop_loading_global_data_ = true;
+        qInfo() << "Canceling global data loading";
+    });
     connect(ui->action_levelDB, &QAction::triggered, this, [this]() {
         this->leveldb_dialog_->initData(this->level_loader_->level().db());
         this->leveldb_dialog_->exec();
@@ -266,21 +269,23 @@ void MainWindow::openLevel() {
     // load level.dat
     auto *ld = dynamic_cast<bl::palette::compound_tag *>(this->level_loader_->level().dat().root());
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
-    BL_LOGGER("Loading global data in background thread...");
+    qInfo() << "Loading global data in background thread...";
     // load data in global
     this->stop_loading_global_data_ = false;
     auto future = QtConcurrent::run(
         [this](const QString &path) {
             auto result = GlobalNBTLoadResult{};
             try {
-                if (cfg::LOAD_GLOBAL_DATA) level_loader_->loadGlobalData(result, std::ref(this->stop_loading_global_data_));
+                if (cfg::LOAD_GLOBAL_DATA) {
+                    level_loader_->loadGlobalData(result, std::ref(this->stop_loading_global_data_));
+                    this->prepareGlobalData(result);
+                }
                 return true;
             } catch (std::exception &e) {
-                BL_ERROR("Can not load global data %s", e.what());
+                qWarning() << "Can not load global data: " << e.what();
+                this->prepareGlobalData(result);
                 return false;
             }
-            this->prepareGlobalData(result);
-            return true;
         },
         root);
     this->load_global_data_watcher_.setFuture(future);
@@ -333,11 +338,11 @@ void MainWindow::openMapItemEditor() {
 
 void MainWindow::deleteChunks(const bl::chunk_pos &min, const bl::chunk_pos &max) {
     if (!this->level_loader_->isOpen()) {
-        QMessageBox::information(nullptr, "警告", "还没有打开世界", QMessageBox::Yes, QMessageBox::Yes);
+        WARN("还没有打开世界");
         return;
     }
     if (!this->write_mode_) {
-        QMessageBox::information(nullptr, "警告", "当前为只读模式，无法删除区块", QMessageBox::Yes, QMessageBox::Yes);
+        WARN("当前为只读模式，无法删除区块");
         return;
     }
     auto future = this->level_loader_->dropChunk(min, max);
@@ -397,10 +402,6 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
 void MainWindow::handle_level_open_finished() {
     auto res = this->load_global_data_watcher_.result();
     if (!res) {
-        if (this->stop_loading_global_data_) {  // 说明是主动停止的
-            qDebug() << "Stop loading global data (by user)";
-            return;
-        }
         qDebug() << "some global data load failed";
         WARN("部分全局数据加载失败");
     }

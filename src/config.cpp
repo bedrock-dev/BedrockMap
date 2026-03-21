@@ -125,6 +125,7 @@ void cfg::initConfig() {
 
     setting.beginGroup("Misc");
     cfg::LOAD_GLOBAL_DATA = setting.value("load_global_data", cfg::LOAD_GLOBAL_DATA).toBool();
+    cfg::MAX_GLOBAL_DATA_LOAD_COUNT = setting.value("max_global_data_load_count", cfg::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
     setting.endGroup();
 
     setting.beginGroup("Debug");
