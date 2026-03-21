@@ -2,6 +2,8 @@
 
 #include <qaction.h>
 #include <qdebug.h>
+#include <qglobal.h>
+#include <qpushbutton.h>
 
 #include <QDesktopServices>
 #include <QDesktopWidget>
@@ -23,6 +25,7 @@
 #include "./ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "asynclevelloader.h"
+#include "config.h"
 #include "global.h"
 #include "mapitemeditor.h"
 #include "mapwidget.h"
@@ -55,26 +58,90 @@ namespace {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    // level loader
+
     this->level_loader_ = new AsyncLevelLoader();
-    // init and insert map widget
+    this->about_dialog_ = new AboutDialog(this);
+    this->leveldb_dialog_ = new LevelDBDebugDialog(this);
+
+    setupMenuActions();
+    setupMapWidget();
+    setupToolBar();
+    setupGlobalNBTWidget();
+    setupShortcuts();
+    // Label and edit
+
+    // ui->main_splitter->setStretchFactor(0, 3);
+    // ui->main_splitter->setStretchFactor(1, 2);
+
+    connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
+    connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
+
+    // watcher
+    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_chunk_delete_finished);
+    connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_level_open_finished);
+
+    // reset UI
+    this->resetToInitUI();
+}
+
+void MainWindow::setupMenuActions() {
+    this->map_item_editor_ = new MapItemEditor(this);
+
+    // File
+    connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
+    connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
+    connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
+    // Tools
+    ui->action_modify->setCheckable(true);
+    connect(ui->action_modify, &QAction::triggered, this, [this]() {
+        auto checked = this->ui->action_modify->isChecked();
+        this->ui->action_modify->setChecked(checked);
+        this->write_mode_ = checked;
+    });
+    ui->action_transparent_void->setCheckable(true);
+    connect(ui->action_transparent_void, &QAction::triggered, this, [this]() {
+        auto checked = this->ui->action_transparent_void->isChecked();
+        this->ui->action_transparent_void->setChecked(checked);
+        cfg::transparent_void = checked;
+        this->level_loader_->clearAllCache();
+    });
+    connect(ui->action_map_item, &QAction::triggered, this, [this]() { openMapItemEditor(); });
+    connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
+    connect(ui->action_settings, &QAction::triggered, this,
+            []() { QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str())); });
+
+    // Developer
+    ui->action_debug->setCheckable(true);
+    connect(ui->action_debug, &QAction::triggered, this, [this]() {
+        auto checked = this->ui->action_debug->isChecked();
+        this->ui->action_debug->setChecked(checked);
+        this->map_widget_->setDrawDebug(checked);
+    });
+    connect(ui->action_abort_global_data_loading, &QAction::triggered, [this] { this->stop_loading_global_data_ = true; });
+    connect(ui->action_levelDB, &QAction::triggered, this, [this]() {
+        this->leveldb_dialog_->initData(this->level_loader_->level().db());
+        this->leveldb_dialog_->exec();
+    });
+
+    // About
+    connect(ui->action_about, &QAction::triggered, this, [&]() { about_dialog_->exec(); });
+}
+void MainWindow::setupMapWidget() {
     this->map_widget_ = new MapWidget(this, nullptr);
     this->map_widget_->gotoBlockPos(0, 0);
     ui->map_visual_layout->addWidget(this->map_widget_);
-    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));  // NOLINT
+    connect(this->map_widget_, SIGNAL(mouseMove(int, int)), this, SLOT(updateXZEdit(int, int)));
     // init chunk editor layout
     this->chunk_editor_widget_ = new ChunkEditorWidget(this);
     ui->map_splitter->setStretchFactor(0, 1);
     ui->map_splitter->setStretchFactor(1, 10);
     ui->map_splitter->setStretchFactor(2, 1);
     ui->map_splitter->addWidget(this->chunk_editor_widget_);
-
-    // basic layer btns group
-
+}
+void MainWindow::setupToolBar() {
     this->layer_btns_ = {{MapWidget::MainRenderType::Biome, ui->biome_layer_btn},
                          {MapWidget::MainRenderType::Terrain, ui->terrain_layer_btn},
                          {MapWidget::MainRenderType::Height, ui->height_layer_btn}};
-
     for (auto &kv : this->layer_btns_) {
         QObject::connect(kv.second, &QPushButton::clicked, [this, &kv]() {
             for (auto &x : this->layer_btns_) {
@@ -83,7 +150,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             this->map_widget_->changeLayer(kv.first);
         });
     }
-
     // dimension btns group
     this->dim_btns_ = {
         {MapWidget::DimType::OverWorld, ui->overwrold_btn},
@@ -99,9 +165,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             this->map_widget_->changeDimension(kv.first);
         });
     }
+}
 
-    // Label and edit
-
+void MainWindow::setupGlobalNBTWidget() {
     // global editor
     this->level_dat_editor_ = new NbtWidget();
     level_dat_editor_->hideLoadDataBtn();
@@ -111,74 +177,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     village_editor_->hideLoadDataBtn();
     this->other_nbt_editor_ = new NbtWidget();
     other_nbt_editor_->hideLoadDataBtn();
-
     ui->level_dat_tab->layout()->replaceWidget(ui->level_dat_empty_widget, level_dat_editor_);
     ui->player_tab->layout()->replaceWidget(ui->player_empty_widget, player_editor_);
     ui->village_tab->layout()->replaceWidget(ui->village_empty_widget, village_editor_);
     ui->other_tab->layout()->replaceWidget(ui->other_empty_widget, other_nbt_editor_);
-
-    ui->main_splitter->setStretchFactor(0, 3);
-    ui->main_splitter->setStretchFactor(1, 2);
-
-    this->map_item_editor_ = new MapItemEditor(this);
-    connect(ui->open_level_btn, &QPushButton::clicked, this, &MainWindow::openLevel);
-    connect(&this->render_filter_dialog_, &RenderFilterDialog::accepted, this, &MainWindow::applyFilter);
-
-    // dialog
-    this->about_dialog_ = new AboutDialog(this);
-    this->leveldb_dialog_ = new LevelDBDebugDialog(this);
-
-    // menu actions
-    connect(ui->action_open, SIGNAL(triggered()), this, SLOT(openLevel()));
-    connect(ui->action_close, SIGNAL(triggered()), this, SLOT(closeLevel()));
-    connect(ui->action_exit, SIGNAL(triggered()), this, SLOT(close_and_exit()));
-    connect(ui->action_NBT, SIGNAL(triggered()), this, SLOT(openNBTEditor()));
-    connect(ui->action_about, &QAction::triggered, this, [&]() { about_dialog_->exec(); });
-
-    connect(ui->action_settings, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str())); });
-
-    connect(ui->action_map_item, &QAction::triggered, this, [this]() { openMapItemEditor(); });
-
-    // modify
-    ui->action_modify->setCheckable(true);
-    connect(ui->action_modify, &QAction::triggered, this, [this]() {
-        auto checked = this->ui->action_modify->isChecked();
-        this->ui->action_modify->setChecked(checked);
-        this->write_mode_ = checked;
-    });
-
-    // transparent void
-    ui->action_transparent_void->setCheckable(true);
-    connect(ui->action_transparent_void, &QAction::triggered, this, [this]() {
-        auto checked = this->ui->action_transparent_void->isChecked();
-        this->ui->action_transparent_void->setChecked(checked);
-        //        this->map_widget_->setDrawDebug(checked);
-        cfg::transparent_void = checked;
-        this->level_loader_->clearAllCache();
-    });
-
-    // developer
-    ui->action_debug->setCheckable(true);
-    connect(ui->action_debug, &QAction::triggered, this, [this]() {
-        auto checked = this->ui->action_debug->isChecked();
-        this->ui->action_debug->setChecked(checked);
-        this->map_widget_->setDrawDebug(checked);
-    });
-
-    connect(ui->action_levelDB, &QAction::triggered, this, [this]() {
-        this->leveldb_dialog_->initData(this->level_loader_->level().db());
-        this->leveldb_dialog_->exec();
-    });
-
-    // watcher
-    connect(&this->delete_chunks_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_chunk_delete_finished);
-    connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this, &MainWindow::handle_level_open_finished);
-
-    // reset UI
-
-    this->setupShortcuts();
-    this->resetToInitUI();
 }
 
 void MainWindow::resetToInitUI() {
@@ -230,23 +232,18 @@ bool MainWindow::openChunkEditor(const bl::chunk_pos &p) {
     if (!CHECK_CONDITION((chunk), "无法打开区块数据")) {
         return false;
     }
-
     this->chunk_editor_widget_->setVisible(true);
     this->chunk_editor_widget_->loadChunkData(chunk);
     return true;
 }
 
 void MainWindow::openLevel() {
-    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] +
-                "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
-    QString root =
-        QFileDialog::getExistingDirectory(this, tr("打开存档根目录"), path, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
+    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + cfg::MCBE_LEVEL_PATH;
+    QString root = QFileDialog::getExistingDirectory(this, tr("打开存档根目录"), path, QFileDialog::ShowDirsOnly);
     if (root.isEmpty()) return;
 
     this->closeLevel();
-    BL_LOGGER("Open Level %s", root.toStdString().c_str());
-
+    qDebug() << "Open level " << root;
     ui->open_level_btn->setText("正在打开...");
     ui->open_level_btn->setEnabled(false);
     auto res = this->level_loader_->open(root.toStdString());
@@ -353,7 +350,7 @@ void MainWindow::handle_chunk_delete_finished() {
 }
 
 void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
-    BL_LOGGER("Filling player data...");
+    qInfo() << "Filling player data...";
     auto &playerData = res.playerData.data();
     std::vector<NBTListItem *> playerNBTList;
     for (auto &kv : playerData) {
@@ -363,7 +360,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
     }
     this->player_editor_->loadNewData(playerNBTList);
 
-    BL_LOGGER("Filling other data...");
+    qInfo() << "Filling other data...";
     auto &otherData = res.otherData.data();
     std::vector<NBTListItem *> otherNBTList;
     for (auto &kv : otherData) {
@@ -373,7 +370,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
     }
     this->other_nbt_editor_->loadNewData(otherNBTList);
 
-    BL_ERROR("Filling village data...");
+    qInfo() << "Filling village data...";
     auto &villData = res.villageData.data();
     this->collect_villages(villData);
     std::vector<NBTListItem *> villNBTList;
@@ -393,7 +390,7 @@ void MainWindow::prepareGlobalData(GlobalNBTLoadResult &res) {
     }
     this->village_editor_->loadNewData(villNBTList);
 
-    BL_LOGGER("Filling map data...");
+    qInfo() << "Filling map data...";
     this->map_item_editor_->load_map_data(res.mapData);
 }
 
@@ -482,21 +479,6 @@ void MainWindow::applyFilter() {
     this->level_loader_->clearAllCache();
 }
 
-#include <QPainter>
-
-void MainWindow::paintEvent(QPaintEvent *event) {
-    //    if (this->levelLoader()->isOpen()) return;
-    //    auto sz = this->size();
-    //    const int w = static_cast<int>(std::min(sz.width(), sz.height()) * 1.2);
-    //    QPainter p(this);
-    //    int x = static_cast<int>(logoPos.x * sz.width());
-    //    int z = static_cast<int>( logoPos.y * sz.height());
-    //    p.translate(x, z);
-    //    p.rotate(logoPos.angle);
-    //    p.drawImage(QRect(-w / 2, -w / 2, w, w), *cfg::BG(), QRect(0, 0, 8, 8));
-    //    QMainWindow::paintEvent(event);
-}
-
 void MainWindow::on_grid_btn_clicked() {
     auto r = this->map_widget_->toggleGrid();
     updateButtonBackground(ui->grid_btn, r);
@@ -535,10 +517,6 @@ QString MainWindow::getStaticTitle() {
         level_name = this->level_loader_->level().dat().level_name();
     }
     return cfg::VERSION_STRING() + " " + level_name.c_str();
-}
-
-void MainWindow::resizeEvent(QResizeEvent *event) {
-    // this->chunk_editor_widget_->setMaximumWidth(this->height() / 2);
 }
 
 void MainWindow::setupShortcuts() {

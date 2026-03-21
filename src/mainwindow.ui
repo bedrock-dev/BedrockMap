@@ -33,7 +33,7 @@
    <property name="styleSheet">
     <string notr="true"/>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1">
     <property name="spacing">
      <number>2</number>
     </property>
@@ -1075,6 +1075,7 @@ border:none;</string>
     </property>
     <addaction name="action_levelDB"/>
     <addaction name="action_debug"/>
+    <addaction name="action_abort_global_data_loading"/>
    </widget>
    <addaction name="file_menu"/>
    <addaction name="menu_2"/>
@@ -1153,6 +1154,11 @@ border:none;</string>
    </property>
    <property name="text">
     <string>调试窗口</string>
+   </property>
+  </action>
+  <action name="action_abort_global_data_loading">
+   <property name="text">
+    <string>终止全局数据加载</string>
    </property>
   </action>
  </widget>

@@ -59,6 +59,7 @@ struct cfg {
 
     // misc
     static bool LOAD_GLOBAL_DATA;
+    static int MAX_GLOBAL_DATA_LOAD_COUNT;
 
     // debug
     static bool LOG_OUT_MISSING_TEXTURE;
@@ -73,6 +74,7 @@ struct cfg {
     static void initConfig();
 
     static QString VERSION_STRING();
+    static QString MCBE_LEVEL_PATH;
 };
 
 #endif  // CONFIG_H

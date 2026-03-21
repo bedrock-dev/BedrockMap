@@ -109,7 +109,7 @@ class AsyncLevelLoader : public QObject {
     std::vector<QCache<region_pos, ChunkRegion> *> region_cache_;
     std::vector<QCache<region_pos, char> *> invalid_cache_;
     // map region thumbnails cache
-    TaskBuffer<region_pos> thumbbail_processing_;
+    TaskBuffer<region_pos> thumbnail_processing_;
     std::vector<QCache<region_pos, QImage> *> thumbnails_cache_;
 
     // 主要是缓存图像，计算不是重点

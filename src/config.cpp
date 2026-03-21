@@ -6,6 +6,7 @@
 #include <qcolor.h>
 #include <qglobal.h>
 #include <qimage.h>
+#include <qmath.h>
 #include <qnamespace.h>
 #include <qnumeric.h>
 #include <qsettings.h>
@@ -52,6 +53,7 @@ int cfg::THUMBNAIL_REION_CACHE_SIZE = 65536;
 
 // misc
 bool cfg::LOAD_GLOBAL_DATA = true;
+int cfg::MAX_GLOBAL_DATA_LOAD_COUNT = -1;
 
 // debug
 bool cfg::LOG_OUT_MISSING_TEXTURE = false;
@@ -144,3 +146,5 @@ void cfg::initConfig() {
 }
 
 QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
+
+QString cfg::MCBE_LEVEL_PATH = "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";

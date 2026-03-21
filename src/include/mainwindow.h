@@ -104,8 +104,16 @@ class MainWindow : public QMainWindow {
    public:
     explicit MainWindow(QWidget *parent = nullptr);
 
+   private:
+    void setupMenuActions();
+    void setupMapWidget();
+    void setupToolBar();
+    void setupGlobalNBTWidget();
+
+   public:
     ~MainWindow() override;
 
+    // getter
     AsyncLevelLoader *levelLoader() { return this->level_loader_; }
 
     MapWidget *mapWidget() { return this->map_widget_; }
@@ -128,11 +136,6 @@ class MainWindow : public QMainWindow {
     inline QMap<QString, VillageDrawInfo> &get_villages() { return this->villages_; }
 
     void applyFilter();
-
-   protected:
-    void paintEvent(QPaintEvent *event) override;
-
-    void resizeEvent(QResizeEvent *event) override;
 
    private slots:
 
