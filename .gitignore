@@ -82,3 +82,4 @@ logs
 !icon.rc
 build_rls
 *.zip
+*.qrc

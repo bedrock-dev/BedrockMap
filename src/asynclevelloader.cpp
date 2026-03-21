@@ -169,7 +169,6 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
         [&result, &stop](const std::string &key, const std::string &value) {
             // key with player_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
             if (key.size() != 43) return;
-            qDebug() << "Load Placery Key: " << key.c_str();
             result.playerData.append_nbt(key, value);
         },
         stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
