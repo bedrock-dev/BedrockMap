@@ -79,6 +79,16 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="render_view_tab">
+      <attribute name="title">
+       <string>视图</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QWidget" name="empty_3d_view_widget" native="true"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
        <string>地形</string>

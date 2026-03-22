@@ -1,18 +1,4 @@
-
-#include <qaction.h>
-#include <qimage.h>
-#include <qmainwindow.h>
-#include <qwidget.h>
-#include <qwindowdefs.h>
-
-#include <utility>
-#include <vector>
-
-#include "bedrock_key.h"
-#include "include/gotopositiondialog.h"
-#include "msg.h"
-#include "utils.h"
-
+#include "chunk.h"
 #ifdef WIN32
 // clang-format off
 #include <Windows.h>
@@ -20,6 +6,12 @@
 #include <Pdh.h>
 // clang-format on
 #endif
+
+#include <qaction.h>
+#include <qimage.h>
+#include <qmainwindow.h>
+#include <qwidget.h>
+#include <qwindowdefs.h>
 
 #include <QAction>
 #include <QApplication>
@@ -42,10 +34,16 @@
 #include <QRectF>
 #include <QRgb>
 #include <cmath>
+#include <utility>
+#include <vector>
 
+#include "bedrock_key.h"
 #include "config.h"
+#include "gotopositiondialog.h"
 #include "mainwindow.h"
 #include "mapwidget.h"
+#include "msg.h"
+#include "voxelwidget.h"
 
 namespace {
 
@@ -77,13 +75,13 @@ void MapWidget::showContextMenu(const QPoint &p) {
         connect(&clearAreaAction, &QAction::triggered, this, [this] { this->has_selected_ = false; });
         connect(&removeChunkAction, SIGNAL(triggered()), this, SLOT(delete_chunks()));
         connect(&screenShotAction, &QAction::triggered, this, [this] { this->saveImageAction(false); });
-        // connect(&renderAreaAction, &QAction::triggered, this, [this, area] {
-        //     auto minX = std::min(this->select_pos_1_.x, this->select_pos_2_.x);
-        //     auto minZ = std::min(this->select_pos_1_.z, this->select_pos_2_.z);
-        //     auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
-        //     auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
-        //     this->render3dAction(bl::chunk_pos(minX, minZ, this->dim_type_), bl::chunk_pos(maxX, maxZ, this->dim_type_));
-        // });
+        connect(&renderAreaAction, &QAction::triggered, this, [this, area] {
+            auto minX = std::min(this->select_pos_1_.x, this->select_pos_2_.x);
+            auto minZ = std::min(this->select_pos_1_.z, this->select_pos_2_.z);
+            auto maxX = std::max(this->select_pos_1_.x, this->select_pos_2_.x);
+            auto maxZ = std::max(this->select_pos_1_.z, this->select_pos_2_.z);
+            this->render3dAction(bl::chunk_pos(minX, minZ, this->dim_type_), bl::chunk_pos(maxX, maxZ, this->dim_type_));
+        });
 
         contextMenu.addAction(&clearAreaAction);
         contextMenu.addAction(&screenShotAction);
@@ -528,10 +526,20 @@ void MapWidget::saveImageAction(bool full_screen) {
 }
 
 void MapWidget::render3dAction(const bl::chunk_pos &minPos, const bl::chunk_pos &maxPos) {
-    static QMainWindow mw;
-    mw.setWindowTitle("3D Render");
-    mw.resize(800, 600);
-    mw.show();
+    std::vector<std::vector<bl::chunk *>> chunks;
+    chunks.resize(maxPos.x - minPos.x + 1);
+    for (auto &row : chunks) {
+        row.resize(maxPos.z - minPos.z + 1);
+    }
+    auto dim = minPos.dim;
+    for (int i = minPos.x; i <= maxPos.x; i++) {
+        for (int j = minPos.z; j <= maxPos.z; j++) {
+            auto *chunk = this->mw_->levelLoader()->getChunkDirect(bl::chunk_pos{i, j, dim});
+            chunks[i - minPos.x][j - minPos.z] = chunk;
+        }
+    }
+    voxel_widgets_->updateVoxelData(VoxelWidget::createVoxelDataFromChunks(chunks));
+    voxel_widgets_->show();
 }
 
 void MapWidget::delete_chunks() {
@@ -574,4 +582,7 @@ void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
     }
 }
 
-MapWidget::~MapWidget() { delete this->sync_refresh_timer_; }
+MapWidget::~MapWidget() {
+    delete this->sync_refresh_timer_;
+    delete this->voxel_widgets_;
+}

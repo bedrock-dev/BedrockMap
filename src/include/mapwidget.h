@@ -2,6 +2,7 @@
 #define MAPWIDGET_H
 
 #include <QObject>
+#include <QOpenGLWidget>
 #include <QPaintEvent>
 #include <QTimer>
 #include <QWidget>
@@ -11,6 +12,7 @@
 #include "bedrock_key.h"
 #include "config.h"
 #include "gotopositiondialog.h"
+#include "voxelwidget.h"
 
 class MainWindow;
 
@@ -30,6 +32,7 @@ class MapWidget : public QWidget {
         this->setContextMenuPolicy(Qt::CustomContextMenu);
         setFocusPolicy(Qt::FocusPolicy::StrongFocus);
         this->goto_dialog_ = new GoToPositionDialog(this);
+        this->voxel_widgets_ = new VoxelWidget();
     }
 
     void paintEvent(QPaintEvent *event) override;
@@ -208,6 +211,9 @@ class MapWidget : public QWidget {
     // opened chunk
     bool opened_chunk_{false};
     bl::chunk_pos opened_chunk_pos_;
+
+    // 3d
+    VoxelWidget *voxel_widgets_{nullptr};
 };
 
 #endif  // MAPWIDGET_H

@@ -38,8 +38,8 @@ include_directories(
 )
 
 #qt
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Concurrent REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Concurrent OpenGL REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent OpenGL REQUIRED)
 
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
@@ -85,6 +85,7 @@ else()
   target_link_libraries(BedrockMap PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::Concurrent
+        Qt${QT_VERSION_MAJOR}::OpenGL
         -static-libgcc -static-libstdc++
         ${BEDROCK_LIBS})
 endif()

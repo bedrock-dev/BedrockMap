@@ -1,12 +1,14 @@
 #include "chunkeditorwidget.h"
 
 #include <qglobal.h>
+#include <qnamespace.h>
 
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QToolTip>
 #include <QtDebug>
+#include <vector>
 
 #include "bedrock_key.h"
 #include "chunksectionwidget.h"
@@ -16,6 +18,7 @@
 #include "palette.h"
 #include "resourcemanager.h"
 #include "ui_chunkeditorwidget.h"
+#include "voxelwidget.h"
 
 namespace {
     bool load_raw(leveldb::DB *&db, const std::string &raw_key, std::string &raw) {
@@ -26,6 +29,8 @@ namespace {
 
 ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(parent), ui(new Ui::ChunkEditorWidget), mw_(mw) {
     ui->setupUi(this);
+    // render view
+    this->terrain_render_widget_ = new class VoxelWidget(this);
     // terrain tab
     ui->base_info_label->setText("无数据");
     this->chunk_section_ = new ChunkSectionWidget();
@@ -47,9 +52,14 @@ ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(
     this->block_entity_editor_->setEnableModifyCache(false);
     //
 
+    ui->render_view_tab->layout()->replaceWidget(ui->empty_3d_view_widget, this->terrain_render_widget_);
     ui->block_actor_tab->layout()->replaceWidget(ui->empty_block_actor_editor_widget, this->block_entity_editor_);
     ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_editor_);
     ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
+
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+        if (index == 0) this->terrain_render_widget_->forceInitAndRender();
+    });
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() {
@@ -67,6 +77,8 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
 
     // load data
     this->chunk_section_->load_data(chunk);
+    auto data = std::vector<std::vector<std::vector<Voxel>>>{{{Voxel(Qt::red)}, {Voxel(Qt::blue)}}, {{Voxel(Qt::green)}, {}}};
+    this->terrain_render_widget_->updateVoxelData(data);
     std::vector<NBTListItem *> block_entity_items;
     auto &bes = chunk->block_entities();
     int index = 0;

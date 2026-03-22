@@ -2,8 +2,10 @@
 #define CHUNKEDITORWIDGET_H
 
 #include <QWidget>
+#include <cstddef>
 
 #include "chunk.h"
+#include "voxelwidget.h"
 
 namespace Ui {
 
@@ -62,6 +64,7 @@ class ChunkEditorWidget : public QWidget {
     NbtWidget *actor_editor_{nullptr};
     NbtWidget *block_entity_editor_{nullptr};
     NbtWidget *pending_tick_editor_{nullptr};
+    VoxelWidget *terrain_render_widget_{nullptr};
 
     Ui::ChunkEditorWidget *ui;
     int y_level{0};
