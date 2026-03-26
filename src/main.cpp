@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
         w.show();
         return QApplication::exec();
     } else {
+        a.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
         auto *w = new NbtWidget();
         const int ext = 100;
         w->setWindowTitle("NBT Editor");

@@ -57,9 +57,14 @@ ChunkEditorWidget::ChunkEditorWidget(MainWindow *mw, QWidget *parent) : QWidget(
     ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_editor_);
     ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
 
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
-        if (index == 0) this->terrain_render_widget_->forceInitAndRender();
-    });
+    // terrain_render_widget_->setAttribute(Qt::WA_NativeWindow);
+    // terrain_render_widget_->setAttribute(Qt::WA_OpaquePaintEvent);
+
+    // connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+    //     terrain_render_widget_->makeCurrent();
+    //     terrain_render_widget_->doneCurrent();
+    //     terrain_render_widget_->update();
+    // });
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() {
@@ -77,8 +82,9 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
 
     // load data
     this->chunk_section_->load_data(chunk);
-    auto data = std::vector<std::vector<std::vector<Voxel>>>{{{Voxel(Qt::red)}, {Voxel(Qt::blue)}}, {{Voxel(Qt::green)}, {}}};
+    auto data = VoxelWidget::createVoxelDataFromChunks({{chunk}});
     this->terrain_render_widget_->updateVoxelData(data);
+
     std::vector<NBTListItem *> block_entity_items;
     auto &bes = chunk->block_entities();
     int index = 0;

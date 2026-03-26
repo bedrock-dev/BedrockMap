@@ -28,7 +28,6 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     void setLayer(int startLayer, int endLayer);
     void updateVoxelData(const std::vector<std::vector<std::vector<Voxel>>>& newData);
-    void forceInitAndRender();
 
     static std::vector<std::vector<std::vector<Voxel>>> createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks);
 
@@ -50,31 +49,34 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     bool hasNeighbor(int layer, int x, int z, int dLayer, int dX, int dZ);
     void buildVoxelVertices();
     void addFaceVertices(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices, const QVector3D& normal);
-    void initOpenGLBuffers();
+    void generateOpenGLBuffers();
+    void rebufferOpenGLData();
 
-    // OpenGL 资源（分离不透明/半透明）
-    QOpenGLShaderProgram* m_shaderProgram = nullptr;
-    GLuint m_vaoOpaque = 0, m_vaoTransparent = 0;
-    GLuint m_vboOpaque = 0, m_vboTransparent = 0;
-    GLuint m_eboOpaque = 0, m_eboTransparent = 0;
+    // OpenGL obj (opaque, transparent)
+    QOpenGLShaderProgram* gl_shader_ = nullptr;
+    GLuint vao_opaque_ = 0, vao_transparent_ = 0;
+    GLuint vbo_opaque_ = 0, vbo_transparent_ = 0;
+    GLuint ebo_opaque_ = 0, ebo_transparent_ = 0;
 
-    // 顶点数据（格式：3位置 + 3法线 + 4颜色(RGBA)）
-    std::vector<float> m_verticesOpaque;
-    std::vector<float> m_verticesTransparent;
-    std::vector<GLuint> m_indicesOpaque;
-    std::vector<GLuint> m_indicesTransparent;
+    // vertices(opaque)
+    std::vector<float> verticles_opaque_;
+    std::vector<float> verticles_transparent_;
 
-    // 体素数据
-    std::vector<std::vector<std::vector<Voxel>>> m_voxelData;
-    int m_startLayer = 0;
-    int m_endLayer = 0;
+    // vertices(transparent)
+    std::vector<GLuint> indices_opaque_;
+    std::vector<GLuint> indices_transparent_;
 
-    // 视角控制
+    // mesh
+    std::vector<std::vector<std::vector<Voxel>>> voxel_data_;
+    int start_layer_ = 0;
+    int ender_layer_ = 0;
+
+    // camera
     QPoint m_lastMousePos;
     float m_rotateX = 0.0f;
     float m_rotateY = 0.0f;
     float m_scale = 1.0f;
-    float m_voxelSize = 1.0f;
+    float voxel_size_ = 1.0f;
 
     QVector3D m_cameraTranslate;   // 相机平移偏移（X/Y/Z轴）
     bool m_isPanDragging{false};   // 是否正在平移拖拽
@@ -82,17 +84,17 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     float m_panSensitivity{0.3};   // 平移灵敏度
     bool m_isShiftPressed{false};  // Shift键是否按下（区分前后/左右平移）
 
-    // 矩阵
+    // matrix
     QMatrix4x4 m_projection;
     QMatrix4x4 m_view;
     QMatrix4x4 m_model;
 
-    // 光照参数
-    QVector3D m_lightPos = QVector3D(10.0f, 20.0f, 10.0f);
+    // shadering
+    QVector3D m_lightPos = QVector3D(8.0f, 384.0f, 8.0f);
     QVector3D m_lightColor = QVector3D(1.0f, 1.0f, 1.0f);
-    QVector3D m_ambientLight = QVector3D(0.3f, 0.3f, 0.3f);
+    QVector3D m_ambientLight = QVector3D(0.8f, 0.8f, 0.8f);
 
-    // 立方体面模板和法线
+    // static data for mesh building
     static const std::vector<std::vector<float>> m_faceTemplates;
     static const std::vector<QVector3D> m_faceNormals;
 };

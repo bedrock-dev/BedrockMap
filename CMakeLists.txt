@@ -55,6 +55,8 @@ file(GLOB_RECURSE RESOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.png
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.jpg
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.ttf
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/*.vert
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/*.frag
 )
 
 set(QRC_FILE ${PROJECT_SOURCE_DIR}/res.qrc)

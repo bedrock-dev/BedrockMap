@@ -26,6 +26,8 @@ struct cfg {
     // 颜色表文件路径
     const static std::string BLOCK_FILE_PATH;
     const static std::string BIOME_FILE_PATH;
+    const static QString SHADER_FILE_PATH;
+    //
     static constexpr uint8_t RW = 8u;  //(1<<w) //区域d大小,一个区域由RW * RW个区块组成，且区块坐标对齐8的倍速
     const static int GRID_WIDTH;       // 地区格子宽度(单位是区块)
 

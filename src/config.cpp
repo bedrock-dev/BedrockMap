@@ -3,6 +3,7 @@
 //
 #include "config.h"
 
+#include <qchar.h>
 #include <qcolor.h>
 #include <qglobal.h>
 #include <qimage.h>
@@ -66,10 +67,12 @@ bool cfg::transparent_void = false;
 const std::string cfg::CONFIG_FILE_PATH = R"(../config.ini)";
 const std::string cfg::BLOCK_FILE_PATH = R"(../bedrock-level/data/colors/block_color.json)";
 const std::string cfg::BIOME_FILE_PATH = R"(../bedrock-level/data/colors/biome_color.json)";
+const QString cfg::SHADER_FILE_PATH = R"(../res/shaders/voxel)";
 #else
 const std::string cfg::CONFIG_FILE_PATH = "config.ini";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
 const std::string cfg::BIOME_FILE_PATH = "biome_color.json";
+const QString cfg::SHADER_FILE_PATH = "shaders/voxel";
 #endif
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
