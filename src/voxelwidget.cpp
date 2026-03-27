@@ -42,6 +42,7 @@ VoxelWidget::VoxelWidget(QWidget* parent) : QOpenGLWidget(parent) {
     format.setStencilBufferSize(8);
     format.setSamples(8);  // 抗锯齿
     setFormat(format);
+    updateVoxelData({});
 }
 
 VoxelWidget::~VoxelWidget() {
@@ -69,7 +70,6 @@ void VoxelWidget::setLayer(int startLayer, int endLayer) {
     update();
 }
 
-// 更新体素数据
 void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxel>>>& newData) {
     voxel_data_ = newData;
     if (!voxel_data_.empty()) {
@@ -78,10 +78,188 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
     }
     buildVoxelVertices();
     makeCurrent();
-    generateOpenGLBuffers();
-    rebufferOpenGLData();
+    updateOpenGLBuffers();
     doneCurrent();
     update();
+}
+
+void VoxelWidget::generateOpenGLBuffers() {
+    if (vao_opaque_ == 0) {
+        glGenVertexArrays(1, &vao_opaque_);
+        glGenBuffers(1, &vbo_opaque_);
+        glGenBuffers(1, &ebo_opaque_);
+    }
+
+    if (vao_transparent_ == 0) {
+        glGenVertexArrays(1, &vao_transparent_);
+        glGenBuffers(1, &vbo_transparent_);
+        glGenBuffers(1, &ebo_transparent_);
+    }
+
+    setupVertexAttributes();
+}
+
+void VoxelWidget::setupVertexAttributes() {
+    // 设置opaque对象的顶点属性
+    glBindVertexArray(vao_opaque_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_opaque_);
+
+    // 顶点位置
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // 法线
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // 颜色
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // 设置transparent对象的顶点属性
+    glBindVertexArray(vao_transparent_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_transparent_);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // 解绑VAO
+    glBindVertexArray(0);
+}
+
+void VoxelWidget::updateOpenGLBuffers() {
+    if (vao_opaque_ == 0 && vao_transparent_ == 0) {
+        qDebug() << "OpenGL buffers not generated yet!";
+        return;
+    }
+    // 更新opaque对象的缓冲数据
+    if (vao_opaque_ != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
+        glBufferData(GL_ARRAY_BUFFER, verticles_opaque_.size() * sizeof(float), verticles_opaque_.data(), GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_opaque_);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_opaque_.size() * sizeof(GLuint), indices_opaque_.data(), GL_DYNAMIC_DRAW);
+    }
+
+    // 更新transparent对象的缓冲数据
+    if (vao_transparent_ != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
+        glBufferData(GL_ARRAY_BUFFER, verticles_transparent_.size() * sizeof(float), verticles_transparent_.data(), GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_transparent_);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_transparent_.size() * sizeof(GLuint), indices_transparent_.data(), GL_DYNAMIC_DRAW);
+    }
+
+    // 解绑缓冲
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void VoxelWidget::initializeGL() {
+    initializeOpenGLFunctions();
+    // 设置OpenGL状态
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    // 编译着色器
+    gl_shader_ = new QOpenGLShaderProgram(this);
+    gl_shader_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/shaders/voxel.vert");
+    gl_shader_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/shaders/voxel.frag");
+
+    if (!gl_shader_->link()) {
+        qDebug() << "Can not link OpenGL Shader：" << gl_shader_->log();
+        return;
+    }
+
+    generateOpenGLBuffers();
+    updateOpenGLBuffers();
+}
+
+void VoxelWidget::paintGL() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (!gl_shader_ || !gl_shader_->isLinked()) return;
+    gl_shader_->bind();
+    updateModelMatrix();
+    setUniforms();
+    renderOpaqueObjects();
+    renderTransparentObjects();
+
+    gl_shader_->release();
+}
+
+void VoxelWidget::updateModelMatrix() {
+    m_model.setToIdentity();
+    m_model.scale(m_scale);
+    m_model.rotate(m_rotateX, 1.0f, 0.0f, 0.0f);
+    m_model.rotate(m_rotateY, 0.0f, 1.0f, 0.0f);
+    m_model.translate(m_cameraTranslate);
+
+    // 居中平移
+    if (!voxel_data_.empty() && !voxel_data_[0].empty() && !voxel_data_[0][0].empty()) {
+        float cx = (voxel_data_[0].size() * voxel_size_) / 2.0f;
+        float cy = (voxel_data_.size() * voxel_size_) / 2.0f;
+        float cz = (voxel_data_[0][0].size() * voxel_size_) / 2.0f;
+        m_model.translate(-cx, -cy, -cz);
+    }
+}
+
+void VoxelWidget::setUniforms() {
+    gl_shader_->setUniformValue("model", m_model);
+    gl_shader_->setUniformValue("view", m_view);
+    gl_shader_->setUniformValue("projection", m_projection);
+    gl_shader_->setUniformValue("lightPos", m_lightPos);
+    gl_shader_->setUniformValue("lightColor", m_lightColor);
+    gl_shader_->setUniformValue("ambientLight", m_ambientLight);
+}
+
+void VoxelWidget::renderOpaqueObjects() {
+    if (indices_opaque_.empty()) return;
+    glBindVertexArray(vao_opaque_);
+    glDepthMask(GL_TRUE);
+    glDrawElements(GL_TRIANGLES, indices_opaque_.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+
+void VoxelWidget::renderTransparentObjects() {
+    if (indices_transparent_.empty()) return;
+    glBindVertexArray(vao_transparent_);
+    glDepthMask(GL_FALSE);
+    glDrawElements(GL_TRIANGLES, indices_transparent_.size(), GL_UNSIGNED_INT, 0);
+    glDepthMask(GL_TRUE);
+    glBindVertexArray(0);
+}
+
+// 添加一个辅助函数用于调试
+void VoxelWidget::checkOpenGLError(const char* location) {
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        qDebug() << "OpenGL error at" << location << ":" << err;
+    }
+}
+
+void VoxelWidget::resizeGL(int w, int h) {
+    // 设置视口
+    glViewport(0, 0, w, h);
+    // 投影矩阵（透视投影）
+    m_projection.setToIdentity();
+    m_projection.perspective(45.0f, (float)w / h, 0.1f, 1000.0f);
+
+    // 视图矩阵（相机位置）
+    m_view.setToIdentity();
+    m_view.lookAt(QVector3D(0.0f, 0.0f, 50.0f),  // 相机位置
+                  QVector3D(0.0f, 0.0f, 0.0f),   // 观察目标
+                  QVector3D(0.0f, 1.0f, 0.0f));  // 上方向
 }
 
 bool VoxelWidget::hasNeighbor(int layer, int x, int z, int dy, int dx, int dz) {
@@ -147,6 +325,7 @@ void VoxelWidget::addFaceVertices(int layer, int x, int z, const Voxel& voxel, c
     }
 }
 
+// Mesh Building
 void VoxelWidget::buildVoxelVertices() {
     // clear
     verticles_opaque_.clear();
@@ -186,193 +365,11 @@ void VoxelWidget::buildVoxelVertices() {
     }
 }
 
-void VoxelWidget::generateOpenGLBuffers() {
-    // for opaque
-    if (vao_opaque_ == 0) glGenVertexArrays(1, &vao_opaque_);
-    if (vbo_opaque_ == 0) glGenBuffers(1, &vbo_opaque_);
-    if (ebo_opaque_ == 0) glGenBuffers(1, &ebo_opaque_);
-
-    // fortransparent
-    if (vao_transparent_ == 0) glGenVertexArrays(1, &vao_transparent_);
-    if (vbo_transparent_ == 0) glGenBuffers(1, &vbo_transparent_);
-    if (ebo_transparent_ == 0) glGenBuffers(1, &ebo_transparent_);
-}
-
-// 初始化OpenGL缓冲（VAO/VBO/EBO）
-void VoxelWidget::rebufferOpenGLData() {
-    // Opaque
-    glBindVertexArray(vao_opaque_);
-    // VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
-    glBufferData(GL_ARRAY_BUFFER, verticles_opaque_.size() * sizeof(float), verticles_opaque_.data(), GL_DYNAMIC_DRAW);
-    // EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_opaque_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_opaque_.size() * sizeof(GLuint), indices_opaque_.data(), GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // Transparent
-    glBindVertexArray(vao_transparent_);
-    // VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
-    glBufferData(GL_ARRAY_BUFFER, verticles_transparent_.size() * sizeof(float), verticles_transparent_.data(), GL_DYNAMIC_DRAW);
-    // EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_transparent_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_transparent_.size() * sizeof(GLuint), indices_transparent_.data(), GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    // unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void VoxelWidget::initializeGL() {
-    initializeOpenGLFunctions();
-
-    // ========== 渲染状态配置（关键：修复半透明） ==========
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);               // 背景色
-    glEnable(GL_DEPTH_TEST);                            // 深度测试（解决分层）
-    glDepthFunc(GL_LESS);                               // 严格深度判定
-    glEnable(GL_BLEND);                                 // 混合（半透明）
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // 标准混合模式
-    glEnable(GL_MULTISAMPLE);                           // 抗锯齿（解决边缘锯齿）
-    glEnable(GL_CULL_FACE);                             // 背面剔除（优化性能）
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);  // 明确正面朝向
-
-    // shader
-    gl_shader_ = new QOpenGLShaderProgram(this);
-    gl_shader_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/shaders/voxel.vert");
-    gl_shader_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":res/shaders/voxel.frag");
-
-    if (!gl_shader_->link()) {
-        qDebug() << "着色器链接失败：" << gl_shader_->log();
-        return;
-    }
-    // 初始化OpenGL缓冲
-    rebufferOpenGLData();
-}
-
-void VoxelWidget::resizeGL(int w, int h) {
-    // 设置视口
-    glViewport(0, 0, w, h);
-
-    // 投影矩阵（透视投影）
-    m_projection.setToIdentity();
-    m_projection.perspective(45.0f, (float)w / h, 0.1f, 1000.0f);
-
-    // 视图矩阵（相机位置）
-    m_view.setToIdentity();
-    m_view.lookAt(QVector3D(0.0f, 0.0f, 50.0f),  // 相机位置
-                  QVector3D(0.0f, 0.0f, 0.0f),   // 观察目标
-                  QVector3D(0.0f, 1.0f, 0.0f));  // 上方向
-}
-
-void VoxelWidget::paintGL() {
-#define CHECK_GL_ERROR()                                             \
-    do {                                                             \
-        GLenum err = glGetError();                                   \
-        if (err != GL_NO_ERROR) {                                    \
-            qDebug() << "OpenGL error at" << __LINE__ << ":" << err; \
-        }                                                            \
-    } while (0)
-    // 渲染代码
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (!gl_shader_ || !gl_shader_->isLinked()) return;
-
-    gl_shader_->bind();
-    CHECK_GL_ERROR();
-
-    // 更新模型矩阵（新增平移逻辑）
-    m_model.setToIdentity();
-    m_model.scale(m_scale);                       // 缩放
-    m_model.rotate(m_rotateX, 1.0f, 0.0f, 0.0f);  // X轴旋转
-    m_model.rotate(m_rotateY, 0.0f, 1.0f, 0.0f);  // Y轴旋转
-    m_model.translate(m_cameraTranslate);         // 新增：应用相机平移
-    // 居中平移（原有逻辑，平移叠加在居中之后）
-    if (!voxel_data_.empty() && !voxel_data_[0].empty() && !voxel_data_[0][0].empty()) {
-        float cx = (voxel_data_[0].size() * voxel_size_) / 2.0f;
-        float cy = (voxel_data_.size() * voxel_size_) / 2.0f;
-        float cz = (voxel_data_[0][0].size() * voxel_size_) / 2.0f;
-        m_model.translate(-cx, -cy, -cz);
-    }
-
-    // ========== 设置Uniform变量 ==========
-    gl_shader_->setUniformValue("model", m_model);
-    gl_shader_->setUniformValue("view", m_view);
-    gl_shader_->setUniformValue("projection", m_projection);
-    gl_shader_->setUniformValue("lightPos", m_lightPos);
-    gl_shader_->setUniformValue("lightColor", m_lightColor);
-    gl_shader_->setUniformValue("ambientLight", m_ambientLight);
-    CHECK_GL_ERROR();
-
-    // draw (opaque)
-    if (!indices_opaque_.empty()) {
-        if (vbo_opaque_ == 0) {
-            qDebug() << "ERROR: VBO is 0, not created!";
-            return;
-        }
-
-        // 检查 VBO 是否是有效的缓冲区对象
-        if (!glIsBuffer(vbo_opaque_)) {
-            qDebug() << "ERROR: VBO" << vbo_opaque_ << "is not a valid buffer object!";
-            return;
-        }
-
-        glDepthMask(GL_TRUE);  // 开启深度写入
-        CHECK_GL_ERROR();
-        glBindVertexArray(vao_opaque_);
-        CHECK_GL_ERROR();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
-        CHECK_GL_ERROR();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verticles_opaque_.size() * sizeof(float), verticles_opaque_.data());
-        CHECK_GL_ERROR();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_opaque_);
-        CHECK_GL_ERROR();
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices_opaque_.size() * sizeof(GLuint), indices_opaque_.data());
-        CHECK_GL_ERROR();
-        glDrawElements(GL_TRIANGLES, indices_opaque_.size(), GL_UNSIGNED_INT, 0);
-        CHECK_GL_ERROR();
-    }
-
-    // draw (transparent)
-    if (!indices_transparent_.empty()) {
-        glDepthMask(GL_FALSE);
-        glBindVertexArray(vao_transparent_);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verticles_transparent_.size() * sizeof(float), verticles_transparent_.data());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_transparent_);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices_transparent_.size() * sizeof(GLuint), indices_transparent_.data());
-        glDrawElements(GL_TRIANGLES, indices_transparent_.size(), GL_UNSIGNED_INT, 0);
-        glDepthMask(GL_TRUE);
-        CHECK_GL_ERROR();
-    }
-
-    // 解绑
-    glBindVertexArray(0);
-    gl_shader_->release();
-}
-
-// 鼠标按下：记录初始位置
+// Camera & Controlling
 void VoxelWidget::mousePressEvent(QMouseEvent* e) {
     if (e->button() == Qt::LeftButton) {
-        // 左键：旋转
         m_lastMousePos = e->pos();
     } else if (e->button() == Qt::RightButton) {
-        // 右键：平移（记录起始位置）
         m_panStartPos = e->pos();
         m_isPanDragging = true;
     }
@@ -386,9 +383,7 @@ void VoxelWidget::mouseReleaseEvent(QMouseEvent* e) {
     e->accept();
 }
 
-// 鼠标拖拽：旋转模型
 void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
-    // 1. 左键旋转（原有逻辑保留）
     if (e->buttons() & Qt::LeftButton && !m_isPanDragging) {
         int dx = e->x() - m_lastMousePos.x();
         int dy = e->y() - m_lastMousePos.y();
@@ -400,40 +395,27 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
         return;
     }
 
-    // 2. 右键平移（核心优化：全维度）
     if ((e->buttons() & Qt::RightButton) && m_isPanDragging) {
-        // 计算鼠标偏移（相对于起始位置）
         int deltaX = e->x() - m_panStartPos.x();
         int deltaY = e->y() - m_panStartPos.y();
 
-        // 灵敏度适配：缩放越大，平移越精细
         float sensitivity = m_panSensitivity / m_scale;
 
-        // 平移规则（符合直觉）：
-        // - 无Shift：水平→左右（X轴），垂直→上下（Y轴）
-        // - 按Shift：水平→前后（Z轴），垂直→上下（Y轴）
         if (!m_isShiftPressed) {
-            // 左右平移（X轴）：鼠标右移→模型右移，左移→模型左移
             m_cameraTranslate.setX(m_cameraTranslate.x() + deltaX * sensitivity);
-            // 上下平移（Y轴）：鼠标上移→模型上移，下移→模型下移
             m_cameraTranslate.setY(m_cameraTranslate.y() - deltaY * sensitivity);
         } else {
-            // 前后平移（Z轴）：鼠标右移→模型前移，左移→模型后移
             m_cameraTranslate.setZ(m_cameraTranslate.z() + deltaX * sensitivity);
-            // 上下平移（Y轴）：保留
             m_cameraTranslate.setY(m_cameraTranslate.y() - deltaY * sensitivity);
         }
 
-        // 更新起始位置（持续拖拽）
         m_panStartPos = e->pos();
-        update();  // 刷新渲染
+        update();
     }
 }
 
-// 滚轮缩放
 void VoxelWidget::wheelEvent(QWheelEvent* e) {
     int delta = e->angleDelta().y();
-    // 缩放增量（限制范围0.1~10.0）
     if (delta > 0) {
         m_scale = std::min(m_scale + 0.1f, 10.0f);
     } else {
@@ -463,6 +445,7 @@ void VoxelWidget::keyReleaseEvent(QKeyEvent* e) {
     QOpenGLWidget::keyReleaseEvent(e);
 }
 
+// helper
 std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks) {
     if (chunks.empty() || chunks[0].empty()) {
         return {};

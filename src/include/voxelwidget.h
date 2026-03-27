@@ -45,13 +45,20 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void keyReleaseEvent(QKeyEvent* e) override;
 
    private:
-    // 核心：邻居判定（同时考虑transparent和alpha）
+    // opengl
+    void generateOpenGLBuffers();
+    void setupVertexAttributes();                 // 设置顶点属性（只调用一次）
+    void updateOpenGLBuffers();                   // 更新OpenGL缓冲数据
+    void updateModelMatrix();                     // 更新模型矩阵
+    void setUniforms();                           // 设置着色器uniform变量
+    void renderOpaqueObjects();                   // 渲染不透明对象
+    void renderTransparentObjects();              // 渲染透明对象
+    void checkOpenGLError(const char* location);  // 调试用的错误检查（可
+
+    // mesh building
     bool hasNeighbor(int layer, int x, int z, int dLayer, int dX, int dZ);
     void buildVoxelVertices();
     void addFaceVertices(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices, const QVector3D& normal);
-    void generateOpenGLBuffers();
-    void rebufferOpenGLData();
-
     // OpenGL obj (opaque, transparent)
     QOpenGLShaderProgram* gl_shader_ = nullptr;
     GLuint vao_opaque_ = 0, vao_transparent_ = 0;
