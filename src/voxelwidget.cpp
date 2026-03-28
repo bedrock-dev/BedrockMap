@@ -4,18 +4,21 @@
 #include <qcolor.h>
 #include <qdebug.h>
 #include <qnamespace.h>
+#include <qobjectdefs.h>
 #include <qopenglshaderprogram.h>
+#include <qtconcurrentrun.h>
+#include <qthread.h>
 #include <qurl.h>
 
 #include <QDebug>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QtConcurrent>
 #include <algorithm>
-#include <string>
+#include <cmath>
 #include <vector>
 
-#include "config.h"
-#include "include/voxelwidget.h"
+#include "voxelwidget.h"
 
 // 每个面的索引模板（2个三角形，6个索引）
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
@@ -47,15 +50,27 @@ VoxelWidget::VoxelWidget(QWidget* parent) : QOpenGLWidget(parent) {
 
 VoxelWidget::~VoxelWidget() {
     makeCurrent();
-    // 释放OpenGL资源
-    glDeleteVertexArrays(1, &vao_opaque_);
-    glDeleteVertexArrays(1, &vao_transparent_);
-    glDeleteBuffers(1, &vbo_opaque_);
-    glDeleteBuffers(1, &vbo_transparent_);
-    glDeleteBuffers(1, &ebo_opaque_);
-    glDeleteBuffers(1, &ebo_transparent_);
-    delete gl_shader_;
+    GLuint vaos[] = {vao_opaque_, vao_transparent_};
+    GLuint vbos[] = {vbo_opaque_, vbo_transparent_};
+    GLuint ebos[] = {ebo_opaque_, ebo_transparent_};
+    if (vao_opaque_ != 0 || vao_transparent_ != 0) {
+        qDebug() << "Delete VAOs";
+        glDeleteVertexArrays(2, vaos);
+    }
+    if (vbo_opaque_ != 0 || vbo_transparent_ != 0) {
+        qDebug() << "Delete VBOs";
+        glDeleteBuffers(2, vbos);
+    }
+    if (ebo_opaque_ != 0 || ebo_transparent_ != 0) {
+        qDebug() << "Delete EBOs";
+        glDeleteBuffers(2, ebos);
+    }
+
     doneCurrent();
+    if (gl_shader_) {
+        delete gl_shader_;
+        gl_shader_ = nullptr;
+    }
 }
 
 // 设置渲染层范围
@@ -80,6 +95,15 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
     makeCurrent();
     updateOpenGLBuffers();
     doneCurrent();
+
+    // change scale
+    if (!newData.empty() && !newData.begin()->empty()) {
+        auto sz1 = newData.size();
+        auto sz2 = newData.begin()->size();
+        auto sz = ::sqrt(sz1 * sz1 + sz2 * sz2);
+        m_scale = 24. / sz;
+    }
+
     update();
 }
 
@@ -201,8 +225,8 @@ void VoxelWidget::paintGL() {
 void VoxelWidget::updateModelMatrix() {
     m_model.setToIdentity();
     m_model.scale(m_scale);
-    m_model.rotate(m_rotateX, 1.0f, 0.0f, 0.0f);
-    m_model.rotate(m_rotateY, 0.0f, 1.0f, 0.0f);
+    m_model.rotate(rotate_x_, 1.0f, 0.0f, 0.0f);
+    m_model.rotate(rotate_y_, 0.0f, 1.0f, 0.0f);
     m_model.translate(m_cameraTranslate);
 
     // 居中平移
@@ -387,9 +411,9 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
     if (e->buttons() & Qt::LeftButton && !m_isPanDragging) {
         int dx = e->x() - m_lastMousePos.x();
         int dy = e->y() - m_lastMousePos.y();
-        m_rotateY += dx * 0.5f;
-        m_rotateX += dy * 0.5f;
-        m_rotateX = std::clamp(m_rotateX, -90.0f, 90.0f);
+        rotate_y_ += dx * 0.5f;
+        rotate_x_ += dy * 0.5f;
+        rotate_x_ = std::clamp(rotate_x_, -90.0f, 90.0f);
         m_lastMousePos = e->pos();
         update();
         return;
@@ -430,8 +454,8 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_Shift) {
         m_isShiftPressed = true;
     } else if (e->key() == Qt::Key_R) {
-        m_rotateX = 0.0f;
-        m_rotateY = 0.0f;
+        rotate_x_ = 0.0f;
+        rotate_y_ = 0.0f;
         m_scale = 1.0f;
         m_cameraTranslate = QVector3D(0.0f, 0.0f, 0.0f);  // 重置平移
         update();
@@ -446,7 +470,8 @@ void VoxelWidget::keyReleaseEvent(QKeyEvent* e) {
 }
 
 // helper
-std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks) {
+std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
+                                                                                    const std::function<void(int)>& f) {
     if (chunks.empty() || chunks[0].empty()) {
         return {};
     }
@@ -483,38 +508,100 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     }
     qDebug() << "Voxel Size: " << QString("%1 (Y) * %2 (X) * %3 (Z)").arg(data.size()).arg(data[0].size()).arg(data[0][0].size());
 
+    // for (int xIdx = 0; xIdx < width; ++xIdx) {
+    //     if (xIdx >= chunks.size()) continue;
+    //     const auto& row = chunks[xIdx];
+    //     for (int zIdx = 0; zIdx < depth; ++zIdx) {
+    //         if (zIdx >= row.size()) continue;
+    //         auto* ch = row[zIdx];
+    //         if (!ch) continue;
+    //         auto [min_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
+    //         for (int y = min_y; y <= max_y; ++y) {
+    //             const int global_y_idx = y - min_y;
+    //             if (global_y_idx < 0 || global_y_idx >= total_layer) continue;
+    //             for (int x = 0; x < CW; ++x) {
+    //                 const int global_x_idx = xIdx * CW + x;
+    //                 if (global_x_idx < 0 || global_x_idx >= data[global_y_idx].size()) continue;
+
+    //                 for (int z = 0; z < CW; ++z) {
+    //                     const int global_z_idx = zIdx * CW + z;
+    //                     if (global_z_idx < 0 || global_z_idx >= data[global_y_idx][global_x_idx].size()) continue;
+
+    //                     Voxel& voxel = data[global_y_idx][global_x_idx][global_z_idx];
+    //                     auto block_info = ch->get_block(x, y, z);
+    //                     auto biome = ch->get_biome(x, y, z);
+    //                     if (block_info.name == "minecraft:unknown" || block_info.name == "minecraft:air") continue;
+    //                     auto blend_color = bl::blend_color_with_biome(block_info.name, block_info.color, biome);
+    //                     voxel.color = QColor(blend_color.r, blend_color.g, blend_color.b, blend_color.a);
+    //                     voxel.transparent = voxel.color.alpha() < 255;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    int n = 0;
     for (int xIdx = 0; xIdx < width; ++xIdx) {
         if (xIdx >= chunks.size()) continue;
         const auto& row = chunks[xIdx];
+
         for (int zIdx = 0; zIdx < depth; ++zIdx) {
             if (zIdx >= row.size()) continue;
             auto* ch = row[zIdx];
             if (!ch) continue;
+
             auto [min_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
-            for (int y = min_y; y <= max_y; ++y) {
-                const int global_y_idx = y - min_y;
-                if (global_y_idx < 0 || global_y_idx >= total_layer) continue;
+            int y_range = max_y - min_y + 1;
 
-                for (int x = 0; x < CW; ++x) {
-                    const int global_x_idx = xIdx * CW + x;
-                    if (global_x_idx < 0 || global_x_idx >= data[global_y_idx].size()) continue;
+            // 预计算全局索引的基础偏移
+            int base_global_x = xIdx * CW;
+            int base_global_z = zIdx * CW;
 
-                    for (int z = 0; z < CW; ++z) {
-                        const int global_z_idx = zIdx * CW + z;
-                        if (global_z_idx < 0 || global_z_idx >= data[global_y_idx][global_x_idx].size()) continue;
+            // 预检查y范围是否有效
+            if (min_y < 0 || max_y >= total_layer) {
+                // 调整有效的y范围
+                min_y = std::max(min_y, 0);
+                max_y = std::min(max_y, total_layer - 1);
+                if (min_y > max_y) continue;
+            }
+
+            for (int x = 0; x < CW; ++x) {
+                int global_x_idx = base_global_x + x;
+                if (global_x_idx < 0 || global_x_idx >= data[0].size()) continue;
+
+                for (int z = 0; z < CW; ++z) {
+                    int global_z_idx = base_global_z + z;
+                    if (global_z_idx < 0 || global_z_idx >= data[0][0].size()) continue;
+
+                    // 内层遍历y（垂直方向）
+                    for (int y = min_y; y <= max_y; ++y) {
+                        int global_y_idx = y;
+                        if (global_y_idx < 0 || global_y_idx >= total_layer) continue;
+
+                        // 检查边界
+                        if (global_y_idx >= data.size() || global_x_idx >= data[global_y_idx].size() ||
+                            global_z_idx >= data[global_y_idx][global_x_idx].size()) {
+                            continue;
+                        }
 
                         Voxel& voxel = data[global_y_idx][global_x_idx][global_z_idx];
                         auto block_info = ch->get_block(x, y, z);
                         auto biome = ch->get_biome(x, y, z);
+
                         if (block_info.name == "minecraft:unknown" || block_info.name == "minecraft:air") continue;
+
                         auto blend_color = bl::blend_color_with_biome(block_info.name, block_info.color, biome);
                         voxel.color = QColor(blend_color.r, blend_color.g, blend_color.b, blend_color.a);
                         voxel.transparent = voxel.color.alpha() < 255;
                     }
                 }
             }
+
+            n++;
+            f(n);
         }
     }
+
     // remove all air layers
     auto layerCheck = [](const auto& layer) {
         return std::any_of(layer.cbegin(), layer.cend(), [](const auto& row) {
@@ -533,4 +620,24 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     std::vector<std::vector<std::vector<Voxel>>> ret(firstIt, lastIt - 1);
     qDebug() << "Real Voxel Size: " << QString("%1 (Y) * %2 (X) * %3 (Z)").arg(ret.size()).arg(ret[0].size()).arg(ret[0][0].size());
     return ret;
+}
+
+bool ChunkRenderWidget::showChunks(const std::vector<std::vector<bl::chunk*>>& chunks) {
+    if (!chunk_render_watcher_.isFinished()) {
+        qDebug() << "Current render task is not finished";
+        return false;
+    }
+    if (chunks.empty() || chunks[0].empty()) return true;
+    bar_->show();
+    bar_->setValue(0);
+    bar_->setMaximum(chunks.size() * chunks[0].size());
+    chunks_ = std::move(chunks);
+    voxels_.clear();
+    voxelWidget_->updateVoxelData({});
+    chunk_render_watcher_.setFuture(QtConcurrent::run([this]() {
+        voxels_ = VoxelWidget::createVoxelDataFromChunks(this->chunks_, [&](int cnt) { emit chunkMeshBuilt(cnt); });
+        return true;
+    }));
+    show();
+    return true;
 }

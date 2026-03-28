@@ -1,15 +1,27 @@
 #ifndef VOXELWIDGET_H
 #define VOXELWIDGET_H
 
+#include <qboxlayout.h>
+#include <qmainwindow.h>
+#include <qobject.h>
+#include <qobjectdefs.h>
+#include <qprogressbar.h>
+#include <qwidget.h>
+
 #include <QColor>
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 #include <QVector3D>
+#include <QWidget>
+#include <functional>
 #include <vector>
 
 #include "chunk.h"
+#include "progressbarwidget.h"
 
 // 体素数据结构：恢复transparent参数，双判定（优先级：transparent > alpha）
 struct Voxel {
@@ -29,7 +41,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void setLayer(int startLayer, int endLayer);
     void updateVoxelData(const std::vector<std::vector<std::vector<Voxel>>>& newData);
 
-    static std::vector<std::vector<std::vector<Voxel>>> createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks);
+    static std::vector<std::vector<std::vector<Voxel>>> createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
+                                                                                  const std::function<void(int)>& f);
 
    protected:
     void initializeGL() override;
@@ -80,8 +93,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // camera
     QPoint m_lastMousePos;
-    float m_rotateX = 0.0f;
-    float m_rotateY = 0.0f;
+    float rotate_x_ = 45.f;
+    float rotate_y_ = 45.f;
     float m_scale = 1.0f;
     float voxel_size_ = 1.0f;
 
@@ -104,6 +117,38 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     // static data for mesh building
     static const std::vector<std::vector<float>> m_faceTemplates;
     static const std::vector<QVector3D> m_faceNormals;
+};
+
+class ChunkRenderWidget : public QWidget {
+    Q_OBJECT
+   public:
+    ChunkRenderWidget() : QWidget() {
+        voxelWidget_ = new VoxelWidget(this);
+        bar_ = new QProgressBar(this);
+        auto* layout = new QVBoxLayout();
+        layout->addWidget(voxelWidget_);
+        layout->addWidget(bar_);
+        setLayout(layout);
+        setGeometry({0, 0, 1200, 900});
+        connect(&this->chunk_render_watcher_, &QFutureWatcher<bool>::finished, this, [this]() {
+            bar_->hide();
+            voxelWidget_->updateVoxelData(voxels_);
+        });
+        connect(this, &ChunkRenderWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
+    }
+
+    bool showChunks(const std::vector<std::vector<bl::chunk*>>& chunks);
+
+   signals:
+    void chunkMeshBuilt(int n);
+
+   private:
+    QProgressBar* bar_;
+    VoxelWidget* voxelWidget_;
+    // data
+    QFutureWatcher<bool> chunk_render_watcher_;
+    std::vector<std::vector<std::vector<Voxel>>> voxels_;
+    std::vector<std::vector<bl::chunk*>> chunks_;
 };
 
 #endif  // VOXELWIDGET_H

@@ -538,8 +538,7 @@ void MapWidget::render3dAction(const bl::chunk_pos &minPos, const bl::chunk_pos 
             chunks[i - minPos.x][j - minPos.z] = chunk;
         }
     }
-    voxel_widgets_->updateVoxelData(VoxelWidget::createVoxelDataFromChunks(chunks));
-    voxel_widgets_->show();
+    chunk_render_window_->showChunks(chunks);
 }
 
 void MapWidget::delete_chunks() {
@@ -584,5 +583,5 @@ void MapWidget::drawMarkers(QPaintEvent *event, QPainter *painter) {
 
 MapWidget::~MapWidget() {
     delete this->sync_refresh_timer_;
-    delete this->voxel_widgets_;
+    delete chunk_render_window_;
 }

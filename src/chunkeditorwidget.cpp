@@ -82,7 +82,8 @@ void ChunkEditorWidget::loadChunkData(bl::chunk *chunk) {
 
     // load data
     this->chunk_section_->load_data(chunk);
-    auto data = VoxelWidget::createVoxelDataFromChunks({{chunk}});
+    int cnt{0};
+    auto data = VoxelWidget::createVoxelDataFromChunks({{chunk}}, {});
     this->terrain_render_widget_->updateVoxelData(data);
 
     std::vector<NBTListItem *> block_entity_items;

@@ -27,6 +27,7 @@
 #include "asynclevelloader.h"
 #include "config.h"
 #include "global.h"
+#include "mainwindow.h"
 #include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "msg.h"

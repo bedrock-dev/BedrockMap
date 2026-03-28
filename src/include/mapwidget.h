@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
+#include <cstddef>
 #include <tuple>
 
 #include "bedrock_key.h"
@@ -32,7 +33,7 @@ class MapWidget : public QWidget {
         this->setContextMenuPolicy(Qt::CustomContextMenu);
         setFocusPolicy(Qt::FocusPolicy::StrongFocus);
         this->goto_dialog_ = new GoToPositionDialog(this);
-        this->voxel_widgets_ = new VoxelWidget();
+        chunk_render_window_ = new ChunkRenderWidget();
     }
 
     void paintEvent(QPaintEvent *event) override;
@@ -213,7 +214,7 @@ class MapWidget : public QWidget {
     bl::chunk_pos opened_chunk_pos_;
 
     // 3d
-    VoxelWidget *voxel_widgets_{nullptr};
+    ChunkRenderWidget *chunk_render_window_{nullptr};
 };
 
 #endif  // MAPWIDGET_H

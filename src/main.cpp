@@ -1,3 +1,5 @@
+#include <qapplication.h>
+
 #include <QApplication>
 #include <QCache>
 #include <QCoreApplication>
@@ -11,8 +13,8 @@
 #include <filesystem>
 
 #include "config.h"
-#include "include/maptile.h"
 #include "mainwindow.h"
+#include "progressbarwidget.h"
 #include "resourcemanager.h"
 
 QString LOG_FILE_NAME;
