@@ -15,7 +15,9 @@
 #include <QWheelEvent>
 #include <QtConcurrent>
 #include <algorithm>
+#include <cerrno>
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include "voxelwidget.h"
@@ -508,38 +510,6 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     }
     qDebug() << "Voxel Size: " << QString("%1 (Y) * %2 (X) * %3 (Z)").arg(data.size()).arg(data[0].size()).arg(data[0][0].size());
 
-    // for (int xIdx = 0; xIdx < width; ++xIdx) {
-    //     if (xIdx >= chunks.size()) continue;
-    //     const auto& row = chunks[xIdx];
-    //     for (int zIdx = 0; zIdx < depth; ++zIdx) {
-    //         if (zIdx >= row.size()) continue;
-    //         auto* ch = row[zIdx];
-    //         if (!ch) continue;
-    //         auto [min_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
-    //         for (int y = min_y; y <= max_y; ++y) {
-    //             const int global_y_idx = y - min_y;
-    //             if (global_y_idx < 0 || global_y_idx >= total_layer) continue;
-    //             for (int x = 0; x < CW; ++x) {
-    //                 const int global_x_idx = xIdx * CW + x;
-    //                 if (global_x_idx < 0 || global_x_idx >= data[global_y_idx].size()) continue;
-
-    //                 for (int z = 0; z < CW; ++z) {
-    //                     const int global_z_idx = zIdx * CW + z;
-    //                     if (global_z_idx < 0 || global_z_idx >= data[global_y_idx][global_x_idx].size()) continue;
-
-    //                     Voxel& voxel = data[global_y_idx][global_x_idx][global_z_idx];
-    //                     auto block_info = ch->get_block(x, y, z);
-    //                     auto biome = ch->get_biome(x, y, z);
-    //                     if (block_info.name == "minecraft:unknown" || block_info.name == "minecraft:air") continue;
-    //                     auto blend_color = bl::blend_color_with_biome(block_info.name, block_info.color, biome);
-    //                     voxel.color = QColor(blend_color.r, blend_color.g, blend_color.b, blend_color.a);
-    //                     voxel.transparent = voxel.color.alpha() < 255;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
     int n = 0;
     for (int xIdx = 0; xIdx < width; ++xIdx) {
         if (xIdx >= chunks.size()) continue;
@@ -622,20 +592,42 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     return ret;
 }
 
-bool ChunkRenderWidget::showChunks(const std::vector<std::vector<bl::chunk*>>& chunks) {
+bool ChunkRenderWidget::showChunks(const bl::chunk_pos& minPos, const bl::chunk_pos& maxPos, AsyncLevelLoader& loader) {
     if (!chunk_render_watcher_.isFinished()) {
         qDebug() << "Current render task is not finished";
         return false;
     }
-    if (chunks.empty() || chunks[0].empty()) return true;
+
+    if (maxPos.x < minPos.x || maxPos.z < minPos.z) {
+        qDebug() << "Invald Chunk Area";
+        return false;
+    }
+
     bar_->show();
     bar_->setValue(0);
-    bar_->setMaximum(chunks.size() * chunks[0].size());
-    chunks_ = std::move(chunks);
+    bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
+
+    chunks_.clear();
     voxels_.clear();
     voxelWidget_->updateVoxelData({});
-    chunk_render_watcher_.setFuture(QtConcurrent::run([this]() {
-        voxels_ = VoxelWidget::createVoxelDataFromChunks(this->chunks_, [&](int cnt) { emit chunkMeshBuilt(cnt); });
+    chunk_render_watcher_.setFuture(QtConcurrent::run([this, minPos, maxPos, &loader]() {
+        // load chunk in another thread
+        this->chunks_.clear();
+        chunks_.resize(maxPos.x - minPos.x + 1);
+        for (auto& row : chunks_) {
+            row.resize(maxPos.z - minPos.z + 1);
+        }
+        size_t chunk_loaded = 0;
+        auto dim = minPos.dim;
+        for (int i = minPos.x; i <= maxPos.x; i++) {
+            for (int j = minPos.z; j <= maxPos.z; j++) {
+                auto* chunk = loader.getChunkDirect(bl::chunk_pos{i, j, dim});
+                this->chunks_[i - minPos.x][j - minPos.z] = chunk;
+                chunk_loaded++;
+                emit chunkMeshBuilt(chunk_loaded);
+            }
+        }
+        voxels_ = VoxelWidget::createVoxelDataFromChunks(this->chunks_, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); });
         return true;
     }));
     show();

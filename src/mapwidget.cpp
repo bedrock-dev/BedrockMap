@@ -526,19 +526,8 @@ void MapWidget::saveImageAction(bool full_screen) {
 }
 
 void MapWidget::render3dAction(const bl::chunk_pos &minPos, const bl::chunk_pos &maxPos) {
-    std::vector<std::vector<bl::chunk *>> chunks;
-    chunks.resize(maxPos.x - minPos.x + 1);
-    for (auto &row : chunks) {
-        row.resize(maxPos.z - minPos.z + 1);
-    }
-    auto dim = minPos.dim;
-    for (int i = minPos.x; i <= maxPos.x; i++) {
-        for (int j = minPos.z; j <= maxPos.z; j++) {
-            auto *chunk = this->mw_->levelLoader()->getChunkDirect(bl::chunk_pos{i, j, dim});
-            chunks[i - minPos.x][j - minPos.z] = chunk;
-        }
-    }
-    chunk_render_window_->showChunks(chunks);
+    chunk_render_window_->showChunks(minPos, maxPos, *this->mw_->levelLoader());
+    ;
 }
 
 void MapWidget::delete_chunks() {

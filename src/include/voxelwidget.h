@@ -20,8 +20,9 @@
 #include <functional>
 #include <vector>
 
+#include "asynclevelloader.h"
+#include "bedrock_key.h"
 #include "chunk.h"
-#include "progressbarwidget.h"
 
 // 体素数据结构：恢复transparent参数，双判定（优先级：transparent > alpha）
 struct Voxel {
@@ -137,7 +138,7 @@ class ChunkRenderWidget : public QWidget {
         connect(this, &ChunkRenderWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
     }
 
-    bool showChunks(const std::vector<std::vector<bl::chunk*>>& chunks);
+    bool showChunks(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
 
    signals:
     void chunkMeshBuilt(int n);
