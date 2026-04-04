@@ -29,7 +29,7 @@ Push-Location $release_dir
 & $windeployqt --release BedrockMap.exe
 Pop-Location
 
-Copy-Item -Path config.json -Destination $release_dir
+Copy-Item -Path config.ini -Destination $release_dir
 Copy-Item -Path .\bedrock-level\data\colors\block_color.json -Destination $release_dir
 Copy-Item -Path .\bedrock-level\data\colors\biome_color.json -Destination $release_dir
 

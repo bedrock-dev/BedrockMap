@@ -143,13 +143,13 @@ void LoadRegionTask::run() {
                                                          std::clamp(terraincolor.greenF() * (diffuse), 0.0, 1.0),  // g
                                                          std::clamp(terraincolor.blueF() * (diffuse), 0.0, 1.0),   // b
                                                          terraincolor.alphaF())
-                                            .light(240);
+                                            .lighter(240);
                 auto biomecolor = region->biome_bake_image_.pixelColor(i, j);
                 auto fragBiomeColor = QColor::fromRgbF(std::clamp(biomecolor.redF() * (diffuse), 0.0, 1.0),    // r
                                                        std::clamp(biomecolor.greenF() * (diffuse), 0.0, 1.0),  // g
                                                        std::clamp(biomecolor.blueF() * (diffuse), 0.0, 1.0),   // b
                                                        biomecolor.alphaF())
-                                          .light(240);
+                                          .lighter(240);
                 region->terrain_bake_image_.setPixelColor(i, j, fragTerrainColor);
                 region->biome_bake_image_.setPixelColor(i, j, fragBiomeColor);
             }
