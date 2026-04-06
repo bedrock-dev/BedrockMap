@@ -1,5 +1,6 @@
-## BedrockMap
+English | [中文](./README_ZH.md)
 
+## BedrockMap
 
 Map Viewer and editor for Minecraft Bedrock.
 
