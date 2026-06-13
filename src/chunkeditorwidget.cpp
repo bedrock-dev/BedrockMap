@@ -3,7 +3,6 @@
 #include <qcontainerfwd.h>
 #include <qglobal.h>
 #include <qnamespace.h>
-#include <winscard.h>
 
 #include <QCryptographicHash>
 #include <QFileDialog>
@@ -16,10 +15,10 @@
 #include "actor.h"
 #include "bedrock_key.h"
 #include "chunk.h"
+#include "chunkio.h"
 #include "chunksectionwidget.h"
 #include "include/msg.h"
 #include "loguru/loguru.hpp"
-#include "mainwindow.h"
 #include "msg.h"
 #include "nbtwidget.h"
 #include "palette.h"
@@ -240,11 +239,11 @@ void ChunkEditorWidget::on_terrain_level_edit_valueChanged(int arg1) {
 
 void ChunkEditorWidget::on_export_btn_clicked() {
     if (!this->has_chunk_) return;
-    auto data = this->raw_chunk_.to_raw();
-    if (data.empty()) return;
-
-    auto fileName = QFileDialog::getSaveFileName(this, "", QString(), "Chunk Files (*.bchk)");
+    ExportedRegion region;
+    region.addChunk(this->raw_chunk_);
+    auto fileName = QFileDialog::getSaveFileName(this, "", QString(), "BedrockMap Chunk Files (*.bchks)");
     if (fileName.isEmpty()) return;
+    auto data = region.serialize();
 
     QFile file(fileName);
     if (file.open(QIODevice::WriteOnly)) {
@@ -254,7 +253,7 @@ void ChunkEditorWidget::on_export_btn_clicked() {
 }
 
 void ChunkEditorWidget::on_import_btn_clicked() {
-    auto fileName = QFileDialog::getOpenFileName(this, "", QString(), "Chunk Files (*.bchk)");
+    auto fileName = QFileDialog::getOpenFileName(this, "", QString(), "BedrockMap Chunk Files (*.bchks)");
     if (fileName.isEmpty()) return;
 
     QFile file(fileName);
@@ -263,13 +262,14 @@ void ChunkEditorWidget::on_import_btn_clicked() {
     auto data = file.readAll();
     file.close();
 
-    std::vector<byte_t> raw(data.begin(), data.end());
-    bl::raw_chunk chunk;
-    if (!chunk.from_raw(raw)) {
+    auto region = ExportedRegion::deserialize(data.data(), data.size());
+
+    if (region.isEmpty()) {
         WARN(msg::INVALID_CHUNK_FORMAT());
         return;
     }
-    // instead with update_position
+
+    auto chunk = region.chunks().front();
     chunk.set_pos(this->raw_chunk_.pos(), &this->level_loader_->level());
     this->loadChunkData(std::move(chunk));
     setDirty(true);
