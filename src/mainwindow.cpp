@@ -118,7 +118,8 @@ void MainWindow::setupMenuActions() {
 
     connect(action_open_, &QAction::triggered, this, &MainWindow::openLevel);
     connect(action_new_, &QAction::triggered, this, [this]() {
-        WARN("In developing!!");
+        WARN("Function is in developing");
+        return;
         NewLevelForm frm(this);
         if (frm.exec() == QDialog::Accepted) {
             LevelOperator::newLevel(frm.path(), frm.version(), frm.isFlat(), frm.flatBlocks());
@@ -129,6 +130,8 @@ void MainWindow::setupMenuActions() {
     // welcome tab actions
     auto *wt = level_tab_widget_->welcomeTab();
     connect(wt, &WelcomeTab::newLevelRequested, this, [this]() {
+        WARN("Function is in developing");
+        return;
         NewLevelForm frm(this);
         if (frm.exec() == QDialog::Accepted) {
             LevelOperator::newLevel(frm.path(), frm.version(), frm.isFlat(), frm.flatBlocks());

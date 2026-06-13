@@ -332,12 +332,12 @@
         <translation>最近打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="182"/>
+        <location filename="../src/mainwindow.cpp" line="185"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="213"/>
+        <location filename="../src/mainwindow.cpp" line="216"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
