@@ -6,9 +6,9 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QtDebug>
 
 #include "color.h"
+#include "loguru/loguru.hpp"
 
 namespace {
     std::string getDisplayedPalette(const std::string &value) {
@@ -72,9 +72,9 @@ int ChunkSectionWidget::get_block_pix() {
 }
 
 void ChunkSectionWidget::load_data(bl::chunk *ch) {
-    qDebug() << "Chunk Section load data begin";
+    LOG_F(INFO, "Chunk Section load data begin");
     if (!ch) {
-        qDebug() << "Invalid Chunk";
+        LOG_F(WARNING, "Invalid Chunk");
         return;
     }
     auto [miny_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
@@ -93,7 +93,7 @@ void ChunkSectionWidget::load_data(bl::chunk *ch) {
             }
         }
     }
-    qDebug() << "Chunk Section load data finished";
+    LOG_F(INFO, "Chunk Section load data finished");
 }
 
 void ChunkSectionWidget::mouseReleaseEvent(QMouseEvent *event) {
@@ -121,10 +121,10 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     auto paletteString = QString(data.block_palette.c_str());
     auto blockNameString = QString(data.block_name.c_str());
 
-    QAction posAction("坐标: " + posString, this);
-    QAction blockNameAction("方块名称: " + blockNameString, this);
+    QAction posAction(tr("chunkSectionWidget.tooltip.position") + posString, this);
+    QAction blockNameAction(tr("chunkSectionWidget.tooltip.blockName") + blockNameString, this);
     QAction blockPaletteAction(("Palette: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
-    QAction biomeAction("群系: " + biomeString, this);
+    QAction biomeAction(tr("chunkSectionWidget.tooltip.biome") + biomeString, this);
 
     auto *cb = QApplication::clipboard();
 

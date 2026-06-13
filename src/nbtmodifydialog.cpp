@@ -11,9 +11,11 @@
 #include <utility>
 #include <vector>
 
+#include "msg.h"
 #include "palette.h"
 #include "resourcemanager.h"
 #include "ui_nbtmodifydialog.h"
+
 
 namespace {
     template <typename T>
@@ -98,12 +100,12 @@ bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) const {
 bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const {
     const auto name = ui->name_lineedit->text().toStdString();
     if (name.empty()) {
-        err = "TAG名字不能为空";
+        err = msg::TAG_NAME_EMPTY();
         return nullptr;
     }
     const auto data = ui->type_combobox->currentData();
     if (!data.canConvert<int>()) {
-        err = "TAG类型不合法";
+        err = msg::TAG_TYPE_INVALID();
         return nullptr;
     }
 
@@ -116,7 +118,7 @@ bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) c
     if (type == Byte || type == Int || type == Short || type == Long || type == ByteArray || type == IntArray || type == LongArray) {
         std::vector<int64_t> values;
         if (!parseIntegerValue(type, vs, values)) {
-            err = "TAG的值不合法";
+            err = msg::TAG_VALUE_INVALID();
             return nullptr;
         }
         if (type == Byte) return new byte_tag(name, static_cast<int8_t>(values.front()));
@@ -151,7 +153,7 @@ bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) c
         if (ok) {
             return new float_tag(name, v);
         } else {
-            err = "TAG的值不合法";
+            err = msg::TAG_VALUE_INVALID();
             return nullptr;
         }
     }
@@ -160,11 +162,11 @@ bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) c
         if (ok) {
             return new double_tag(name, v);
         }
-        err = "TAG的值不合法";
+        err = msg::TAG_VALUE_INVALID();
         return nullptr;
     }
 
-    err = "未知的TAG类型";
+    err = msg::TAG_UNKNOWN_TYPE();
     return nullptr;
 }
 
@@ -176,14 +178,14 @@ bool NBTModifyDialog::modifyCurrentTag(bl::palette::abstract_tag *&tag, QString 
     if (type == String) dynamic_cast<string_tag *>(tag)->value = vs.toStdString();
     vs = vs.trimmed();
     if (vs.isEmpty()) {
-        err = "TAG的值为空";
+        err = msg::TAG_VALUE_EMPTY();
         return false;
     }
 
     if (type == Byte || type == Int || type == Short || type == Long || type == ByteArray || type == IntArray || type == LongArray) {
         std::vector<int64_t> values;
         if (!parseIntegerValue(type, vs, values)) {
-            err = "TAG的值不合法";
+            err = msg::TAG_VALUE_INVALID();
             return false;
         }
         if (type == Byte) dynamic_cast<byte_tag *>(tag)->value = static_cast<int8_t>(values.front());
@@ -220,7 +222,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::palette::abstract_tag *&tag, QString 
             dynamic_cast<float_tag *>(tag)->value = v;
             return true;
         } else {
-            err = "TAG的值不合法";
+            err = msg::TAG_VALUE_INVALID();
             return false;
         }
     }
@@ -231,7 +233,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::palette::abstract_tag *&tag, QString 
             dynamic_cast<double_tag *>(tag)->value = v;
             return true;
         } else {
-            err = "TAG的值不合法";
+            err = msg::TAG_VALUE_INVALID();
             return false;
         }
     }
@@ -239,7 +241,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::palette::abstract_tag *&tag, QString 
         dynamic_cast<string_tag *>(tag)->value = vs.toStdString();
         return true;
     }
-    err = "未知的TAG类型";
+    err = msg::TAG_UNKNOWN_TYPE();
     return false;
 }
 

@@ -83,3 +83,6 @@ logs
 build_rls
 *.zip
 *.qrc
+cache
+.qtcreator
+.vscode

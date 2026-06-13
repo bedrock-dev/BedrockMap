@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>filter.title</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../icon.qrc">
@@ -34,7 +34,7 @@
        <item>
         <widget class="QCheckBox" name="enable_layer_box">
          <property name="text">
-          <string>启用选层模式</string>
+          <string>filter.enableLayer</string>
          </property>
         </widget>
        </item>
@@ -70,14 +70,14 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>群系过滤</string>
+            <string>filter.biomeFilter</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="biome_black_box">
            <property name="text">
-            <string>黑名单</string>
+            <string>filter.blackList</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -101,14 +101,14 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>方块过滤</string>
+            <string>filter.blockFilter</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="block_black_box">
            <property name="text">
-            <string>黑名单</string>
+            <string>filter.blackList</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -135,14 +135,14 @@
          <item>
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>实体过滤</string>
+            <string>filter.entitiesFilter</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="actor_black_box">
            <property name="text">
-            <string>黑名单</string>
+            <string>filter.blackList</string>
            </property>
            <property name="checked">
             <bool>true</bool>

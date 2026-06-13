@@ -10,7 +10,7 @@
 AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent), ui(new Ui::AboutDialog) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
-    setWindowTitle(QString("关于 ") + cfg::SOFTWARE_NAME.c_str());
+    setWindowTitle(tr("aboutDialog.title.about") + cfg::SOFTWARE_NAME.c_str());
     ui->info_label->setText(ui->info_label->text().replace("{NAME_VERSION}", cfg::VERSION_STRING()));
     ui->logo->setPixmap(QPixmap(":/res/icon.png").scaled(128, 128));
 }

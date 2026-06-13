@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <qchar.h>
+#include <qcontainerfwd.h>
 #include <qimage.h>
 #include <sys/stat.h>
 
@@ -27,6 +28,9 @@ struct cfg {
     const static std::string BLOCK_FILE_PATH;
     const static std::string BIOME_FILE_PATH;
     const static QString SHADER_FILE_PATH;
+
+    // 翻译文件路径
+    const static QString TRANSLATION_FILES_PATH;
     //
     static constexpr uint8_t RW = 8u;  //(1<<w) //区域d大小,一个区域由RW * RW个区块组成，且区块坐标对齐8的倍速
     const static int GRID_WIDTH;       // 地区格子宽度(单位是区块)
@@ -62,6 +66,10 @@ struct cfg {
     // misc
     static bool LOAD_GLOBAL_DATA;
     static int MAX_GLOBAL_DATA_LOAD_COUNT;
+    static QString ICON_THEME;
+
+    // lang
+    static QString LANGUAGE;
 
     // debug
     static bool LOG_OUT_MISSING_TEXTURE;

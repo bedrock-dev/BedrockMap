@@ -6,19 +6,46 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>619</width>
+    <width>840</width>
     <height>559</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>chunkEditor.title</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>1</number>
+   </property>
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
      <item>
       <widget class="QLabel" name="base_info_label">
        <property name="text">
@@ -29,7 +56,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -40,9 +67,23 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="dump_btn">
+      <widget class="QPushButton" name="view_3d_btn">
        <property name="text">
-        <string>导出区块数据</string>
+        <string>chunkEditor.view3D</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="export_btn">
+       <property name="text">
+        <string>chunkEditor.exportChunkData</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="import_btn">
+       <property name="text">
+        <string>chunkEditor.importChunkData</string>
        </property>
       </widget>
      </item>
@@ -55,7 +96,7 @@
         </size>
        </property>
        <property name="text">
-        <string>定位</string>
+        <string>chunkEditor.location</string>
        </property>
       </widget>
      </item>
@@ -68,7 +109,7 @@
         </size>
        </property>
        <property name="text">
-        <string>关闭</string>
+        <string>chunkEditor.exit</string>
        </property>
       </widget>
      </item>
@@ -79,23 +120,31 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="render_view_tab">
-      <attribute name="title">
-       <string>视图</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <item>
-        <widget class="QWidget" name="empty_3d_view_widget" native="true"/>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="terrain_tab">
       <attribute name="title">
-       <string>地形</string>
+       <string>chunkEditor.terrain</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,1">
+         <property name="spacing">
+          <number>1</number>
+         </property>
          <item>
           <widget class="QCheckBox" name="terrain_show_grid_cb">
            <property name="sizePolicy">
@@ -105,7 +154,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>显示网格</string>
+            <string>chunkEditor.showGrid</string>
            </property>
           </widget>
          </item>
@@ -121,7 +170,7 @@
             </sizepolicy>
            </property>
            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
           </widget>
          </item>
@@ -131,55 +180,128 @@
      </widget>
      <widget class="QWidget" name="actor_tab">
       <attribute name="title">
-       <string>实体</string>
+       <string>chunkEditor.entities</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
         <widget class="QWidget" name="empyt_actor_editor_widget" native="true"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_actor_btn">
-         <property name="text">
-          <string>保存实体数据</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="block_actor_tab">
       <attribute name="title">
-       <string>方块实体</string>
+       <string>chunkEditor.blockEntities</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
         <widget class="QWidget" name="empty_block_actor_editor_widget" native="true"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_block_actor_btn">
-         <property name="text">
-          <string>保存方块实体数据</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="pt_tab">
       <attribute name="title">
-       <string>计划刻</string>
+       <string>chunkEditor.pendingTicks</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
         <widget class="QWidget" name="empty_pt_editor_widget" native="true"/>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="stats_tab">
+      <attribute name="title">
+       <string>chunkEditor.stats</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
-        <widget class="QPushButton" name="save_pt_btn">
+        <widget class="QLabel" name="stats_label">
          <property name="text">
-          <string>保存计划刻数据</string>
+          <string/>
          </property>
         </widget>
        </item>
+       <item>
+        <spacer name="stats_vertical_spacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="save_btn">
+     <property name="text">
+      <string>chunkEditor.save</string>
+     </property>
     </widget>
    </item>
   </layout>

@@ -9,11 +9,11 @@
 #include <unordered_set>
 
 #include "bedrock_key.h"
-#include "bedrock_level.h"
 #include "chunk.h"
 #include "config.h"
 #include "data_3d.h"
 #include "renderfilterdialog.h"
+class AsyncLevelLoader;
 
 namespace bl {
 
@@ -102,8 +102,8 @@ class LoadRegionTask : public QObject, public QRunnable {
     Q_OBJECT
 
    public:
-    LoadRegionTask(bl::bedrock_level *level, const bl::chunk_pos &pos, const MapFilter *filter)
-        : QRunnable(), level_(level), pos_(pos), filter_(filter) {}
+    LoadRegionTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos, const MapFilter *filter)
+        : QRunnable(), loader_(loader), pos_(pos), filter_(filter) {}
     void run() override;
 
    public:
@@ -112,7 +112,7 @@ class LoadRegionTask : public QObject, public QRunnable {
     void finish(int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks);
 
    private:
-    bl::bedrock_level *level_;
+    AsyncLevelLoader *loader_;
     region_pos pos_;
     const MapFilter *filter_;
 };
@@ -121,7 +121,7 @@ class LoadThumbnailTask : public QObject, public QRunnable {
     Q_OBJECT
 
    public:
-    LoadThumbnailTask(bl::bedrock_level *level, const bl::chunk_pos &pos) : QRunnable(), level_(level), pos_(pos) {}
+    LoadThumbnailTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos) : QRunnable(), loader_(loader), pos_(pos) {}
     void run() override;
 
    signals:
@@ -129,7 +129,7 @@ class LoadThumbnailTask : public QObject, public QRunnable {
     void finish(int x, int z, int dim, QImage *thumbnail);
 
    private:
-    bl::bedrock_level *level_;
+    AsyncLevelLoader *loader_;
     region_pos pos_;
 };
 

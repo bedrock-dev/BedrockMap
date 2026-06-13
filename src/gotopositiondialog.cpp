@@ -6,10 +6,11 @@
 
 GoToPositionDialog::GoToPositionDialog(QWidget *parent) : QDialog(parent), ui(new Ui::GoToPositionDialog) {
     ui->setupUi(this);
-    setWindowTitle("前往");
+    setWindowTitle(tr("goToPositionDialog.title.goto"));
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
     ui->x_lineedit->setValidator(new QIntValidator(this));
     ui->z_lineedit->setValidator(new QIntValidator(this));
+    // todo
 }
 
 bool GoToPositionDialog::positionValid() { return !ui->x_lineedit->text().isEmpty() && !ui->z_lineedit->text().isEmpty(); }

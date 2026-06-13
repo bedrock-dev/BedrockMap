@@ -2,8 +2,9 @@
 #define RENDERFILTERDIALOG_H
 
 #include <QDialog>
-#include <QtDebug>
 #include <unordered_set>
+
+#include "loguru/loguru.hpp"
 
 namespace Ui {
     class RenderFilterDialog;
@@ -26,13 +27,18 @@ struct MapFilter {
 
     void renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
-    //    void bakeChunkTerrain(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
-
-    //    void bakeChunkBiome(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
-
     void bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const;
 
-    // void bakeChunkHeight(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
+    void print() {
+        LOG_F(INFO, "BlockList (%d)", block_black_mode_);
+        for (const auto &block : blocks_list_) {
+            LOG_F(INFO, " - %s", block.c_str());
+        }
+        LOG_F(INFO, "ActorList (%d)", actor_black_mode_);
+        for (const auto &actor : actors_list_) {
+            LOG_F(INFO, " - %s", actor.c_str());
+        }
+    }
 };
 
 class RenderFilterDialog : public QDialog {
@@ -44,7 +50,10 @@ class RenderFilterDialog : public QDialog {
    public:
     ~RenderFilterDialog() override;
 
-    void setFilter(const MapFilter &f) { this->filter_ = f; }
+    void setFilter(const MapFilter &f) {
+        this->filter_ = f;
+        fillInUI();
+    }
 
     MapFilter getFilter() const { return this->filter_; }
 

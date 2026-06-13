@@ -5,22 +5,24 @@
 #include "resourcemanager.h"
 
 #include <qcolor.h>
+#include <qcontainerfwd.h>
 #include <qicon.h>
 #include <qimage.h>
 #include <qpixmap.h>
 #include <qrgb.h>
+#include <sys/stat.h>
 
+#include <QApplication>
 #include <QDir>
 #include <QDirIterator>
 #include <QIcon>
 #include <QMap>
 #include <QString>
-#include <QtDebug>
-#include <iostream>
 #include <unordered_map>
 
 #include "bedrock_key.h"
 #include "config.h"
+#include "loguru/loguru.hpp"
 
 namespace {
     QMap<QString, QImage *> actor_img_pool;
@@ -134,7 +136,7 @@ QImage *OtherNBTIcon() { return other_nbt; }
 QImage *BlockActorNBTIcon(const QString &key) {
     auto it = block_actor_icon_pool.find(key);
     if (it == block_actor_icon_pool.end()) {
-        qDebug() << " unknown block actor key " << key;
+        LOG_F(WARNING, " unknown block actor key %s", key.toStdString().c_str());
     }
     return it == block_actor_icon_pool.end() ? unknown_img : it.value();
 }
@@ -142,7 +144,7 @@ QImage *BlockActorNBTIcon(const QString &key) {
 QImage *ActorImage(const QString &key) {
     auto it = actor_img_pool.find(key);
     if (it == actor_img_pool.end()) {
-        qDebug() << " unknown actor image key " << key;
+        LOG_F(WARNING, " unknown actor image key %s", key.toStdString().c_str());
     }
 
     return it == actor_img_pool.end() ? unknown_img : it.value();
@@ -167,7 +169,7 @@ QImage *VillageNBTIcon(bl::village_key::key_type t) {
 QImage *EntityNBTIcon(const QString &key) {
     auto it = entity_icon_pool.find(key);
     if (it == entity_icon_pool.end()) {
-        qDebug() << " unknown key " << key;
+        LOG_F(WARNING, " unknown key %s", key.toStdString().c_str());
     }
     return it == entity_icon_pool.end() ? unknown_img : it.value();
 }
@@ -194,4 +196,41 @@ QImage *TagIcon(bl::palette::tag_type t) {
 
     auto it = tag_icon_pool.find(QString(names[t].c_str()));
     return it == tag_icon_pool.end() ? unknown_img : it.value();
+}
+QString ToolBarIcon(const QString &name) { return QString(":/res/ui/%1/%2.png").arg(cfg::ICON_THEME).arg(name); }
+void TranslatorMgr::init() {
+    const auto &langs = cfg::TRANSLATION_FILES_PATH;
+    // tranverse all the .qm files and load them into the translations map
+    QDirIterator it(langs, QStringList() << "*.qm", QDir::Files);
+    while (it.hasNext()) {
+        auto filePath = it.next();
+        auto langName = QFileInfo(filePath).baseName();
+        auto translator = std::make_shared<QTranslator>();
+        if (translator->load(filePath)) {
+            LOG_F(INFO, "Load translation file %s succeed", filePath.toStdString().c_str());
+            translations().insert(langName, translator);
+        } else {
+            LOG_F(WARNING, "Load translation file %s failed", filePath.toStdString().c_str());
+        }
+    }
+}
+
+void TranslatorMgr::setupTranslation(QApplication &a, const QString &langName) {
+    // remove the current translator
+    for (auto &t : translations()) {
+        a.removeTranslator(t.get());
+    }
+    // add new
+    auto it = translations().find(langName);
+    if (it != translations().end()) {
+        a.installTranslator(it.value().get());
+        LOG_F(INFO, "Install translation for language %s succeed", langName.toStdString().c_str());
+    } else {
+        LOG_F(WARNING, "No translation found for language %s", langName.toStdString().c_str());
+    }
+}
+
+QMap<QString, std::shared_ptr<QTranslator>> &TranslatorMgr::translations() {
+    static QMap<QString, std::shared_ptr<QTranslator>> translations_;
+    return translations_;
 }

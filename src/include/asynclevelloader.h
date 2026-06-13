@@ -9,13 +9,17 @@
 #include <QRunnable>
 #include <QThreadPool>
 #include <atomic>
+#include <optional>
 #include <vector>
 
 #include "bedrock_key.h"
 #include "bedrock_level.h"
+#include "chunk.h"
 #include "chunk_task.h"
 #include "config.h"
 #include "palette.h"
+#include "rawchunkcache.h"
+#include "renderfilterdialog.h"
 
 class AsyncLevelLoader;
 
@@ -24,13 +28,25 @@ struct GlobalNBTLoadResult {
     bl::general_kv_nbts playerData;
     bl::general_kv_nbts mapData;
     bl::general_kv_nbts otherData;
+
+    void clear() {
+        villageData.clear_data();
+        playerData.clear_data();
+        mapData.clear_data();
+        otherData.clear_data();
+    }
 };
 
 class AsyncLevelLoader : public QObject {
     Q_OBJECT
 
+   signals:
+    void dirtyChanged();
+
    public:
     AsyncLevelLoader();
+
+    ~AsyncLevelLoader() override;
 
     void clearAllCache();
 
@@ -42,7 +58,11 @@ class AsyncLevelLoader : public QObject {
 
     inline bool isOpen() const { return this->loaded_; }
 
+    inline bool isDirty() const { return level_cache_.isDirty(); }
+
     void setFilter(const MapFilter &f) { this->map_filter_ = f; }
+
+    const MapFilter &filter() const { return this->map_filter_; }
 
     void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
 
@@ -67,10 +87,22 @@ class AsyncLevelLoader : public QObject {
     std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos &rp);
 
     /*Modify*/
-    bl::chunk *getChunkDirect(const bl::chunk_pos &p);
+    // return a chunk from cache or loader; caller owns the returned pointer and must delete it
+    bl::chunk *getChunk(const bl::chunk_pos &p);
 
-    // modify
-    QFuture<bool> dropChunk(const bl::chunk_pos &min, const ::bl::chunk_pos &max);
+    // return a raw chunk from cache or loader
+    std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &p);
+
+    // delete chunk
+    bool deleteChunk(const bl::chunk_pos &p);
+    // modify a chunk
+    bool putRawChunk(const bl::raw_chunk &raw);
+
+    bool createVoid(const bl::chunk_pos &p);
+
+    void clearChunkCache(const bl::chunk_pos &p);
+
+    void commit();
 
     /**
      * 批量修改数据库
@@ -85,14 +117,7 @@ class AsyncLevelLoader : public QObject {
 
     bool modifyLeveldat(bl::palette::compound_tag *nbt);
 
-    bool modifyChunkBlockEntities(const bl::chunk_pos &cp, const std::string &raw);
-
-    bool modifyChunkPendingTicks(const bl::chunk_pos &cp, const std::string &raw);
-
     bool modifyChunkActors(const bl::chunk_pos &cp, bl::ChunkVersion v, const std::vector<bl::actor *> &actors);
-
-   public:
-    ~AsyncLevelLoader() override;
 
     std::vector<QString> debugInfo();
 
@@ -104,6 +129,7 @@ class AsyncLevelLoader : public QObject {
    private:
     std::atomic_bool loaded_{false};
     bl::bedrock_level level_{};
+    RawChunkCache level_cache_;
     // map region cache
     TaskBuffer<region_pos> processing_;
     std::vector<QCache<region_pos, ChunkRegion> *> region_cache_;
@@ -116,6 +142,7 @@ class AsyncLevelLoader : public QObject {
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;
+
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;
 };

@@ -5,6 +5,7 @@
 
 #include <qchar.h>
 #include <qcolor.h>
+#include <qcontainerfwd.h>
 #include <qglobal.h>
 #include <qimage.h>
 #include <qmath.h>
@@ -13,14 +14,14 @@
 #include <qsettings.h>
 
 #include <QDir>
-#include <QtDebug>
 #include <string>
 
 #include "color.h"
+#include "loguru/loguru.hpp"
 
 // Base info
 const std::string cfg::SOFTWARE_NAME = "BedrockMap";
-const std::string cfg::SOFTWARE_VERSION = "v0.6.0-beta2";
+const std::string cfg::SOFTWARE_VERSION = "v1.0.0-beta1";
 
 // Unconfigurable
 const int cfg::GRID_WIDTH = 32;
@@ -55,9 +56,13 @@ int cfg::THUMBNAIL_REION_CACHE_SIZE = 65536;
 // misc
 bool cfg::LOAD_GLOBAL_DATA = true;
 int cfg::MAX_GLOBAL_DATA_LOAD_COUNT = -1;
+QString cfg::ICON_THEME = "classic";
 
 // debug
 bool cfg::LOG_OUT_MISSING_TEXTURE = false;
+
+// lang
+QString cfg::LANGUAGE = "zh_CN";
 
 // others
 bool cfg::transparent_void = false;
@@ -68,11 +73,13 @@ const std::string cfg::CONFIG_FILE_PATH = R"(../config.ini)";
 const std::string cfg::BLOCK_FILE_PATH = R"(../bedrock-level/data/colors/block_color.json)";
 const std::string cfg::BIOME_FILE_PATH = R"(../bedrock-level/data/colors/biome_color.json)";
 const QString cfg::SHADER_FILE_PATH = R"(../res/shaders/voxel)";
+const QString cfg::TRANSLATION_FILES_PATH = R"(./)";
 #else
 const std::string cfg::CONFIG_FILE_PATH = "config.ini";
 const std::string cfg::BLOCK_FILE_PATH = "block_color.json";
 const std::string cfg::BIOME_FILE_PATH = "biome_color.json";
 const QString cfg::SHADER_FILE_PATH = "shaders/voxel";
+const QString cfg::TRANSLATION_FILES_PATH = R"(./translations)";
 #endif
 
 region_pos cfg::c2r(const bl::chunk_pos &ch) {
@@ -83,20 +90,24 @@ region_pos cfg::c2r(const bl::chunk_pos &ch) {
 
 void cfg::initColorTable() {
     if (!bl::init_biome_color_palette_from_file(cfg::BIOME_FILE_PATH)) {
-        qWarning() << "Can not load biome color file in path: " << BIOME_FILE_PATH.c_str();
+        LOG_F(WARNING, "Can not load biome color file in path: %s", BIOME_FILE_PATH.c_str());
     }
 
     if (!bl::init_block_color_from_file(cfg::BLOCK_FILE_PATH)) {
-        qWarning() << "Can not load block color file in path: " << BLOCK_FILE_PATH.c_str();
+        LOG_F(WARNING, "Can not load block color file in path: %s", BLOCK_FILE_PATH.c_str());
     }
 
     bl::setUseColorDebugMode(cfg::LOG_OUT_MISSING_TEXTURE);
 }
 
 void cfg::initConfig() {
-    qInfo() << "Current working directory: " << QDir::currentPath();
-    qInfo() << "Configuration file path: " << CONFIG_FILE_PATH.c_str();
+    LOG_F(INFO, "Current working directory: %s", QDir::currentPath().toStdString().c_str());
+    LOG_F(INFO, "Configuration file path: %s", CONFIG_FILE_PATH.c_str());
     QSettings setting(CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
+
+    foreach (const auto &key, setting.allKeys()) {
+        LOG_F(INFO, "Config key: %s, value: %s", key.toStdString().c_str(), setting.value(key).toString().toStdString().c_str());
+    }
 
     setting.beginGroup("Gui");
     cfg::COLOR_THEME = setting.value("theme", cfg::COLOR_THEME).toString();
@@ -129,21 +140,26 @@ void cfg::initConfig() {
     setting.beginGroup("Misc");
     cfg::LOAD_GLOBAL_DATA = setting.value("load_global_data", cfg::LOAD_GLOBAL_DATA).toBool();
     cfg::MAX_GLOBAL_DATA_LOAD_COUNT = setting.value("max_global_data_load_count", cfg::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
+    cfg::ICON_THEME = setting.value("icon_theme", cfg::ICON_THEME).toString();
     setting.endGroup();
 
     setting.beginGroup("Debug");
     cfg::LOG_OUT_MISSING_TEXTURE = setting.value("log_out_missng_texture", cfg::LOG_OUT_MISSING_TEXTURE).toBool();
     setting.endGroup();
 
+    setting.beginGroup("Lang");
+    cfg::LANGUAGE = setting.value("lang", cfg::LANGUAGE).toString();
+    setting.endGroup();
+
     if (setting.status() != QSettings::NoError) {
-        qDebug() << "Settings read error:" << setting.status();
+        LOG_F(WARNING, "Settings read error: %d", setting.status());
     }
 
-    qInfo() << "all keys: " << setting.allKeys().size();
+    LOG_F(INFO, "all keys: %d", static_cast<int>(setting.allKeys().size()));
 
     if (THREAD_NUM < 1) {
         THREAD_NUM = 2;
-        qWarning() << "Invalid background thread number, reset it to default(2)";
+        LOG_F(WARNING, "Invalid background thread number, reset it to default(2)");
     }
 
     initColorTable();

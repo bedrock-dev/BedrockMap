@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
-
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_PREFIX_PATH $ENV{QT_ROOT})
 message(STATUS "QT_ROOT environment variable: $ENV{QT_ROOT}")
@@ -15,11 +14,13 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS -utf8)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -utf8")
 
-#bedorck-level
+
+
+#bedrock-level
 set(BEDROCK_LEVEL_ROOT "${PROJECT_SOURCE_DIR}/bedrock-level")
 
 set(BEDROCK_LIBS
@@ -33,32 +34,43 @@ include_directories(
         ${BEDROCK_LEVEL_ROOT}/src/include
         ${BEDROCK_LEVEL_ROOT}/third
         ${PROJECT_SOURCE_DIR}/src/include
+        ${PROJECT_SOURCE_DIR}/third
         # for clangd
         ${CMAKE_CURRENT_BINARY_DIR}/BedrockMap_autogen/include
 )
 
-#qt
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Concurrent OpenGL REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent OpenGL REQUIRED)
+#qt6
+find_package(Qt6 REQUIRED COMPONENTS 
+    Core 
+    Widgets 
+    Concurrent 
+    OpenGL 
+    OpenGLWidgets
+    LinguistTools
+)
 
+# 定义资源文件
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
+# 收集源文件
 file(GLOB_RECURSE SRC_FILES
         src/*.ui
         src/*.cpp
         src/include/*.h
+        third/*.cpp
 )
 
-
-#qrc generation
+# 收集资源文件
 file(GLOB_RECURSE RESOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.png
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.jpg
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.ttf
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.frag
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/*.dat
 )
 
+# 生成 qrc 文件
 set(QRC_FILE ${PROJECT_SOURCE_DIR}/res.qrc)
 file(WRITE ${QRC_FILE} "<RCC>\n    <qresource prefix=\"/\">\n")
 foreach(FILE ${RESOURCE_FILES})
@@ -67,31 +79,62 @@ foreach(FILE ${RESOURCE_FILES})
     file(APPEND ${QRC_FILE} "        <file>${REL_PATH}</file>\n")
 endforeach()
 file(APPEND ${QRC_FILE} "    </qresource>\n</RCC>\n")
-#qt5_add_resources(RESOURCES_RCC ${QRC_FILE})
 
+# i18n 翻译
+set(TS_FILES
+    translations/zh_CN.ts
+    translations/en.ts
+)
+
+# Qt6 翻译
+qt6_add_translations(BedrockMap
+    TS_FILES ${TS_FILES}
+)
+
+# 创建可执行文件 - 不要使用 WIN32 参数
 add_executable(BedrockMap
-                ${SRC_FILES}
-                ${APP_ICON_RESOURCE_WINDOWS} 
-                ${QRC_FILE})
+    ${SRC_FILES}
+    ${APP_ICON_RESOURCE_WINDOWS}
+    ${QRC_FILE}
+)
 
-message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
-if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
- message(STATUS "Use no console mode")
- target_link_libraries(BedrockMap PRIVATE
-        Qt${QT_VERSION_MAJOR}::Widgets
-        Qt${QT_VERSION_MAJOR}::Concurrent
-        -static-libgcc -static-libstdc++
-        -mwindows
-        ${BEDROCK_LIBS}) 
-else()
-  target_link_libraries(BedrockMap PRIVATE
-        Qt${QT_VERSION_MAJOR}::Widgets
-        Qt${QT_VERSION_MAJOR}::Concurrent
-        Qt${QT_VERSION_MAJOR}::OpenGL
-        -static-libgcc -static-libstdc++
-        ${BEDROCK_LIBS})
+# 链接库
+target_link_libraries(BedrockMap PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Concurrent
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    ${BEDROCK_LIBS}
+)
+
+# 预编译头 — 大幅减少重复编译 Qt 头文件的时间
+target_precompile_headers(BedrockMap PRIVATE
+    src/include/pch.h
+)
+
+target_compile_definitions(BedrockMap PRIVATE NOMINMAX)
+
+# Windows 特定设置
+if(WIN32)
+    # 添加 Windows 系统库和链接选项
+    # Debug 模式使用控制台子系统以显示 qDebug 输出，Release 使用 GUI 子系统
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_options(BedrockMap PRIVATE
+            -static-libgcc
+            -static-libstdc++
+            -mconsole
+        )
+    else()
+        target_link_options(BedrockMap PRIVATE
+            -static-libgcc
+            -static-libstdc++
+            -mwindows
+        )
+    endif()
 endif()
 
-if (QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(BedrockMap)
-endif ()
+# 根据构建类型添加选项
+if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    target_compile_definitions(BedrockMap PRIVATE QT_NO_DEBUG_OUTPUT)
+endif()

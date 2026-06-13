@@ -14,9 +14,9 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLWidget>
 #include <QVector3D>
 #include <QWidget>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #include <functional>
 #include <vector>
 

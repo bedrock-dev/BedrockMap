@@ -22,22 +22,32 @@ using namespace bl::palette;
 // 不持有数据
 class NBTTreeItem : public QTreeWidgetItem {
    public:
-    bool tryAddChild(bl::palette::abstract_tag *tag);
+    bool tryAddChild(bl::palette::abstract_tag *tag, bool hex_mode);
 
-    void updateLabel() {
+    void updateLabel(bool hex_mode) {
         if (!root_) return;
         auto type = root_->type();
-        QString text;
         if (type == Compound) {
-            text = dynamic_cast<compound_tag *>(root_)->key().c_str();
+            setText(0, dynamic_cast<compound_tag *>(root_)->key().c_str());
+            setText(1, "");
         } else if (type == List) {
             auto *list = dynamic_cast<bl::palette::list_tag *>(root_);
-            text = list->key().c_str() + QString("[%1]").arg(QString::number(list->value.size()));
+            setText(0, list->key().c_str());
+            setText(1, QString("[%1]").arg(QString::number(list->value.size())));
+        } else if (hex_mode && (type >= Byte && type <= Long)) {
+            setText(0, root_->key().c_str());
+            setText(1, NBTTreeItem::hexValueString(root_).c_str());
+        } else if (hex_mode && (type == ByteArray || type == IntArray || type == LongArray)) {
+            setText(0, root_->key().c_str());
+            setText(1, NBTTreeItem::hexArrayString(root_).c_str());
         } else {
-            text = QString() + root_->key().c_str() + ": " + root_->value_string().c_str();
+            setText(0, root_->key().c_str());
+            setText(1, root_->value_string().c_str());
         }
-        setText(0, text);
     }
+
+    static std::string hexValueString(bl::palette::abstract_tag *tag);
+    static std::string hexArrayString(bl::palette::abstract_tag *tag);
 
     bl::palette::abstract_tag *root_{nullptr};
 };
@@ -121,26 +131,34 @@ class NbtWidget : public QWidget {
         this->enable_modify_cache_ = enable;
     }
 
+    inline bool dirty() const { return !this->modified_cache_.empty(); }
+
     const std::unordered_map<std::string, std::string> &getModifyCache() { return this->modified_cache_; }
 
     void putModifyToCache(const std::string &key, const std::string &value);
 
     void putRemoveToCache(const std::string &key) { putModifyToCache(key, ""); }
 
-    inline void clearModifyCache() { this->modified_cache_.clear(); };
+    void clearModifyCache();
 
     inline NBTListItem *openedItem() { return this->current_opened_; }
 
     inline bool modifyAllowed() const { return this->modify_allowed_; }
 
+   signals:
+    void nbtModified();
+
    private slots:
     void on_print_cache_btn_clicked();
 
    private slots:
-
     void on_load_btn_clicked();
 
     void on_list_widget_itemDoubleClicked(QListWidgetItem *item);
+
+    void on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
+    void on_tree_widget_itemChanged(QTreeWidgetItem *item, int column);
 
     void on_save_btn_clicked();
 
@@ -152,7 +170,7 @@ class NbtWidget : public QWidget {
 
     void on_multi_select_checkbox_stateChanged(int arg1);
 
-    void on_modify_checkbox_stateChanged(int arg1);
+    void on_hex_checkbox_stateChanged(int arg1);
 
     void on_search_edit_textEdited(const QString &arg1);
 
@@ -160,16 +178,19 @@ class NbtWidget : public QWidget {
 
    private:
     void openNBTItem(bl::palette::compound_tag *root) const;
+    void tryModifyCurrentNode();
 
    private:
     // 不存数据，只引用数据
     Ui::NbtWidget *ui;
     NBTModifyDialog *modify_dialog_{nullptr};
-    bool modify_allowed_{false};
+    bool modify_allowed_{true};
     std::function<void(compound_tag *)> extra_load_event_{[](const compound_tag *) {}};
     std::unordered_map<std::string, std::string> modified_cache_;
     NBTListItem *current_opened_{nullptr};
     bool enable_modify_cache_{true};
+    bool hex_mode_{false};
+    bool editing_in_progress_{false};
     std::string current_palette_path_;
 };
 

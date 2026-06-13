@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <cstddef>
 
+#include "asynclevelloader.h"
 #include "chunk.h"
 #include "voxelwidget.h"
 
@@ -21,15 +22,18 @@ class MainWindow;
 class ChunkEditorWidget : public QWidget {
     Q_OBJECT
    public:
-    explicit ChunkEditorWidget(MainWindow *mw, QWidget *parent = nullptr);
+    explicit ChunkEditorWidget(QWidget *parent = nullptr, AsyncLevelLoader *levelLoader = nullptr);
 
     ~ChunkEditorWidget() override;
 
-    void loadChunkData(bl::chunk *chunk);
+    void loadChunkData(bl::raw_chunk raw);
 
     void mousePressEvent(QMouseEvent *event) override;
 
     void clearData();
+
+   signals:
+    void locateChunk(int x, int z, int dim);
 
    private slots:
     void on_terrain_level_edit_valueChanged(int arg1);
@@ -43,20 +47,20 @@ class ChunkEditorWidget : public QWidget {
 
     void on_terrain_level_slider_valueChanged(int value);
 
-    //   void on_terrain_goto_level_btn_clicked();
-
-    void on_save_actor_btn_clicked();
-
-    void on_save_block_actor_btn_clicked();
-
-    void on_save_pt_btn_clicked();
-
     void on_locate_btn_clicked();
 
-    void on_dump_btn_clicked();
+    void on_export_btn_clicked();
+
+    void on_import_btn_clicked();
+
+    void on_view_3d_btn_clicked();
+
+    void on_save_btn_clicked();
 
    private:
     void refreshBasicData();
+
+    void setDirty(bool bo) { dirty_ = bo; }
 
    private:
     ChunkSectionWidget *chunk_section_{nullptr};
@@ -67,11 +71,13 @@ class ChunkEditorWidget : public QWidget {
     VoxelWidget *terrain_render_widget_{nullptr};
 
     Ui::ChunkEditorWidget *ui;
+    AsyncLevelLoader *level_loader_{nullptr};
     int y_level{0};
-    //    bl::chunk *chunk_{nullptr};
     bl::ChunkVersion cv{bl::Old};
     bl::chunk_pos cp_;
-    MainWindow *mw_;
+    bl::raw_chunk raw_chunk_;
+    bool has_chunk_{false};
+    bool dirty_{false};
 };
 
 #endif  // CHUNKEDITORWIDGET_H

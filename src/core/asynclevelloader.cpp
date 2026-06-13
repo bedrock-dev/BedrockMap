@@ -2,6 +2,7 @@
 
 #include <qcache.h>
 #include <qcolor.h>
+#include <qcontainerfwd.h>
 #include <qglobal.h>
 #include <qimage.h>
 #include <qobject.h>
@@ -10,17 +11,18 @@
 #include <QObject>
 #include <QVector3D>
 #include <QtConcurrent>
-#include <QtDebug>
-#include <cstddef>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "bedrock_key.h"
+#include "chunk.h"
+#include "chunk_task.h"
+#include "chunkio.h"
 #include "config.h"
-#include "include/chunk_task.h"
 #include "leveldb/write_batch.h"
+#include "loguru/loguru.hpp"
 #include "maptile.h"
-#include "qdebug.h"
 #include "utils.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
@@ -50,7 +52,7 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     if (region) return region;
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
-    auto *task = new LoadRegionTask(&this->level_, p, &this->map_filter_);
+    auto *task = new LoadRegionTask(this, p, &this->map_filter_);
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 this->region_load_timer_.push(load_time);
@@ -72,7 +74,7 @@ QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
     auto *img = this->thumbnails_cache_[p.dim]->operator[](p);
     if (img) return img;
     if (this->thumbnail_processing_.contains(p)) return nullptr;
-    auto *task = new LoadThumbnailTask(&this->level_, p);
+    auto *task = new LoadThumbnailTask(this, p);
     connect(task, &LoadThumbnailTask::finish, this, [this](int x, int z, int dim, QImage *img) {
         if (img) {
             this->thumbnails_cache_[dim]->insert(bl::chunk_pos(x, z, dim), img);
@@ -94,54 +96,90 @@ AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
-    qInfo() << "Try close level";
+    LOG_F(INFO, "Try close level");
     this->loaded_ = false;      // 阻止UI层请求数据
     this->processing_.clear();  // 队列清除
     this->pool_.clear();        // 清除所有任务
     this->pool_.waitForDone();  // 等待当前任务完成
-    qInfo() << "Clear work pool";
+    LOG_F(INFO, "Clear work pool");
     this->level_.close();  // 关闭存档
     this->clearAllCache();
 }
 
-bl::chunk *AsyncLevelLoader::getChunkDirect(const bl::chunk_pos &p) { return this->level_.get_chunk(p, false); }
-
-void AsyncLevelLoader::clearAllCache() {
-    qDebug() << "Clear cache";
-    for (auto &cache : this->region_cache_) {
-        cache->clear();
+bl::chunk *AsyncLevelLoader::getChunk(const bl::chunk_pos &p) {
+    if (!this->loaded_) return nullptr;
+    if (this->level_cache_.hasChunk(p)) {
+        return this->level_cache_.getChunk(p);
     }
-    for (auto cache : this->invalid_cache_) {
-        cache->clear();
-    }
-    for (auto cache : this->thumbnails_cache_) {
-        cache->clear();
-    }
-    this->slime_chunk_cache_->clear();
+    return this->level_.get_chunk(p, false);
 }
 
-QFuture<bool> AsyncLevelLoader::dropChunk(const bl::chunk_pos &min, const bl::chunk_pos &max) {
-    auto directChunkReader = [&](const bl::chunk_pos &min, const bl::chunk_pos &max) {
-        int res = 0;
-    std:;
-        std::set<bl::chunk_pos> positions;
-        for (int i = min.x; i <= max.x; i++) {
-            for (int j = min.z; j <= max.z; j++) {
-                bl::chunk_pos cp{i, j, min.dim};
-                positions.insert(cp);
-            }
-        }
-        this->level().remove_chunks(positions);
-        return true;
-    };
-    return QtConcurrent::run(directChunkReader, min, max);
+std::optional<bl::raw_chunk> AsyncLevelLoader::getRawChunk(const bl::chunk_pos &p) {
+    if (!this->loaded_) return std::nullopt;
+    if (this->level_cache_.hasChunk(p)) return this->level_cache_.getRawChunk(p);
+    bl::raw_chunk rc(p);
+    rc.read(level_);
+    return rc;
+}
+
+bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos &p) {
+    if (!this->loaded_) return false;
+    this->level_cache_.putMissing(level_, p);
+    clearChunkCache(p);
+    emit dirtyChanged();
+    return true;
+}
+
+bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk &raw) {
+    LOG_F(INFO, "put raw chunk %s", raw.pos().to_string().c_str());
+    if (!this->loaded_) return false;
+    this->level_cache_.putChunk(raw.pos(), raw);
+    clearChunkCache(raw.pos());
+    emit dirtyChanged();
+    return true;
+}
+
+bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) {
+    if (!this->loaded_) return false;
+    auto raw = getRawChunk(p);
+    if (raw.has_value()) {
+        raw->clear_terrain();
+        putRawChunk(raw.value());
+    } else {
+        // TODO: create new
+    }
+    return true;
+}
+
+void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
+    auto rp = cfg::c2r(p);
+    this->region_cache_[rp.dim]->remove(rp);
+    this->invalid_cache_[rp.dim]->remove(rp);
+    this->thumbnails_cache_[rp.dim]->remove(rp);
+}
+
+void AsyncLevelLoader::commit() {
+    LOG_F(INFO, "Commit chunks change");
+    if (!this->loaded_ || this->level_cache_.empty()) return;
+    leveldb::WriteBatch batch;
+    this->level_cache_.commit(batch);
+    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    emit dirtyChanged();
+}
+
+void AsyncLevelLoader::clearAllCache() {
+    LOG_F(INFO, "Clear cache");
+    for (auto &cache : this->region_cache_) cache->clear();
+    for (auto cache : this->invalid_cache_) cache->clear();
+    for (auto cache : this->thumbnails_cache_) cache->clear();
+    this->slime_chunk_cache_->clear();
 }
 
 void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop) {
     static const std::vector<std::string> others_keys{"portals",   "scoreboard", "AutonomousEntities", "BiomeData", "Nether",
                                                       "Overworld", "TheEnd",     "schedulerWT",        "mobevents"};
     std::string value;
-    qDebug() << "Loading Global Data(Others)";
+    LOG_F(INFO, "Loading Global Data(Others)");
     for (auto &key : others_keys) {
         if (level_.load_raw(key, value)) {
             if (stop) break;
@@ -149,7 +187,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
         }
     }
 
-    qDebug() << "Loading Global Data(Village)";
+    LOG_F(INFO, "Loading Global Data(Village)");
     level_.foreach_key_with_prefix(
         "VILLAGE_",
         [&result, &stop](const auto &key, const auto &value) {
@@ -158,12 +196,12 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
         },
         stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
 
-    qDebug() << "Loading Global Data(Map)";
+    LOG_F(INFO, "Loading Global Data(Map)");
     level_.foreach_key_with_prefix(
         "map_", [&result, &stop](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); }, stop,
         cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
 
-    qDebug() << "Loading Global Data(Player)";
+    LOG_F(INFO, "Loading Global Data(Player)");
     level_.foreach_key_with_prefix(
         "player_",
         [&result, &stop](const std::string &key, const std::string &value) {
@@ -187,31 +225,19 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
     leveldb::WriteBatch batch;
     for (auto &kv : modifies) {
         if (kv.second.empty()) {
-            qDebug() << "Delete key: " << kv.first.c_str();
+            LOG_F(INFO, "Delete key: %s", kv.first.c_str());
             batch.Delete(kv.first);
         } else {
             batch.Put(kv.first, kv.second);
-            qDebug() << "Put key: " << kv.first.c_str();
+            LOG_F(INFO, "Put key: %s", kv.first.c_str());
         }
     }
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
     return true;
 }
 
-bool AsyncLevelLoader::modifyChunkBlockEntities(const bl::chunk_pos &cp, const std::string &raw) {
-    bl::chunk_key key{bl::chunk_key::BlockEntity, cp, -1};
-    auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
-    return s.ok();
-}
-
-bool AsyncLevelLoader::modifyChunkPendingTicks(const bl::chunk_pos &cp, const std::string &raw) {
-    bl::chunk_key key{bl::chunk_key::PendingTicks, cp, -1};
-    auto s = this->level_.db()->Put(leveldb::WriteOptions(), key.to_raw(), raw);
-    return s.ok();
-}
-
 bool AsyncLevelLoader::modifyChunkActors(const bl::chunk_pos &cp, const bl::ChunkVersion v, const std::vector<bl::actor *> &actors) {
-    qDebug() << cp.to_string().c_str() << "Update actors to " << actors.size();
+    LOG_F(INFO, "%s Update actors to %zu", cp.to_string().c_str(), actors.size());
     // clear entities (the chunk with new format will store entities with
     // different format)
 
@@ -228,7 +254,7 @@ bool AsyncLevelLoader::modifyChunkActors(const bl::chunk_pos &cp, const bl::Chun
         al.load(actor_digest_raw);
         for (auto &uid : al.actor_digests_) {
             auto actor_key = "actorprefix" + uid;
-            qDebug() << "remove actor: " << actor_key.c_str();
+            LOG_F(INFO, "remove actor: %s", actor_key.c_str());
             batch.Delete(actor_key);
         }
     }
@@ -284,6 +310,11 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
 
     res.emplace_back("Background thread pool:");
     res.push_back(QString(" - Total threads: %1").arg(QString::number(cfg::THREAD_NUM)));
+
+    res.emplace_back("Chunk Modify Cache");
+    auto [e, ne] = level_cache_.chunkCounts();
+    res.push_back(QString(" - Modified: %1").arg(QString::number(ne)));
+    res.push_back(QString(" - Delete: %1").arg(QString::number(e)));
 
 #ifdef QT_DEBUG
     res.push_back(QString(" - Background tasks %1").arg(QString::number(this->processing_.size())));

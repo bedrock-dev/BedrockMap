@@ -6,49 +6,49 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>642</width>
+    <width>843</width>
     <height>388</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>nbtEditor.title</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../icon.qrc">
+   <iconset>
     <normaloff>:/res/ui/global_nbt.png</normaloff>:/res/ui/global_nbt.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,8">
    <property name="spacing">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>0</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="nbt_edit_toolbar">
      <property name="spacing">
-      <number>6</number>
+      <number>1</number>
      </property>
      <property name="leftMargin">
-      <number>4</number>
+      <number>2</number>
      </property>
      <property name="topMargin">
       <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>4</number>
+      <number>2</number>
      </property>
      <property name="bottomMargin">
-      <number>4</number>
+      <number>0</number>
      </property>
      <item>
       <widget class="QLabel" name="item_num_label">
@@ -65,7 +65,7 @@
         </size>
        </property>
        <property name="text">
-        <string>共1项</string>
+        <string>nbtEditor.itemCount</string>
        </property>
       </widget>
      </item>
@@ -91,7 +91,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -109,8 +109,14 @@
          <height>0</height>
         </size>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
-        <string>加载</string>
+        <string>nbtEditor.load</string>
        </property>
       </widget>
      </item>
@@ -118,45 +124,52 @@
       <widget class="QPushButton" name="save_btn">
        <property name="minimumSize">
         <size>
-         <width>100</width>
+         <width>80</width>
          <height>0</height>
         </size>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
-        <string>另存为</string>
+        <string>nbtEditor.saveAs</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="multi_select_checkbox">
-       <property name="styleSheet">
-        <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-       </property>
        <property name="text">
-        <string>多选</string>
+        <string>nbtEditor.multiSelection</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="hex_checkbox">
+       <property name="text">
+        <string>nbtEditor.hex</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="modify_checkbox">
-       <property name="styleSheet">
-        <string notr="true">QCheckBox::indicator {
-     width: 28px;
-     height: 28px;
-}</string>
-       </property>
        <property name="text">
-        <string>修改</string>
+        <string>nbtEditor.modify</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="print_cache_btn">
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
-        <string>打印缓存</string>
+        <string>nbtEditor.printCache</string>
        </property>
       </widget>
      </item>
@@ -165,7 +178,10 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="handleWidth">
+      <number>1</number>
      </property>
      <widget class="QListWidget" name="list_widget"/>
      <widget class="QTreeWidget" name="tree_widget">
@@ -180,7 +196,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../icon.qrc"/>
+  <include location="../res.qrc"/>
  </resources>
  <connections/>
 </ui>

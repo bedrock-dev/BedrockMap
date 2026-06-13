@@ -2,7 +2,6 @@
 
 #include <qchar.h>
 #include <qcolor.h>
-#include <qdebug.h>
 #include <qnamespace.h>
 #include <qobjectdefs.h>
 #include <qopenglshaderprogram.h>
@@ -10,7 +9,6 @@
 #include <qthread.h>
 #include <qurl.h>
 
-#include <QDebug>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QtConcurrent>
@@ -20,6 +18,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "loguru/loguru.hpp"
 #include "voxelwidget.h"
 
 // 每个面的索引模板（2个三角形，6个索引）
@@ -56,15 +55,15 @@ VoxelWidget::~VoxelWidget() {
     GLuint vbos[] = {vbo_opaque_, vbo_transparent_};
     GLuint ebos[] = {ebo_opaque_, ebo_transparent_};
     if (vao_opaque_ != 0 || vao_transparent_ != 0) {
-        qDebug() << "Delete VAOs";
+        LOG_F(INFO, "Delete VAOs");
         glDeleteVertexArrays(2, vaos);
     }
     if (vbo_opaque_ != 0 || vbo_transparent_ != 0) {
-        qDebug() << "Delete VBOs";
+        LOG_F(INFO, "Delete VBOs");
         glDeleteBuffers(2, vbos);
     }
     if (ebo_opaque_ != 0 || ebo_transparent_ != 0) {
-        qDebug() << "Delete EBOs";
+        LOG_F(INFO, "Delete EBOs");
         glDeleteBuffers(2, ebos);
     }
 
@@ -159,7 +158,7 @@ void VoxelWidget::setupVertexAttributes() {
 
 void VoxelWidget::updateOpenGLBuffers() {
     if (vao_opaque_ == 0 && vao_transparent_ == 0) {
-        qDebug() << "OpenGL buffers not generated yet!";
+        LOG_F(WARNING, "OpenGL buffers not generated yet!");
         return;
     }
     // 更新opaque对象的缓冲数据
@@ -204,7 +203,7 @@ void VoxelWidget::initializeGL() {
     gl_shader_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/shaders/voxel.frag");
 
     if (!gl_shader_->link()) {
-        qDebug() << "Can not link OpenGL Shader：" << gl_shader_->log();
+        LOG_F(ERROR, "Can not link OpenGL Shader: %s", gl_shader_->log().toStdString().c_str());
         return;
     }
 
@@ -270,7 +269,7 @@ void VoxelWidget::renderTransparentObjects() {
 void VoxelWidget::checkOpenGLError(const char* location) {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
-        qDebug() << "OpenGL error at" << location << ":" << err;
+        LOG_F(WARNING, "OpenGL error at %s: %d", location, err);
     }
 }
 
@@ -411,8 +410,8 @@ void VoxelWidget::mouseReleaseEvent(QMouseEvent* e) {
 
 void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
     if (e->buttons() & Qt::LeftButton && !m_isPanDragging) {
-        int dx = e->x() - m_lastMousePos.x();
-        int dy = e->y() - m_lastMousePos.y();
+        int dx = e->pos().x() - m_lastMousePos.x();
+        int dy = e->pos().y() - m_lastMousePos.y();
         rotate_y_ += dx * 0.5f;
         rotate_x_ += dy * 0.5f;
         rotate_x_ = std::clamp(rotate_x_, -90.0f, 90.0f);
@@ -422,8 +421,8 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
     }
 
     if ((e->buttons() & Qt::RightButton) && m_isPanDragging) {
-        int deltaX = e->x() - m_panStartPos.x();
-        int deltaY = e->y() - m_panStartPos.y();
+        int deltaX = e->pos().x() - m_panStartPos.x();
+        int deltaY = e->pos().y() - m_panStartPos.y();
 
         float sensitivity = m_panSensitivity / m_scale;
 
@@ -484,7 +483,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     // 2. 计算所有Chunk的Y轴范围（修复MIN/MAX初始化逻辑）
     int min_y = INT_MAX, max_y = INT_MIN;
     for (const auto& chunk_row : chunks) {
-        for (const bl::chunk* ch : chunk_row) {
+        for (const auto& ch : chunk_row) {
             if (!ch) continue;
             auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
             min_y = std::min(min_y, miny);
@@ -508,7 +507,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
             }
         }
     }
-    qDebug() << "Voxel Size: " << QString("%1 (Y) * %2 (X) * %3 (Z)").arg(data.size()).arg(data[0].size()).arg(data[0][0].size());
+    LOG_F(INFO, "Voxel Size: %zu (Y) * %zu (X) * %zu (Z)", data.size(), data[0].size(), data[0][0].size());
 
     int n = 0;
     for (int xIdx = 0; xIdx < width; ++xIdx) {
@@ -588,18 +587,19 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     }
 
     std::vector<std::vector<std::vector<Voxel>>> ret(firstIt, lastIt - 1);
-    qDebug() << "Real Voxel Size: " << QString("%1 (Y) * %2 (X) * %3 (Z)").arg(ret.size()).arg(ret[0].size()).arg(ret[0][0].size());
+    LOG_F(INFO, "Real Voxel Size: %zu (Y) * %zu (X) * %zu (Z)", ret.size(), ret[0].size(), ret[0][0].size());
     return ret;
 }
 
 bool ChunkRenderWidget::showChunks(const bl::chunk_pos& minPos, const bl::chunk_pos& maxPos, AsyncLevelLoader& loader) {
+    setWindowTitle(QString("%1 ~ %2").arg(minPos.to_string().c_str()).arg(maxPos.to_string().c_str()));
     if (!chunk_render_watcher_.isFinished()) {
-        qDebug() << "Current render task is not finished";
+        LOG_F(WARNING, "Current render task is not finished");
         return false;
     }
 
     if (maxPos.x < minPos.x || maxPos.z < minPos.z) {
-        qDebug() << "Invald Chunk Area";
+        LOG_F(WARNING, "Invald Chunk Area");
         return false;
     }
 
@@ -607,11 +607,15 @@ bool ChunkRenderWidget::showChunks(const bl::chunk_pos& minPos, const bl::chunk_
     bar_->setValue(0);
     bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
 
+    for (auto& row : chunks_)
+        for (auto* c : row) delete c;
     chunks_.clear();
     voxels_.clear();
     voxelWidget_->updateVoxelData({});
     chunk_render_watcher_.setFuture(QtConcurrent::run([this, minPos, maxPos, &loader]() {
         // load chunk in another thread
+        for (auto& row : this->chunks_)
+            for (auto* c : row) delete c;
         this->chunks_.clear();
         chunks_.resize(maxPos.x - minPos.x + 1);
         for (auto& row : chunks_) {
@@ -621,13 +625,15 @@ bool ChunkRenderWidget::showChunks(const bl::chunk_pos& minPos, const bl::chunk_
         auto dim = minPos.dim;
         for (int i = minPos.x; i <= maxPos.x; i++) {
             for (int j = minPos.z; j <= maxPos.z; j++) {
-                auto* chunk = loader.getChunkDirect(bl::chunk_pos{i, j, dim});
-                this->chunks_[i - minPos.x][j - minPos.z] = chunk;
+                this->chunks_[i - minPos.x][j - minPos.z] = loader.getChunk(bl::chunk_pos{i, j, dim});
                 chunk_loaded++;
                 emit chunkMeshBuilt(chunk_loaded);
             }
         }
         voxels_ = VoxelWidget::createVoxelDataFromChunks(this->chunks_, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); });
+        for (auto& row : this->chunks_)
+            for (auto* c : row) delete c;
+        this->chunks_.clear();
         return true;
     }));
     show();

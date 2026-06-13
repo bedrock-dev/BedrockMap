@@ -6,71 +6,88 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
-    <height>381</height>
+    <width>454</width>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>mapItemEditor.title</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../icon.qrc">
+   <iconset>
     <normaloff>:/res/ui/map.png</normaloff>:/res/ui/map.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="spacing">
+    <number>1</number>
+   </property>
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="image_widget" native="true">
+     <widget class="QWidget" name="main_img_widget" native="true">
       <property name="minimumSize">
        <size>
         <width>300</width>
         <height>0</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
        <property name="topMargin">
-        <number>10</number>
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
        </property>
        <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QLabel" name="image_widget">
+         <property name="text">
+          <string/>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>2</number>
+         </property>
          <item>
           <widget class="QPushButton" name="export_map_btn">
            <property name="text">
-            <string>导出图像</string>
+            <string>mapItemEditor.saveImg</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="change_map_btn">
            <property name="text">
-            <string>修改图像</string>
+            <string>mapItemEditor.changeImg</string>
            </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_map_btn">
-         <property name="text">
-          <string>保存所有修改</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -78,8 +95,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../icon.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

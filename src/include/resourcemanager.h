@@ -5,7 +5,13 @@
 #ifndef BEDROCKMAP_RESOURCEMANAGER_H
 #define BEDROCKMAP_RESOURCEMANAGER_H
 
+#include <qchar.h>
+#include <qcontainerfwd.h>
+#include <qmap.h>
+#include <qtranslator.h>
+
 #include <QImage>
+#include <memory>
 
 #include "bedrock_key.h"
 #include "palette.h"
@@ -26,12 +32,26 @@ QImage *BlockActorNBTIcon(const QString &key);
 
 QImage *EntityNBTIcon(const QString &key);
 
+QString ToolBarIcon(const QString &name);
+
 // 下面是新的API
 
 struct IconManager {
     IconManager() = delete;
 
     static void init();
+};
+
+class TranslatorMgr {
+   public:
+    TranslatorMgr() = delete;
+
+    static void init();
+
+    static void setupTranslation(QApplication &a, const QString &langName);
+
+   private:
+    static QMap<QString, std::shared_ptr<QTranslator>> &translations();
 };
 
 #endif  // BEDROCKMAP_RESOURCEMANAGER_H

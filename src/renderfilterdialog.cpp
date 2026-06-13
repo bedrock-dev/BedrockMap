@@ -24,7 +24,7 @@ namespace {
 
 RenderFilterDialog::RenderFilterDialog(QWidget *parent) : QDialog(parent), ui(new Ui::RenderFilterDialog) {
     ui->setupUi(this);
-    this->setWindowTitle("配置地图过滤器");
+    this->setWindowTitle(tr("renderFilterDialog.title.filter"));
     ui->layer_slider->setSingleStep(1);
     ui->layer_slider->setRange(-63, 319);
 }
