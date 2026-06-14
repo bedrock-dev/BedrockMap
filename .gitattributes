@@ -1,0 +1,2 @@
+# Qt translation files — lupdate 输出 LF，接受 LF 避免每次构建后 git 报 warning
+*.ts text eol=lf
