@@ -53,6 +53,8 @@ struct cfg {
     static int ACTOR_RENDER_STYLE;
     static int ACTOR_BORDER_WIDTH;
     static QString ACTOR_BORDER_COLOR;
+    static QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
+    static int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
     static QString VOID_MAP_COLOR;
     static bool TRANSPARENT_WATER;
     static bool ENABLE_THUMBNAIL_MODE;

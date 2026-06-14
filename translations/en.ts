@@ -137,87 +137,87 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="117"/>
+        <location filename="../src/levelpagewidget.cpp" line="121"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation type="unfinished">Replace</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="118"/>
+        <location filename="../src/levelpagewidget.cpp" line="122"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation type="unfinished">Add</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="119"/>
+        <location filename="../src/levelpagewidget.cpp" line="123"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation type="unfinished">Subtract</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="128"/>
+        <location filename="../src/levelpagewidget.cpp" line="132"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation type="unfinished">Save</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="165"/>
+        <location filename="../src/levelpagewidget.cpp" line="169"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation type="unfinished">Show Grid</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="166"/>
+        <location filename="../src/levelpagewidget.cpp" line="170"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation type="unfinished">Show Coordinates</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="176"/>
+        <location filename="../src/levelpagewidget.cpp" line="180"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation type="unfinished">Overworld</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="177"/>
+        <location filename="../src/levelpagewidget.cpp" line="181"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation type="unfinished">Nether</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="178"/>
+        <location filename="../src/levelpagewidget.cpp" line="182"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation type="unfinished">The End</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="188"/>
+        <location filename="../src/levelpagewidget.cpp" line="192"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation type="unfinished">Terrain</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="189"/>
+        <location filename="../src/levelpagewidget.cpp" line="193"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation type="unfinished">Biome</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="201"/>
+        <location filename="../src/levelpagewidget.cpp" line="205"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation type="unfinished">Slime Chunks</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="202"/>
+        <location filename="../src/levelpagewidget.cpp" line="206"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation type="unfinished">Entities</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="203"/>
+        <location filename="../src/levelpagewidget.cpp" line="207"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation type="unfinished">Villages</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="204"/>
+        <location filename="../src/levelpagewidget.cpp" line="208"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation type="unfinished">HSAs</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="214"/>
+        <location filename="../src/levelpagewidget.cpp" line="218"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation type="unfinished">Filter</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="215"/>
+        <location filename="../src/levelpagewidget.cpp" line="219"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation type="unfinished">Global NBT</translation>
     </message>
@@ -374,8 +374,8 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp" line="513"/>
-        <location filename="../src/mapwidget.cpp" line="539"/>
+        <location filename="../src/mapwidget.cpp" line="523"/>
+        <location filename="../src/mapwidget.cpp" line="549"/>
         <source>mapWidget.fileDialog.save</source>
         <translation type="unfinished">Save File</translation>
     </message>

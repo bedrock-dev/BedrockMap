@@ -43,6 +43,8 @@ QString cfg::GRID_LINE_COLOR = "#bbbbbb";
 int cfg::ACTOR_RENDER_STYLE = 0;  // 0/1
 int cfg::ACTOR_BORDER_WIDTH = 2;
 QString cfg::ACTOR_BORDER_COLOR = "#ff000000";
+QString cfg::CHUNK_EDITOR_HIGHLIGHT_COLOR = "#ffaa00";
+int cfg::CHUNK_EDITOR_HIGHLIGHT_WIDTH = 8;
 QString cfg::VOID_MAP_COLOR = "#dddddd";
 bool cfg::TRANSPARENT_WATER = true;
 bool cfg::ENABLE_THUMBNAIL_MODE = true;
@@ -126,6 +128,8 @@ void cfg::initConfig() {
     cfg::ACTOR_RENDER_STYLE = setting.value("actor_render_style", cfg::ACTOR_RENDER_STYLE).toInt();
     cfg::ACTOR_BORDER_WIDTH = setting.value("actor_border_width", cfg::ACTOR_BORDER_WIDTH).toInt();
     cfg::ACTOR_BORDER_COLOR = setting.value("actor_border_color", cfg::ACTOR_BORDER_COLOR).toString();
+    cfg::CHUNK_EDITOR_HIGHLIGHT_COLOR = setting.value("chunk_editor_highlight_color", cfg::CHUNK_EDITOR_HIGHLIGHT_COLOR).toString();
+    cfg::CHUNK_EDITOR_HIGHLIGHT_WIDTH = setting.value("chunk_editor_highlight_width", cfg::CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
     cfg::VOID_MAP_COLOR = setting.value("void_color", cfg::VOID_MAP_COLOR).toString();
     cfg::TRANSPARENT_WATER = setting.value("transparent_water", cfg::TRANSPARENT_WATER).toBool();
     cfg::ENABLE_THUMBNAIL_MODE = setting.value("enable_thumbnail_mode", cfg::ENABLE_THUMBNAIL_MODE).toBool();

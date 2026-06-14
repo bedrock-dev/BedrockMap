@@ -32,8 +32,11 @@ class ChunkEditorWidget : public QWidget {
 
     void clearData();
 
+    void hideEvent(QHideEvent *event) override;
+
    signals:
     void locateChunk(int x, int z, int dim);
+    void editorClosed();
 
    private slots:
     void on_terrain_level_edit_valueChanged(int arg1);

@@ -272,6 +272,8 @@ class MapWidget : public QWidget {
 
     void drawSelection(QPainter *p) { selection_.draw(p, scaleLevel()); }
 
+    void drawOpenedChunkHighlight(QPainter *p);
+
    public:
     ~MapWidget() override;
     /// Capture the selected region as an image.

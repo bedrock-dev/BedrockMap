@@ -85,6 +85,10 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : QWidget(paren
     connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
     connect(this->mapWidget_, &MapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
     connect(this->mapWidget_, &MapWidget::requestOpenChunkEditor, this, &LevelPageWidget::showChunkEditor);
+    connect(chunkWidget_, &ChunkEditorWidget::editorClosed, this, [this]() {
+        mapWidget_->unselectChunk();
+        mapWidget_->update();
+    });
     connect(chunkWidget_, &ChunkEditorWidget::locateChunk, this, [this](int x, int z, int dim) {
         mapWidget_->setDim(static_cast<MapWidget::RenderOption::DimType>(dim));
         mapWidget_->gotoBlockPos(x * 16 + 8, z * 16 + 8);
@@ -406,6 +410,7 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos &pos) {
         return;
     }
     chunkWidget_->loadChunkData(std::move(*opt));
+    mapWidget_->selectChunk(pos);
     int totalW = mainSplitter_->width();
     int chunkW = totalW / 3;
     if (chunkW < 300) chunkW = 300;

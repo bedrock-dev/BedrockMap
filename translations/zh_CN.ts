@@ -136,87 +136,87 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="117"/>
+        <location filename="../src/levelpagewidget.cpp" line="121"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation>替换</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="118"/>
+        <location filename="../src/levelpagewidget.cpp" line="122"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="119"/>
+        <location filename="../src/levelpagewidget.cpp" line="123"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation>减去</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="128"/>
+        <location filename="../src/levelpagewidget.cpp" line="132"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="165"/>
+        <location filename="../src/levelpagewidget.cpp" line="169"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="166"/>
+        <location filename="../src/levelpagewidget.cpp" line="170"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>显示坐标</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="176"/>
+        <location filename="../src/levelpagewidget.cpp" line="180"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>主世界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="177"/>
+        <location filename="../src/levelpagewidget.cpp" line="181"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>下界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="178"/>
+        <location filename="../src/levelpagewidget.cpp" line="182"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>末地</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="188"/>
+        <location filename="../src/levelpagewidget.cpp" line="192"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>地形</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="189"/>
+        <location filename="../src/levelpagewidget.cpp" line="193"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>群系</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="201"/>
+        <location filename="../src/levelpagewidget.cpp" line="205"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="202"/>
+        <location filename="../src/levelpagewidget.cpp" line="206"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>实体</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="203"/>
+        <location filename="../src/levelpagewidget.cpp" line="207"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>村庄</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="204"/>
+        <location filename="../src/levelpagewidget.cpp" line="208"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSA</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="214"/>
+        <location filename="../src/levelpagewidget.cpp" line="218"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>过滤</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="215"/>
+        <location filename="../src/levelpagewidget.cpp" line="219"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>全局NBT</translation>
     </message>
@@ -373,8 +373,8 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp" line="513"/>
-        <location filename="../src/mapwidget.cpp" line="539"/>
+        <location filename="../src/mapwidget.cpp" line="523"/>
+        <location filename="../src/mapwidget.cpp" line="549"/>
         <source>mapWidget.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>

@@ -6,6 +6,7 @@
 
 #include <QCryptographicHash>
 #include <QFileDialog>
+#include <QHideEvent>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QToolTip>
@@ -25,6 +26,7 @@
 #include "resourcemanager.h"
 #include "ui_chunkeditorwidget.h"
 #include "voxelwidget.h"
+
 
 namespace {
     bool load_raw(leveldb::DB *&db, const std::string &raw_key, std::string &raw) {
@@ -85,7 +87,6 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
 ChunkEditorWidget::~ChunkEditorWidget() {
     this->clearData();
     delete terrain_render_widget_;
-    // this->mw_->mapWidget()->unselectChunk();
     delete ui;
 }
 
@@ -195,6 +196,11 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
 void ChunkEditorWidget::on_close_btn_clicked() {
     terrain_render_widget_->hide();
     hide();
+}
+
+void ChunkEditorWidget::hideEvent(QHideEvent *event) {
+    emit editorClosed();
+    QWidget::hideEvent(event);
 }
 
 void ChunkEditorWidget::refreshBasicData() {

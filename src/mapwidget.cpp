@@ -179,6 +179,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     if (option_.getOther(RenderOption::SlimeChunk)) this->drawSlimeChunks(event, &p);
     if (option_.getOther(RenderOption::Grid)) this->drawGrid(event, &p);
     if (!capturing_) this->drawSelection(&p);
+    if (opened_chunk_) this->drawOpenedChunkHighlight(&p);
     if (import_overlay_->active()) import_overlay_->draw(&p, scaleLevel());
     p.resetTransform();
     if (option_.getOther(RenderOption::Actors)) this->drawActors(event, &p);
@@ -301,6 +302,15 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     pen.setWidth(3);
     painter->setPen(pen);
     painter->drawRects(largeRects);
+}
+
+void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
+    QColor color(cfg::CHUNK_EDITOR_HIGHLIGHT_COLOR);
+    QPen pen(color, cfg::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    pen.setCosmetic(true);
+    p->setPen(pen);
+    p->setBrush(Qt::NoBrush);
+    p->drawRect(QRectF(opened_chunk_pos_.x, opened_chunk_pos_.z, 1, 1));
 }
 
 void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
