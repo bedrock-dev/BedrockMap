@@ -56,10 +56,10 @@ void setupFont(QApplication &a) {
 int main(int argc, char *argv[]) {
     setupLog(argc, argv);
     LOG_F(INFO, "Start %s", cfg::VERSION_STRING().toStdString().c_str());
-    cfg::initConfig();
-    initResources();
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication a(argc, argv);
+    cfg::initConfig();
+    initResources();
     setupTheme(a);
     setupFont(a);
     TranslatorMgr::init();
