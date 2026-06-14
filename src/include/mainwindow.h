@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCloseEvent>
 #include <QDialog>
 #include <QFutureWatcher>
 #include <QKeyEvent>
@@ -27,6 +28,9 @@ class MainWindow : public QMainWindow {
    public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+   protected:
+    void closeEvent(QCloseEvent *event) override;
 
    private:
     void setupUI();
@@ -60,7 +64,6 @@ class MainWindow : public QMainWindow {
     QAction *action_close_;
     QAction *action_exit_;
     QAction *action_transparent_void_;
-    QAction *action_map_item_;
     QAction *action_NBT_;
     QAction *action_settings_;
     QAction *action_help_;

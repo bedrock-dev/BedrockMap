@@ -274,71 +274,66 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="89"/>
-        <source>mainWindow.menu.mapItemEditor</source>
-        <translation type="unfinished">Map Item Editor</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp" line="90"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="92"/>
+        <location filename="../src/mainwindow.cpp" line="91"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation type="unfinished">Open Config File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="95"/>
+        <location filename="../src/mainwindow.cpp" line="94"/>
         <source>mainWindow.menu.developer</source>
         <translation type="unfinished">Developer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp" line="96"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation type="unfinished">Show LevelDB Data</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="98"/>
+        <location filename="../src/mainwindow.cpp" line="97"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation type="unfinished">Debug Window</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="100"/>
+        <location filename="../src/mainwindow.cpp" line="99"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation type="unfinished">Abort Global Data Loading</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="103"/>
+        <location filename="../src/mainwindow.cpp" line="102"/>
         <source>mainWindow.menu.help</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp" line="104"/>
         <source>mainWindow.menu.helpAction</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="106"/>
+        <location filename="../src/mainwindow.cpp" line="105"/>
         <source>mainWindow.menu.opensource</source>
         <translation type="unfinished">Open Source</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="108"/>
+        <location filename="../src/mainwindow.cpp" line="107"/>
         <source>mainWindow.menu.about</source>
         <translation type="unfinished">About</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="115"/>
+        <location filename="../src/mainwindow.cpp" line="114"/>
         <source>mainWindow.menu.openRecent</source>
         <translation type="unfinished">Open Recent</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="185"/>
+        <location filename="../src/mainwindow.cpp" line="184"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="216"/>
+        <location filename="../src/mainwindow.cpp" line="223"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>

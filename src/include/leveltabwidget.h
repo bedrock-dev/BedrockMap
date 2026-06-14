@@ -61,6 +61,7 @@ class LevelTabWidget : public QTabWidget {
 
     void openNewLevel(const QString &path);
     void openLevelDBDebugDialog();
+    bool confirmCloseAllLevels();
 
     WelcomeTab *welcomeTab() const { return welcome_tab_; }
 

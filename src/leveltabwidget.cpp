@@ -95,6 +95,22 @@ void LevelTabWidget::onCloseLevelFinished() {
     close_level_mss_box_->hide();
 }
 
+bool LevelTabWidget::confirmCloseAllLevels() {
+    for (auto *page : level_pages_) {
+        if (!page) continue;
+        if (page->isDirty()) {
+            int idx = indexOf(page);
+            if (idx >= 0) setCurrentIndex(idx);
+
+            auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                             QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (btn == QMessageBox::Cancel) return false;
+            if (btn == QMessageBox::Yes) page->commit();
+        }
+    }
+    return true;
+}
+
 void LevelTabWidget::onMapDimensionChanged(int dim) {
     if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
         page->getMapWidget()->changeDimension(static_cast<MapWidget::RenderOption::DimType>(dim));

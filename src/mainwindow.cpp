@@ -86,7 +86,6 @@ void MainWindow::setupMenuBar() {
     action_transparent_void_ = tool_menu_->addAction(tr("mainWindow.menu.transparentVoid"));
     action_transparent_void_->setCheckable(true);
     tool_menu_->addSeparator();
-    action_map_item_ = tool_menu_->addAction(tr("mainWindow.menu.mapItemEditor"));
     action_NBT_ = tool_menu_->addAction(tr("mainWindow.menu.nbtEditor"));
     tool_menu_->addSeparator();
     action_settings_ = tool_menu_->addAction(tr("mainWindow.menu.openCfgFile"));
@@ -208,6 +207,14 @@ void MainWindow::openLevel() {
 }
 
 void MainWindow::close_and_exit() { this->close(); }
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (!level_tab_widget_->confirmCloseAllLevels()) {
+        event->ignore();
+        return;
+    }
+    QMainWindow::closeEvent(event);
+}
 
 void MainWindow::openNBTEditor() {
     auto *w = new NbtWidget();
