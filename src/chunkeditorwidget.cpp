@@ -179,15 +179,15 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             auto &d = this->raw_chunk_.get_actor_digest();
             lines.append(QString("ActorDigest: %1 bytes [%2]").arg(d.size()).arg(shortHash(d)));
         }
-        for (auto &[uid, data] : this->raw_chunk_.get_entities()) {
-            if (uid.size() != 8) {
-                LOG_F(WARNING, "Entity uid size is %zu, expected 8, skipping", uid.size());
+        for (auto &[key, data] : this->raw_chunk_.get_entities()) {
+            if (key.size() != 8) {
+                LOG_F(WARNING, "Entity uid size is %zu, expected 8, skipping", key.size());
                 continue;
             }
-            qulonglong uidVal = 0;
-            memcpy(&uidVal, uid.data(), 8);
-            lines.append(QString("Entity[%1]: %2 bytes [%3]").arg(uidVal, 16, 16, QChar('0')).arg(data.size()).arg(shortHash(data)));
+            QString hexKey = QString::fromLatin1(QByteArray::fromRawData(key.data(), 8).toHex());
+            lines.append(QString("Entity[%1]: %2 bytes [%3]").arg(hexKey).arg(data.size()).arg(shortHash(data)));
         }
+
         ui->stats_label->setText(lines.join('\n'));
     }
 }

@@ -236,54 +236,6 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
     return true;
 }
 
-bool AsyncLevelLoader::modifyChunkActors(const bl::chunk_pos &cp, const bl::ChunkVersion v, const std::vector<bl::actor *> &actors) {
-    LOG_F(INFO, "%s Update actors to %zu", cp.to_string().c_str(), actors.size());
-    // clear entities (the chunk with new format will store entities with
-    // different format)
-
-    leveldb::WriteBatch batch;
-
-    // digest key
-    bl::actor_digest_key chunk_digest_key{cp};
-    bl::chunk_key chunk_actor_key{bl::chunk_key::Entity, cp};
-
-    // 1. Remove all entities with new format
-    std::string actor_digest_raw;
-    if (level_.load_raw(chunk_digest_key.to_raw(), actor_digest_raw)) {
-        bl::actor_digest_list al;
-        al.load(actor_digest_raw);
-        for (auto &uid : al.actor_digests_) {
-            auto actor_key = "actorprefix" + uid;
-            LOG_F(INFO, "remove actor: %s", actor_key.c_str());
-            batch.Delete(actor_key);
-        }
-    }
-
-    batch.Delete(chunk_digest_key.to_raw());
-    // 2. remove all entities with old format
-    batch.Delete(chunk_actor_key.to_raw());
-
-    // 3. if current chunk is old version, use old storage format
-    if (v == bl::Old) {
-        std::string chunk_actor_data;
-        // create palette
-        for (auto &p : actors) chunk_actor_data += p->root()->to_raw();
-        batch.Put(chunk_actor_key.to_raw(), chunk_actor_data);
-    } else {
-        // 4. write actors with new format
-        std::string digest;
-        for (auto &ac : actors) {
-            batch.Put("actorprefix" + ac->uid_raw(), ac->root()->to_raw());
-            digest += ac->uid_raw();
-        }
-
-        // 写入摘要
-        batch.Put(chunk_digest_key.to_raw(), digest);
-    }
-    auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
-    return s.ok();
-}
-
 std::vector<QString> AsyncLevelLoader::debugInfo() {
     std::vector<QString> res;
     res.emplace_back("Region cache:");

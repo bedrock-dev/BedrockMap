@@ -117,8 +117,6 @@ class AsyncLevelLoader : public QObject {
 
     bool modifyLeveldat(bl::palette::compound_tag *nbt);
 
-    bool modifyChunkActors(const bl::chunk_pos &cp, bl::ChunkVersion v, const std::vector<bl::actor *> &actors);
-
     std::vector<QString> debugInfo();
 
    private:

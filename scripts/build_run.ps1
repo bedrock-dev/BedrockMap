@@ -1,4 +1,13 @@
+param([switch]$BuildBL)
+
 $qtPath = $env:QT_ROOT
+
+# optionally build bedrock-level first
+if ($BuildBL) {
+    Push-Location ./bedrock-level
+    .\build.ps1
+    Pop-Location
+}
 
 #update language files
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"

@@ -130,7 +130,7 @@ void ImportOverlay::confirm() {
         cp.z += offset_.z;
         cp.dim = static_cast<int8_t>(dim_);
         // BUG here, the imported enitites will be mixed with original, so we disabled it now
-        chunk.clear_entities();
+        // chunk.clear_entities();
         chunk.set_pos(cp, &this->level_page_->levelLoader()->level());
     }
 
