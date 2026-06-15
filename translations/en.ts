@@ -135,6 +135,24 @@
     </message>
 </context>
 <context>
+    <name>ImageCropDialog</name>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="17"/>
+        <source>imageCropDialog.title.cropImage</source>
+        <translation type="unfinished">Crop Image</translation>
+    </message>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="26"/>
+        <source>imageCropDialog.button.confirm</source>
+        <translation type="unfinished">Ok</translation>
+    </message>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="27"/>
+        <source>imageCropDialog.button.cancel</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+</context>
+<context>
     <name>LevelPageWidget</name>
     <message>
         <location filename="../src/levelpagewidget.cpp" line="121"/>
@@ -356,17 +374,17 @@
         <translation type="unfinished">Change Image</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="15"/>
+        <location filename="../src/mapitemeditor.cpp" line="255"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation type="unfinished">Map Item Editor</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="71"/>
+        <location filename="../src/mapitemeditor.cpp" line="311"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation type="unfinished">Save File</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="78"/>
+        <location filename="../src/mapitemeditor.cpp" line="318"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation type="unfinished">Open File</translation>
     </message>
@@ -666,8 +684,7 @@
     <message>
         <location filename="../src/include/msg.h" line="63"/>
         <source>msg.imageAspectMismatch</source>
-        <translation type="unfinished">
-      </translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/include/msg.h" line="66"/>

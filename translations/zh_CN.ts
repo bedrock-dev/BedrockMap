@@ -134,6 +134,24 @@
     </message>
 </context>
 <context>
+    <name>ImageCropDialog</name>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="17"/>
+        <source>imageCropDialog.title.cropImage</source>
+        <translation type="unfinished">裁剪图片</translation>
+    </message>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="26"/>
+        <source>imageCropDialog.button.confirm</source>
+        <translation type="unfinished">确定</translation>
+    </message>
+    <message>
+        <location filename="../src/mapitemeditor.cpp" line="27"/>
+        <source>imageCropDialog.button.cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+</context>
+<context>
     <name>LevelPageWidget</name>
     <message>
         <location filename="../src/levelpagewidget.cpp" line="121"/>
@@ -355,17 +373,17 @@
         <translation type="unfinished">修改图像</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="15"/>
+        <location filename="../src/mapitemeditor.cpp" line="255"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation>地图物品编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="71"/>
+        <location filename="../src/mapitemeditor.cpp" line="311"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="78"/>
+        <location filename="../src/mapitemeditor.cpp" line="318"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation>打开文件</translation>
     </message>
