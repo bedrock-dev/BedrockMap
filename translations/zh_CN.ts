@@ -4,12 +4,10 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/aboutdialog.ui" line="57"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a name=&quot;bedrockmap-v0-1&quot;/&gt;&lt;span style=&quot; font-size:16pt; font-weight:600;&quot;&gt;{NAME_VERSION}&lt;/span&gt;&lt;/p&gt;&lt;h5 style=&quot; margin-top:12px; margin-bottom:4px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-&quot;/&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;说&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;明&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;BedrockMap是一个由&lt;/span&gt;&lt;a href=&quot;https://github.com/hhhxiao&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;hhhxiao&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;开发的MCBE存档查看器和编辑器。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;能够可视化整个世界的地形，群系，高度，也能够显示实体，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;村庄和HSA所在的位置。&lt;/span&gt;&lt;/p&gt;&lt;h5 style=&quot; margin-top:12px; margin-bottom:4px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Credits&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/bedrock-dev/bedrock-level/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;bedrock-level&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 基岩版存档读取库&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://space.bilibili.com/382492603&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;INT-ZOT&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 图标绘制&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/OEOTYAN/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;OEOTYAN&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 方块和群系颜色表&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.ui" line="14"/>
         <source>about.about</source>
         <translation type="unfinished">关于</translation>
     </message>
@@ -22,72 +20,58 @@
 <context>
     <name>ChunkEditorWidget</name>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="52"/>
         <source>(-1,-1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="72"/>
         <source>chunkEditor.view3D</source>
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="79"/>
         <source>chunkEditor.exportChunkData</source>
         <translation type="unfinished">导出</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="86"/>
         <source>chunkEditor.importChunkData</source>
         <translation type="unfinished">导入</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="99"/>
         <source>chunkEditor.location</source>
         <translation type="unfinished">定位</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="14"/>
         <source>chunkEditor.title</source>
         <translation type="unfinished">区块编辑器</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="112"/>
         <source>chunkEditor.exit</source>
         <translation type="unfinished">关闭</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="125"/>
         <source>chunkEditor.terrain</source>
         <translation type="unfinished">地形</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="157"/>
         <source>chunkEditor.showGrid</source>
         <translation type="unfinished">显示网格</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="183"/>
         <source>chunkEditor.entities</source>
         <translation type="unfinished">实体</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="208"/>
         <source>chunkEditor.blockEntities</source>
         <translation type="unfinished">方块实体</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="233"/>
         <source>chunkEditor.pendingTicks</source>
         <translation type="unfinished">计划刻</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="258"/>
         <source>chunkEditor.stats</source>
         <translation type="unfinished">统计数据</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.ui" line="303"/>
         <source>chunkEditor.save</source>
         <translation type="unfinished">保存区块数据</translation>
     </message>
@@ -113,17 +97,14 @@
 <context>
     <name>GoToPositionDialog</name>
     <message>
-        <location filename="../src/gotopositiondialog.ui" line="14"/>
         <source>goto.title</source>
         <translation type="unfinished">前往</translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.ui" line="22"/>
         <source>goto.z</source>
         <translation type="unfinished">Z: </translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.ui" line="29"/>
         <source>goto.x</source>
         <translation type="unfinished">X: </translation>
     </message>
@@ -358,17 +339,14 @@
 <context>
     <name>MapItemEditor</name>
     <message>
-        <location filename="../src/mapitemeditor.ui" line="14"/>
         <source>mapItemEditor.title</source>
         <translation type="unfinished">地图物品编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.ui" line="79"/>
         <source>mapItemEditor.saveImg</source>
         <translation type="unfinished">保存图像</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.ui" line="86"/>
         <source>mapItemEditor.changeImg</source>
         <translation type="unfinished">修改图像</translation>
     </message>
@@ -400,22 +378,18 @@
 <context>
     <name>NBTModifyDialog</name>
     <message>
-        <location filename="../src/nbtmodifydialog.ui" line="14"/>
         <source>nbtEditor.dialogTitle</source>
         <translation type="unfinished">修改NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.ui" line="54"/>
         <source>nbtEditor.type</source>
         <translation type="unfinished">类型</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.ui" line="61"/>
         <source>nbtEditor.name</source>
         <translation type="unfinished">名称</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.ui" line="68"/>
         <source>nbtEditor.value</source>
         <translation type="unfinished">值</translation>
     </message>
@@ -423,42 +397,30 @@
 <context>
     <name>NbtWidget</name>
     <message>
-        <location filename="../src/nbtwidget.ui" line="14"/>
         <source>nbtEditor.title</source>
         <translation type="unfinished">NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="68"/>
         <source>nbtEditor.itemCount</source>
         <translation type="unfinished">物品数量</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="119"/>
         <source>nbtEditor.load</source>
         <translation type="unfinished">加载</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="138"/>
         <source>nbtEditor.saveAs</source>
         <translation type="unfinished">另存为</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="145"/>
         <source>nbtEditor.multiSelection</source>
         <translation type="unfinished">多选</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="152"/>
         <source>nbtEditor.hex</source>
         <translation type="unfinished">16进制</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.ui" line="159"/>
-        <source>nbtEditor.modify</source>
-        <translation type="unfinished">修改</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.ui" line="172"/>
         <source>nbtEditor.printCache</source>
         <translation type="unfinished">打印缓存</translation>
     </message>
@@ -909,39 +871,30 @@
 <context>
     <name>RenderFilterDialog</name>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="14"/>
         <source>filter.title</source>
         <translation type="unfinished">过滤器</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="37"/>
         <source>filter.enableLayer</source>
         <translation type="unfinished">启用选层</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="73"/>
         <source>filter.biomeFilter</source>
         <translation type="unfinished">群系过滤</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="80"/>
-        <location filename="../src/renderfilterdialog.ui" line="111"/>
-        <location filename="../src/renderfilterdialog.ui" line="145"/>
         <source>filter.blackList</source>
         <translation type="unfinished">黑名单</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="104"/>
         <source>filter.blockFilter</source>
         <translation type="unfinished">方块过滤器</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="138"/>
         <source>filter.entitiesFilter</source>
         <translation type="unfinished">实体过滤</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.ui" line="157"/>
         <source>item</source>
         <translation type="unfinished">物品</translation>
     </message>

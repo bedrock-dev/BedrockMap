@@ -13,7 +13,7 @@ if (Test-Path $build_dir) {
 New-Item -Path "." -Name $build_dir -ItemType Directory 
 
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"
-& $lupdate -no-obsolete -recursive ./src -ts translations/zh_CN.ts translations/en.ts
+& $lupdate -no-obsolete -no-ui-lines -recursive ./src -ts translations/zh_CN.ts translations/en.ts
 
 # 编译
 cmake -G "MinGW Makefiles" -B  $build_dir -DCMAKE_BUILD_TYPE=Release .

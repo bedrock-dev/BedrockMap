@@ -154,13 +154,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="modify_checkbox">
-       <property name="text">
-        <string>nbtEditor.modify</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="print_cache_btn">
        <property name="maximumSize">
         <size>

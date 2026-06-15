@@ -172,11 +172,11 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     connect(ui->tree_widget, &QTreeWidget::itemChanged, this, &NbtWidget::on_tree_widget_itemChanged);
     connect(ui->list_widget, &QListWidget::customContextMenuRequested, this, &NbtWidget::prepareListWidgetMenu);
 
-    ui->modify_checkbox->setVisible(false);
     connect(ui->hex_checkbox, &QCheckBox::checkStateChanged, this, &NbtWidget::on_hex_checkbox_stateChanged);
     modify_dialog_ = new NBTModifyDialog(this);
     this->refreshLabel();
     this->clearModifyCache();
+    ui->print_cache_btn->hide();
 }
 
 void NbtWidget::on_load_btn_clicked() {
