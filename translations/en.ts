@@ -18,6 +18,21 @@
     </message>
 </context>
 <context>
+    <name>BiomePickerDialog</name>
+    <message>
+        <source>biomePicker.title</source>
+        <translation type="unfinished">Biome Picker</translation>
+    </message>
+    <message>
+        <source>biomePicker.name</source>
+        <translation type="unfinished">Name</translation>
+    </message>
+    <message>
+        <source>biomePicker.id</source>
+        <translation type="unfinished">ID</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
@@ -731,32 +746,32 @@
         <translation type="unfinished">Save data successfully</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="34"/>
+        <location filename="../src/contextmenubuilder.cpp" line="35"/>
         <source>mapWidget.rightMenu.unselect</source>
         <translation type="unfinished">UnSelect</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="39"/>
+        <location filename="../src/contextmenubuilder.cpp" line="40"/>
         <source>mapWidget.rightMenu.selectionOps</source>
         <translation type="unfinished">Selection Operations</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="40"/>
+        <location filename="../src/contextmenubuilder.cpp" line="41"/>
         <source>mapWidget.rightMenu.delete</source>
         <translation type="unfinished">Delete Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="42"/>
+        <location filename="../src/contextmenubuilder.cpp" line="43"/>
         <source>mapWidget.rightMenu.createVoid</source>
         <translation type="unfinished">Make Region Void</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="64"/>
+        <location filename="../src/contextmenubuilder.cpp" line="71"/>
         <source>mapWidget.rightMenu.export</source>
         <translation type="unfinished">Export Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="65"/>
+        <location filename="../src/contextmenubuilder.cpp" line="72"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">Export Region</translation>
     </message>
@@ -766,12 +781,12 @@
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="44"/>
+        <location filename="../src/contextmenubuilder.cpp" line="51"/>
         <source>mapWidget.rightMenu.copy</source>
         <translation type="unfinished">Copy Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="76"/>
+        <location filename="../src/contextmenubuilder.cpp" line="83"/>
         <source>mapWidget.rightMenu.paste</source>
         <translation type="unfinished">Paste</translation>
     </message>
@@ -791,12 +806,12 @@
         <translation>Invalid clipboard data, cannot parse</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="97"/>
+        <location filename="../src/contextmenubuilder.cpp" line="104"/>
         <source>mapWidget.rightMenu.import</source>
         <translation type="unfinished">Import</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="98"/>
+        <location filename="../src/contextmenubuilder.cpp" line="105"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">Import Region</translation>
     </message>
@@ -806,52 +821,57 @@
         <translation>BCHKS Files (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="29"/>
+        <location filename="../src/contextmenubuilder.cpp" line="30"/>
         <source>mapWidget.rightMenu.gotoPosition</source>
         <translation type="unfinished">Go To Position</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="119"/>
+        <location filename="../src/contextmenubuilder.cpp" line="126"/>
         <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
         <translation type="unfinished">Region Screenshot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="135"/>
+        <location filename="../src/contextmenubuilder.cpp" line="142"/>
         <source>mapWidget.rightMenu.openchunkEditor</source>
         <translation type="unfinished">Open In Chunk Editor</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="106"/>
+        <location filename="../src/contextmenubuilder.cpp" line="113"/>
         <source>mapWidget.rightMenu.copyInfo</source>
         <translation type="unfinished">Copy Information</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="107"/>
-        <source>mapWdiget.rightMenu.copyBlockName</source>
-        <translation type="unfinished">Copy Block Name: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp" line="109"/>
-        <source>mapWidget.rightMenu.copyBiomeName</source>
-        <translation type="unfinished">Copy Biome Name: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp" line="111"/>
-        <source>mapWidget.rightMenu.copyAltitude</source>
-        <translation type="unfinished">Copy Altitude: </translation>
+        <location filename="../src/contextmenubuilder.cpp" line="45"/>
+        <source>mapWidget.rightMenu.setBiome</source>
+        <translation type="unfinished">Set Region Biome</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp" line="114"/>
+        <source>mapWdiget.rightMenu.copyBlockName</source>
+        <translation type="unfinished">Block Name: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="116"/>
+        <source>mapWidget.rightMenu.copyBiomeName</source>
+        <translation type="unfinished">Biome Name: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="118"/>
+        <source>mapWidget.rightMenu.copyAltitude</source>
+        <translation type="unfinished">Altitude: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="121"/>
         <source>mapWidget.rightMenu.copyTPCommand</source>
         <translation type="unfinished">Copy TP Command: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="121"/>
+        <location filename="../src/contextmenubuilder.cpp" line="128"/>
         <source>mapWidget.rightMenu.saveScreenshot</source>
         <translation type="unfinished">ScreenShot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="127"/>
+        <location filename="../src/contextmenubuilder.cpp" line="134"/>
         <source>mapWidget.rightMenu.view3D</source>
         <translation type="unfinished">3D View</translation>
     </message>

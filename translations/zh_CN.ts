@@ -18,6 +18,21 @@
     </message>
 </context>
 <context>
+    <name>BiomePickerDialog</name>
+    <message>
+        <source>biomePicker.title</source>
+        <translation type="unfinished">群系选择器</translation>
+    </message>
+    <message>
+        <source>biomePicker.name</source>
+        <translation type="unfinished">名称</translation>
+    </message>
+    <message>
+        <source>biomePicker.id</source>
+        <translation type="unfinished">ID</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
@@ -728,32 +743,32 @@
         <translation type="unfinished">成功保存数据</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="34"/>
+        <location filename="../src/contextmenubuilder.cpp" line="35"/>
         <source>mapWidget.rightMenu.unselect</source>
         <translation type="unfinished">取消选择</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="39"/>
+        <location filename="../src/contextmenubuilder.cpp" line="40"/>
         <source>mapWidget.rightMenu.selectionOps</source>
         <translation type="unfinished">选区操作</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="40"/>
+        <location filename="../src/contextmenubuilder.cpp" line="41"/>
         <source>mapWidget.rightMenu.delete</source>
         <translation type="unfinished">删除选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="42"/>
+        <location filename="../src/contextmenubuilder.cpp" line="43"/>
         <source>mapWidget.rightMenu.createVoid</source>
         <translation type="unfinished">创建虚空</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="64"/>
+        <location filename="../src/contextmenubuilder.cpp" line="71"/>
         <source>mapWidget.rightMenu.export</source>
         <translation type="unfinished">导出区域</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="65"/>
+        <location filename="../src/contextmenubuilder.cpp" line="72"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">导出选区</translation>
     </message>
@@ -763,12 +778,12 @@
         <translation>所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="44"/>
+        <location filename="../src/contextmenubuilder.cpp" line="51"/>
         <source>mapWidget.rightMenu.copy</source>
         <translation type="unfinished">复制选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="76"/>
+        <location filename="../src/contextmenubuilder.cpp" line="83"/>
         <source>mapWidget.rightMenu.paste</source>
         <translation type="unfinished">粘贴</translation>
     </message>
@@ -788,12 +803,12 @@
         <translation>剪贴板数据不合法，无法解析</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="97"/>
+        <location filename="../src/contextmenubuilder.cpp" line="104"/>
         <source>mapWidget.rightMenu.import</source>
         <translation type="unfinished">导入</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="98"/>
+        <location filename="../src/contextmenubuilder.cpp" line="105"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">导入选区</translation>
     </message>
@@ -803,52 +818,57 @@
         <translation>BCHKS 文件 (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="29"/>
+        <location filename="../src/contextmenubuilder.cpp" line="30"/>
         <source>mapWidget.rightMenu.gotoPosition</source>
         <translation type="unfinished">前往坐标</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="119"/>
+        <location filename="../src/contextmenubuilder.cpp" line="126"/>
         <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
         <translation type="unfinished">选区截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="135"/>
+        <location filename="../src/contextmenubuilder.cpp" line="142"/>
         <source>mapWidget.rightMenu.openchunkEditor</source>
         <translation type="unfinished">在区块编辑器中打开</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="106"/>
+        <location filename="../src/contextmenubuilder.cpp" line="113"/>
         <source>mapWidget.rightMenu.copyInfo</source>
         <translation type="unfinished">复制信息</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="107"/>
-        <source>mapWdiget.rightMenu.copyBlockName</source>
-        <translation type="unfinished">复制方块名字: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp" line="109"/>
-        <source>mapWidget.rightMenu.copyBiomeName</source>
-        <translation type="unfinished">复制群系名字: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp" line="111"/>
-        <source>mapWidget.rightMenu.copyAltitude</source>
-        <translation type="unfinished">复制高度信息: </translation>
+        <location filename="../src/contextmenubuilder.cpp" line="45"/>
+        <source>mapWidget.rightMenu.setBiome</source>
+        <translation type="unfinished">设置区域群系</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp" line="114"/>
+        <source>mapWdiget.rightMenu.copyBlockName</source>
+        <translation type="unfinished">方块名字: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="116"/>
+        <source>mapWidget.rightMenu.copyBiomeName</source>
+        <translation type="unfinished">群系名字: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="118"/>
+        <source>mapWidget.rightMenu.copyAltitude</source>
+        <translation type="unfinished">高度信息: </translation>
+    </message>
+    <message>
+        <location filename="../src/contextmenubuilder.cpp" line="121"/>
         <source>mapWidget.rightMenu.copyTPCommand</source>
         <translation type="unfinished">复制TP命令: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="121"/>
+        <location filename="../src/contextmenubuilder.cpp" line="128"/>
         <source>mapWidget.rightMenu.saveScreenshot</source>
         <translation type="unfinished">截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="127"/>
+        <location filename="../src/contextmenubuilder.cpp" line="134"/>
         <source>mapWidget.rightMenu.view3D</source>
         <translation type="unfinished">3D视图</translation>
     </message>

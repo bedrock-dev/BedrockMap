@@ -6,10 +6,11 @@
 #include <QMessageBox>
 #include <QMimeData>
 
+#include "biomepickerdialog.h"
 #include "chunkio.h"
 #include "chunkoperator.h"
+#include "color.h"
 #include "importoverlay.h"
-#include "levelpagewidget.h"
 #include "loguru/loguru.hpp"
 #include "mapwidget.h"
 #include "msg.h"
@@ -41,6 +42,12 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
                            [w] { ChunkOperator::deleteRegion(w->selection_.region(), *w->level_loader_); });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"),
                            [w] { ChunkOperator::createVoid(w->selection_.region(), *w->level_loader_); });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w] {
+            BiomePickerDialog dlg(w);
+            if (dlg.exec() == QDialog::Accepted) {
+                ChunkOperator::setRegionBiome(w->selection_.region(), *w->level_loader_, dlg.selectedBiome());
+            }
+        });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] {
             auto *clip = QApplication::clipboard();
             ExportedRegion region;
@@ -106,7 +113,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     auto *copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
     copyMenu->addAction(QObject::tr("mapWdiget.rightMenu.copyBlockName") + QString(blockInfo.block_name.c_str()),
                         [cb, &blockInfo] { cb->setText(blockInfo.block_name.c_str()); });
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName") + QString::number(blockInfo.biome),
+    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName") + QString::fromStdString(bl::get_biome_name(blockInfo.biome)),
                         [cb, &blockInfo] { /* cb->setText(bl::get_biome_name(blockInfo.biome).c_str()); */ });
     copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyAltitude") + QString::number(blockInfo.height),
                         [cb, &blockInfo] { cb->setText(QString::number(blockInfo.height)); });

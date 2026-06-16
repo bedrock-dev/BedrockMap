@@ -24,6 +24,8 @@ class ChunkOperator {
     static void deleteRegion(const QRegion &chunkRegion, AsyncLevelLoader &loader);
 
     static void createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loader);
+
+    static void setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome);
 };
 
 #endif  // CHUNKOPERATOR_H

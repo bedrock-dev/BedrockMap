@@ -151,6 +151,14 @@ bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) {
     return true;
 }
 
+bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome) {
+    if (!this->loaded_) return false;
+    auto raw = getRawChunk(p);
+    if (!raw.has_value()) return false;
+    raw->set_biome(biome);
+    return putRawChunk(raw.value());
+}
+
 void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
     auto rp = cfg::c2r(p);
     this->region_cache_[rp.dim]->remove(rp);

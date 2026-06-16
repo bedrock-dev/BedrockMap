@@ -117,7 +117,7 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     auto rz = ((p.y() - z_start) / bw) % 17;
     auto &data = this->get_layer_data(this->y_level_)[rx][rz];
     auto posString = QString("%1,%2,%3").arg(QString::number(rx), QString::number(this->y_level_), QString::number(rz));
-    auto biomeString = QString(bl::get_biome_name(data.biome).c_str());
+    auto biomeString = QString("%1 (%2)").arg(data.biome).arg(bl::get_biome_name(data.biome).c_str());
     auto paletteString = QString(data.block_palette.c_str());
     auto blockNameString = QString(data.block_name.c_str());
 

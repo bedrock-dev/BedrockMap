@@ -65,3 +65,7 @@ void ChunkOperator::createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loa
     LOG_F(INFO, "Create void!");
     forEachChunkInRegion(chunkRegion, [&](const bl::chunk_pos &cp) { loader.createVoid(cp); });
 }
+
+void ChunkOperator::setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome) {
+    forEachChunkInRegion(chunkRegion, [&](const bl::chunk_pos &cp) { loader.setRawChunkBiome(cp, biome); });
+}

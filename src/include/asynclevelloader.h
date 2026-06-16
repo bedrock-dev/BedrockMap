@@ -100,6 +100,8 @@ class AsyncLevelLoader : public QObject {
 
     bool createVoid(const bl::chunk_pos &p);
 
+    bool setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome);
+
     void clearChunkCache(const bl::chunk_pos &p);
 
     void commit();
