@@ -39,13 +39,13 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
 
         auto *selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"),
-                           [w] { ChunkOperator::deleteRegion(w->selection_.region(), *w->level_loader_); });
+                           [w, dim] { ChunkOperator::deleteRegion(w->selection_.region(), *w->level_loader_, dim); });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"),
-                           [w] { ChunkOperator::createVoid(w->selection_.region(), *w->level_loader_); });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w] {
+                           [w, dim] { ChunkOperator::createVoid(w->selection_.region(), *w->level_loader_, dim); });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w, dim] {
             BiomePickerDialog dlg(w);
             if (dlg.exec() == QDialog::Accepted) {
-                ChunkOperator::setRegionBiome(w->selection_.region(), *w->level_loader_, dlg.selectedBiome());
+                ChunkOperator::setRegionBiome(w->selection_.region(), *w->level_loader_, dlg.selectedBiome(), dim);
             }
         });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] {
@@ -55,8 +55,8 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
             for (const auto &r : sel) {
                 for (int x = r.x(); x < r.x() + r.width(); x++) {
                     for (int z = r.y(); z < r.y() + r.height(); z++) {
-                        bl::raw_chunk raw(bl::chunk_pos(x, z, dim));
-                        if (raw.read(w->level_loader_->level())) region.addChunk(raw);
+                        auto raw = w->level_loader_->getRawChunk(bl::chunk_pos(x, z, dim));
+                        if (raw.has_value()) region.addChunk(raw.value());
                     }
                 }
             }
@@ -68,10 +68,10 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
             clip->setMimeData(md, QClipboard::Clipboard);
             LOG_F(INFO, "MapWidget: copied %d chunks to clipboard", static_cast<int>(region.chunkCount()));
         });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.export"), [w] {
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.export"), [w, dim] {
             auto fp = QFileDialog::getSaveFileName(nullptr, QObject::tr("mapWidget.rightMenu.exportRegion"), {}, msg::ALL_FILES());
             if (fp.isEmpty()) return;
-            ChunkOperator::exportRegion(w->selection_.region(), fp, *w->level_loader_);
+            ChunkOperator::exportRegion(w->selection_.region(), fp, *w->level_loader_, dim);
             INFO(msg::EXPORT_COMPLETE());
         });
         menu.addSeparator();
@@ -111,10 +111,10 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
 
     // === Group 3: Copy info ===
     auto *copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
-    copyMenu->addAction(QObject::tr("mapWdiget.rightMenu.copyBlockName") + QString(blockInfo.block_name.c_str()),
+    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBlockName") + QString(blockInfo.block_name.c_str()),
                         [cb, &blockInfo] { cb->setText(blockInfo.block_name.c_str()); });
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName") + QString::fromStdString(bl::get_biome_name(blockInfo.biome)),
-                        [cb, &blockInfo] { /* cb->setText(bl::get_biome_name(blockInfo.biome).c_str()); */ });
+    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName"),
+                        [cb, &blockInfo] { cb->setText(bl::get_biome_name(blockInfo.biome).c_str()); });
     copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyAltitude") + QString::number(blockInfo.height),
                         [cb, &blockInfo] { cb->setText(QString::number(blockInfo.height)); });
     auto tpCmd = QString("tp @s %1 ~ %2").arg(QString::number(cursorPos.x), QString::number(cursorPos.z));
