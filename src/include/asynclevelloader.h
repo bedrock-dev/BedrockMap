@@ -106,15 +106,6 @@ class AsyncLevelLoader : public QObject {
 
     void commit();
 
-    /**
-     * 批量修改数据库
-     * 对于 @modifies中的没一个key 和value
-     * 如果value是空的，就往db中删除key
-     * 如果value不是空的，就更新key
-     * 注意不会更新内存中的bedrock_level对象
-     * @param modifies
-     * @return
-     */
     bool modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies);
 
     bool modifyLeveldat(bl::palette::compound_tag *nbt);

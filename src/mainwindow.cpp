@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUI();
     setupMenuBar();
     setupMenuActions();
+    menu_bar_->setVisible(false);
 
     this->about_dialog_ = new AboutDialog(this);
 }
@@ -117,11 +118,9 @@ void MainWindow::setupMenuActions() {
 
     connect(action_open_, &QAction::triggered, this, &MainWindow::openLevel);
     connect(action_new_, &QAction::triggered, this, [this]() {
-        WARN("Function is in developing");
-        return;
         NewLevelForm frm(this);
         if (frm.exec() == QDialog::Accepted) {
-            LevelOperator::newLevel(frm.path(), frm.version(), frm.isFlat(), frm.flatBlocks());
+            LevelOperator::newLevel(frm.params());
         }
     });
     connect(action_exit_, &QAction::triggered, this, &MainWindow::close_and_exit);
@@ -129,11 +128,9 @@ void MainWindow::setupMenuActions() {
     // welcome tab actions
     auto *wt = level_tab_widget_->welcomeTab();
     connect(wt, &WelcomeTab::newLevelRequested, this, [this]() {
-        WARN("Function is in developing");
-        return;
         NewLevelForm frm(this);
         if (frm.exec() == QDialog::Accepted) {
-            LevelOperator::newLevel(frm.path(), frm.version(), frm.isFlat(), frm.flatBlocks());
+            LevelOperator::newLevel(frm.params());
         }
     });
     connect(wt, &WelcomeTab::openLevelRequested, this, [this]() { openLevel(); });

@@ -61,9 +61,9 @@ void WelcomeTab::setupUI() {
     root->addWidget(makeSectionTitle(tr("msg.welcome.start"), this));
 
     auto *startContent = makeContentLayout(this);
-    auto *newLink = makeLink(QString("<a href=\"new\">%1</a>").arg(tr("msg.welcome.newLevel")), this);
-    connect(newLink, &QLabel::linkActivated, this, [this](const QString &) { emit newLevelRequested(); });
-    startContent->addWidget(newLink);
+    // newLevel is hidden due to bugs — will be re-enabled later
+    // auto *newLink = makeLink(...)
+    // startContent->addWidget(newLink);
 
     auto *openLink = makeLink(QString("<a href=\"open\">%1</a>").arg(tr("msg.welcome.openLevel")), this);
     connect(openLink, &QLabel::linkActivated, this, [this](const QString &) { emit openLevelRequested(); });

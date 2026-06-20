@@ -251,102 +251,102 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="71"/>
+        <location filename="../src/mainwindow.cpp" line="72"/>
         <source>mainWindow.menu.file</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="73"/>
+        <location filename="../src/mainwindow.cpp" line="74"/>
         <source>mainWindow.menu.open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="76"/>
+        <location filename="../src/mainwindow.cpp" line="77"/>
         <source>mainWindow.menu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="79"/>
+        <location filename="../src/mainwindow.cpp" line="80"/>
         <source>mainWindow.menu.close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="80"/>
+        <location filename="../src/mainwindow.cpp" line="81"/>
         <source>mainWindow.menu.exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="84"/>
+        <location filename="../src/mainwindow.cpp" line="85"/>
         <source>mainWindow.menu.tool</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="86"/>
+        <location filename="../src/mainwindow.cpp" line="87"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>透明虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="89"/>
+        <location filename="../src/mainwindow.cpp" line="90"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="91"/>
+        <location filename="../src/mainwindow.cpp" line="92"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>打开配置文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="94"/>
+        <location filename="../src/mainwindow.cpp" line="95"/>
         <source>mainWindow.menu.developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="96"/>
+        <location filename="../src/mainwindow.cpp" line="97"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>显示LevelDB数据</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp" line="98"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation>调试窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="99"/>
+        <location filename="../src/mainwindow.cpp" line="100"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation>终止全局数据加载</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="102"/>
+        <location filename="../src/mainwindow.cpp" line="103"/>
         <source>mainWindow.menu.help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="104"/>
+        <location filename="../src/mainwindow.cpp" line="105"/>
         <source>mainWindow.menu.helpAction</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp" line="106"/>
         <source>mainWindow.menu.opensource</source>
         <translation>开源</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="107"/>
+        <location filename="../src/mainwindow.cpp" line="108"/>
         <source>mainWindow.menu.about</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="114"/>
+        <location filename="../src/mainwindow.cpp" line="115"/>
         <source>mainWindow.menu.openRecent</source>
         <translation>最近打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="184"/>
+        <location filename="../src/mainwindow.cpp" line="181"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="223"/>
+        <location filename="../src/mainwindow.cpp" line="220"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
@@ -497,53 +497,127 @@
 <context>
     <name>NewLevelForm</name>
     <message>
-        <location filename="../src/newlevelform.cpp" line="12"/>
-        <source>newLevelForm.title.newLevel</source>
-        <translation>新建存档</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="20"/>
-        <source>newLevelForm.placeholder.selectDir</source>
-        <translation>选择目录...</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="21"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="28"/>
-        <source>newLevelForm.placeholder.version</source>
-        <translation>版本号</translation>
+        <source>+</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="31"/>
-        <source>newLevelForm.label.superflat</source>
-        <translation>超平坦</translation>
+        <source>-</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="35"/>
-        <source>newLevelForm.placeholder.blocks</source>
-        <translation>方块列表</translation>
+        <source>newLevelForm.gamemode.survival</source>
+        <translation>生存</translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="48"/>
-        <source>newLevelForm.label.path</source>
+        <source>newLevelForm.gamemode.creative</source>
+        <translation>创造</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.adventure</source>
+        <translation>冒险</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.spectator</source>
+        <translation>旁观</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.peaceful</source>
+        <translation>和平</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.easy</source>
+        <translation>简单</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.normal</source>
+        <translation>普通</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.hard</source>
+        <translation>困难</translation>
+    </message>
+    <message>
+        <source>newLevelForm.title</source>
+        <translation>新建存档</translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelSettings</source>
+        <translation>存档设置</translation>
+    </message>
+    <message>
+        <source>newLevelForm.path</source>
         <translation>路径</translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="49"/>
-        <source>newLevelForm.label.version</source>
+        <source>newLevelForm.selectDir</source>
+        <translation>选择目录...</translation>
+    </message>
+    <message>
+        <source>newLevelForm.version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="51"/>
-        <source>newLevelForm.label.blockList</source>
-        <translation>方块列表</translation>
+        <source>newLevelForm.versionHint</source>
+        <translation>例如 1.21.0</translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="50"/>
-        <source></source>
+        <source>newLevelForm.worldSettings</source>
+        <translation>世界设置</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gameMode</source>
+        <translation>游戏模式</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty</source>
+        <translation>难度</translation>
+    </message>
+    <message>
+        <source>newLevelForm.dayNightCycle</source>
+        <translation>昼夜循环</translation>
+    </message>
+    <message>
+        <source>newLevelForm.weatherCycle</source>
+        <translation>天气循环</translation>
+    </message>
+    <message>
+        <source>newLevelForm.mobSpawning</source>
+        <translation>生成怪物</translation>
+    </message>
+    <message>
+        <source>newLevelForm.superflat</source>
+        <translation>超平坦</translation>
+    </message>
+    <message>
+        <source>newLevelForm.blockCol</source>
+        <translation>方块</translation>
+    </message>
+    <message>
+        <source>newLevelForm.countCol</source>
+        <translation>数量</translation>
+    </message>
+    <message>
+        <source>newLevelForm.addRow</source>
+        <translation>添加行</translation>
+    </message>
+    <message>
+        <source>newLevelForm.delRow</source>
+        <translation>删除行</translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelNameHint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>newLevelForm.biome</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -565,138 +639,138 @@
         <translation type="unfinished">清空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="39"/>
+        <location filename="../src/include/msg.h" line="47"/>
         <source>msg.cannotOpenFile</source>
         <translation type="unfinished">无法保存文件</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="40"/>
+        <location filename="../src/include/msg.h" line="48"/>
         <source>msg.nbtDataCorrupted</source>
         <translation type="unfinished">NBT数据损坏</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="41"/>
+        <location filename="../src/include/msg.h" line="49"/>
         <source>msg.initFailed</source>
         <translation type="unfinished">初始化失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="42"/>
+        <location filename="../src/include/msg.h" line="50"/>
         <source>msg.cannotDeleteRoot</source>
         <translation type="unfinished">无法删除根节点</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="43"/>
+        <location filename="../src/include/msg.h" line="51"/>
         <source>msg.nbtParseFailed</source>
         <translation type="unfinished">NBT解析失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="44"/>
+        <location filename="../src/include/msg.h" line="52"/>
         <source>msg.emptyNbtData</source>
         <translation type="unfinished">空的NBT数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="45"/>
+        <location filename="../src/include/msg.h" line="53"/>
         <location filename="../src/nbtwidget.cpp" line="480"/>
         <source>msg.confirmClearAll</source>
         <translation type="unfinished">确认清空全部</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="48"/>
+        <location filename="../src/include/msg.h" line="56"/>
         <source>msg.nothingToSave</source>
         <translation type="unfinished">无需保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="49"/>
+        <location filename="../src/include/msg.h" line="57"/>
         <source>msg.levelSaved</source>
         <translation type="unfinished">存档已保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="50"/>
+        <location filename="../src/include/msg.h" line="58"/>
         <source>msg.importFailed</source>
         <translation type="unfinished">导入失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="51"/>
+        <location filename="../src/include/msg.h" line="59"/>
         <source>msg.invalidChunkFormat</source>
         <translation type="unfinished">不合法的区块格式</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="52"/>
+        <location filename="../src/include/msg.h" line="60"/>
         <source>msg.unsavedChanges</source>
         <translation type="unfinished">未保存的修改</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="53"/>
+        <location filename="../src/include/msg.h" line="61"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation type="unfinished">发现未保存的修改，确定关闭当前存档吗?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="54"/>
+        <location filename="../src/include/msg.h" line="62"/>
         <source>msg.exportSucc</source>
         <translation type="unfinished">导出成功</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="55"/>
+        <location filename="../src/include/msg.h" line="63"/>
         <source>msg.exportComplete</source>
         <translation type="unfinished">导出完成</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="56"/>
+        <location filename="../src/include/msg.h" line="64"/>
         <source>msg.noChunkFound</source>
         <translation type="unfinished">找不到区块</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="59"/>
+        <location filename="../src/include/msg.h" line="67"/>
         <source>msg.createNodeFailed</source>
         <translation type="unfinished">节点创建失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="60"/>
+        <location filename="../src/include/msg.h" line="68"/>
         <source>msg.modifyNodeFailed</source>
         <translation type="unfinished">修改节点失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="63"/>
+        <location filename="../src/include/msg.h" line="71"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="66"/>
+        <location filename="../src/include/msg.h" line="74"/>
         <source>msg.pleaseWait</source>
         <translation type="unfinished">请稍等</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="69"/>
+        <location filename="../src/include/msg.h" line="77"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG名字不能为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="70"/>
+        <location filename="../src/include/msg.h" line="78"/>
         <source>msg.tagTypeInvalid</source>
         <translation>TAG类型不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="71"/>
+        <location filename="../src/include/msg.h" line="79"/>
         <source>msg.tagValueInvalid</source>
         <translation>TAG的值不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="72"/>
+        <location filename="../src/include/msg.h" line="80"/>
         <source>msg.tagUnknownType</source>
         <translation>未知的TAG类型</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="73"/>
+        <location filename="../src/include/msg.h" line="81"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG的值为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="81"/>
+        <location filename="../src/include/msg.h" line="89"/>
         <source>msg.selectLevelDir</source>
         <translation type="unfinished">选择存档目录</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="86"/>
+        <location filename="../src/include/msg.h" line="94"/>
         <source>msg.invalidCoordinate</source>
         <translation>无效的坐标</translation>
     </message>
@@ -712,6 +786,36 @@
     </message>
     <message>
         <location filename="../src/include/msg.h" line="30"/>
+        <source>msg.newLevelNameEmpty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="31"/>
+        <source>msg.newLevelDirNotExist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="32"/>
+        <source>msg.newLevelPathNotDir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="33"/>
+        <source>msg.newLevelDirNotEmpty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="34"/>
+        <source>msg.newLevelNoWritePerm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="35"/>
+        <source>msg.newLevelInvalidVersion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="38"/>
         <source>msg.setScaleLevel</source>
         <translation type="unfinished">设置缩放等级</translation>
     </message>
@@ -721,24 +825,24 @@
         <translation type="unfinished">另存为</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="33"/>
+        <location filename="../src/include/msg.h" line="41"/>
         <source>msg.warning</source>
         <translation type="unfinished">警告</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="34"/>
+        <location filename="../src/include/msg.h" line="42"/>
         <source>msg.info</source>
         <translation type="unfinished">信息</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="37"/>
+        <location filename="../src/include/msg.h" line="45"/>
         <source>msg.saveDataSucc</source>
         <translation type="unfinished">成功保存数据</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="38"/>
+        <location filename="../src/include/msg.h" line="46"/>
         <source>msg.saveDataFailed</source>
         <translation type="unfinished">成功保存数据</translation>
     </message>
@@ -773,7 +877,7 @@
         <translation type="unfinished">导出选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="82"/>
+        <location filename="../src/include/msg.h" line="90"/>
         <source>msg.allFiles</source>
         <translation>所有文件 (*)</translation>
     </message>
@@ -788,17 +892,17 @@
         <translation type="unfinished">粘贴</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="76"/>
+        <location filename="../src/include/msg.h" line="84"/>
         <source>msg.pasteNoData</source>
         <translation>剪贴板中没有可粘贴的区块数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="77"/>
+        <location filename="../src/include/msg.h" line="85"/>
         <source>msg.pasteDataEmpty</source>
         <translation>剪贴板数据为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="78"/>
+        <location filename="../src/include/msg.h" line="86"/>
         <source>msg.pasteDataInvalid</source>
         <translation>剪贴板数据不合法，无法解析</translation>
     </message>
@@ -813,7 +917,7 @@
         <translation type="unfinished">导入选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="83"/>
+        <location filename="../src/include/msg.h" line="91"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS 文件 (*.bchks)</translation>
     </message>
@@ -840,11 +944,11 @@
     <message>
         <location filename="../src/contextmenubuilder.cpp" line="45"/>
         <source>mapWidget.rightMenu.setBiome</source>
-        <translation type="unfinished">设置区域群系</translation>
+        <translation type="unfinished">设置选区群系</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp" line="114"/>
-        <source>mapWdiget.rightMenu.copyBlockName</source>
+        <source>mapWidget.rightMenu.copyBlockName</source>
         <translation type="unfinished">方块名字: </translation>
     </message>
     <message>
@@ -935,11 +1039,6 @@
         <location filename="../src/welcometab.cpp" line="61"/>
         <source>msg.welcome.start</source>
         <translation type="unfinished">开始</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp" line="64"/>
-        <source>msg.welcome.newLevel</source>
-        <translation type="unfinished">新建</translation>
     </message>
     <message>
         <location filename="../src/welcometab.cpp" line="68"/>

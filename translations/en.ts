@@ -252,102 +252,102 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="71"/>
+        <location filename="../src/mainwindow.cpp" line="72"/>
         <source>mainWindow.menu.file</source>
         <translation type="unfinished">File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="73"/>
+        <location filename="../src/mainwindow.cpp" line="74"/>
         <source>mainWindow.menu.open</source>
         <translation type="unfinished">Open</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="76"/>
+        <location filename="../src/mainwindow.cpp" line="77"/>
         <source>mainWindow.menu.new</source>
         <translation type="unfinished">New</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="79"/>
+        <location filename="../src/mainwindow.cpp" line="80"/>
         <source>mainWindow.menu.close</source>
         <translation type="unfinished">Close</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="80"/>
+        <location filename="../src/mainwindow.cpp" line="81"/>
         <source>mainWindow.menu.exit</source>
         <translation type="unfinished">Exit</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="84"/>
+        <location filename="../src/mainwindow.cpp" line="85"/>
         <source>mainWindow.menu.tool</source>
         <translation type="unfinished">Tools</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="86"/>
+        <location filename="../src/mainwindow.cpp" line="87"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation type="unfinished">Transparent Void</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="89"/>
+        <location filename="../src/mainwindow.cpp" line="90"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="91"/>
+        <location filename="../src/mainwindow.cpp" line="92"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation type="unfinished">Open Config File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="94"/>
+        <location filename="../src/mainwindow.cpp" line="95"/>
         <source>mainWindow.menu.developer</source>
         <translation type="unfinished">Developer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="96"/>
+        <location filename="../src/mainwindow.cpp" line="97"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation type="unfinished">Show LevelDB Data</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp" line="98"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation type="unfinished">Debug Window</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="99"/>
+        <location filename="../src/mainwindow.cpp" line="100"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation type="unfinished">Abort Global Data Loading</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="102"/>
+        <location filename="../src/mainwindow.cpp" line="103"/>
         <source>mainWindow.menu.help</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="104"/>
+        <location filename="../src/mainwindow.cpp" line="105"/>
         <source>mainWindow.menu.helpAction</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp" line="106"/>
         <source>mainWindow.menu.opensource</source>
         <translation type="unfinished">Open Source</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="107"/>
+        <location filename="../src/mainwindow.cpp" line="108"/>
         <source>mainWindow.menu.about</source>
         <translation type="unfinished">About</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="114"/>
+        <location filename="../src/mainwindow.cpp" line="115"/>
         <source>mainWindow.menu.openRecent</source>
         <translation type="unfinished">Open Recent</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="184"/>
+        <location filename="../src/mainwindow.cpp" line="181"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="223"/>
+        <location filename="../src/mainwindow.cpp" line="220"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
@@ -498,55 +498,129 @@
 <context>
     <name>NewLevelForm</name>
     <message>
-        <location filename="../src/newlevelform.cpp" line="12"/>
-        <source>newLevelForm.title.newLevel</source>
-        <translation type="unfinished">New Level</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="20"/>
-        <source>newLevelForm.placeholder.selectDir</source>
-        <translation type="unfinished">Select Directory...</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="21"/>
         <source>...</source>
         <translation type="unfinished">
       </translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="28"/>
-        <source>newLevelForm.placeholder.version</source>
-        <translation type="unfinished">Version</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="31"/>
-        <source>newLevelForm.label.superflat</source>
-        <translation type="unfinished">Superflat</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="35"/>
-        <source>newLevelForm.placeholder.blocks</source>
-        <translation type="unfinished">Block List</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="48"/>
-        <source>newLevelForm.label.path</source>
-        <translation type="unfinished">Path</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="49"/>
-        <source>newLevelForm.label.version</source>
-        <translation type="unfinished">Version</translation>
-    </message>
-    <message>
-        <location filename="../src/newlevelform.cpp" line="50"/>
-        <source></source>
+        <source>+</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/newlevelform.cpp" line="51"/>
-        <source>newLevelForm.label.blockList</source>
-        <translation type="unfinished">Block List</translation>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.survival</source>
+        <translation>Survival</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.creative</source>
+        <translation>Creative</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.adventure</source>
+        <translation>Adventure</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gamemode.spectator</source>
+        <translation>Spectator</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.peaceful</source>
+        <translation>Peaceful</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.easy</source>
+        <translation>Easy</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.normal</source>
+        <translation>Normal</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty.hard</source>
+        <translation>Hard</translation>
+    </message>
+    <message>
+        <source>newLevelForm.title</source>
+        <translation>New Level</translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelSettings</source>
+        <translation>Level Settings</translation>
+    </message>
+    <message>
+        <source>newLevelForm.path</source>
+        <translation>Path</translation>
+    </message>
+    <message>
+        <source>newLevelForm.selectDir</source>
+        <translation>Select Directory...</translation>
+    </message>
+    <message>
+        <source>newLevelForm.version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <source>newLevelForm.versionHint</source>
+        <translation>e.g. 1.21.0</translation>
+    </message>
+    <message>
+        <source>newLevelForm.worldSettings</source>
+        <translation>World Settings</translation>
+    </message>
+    <message>
+        <source>newLevelForm.gameMode</source>
+        <translation>Game Mode</translation>
+    </message>
+    <message>
+        <source>newLevelForm.difficulty</source>
+        <translation>Difficulty</translation>
+    </message>
+    <message>
+        <source>newLevelForm.dayNightCycle</source>
+        <translation>Day/Night Cycle</translation>
+    </message>
+    <message>
+        <source>newLevelForm.weatherCycle</source>
+        <translation>Weather Cycle</translation>
+    </message>
+    <message>
+        <source>newLevelForm.mobSpawning</source>
+        <translation>Mob Spawning</translation>
+    </message>
+    <message>
+        <source>newLevelForm.superflat</source>
+        <translation>Superflat</translation>
+    </message>
+    <message>
+        <source>newLevelForm.blockCol</source>
+        <translation>Block</translation>
+    </message>
+    <message>
+        <source>newLevelForm.countCol</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <source>newLevelForm.addRow</source>
+        <translation>Add Row</translation>
+    </message>
+    <message>
+        <source>newLevelForm.delRow</source>
+        <translation>Delete Row</translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelName</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>newLevelForm.levelNameHint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>newLevelForm.biome</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -567,139 +641,139 @@
         <translation type="unfinished">Clear</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="39"/>
+        <location filename="../src/include/msg.h" line="47"/>
         <source>msg.cannotOpenFile</source>
         <translation type="unfinished">Can not open file</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="40"/>
+        <location filename="../src/include/msg.h" line="48"/>
         <source>msg.nbtDataCorrupted</source>
         <translation type="unfinished">NBT data is corrupted</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="41"/>
+        <location filename="../src/include/msg.h" line="49"/>
         <source>msg.initFailed</source>
         <translation type="unfinished">Initilize Failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="42"/>
+        <location filename="../src/include/msg.h" line="50"/>
         <source>msg.cannotDeleteRoot</source>
         <translation type="unfinished">Can not remove root noed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="43"/>
+        <location filename="../src/include/msg.h" line="51"/>
         <source>msg.nbtParseFailed</source>
         <translation type="unfinished">Parse NBT failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="44"/>
+        <location filename="../src/include/msg.h" line="52"/>
         <source>msg.emptyNbtData</source>
         <translation type="unfinished">Empty NBT data</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="45"/>
+        <location filename="../src/include/msg.h" line="53"/>
         <location filename="../src/nbtwidget.cpp" line="480"/>
         <source>msg.confirmClearAll</source>
         <translation type="unfinished">
       </translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="48"/>
+        <location filename="../src/include/msg.h" line="56"/>
         <source>msg.nothingToSave</source>
         <translation type="unfinished">Nothing to Save</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="49"/>
+        <location filename="../src/include/msg.h" line="57"/>
         <source>msg.levelSaved</source>
         <translation type="unfinished">Level Saved</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="50"/>
+        <location filename="../src/include/msg.h" line="58"/>
         <source>msg.importFailed</source>
         <translation type="unfinished">Import failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="51"/>
+        <location filename="../src/include/msg.h" line="59"/>
         <source>msg.invalidChunkFormat</source>
         <translation type="unfinished">Invalid chunk format</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="52"/>
+        <location filename="../src/include/msg.h" line="60"/>
         <source>msg.unsavedChanges</source>
         <translation type="unfinished">Unsaved Changes</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="53"/>
+        <location filename="../src/include/msg.h" line="61"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation type="unfinished">Unsaved changes found, would you like to close current level?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="54"/>
+        <location filename="../src/include/msg.h" line="62"/>
         <source>msg.exportSucc</source>
         <translation type="unfinished">Export successfully</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="55"/>
+        <location filename="../src/include/msg.h" line="63"/>
         <source>msg.exportComplete</source>
         <translation type="unfinished">Done</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="56"/>
+        <location filename="../src/include/msg.h" line="64"/>
         <source>msg.noChunkFound</source>
         <translation type="unfinished">No chunk found</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="59"/>
+        <location filename="../src/include/msg.h" line="67"/>
         <source>msg.createNodeFailed</source>
         <translation type="unfinished">Create node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="60"/>
+        <location filename="../src/include/msg.h" line="68"/>
         <source>msg.modifyNodeFailed</source>
         <translation type="unfinished">Modify node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="63"/>
+        <location filename="../src/include/msg.h" line="71"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="66"/>
+        <location filename="../src/include/msg.h" line="74"/>
         <source>msg.pleaseWait</source>
         <translation type="unfinished">Please wait</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="69"/>
+        <location filename="../src/include/msg.h" line="77"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG name cannot be empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="70"/>
+        <location filename="../src/include/msg.h" line="78"/>
         <source>msg.tagTypeInvalid</source>
         <translation>Invalid TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="71"/>
+        <location filename="../src/include/msg.h" line="79"/>
         <source>msg.tagValueInvalid</source>
         <translation>Invalid TAG value</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="72"/>
+        <location filename="../src/include/msg.h" line="80"/>
         <source>msg.tagUnknownType</source>
         <translation>Unknown TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="73"/>
+        <location filename="../src/include/msg.h" line="81"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG value is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="81"/>
+        <location filename="../src/include/msg.h" line="89"/>
         <source>msg.selectLevelDir</source>
         <translation type="unfinished">Select Level Directory</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="86"/>
+        <location filename="../src/include/msg.h" line="94"/>
         <source>msg.invalidCoordinate</source>
         <translation>Invalid coordinate</translation>
     </message>
@@ -715,6 +789,36 @@
     </message>
     <message>
         <location filename="../src/include/msg.h" line="30"/>
+        <source>msg.newLevelNameEmpty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="31"/>
+        <source>msg.newLevelDirNotExist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="32"/>
+        <source>msg.newLevelPathNotDir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="33"/>
+        <source>msg.newLevelDirNotEmpty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="34"/>
+        <source>msg.newLevelNoWritePerm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="35"/>
+        <source>msg.newLevelInvalidVersion</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h" line="38"/>
         <source>msg.setScaleLevel</source>
         <translation type="unfinished">Set scale level</translation>
     </message>
@@ -724,24 +828,24 @@
         <translation type="unfinished">Save As</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="33"/>
+        <location filename="../src/include/msg.h" line="41"/>
         <source>msg.warning</source>
         <translation type="unfinished">Warning</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="34"/>
+        <location filename="../src/include/msg.h" line="42"/>
         <source>msg.info</source>
         <translation type="unfinished">Information</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="37"/>
+        <location filename="../src/include/msg.h" line="45"/>
         <source>msg.saveDataSucc</source>
         <translation type="unfinished">Save data failed</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="38"/>
+        <location filename="../src/include/msg.h" line="46"/>
         <source>msg.saveDataFailed</source>
         <translation type="unfinished">Save data successfully</translation>
     </message>
@@ -776,7 +880,7 @@
         <translation type="unfinished">Export Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="82"/>
+        <location filename="../src/include/msg.h" line="90"/>
         <source>msg.allFiles</source>
         <translation>All files (*)</translation>
     </message>
@@ -791,17 +895,17 @@
         <translation type="unfinished">Paste</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="76"/>
+        <location filename="../src/include/msg.h" line="84"/>
         <source>msg.pasteNoData</source>
         <translation>No chunk data on clipboard</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="77"/>
+        <location filename="../src/include/msg.h" line="85"/>
         <source>msg.pasteDataEmpty</source>
         <translation>Clipboard data is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="78"/>
+        <location filename="../src/include/msg.h" line="86"/>
         <source>msg.pasteDataInvalid</source>
         <translation>Invalid clipboard data, cannot parse</translation>
     </message>
@@ -816,7 +920,7 @@
         <translation type="unfinished">Import Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="83"/>
+        <location filename="../src/include/msg.h" line="91"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS Files (*.bchks)</translation>
     </message>
@@ -847,7 +951,7 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp" line="114"/>
-        <source>mapWdiget.rightMenu.copyBlockName</source>
+        <source>mapWidget.rightMenu.copyBlockName</source>
         <translation type="unfinished">Block Name: </translation>
     </message>
     <message>
@@ -938,11 +1042,6 @@
         <location filename="../src/welcometab.cpp" line="61"/>
         <source>msg.welcome.start</source>
         <translation type="unfinished">Start</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp" line="64"/>
-        <source>msg.welcome.newLevel</source>
-        <translation type="unfinished">New Level</translation>
     </message>
     <message>
         <location filename="../src/welcometab.cpp" line="68"/>

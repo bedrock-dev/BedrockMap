@@ -26,6 +26,14 @@ namespace msg {
     inline QString OPEN_LEVEL_SUCC() { return QObject::tr("msg.openLevelSucc"); }
     inline QString LOAD_GLOBAL_DATA_FAILED() { return QObject::tr("msg.loadGlobalDataFailed"); }
 
+    // new level validation
+    inline QString NEW_LEVEL_NAME_EMPTY() { return QObject::tr("msg.newLevelNameEmpty"); }
+    inline QString NEW_LEVEL_DIR_NOT_EXIST(const QString &path) { return QObject::tr("msg.newLevelDirNotExist") + path; }
+    inline QString NEW_LEVEL_PATH_NOT_DIR(const QString &path) { return QObject::tr("msg.newLevelPathNotDir") + path; }
+    inline QString NEW_LEVEL_DIR_NOT_EMPTY(const QString &path) { return QObject::tr("msg.newLevelDirNotEmpty") + path; }
+    inline QString NEW_LEVEL_NO_WRITE_PERM(const QString &path) { return QObject::tr("msg.newLevelNoWritePerm") + path; }
+    inline QString NEW_LEVEL_INVALID_VERSION(const QString &ver) { return QObject::tr("msg.newLevelInvalidVersion") + ver; }
+
     // misc
     inline QString SET_SCALE_LEVEL() { return QObject::tr("msg.setScaleLevel"); }
 

@@ -1,7 +1,7 @@
 {
     "cmake.generator": "MinGW Makefiles",
     "cmake.configureEnvironment": {
-        "QT_ROOT": "C:\\Qt\\Qt5.12.12\\5.12.12\\mingw73_64"
+        "QT_ROOT": "C:\\noinstall\\Qt\\6.11.0\\mingw_64"
     },
     "files.associations": {
         "translations/*.ts": "xml"
