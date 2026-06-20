@@ -45,7 +45,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUI();
     setupMenuBar();
     setupMenuActions();
-    menu_bar_->setVisible(false);
 
     this->about_dialog_ = new AboutDialog(this);
 }
@@ -75,6 +74,7 @@ void MainWindow::setupMenuBar() {
 
     action_new_ = file_menu_->addAction(tr("mainWindow.menu.new"));
     action_new_->setShortcut(QKeySequence("Ctrl+N"));
+    action_new_->setVisible(false);  // hidden — has bugs, disabled temporarily
 
     action_close_ = file_menu_->addAction(tr("mainWindow.menu.close"));
     action_exit_ = file_menu_->addAction(tr("mainWindow.menu.exit"));

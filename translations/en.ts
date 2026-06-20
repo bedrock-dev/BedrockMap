@@ -12,7 +12,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="13"/>
+        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.title.about</source>
         <translation type="unfinished">About</translation>
     </message>
@@ -36,8 +36,7 @@
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
-        <translation type="unfinished">
-      </translation>
+        <translation type="unfinished">       </translation>
     </message>
     <message>
         <source>chunkEditor.view3D</source>
@@ -95,17 +94,17 @@
 <context>
     <name>ChunkSectionWidget</name>
     <message>
-        <location filename="../src/chunksectionwidget.cpp" line="124"/>
+        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.position</source>
         <translation type="unfinished">Position: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp" line="125"/>
+        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.blockName</source>
         <translation type="unfinished">Block: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp" line="127"/>
+        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation type="unfinished">Biome: </translation>
     </message>
@@ -125,7 +124,7 @@
         <translation type="unfinished">X: </translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.cpp" line="9"/>
+        <location filename="../src/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation type="unfinished">Go To Position</translation>
     </message>
@@ -133,17 +132,17 @@
 <context>
     <name>ImageCropDialog</name>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="17"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.title.cropImage</source>
         <translation type="unfinished">Crop Image</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="26"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.confirm</source>
         <translation type="unfinished">Ok</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="27"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.cancel</source>
         <translation type="unfinished">Cancel</translation>
     </message>
@@ -151,87 +150,87 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="121"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation type="unfinished">Replace</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="122"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation type="unfinished">Add</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="123"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation type="unfinished">Subtract</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="132"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation type="unfinished">Save</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="169"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation type="unfinished">Show Grid</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="170"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation type="unfinished">Show Coordinates</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="180"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation type="unfinished">Overworld</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="181"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation type="unfinished">Nether</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="182"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation type="unfinished">The End</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="192"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation type="unfinished">Terrain</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="193"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation type="unfinished">Biome</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="205"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation type="unfinished">Slime Chunks</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="206"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation type="unfinished">Entities</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="207"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation type="unfinished">Villages</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="208"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation type="unfinished">HSAs</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="218"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation type="unfinished">Filter</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp" line="219"/>
+        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation type="unfinished">Global NBT</translation>
     </message>
@@ -239,12 +238,12 @@
 <context>
     <name>LevelTabWidget</name>
     <message>
-        <location filename="../src/leveltabwidget.cpp" line="19"/>
+        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation type="unfinished">Welcome</translation>
     </message>
     <message>
-        <location filename="../src/leveltabwidget.cpp" line="22"/>
+        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.pleaseWait</source>
         <translation type="unfinished">Please wait...</translation>
     </message>
@@ -252,102 +251,102 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="71"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.file</source>
         <translation type="unfinished">File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="73"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.open</source>
         <translation type="unfinished">Open</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="76"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation type="unfinished">New</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="79"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation type="unfinished">Close</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="80"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.exit</source>
         <translation type="unfinished">Exit</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="84"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.tool</source>
         <translation type="unfinished">Tools</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="86"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation type="unfinished">Transparent Void</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="89"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="91"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation type="unfinished">Open Config File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="94"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.developer</source>
         <translation type="unfinished">Developer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="96"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation type="unfinished">Show LevelDB Data</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation type="unfinished">Debug Window</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="99"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation type="unfinished">Abort Global Data Loading</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="102"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.help</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="104"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.helpAction</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.opensource</source>
         <translation type="unfinished">Open Source</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="107"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.about</source>
         <translation type="unfinished">About</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="114"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.openRecent</source>
         <translation type="unfinished">Open Recent</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="180"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="219"/>
+        <location filename="../src/mainwindow.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
@@ -367,17 +366,17 @@
         <translation type="unfinished">Change Image</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="255"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation type="unfinished">Map Item Editor</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="311"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation type="unfinished">Save File</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp" line="318"/>
+        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation type="unfinished">Open File</translation>
     </message>
@@ -385,8 +384,8 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp" line="523"/>
-        <location filename="../src/mapwidget.cpp" line="549"/>
+        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.fileDialog.save</source>
         <translation type="unfinished">Save File</translation>
     </message>
@@ -441,56 +440,56 @@
         <translation type="unfinished">Print Cache</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="183"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.open</source>
         <translation type="unfinished">Open File</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="347"/>
-        <location filename="../src/nbtwidget.cpp" line="449"/>
+        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.new</source>
         <translation type="unfinished">New</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="348"/>
-        <location filename="../src/nbtwidget.cpp" line="447"/>
+        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.delete</source>
         <translation type="unfinished">Delete</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="349"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.modify</source>
         <translation type="unfinished">Modify</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="350"/>
-        <location filename="../src/nbtwidget.cpp" line="450"/>
+        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.clear</source>
         <translation type="unfinished">Clear</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="448"/>
-        <location filename="../src/nbtwidget.cpp" line="501"/>
+        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.exportSelected</source>
         <translation type="unfinished">Export Selected</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="499"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.deleteSelected</source>
         <translation type="unfinished">Delete Selected</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="500"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.unselectAll</source>
         <translation type="unfinished">Unselect All</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="562"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation type="unfinished">Save File</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="562"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation type="unfinished">NBT Files (*.*)</translation>
     </message>
@@ -499,8 +498,7 @@
     <name>NewLevelForm</name>
     <message>
         <source>...</source>
-        <translation type="unfinished">
-      </translation>
+        <translation type="unfinished">       </translation>
     </message>
     <message>
         <source>+</source>
@@ -626,371 +624,370 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/include/msg.h" line="24"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.levelNotOpen</source>
         <translation type="unfinished">Level is not opened</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="25"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation type="unfinished">Open level failed</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp" line="480"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>msg.clear</source>
         <translation type="unfinished">Clear</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="47"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.cannotOpenFile</source>
         <translation type="unfinished">Can not open file</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="48"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.nbtDataCorrupted</source>
         <translation type="unfinished">NBT data is corrupted</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="49"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.initFailed</source>
         <translation type="unfinished">Initilize Failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="50"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.cannotDeleteRoot</source>
         <translation type="unfinished">Can not remove root noed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="51"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.nbtParseFailed</source>
         <translation type="unfinished">Parse NBT failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="52"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.emptyNbtData</source>
         <translation type="unfinished">Empty NBT data</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="53"/>
-        <location filename="../src/nbtwidget.cpp" line="480"/>
+        <location filename="../src/include/msg.h"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
-        <translation type="unfinished">
-      </translation>
+        <translation type="unfinished">       </translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="56"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.nothingToSave</source>
         <translation type="unfinished">Nothing to Save</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="57"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.levelSaved</source>
         <translation type="unfinished">Level Saved</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="58"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.importFailed</source>
         <translation type="unfinished">Import failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="59"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.invalidChunkFormat</source>
         <translation type="unfinished">Invalid chunk format</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="60"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChanges</source>
         <translation type="unfinished">Unsaved Changes</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="61"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation type="unfinished">Unsaved changes found, would you like to close current level?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="62"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.exportSucc</source>
         <translation type="unfinished">Export successfully</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="63"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.exportComplete</source>
         <translation type="unfinished">Done</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="64"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.noChunkFound</source>
         <translation type="unfinished">No chunk found</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="67"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.createNodeFailed</source>
         <translation type="unfinished">Create node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="68"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.modifyNodeFailed</source>
         <translation type="unfinished">Modify node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="71"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="74"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.pleaseWait</source>
         <translation type="unfinished">Please wait</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="77"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG name cannot be empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="78"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.tagTypeInvalid</source>
         <translation>Invalid TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="79"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.tagValueInvalid</source>
         <translation>Invalid TAG value</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="80"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.tagUnknownType</source>
         <translation>Unknown TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="81"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG value is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="89"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.selectLevelDir</source>
         <translation type="unfinished">Select Level Directory</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="94"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.invalidCoordinate</source>
         <translation>Invalid coordinate</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="26"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.openLevelSucc</source>
         <translation type="unfinished">Open Level Successfully</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="27"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.loadGlobalDataFailed</source>
         <translation type="unfinished">Load global data failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="30"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelNameEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="31"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelDirNotExist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="32"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelPathNotDir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="33"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelDirNotEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="34"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelNoWritePerm</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="35"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelInvalidVersion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="38"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.setScaleLevel</source>
         <translation type="unfinished">Set scale level</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="21"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.saveAs</source>
         <translation type="unfinished">Save As</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="41"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.warning</source>
         <translation type="unfinished">Warning</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="42"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.info</source>
         <translation type="unfinished">Information</translation>
     </message>
     <message>
-        <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="45"/>
+        <location filename="../src/core/msg.cpp"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.saveDataSucc</source>
         <translation type="unfinished">Save data failed</translation>
     </message>
     <message>
-        <location filename="../src/core/msg.cpp" line="34"/>
-        <location filename="../src/include/msg.h" line="46"/>
+        <location filename="../src/core/msg.cpp"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.saveDataFailed</source>
         <translation type="unfinished">Save data successfully</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="35"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.unselect</source>
         <translation type="unfinished">UnSelect</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="40"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.selectionOps</source>
         <translation type="unfinished">Selection Operations</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="41"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.delete</source>
         <translation type="unfinished">Delete Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="43"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.createVoid</source>
         <translation type="unfinished">Make Region Void</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="71"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.export</source>
         <translation type="unfinished">Export Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="72"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">Export Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="90"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.allFiles</source>
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="51"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copy</source>
         <translation type="unfinished">Copy Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="83"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.paste</source>
         <translation type="unfinished">Paste</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="84"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.pasteNoData</source>
         <translation>No chunk data on clipboard</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="85"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.pasteDataEmpty</source>
         <translation>Clipboard data is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="86"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.pasteDataInvalid</source>
         <translation>Invalid clipboard data, cannot parse</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="104"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.import</source>
         <translation type="unfinished">Import</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="105"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">Import Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h" line="91"/>
+        <location filename="../src/include/msg.h"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS Files (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="30"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.gotoPosition</source>
         <translation type="unfinished">Go To Position</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="126"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
         <translation type="unfinished">Region Screenshot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="142"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.openchunkEditor</source>
         <translation type="unfinished">Open In Chunk Editor</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="113"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyInfo</source>
         <translation type="unfinished">Copy Information</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="45"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.setBiome</source>
         <translation type="unfinished">Set Region Biome</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="114"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyBlockName</source>
         <translation type="unfinished">Block Name: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="116"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyBiomeName</source>
         <translation type="unfinished">Biome Name: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="118"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyAltitude</source>
         <translation type="unfinished">Altitude: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="121"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyTPCommand</source>
         <translation type="unfinished">Copy TP Command: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="128"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.saveScreenshot</source>
         <translation type="unfinished">ScreenShot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp" line="134"/>
+        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.view3D</source>
         <translation type="unfinished">3D View</translation>
     </message>
     <message>
-        <location filename="../src/core/main.cpp" line="77"/>
+        <location filename="../src/core/main.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp" line="58"/>
+        <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation type="unfinished">Confirm</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp" line="59"/>
+        <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation type="unfinished">Cancel</translation>
     </message>
@@ -1026,7 +1023,7 @@
         <translation type="unfinished">Item</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp" line="25"/>
+        <location filename="../src/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation type="unfinished">Render Filter</translation>
     </message>
@@ -1034,47 +1031,47 @@
 <context>
     <name>WelcomeTab</name>
     <message>
-        <location filename="../src/welcometab.cpp" line="49"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.text</source>
         <translation type="unfinished">Welcome</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="61"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.start</source>
         <translation type="unfinished">Start</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="68"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.openLevel</source>
         <translation type="unfinished">Open</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="72"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="79"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.recentLevels</source>
         <translation type="unfinished">Recent Levels</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="85"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.links</source>
         <translation type="unfinished">Links</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="88"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.tutorial</source>
         <translation type="unfinished">Tutorial</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="91"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.github</source>
         <translation type="unfinished">Github</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp" line="112"/>
+        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">No Recent</translation>
     </message>

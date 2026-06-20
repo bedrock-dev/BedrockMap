@@ -14,6 +14,8 @@ New-Item -Path "." -Name $build_dir -ItemType Directory
 
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"
 & $lupdate -no-obsolete -no-ui-lines -recursive ./src -ts translations/zh_CN.ts translations/en.ts
+# Strip line numbers from .ts files (UTF-8 no BOM) to avoid spurious diffs on every code change
+Get-ChildItem translations/*.ts | ForEach-Object { $content = (Get-Content $_ -Encoding UTF8 -Raw) -replace ' line="\d+"', ''; [System.IO.File]::WriteAllText($_.FullName, $content, [System.Text.UTF8Encoding]::new($false)) }
 
 # 编译
 cmake -G "MinGW Makefiles" -B  $build_dir -DCMAKE_BUILD_TYPE=Release .
