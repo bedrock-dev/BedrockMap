@@ -2,9 +2,7 @@
 
 #include <QColor>
 #include <cstdint>
-#include <cstdio>
 
-#include "asynclevelloader.h"
 #include "color.h"
 #include "config.h"
 #include "resourcemanager.h"

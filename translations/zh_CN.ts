@@ -251,102 +251,102 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="72"/>
+        <location filename="../src/mainwindow.cpp" line="71"/>
         <source>mainWindow.menu.file</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="74"/>
+        <location filename="../src/mainwindow.cpp" line="73"/>
         <source>mainWindow.menu.open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="77"/>
+        <location filename="../src/mainwindow.cpp" line="76"/>
         <source>mainWindow.menu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="80"/>
+        <location filename="../src/mainwindow.cpp" line="79"/>
         <source>mainWindow.menu.close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="81"/>
+        <location filename="../src/mainwindow.cpp" line="80"/>
         <source>mainWindow.menu.exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="85"/>
+        <location filename="../src/mainwindow.cpp" line="84"/>
         <source>mainWindow.menu.tool</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="87"/>
+        <location filename="../src/mainwindow.cpp" line="86"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>透明虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="90"/>
+        <location filename="../src/mainwindow.cpp" line="89"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="92"/>
+        <location filename="../src/mainwindow.cpp" line="91"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>打开配置文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="95"/>
+        <location filename="../src/mainwindow.cpp" line="94"/>
         <source>mainWindow.menu.developer</source>
         <translation>开发者</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp" line="96"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>显示LevelDB数据</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="98"/>
+        <location filename="../src/mainwindow.cpp" line="97"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation>调试窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="100"/>
+        <location filename="../src/mainwindow.cpp" line="99"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation>终止全局数据加载</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="103"/>
+        <location filename="../src/mainwindow.cpp" line="102"/>
         <source>mainWindow.menu.help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp" line="104"/>
         <source>mainWindow.menu.helpAction</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="106"/>
+        <location filename="../src/mainwindow.cpp" line="105"/>
         <source>mainWindow.menu.opensource</source>
         <translation>开源</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="108"/>
+        <location filename="../src/mainwindow.cpp" line="107"/>
         <source>mainWindow.menu.about</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="115"/>
+        <location filename="../src/mainwindow.cpp" line="114"/>
         <source>mainWindow.menu.openRecent</source>
         <translation>最近打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="181"/>
+        <location filename="../src/mainwindow.cpp" line="180"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="220"/>
+        <location filename="../src/mainwindow.cpp" line="219"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
@@ -1023,7 +1023,7 @@
         <translation type="unfinished">物品</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp" line="27"/>
+        <location filename="../src/renderfilterdialog.cpp" line="25"/>
         <source>renderFilterDialog.title.filter</source>
         <translation>渲染过滤</translation>
     </message>

@@ -252,102 +252,102 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="72"/>
+        <location filename="../src/mainwindow.cpp" line="71"/>
         <source>mainWindow.menu.file</source>
         <translation type="unfinished">File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="74"/>
+        <location filename="../src/mainwindow.cpp" line="73"/>
         <source>mainWindow.menu.open</source>
         <translation type="unfinished">Open</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="77"/>
+        <location filename="../src/mainwindow.cpp" line="76"/>
         <source>mainWindow.menu.new</source>
         <translation type="unfinished">New</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="80"/>
+        <location filename="../src/mainwindow.cpp" line="79"/>
         <source>mainWindow.menu.close</source>
         <translation type="unfinished">Close</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="81"/>
+        <location filename="../src/mainwindow.cpp" line="80"/>
         <source>mainWindow.menu.exit</source>
         <translation type="unfinished">Exit</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="85"/>
+        <location filename="../src/mainwindow.cpp" line="84"/>
         <source>mainWindow.menu.tool</source>
         <translation type="unfinished">Tools</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="87"/>
+        <location filename="../src/mainwindow.cpp" line="86"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation type="unfinished">Transparent Void</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="90"/>
+        <location filename="../src/mainwindow.cpp" line="89"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="92"/>
+        <location filename="../src/mainwindow.cpp" line="91"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation type="unfinished">Open Config File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="95"/>
+        <location filename="../src/mainwindow.cpp" line="94"/>
         <source>mainWindow.menu.developer</source>
         <translation type="unfinished">Developer</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="97"/>
+        <location filename="../src/mainwindow.cpp" line="96"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation type="unfinished">Show LevelDB Data</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="98"/>
+        <location filename="../src/mainwindow.cpp" line="97"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation type="unfinished">Debug Window</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="100"/>
+        <location filename="../src/mainwindow.cpp" line="99"/>
         <source>mainWindow.menu.abortGlobalDataLoading</source>
         <translation type="unfinished">Abort Global Data Loading</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="103"/>
+        <location filename="../src/mainwindow.cpp" line="102"/>
         <source>mainWindow.menu.help</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="105"/>
+        <location filename="../src/mainwindow.cpp" line="104"/>
         <source>mainWindow.menu.helpAction</source>
         <translation type="unfinished">Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="106"/>
+        <location filename="../src/mainwindow.cpp" line="105"/>
         <source>mainWindow.menu.opensource</source>
         <translation type="unfinished">Open Source</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="108"/>
+        <location filename="../src/mainwindow.cpp" line="107"/>
         <source>mainWindow.menu.about</source>
         <translation type="unfinished">About</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="115"/>
+        <location filename="../src/mainwindow.cpp" line="114"/>
         <source>mainWindow.menu.openRecent</source>
         <translation type="unfinished">Open Recent</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="181"/>
+        <location filename="../src/mainwindow.cpp" line="180"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="220"/>
+        <location filename="../src/mainwindow.cpp" line="219"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
@@ -1026,7 +1026,7 @@
         <translation type="unfinished">Item</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp" line="27"/>
+        <location filename="../src/renderfilterdialog.cpp" line="25"/>
         <source>renderFilterDialog.title.filter</source>
         <translation type="unfinished">Render Filter</translation>
     </message>

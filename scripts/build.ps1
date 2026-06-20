@@ -11,6 +11,7 @@ if ($BuildBL) {
 
 #update language files
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"
+& $lupdate --help
 & $lupdate -no-obsolete -no-ui-lines -recursive ./src -ts translations/zh_CN.ts translations/en.ts
 
 #cmake (首次运行自动检测并生成 Ninja 构建系统)

@@ -24,7 +24,6 @@
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
 #include "mapitemeditor.h"
-#include "msg.h"
 #include "nbtwidget.h"
 #include "newlevelform.h"
 
