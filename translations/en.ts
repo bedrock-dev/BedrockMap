@@ -4,17 +4,61 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <source>about.about</source>
-        <translation type="unfinished">Abort</translation>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.title.about</source>
+        <translation type="unfinished">About</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a name=&quot;bedrockmap-v0-1&quot;/&gt;&lt;span style=&quot; font-size:16pt; font-weight:600;&quot;&gt;{NAME_VERSION}&lt;/span&gt;&lt;/p&gt;&lt;h5 style=&quot; margin-top:12px; margin-bottom:4px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;-&quot;/&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;说&lt;/span&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;明&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;BedrockMap是一个由&lt;/span&gt;&lt;a href=&quot;https://github.com/hhhxiao&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;hhhxiao&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;开发的MCBE存档查看器和编辑器。 &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;能够可视化整个世界的地形，群系，高度，也能够显示实体，&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;村庄和HSA所在的位置。&lt;/span&gt;&lt;/p&gt;&lt;h5 style=&quot; margin-top:12px; margin-bottom:4px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Credits&lt;/span&gt;&lt;/h5&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/bedrock-dev/bedrock-level/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;bedrock-level&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 基岩版存档读取库&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://space.bilibili.com/382492603&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;INT-ZOT&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 图标绘制&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/OEOTYAN/&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#007af4;&quot;&gt;OEOTYAN&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; 方块和群系颜色表&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>{NAME_VERSION}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp"/>
-        <source>aboutDialog.title.about</source>
-        <translation type="unfinished">About</translation>
+        <source>aboutDialog.developer</source>
+        <translation type="unfinished">Developed by %1</translation>
+    </message>
+    <message>
+        <source>aboutDialog.copyright</source>
+        <translation type="unfinished">Licensed under GNU AGPL v3.0</translation>
+    </message>
+    <message>
+        <source>aboutDialog.description</source>
+        <translation type="unfinished">BedrockMap is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++17. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.</translation>
+    </message>
+    <message>
+        <source>aboutDialog.close</source>
+        <translation type="unfinished">Close</translation>
+    </message>
+    <message>
+        <source>aboutDialog.links</source>
+        <translation type="unfinished">Links</translation>
+    </message>
+    <message>
+        <source>aboutDialog.otherContributors</source>
+        <translation type="unfinished">Other Contributors</translation>
+    </message>
+    <message>
+        <source>aboutDialog.contributorIntzot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>aboutDialog.contributorOeyan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.checkUpdate</source>
+        <translation type="unfinished">Check Update</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.joinQQGroup</source>
+        <translation type="unfinished">Join QQ Group</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.github</source>
+        <translation type="unfinished">Github</translation>
     </message>
 </context>
 <context>
