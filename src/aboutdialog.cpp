@@ -18,7 +18,7 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDia
 
     // Set name & version with rich text formatting
     QString name = QString::fromStdString(cfg::SOFTWARE_NAME);
-    QString ver = QString::fromStdString(cfg::SOFTWARE_VERSION);
+    QString ver = QString::fromStdString(cfg::SOFTWARE_VERSION) + "." + QString(GIT_COMMIT_HASH);
     QString text = QString("<h2>%1</h2><p>%2</p>").arg(name, ver);
     ui->name_version_label->setText(text);
 

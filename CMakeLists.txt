@@ -121,6 +121,20 @@ target_precompile_headers(BedrockMap PRIVATE
 
 target_compile_definitions(BedrockMap PRIVATE NOMINMAX)
 
+# 获取当前 git commit 哈希（前7位）
+execute_process(
+    COMMAND git rev-parse --short=7 HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(NOT GIT_COMMIT_HASH)
+    set(GIT_COMMIT_HASH "unknown")
+endif()
+message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
+target_compile_definitions(BedrockMap PRIVATE GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+
 # Windows 特定设置
 if(WIN32)
     # 添加 Windows 系统库和链接选项

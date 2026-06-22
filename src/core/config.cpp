@@ -169,6 +169,8 @@ void cfg::initConfig() {
     initColorTable();
 }
 
-QString cfg::VERSION_STRING() { return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()); }
+QString cfg::VERSION_STRING() {
+    return QString(cfg::SOFTWARE_NAME.c_str()) + " " + QString(cfg::SOFTWARE_VERSION.c_str()) + "." + QString(GIT_COMMIT_HASH);
+}
 
 QString cfg::MCBE_LEVEL_PATH = "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
