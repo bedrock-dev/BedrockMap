@@ -64,6 +64,10 @@ class AsyncLevelLoader : public QObject {
 
     const MapFilter &filter() const { return this->map_filter_; }
 
+    void setTransparentVoid(bool v) { transparent_void_.store(v); }
+
+    bool transparentVoid() const { return transparent_void_.load(); }
+
     void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
 
    public:
@@ -133,6 +137,7 @@ class AsyncLevelLoader : public QObject {
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;
+    std::atomic_bool transparent_void_{false};
 
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;

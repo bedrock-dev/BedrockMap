@@ -32,10 +32,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
 
     // === Group 2: Selection operations ===
     if (insideSelection) {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.unselect"), [w] {
-            w->selection_.clear();
-            w->update();
-        });
+        menu.addAction(QObject::tr("mapWidget.rightMenu.unselect"), [w] { w->clearSelection(); });
 
         auto *selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"),
@@ -48,32 +45,8 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
                 ChunkOperator::setRegionBiome(w->selection_.region(), *w->level_loader_, dlg.selectedBiome(), dim);
             }
         });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] {
-            auto *clip = QApplication::clipboard();
-            ExportedRegion region;
-            auto sel = w->selection_.region();
-            for (const auto &r : sel) {
-                for (int x = r.x(); x < r.x() + r.width(); x++) {
-                    for (int z = r.y(); z < r.y() + r.height(); z++) {
-                        auto raw = w->level_loader_->getRawChunk(bl::chunk_pos(x, z, dim));
-                        if (raw.has_value()) region.addChunk(raw.value());
-                    }
-                }
-            }
-            if (region.isEmpty()) return;
-            auto data = region.serialize();
-            auto *md = new QMimeData();
-            md->setData("application/x-bedrockmap-region", QByteArray(data.data(), static_cast<int>(data.size())));
-            clip->clear(QClipboard::Clipboard);
-            clip->setMimeData(md, QClipboard::Clipboard);
-            LOG_F(INFO, "MapWidget: copied %d chunks to clipboard", static_cast<int>(region.chunkCount()));
-        });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.export"), [w, dim] {
-            auto fp = QFileDialog::getSaveFileName(nullptr, QObject::tr("mapWidget.rightMenu.exportRegion"), {}, msg::ALL_FILES());
-            if (fp.isEmpty()) return;
-            ChunkOperator::exportRegion(w->selection_.region(), fp, *w->level_loader_, dim);
-            INFO(msg::EXPORT_COMPLETE());
-        });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] { w->copySelectionToClipboard(dim); });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.export"), [w, dim] { w->exportSelectionToFile(dim); });
         menu.addSeparator();
     }
 

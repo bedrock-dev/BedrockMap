@@ -311,6 +311,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.save</source>
+        <translation type="unfinished">Save</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation type="unfinished">Close</translation>
     </message>
@@ -341,8 +346,63 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.developer</source>
-        <translation type="unfinished">Developer</translation>
+        <source>levelPageWidget.toolBar.showGrid</source>
+        <translation type="unfinished">Toggle Grid</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.showCoord</source>
+        <translation type="unfinished">Toggle Coordinates</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.overworld</source>
+        <translation type="unfinished">Overworld</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.nether</source>
+        <translation type="unfinished">Nether</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.theend</source>
+        <translation type="unfinished">The End</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.terrain</source>
+        <translation type="unfinished">Terrain</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.biome</source>
+        <translation type="unfinished">Biome</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.slimeChunks</source>
+        <translation type="unfinished">Slime Chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.entities</source>
+        <translation type="unfinished">Entities</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.villages</source>
+        <translation type="unfinished">Villages</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.HSAs</source>
+        <translation type="unfinished">HSAs</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.filter</source>
+        <translation type="unfinished">Filter</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -356,8 +416,8 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.abortGlobalDataLoading</source>
-        <translation type="unfinished">Abort Global Data Loading</translation>
+        <source>mainWindow.menu.goto</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -388,6 +448,86 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.layers</source>
+        <translation type="unfinished">Layers</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selection</source>
+        <translation type="unfinished">Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selReplace</source>
+        <translation type="unfinished">Add Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selAdd</source>
+        <translation type="unfinished">Incremental Add</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selSubtract</source>
+        <translation type="unfinished">Delete Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selClear</source>
+        <translation type="unfinished">Clear Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selCopy</source>
+        <translation type="unfinished">Copy Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selPaste</source>
+        <translation type="unfinished">Paste Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selExport</source>
+        <translation type="unfinished">Export Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selImport</source>
+        <translation type="unfinished">Import Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selDelete</source>
+        <translation type="unfinished">Delete Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selVoid</source>
+        <translation type="unfinished">Create Void</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selBiome</source>
+        <translation type="unfinished">Set Biome</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selScreenshot</source>
+        <translation type="unfinished">Screenshot Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.sel3D</source>
+        <translation type="unfinished">3D View</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.chunk</source>
+        <translation type="unfinished">Chunk</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -916,7 +1056,7 @@
         <translation type="unfinished">Export Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">Export Region</translation>
     </message>
@@ -957,6 +1097,7 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">Import Region</translation>
     </message>

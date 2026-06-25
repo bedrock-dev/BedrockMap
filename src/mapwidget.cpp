@@ -561,6 +561,99 @@ void MapWidget::gotoPositionAction() {
     }
 }
 
+void MapWidget::clearSelection() {
+    selection_.clear();
+    update();
+}
+
+void MapWidget::copySelectionToClipboard(uint8_t dim) {
+    if (selection_.isEmpty()) return;
+    ExportedRegion region;
+    auto sel = selection_.region();
+    for (const auto &r : sel) {
+        for (int x = r.x(); x < r.x() + r.width(); x++) {
+            for (int z = r.y(); z < r.y() + r.height(); z++) {
+                auto raw = level_loader_->getRawChunk(bl::chunk_pos(x, z, dim));
+                if (raw.has_value()) region.addChunk(raw.value());
+            }
+        }
+    }
+    if (region.isEmpty()) return;
+    auto data = region.serialize();
+    auto *md = new QMimeData();
+    md->setData("application/x-bedrockmap-region", QByteArray(data.data(), static_cast<int>(data.size())));
+    auto *clip = QApplication::clipboard();
+    clip->clear(QClipboard::Clipboard);
+    clip->setMimeData(md, QClipboard::Clipboard);
+    LOG_F(INFO, "MapWidget: copied %d chunks to clipboard", static_cast<int>(region.chunkCount()));
+}
+
+void MapWidget::pasteFromClipboard(uint8_t dim) {
+    auto *clip = QApplication::clipboard();
+    const auto *md = clip->mimeData();
+    if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
+        WARN(msg::PASTE_NO_DATA());
+        return;
+    }
+    QByteArray rawData = md->data("application/x-bedrockmap-region");
+    if (rawData.isEmpty()) {
+        INFO(msg::PASTE_DATA_EMPTY());
+        return;
+    }
+    bl::chunk_pos anchor(0, 0, dim);
+    if (!import_overlay_->startPaste(rawData, dim, anchor)) {
+        INFO(msg::PASTE_DATA_INVALID());
+        return;
+    }
+    update();
+}
+
+void MapWidget::exportSelectionToFile(uint8_t dim) {
+    if (selection_.isEmpty()) return;
+    auto fp = QFileDialog::getSaveFileName(nullptr, QObject::tr("mapWidget.rightMenu.exportRegion"), {}, msg::ALL_FILES());
+    if (fp.isEmpty()) return;
+    ChunkOperator::exportRegion(selection_.region(), fp, *level_loader_, dim);
+    INFO(msg::EXPORT_COMPLETE());
+}
+
+void MapWidget::importFromFile(uint8_t dim) {
+    auto fp = QFileDialog::getOpenFileName(nullptr, QObject::tr("mapWidget.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
+    if (fp.isEmpty()) return;
+    bl::chunk_pos anchor(0, 0, dim);
+    import_overlay_->startImport(fp, dim, anchor);
+    update();
+}
+
+void MapWidget::deleteSelection(uint8_t dim) {
+    if (selection_.isEmpty()) return;
+    ChunkOperator::deleteRegion(selection_.region(), *level_loader_, dim);
+    update();
+}
+
+void MapWidget::createVoidSelection(uint8_t dim) {
+    if (selection_.isEmpty()) return;
+    ChunkOperator::createVoid(selection_.region(), *level_loader_, dim);
+    update();
+}
+
+void MapWidget::setSelectionBiome(int biome, uint8_t dim) {
+    if (selection_.isEmpty()) return;
+    ChunkOperator::setRegionBiome(selection_.region(), *level_loader_, static_cast<bl::biome>(biome), dim);
+    update();
+}
+
+void MapWidget::show3DView(uint8_t dim) {
+    if (selection_.isEmpty() || selection_.rectCount() != 1) return;
+    auto rect = selection_.region().boundingRect();
+    bl::chunk_pos minPos(rect.x(), rect.y(), dim);
+    bl::chunk_pos maxPos(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1, dim);
+    chunk_render_window_->showChunks(minPos, maxPos, *level_loader_);
+}
+
+void MapWidget::syncToolbars() {
+    if (level_page_) level_page_->syncToolbars();
+}
+
 // 显示右键菜单
 // 显示右键菜单
 void MapWidget::showContextMenu(const QPoint &p) { ContextMenuBuilder::show(this, this, mapToGlobal(p)); }

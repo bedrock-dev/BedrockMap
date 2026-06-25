@@ -68,6 +68,7 @@ class LevelPageWidget : public QWidget {
     void toggleGlobalDataWidget();
     void openFilterDialog();
     void showChunkEditor(const bl::chunk_pos &pos);
+    void syncToolbars();
 
     void setToolBarsVisible(bool visible) {
         if (toolbar_) toolbar_->setVisible(visible);
@@ -119,6 +120,13 @@ class LevelPageWidget : public QWidget {
     // id in tabwidget
     // filter dialog
     RenderFilterDialog *render_filter_dialog_{nullptr};
+    // toolbar group indices
+    int tb_view_grp_{-1};
+    int tb_dim_grp_{-1};
+    int tb_layer_grp_{-1};
+    int tb_overlay_grp_{-1};
+    int sel_grp_{-1};
+
     const int tab_id_{-1};
 };
 #endif

@@ -136,7 +136,7 @@ void LoadRegionTask::run() {
         }
 
         // init bg
-        auto img = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, !cfg::transparent_void);
+        auto img = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, !this->loader_->transparentVoid());
         region->terrain_bake_image_ = img;
         region->biome_bake_image_ = img;
         region->height_bake_image_ = img;

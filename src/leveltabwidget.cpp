@@ -95,6 +95,8 @@ void LevelTabWidget::onCloseLevelFinished() {
     close_level_mss_box_->hide();
 }
 
+void LevelTabWidget::closeCurrentLevel() { onTabClosed(); }
+
 bool LevelTabWidget::confirmCloseAllLevels() {
     for (auto *page : level_pages_) {
         if (!page) continue;

@@ -67,6 +67,7 @@ class LevelTabWidget : public QTabWidget {
 
    public:
     void setEnableDebugWindow(bool enable);
+    LevelPageWidget *currentLevelPage();
 
    signals:
     void currentLevelChanged(LevelPageWidget *levePage);
@@ -77,13 +78,11 @@ class LevelTabWidget : public QTabWidget {
     void onMapToggleOtherLayer(int);
     void onMapOpenFilterDialog();
     void onMapToggleGlobalDataWidget();
+    void closeCurrentLevel();
 
    private slots:
     void onTabClosed();
     void onCloseLevelFinished();
-
-   private:
-    LevelPageWidget *currentLevelPage();
 
    private:
     LevelDBDebugDialog *levedb_debug_widget_;

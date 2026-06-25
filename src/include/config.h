@@ -77,7 +77,6 @@ struct cfg {
     static bool LOG_OUT_MISSING_TEXTURE;
 
     // Configurable (not in config file, can be changed at runtime)
-    static bool transparent_void;
 
     static region_pos c2r(const bl::chunk_pos &ch);
 

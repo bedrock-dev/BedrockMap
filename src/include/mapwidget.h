@@ -219,6 +219,24 @@ class MapWidget : public QWidget {
     inline void setLayer(RenderOption::LayerType layer) { changeLayer(layer); }
 
     inline void setDrawDebug(bool enable) { this->draw_debug_window_ = enable; }
+    inline bool isDebugEnabled() const { return draw_debug_window_; }
+
+    inline void setTransparentVoid(bool v) {
+        if (transparent_void_ == v) return;
+        transparent_void_ = v;
+        if (level_loader_) {
+            level_loader_->setTransparentVoid(v);
+            level_loader_->clearAllCache();
+        }
+        update();
+    }
+
+    inline bool toggleTransparentVoid() {
+        setTransparentVoid(!transparent_void_);
+        return transparent_void_;
+    }
+
+    inline bool transparentVoid() const { return transparent_void_; }
 
     // selection
     inline SelectionController &selection() { return selection_; }
@@ -227,6 +245,17 @@ class MapWidget : public QWidget {
     inline void selectChunk(const bl::chunk_pos &p) { this->opened_chunk_ = true, this->opened_chunk_pos_ = p; }
 
     inline void unselectChunk() { this->opened_chunk_ = false; }
+
+    void clearSelection();
+    void copySelectionToClipboard(uint8_t dim);
+    void pasteFromClipboard(uint8_t dim);
+    void exportSelectionToFile(uint8_t dim);
+    void importFromFile(uint8_t dim);
+    void deleteSelection(uint8_t dim);
+    void createVoidSelection(uint8_t dim);
+    void setSelectionBiome(int biome, uint8_t dim);
+    void show3DView(uint8_t dim);
+    void syncToolbars();
 
     // signals
    signals:
@@ -313,6 +342,7 @@ class MapWidget : public QWidget {
     // render control
     RenderOption option_;
     bool draw_debug_window_{false};
+    bool transparent_void_{false};
     QTransform world_to_view_xf_;
     QRect camera_{-10, -10, width() + 10, height() + 10};  // 需要绘制的范围，后面设置成和widget等大即可
     QTimer *sync_refresh_timer_;

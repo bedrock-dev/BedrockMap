@@ -311,6 +311,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation>关闭</translation>
     </message>
@@ -341,8 +346,63 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.developer</source>
-        <translation>开发者</translation>
+        <source>levelPageWidget.toolBar.showGrid</source>
+        <translation type="unfinished">显示网格</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.showCoord</source>
+        <translation type="unfinished">显示坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.overworld</source>
+        <translation type="unfinished">主世界</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.nether</source>
+        <translation type="unfinished">下界</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.theend</source>
+        <translation type="unfinished">末地</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.terrain</source>
+        <translation type="unfinished">地形</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.biome</source>
+        <translation type="unfinished">群系</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.slimeChunks</source>
+        <translation type="unfinished">史莱姆区块</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.entities</source>
+        <translation type="unfinished">实体</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.villages</source>
+        <translation type="unfinished">村庄</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.HSAs</source>
+        <translation type="unfinished">HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.filter</source>
+        <translation type="unfinished">过滤</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -356,8 +416,8 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.abortGlobalDataLoading</source>
-        <translation>终止全局数据加载</translation>
+        <source>mainWindow.menu.goto</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -388,6 +448,86 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.layers</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selection</source>
+        <translation>选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selReplace</source>
+        <translation>添加选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selAdd</source>
+        <translation type="unfinished">增量添加</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selSubtract</source>
+        <translation>删除选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selClear</source>
+        <translation>清空选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selCopy</source>
+        <translation>复制选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selPaste</source>
+        <translation>粘贴选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selExport</source>
+        <translation>导出选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selImport</source>
+        <translation>导入选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selDelete</source>
+        <translation type="unfinished">删除选区</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selVoid</source>
+        <translation>创建虚空</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selBiome</source>
+        <translation>修改群系</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.selScreenshot</source>
+        <translation>选区截图</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.sel3D</source>
+        <translation>3D视图</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.chunk</source>
+        <translation>区块</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -916,7 +1056,7 @@
         <translation type="unfinished">导出区域</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">导出选区</translation>
     </message>
@@ -957,6 +1097,7 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">导入选区</translation>
     </message>

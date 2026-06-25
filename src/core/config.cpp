@@ -66,9 +66,6 @@ bool cfg::LOG_OUT_MISSING_TEXTURE = false;
 // lang
 QString cfg::LANGUAGE = "zh_CN";
 
-// others
-bool cfg::transparent_void = false;
-
 // 三个重要文件的路径，直接内置
 #ifdef QT_DEBUG
 const std::string cfg::CONFIG_FILE_PATH = R"(../config.ini)";

@@ -123,6 +123,7 @@ void LevelPageWidget::setupSelectionToolBar() {
         {ToolBarIcon("del_sel"), tr("levelPageWidget.toolBar.selection.subtract")},
     };
     int selGrp = selection_toolbar_->addGroup(selGroup);
+    sel_grp_ = selGrp;
 
     selection_toolbar_->addSeparator();
 
@@ -170,6 +171,7 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("coord"), tr("levelPageWidget.toolBar.showCoord")},
     };
     int viewGrp = toolbar_->addGroup(viewGroup);
+    tb_view_grp_ = viewGrp;
 
     toolbar_->addSeparator();
 
@@ -182,6 +184,7 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("theend"), tr("levelPageWidget.toolBar.theend")},
     };
     int dimGrp = toolbar_->addGroup(dimGroup);
+    tb_dim_grp_ = dimGrp;
 
     toolbar_->addSeparator();
 
@@ -195,6 +198,7 @@ void LevelPageWidget::setupToolBar() {
     };
     // default to terrain (index 1)
     int layerGrp = toolbar_->addGroup(layerGroup);
+    tb_layer_grp_ = layerGrp;
 
     toolbar_->addSeparator();
 
@@ -208,6 +212,7 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("hsa"), tr("levelPageWidget.toolBar.HSAs")},
     };
     int overlayGrp = toolbar_->addGroup(overlayGroup);
+    tb_overlay_grp_ = overlayGrp;
 
     toolbar_->addSeparator();
 
@@ -254,6 +259,38 @@ void LevelPageWidget::setupToolBar() {
     toolbar_->setButtonChecked(viewGrp, 0, true);
     // default terrain (index 0 = map/terrain, index 1 = biome)
     toolbar_->setButtonChecked(layerGrp, 0, true);
+}
+
+void LevelPageWidget::syncToolbars() {
+    if (!mapWidget_) return;
+
+    using Mr = MapWidget::RenderOption;
+    auto opt = mapWidget_->renderOption();
+
+    // View group
+    if (auto *tb = toolbar_) {
+        tb->blockSignals(true);
+        tb->setButtonChecked(tb_view_grp_, 0, opt.getOther(Mr::Grid));
+        tb->setButtonChecked(tb_view_grp_, 1, opt.getOther(Mr::Coords));
+        // Dimension group
+        for (int i = 0; i < 3; ++i) tb->setButtonChecked(tb_dim_grp_, i, static_cast<int>(opt.dim) == i);
+        // Layer group
+        for (int i = 0; i < 3; ++i) tb->setButtonChecked(tb_layer_grp_, i, static_cast<int>(opt.layer) == i);
+        // Overlay group
+        tb->setButtonChecked(tb_overlay_grp_, 0, opt.getOther(Mr::SlimeChunk));
+        tb->setButtonChecked(tb_overlay_grp_, 1, opt.getOther(Mr::Actors));
+        tb->setButtonChecked(tb_overlay_grp_, 2, opt.getOther(Mr::Village));
+        tb->setButtonChecked(tb_overlay_grp_, 3, opt.getOther(Mr::HSA));
+        tb->blockSignals(false);
+    }
+
+    // Selection toolbar
+    if (auto *stb = selection_toolbar_) {
+        stb->blockSignals(true);
+        auto mode = mapWidget_->selection().mode();
+        for (int i = 0; i < 3; ++i) stb->setButtonChecked(sel_grp_, i, static_cast<int>(mode) == i);
+        stb->blockSignals(false);
+    }
 }
 
 void LevelPageWidget::setupDataWidget() {
