@@ -29,11 +29,17 @@ namespace {
                 } else if (i != 0 && j != 0) {
                     sum = region->tips_info_[i][j - 1].height + region->tips_info_[i - 1][j].height;
                 }
+                // 直接 QRgb 运算替代 setPixelColor/pixelColor（慢 10-20x）
+                auto *line = reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(j));
+                QRgb px = line[i];
+                int r = qRed(px), g = qGreen(px), b = qBlue(px);
                 if (current_height * 2 > sum) {
-                    region->terrain_bake_image_.setPixelColor(i, j,
-                                                              region->terrain_bake_image_.pixelColor(i, j).lighter(cfg::SHADOW_LEVEL));
+                    // lighter(f): multiply by f/100, clamp to 255
+                    line[i] = qRgb(std::min(255, r * cfg::SHADOW_LEVEL / 100), std::min(255, g * cfg::SHADOW_LEVEL / 100),
+                                   std::min(255, b * cfg::SHADOW_LEVEL / 100));
                 } else if (current_height * 2 < sum) {
-                    region->terrain_bake_image_.setPixelColor(i, j, region->terrain_bake_image_.pixelColor(i, j).darker(cfg::SHADOW_LEVEL));
+                    // darker(f): multiply by 100/f
+                    line[i] = qRgb(r * 100 / cfg::SHADOW_LEVEL, g * 100 / cfg::SHADOW_LEVEL, b * 100 / cfg::SHADOW_LEVEL);
                 }
             }
         }
@@ -77,13 +83,15 @@ namespace {
                 float diffuse = std::max(0.0f, QVector3D::dotProduct(normal, sun));
                 float factor = (diffuse * (1.0f - ambient) + ambient) * brightness;
 
-                auto apply = [factor](const QColor &c) {
-                    return QColor::fromRgbF(std::clamp(c.redF() * factor, 0.0f, 1.0f), std::clamp(c.greenF() * factor, 0.0f, 1.0f),
-                                            std::clamp(c.blueF() * factor, 0.0f, 1.0f), c.alphaF());
+                // 直接 QRgb 运算替代 setPixelColor/pixelColor
+                auto apply_rgb = [factor](QRgb px) -> QRgb {
+                    return qRgb(qBound(0, qRound(qRed(px) * factor), 255), qBound(0, qRound(qGreen(px) * factor), 255),
+                                qBound(0, qRound(qBlue(px) * factor), 255));
                 };
-
-                region->terrain_bake_image_.setPixelColor(i, j, apply(region->terrain_bake_image_.pixelColor(i, j)));
-                region->biome_bake_image_.setPixelColor(i, j, apply(region->biome_bake_image_.pixelColor(i, j)));
+                auto *terrain_line = reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(j));
+                auto *biome_line = reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(j));
+                terrain_line[i] = apply_rgb(terrain_line[i]);
+                biome_line[i] = apply_rgb(biome_line[i]);
             }
         }
     }

@@ -131,14 +131,16 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
         }
     }
 
-    region->terrain_bake_image_.setPixelColor(X, Z, QColor(info.color.r, info.color.g, info.color.b, info.color.a));
+    // 直接 scanLine + QRgb* 写入，比 setPixelColor 快 10-20x
+    reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
 
     if ((f->biomes_list_.count(biome) == 0) == f->biome_black_mode_) {
         // 群系过滤(只是不显示，没有查找功能)
         auto biome_color = bl::get_biome_color(biome);
-        region->biome_bake_image_.setPixelColor(X, Z, QColor(biome_color.r, biome_color.g, biome_color.b, biome_color.a));
+        reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(Z))[X] =
+            qRgba(biome_color.r, biome_color.g, biome_color.b, biome_color.a);
     }
-    region->height_bake_image_.setPixelColor(X, Z, height_to_color(y, ch->get_pos().dim));
+    reinterpret_cast<QRgb *>(region->height_bake_image_.scanLine(Z))[X] = height_to_color(y, ch->get_pos().dim).rgba();
     // setup tips
     auto &tips = region->tips_info_[X][Z];
     tips.block_name = info.name;

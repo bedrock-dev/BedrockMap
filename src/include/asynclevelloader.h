@@ -42,6 +42,8 @@ class AsyncLevelLoader : public QObject {
 
    signals:
     void dirtyChanged();
+    /// Emitted when a new region tile finishes loading/rendering in the background.
+    void regionReady();
 
    public:
     AsyncLevelLoader();

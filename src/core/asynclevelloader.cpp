@@ -64,6 +64,7 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
                     this->region_cache_[dim]->insert(bl::chunk_pos(x, z, dim), region);
                 }
                 this->processing_.remove(bl::chunk_pos(x, z, dim));
+                emit regionReady();
             });
     this->processing_.add(p);
     this->pool_.start(task);
@@ -80,6 +81,7 @@ QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
             this->thumbnails_cache_[dim]->insert(bl::chunk_pos(x, z, dim), img);
         }
         this->thumbnail_processing_.remove(bl::chunk_pos(x, z, dim));
+        emit regionReady();
     });
     this->thumbnail_processing_.add(p);
     this->pool_.start(task);

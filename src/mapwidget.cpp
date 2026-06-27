@@ -85,10 +85,16 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
         LOG_F(WARNING, "The parent widget of mapwidget is not LevelPageWidget!");
     }
 
-    // timer
+    // 异步 region 加载完成时触发重绘，替代旧的 100ms 定时轮询
+    if (this->level_loader_) {
+        connect(this->level_loader_, &AsyncLevelLoader::regionReady, this, [this] { this->update(); });
+    }
+    // 低频定时器仅用于刷新调试窗口信息（内存占用等）
     this->sync_refresh_timer_ = new QTimer();
-    connect(this->sync_refresh_timer_, SIGNAL(timeout()), this, SLOT(asyncRefresh()));
-    this->sync_refresh_timer_->start(100);
+    connect(this->sync_refresh_timer_, &QTimer::timeout, this, [this] {
+        if (this->draw_debug_window_) this->update();
+    });
+    this->sync_refresh_timer_->start(2000);
 
     setMouseTracking(true);
     this->setContextMenuPolicy(Qt::CustomContextMenu);
