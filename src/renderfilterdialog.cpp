@@ -96,7 +96,7 @@ void RenderFilterDialog::on_layer_slider_valueChanged(int value) { ui->current_l
  * @param rh 区域坐标h
  * @param region  区域数据对象
  */
-void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, int rw, int rh, ChunkRegion *region) {
+void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, int y_solid, int rw, int rh, ChunkRegion *region) {
     if (!ch || !f) return;
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
@@ -104,35 +104,38 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
-    if (cfg::TRANSPARENT_WATER && info.name == "minecraft:water") {
-        bl::block_info solid;
-        int hight = y;
-        bool found_solid = false;
-        while (hight > 0) {  // 添加边界检查
-            hight--;
-            solid = ch->get_block_fast(chx, hight, chz);
-            if (solid.name == "minecraft:unknown") break;
-            if (solid.name != "minecraft:water" && solid.name != "minecraft:air") {
-                found_solid = true;
-                break;
-            }
-        }
-        if (found_solid) {
-            solid = ch->get_block(chx, hight, chz);
-            int water_depth = y - hight;
-            const float base_opacity = 0.15f;
-            // float water_opacity = std::min(base_opacity * water_depth, 0.9f);
-            // water_opacity = std::min(0.1f * std::sqrt(water_depth), 0.9f);
-            float water_opacity = std::min(0.1f * water_depth, 0.7f);
-            info.color.r = static_cast<uint8_t>((1 - water_opacity) * solid.color.r + water_opacity * info.color.r);
-            info.color.g = static_cast<uint8_t>((1 - water_opacity) * solid.color.g + water_opacity * info.color.g);
-            info.color.b = static_cast<uint8_t>((1 - water_opacity) * solid.color.b + water_opacity * info.color.b);
-            info.name = solid.name;  // 如果你想显示为下方方块带水效果
-        }
+    // 获取固体方块信息（用于 tips 和水体透明）
+    bl::block_info solid_info;
+    int16_t solid_h = -1;
+    if (y_solid >= 0 && y_solid < y) {
+        solid_info = ch->get_block(chx, y_solid, chz);
+        solid_h = static_cast<int16_t>(y_solid);
+    } else {
+        solid_info = info;
+        solid_h = static_cast<int16_t>(y);
+    }
+
+    // 决定写入地形的颜色和高度
+    bl::block_info render_info = info;
+    int render_y = y;
+
+    if (cfg::TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
+        // 保存水面颜色/深度，后续阴影计算完成后叠加
+        uint32_t wc = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
+
+        // 地形先用固体方块的颜色（后续阴影叠加后再叠水）
+        render_info = solid_info;
+        render_y = solid_h;
+
+        // 写入 tips，供 applyWaterOverlay 使用
+        auto &tips = region->tips_info_[X][Z];
+        tips.water_surface_color = wc;
+        tips.water_depth = static_cast<uint8_t>(y - solid_h);
     }
 
     // 直接 scanLine + QRgb* 写入，比 setPixelColor 快 10-20x
-    reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
+    reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] =
+        qRgba(render_info.color.r, render_info.color.g, render_info.color.b, render_info.color.a);
 
     if ((f->biomes_list_.count(biome) == 0) == f->biome_black_mode_) {
         // 群系过滤(只是不显示，没有查找功能)
@@ -140,12 +143,15 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
         reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(Z))[X] =
             qRgba(biome_color.r, biome_color.g, biome_color.b, biome_color.a);
     }
+    // height 图用原始水面高度（阴影需要平坦水面），tips.height = 水面, solid_height = 海底
     reinterpret_cast<QRgb *>(region->height_bake_image_.scanLine(Z))[X] = height_to_color(y, ch->get_pos().dim).rgba();
     // setup tips
     auto &tips = region->tips_info_[X][Z];
-    tips.block_name = info.name;
+    tips.block_name = render_info.name;
+    tips.solid_block_name = solid_info.name;
     tips.biome = biome;
     tips.height = static_cast<int16_t>(y);
+    tips.solid_height = solid_h;
 }
 
 // 地形，群系渲染以及坐标数据设置
@@ -159,26 +165,44 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
             for (int j = 0; j < 16; j++) {
                 auto b = ch->get_block_fast(i, this->layer, j);
                 if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
-                    setRegionBlockData(this, ch, i, j, this->layer, rw, rh, region);
+                    setRegionBlockData(this, ch, i, j, this->layer, -1, rw, rh, region);
                 }
             }
         }
     } else {
-        // 无层，从上往下寻找白名单方块
+        // 无层：从高度图 O(1) 取 top_y，过滤器循环中顺便记下 solid_y
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 int y = ch->get_height(i, j);
+                int solid_y = miny - 1;
+                int found_y = miny - 1;
                 bool found{false};
                 while (y >= miny) {
                     auto b = ch->get_block_fast(i, y, j);
-                    if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
+
+                    // 过滤器匹配
+                    if (!found && (this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
                         found = true;
+                        found_y = y;
+                        if (b.name != "minecraft:water") {
+                            solid_y = y;  // 非水，地面即固体
+                            break;
+                        }
+                        // 水，继续往下扫固体
+                        y--;
+                        continue;
+                    }
+
+                    // 已匹配到水，继续往下找固体
+                    if (found && b.name != "minecraft:air" && b.name != "minecraft:water") {
+                        solid_y = y;
                         break;
                     }
+
                     y--;
                 }
                 if (found) {
-                    setRegionBlockData(this, ch, i, j, y, rw, rh, region);
+                    setRegionBlockData(this, ch, i, j, found_y, solid_y, rw, rh, region);
                 }
             }
         }

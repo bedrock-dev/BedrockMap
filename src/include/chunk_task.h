@@ -28,8 +28,12 @@ namespace bl {
 
 struct BlockTipsInfo {
     std::string block_name{"?"};
+    std::string solid_block_name{"?"};
     bl::biome biome{bl::none};
     int16_t height{-128};
+    int16_t solid_height{-128};
+    uint32_t water_surface_color{0};  // QRgb packed, 0 = no water overlay
+    uint8_t water_depth{0};           // 0 = no water
 };
 
 struct ChunkRegion {

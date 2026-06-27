@@ -14,6 +14,7 @@
 #include <qsettings.h>
 
 #include <QDir>
+#include <algorithm>
 #include <string>
 
 #include "color.h"
@@ -39,6 +40,8 @@ float cfg::ZOOM_SPEED = 1.2;
 int cfg::MINIMUM_SCALE_LEVEL = 4;
 int cfg::MAXIMUM_SCALE_LEVEL = 1024;
 int cfg::MAP_RENDER_STYLE = 1;
+int cfg::SHADOW_RENDER_SCALE = 4;
+int cfg::SHADOW_PCF_RADIUS = 1;
 QString cfg::GRID_LINE_COLOR = "#bbbbbb";
 int cfg::ACTOR_RENDER_STYLE = 0;  // 0/1
 int cfg::ACTOR_BORDER_WIDTH = 2;
@@ -121,6 +124,8 @@ void cfg::initConfig() {
     cfg::MAXIMUM_SCALE_LEVEL = setting.value("max_scale_level", cfg::MAXIMUM_SCALE_LEVEL).toInt();
     cfg::ZOOM_SPEED = setting.value("zoom_speed", cfg::ZOOM_SPEED).toDouble();
     cfg::MAP_RENDER_STYLE = setting.value("render_style", cfg::MAP_RENDER_STYLE).toInt();
+    cfg::SHADOW_RENDER_SCALE = std::clamp(setting.value("shadow_render_scale", cfg::SHADOW_RENDER_SCALE).toInt(), 1, 16);
+    cfg::SHADOW_PCF_RADIUS = std::clamp(setting.value("shadow_pcf_radius", cfg::SHADOW_PCF_RADIUS).toInt(), 0, 8);
     cfg::GRID_LINE_COLOR = setting.value("grid_line_color", cfg::GRID_LINE_COLOR).toString();
     cfg::ACTOR_RENDER_STYLE = setting.value("actor_render_style", cfg::ACTOR_RENDER_STYLE).toInt();
     cfg::ACTOR_BORDER_WIDTH = setting.value("actor_border_width", cfg::ACTOR_BORDER_WIDTH).toInt();

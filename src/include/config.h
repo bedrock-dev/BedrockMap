@@ -49,6 +49,8 @@ struct cfg {
     static int MINIMUM_SCALE_LEVEL;
     static int MAXIMUM_SCALE_LEVEL;
     static int MAP_RENDER_STYLE;
+    static int SHADOW_RENDER_SCALE;
+    static int SHADOW_PCF_RADIUS;
     static QString GRID_LINE_COLOR;
     static int ACTOR_RENDER_STYLE;
     static int ACTOR_BORDER_WIDTH;
