@@ -288,6 +288,7 @@
     </message>
     <message>
         <location filename="../src/leveltabwidget.cpp"/>
+        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.pleaseWait</source>
         <translation>请稍候...</translation>
     </message>
@@ -886,7 +887,7 @@
     <message>
         <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
-        <translation type="unfinished">发现未保存的修改，确定关闭当前存档吗?</translation>
+        <translation type="unfinished">发现未保存的修改，关闭当前存档前要保存修改吗?</translation>
     </message>
     <message>
         <location filename="../src/include/msg.h"/>
@@ -1053,7 +1054,7 @@
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.export</source>
-        <translation type="unfinished">导出区域</translation>
+        <translation type="unfinished">导出选区</translation>
     </message>
     <message>
         <location filename="../src/mapwidget.cpp"/>

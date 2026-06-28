@@ -1,11 +1,14 @@
 #include "leveltabwidget.h"
 
+#include <qdialog.h>
+#include <qlabel.h>
 #include <qlogging.h>
 #include <qmessagebox.h>
 #include <qnamespace.h>
 #include <qtmetamacros.h>
 #include <qwidget.h>
 
+#include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 
 #include "asynclevelloader.h"
@@ -18,8 +21,16 @@ LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
     this->welcome_tab_ = new WelcomeTab(this);
     this->addTab(this->welcome_tab_, tr("levelTabWidget.title.welcome"));
 
-    close_level_mss_box_ = new QMessageBox(this);
-    close_level_mss_box_->setDetailedText(tr("levelTabWidget.title.pleaseWait"));
+    close_level_mss_box_ = new QDialog(this);
+    close_level_mss_box_->setWindowTitle(tr("levelTabWidget.title.pleaseWait"));
+    close_level_mss_box_->setFixedSize(200, 80);
+    auto *layout = new QVBoxLayout(close_level_mss_box_);
+    auto *label = new QLabel(tr("levelTabWidget.title.pleaseWait"), close_level_mss_box_);
+    label->setAlignment(Qt::AlignCenter);
+    layout->addWidget(label);
+    close_level_mss_box_->setLayout(layout);
+    close_level_mss_box_->setModal(false);
+    close_level_mss_box_->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     this->levedb_debug_widget_ = new LevelDBDebugDialog(this);
     this->render_filter_dialog_ = new RenderFilterDialog(this);

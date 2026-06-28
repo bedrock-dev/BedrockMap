@@ -93,6 +93,6 @@ class LevelTabWidget : public QTabWidget {
     int index = 0;
     // close level handler
     QFutureWatcher<void> close_level_watcher_;
-    QMessageBox *close_level_mss_box_;
+    QDialog *close_level_mss_box_;
 };
 #endif

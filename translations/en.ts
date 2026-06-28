@@ -288,6 +288,7 @@
     </message>
     <message>
         <location filename="../src/leveltabwidget.cpp"/>
+        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.pleaseWait</source>
         <translation type="unfinished">Please wait...</translation>
     </message>
@@ -886,7 +887,7 @@
     <message>
         <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
-        <translation type="unfinished">Unsaved changes found, would you like to close current level?</translation>
+        <translation type="unfinished">Unsaved changes found, would you like to save before closing the level?</translation>
     </message>
     <message>
         <location filename="../src/include/msg.h"/>
