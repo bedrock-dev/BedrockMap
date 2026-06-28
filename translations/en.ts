@@ -887,7 +887,7 @@
     <message>
         <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
-        <translation type="unfinished">Unsaved changes found, would you like to save before closing the level?</translation>
+        <translation type="unfinished">Unsaved changes found, would you like to save before closing?</translation>
     </message>
     <message>
         <location filename="../src/include/msg.h"/>

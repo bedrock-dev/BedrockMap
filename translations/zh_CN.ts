@@ -887,7 +887,7 @@
     <message>
         <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
-        <translation type="unfinished">发现未保存的修改，关闭当前存档前要保存修改吗?</translation>
+        <translation type="unfinished">发现未保存的修改，关闭之前要保存修改吗?</translation>
     </message>
     <message>
         <location filename="../src/include/msg.h"/>

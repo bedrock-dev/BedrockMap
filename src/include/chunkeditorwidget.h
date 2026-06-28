@@ -32,6 +32,9 @@ class ChunkEditorWidget : public QWidget {
 
     void clearData();
 
+    bool isDirty() const { return dirty_; }
+    void saveChunk();
+
     void hideEvent(QHideEvent *event) override;
 
    signals:

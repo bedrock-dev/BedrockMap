@@ -27,14 +27,6 @@
 #include "ui_chunkeditorwidget.h"
 #include "voxelwidget.h"
 
-
-namespace {
-    bool load_raw(leveldb::DB *&db, const std::string &raw_key, std::string &raw) {
-        auto r = db->Get(leveldb::ReadOptions(), raw_key, &raw);
-        return r.ok();
-    }
-}  // namespace
-
 ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoader)
     : QWidget(parent), ui(new Ui::ChunkEditorWidget), level_loader_(levelLoader) {
     ui->setupUi(this);
@@ -193,7 +185,36 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     }
 }
 
+void ChunkEditorWidget::saveChunk() {
+    if (!dirty_) return;
+    auto pt = this->pending_tick_editor_->getCurrentPaletteRaw();
+    raw_chunk_.set_normal(bl::chunk_key::PendingTicks, pt);
+    auto be = this->block_entity_editor_->getCurrentPaletteRaw();
+    raw_chunk_.set_normal(bl::chunk_key::BlockEntity, be);
+    auto actors_palette = this->actor_editor_->getPaletteCopy();
+    std::vector<bl::actor *> actors;
+    for (const auto &nbt : actors_palette) {
+        auto *actor = new bl::actor();
+        if (actor->load_from_nbt(nbt)) {
+            actors.push_back(actor);
+        }
+    }
+    raw_chunk_.set_entities(actors);
+    this->level_loader_->putRawChunk(this->raw_chunk_);
+    actor_editor_->clearModifyCache();
+    pending_tick_editor_->clearModifyCache();
+    block_entity_editor_->clearModifyCache();
+    for (auto *actor : actors) delete actor;
+    setDirty(false);
+}
+
 void ChunkEditorWidget::on_close_btn_clicked() {
+    if (dirty_) {
+        auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        if (btn == QMessageBox::Cancel) return;
+        if (btn == QMessageBox::Yes) saveChunk();
+    }
     terrain_render_widget_->hide();
     hide();
 }
@@ -293,28 +314,5 @@ void ChunkEditorWidget::on_save_btn_clicked() {
         INFO(msg::NOTHING_TO_SAVE());
         return;
     }
-
-    // collect entities and pts
-    auto pt = this->pending_tick_editor_->getCurrentPaletteRaw();
-    raw_chunk_.set_normal(bl::chunk_key::PendingTicks, pt);
-
-    auto be = this->block_entity_editor_->getCurrentPaletteRaw();
-    raw_chunk_.set_normal(bl::chunk_key::BlockEntity, be);
-
-    auto actors_palette = this->actor_editor_->getPaletteCopy();
-    std::vector<bl::actor *> actors;
-    for (const auto &nbt : actors_palette) {
-        auto *actor = new bl::actor();
-        if (actor->load_from_nbt(nbt)) {
-            actors.push_back(actor);
-        }
-    }
-    raw_chunk_.set_entities(actors);
-    // write
-    this->level_loader_->putRawChunk(this->raw_chunk_);
-    actor_editor_->clearModifyCache();
-    pending_tick_editor_->clearModifyCache();
-    block_entity_editor_->clearModifyCache();
-    for (auto *actor : actors) delete actor;
-    setDirty(false);
+    saveChunk();
 }

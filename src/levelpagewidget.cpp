@@ -446,6 +446,15 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos &pos) {
         WARN(msg::NO_CHUNK_FOUND());
         return;
     }
+
+    // if the chunk editor has unsaved changes, prompt the user
+    if (chunkWidget_->isVisible() && chunkWidget_->isDirty()) {
+        auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        if (btn == QMessageBox::Cancel) return;
+        if (btn == QMessageBox::Yes) chunkWidget_->saveChunk();
+    }
+
     chunkWidget_->loadChunkData(std::move(*opt));
     mapWidget_->selectChunk(pos);
     int totalW = mainSplitter_->width();
