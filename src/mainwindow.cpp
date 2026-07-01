@@ -7,6 +7,8 @@
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QIcon>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPalette>
@@ -24,7 +26,6 @@
 #include "leveloperator.h"
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
-#include "mapitemeditor.h"
 #include "nbtwidget.h"
 #include "newlevelform.h"
 
@@ -189,7 +190,10 @@ void MainWindow::setupMenuActions() {
     file_menu_->insertMenu(action_new_, recent_menu_);
     rebuildRecentMenu();
 
-    connect(action_open_, &QAction::triggered, this, &MainWindow::openLevel);
+    //    if (auto *m = buildLeviMenu()) file_menu_->insertMenu(action_new_, m);
+
+    connect(action_open_, &QAction::triggered, this, [this]() { openLevel(); });
+
     connect(action_new_, &QAction::triggered, this, [this]() {
         NewLevelForm frm(this);
         if (frm.exec() == QDialog::Accepted) {
@@ -404,8 +408,36 @@ void MainWindow::rebuildRecentMenu() {
     level_tab_widget_->welcomeTab()->setRecentPaths(paths);
 }
 
-void MainWindow::openLevel() {
-    auto path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + cfg::MCBE_LEVEL_PATH;
+QMenu *MainWindow::buildLeviMenu() {
+    QFile file(QString(qEnvironmentVariable("APPDATA")) + "/LeviLauncher.exe/config.json");
+    if (!file.open(QIODevice::ReadOnly)) return nullptr;
+    auto doc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    if (!doc.isObject()) return nullptr;
+
+    auto root = doc.object();
+    auto baseRoot = root.value("base_root").toString();
+    if (baseRoot.isEmpty()) return nullptr;
+
+    QDir versionsDir(baseRoot + "/versions");
+    if (!versionsDir.exists()) return nullptr;
+
+    auto versions = versionsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    if (versions.isEmpty()) return nullptr;
+    LOG_F(INFO, "4");
+    auto *menu = new QMenu(tr("mainWindow.menu.openLevi"), this);
+    for (const auto &ver : versions) {
+        QString versionPath = baseRoot + "/versions/" + ver + "/Minecraft Bedrock/Users";
+
+        auto *action = menu->addAction(ver);
+        connect(action, &QAction::triggered, this, [this, versionPath]() { openLevel(versionPath); });
+    }
+    return menu;
+}
+
+void MainWindow::openLevel(const QString &startPath) {
+    auto path = startPath;
+    if (path.isEmpty()) path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + cfg::MCBE_LEVEL_PATH;
     QString root = QFileDialog::getExistingDirectory(this, "", path, QFileDialog::ShowDirsOnly);
     if (root.isEmpty()) return;
     this->level_tab_widget_->openNewLevel(root);

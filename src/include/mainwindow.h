@@ -38,13 +38,14 @@ class MainWindow : public QMainWindow {
     void setupWelcomeTabActions();
     void setupToolBar();
     void rebuildRecentMenu();
+    QMenu *buildLeviMenu();
 
    public slots:
     inline bool enable_write() const { return this->write_mode_; }
     void openNBTEditor();
 
    private slots:
-    void openLevel();
+    void openLevel(const QString &startPath = QString());
     void close_and_exit();
     void setupShortcuts();
 
