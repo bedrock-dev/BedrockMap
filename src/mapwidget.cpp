@@ -117,6 +117,11 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
     // import overlay
     import_overlay_ = new ImportOverlay(this, loader, level_page_);
     connect(import_overlay_, &ImportOverlay::confirmed, this, [this] { update(); });
+
+    // keyboard pan timer: ~60fps for smooth arrow-key movement
+    pan_timer_ = new QTimer(this);
+    pan_timer_->setInterval(16);  // ~60 fps
+    connect(pan_timer_, &QTimer::timeout, this, [this] { onPanTick(); });
 }
 
 // transform & position translation
@@ -670,7 +675,47 @@ void MapWidget::keyPressEvent(QKeyEvent *event) {
         event->accept();
         return;
     }
-    QWidget::keyPressEvent(event);
+
+    switch (event->key()) {
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+            pressed_keys_.insert(event->key());
+            if (!pan_timer_->isActive()) pan_timer_->start();
+            event->accept();
+            return;
+        default:
+            QWidget::keyPressEvent(event);
+    }
+}
+
+void MapWidget::keyReleaseEvent(QKeyEvent *event) {
+    switch (event->key()) {
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+            pressed_keys_.remove(event->key());
+            if (pressed_keys_.isEmpty()) pan_timer_->stop();
+            event->accept();
+            return;
+        default:
+            QWidget::keyReleaseEvent(event);
+    }
+}
+
+void MapWidget::onPanTick() {
+    constexpr qreal kPanSpeed = 20.0 / 60.0;
+    QPointF delta;
+    if (pressed_keys_.contains(Qt::Key_Left)) delta += QPointF(kPanSpeed, 0);
+    if (pressed_keys_.contains(Qt::Key_Right)) delta += QPointF(-kPanSpeed, 0);
+    if (pressed_keys_.contains(Qt::Key_Up)) delta += QPointF(0, kPanSpeed);
+    if (pressed_keys_.contains(Qt::Key_Down)) delta += QPointF(0, -kPanSpeed);
+    if (!delta.isNull()) {
+        doTranslate(delta);
+        update();
+    }
 }
 
 MapWidget::~MapWidget() {

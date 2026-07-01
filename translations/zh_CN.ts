@@ -532,6 +532,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.openLevi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>

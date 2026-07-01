@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QPaintEvent>
+#include <QSet>
 #include <QTimer>
 #include <QWidget>
 #include <QtDebug>
@@ -191,6 +192,8 @@ class MapWidget : public QWidget {
 
     void keyPressEvent(QKeyEvent *event) override;
 
+    void keyReleaseEvent(QKeyEvent *event) override;
+
     // signals
    public:
     inline void changeDimension(RenderOption::DimType dim) {
@@ -322,6 +325,9 @@ class MapWidget : public QWidget {
     // Menu & Action
     void showContextMenu(const QPoint &p);
 
+    // Keyboard pan tick
+    void onPanTick();
+
    private:
     // parent widget
     LevelPageWidget *level_page_{nullptr};
@@ -356,6 +362,10 @@ class MapWidget : public QWidget {
 
     // import
     ImportOverlay *import_overlay_{nullptr};
+
+    // keyboard pan
+    QTimer *pan_timer_{nullptr};
+    QSet<int> pressed_keys_;
 
     // exporter
     // ChunkOperator is static; no instance needed
