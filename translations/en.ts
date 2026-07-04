@@ -1289,8 +1289,6 @@
     </message>
     <message>
         <location filename="../src/worldlisttab.cpp"/>
-        <location filename="../src/worldlisttab.cpp"/>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">No Recent</translation>
     </message>

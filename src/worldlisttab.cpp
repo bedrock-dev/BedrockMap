@@ -211,7 +211,7 @@ void WorldListTab::setupUI() {
     root->setSpacing(SPACING);
 
     // --- recent worlds ---
-    recent_list_ = createSection(root, tr("msg.welcome.recentLevels"));
+    recent_list_ = createSection(root, tr("msg.welcome.recentLevels"), &recent_header_);
 
     // --- release worlds ---
     release_list_ = createSection(root, tr("msg.welcome.release"));
@@ -222,8 +222,9 @@ void WorldListTab::setupUI() {
     setLayout(root);
 }
 
-QListWidget *WorldListTab::createSection(QVBoxLayout *parent, const QString &title) {
+QListWidget *WorldListTab::createSection(QVBoxLayout *parent, const QString &title, SectionHeader **outHeader) {
     auto *header = new SectionHeader(title, 0, this);
+    if (outHeader) *outHeader = header;
     parent->addWidget(header);
     parent->addSpacing(4);
 
@@ -268,15 +269,13 @@ void WorldListTab::rebuildRecentList() {
     next_recent_idx_ = 0;
 
     if (recent_paths_.isEmpty()) {
-        auto *emptyItem = new QListWidgetItem();
-        auto *emptyLabel = new QLabel(tr("msg.welcome.noRecent"), this);
-        emptyLabel->setStyleSheet("color: gray; font-size: 12px; padding: 8px;");
-        emptyLabel->setAlignment(Qt::AlignLeft);
-        emptyItem->setSizeHint(emptyLabel->sizeHint());
-        recent_list_->addItem(emptyItem);
-        recent_list_->setItemWidget(emptyItem, emptyLabel);
+        if (recent_header_) recent_header_->hide();
+        recent_list_->hide();
         return;
     }
+
+    if (recent_header_) recent_header_->show();
+    recent_list_->show();
 
     // Show placeholder items first, then load asynchronously
     int validCount = 0;
@@ -304,12 +303,8 @@ void WorldListTab::rebuildRecentList() {
                         recent_paths_.end());
 
     if (validCount == 0) {
-        auto *emptyItem = new QListWidgetItem();
-        auto *emptyLabel = new QLabel(tr("msg.welcome.noRecent"), this);
-        emptyLabel->setStyleSheet("color: gray; font-size: 12px; padding: 8px;");
-        emptyItem->setSizeHint(emptyLabel->sizeHint());
-        recent_list_->addItem(emptyItem);
-        recent_list_->setItemWidget(emptyItem, emptyLabel);
+        if (recent_header_) recent_header_->hide();
+        recent_list_->hide();
         return;
     }
 

@@ -9,6 +9,7 @@
 #include "levelpathmanager.h"
 
 class QVBoxLayout;
+class SectionHeader;
 
 // ---------------------------------------------------------------------------
 // WorldListItem — single row widget inside a QListWidget
@@ -65,12 +66,13 @@ class WorldListTab : public QWidget {
     void rebuildScannedLists();
     void loadNextRecentInfo();
 
-    QListWidget *createSection(QVBoxLayout *parent, const QString &title);
+    QListWidget *createSection(QVBoxLayout *parent, const QString &title, SectionHeader **outHeader = nullptr);
 
     // -- sections --
     QListWidget *recent_list_ = nullptr;
     QListWidget *release_list_ = nullptr;
     QListWidget *preview_list_ = nullptr;
+    SectionHeader *recent_header_ = nullptr;
 
     // -- data --
     QStringList recent_paths_;
