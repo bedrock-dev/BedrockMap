@@ -66,6 +66,9 @@ QString cfg::ICON_THEME = "classic";
 // debug
 bool cfg::LOG_OUT_MISSING_TEXTURE = false;
 
+// LeviLauncher
+bool cfg::SCAN_LEVI_PATH = true;
+
 // lang
 QString cfg::LANGUAGE = "zh_CN";
 
@@ -151,6 +154,10 @@ void cfg::initConfig() {
 
     setting.beginGroup("Debug");
     cfg::LOG_OUT_MISSING_TEXTURE = setting.value("log_out_missng_texture", cfg::LOG_OUT_MISSING_TEXTURE).toBool();
+    setting.endGroup();
+
+    setting.beginGroup("LeviLauncher");
+    cfg::SCAN_LEVI_PATH = setting.value("scan_levi_path", cfg::SCAN_LEVI_PATH).toBool();
     setting.endGroup();
 
     setting.beginGroup("Lang");

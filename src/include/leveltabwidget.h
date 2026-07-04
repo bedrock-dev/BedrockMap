@@ -11,7 +11,7 @@
 #include "levelpagewidget.h"
 #include "mapwidget.h"
 #include "renderfilterdialog.h"
-#include "welcometab.h"
+#include "worldlisttab.h"
 
 class LevelDBDebugDialog : public QDialog {
    public:
@@ -63,7 +63,7 @@ class LevelTabWidget : public QTabWidget {
     void openLevelDBDebugDialog();
     bool confirmCloseAllLevels();
 
-    WelcomeTab *welcomeTab() const { return welcome_tab_; }
+    WorldListTab *welcomeTab() const { return welcome_tab_; }
 
    public:
     void setEnableDebugWindow(bool enable);
@@ -87,7 +87,7 @@ class LevelTabWidget : public QTabWidget {
    private:
     LevelDBDebugDialog *levedb_debug_widget_;
     RenderFilterDialog *render_filter_dialog_;
-    WelcomeTab *welcome_tab_;
+    WorldListTab *welcome_tab_;
     QMap<int, LevelPageWidget *> level_pages_;
 
     int index = 0;

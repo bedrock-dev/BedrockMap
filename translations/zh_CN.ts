@@ -532,11 +532,6 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openLevi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
@@ -1263,6 +1258,39 @@
     </message>
     <message>
         <location filename="../src/welcometab.cpp"/>
+        <source>msg.welcome.noRecent</source>
+        <translation type="unfinished">无近期文件</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListItem</name>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.openFolder</source>
+        <translation type="unfinished">打开文件夹位置</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListTab</name>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.recentLevels</source>
+        <translation type="unfinished">最近存档</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.release</source>
+        <translation type="unfinished">正式版</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.preview</source>
+        <translation type="unfinished">预览版</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">无近期文件</translation>
     </message>

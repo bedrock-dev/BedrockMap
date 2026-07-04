@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "aboutdialog.h"
-#include "cachemgr.h"
 #include "chunkeditorwidget.h"
+#include "levelpathmanager.h"
 #include "leveltabwidget.h"
 
 class MainWindow : public QMainWindow {
@@ -38,7 +38,6 @@ class MainWindow : public QMainWindow {
     void setupWelcomeTabActions();
     void setupToolBar();
     void rebuildRecentMenu();
-    QMenu *buildLeviMenu();
 
    public slots:
     inline bool enable_write() const { return this->write_mode_; }
@@ -109,7 +108,7 @@ class MainWindow : public QMainWindow {
 
     AboutDialog *about_dialog_{nullptr};
     std::vector<QShortcut *> shortcuts_;
-    CacheManager cache_mgr_;
+    LevelPathManager level_path_mgr_;
 };
 
 #endif  // MAINWINDOW_H

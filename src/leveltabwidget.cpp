@@ -13,12 +13,13 @@
 
 #include "asynclevelloader.h"
 #include "levelpagewidget.h"
+#include "levelpathmanager.h"
 #include "mapwidget.h"
 #include "msg.h"
 
 LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
     setTabsClosable(true);
-    this->welcome_tab_ = new WelcomeTab(this);
+    this->welcome_tab_ = new WorldListTab(this);
     this->addTab(this->welcome_tab_, tr("levelTabWidget.title.welcome"));
 
     close_level_mss_box_ = new QDialog(this);

@@ -78,6 +78,9 @@ struct cfg {
     // debug
     static bool LOG_OUT_MISSING_TEXTURE;
 
+    // LeviLauncher
+    static bool SCAN_LEVI_PATH;
+
     // Configurable (not in config file, can be changed at runtime)
 
     static region_pos c2r(const bl::chunk_pos &ch);

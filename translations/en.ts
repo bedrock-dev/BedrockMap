@@ -532,11 +532,6 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openLevi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation type="unfinished">NBT Editor</translation>
     </message>
@@ -1263,6 +1258,39 @@
     </message>
     <message>
         <location filename="../src/welcometab.cpp"/>
+        <source>msg.welcome.noRecent</source>
+        <translation type="unfinished">No Recent</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListItem</name>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.openFolder</source>
+        <translation type="unfinished">Open folder location</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListTab</name>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.recentLevels</source>
+        <translation type="unfinished">Recent Levels</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.release</source>
+        <translation type="unfinished">Release</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.preview</source>
+        <translation type="unfinished">Preview</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">No Recent</translation>
     </message>

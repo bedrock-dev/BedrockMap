@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUI();
     setupMenuBar();
     setupMenuActions();
+    level_path_mgr_.init();
+    level_path_mgr_.scanNormalPaths();
+    level_path_mgr_.scanModernPaths();
+    // level_path_mgr_.dumpPaths();
     setupWelcomeTabActions();
     this->about_dialog_ = new AboutDialog(this);
 }
@@ -368,29 +372,30 @@ void MainWindow::setupMenuActions() {
 }
 
 void MainWindow::setupWelcomeTabActions() {
+    LOG_F(INFO, "MainWindow::setupWelcomeTabActions start");
     auto *wt = level_tab_widget_->welcomeTab();
-    connect(wt, &WelcomeTab::newLevelRequested, this, [this]() {
-        NewLevelForm frm(this);
-        if (frm.exec() == QDialog::Accepted) {
-            LevelOperator::newLevel(frm.params());
-        }
-    });
-    connect(wt, &WelcomeTab::openLevelRequested, this, [this]() { openLevel(); });
-    connect(wt, &WelcomeTab::openNbtEditorRequested, this, [this]() { openNBTEditor(); });
-    connect(wt, &WelcomeTab::openRecentLevel, this, [this, wt](const QString &path) {
+
+    // clicking any world item (recent / release / preview) opens the level
+    connect(wt, &WorldListTab::openLevelRequested, this, [this](const QString &path) {
+        LOG_F(INFO, "WorldListTab openLevelRequested path=%s", path.toStdString().c_str());
         level_tab_widget_->openNewLevel(path);
-        cache_mgr_.addRecentPath(path);
-        rebuildRecentMenu();
-        wt->setRecentPaths(cache_mgr_.recentPaths());
+        level_path_mgr_.addRecentPath(path);
+        rebuildRecentMenu();  // also updates welcome tab
     });
-    wt->setRecentPaths(cache_mgr_.recentPaths());
+
+    // populate data
+    LOG_F(INFO, "MainWindow setting recent paths");
+    wt->setRecentPaths(level_path_mgr_.recentPaths());
+    LOG_F(INFO, "MainWindow setting discovered levels");
+    wt->setDiscoveredLevels(level_path_mgr_.discoveredLevels());
+    LOG_F(INFO, "MainWindow::setupWelcomeTabActions end");
 }
 
 void MainWindow::setupShortcuts() {}
 
 void MainWindow::rebuildRecentMenu() {
     recent_menu_->clear();
-    auto paths = cache_mgr_.recentPaths();
+    auto paths = level_path_mgr_.recentPaths();
     if (paths.isEmpty()) {
         auto *a = recent_menu_->addAction(tr("mainWindow.menu.emptyRecent"));
         a->setEnabled(false);
@@ -399,40 +404,13 @@ void MainWindow::rebuildRecentMenu() {
             auto *a = recent_menu_->addAction(path);
             connect(a, &QAction::triggered, this, [this, path]() {
                 this->level_tab_widget_->openNewLevel(path);
-                cache_mgr_.addRecentPath(path);
+                level_path_mgr_.addRecentPath(path);
                 rebuildRecentMenu();
             });
         }
+        // refresh the welcome tab once
+        level_tab_widget_->welcomeTab()->setRecentPaths(paths);
     }
-    // also refresh the welcome tab
-    level_tab_widget_->welcomeTab()->setRecentPaths(paths);
-}
-
-QMenu *MainWindow::buildLeviMenu() {
-    QFile file(QString(qEnvironmentVariable("APPDATA")) + "/LeviLauncher.exe/config.json");
-    if (!file.open(QIODevice::ReadOnly)) return nullptr;
-    auto doc = QJsonDocument::fromJson(file.readAll());
-    file.close();
-    if (!doc.isObject()) return nullptr;
-
-    auto root = doc.object();
-    auto baseRoot = root.value("base_root").toString();
-    if (baseRoot.isEmpty()) return nullptr;
-
-    QDir versionsDir(baseRoot + "/versions");
-    if (!versionsDir.exists()) return nullptr;
-
-    auto versions = versionsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    if (versions.isEmpty()) return nullptr;
-    LOG_F(INFO, "4");
-    auto *menu = new QMenu(tr("mainWindow.menu.openLevi"), this);
-    for (const auto &ver : versions) {
-        QString versionPath = baseRoot + "/versions/" + ver + "/Minecraft Bedrock/Users";
-
-        auto *action = menu->addAction(ver);
-        connect(action, &QAction::triggered, this, [this, versionPath]() { openLevel(versionPath); });
-    }
-    return menu;
 }
 
 void MainWindow::openLevel(const QString &startPath) {
@@ -441,7 +419,7 @@ void MainWindow::openLevel(const QString &startPath) {
     QString root = QFileDialog::getExistingDirectory(this, "", path, QFileDialog::ShowDirsOnly);
     if (root.isEmpty()) return;
     this->level_tab_widget_->openNewLevel(root);
-    cache_mgr_.addRecentPath(root);
+    level_path_mgr_.addRecentPath(root);
     rebuildRecentMenu();
 }
 
