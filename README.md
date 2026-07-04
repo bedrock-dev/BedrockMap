@@ -21,19 +21,9 @@
 # Clone with submodules
 git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 
-# Build the bedrock-level static library
-cd bedrock-level
-.\build.ps1
-
-# Build the main application
-cd ..
-.\scripts\build.ps1
-
-# Build and run in one step
-.\scripts\build_run.ps1
+# Build BedrockMap
+.\scripts\build.ps1 -buildBL
 ```
-
-For detailed instructions, see the [Compile Guide](./docs/complie_guide.md).
 
 ## License
 

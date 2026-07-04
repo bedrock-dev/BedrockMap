@@ -22,7 +22,7 @@
 
 // Base info
 const std::string cfg::SOFTWARE_NAME = "BedrockMap";
-const std::string cfg::SOFTWARE_VERSION = "v1.0.0-beta3";
+const std::string cfg::SOFTWARE_VERSION = "v1.0.0-beta4";
 
 // Unconfigurable
 const int cfg::GRID_WIDTH = 32;
