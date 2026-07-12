@@ -26,6 +26,8 @@ class LevelStatusBar : public QWidget {
     LevelStatusBar(QWidget *parent);
 
     void setStatus(const QString &status) { status_msg_->setText(status); }
+    void setSelectionInfo(int count);
+    void setModifyInfo(int modified, int deleted);
 
    public slots:
     void onPosChanged(int x, int z);
@@ -33,6 +35,8 @@ class LevelStatusBar : public QWidget {
    private:
     QLabel *pos_;
     QLabel *status_msg_;
+    QLabel *sel_info_;
+    QLabel *modify_info_;
 };
 class LevelTabWidget;
 class LevelPageWidget : public QWidget {

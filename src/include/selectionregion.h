@@ -36,6 +36,12 @@ class SelectionRegion {
         }
     }
 
+    int chunkCount() const {
+        int count = 0;
+        for (const auto &r : region_) count += r.width() * r.height();
+        return count;
+    }
+
    private:
     QRegion region_;
     Mode mode_{Mode::Replace};

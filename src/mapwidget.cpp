@@ -245,6 +245,7 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
         if (selection_.isDragging()) {
             auto rect = selection_.finishDrag();
             update();
+            emit selectionChanged();
             LOG_F(INFO, "Selection applied: mode=%d rect=(%d,%d,%d,%d) total=%d rects", static_cast<int>(selection_.mode()), rect.x(),
                   rect.y(), rect.width(), rect.height(), static_cast<int>(selection_.rectCount()));
         }
@@ -575,6 +576,7 @@ void MapWidget::gotoPositionAction() {
 void MapWidget::clearSelection() {
     selection_.clear();
     update();
+    emit selectionChanged();
 }
 
 void MapWidget::copySelectionToClipboard(uint8_t dim) {

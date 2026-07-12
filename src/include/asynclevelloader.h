@@ -118,6 +118,8 @@ class AsyncLevelLoader : public QObject {
 
     std::vector<QString> debugInfo();
 
+    std::pair<int, int> chunkModifyCounts() const { return level_cache_.chunkCounts(); }
+
    private:
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
 

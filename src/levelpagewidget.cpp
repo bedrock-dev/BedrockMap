@@ -30,19 +30,37 @@
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
     status_msg_ = new QLabel(this);
+    sel_info_ = new QLabel(this);
+    modify_info_ = new QLabel(this);
     pos_ = new QLabel(this);
     pos_->setMargin(0);
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 0, 10, 0);
     layout->addWidget(status_msg_);
     layout->addStretch();
+    layout->addWidget(sel_info_);
+    layout->addWidget(modify_info_);
     layout->addWidget(pos_);
     setFixedHeight(14);
 }
 
 void LevelStatusBar::onPosChanged(int x, int z) {
     auto cp = bl::block_pos{x, 0, z}.to_chunk_pos();
-    this->pos_->setText(QString("%1,%2 / %3,%4").arg(cp.x).arg(cp.z).arg(x).arg(z));
+    this->pos_->setText(QString("Pos: %1,%2 / %3,%4").arg(cp.x).arg(cp.z).arg(x).arg(z));
+}
+
+void LevelStatusBar::setSelectionInfo(int count) {
+    if (count > 0)
+        sel_info_->setText(QString("Sel: %1  ").arg(count));
+    else
+        sel_info_->clear();
+}
+
+void LevelStatusBar::setModifyInfo(int modified, int deleted) {
+    if (modified > 0 || deleted > 0)
+        modify_info_->setText(QString("Modify: %1 Del:%2  ").arg(modified).arg(deleted));
+    else
+        modify_info_->clear();
 }
 
 // level widget
@@ -93,7 +111,14 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : QWidget(paren
         mapWidget_->setDim(static_cast<MapWidget::RenderOption::DimType>(dim));
         mapWidget_->gotoBlockPos(x * 16 + 8, z * 16 + 8);
     });
-    connect(level_loader_.get(), &AsyncLevelLoader::dirtyChanged, this, &LevelPageWidget::refreshDirty);
+    connect(level_loader_.get(), &AsyncLevelLoader::dirtyChanged, this, [this]() {
+        auto [e, ne] = level_loader_->chunkModifyCounts();
+        status_bar_->setModifyInfo(ne, e);
+    });
+    connect(this->mapWidget_, &MapWidget::selectionChanged, this, [this]() {
+        auto count = mapWidget_->selection().chunkCount();
+        status_bar_->setSelectionInfo(static_cast<int>(count));
+    });
 }
 
 LevelPageWidget::~LevelPageWidget() {

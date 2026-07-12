@@ -42,6 +42,7 @@ class SelectionController {
     void setMode(Mode m) { region_.setMode(m); }
     void clear() { region_.clear(); }
     size_t rectCount() const { return region_.region().rectCount(); }
+    int chunkCount() const { return region_.chunkCount(); }
 
     void startDrag(bl::chunk_pos p) {
         dragging_ = true;
@@ -266,6 +267,8 @@ class MapWidget : public QWidget {
 
     void requestOpenChunkEditor(const bl::chunk_pos &pos);
 
+    void selectionChanged();
+
    public slots:
 
     void asyncRefresh();
@@ -273,7 +276,9 @@ class MapWidget : public QWidget {
     void gotoBlockPos(int x, int z);
 
    private:
-    [[nodiscard]] inline bool thumbnailMode() const { return setting::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL; }
+    [[nodiscard]] inline bool thumbnailMode() const {
+        return setting::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
+    }
 
    private:
     // for debug
