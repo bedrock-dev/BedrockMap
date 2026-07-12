@@ -87,7 +87,7 @@ const std::string LevelPathManager::DIR_MINECRAFT_BEDROCK = "Minecraft Bedrock";
 const std::string LevelPathManager::DIR_MINECRAFT_BEDROCK_PREVIEW = "Minecraft Bedrock Preview";
 
 LevelPathManager::LevelPathManager() {
-    QFileInfo configInfo(cfg::CONFIG_FILE_PATH.c_str());
+    QFileInfo configInfo(constant::CONFIG_FILE_PATH.c_str());
     filePath_ = configInfo.absoluteDir().absoluteFilePath("cache").toStdString();
     loadHistory();
 }
@@ -143,7 +143,7 @@ void LevelPathManager::init() {
 
     scan_paths_.push_back({appData.toStdString(), {}, "Official", true, false});
 
-    if (cfg::SCAN_LEVI_PATH) {
+    if (setting::SCAN_LEVI_PATH) {
         initLeviPath();
     }
 }

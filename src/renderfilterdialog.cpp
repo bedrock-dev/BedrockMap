@@ -119,7 +119,7 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     bl::block_info render_info = info;
     int render_y = y;
 
-    if (cfg::TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
+    if (setting::TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
         // 保存水面颜色/深度，后续阴影计算完成后叠加
         uint32_t wc = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
 
@@ -212,7 +212,7 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
 void MapFilter::bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const {
     if (!ch) return;
     auto entities = ch->entities();
-    auto mode = cfg::ACTOR_RENDER_STYLE;
+    auto mode = setting::ACTOR_RENDER_STYLE;
     for (auto &e : entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
         if ((this->actors_list_.count(key.toStdString()) == 0) == this->actor_black_mode_) {

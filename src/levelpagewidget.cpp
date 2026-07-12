@@ -395,7 +395,7 @@ bool LevelPageWidget::loadLevel(const QString &path) {
     auto *ld = dynamic_cast<bl::palette::compound_tag *>(dat.root());
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
-    if (!cfg::LOAD_GLOBAL_DATA) {
+    if (!setting::LOAD_GLOBAL_DATA) {
         return true;
     }
     auto future = QtConcurrent::run(

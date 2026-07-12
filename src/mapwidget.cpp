@@ -155,10 +155,10 @@ void MapWidget::forEachChunkInCamera(const std::function<void(const region_pos &
 
 void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos &p)> &f) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
-    auto reginMin = cfg::c2r(minChunk);
-    auto regionMax = cfg::c2r(maxChunk);
-    for (int i = reginMin.x; i <= regionMax.x; i += cfg::RW) {
-        for (int j = reginMin.z; j <= regionMax.z; j += cfg::RW) {
+    auto reginMin = constant::c2r(minChunk);
+    auto regionMax = constant::c2r(maxChunk);
+    for (int i = reginMin.x; i <= regionMax.x; i += constant::RW) {
+        for (int j = reginMin.z; j <= regionMax.z; j += constant::RW) {
             f({i, j, minChunk.dim});
         }
     }
@@ -270,7 +270,7 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     QPointF world = world_to_view_xf_.inverted().map(pos);
 
     double scale = world_to_view_xf_.m11() * factor;
-    scale = std::clamp(scale, (qreal)cfg::MINIMUM_SCALE_LEVEL, (qreal)cfg::MAXIMUM_SCALE_LEVEL);
+    scale = std::clamp(scale, (qreal)setting::MINIMUM_SCALE_LEVEL, (qreal)setting::MAXIMUM_SCALE_LEVEL);
 
     world_to_view_xf_ = QTransform();
     world_to_view_xf_.translate(pos.x(), pos.y());
@@ -284,21 +284,21 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
 void MapWidget::asyncRefresh() { this->update(); }
 
 void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, QImage *img) const {
-    if (img) p->drawImage(QRectF(pos.x, pos.z, cfg::RW, cfg::RW), *img, img->rect());
+    if (img) p->drawImage(QRectF(pos.x, pos.z, constant::RW, constant::RW), *img, img->rect());
 }
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     if (thumbnailMode()) return;
-    auto pen = QPen(QColor(cfg::GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    auto pen = QPen(QColor(setting::GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setBrush(Qt::NoBrush);
     pen.setCosmetic(true);
 
     QVector<QRect> chunkRects, largeRects;
     auto cw = this->chunkWidthInPixel();
-    const auto gw = cfg::GRID_WIDTH;
+    const auto gw = constant::GRID_WIDTH;
     forEachChunkInCamera([&chunkRects, &largeRects, cw, gw](const bl::chunk_pos &pos) {
         if (cw > 64) chunkRects.emplace_back(pos.x, pos.z, 1, 1);
-        if (pos.x % cfg::GRID_WIDTH == 0 && pos.z % cfg::GRID_WIDTH == 0) {
+        if (pos.x % constant::GRID_WIDTH == 0 && pos.z % constant::GRID_WIDTH == 0) {
             if (cw > 1.) {
                 largeRects.emplace_back(pos.x - gw, pos.z - gw, gw, gw);
                 largeRects.emplace_back(pos.x - gw, pos.z, gw, gw);
@@ -316,8 +316,8 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
-    QColor color(cfg::CHUNK_EDITOR_HIGHLIGHT_COLOR);
-    QPen pen(color, cfg::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    QColor color(setting::CHUNK_EDITOR_HIGHLIGHT_COLOR);
+    QPen pen(color, setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
     pen.setCosmetic(true);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
@@ -332,7 +332,7 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     pen.setCosmetic(true);
     painter->setPen(pen);
     this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch) {
-        if ((ch.x % cfg::GRID_WIDTH == 0 && ch.z % cfg::GRID_WIDTH == 0) || scaleLevel() >= 128) {
+        if ((ch.x % constant::GRID_WIDTH == 0 && ch.z % constant::GRID_WIDTH == 0) || scaleLevel() >= 128) {
             auto text = QString("%1,%2").arg(QString::number(ch.x << 4), QString::number(ch.z << 4));
             auto p = chunkPosToViewPos(ch);
             auto rect = QRectF(p.x() + 2, p.y() + 2, fm.horizontalAdvance(text) + 4, fm.height() + 4);
@@ -446,7 +446,7 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch) {
-        if (cfg::ACTOR_RENDER_STYLE == 0) {
+        if (setting::ACTOR_RENDER_STYLE == 0) {
             // draw all
             auto actors = level_loader_->getActorList(ch);
             for (auto &kv : actors) {

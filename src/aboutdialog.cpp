@@ -11,14 +11,14 @@
 AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
-    setWindowTitle(tr("aboutDialog.title.about") + " - " + cfg::SOFTWARE_NAME.c_str());
+    setWindowTitle(tr("aboutDialog.title.about") + " - " + constant::SOFTWARE_NAME.c_str());
 
     // Set logo
     ui->logo->setPixmap(QPixmap(":/res/ui/classic/icon.png").scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     // Set name & version with rich text formatting
-    QString name = QString::fromStdString(cfg::SOFTWARE_NAME);
-    QString ver = QString::fromStdString(cfg::SOFTWARE_VERSION) + "." + QString(GIT_COMMIT_HASH);
+    QString name = QString::fromStdString(constant::SOFTWARE_NAME);
+    QString ver = QString::fromStdString(constant::SOFTWARE_VERSION) + "." + QString(GIT_COMMIT_HASH);
     QString text = QString("<h2>%1</h2><p>%2</p>").arg(name, ver);
     ui->name_version_label->setText(text);
 

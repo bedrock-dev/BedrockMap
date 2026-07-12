@@ -26,11 +26,11 @@
 #include "utils.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(cfg::THREAD_NUM);
+    this->pool_.setMaxThreadCount(setting::THREAD_NUM);
     for (int i = 0; i < 3; i++) {
-        this->region_cache_.push_back(new QCache<region_pos, ChunkRegion>(cfg::REGION_CACHE_SIZE));
-        this->invalid_cache_.push_back(new QCache<region_pos, char>(cfg::EMPTY_REGION_CACHE_SIZE));
-        this->thumbnails_cache_.push_back(new QCache<region_pos, QImage>(cfg::THUMBNAIL_REION_CACHE_SIZE));
+        this->region_cache_.push_back(new QCache<region_pos, ChunkRegion>(setting::REGION_CACHE_SIZE));
+        this->invalid_cache_.push_back(new QCache<region_pos, char>(setting::EMPTY_REGION_CACHE_SIZE));
+        this->thumbnails_cache_.push_back(new QCache<region_pos, QImage>(setting::THUMBNAIL_REION_CACHE_SIZE));
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     /**
@@ -162,7 +162,7 @@ bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome)
 }
 
 void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
-    auto rp = cfg::c2r(p);
+    auto rp = constant::c2r(p);
     this->region_cache_[rp.dim]->remove(rp);
     this->invalid_cache_[rp.dim]->remove(rp);
     this->thumbnails_cache_[rp.dim]->remove(rp);
@@ -204,12 +204,12 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
             auto vk = bl::village_key::parse(key);
             if (vk.valid()) result.villageData.append_village(vk, value);
         },
-        stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
+        stop, setting::MAX_GLOBAL_DATA_LOAD_COUNT);
 
     LOG_F(INFO, "Loading Global Data(Map)");
     level_.foreach_key_with_prefix(
         "map_", [&result, &stop](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); }, stop,
-        cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
+        setting::MAX_GLOBAL_DATA_LOAD_COUNT);
 
     LOG_F(INFO, "Loading Global Data(Player)");
     level_.foreach_key_with_prefix(
@@ -219,7 +219,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
             if (key.size() != 43) return;
             result.playerData.append_nbt(key, value);
         },
-        stop, cfg::MAX_GLOBAL_DATA_LOAD_COUNT);
+        stop, setting::MAX_GLOBAL_DATA_LOAD_COUNT);
 }
 
 bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
@@ -271,7 +271,7 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
                       .arg(QString::number(this->slime_chunk_cache_->totalCost()), QString::number(this->slime_chunk_cache_->maxCost())));
 
     res.emplace_back("Background thread pool:");
-    res.push_back(QString(" - Total threads: %1").arg(QString::number(cfg::THREAD_NUM)));
+    res.push_back(QString(" - Total threads: %1").arg(QString::number(setting::THREAD_NUM)));
 
     res.emplace_back("Chunk Modify Cache");
     auto [e, ne] = level_cache_.chunkCounts();
@@ -347,7 +347,7 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     if (!this->loaded_) return {};
     auto cp = p.to_chunk_pos();
     cp.dim = dim;
-    auto rp = cfg::c2r(cp);
+    auto rp = constant::c2r(cp);
     bool null_region{false};
     auto *region = this->tryGetRegion(rp, null_region);
     if (null_region || (!region)) return {};
@@ -362,11 +362,11 @@ QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
     if (img) {
         return img;
     }
-    auto *res = new QImage(cfg::RW << 4, cfg::RW << 4, QImage::Format_Indexed8);
+    auto *res = new QImage(constant::RW << 4, constant::RW << 4, QImage::Format_Indexed8);
     res->setColor(0, qRgba(0, 0, 0, 0));
     res->setColor(1, qRgba(29, 145, 44, 190));
-    for (int rw = 0; rw < cfg::RW; rw++) {
-        for (int rh = 0; rh < cfg::RW; rh++) {
+    for (int rw = 0; rw < constant::RW; rw++) {
+        for (int rh = 0; rh < constant::RW; rh++) {
             bl::chunk_pos cp(rp.x + rw, rp.z + rh, rp.dim);
             auto color = cp.is_slime() ? 1 : 0;
             for (int i = 0; i < 16; i++) {

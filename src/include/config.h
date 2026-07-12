@@ -15,82 +15,75 @@
 
 typedef bl::chunk_pos region_pos;
 
-struct cfg {
-    // base info
-    const static std::string SOFTWARE_NAME;
-    const static std::string SOFTWARE_VERSION;
+// Compile-time constants (unchanging)
+namespace constant {
+    extern const std::string SOFTWARE_NAME;
+    extern const std::string SOFTWARE_VERSION;
 
-    // Unconfigurable
+    extern const std::string CONFIG_FILE_PATH;
+    extern const std::string BLOCK_FILE_PATH;
+    extern const std::string BIOME_FILE_PATH;
+    extern const QString SHADER_FILE_PATH;
+    extern const QString TRANSLATION_FILES_PATH;
 
-    // 配置文件
-    const static std::string CONFIG_FILE_PATH;  // 配置文件路径
-    // 颜色表文件路径
-    const static std::string BLOCK_FILE_PATH;
-    const static std::string BIOME_FILE_PATH;
-    const static QString SHADER_FILE_PATH;
+    constexpr uint8_t RW = 8u;
+    extern const int GRID_WIDTH;
 
-    // 翻译文件路径
-    const static QString TRANSLATION_FILES_PATH;
-    //
-    static constexpr uint8_t RW = 8u;  //(1<<w) //区域d大小,一个区域由RW * RW个区块组成，且区块坐标对齐8的倍速
-    const static int GRID_WIDTH;       // 地区格子宽度(单位是区块)
+    extern QString MCBE_LEVEL_PATH;
 
-    // Configurable
+    region_pos c2r(const bl::chunk_pos &ch);
+    void initColorTable();
+    QString VERSION_STRING();
+}  // namespace constant
 
+// Runtime settings (read from / written to config.ini)
+namespace setting {
+    void init();
+    void load();
+    void save();
     // Gui
-    static QString FONT_FAMILY;
-    static int FONT_SIZE;
-    static QString COLOR_THEME;
-    static bool OPEN_NBT_EDITOR_ONLY;
+    extern QString COLOR_THEME;
+    extern QString FONT_FAMILY;
+    extern int FONT_SIZE;
+    extern bool OPEN_NBT_EDITOR_ONLY;
 
     // Map
-    static int SHADOW_LEVEL;
-    static float ZOOM_SPEED;
-    static int MINIMUM_SCALE_LEVEL;
-    static int MAXIMUM_SCALE_LEVEL;
-    static int MAP_RENDER_STYLE;
-    static int SHADOW_RENDER_SCALE;
-    static int SHADOW_PCF_RADIUS;
-    static QString GRID_LINE_COLOR;
-    static int ACTOR_RENDER_STYLE;
-    static int ACTOR_BORDER_WIDTH;
-    static QString ACTOR_BORDER_COLOR;
-    static QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
-    static int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
-    static QString VOID_MAP_COLOR;
-    static bool TRANSPARENT_WATER;
-    static bool ENABLE_THUMBNAIL_MODE;
+    extern int MAP_RENDER_STYLE;
+    extern int SHADOW_RENDER_SCALE;
+    extern int SHADOW_PCF_RADIUS;
+    extern int SHADOW_LEVEL;
+    extern int MINIMUM_SCALE_LEVEL;
+    extern int MAXIMUM_SCALE_LEVEL;
+    extern float ZOOM_SPEED;
+    extern QString GRID_LINE_COLOR;
+    extern int ACTOR_RENDER_STYLE;
+    extern int ACTOR_BORDER_WIDTH;
+    extern QString ACTOR_BORDER_COLOR;
+    extern QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
+    extern int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
+    extern QString VOID_MAP_COLOR;
+    extern bool TRANSPARENT_WATER;
+    extern bool ENABLE_THUMBNAIL_MODE;
 
     // Cache
-    static int THREAD_NUM;
-    static int REGION_CACHE_SIZE;
-    static int EMPTY_REGION_CACHE_SIZE;
-    static int THUMBNAIL_REION_CACHE_SIZE;
+    extern int THREAD_NUM;
+    extern int REGION_CACHE_SIZE;
+    extern int EMPTY_REGION_CACHE_SIZE;
+    extern int THUMBNAIL_REION_CACHE_SIZE;
 
-    // misc
-    static bool LOAD_GLOBAL_DATA;
-    static int MAX_GLOBAL_DATA_LOAD_COUNT;
-    static QString ICON_THEME;
-
-    // lang
-    static QString LANGUAGE;
-
-    // debug
-    static bool LOG_OUT_MISSING_TEXTURE;
+    // Misc
+    extern bool LOAD_GLOBAL_DATA;
+    extern int MAX_GLOBAL_DATA_LOAD_COUNT;
+    extern QString ICON_THEME;
 
     // LeviLauncher
-    static bool SCAN_LEVI_PATH;
+    extern bool SCAN_LEVI_PATH;
 
-    // Configurable (not in config file, can be changed at runtime)
+    // Debug
+    extern bool LOG_OUT_MISSING_TEXTURE;
 
-    static region_pos c2r(const bl::chunk_pos &ch);
-
-    static void initColorTable();
-
-    static void initConfig();
-
-    static QString VERSION_STRING();
-    static QString MCBE_LEVEL_PATH;
-};
+    // Lang
+    extern QString LANGUAGE;
+}  // namespace setting
 
 #endif  // CONFIG_H

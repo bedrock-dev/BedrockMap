@@ -28,6 +28,7 @@
 #include "mainwindow.h"
 #include "nbtwidget.h"
 #include "newlevelform.h"
+#include "settingsdialog.h"
 
 namespace {
 
@@ -173,6 +174,7 @@ void MainWindow::setupMenuBar() {
     action_NBT_ = tool_menu_->addAction(tr("mainWindow.menu.nbtEditor"));
     action_levelDB_ = tool_menu_->addAction(tr("mainWindow.menu.showLevelDBData"));
     action_settings_ = tool_menu_->addAction(tr("mainWindow.menu.openCfgFile"));
+    action_settings_->setShortcut(QKeySequence("Ctrl+,"));
 
     // --- Global shortcuts (not in any menu) ---
     action_goto_ = new QAction(tr("mainWindow.menu.goto"), this);
@@ -219,8 +221,10 @@ void MainWindow::setupMenuActions() {
         if (auto *w = getCurrentMapWidget()) w->gotoPositionAction();
     });
     connect(action_levelDB_, &QAction::triggered, this, [this]() { this->level_tab_widget_->openLevelDBDebugDialog(); });
-    connect(action_settings_, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl::fromLocalFile(cfg::CONFIG_FILE_PATH.c_str())); });
+    connect(action_settings_, &QAction::triggered, this, [this]() {
+        SettingsDialog dialog(this);
+        dialog.exec();
+    });
 
     // Layers
     using Mr = MapWidget::RenderOption;
@@ -415,7 +419,7 @@ void MainWindow::rebuildRecentMenu() {
 
 void MainWindow::openLevel(const QString &startPath) {
     auto path = startPath;
-    if (path.isEmpty()) path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + cfg::MCBE_LEVEL_PATH;
+    if (path.isEmpty()) path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + constant::MCBE_LEVEL_PATH;
     QString root = QFileDialog::getExistingDirectory(this, "", path, QFileDialog::ShowDirsOnly);
     if (root.isEmpty()) return;
     this->level_tab_widget_->openNewLevel(root);
@@ -442,7 +446,7 @@ void MainWindow::openNBTEditor() {
     w->show();
 }
 
-QString MainWindow::getStaticTitle() { return cfg::VERSION_STRING(); }
+QString MainWindow::getStaticTitle() { return constant::VERSION_STRING(); }
 
 MapWidget *MainWindow::getCurrentMapWidget() {
     auto *page = level_tab_widget_->currentLevelPage();

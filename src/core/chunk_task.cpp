@@ -38,11 +38,11 @@ namespace {
                 int r = qRed(px), g = qGreen(px), b = qBlue(px);
                 if (cur * 2 > sum) {
                     // lighter(f): multiply by f/100, clamp to 255
-                    line[i] = qRgb(std::min(255, r * cfg::SHADOW_LEVEL / 100), std::min(255, g * cfg::SHADOW_LEVEL / 100),
-                                   std::min(255, b * cfg::SHADOW_LEVEL / 100));
+                    line[i] = qRgb(std::min(255, r * setting::SHADOW_LEVEL / 100), std::min(255, g * setting::SHADOW_LEVEL / 100),
+                                   std::min(255, b * setting::SHADOW_LEVEL / 100));
                 } else if (cur * 2 < sum) {
                     // darker(f): multiply by 100/f
-                    line[i] = qRgb(r * 100 / cfg::SHADOW_LEVEL, g * 100 / cfg::SHADOW_LEVEL, b * 100 / cfg::SHADOW_LEVEL);
+                    line[i] = qRgb(r * 100 / setting::SHADOW_LEVEL, g * 100 / setting::SHADOW_LEVEL, b * 100 / setting::SHADOW_LEVEL);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace {
         const int HR = hr_t.width();
         auto &tp = region->tips_info_;
         constexpr float kShadowDarkness = 0.52f;
-        const int kPcfRadius = cfg::SHADOW_PCF_RADIUS;  // PCF blur radius (0=hard, 8=very soft)
+        const int kPcfRadius = setting::SHADOW_PCF_RADIUS;  // PCF blur radius (0=hard, 8=very soft)
         constexpr int kMaxSteps = 192;
 
         // Sun 2D direction
@@ -212,7 +212,7 @@ namespace {
 
     // Shadow map → then bevel on top so SSAO bright edges show through shadows.
     void renderStyle2(ChunkRegion *region, int IMG_WIDTH) {
-        const int scale = std::clamp(cfg::SHADOW_RENDER_SCALE, 1, 32);
+        const int scale = std::clamp(setting::SHADOW_RENDER_SCALE, 1, 32);
         const int HR = IMG_WIDTH * scale;
 
         QImage hr_t = region->terrain_bake_image_.scaled(HR, HR, Qt::IgnoreAspectRatio, Qt::FastTransformation);
@@ -226,7 +226,7 @@ namespace {
         QImage dummy(HR, HR, hr_t.format());
 
         // 1. 先叠水面颜色
-        if (cfg::TRANSPARENT_WATER) {
+        if (setting::TRANSPARENT_WATER) {
             auto &tp = region->tips_info_;
             for (int bi = 0; bi < IMG_WIDTH; bi++) {
                 for (int bj = 0; bj < IMG_WIDTH; bj++) {
@@ -300,12 +300,12 @@ void LoadRegionTask::run() {
 #endif
 
     auto *region = new ChunkRegion();
-    bl::chunk *chunks_[cfg::RW * cfg::RW]{nullptr};
+    bl::chunk *chunks_[constant::RW * constant::RW]{nullptr};
     // 读取区块数据
-    for (int i = 0; i < cfg::RW; i++) {
-        for (int j = 0; j < cfg::RW; j++) {
+    for (int i = 0; i < constant::RW; i++) {
+        for (int j = 0; j < constant::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            chunks_[i * cfg::RW + j] = this->loader_->getChunk(p);
+            chunks_[i * constant::RW + j] = this->loader_->getChunk(p);
         }
     }
 
@@ -320,13 +320,13 @@ void LoadRegionTask::run() {
         }
     }
 
-    const auto IMG_WIDTH = cfg::RW << 4;
+    const auto IMG_WIDTH = constant::RW << 4;
 
     if (region->valid) {
-        for (int rw = 0; rw < cfg::RW; rw++) {
-            for (int rh = 0; rh < cfg::RW; rh++) {
-                auto *chunk = chunks_[rw * cfg::RW + rh];
-                region->chunk_bit_map_.set(rw * cfg::RW + rh, chunk != nullptr);
+        for (int rw = 0; rw < constant::RW; rw++) {
+            for (int rh = 0; rh < constant::RW; rh++) {
+                auto *chunk = chunks_[rw * constant::RW + rh];
+                region->chunk_bit_map_.set(rw * constant::RW + rh, chunk != nullptr);
             }
         }
 
@@ -336,9 +336,9 @@ void LoadRegionTask::run() {
         region->biome_bake_image_ = img;
         region->height_bake_image_ = img;
         // draw blocks
-        for (int rw = 0; rw < cfg::RW; rw++) {
-            for (int rh = 0; rh < cfg::RW; rh++) {
-                auto *chunk = chunks_[rw * cfg::RW + rh];
+        for (int rw = 0; rw < constant::RW; rw++) {
+            for (int rh = 0; rh < constant::RW; rh++) {
+                auto *chunk = chunks_[rw * constant::RW + rh];
                 this->filter_->renderImages(chunk, rw, rh, region);
                 this->filter_->bakeChunkActors(chunk, region);
                 if (chunk) {
@@ -349,12 +349,12 @@ void LoadRegionTask::run() {
         }
 
         // blender
-        if (cfg::MAP_RENDER_STYLE == 1) {
-            if (cfg::TRANSPARENT_WATER) applyWaterOverlay(region, IMG_WIDTH);
+        if (setting::MAP_RENDER_STYLE == 1) {
+            if (setting::TRANSPARENT_WATER) applyWaterOverlay(region, IMG_WIDTH);
             renderStyle1(region, IMG_WIDTH);
-        } else if (cfg::MAP_RENDER_STYLE == 2) {
+        } else if (setting::MAP_RENDER_STYLE == 2) {
             renderStyle2(region, IMG_WIDTH);  // 内部已处理水面叠加
-        } else if (cfg::TRANSPARENT_WATER) {
+        } else if (setting::TRANSPARENT_WATER) {
             applyWaterOverlay(region, IMG_WIDTH);
         }
     }
@@ -376,13 +376,13 @@ int64_t RegionTimer::mean() const {
 }
 
 void LoadThumbnailTask::run() {
-    std::bitset<cfg::RW * cfg::RW> chunk_bit_map;
-    for (int i = 0; i < cfg::RW; i++) {
-        for (int j = 0; j < cfg::RW; j++) {
+    std::bitset<constant::RW * constant::RW> chunk_bit_map;
+    for (int i = 0; i < constant::RW; i++) {
+        for (int j = 0; j < constant::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
             auto *ch = this->loader_->getChunk(p);
             bool load = (ch && ch->loaded());
-            chunk_bit_map.set(i * cfg::RW + j, load);
+            chunk_bit_map.set(i * constant::RW + j, load);
             delete ch;
         }
     }

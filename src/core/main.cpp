@@ -34,8 +34,14 @@ void setupLog(int argc, char *argv[]) {
 }
 
 void setupTheme(QApplication &a) {
-    // 强制 Qt 重新读取 Windows 系统主题色
-    a.setStyle(QApplication::style()->objectName());
+    auto *hints = a.styleHints();
+    if (setting::COLOR_THEME == "dark") {
+        hints->setColorScheme(Qt::ColorScheme::Dark);
+    } else if (setting::COLOR_THEME == "light") {
+        hints->setColorScheme(Qt::ColorScheme::Light);
+    } else {
+        hints->setColorScheme(Qt::ColorScheme::Unknown);
+    }
 }
 
 void setupFont(QApplication &a) {
@@ -44,8 +50,8 @@ void setupFont(QApplication &a) {
         LOG_F(WARNING, "Can not load font");
     }
     QFont font;
-    auto sz = cfg::FONT_SIZE > 0 ? cfg::FONT_SIZE : 10;
-    auto family = !cfg::FONT_FAMILY.isEmpty() ? cfg::FONT_FAMILY : "微软雅黑";
+    auto sz = setting::FONT_SIZE > 0 ? setting::FONT_SIZE : 10;
+    auto family = !setting::FONT_FAMILY.isEmpty() ? setting::FONT_FAMILY : "微软雅黑";
     font.setHintingPreference(QFont::PreferNoHinting);
     font.setStyleStrategy(QFont::PreferAntialias);
     font.setPointSize(sz);
@@ -55,23 +61,23 @@ void setupFont(QApplication &a) {
 
 int main(int argc, char *argv[]) {
     setupLog(argc, argv);
-    LOG_F(INFO, "Start %s", cfg::VERSION_STRING().toStdString().c_str());
+    LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication a(argc, argv);
-    cfg::initConfig();
+    setting::init();
+    constant::initColorTable();
     initResources();
     setupTheme(a);
     setupFont(a);
     TranslatorMgr::init();
-    TranslatorMgr::setupTranslation(a, cfg::LANGUAGE);
+    TranslatorMgr::setupTranslation(a, setting::LANGUAGE);
     QTabWidget *w;
-    if (!cfg::OPEN_NBT_EDITOR_ONLY) {
+    if (!setting::OPEN_NBT_EDITOR_ONLY) {
         MainWindow w;
-        w.setWindowTitle(cfg::VERSION_STRING());
+        w.setWindowTitle(constant::VERSION_STRING());
         w.show();
         return QApplication::exec();
     } else {
-        //    a.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
         auto *w = new NbtWidget();
         const int ext = 100;
         w->setWindowTitle(QObject::tr("nbtEditor.title.nbtEditor"));

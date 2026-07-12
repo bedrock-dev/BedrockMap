@@ -342,11 +342,6 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openCfgFile</source>
-        <translation>打开配置文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation type="unfinished">显示网格</translation>
     </message>
@@ -409,6 +404,11 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>显示LevelDB数据</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.openCfgFile</source>
+        <translation>设置</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -1212,6 +1212,289 @@
         <location filename="../src/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation>渲染过滤</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsDialog</name>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.title</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.gui</source>
+        <translation>界面设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.map</source>
+        <translation>地图设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.cache</source>
+        <translation>缓存设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.misc</source>
+        <translation>杂项设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.debug</source>
+        <translation>调试设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.lang</source>
+        <translation>语言设置</translation>
+    </message>
+    <message>
+        <source>settingsDialog.restartHint</source>
+        <translation>所有设置将在应用重启后生效</translation>
+    </message>
+    <message>
+        <source>settingsDialog.save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.colorPicker.title</source>
+        <translation>选择颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.groupTitle</source>
+        <translation>界面选项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.light</source>
+        <translation>浅色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.dark</source>
+        <translation>深色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.system</source>
+        <translation>跟随系统</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.fontFamily</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.fontSize</source>
+        <translation>字号</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.nbtEditorMode</source>
+        <translation>纯NBT编辑器模式</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderGroup</source>
+        <translation>渲染选项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle</source>
+        <translation>渲染风格</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.noShadow</source>
+        <translation>无阴影</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.basicShadow</source>
+        <translation>基础阴影</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
+        <translation>SSAO+阴影贴图（实验性）</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowScale</source>
+        <translation>阴影分辨率</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowPCF</source>
+        <translation>阴影PCF模糊半径</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowLevel</source>
+        <translation>阴影强度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.zoomGroup</source>
+        <translation>缩放选项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.minScale</source>
+        <translation>最小缩放等级</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.maxScale</source>
+        <translation>最大缩放等级</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.zoomSpeed</source>
+        <translation>缩放速度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.appearanceGroup</source>
+        <translation>外观</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.gridColor</source>
+        <translation>网格线颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.voidColor</source>
+        <translation>空白区域颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.transparentWater</source>
+        <translation>水下透视</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.thumbnailMode</source>
+        <translation>启用缩略图模式</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorGroup</source>
+        <translation>实体显示</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle</source>
+        <translation>实体渲染风格</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle.individual</source>
+        <translation>独立图标</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle.consolidated</source>
+        <translation>合并显示</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorBorderWidth</source>
+        <translation>实体边框宽度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorBorderColor</source>
+        <translation>实体边框颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorGroup</source>
+        <translation>区块编辑器</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorColor</source>
+        <translation>高亮边框颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorWidth</source>
+        <translation>高亮边框宽度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.groupTitle</source>
+        <translation>缓存选项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.regionCacheSize</source>
+        <translation>区域缓存大小</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.emptyCacheSize</source>
+        <translation>空白区域缓存大小</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.threadNum</source>
+        <translation>后台线程数</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.groupTitle</source>
+        <translation>杂项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.loadGlobalData</source>
+        <translation>加载全局数据</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.maxGlobalData</source>
+        <translation>最大全局数据加载数</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.maxGlobalData.unlimited</source>
+        <translation>无限</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.iconTheme</source>
+        <translation>图标主题</translation>
+    </message>
+    <message>
+        <source>settingsDialog.debug.groupTitle</source>
+        <translation>调试选项</translation>
+    </message>
+    <message>
+        <source>settingsDialog.debug.logMissingTexture</source>
+        <translation>记录缺失纹理/颜色</translation>
+    </message>
+    <message>
+        <source>settingsDialog.lang.groupTitle</source>
+        <translation>语言</translation>
+    </message>
+    <message>
+        <source>settingsDialog.lang.label</source>
+        <translation>界面语言</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>classic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>English (en)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>中文 (zh_CN)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

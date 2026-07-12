@@ -342,11 +342,6 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openCfgFile</source>
-        <translation type="unfinished">Open Config File</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation type="unfinished">Toggle Grid</translation>
     </message>
@@ -409,6 +404,11 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation type="unfinished">Show LevelDB Data</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.openCfgFile</source>
+        <translation type="unfinished">Settings</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -1212,6 +1212,289 @@
         <location filename="../src/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation type="unfinished">Render Filter</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsDialog</name>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.title</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.gui</source>
+        <translation>Interface</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.map</source>
+        <translation>Map</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.cache</source>
+        <translation>Cache</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.misc</source>
+        <translation>Misc</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.debug</source>
+        <translation>Debug</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.lang</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <source>settingsDialog.restartHint</source>
+        <translation type="unfinished">All settings will take effect after restart</translation>
+    </message>
+    <message>
+        <source>settingsDialog.save</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.colorPicker.title</source>
+        <translation>Pick a Color</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.groupTitle</source>
+        <translation>Interface Options</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme</source>
+        <translation>Theme</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.light</source>
+        <translation>Light</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.dark</source>
+        <translation>Dark</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.theme.system</source>
+        <translation>System</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.fontFamily</source>
+        <translation>Font Family</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.fontSize</source>
+        <translation>Font Size</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.nbtEditorMode</source>
+        <translation>Pure NBT Editor Mode</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderGroup</source>
+        <translation>Rendering</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle</source>
+        <translation>Render Style</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.noShadow</source>
+        <translation>No Shadows</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.basicShadow</source>
+        <translation>Basic Shadows</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
+        <translation>SSAO + Shadow Map (Experimental)</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowScale</source>
+        <translation>Shadow Resolution</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowPCF</source>
+        <translation>Shadow PCF Radius</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowLevel</source>
+        <translation>Shadow Intensity</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.zoomGroup</source>
+        <translation>Zoom</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.minScale</source>
+        <translation>Min Zoom Level</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.maxScale</source>
+        <translation>Max Zoom Level</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.zoomSpeed</source>
+        <translation>Zoom Speed</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.appearanceGroup</source>
+        <translation>Appearance</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.gridColor</source>
+        <translation>Grid Line Color</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.voidColor</source>
+        <translation>Void Color</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.transparentWater</source>
+        <translation>Transparent Water</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.thumbnailMode</source>
+        <translation>Enable Thumbnail Mode</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorGroup</source>
+        <translation>Actors</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle</source>
+        <translation>Actor Render Style</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle.individual</source>
+        <translation>Individual Icons</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorStyle.consolidated</source>
+        <translation>Consolidated</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorBorderWidth</source>
+        <translation>Actor Border Width</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.actorBorderColor</source>
+        <translation>Actor Border Color</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorGroup</source>
+        <translation>Chunk Editor</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorColor</source>
+        <translation>Highlight Color</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.chunkEditorWidth</source>
+        <translation>Highlight Width</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.groupTitle</source>
+        <translation>Cache Options</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.regionCacheSize</source>
+        <translation>Region Cache Size</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.emptyCacheSize</source>
+        <translation>Empty Region Cache Size</translation>
+    </message>
+    <message>
+        <source>settingsDialog.cache.threadNum</source>
+        <translation>Background Threads</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.groupTitle</source>
+        <translation>Miscellaneous</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.loadGlobalData</source>
+        <translation>Load Global Data</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.maxGlobalData</source>
+        <translation>Max Global Data Count</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.maxGlobalData.unlimited</source>
+        <translation>Unlimited</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.iconTheme</source>
+        <translation>Icon Theme</translation>
+    </message>
+    <message>
+        <source>settingsDialog.debug.groupTitle</source>
+        <translation>Debug Options</translation>
+    </message>
+    <message>
+        <source>settingsDialog.debug.logMissingTexture</source>
+        <translation>Log Missing Textures</translation>
+    </message>
+    <message>
+        <source>settingsDialog.lang.groupTitle</source>
+        <translation>Language</translation>
+    </message>
+    <message>
+        <source>settingsDialog.lang.label</source>
+        <translation>Interface Language</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32x</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">       </translation>
+    </message>
+    <message>
+        <source>classic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>English (en)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>中文 (zh_CN)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

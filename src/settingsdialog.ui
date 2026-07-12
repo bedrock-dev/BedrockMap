@@ -1,0 +1,1104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>650</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>750</width>
+    <height>550</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>settingsDialog.title</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/res/ui/icon.png</normaloff>:/res/ui/icon.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <property name="spacing">
+    <number>4</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="mainLayout">
+     <item>
+      <widget class="QTreeWidget" name="categoryTree">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>220</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::NoFrame</enum>
+       </property>
+       <property name="headerHidden">
+        <bool>true</bool>
+       </property>
+       <property name="indentation">
+        <number>12</number>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QStackedWidget" name="settingsStack">
+       <property name="frameShape">
+        <enum>QFrame::Shape::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
+
+       <!-- ==================== Page 0: Gui ==================== -->
+       <widget class="QWidget" name="guiPage">
+        <layout class="QVBoxLayout" name="verticalLayout_gui">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_gui">
+           <property name="text">
+            <string>settingsDialog.gui.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_gui">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_theme">
+             <property name="text">
+              <string>settingsDialog.gui.theme</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="themeCombo">
+             <item>
+              <property name="text">
+               <string>settingsDialog.gui.theme.light</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.gui.theme.dark</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.gui.theme.system</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_font_family">
+             <property name="text">
+              <string>settingsDialog.gui.fontFamily</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QFontComboBox" name="fontFamilyCombo"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_font_size">
+             <property name="text">
+              <string>settingsDialog.gui.fontSize</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="fontSizeSpin">
+             <property name="minimum">
+              <number>6</number>
+             </property>
+             <property name="maximum">
+              <number>72</number>
+             </property>
+             <property name="value">
+              <number>9</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_nbt_editor_mode">
+             <property name="text">
+              <string>settingsDialog.gui.nbtEditorMode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QCheckBox" name="nbtEditorModeCheck"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_gui">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 1: Map ==================== -->
+       <widget class="QWidget" name="mapPage">
+        <layout class="QVBoxLayout" name="verticalLayout_map">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_map_render">
+           <property name="text">
+            <string>settingsDialog.map.renderGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_map_render">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_render_style">
+             <property name="text">
+              <string>settingsDialog.map.renderStyle</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="renderStyleCombo">
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.renderStyle.noShadow</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.renderStyle.basicShadow</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.renderStyle.ssaoShadow</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_shadow_scale">
+             <property name="text">
+              <string>settingsDialog.map.shadowScale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="shadowScaleCombo">
+             <item>
+              <property name="text">
+               <string>1x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>8x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>16x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>32x</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_shadow_pcf">
+             <property name="text">
+              <string>settingsDialog.map.shadowPCF</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="shadowPCFSpin">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>8</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_shadow_level">
+             <property name="text">
+              <string>settingsDialog.map.shadowLevel</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="shadowLevelSpin">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>255</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_map_zoom">
+           <property name="text">
+            <string>settingsDialog.map.zoomGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_map_zoom">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_min_scale">
+             <property name="text">
+              <string>settingsDialog.map.minScale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="minScaleSpin">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>64</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_max_scale">
+             <property name="text">
+              <string>settingsDialog.map.maxScale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="maxScaleSpin">
+             <property name="minimum">
+              <number>64</number>
+             </property>
+             <property name="maximum">
+              <number>4096</number>
+             </property>
+             <property name="singleStep">
+              <number>64</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_zoom_speed">
+             <property name="text">
+              <string>settingsDialog.map.zoomSpeed</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="zoomSpeedSpin">
+             <property name="minimum">
+              <number>0.1</number>
+             </property>
+             <property name="maximum">
+              <number>5.0</number>
+             </property>
+             <property name="singleStep">
+              <number>0.1</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_map_appearance">
+           <property name="text">
+            <string>settingsDialog.map.appearanceGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_map_appearance">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_grid_color">
+             <property name="text">
+              <string>settingsDialog.map.gridColor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_grid_color">
+             <item>
+              <widget class="QLineEdit" name="gridColorEdit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="gridColorBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>32</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_void_color">
+             <property name="text">
+              <string>settingsDialog.map.voidColor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_void_color">
+             <item>
+              <widget class="QLineEdit" name="voidColorEdit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="voidColorBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>32</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_transparent_water">
+             <property name="text">
+              <string>settingsDialog.map.transparentWater</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QCheckBox" name="transparentWaterCheck"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_thumbnail">
+             <property name="text">
+              <string>settingsDialog.map.thumbnailMode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QCheckBox" name="thumbnailModeCheck"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_map_actor">
+           <property name="text">
+            <string>settingsDialog.map.actorGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_map_actor">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_actor_style">
+             <property name="text">
+              <string>settingsDialog.map.actorStyle</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="actorStyleCombo">
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.actorStyle.individual</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.actorStyle.consolidated</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_actor_border_width">
+             <property name="text">
+              <string>settingsDialog.map.actorBorderWidth</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="actorBorderWidthSpin">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_actor_border_color">
+             <property name="text">
+              <string>settingsDialog.map.actorBorderColor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_actor_border_color">
+             <item>
+              <widget class="QLineEdit" name="actorBorderColorEdit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="actorBorderColorBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>32</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_map_chunk_editor">
+           <property name="text">
+            <string>settingsDialog.map.chunkEditorGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_map_chunk_editor">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_chunk_editor_color">
+             <property name="text">
+              <string>settingsDialog.map.chunkEditorColor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_chunk_editor_color">
+             <item>
+              <widget class="QLineEdit" name="chunkEditorColorEdit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="chunkEditorColorBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>32</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_chunk_editor_width">
+             <property name="text">
+              <string>settingsDialog.map.chunkEditorWidth</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="chunkEditorWidthSpin">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>32</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_map">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 2: Cache ==================== -->
+       <widget class="QWidget" name="cachePage">
+        <layout class="QVBoxLayout" name="verticalLayout_cache">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_cache">
+           <property name="text">
+            <string>settingsDialog.cache.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_cache">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_region_cache">
+             <property name="text">
+              <string>settingsDialog.cache.regionCacheSize</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="regionCacheSpin">
+             <property name="minimum">
+              <number>128</number>
+             </property>
+             <property name="maximum">
+              <number>65536</number>
+             </property>
+             <property name="singleStep">
+              <number>128</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_empty_cache">
+             <property name="text">
+              <string>settingsDialog.cache.emptyCacheSize</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="emptyCacheSpin">
+             <property name="minimum">
+              <number>512</number>
+             </property>
+             <property name="maximum">
+              <number>131072</number>
+             </property>
+             <property name="singleStep">
+              <number>512</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_thread_num">
+             <property name="text">
+              <string>settingsDialog.cache.threadNum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="threadNumSpin">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>64</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_cache">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 3: Misc ==================== -->
+       <widget class="QWidget" name="miscPage">
+        <layout class="QVBoxLayout" name="verticalLayout_misc">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_misc">
+           <property name="text">
+            <string>settingsDialog.misc.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_misc">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_load_global">
+             <property name="text">
+              <string>settingsDialog.misc.loadGlobalData</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="loadGlobalDataCheck"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_max_global">
+             <property name="text">
+              <string>settingsDialog.misc.maxGlobalData</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="maxGlobalDataSpin">
+             <property name="minimum">
+              <number>-1</number>
+             </property>
+             <property name="maximum">
+              <number>65536</number>
+             </property>
+             <property name="specialValueText">
+              <string>settingsDialog.misc.maxGlobalData.unlimited</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_icon_theme">
+             <property name="text">
+              <string>settingsDialog.misc.iconTheme</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="iconThemeCombo">
+             <item>
+              <property name="text">
+               <string>classic</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>new</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_misc">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 4: Debug ==================== -->
+       <widget class="QWidget" name="debugPage">
+        <layout class="QVBoxLayout" name="verticalLayout_debug">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_debug">
+           <property name="text">
+            <string>settingsDialog.debug.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_debug">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_log_missing">
+             <property name="text">
+              <string>settingsDialog.debug.logMissingTexture</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="logMissingTextureCheck"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_debug">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 5: Lang ==================== -->
+       <widget class="QWidget" name="langPage">
+        <layout class="QVBoxLayout" name="verticalLayout_lang">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_lang">
+           <property name="text">
+            <string>settingsDialog.lang.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_lang">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_lang">
+             <property name="text">
+              <string>settingsDialog.lang.label</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="langCombo">
+             <item>
+              <property name="text">
+               <string>中文 (zh_CN)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>English (en)</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_lang">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <property name="spacing">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="restartHintLabel">
+       <property name="text">
+        <string>settingsDialog.restartHint</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: #888888; font-size: 11px;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_buttons">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveBtn">
+       <property name="text">
+        <string>settingsDialog.save</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

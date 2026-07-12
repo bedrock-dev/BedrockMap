@@ -28,7 +28,7 @@ QImage MapTile::createQuadChessTile(int width, const QRgb &c1, const QRgb &c2, i
 QImage &MapTile::UNLOADED_REGION_TILE() {
     static auto c1 = QColor(128, 128, 128).rgb();
     static auto c2 = QColor(148, 148, 148).rgb();
-    static QImage img = createQuadChessTile(2, c1, c2, cfg::RW << 3);
+    static QImage img = createQuadChessTile(2, c1, c2, constant::RW << 3);
     return img;
 }
 
@@ -36,22 +36,22 @@ QImage &MapTile::NULL_REGION_TILE() {
     static auto c1 = QColor(20, 20, 20).rgb();
     static auto c2 = QColor(40, 40, 40).rgb();
 
-    static QImage img = createQuadChessTile(2, c1, c2, cfg::RW << 3);
+    static QImage img = createQuadChessTile(2, c1, c2, constant::RW << 3);
     return img;
 }
 
-QImage MapTile::CREATE_REGION_TILE(const std::bitset<cfg::RW * cfg::RW> &chunk_bit_map, bool fill) {
-    static auto color = QColor(cfg::VOID_MAP_COLOR).rgb();
+QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &chunk_bit_map, bool fill) {
+    static auto color = QColor(setting::VOID_MAP_COLOR).rgb();
     auto img = NULL_REGION_TILE().copy();
     if (fill) {
-        int gridSize = img.width() / cfg::RW;
+        int gridSize = img.width() / constant::RW;
 
         for (int y = 0; y < img.height(); ++y) {
             QRgb *line = (QRgb *)img.scanLine(y);
             int gridY = y / gridSize;
             for (int x = 0; x < img.width(); ++x) {
                 int gridX = x / gridSize;
-                if (chunk_bit_map[gridX * cfg::RW + gridY]) {
+                if (chunk_bit_map[gridX * constant::RW + gridY]) {
                     line[x] = color;
                 }
             }
@@ -60,15 +60,15 @@ QImage MapTile::CREATE_REGION_TILE(const std::bitset<cfg::RW * cfg::RW> &chunk_b
     return img;
 }
 
-QImage *MapTile::CREATE_REGION_THUMBNAIL(std::bitset<cfg::RW * cfg::RW> &region_bit_map) {
+QImage *MapTile::CREATE_REGION_THUMBNAIL(std::bitset<constant::RW * constant::RW> &region_bit_map) {
     static auto c1 = QColor(20, 20, 20).rgb();
     static auto c2 = QColor(40, 40, 40).rgb();
-    static auto color = QColor(cfg::VOID_MAP_COLOR).rgb();
-    auto *img = new QImage(MapTile::createQuadChessTile(cfg::RW, c1, c2));
-    for (int y = 0; y < cfg::RW; ++y) {
+    static auto color = QColor(setting::VOID_MAP_COLOR).rgb();
+    auto *img = new QImage(MapTile::createQuadChessTile(constant::RW, c1, c2));
+    for (int y = 0; y < constant::RW; ++y) {
         QRgb *line = (QRgb *)img->scanLine(y);
-        for (int x = 0; x < cfg::RW; ++x) {
-            if (region_bit_map[x * cfg::RW + y]) {
+        for (int x = 0; x < constant::RW; ++x) {
+            if (region_bit_map[x * constant::RW + y]) {
                 line[x] = color;
             }
         }

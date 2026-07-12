@@ -273,7 +273,7 @@ class MapWidget : public QWidget {
     void gotoBlockPos(int x, int z);
 
    private:
-    [[nodiscard]] inline bool thumbnailMode() const { return cfg::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < cfg::MINIMUM_SCALE_LEVEL; }
+    [[nodiscard]] inline bool thumbnailMode() const { return setting::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL; }
 
    private:
     // for debug

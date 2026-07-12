@@ -60,7 +60,7 @@ namespace {
                     for (int j = -bw; j <= bw; ++j) {
                         if (cx + i >= 0 && cx + i < origin->width() && cz + j >= 0 && cz + j < origin->height() &&
                             origin->pixelColor(cx + i, cz + j).alpha() != 0) {
-                            mask->setPixelColor(x, z, QColor(cfg::ACTOR_BORDER_COLOR));
+                            mask->setPixelColor(x, z, QColor(setting::ACTOR_BORDER_COLOR));
                             return;
                         }
                     }
@@ -97,7 +97,7 @@ void initResources() {
     while (it.hasNext()) {
         auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
-        auto masked = addBorder(img, cfg::ACTOR_BORDER_WIDTH);
+        auto masked = addBorder(img, setting::ACTOR_BORDER_WIDTH);
         entity_icon_pool[key] = masked;
         if (masked) {
             actor_img_pool[key] = masked;
@@ -197,9 +197,9 @@ QImage *TagIcon(bl::palette::tag_type t) {
     auto it = tag_icon_pool.find(QString(names[t].c_str()));
     return it == tag_icon_pool.end() ? unknown_img : it.value();
 }
-QString ToolBarIcon(const QString &name) { return QString(":/res/ui/%1/%2.png").arg(cfg::ICON_THEME).arg(name); }
+QString ToolBarIcon(const QString &name) { return QString(":/res/ui/%1/%2.png").arg(setting::ICON_THEME).arg(name); }
 void TranslatorMgr::init() {
-    const auto &langs = cfg::TRANSLATION_FILES_PATH;
+    const auto &langs = constant::TRANSLATION_FILES_PATH;
     // tranverse all the .qm files and load them into the translations map
     QDirIterator it(langs, QStringList() << "*.qm", QDir::Files);
     while (it.hasNext()) {

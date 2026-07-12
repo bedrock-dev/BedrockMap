@@ -43,8 +43,8 @@ struct ChunkRegion {
         int count{0};
     };
 
-    std::array<std::array<BlockTipsInfo, cfg::RW << 4>, cfg::RW << 4> tips_info_{};
-    std::bitset<cfg::RW * cfg::RW> chunk_bit_map_;
+    std::array<std::array<BlockTipsInfo, constant::RW << 4>, constant::RW << 4> tips_info_{};
+    std::bitset<constant::RW * constant::RW> chunk_bit_map_;
     QImage terrain_bake_image_;
     QImage biome_bake_image_;
     QImage height_bake_image_;
