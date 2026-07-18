@@ -1314,15 +1314,15 @@
     </message>
     <message>
         <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>SSAO + Shadow Map (Experimental)</translation>
+        <translation type="unfinished">Fake SSAO + Shadow Map (Higher resource overhead)</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowScale</source>
-        <translation>Shadow Resolution</translation>
+        <translation type="unfinished">Block Tile Resolution</translation>
     </message>
     <message>
-        <source>settingsDialog.map.shadowPCF</source>
-        <translation>Shadow PCF Radius</translation>
+        <source>settingsDialog.map.shadowMapScale</source>
+        <translation>Shadow Map Scale</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowLevel</source>
@@ -1355,10 +1355,6 @@
     <message>
         <source>settingsDialog.map.voidColor</source>
         <translation>Void Color</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.transparentWater</source>
-        <translation>Transparent Water</translation>
     </message>
     <message>
         <source>settingsDialog.map.thumbnailMode</source>

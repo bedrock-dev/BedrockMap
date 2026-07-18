@@ -27,13 +27,15 @@ namespace bl {
 }  // namespace bl
 
 struct BlockTipsInfo {
-    std::string block_name{"?"};
-    std::string solid_block_name{"?"};
-    bl::biome biome{bl::none};
+    // top
     int16_t height{-128};
+    std::string block_name{"?"};
+    bl::biome biome{bl::none};
+    // top solid
     int16_t solid_height{-128};
+    std::string solid_block_name{"?"};
+
     uint32_t water_surface_color{0};  // QRgb packed, 0 = no water overlay
-    uint8_t water_depth{0};           // 0 = no water
 };
 
 struct ChunkRegion {
@@ -47,7 +49,6 @@ struct ChunkRegion {
     std::bitset<constant::RW * constant::RW> chunk_bit_map_;
     QImage terrain_bake_image_;
     QImage biome_bake_image_;
-    QImage height_bake_image_;
     bool valid{false};
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;             // for render mode 0
     std::map<bl::chunk_pos, std::map<QImage *, ActorCount>> actors_counts_;  // for render mode 1

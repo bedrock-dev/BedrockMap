@@ -304,20 +304,34 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="label_shadow_pcf">
+            <widget class="QLabel" name="label_shadow_map_scale">
              <property name="text">
-              <string>settingsDialog.map.shadowPCF</string>
+              <string>settingsDialog.map.shadowMapScale</string>
              </property>
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QSpinBox" name="shadowPCFSpin">
-             <property name="minimum">
-              <number>0</number>
-             </property>
-             <property name="maximum">
-              <number>8</number>
-             </property>
+            <widget class="QComboBox" name="shadowMapScaleCombo">
+             <item>
+              <property name="text">
+               <string>1x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>8x</string>
+              </property>
+             </item>
             </widget>
            </item>
            <item row="3" column="0">
@@ -402,17 +416,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QDoubleSpinBox" name="zoomSpeedSpin">
-             <property name="minimum">
-              <number>0.1</number>
-             </property>
-             <property name="maximum">
-              <number>5.0</number>
-             </property>
-             <property name="singleStep">
-              <number>0.1</number>
-             </property>
-            </widget>
+            <widget class="QLineEdit" name="zoomSpeedEdit"/>
            </item>
           </layout>
          </item>
@@ -495,23 +499,13 @@
             </layout>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="label_transparent_water">
-             <property name="text">
-              <string>settingsDialog.map.transparentWater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QCheckBox" name="transparentWaterCheck"/>
-           </item>
-           <item row="3" column="0">
             <widget class="QLabel" name="label_thumbnail">
              <property name="text">
               <string>settingsDialog.map.thumbnailMode</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
+           <item row="2" column="1">
             <widget class="QCheckBox" name="thumbnailModeCheck"/>
            </item>
           </layout>

@@ -20,6 +20,7 @@
 #include "chunk_task.h"
 #include "chunkio.h"
 #include "config.h"
+#include "data_3d.h"
 #include "leveldb/write_batch.h"
 #include "loguru/loguru.hpp"
 #include "maptile.h"
@@ -33,6 +34,7 @@ AsyncLevelLoader::AsyncLevelLoader() {
         this->thumbnails_cache_.push_back(new QCache<region_pos, QImage>(setting::THUMBNAIL_REION_CACHE_SIZE));
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
+    this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
     /**
      * 不要相信bedrock_level的任何数据，不在库内做任何长期的缓存
      */
@@ -55,12 +57,12 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     auto *task = new LoadRegionTask(this, p, &this->map_filter_);
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
-                this->region_load_timer_.push(load_time);
-                this->region_render_timer_.push(render_time);
                 if (!region || (!region->valid)) {
                     this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
                     delete region;
                 } else {
+                    this->region_load_timer_.push(load_time);
+                    this->region_render_timer_.push(render_time);
                     this->region_cache_[dim]->insert(bl::chunk_pos(x, z, dim), region);
                 }
                 this->processing_.remove(bl::chunk_pos(x, z, dim));
@@ -183,6 +185,51 @@ void AsyncLevelLoader::clearAllCache() {
     for (auto cache : this->invalid_cache_) cache->clear();
     for (auto cache : this->thumbnails_cache_) cache->clear();
     this->slime_chunk_cache_->clear();
+    {
+        QMutexLocker lock(&height_map_mutex_);
+        height_map_cache_->clear();
+    }
+}
+
+std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl::chunk_pos &pos) {
+    {
+        QMutexLocker lock(&height_map_mutex_);
+        auto *cached = height_map_cache_->object(pos);
+        if (cached) return *cached;
+    }
+
+    // Cache miss — load from LevelDB (Data3D preferred, Data2D fallback)
+    std::string raw;
+    bl::biome3d b3d;
+    for (auto kt : {bl::chunk_key::Data3D, bl::chunk_key::Data2D}) {
+        bl::chunk_key key{kt, pos};
+        if (level_.load_raw(key.to_raw(), raw) && !raw.empty()) {
+            b3d.set_chunk_pos(pos);
+            auto version = kt == bl::chunk_key::Data3D ? bl::New : bl::Old;
+            b3d.set_version(version);
+            bool ok = (kt == bl::chunk_key::Data3D) ? b3d.load_from_d3d(raw.data(), raw.size()) : b3d.load_from_d2d(raw.data(), raw.size());
+            if (ok) {
+                auto hm = b3d.height_map();
+                // Apply the version-correct min_y baseline (same logic as biome3d::height()).
+                // -128 is the void sentinel and must stay unchanged.
+                auto [miny, maxy] = pos.get_y_range(version);
+                for (auto &h : hm)
+                    if (h != -128) h += miny;
+                QMutexLocker lock(&height_map_mutex_);
+                height_map_cache_->insert(pos, new std::array<int16_t, 256>(hm));
+                return hm;
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+void AsyncLevelLoader::putHeightMap(const bl::chunk_pos &pos, const std::array<int16_t, 256> &hm) {
+    QMutexLocker lock(&height_map_mutex_);
+    // Only insert if not already cached (cheaper than unconditional replace)
+    if (!height_map_cache_->object(pos)) {
+        height_map_cache_->insert(pos, new std::array<int16_t, 256>(hm));
+    }
 }
 
 void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop) {
@@ -304,14 +351,6 @@ QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
     auto *region = this->tryGetRegion(rp, null_region);
     if (null_region) return &MapTile::NULL_REGION_TILE();
     return region ? &region->biome_bake_image_ : &MapTile::UNLOADED_REGION_TILE();
-}
-
-QImage *AsyncLevelLoader::bakedHeightImage(const region_pos &rp) {
-    if (!this->loaded_) return &MapTile::UNLOADED_REGION_TILE();
-    bool null_region{false};
-    auto *region = this->tryGetRegion(rp, null_region);
-    if (null_region) return &MapTile::NULL_REGION_TILE();
-    return region ? &region->height_bake_image_ : &MapTile::UNLOADED_REGION_TILE();
 }
 
 QImage *AsyncLevelLoader::bakeThumbnailImage(const region_pos &rp) {

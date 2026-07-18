@@ -6,8 +6,10 @@
 
 #include <QCache>
 #include <QFuture>
+#include <QMutex>
 #include <QRunnable>
 #include <QThreadPool>
+#include <array>
 #include <atomic>
 #include <optional>
 #include <vector>
@@ -78,8 +80,6 @@ class AsyncLevelLoader : public QObject {
 
     QImage *bakedTerrainImage(const region_pos &rp);
 
-    QImage *bakedHeightImage(const region_pos &rp);
-
     QImage *bakeThumbnailImage(const region_pos &rp);
 
     QImage *bakedSlimeChunkImage(const region_pos &rp);
@@ -91,6 +91,15 @@ class AsyncLevelLoader : public QObject {
     std::map<bl::chunk_pos, std::map<QImage *, ChunkRegion::ActorCount>> getActorCountList(const region_pos &rp);
 
     std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos &rp);
+
+    /// Height-map cache for shadow rendering.
+    /// Returns world-space heights (-128 = void, others = raw + chunk's min_y).
+    /// Thread-safe — safe to call from worker threads during renderStyle2.
+    std::optional<std::array<int16_t, 256>> getHeightMap(const bl::chunk_pos &pos);
+
+    /// Preload a height map directly (avoids LevelDB read when data is already
+    /// available from a loaded chunk). Thread-safe.
+    void putHeightMap(const bl::chunk_pos &pos, const std::array<int16_t, 256> &hm);
 
     /*Modify*/
     // return a chunk from cache or loader; caller owns the returned pointer and must delete it
@@ -142,6 +151,13 @@ class AsyncLevelLoader : public QObject {
     QThreadPool pool_;
     MapFilter map_filter_;
     std::atomic_bool transparent_void_{false};
+
+    // Height-map cache for shadow rendering (keyed by chunk_pos).
+    // Values are raw Data3D/Data2D height_map arrays (256 × int16_t, ~512 bytes each).
+    // Populated on first access, survives across region loads.
+    // Protected by height_map_mutex_ for worker-thread safety; uses QCache auto-LRU.
+    QCache<bl::chunk_pos, std::array<int16_t, 256>> *height_map_cache_ = nullptr;
+    mutable QMutex height_map_mutex_;
 
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;

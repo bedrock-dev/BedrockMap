@@ -7,12 +7,35 @@
 #include <QImage>
 #include <bitset>
 
+#include "chunk.h"
 #include "config.h"
+#include "renderfilterdialog.h"
+#include "resourcemanager.h"
+
+class AsyncLevelLoader;
 
 // map tile, to fill the mapview
 class MapTile {
    public:
     MapTile() = delete;
+
+    // render a single chunk's terrain colour + height/biome tips into the region.
+    // fast-path: if filter is default (only excludes air+unknown), uses get_top_y().
+    // slow-path: scans down from the height-map to find matching blocks.
+    static void bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, int rh, ChunkRegion *region);
+
+    static void bakeChunkActors(bl::chunk *ch, const MapFilter *filter, ChunkRegion *region);
+
+    // render passes (called after all chunks in a region are baked)
+    static void renderStyle0(ChunkRegion *region, int IMG_WIDTH);
+    static void renderStyle1(ChunkRegion *region, int IMG_WIDTH);
+    static void renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader *loader, const bl::chunk_pos &region_pos);
+
+   private:
+    static void renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapFilter *filter, int rw, int rh, int chx, int chz, int y,
+                                    int y_solid);
+
+   public:
     // create a chessboard image(witdt * scale)^2 with color c1 and c2
     static QImage createQuadChessTile(int width, const QRgb &c1, const QRgb &c2, int scale = 1);
 

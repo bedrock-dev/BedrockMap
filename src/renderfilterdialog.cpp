@@ -9,17 +9,6 @@
 #include "sub_chunk.h"
 #include "ui_renderfilterdialog.h"
 
-namespace {
-    QColor height_to_color(int height, int dim) {
-        static int min[]{-64, 0, 0};
-        static int max[]{319, 127, 255};
-        if (height < min[dim]) height = min[dim];
-        if (height > max[dim]) height = max[dim];
-        auto gray = static_cast<int>(static_cast<qreal>(height - min[dim]) / static_cast<qreal>(max[dim] - min[dim]) * 255.0);
-        return {255 - gray, 255 - gray, 255 - gray};
-    }
-}  // namespace
-
 RenderFilterDialog::RenderFilterDialog(QWidget *parent) : QDialog(parent), ui(new Ui::RenderFilterDialog) {
     ui->setupUi(this);
     this->setWindowTitle(tr("renderFilterDialog.title.filter"));
@@ -104,7 +93,6 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
-    // 获取固体方块信息（用于 tips 和水体透明）
     bl::block_info solid_info;
     int16_t solid_h = -1;
     if (y_solid >= 0 && y_solid < y) {
@@ -115,37 +103,26 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
         solid_h = static_cast<int16_t>(y);
     }
 
-    // 决定写入地形的颜色和高度
     bl::block_info render_info = info;
     int render_y = y;
 
     if (setting::TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
-        // 保存水面颜色/深度，后续阴影计算完成后叠加
         uint32_t wc = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
-
-        // 地形先用固体方块的颜色（后续阴影叠加后再叠水）
         render_info = solid_info;
         render_y = solid_h;
-
-        // 写入 tips，供 applyWaterOverlay 使用
         auto &tips = region->tips_info_[X][Z];
         tips.water_surface_color = wc;
-        tips.water_depth = static_cast<uint8_t>(y - solid_h);
     }
 
-    // 直接 scanLine + QRgb* 写入，比 setPixelColor 快 10-20x
     reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] =
         qRgba(render_info.color.r, render_info.color.g, render_info.color.b, render_info.color.a);
 
     if ((f->biomes_list_.count(biome) == 0) == f->biome_black_mode_) {
-        // 群系过滤(只是不显示，没有查找功能)
         auto biome_color = bl::get_biome_color(biome);
         reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(Z))[X] =
             qRgba(biome_color.r, biome_color.g, biome_color.b, biome_color.a);
     }
-    // height 图用原始水面高度（阴影需要平坦水面），tips.height = 水面, solid_height = 海底
-    reinterpret_cast<QRgb *>(region->height_bake_image_.scanLine(Z))[X] = height_to_color(y, ch->get_pos().dim).rgba();
-    // setup tips
+
     auto &tips = region->tips_info_[X][Z];
     tips.block_name = render_info.name;
     tips.solid_block_name = solid_info.name;
@@ -170,61 +147,12 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
             }
         }
     } else {
-        // 无层：从高度图 O(1) 取 top_y，过滤器循环中顺便记下 solid_y
+        // get_height() 缩小扫描区间，get_top_y 内部跳过 unknown/air
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                int y = ch->get_height(i, j);
-                int solid_y = miny - 1;
-                int found_y = miny - 1;
-                bool found{false};
-                while (y >= miny) {
-                    auto b = ch->get_block_fast(i, y, j);
-
-                    // 过滤器匹配
-                    if (!found && (this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
-                        found = true;
-                        found_y = y;
-                        if (b.name != "minecraft:water") {
-                            solid_y = y;  // 非水，地面即固体
-                            break;
-                        }
-                        // 水，继续往下扫固体
-                        y--;
-                        continue;
-                    }
-
-                    // 已匹配到水，继续往下找固体
-                    if (found && b.name != "minecraft:air" && b.name != "minecraft:water") {
-                        solid_y = y;
-                        break;
-                    }
-
-                    y--;
-                }
-                if (found) {
-                    setRegionBlockData(this, ch, i, j, found_y, solid_y, rw, rh, region);
-                }
-            }
-        }
-    }
-}
-
-void MapFilter::bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const {
-    if (!ch) return;
-    auto entities = ch->entities();
-    auto mode = setting::ACTOR_RENDER_STYLE;
-    for (auto &e : entities) {
-        auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
-        if ((this->actors_list_.count(key.toStdString()) == 0) == this->actor_black_mode_) {
-            if (mode == 0) {  // 每个实体都需要渲染
-                region->actors_[ActorImage(key)].push_back(e->pos());
-            } else {
-                auto chunk_pos = ch->get_pos();
-                auto &ac = region->actors_counts_[chunk_pos][ActorImage(key)];
-                ac = {
-                    e->pos(),
-                    ac.count + 1,
-                };
+                auto [top_y, solid_y] = ch->get_top_y(i, j, ch->get_height(i, j));
+                if (top_y < miny) continue;
+                setRegionBlockData(this, ch, i, j, top_y, solid_y, rw, rh, region);
             }
         }
     }

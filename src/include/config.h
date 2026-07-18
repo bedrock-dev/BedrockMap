@@ -29,6 +29,10 @@ namespace constant {
     constexpr uint8_t RW = 8u;
     extern const int GRID_WIDTH;
 
+    // 45°-only sun direction for basic shadow (renderStyle1)
+    enum class SunDir { NW = 0, NE = 1, SW = 2, SE = 3 };
+    constexpr SunDir SUN_DIRECTION = SunDir::NW;
+
     extern QString MCBE_LEVEL_PATH;
 
     region_pos c2r(const bl::chunk_pos &ch);
@@ -49,8 +53,9 @@ namespace setting {
 
     // Map
     extern int MAP_RENDER_STYLE;
-    extern int SHADOW_RENDER_SCALE;
+    extern int TILE_RENDER_SCALE;
     extern int SHADOW_PCF_RADIUS;
+    extern int SHADOW_MAP_SCALE;
     extern int SHADOW_LEVEL;
     extern int MINIMUM_SCALE_LEVEL;
     extern int MAXIMUM_SCALE_LEVEL;
@@ -70,6 +75,7 @@ namespace setting {
     extern int REGION_CACHE_SIZE;
     extern int EMPTY_REGION_CACHE_SIZE;
     extern int THUMBNAIL_REION_CACHE_SIZE;
+    extern int HEIGHT_MAP_CACHE_SIZE;
 
     // Misc
     extern bool LOAD_GLOBAL_DATA;

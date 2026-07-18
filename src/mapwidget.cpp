@@ -183,8 +183,6 @@ void MapWidget::paintEvent(QPaintEvent *event) {
 
     if (option_.layer == RenderOption::Terrain) drawTerrain(event, &p);
     if (option_.layer == RenderOption::Biome) drawBiome(event, &p);
-    if (option_.layer == RenderOption::Height) drawHeight(event, &p);
-
     if (option_.getOther(RenderOption::HSA)) this->drawHSAs(event, &p);
     if (option_.getOther(RenderOption::Village)) this->drawVillages(event, &p);
     if (option_.getOther(RenderOption::SlimeChunk)) this->drawSlimeChunks(event, &p);
@@ -391,14 +389,6 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp) {
         auto terrain = thumbnailMode() ? level_loader_->bakeThumbnailImage(rp) : level_loader_->bakedTerrainImage(rp);
         this->drawImageInRegion(event, painter, rp, terrain);
-    });
-}
-
-void MapWidget::drawHeight(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
-    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp) {
-        auto height = level_loader_->bakedHeightImage(rp);
-        this->drawImageInRegion(event, painter, rp, height);
     });
 }
 

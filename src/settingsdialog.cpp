@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QStringList>
 #include <QTreeWidgetItem>
+#include <cmath>
 
 #include "config.h"
 #include "loguru/loguru.hpp"
@@ -92,15 +93,34 @@ void SettingsDialog::loadSettings() {
 
     // --- Map ---
     ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::MAP_RENDER_STYLE, 0, 2));
-    ui->shadowScaleCombo->setCurrentIndex((setting::SHADOW_RENDER_SCALE >> 0) - 1);  // 1→0, 2→1, 4→2, 8→3, 16→4, 32→5
-    ui->shadowPCFSpin->setValue(setting::SHADOW_PCF_RADIUS);
+    {
+        const int scaleVals[] = {1, 2, 4, 8, 16, 32};
+        int idx = 0;
+        for (int i = 0; i < 6; i++) {
+            if (scaleVals[i] == setting::TILE_RENDER_SCALE) {
+                idx = i;
+                break;
+            }
+        }
+        ui->shadowScaleCombo->setCurrentIndex(idx);
+    }
+    {
+        const int mapScaleVals[] = {1, 2, 4, 8};
+        int idx = 0;
+        for (int i = 0; i < 4; i++) {
+            if (mapScaleVals[i] == setting::SHADOW_MAP_SCALE) {
+                idx = i;
+                break;
+            }
+        }
+        ui->shadowMapScaleCombo->setCurrentIndex(idx);
+    }
     ui->shadowLevelSpin->setValue(setting::SHADOW_LEVEL);
     ui->minScaleSpin->setValue(setting::MINIMUM_SCALE_LEVEL);
     ui->maxScaleSpin->setValue(setting::MAXIMUM_SCALE_LEVEL);
-    ui->zoomSpeedSpin->setValue(setting::ZOOM_SPEED);
+    ui->zoomSpeedEdit->setText(QString::number(setting::ZOOM_SPEED, 'f', 1));
     ui->gridColorEdit->setText(setting::GRID_LINE_COLOR);
     ui->voidColorEdit->setText(setting::VOID_MAP_COLOR);
-    ui->transparentWaterCheck->setChecked(setting::TRANSPARENT_WATER);
     ui->thumbnailModeCheck->setChecked(setting::ENABLE_THUMBNAIL_MODE);
     ui->actorStyleCombo->setCurrentIndex(std::clamp(setting::ACTOR_RENDER_STYLE, 0, 1));
     ui->actorBorderWidthSpin->setValue(setting::ACTOR_BORDER_WIDTH);
@@ -154,8 +174,8 @@ void SettingsDialog::updateShadowOptions() {
 
     ui->label_shadow_scale->setEnabled(hasAdvanced);
     ui->shadowScaleCombo->setEnabled(hasAdvanced);
-    ui->label_shadow_pcf->setEnabled(hasAdvanced);
-    ui->shadowPCFSpin->setEnabled(hasAdvanced);
+    ui->label_shadow_map_scale->setEnabled(hasAdvanced);
+    ui->shadowMapScaleCombo->setEnabled(hasAdvanced);
     ui->label_shadow_level->setEnabled(hasShadow);
     ui->shadowLevelSpin->setEnabled(hasShadow);
 }
@@ -186,15 +206,22 @@ void SettingsDialog::onSave() {
     setting::MAP_RENDER_STYLE = ui->renderStyleCombo->currentIndex();
     int scaleValues[] = {1, 2, 4, 8, 16, 32};
     int scaleIdx = std::clamp(ui->shadowScaleCombo->currentIndex(), 0, 5);
-    setting::SHADOW_RENDER_SCALE = scaleValues[scaleIdx];
-    setting::SHADOW_PCF_RADIUS = ui->shadowPCFSpin->value();
+    setting::TILE_RENDER_SCALE = scaleValues[scaleIdx];
+    {
+        const int mapScaleVals[] = {1, 2, 4, 8};
+        int idx = std::clamp(ui->shadowMapScaleCombo->currentIndex(), 0, 3);
+        setting::SHADOW_MAP_SCALE = mapScaleVals[idx];
+    }
     setting::SHADOW_LEVEL = ui->shadowLevelSpin->value();
     setting::MINIMUM_SCALE_LEVEL = ui->minScaleSpin->value();
     setting::MAXIMUM_SCALE_LEVEL = ui->maxScaleSpin->value();
-    setting::ZOOM_SPEED = static_cast<float>(ui->zoomSpeedSpin->value());
+    {
+        bool ok = false;
+        float val = ui->zoomSpeedEdit->text().toFloat(&ok);
+        setting::ZOOM_SPEED = ok ? std::clamp(val, 0.1f, 5.0f) : 1.2f;
+    }
     setting::GRID_LINE_COLOR = ui->gridColorEdit->text();
     setting::VOID_MAP_COLOR = ui->voidColorEdit->text();
-    setting::TRANSPARENT_WATER = ui->transparentWaterCheck->isChecked();
     setting::ENABLE_THUMBNAIL_MODE = ui->thumbnailModeCheck->isChecked();
     setting::ACTOR_RENDER_STYLE = ui->actorStyleCombo->currentIndex();
     setting::ACTOR_BORDER_WIDTH = ui->actorBorderWidthSpin->value();

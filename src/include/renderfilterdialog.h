@@ -25,9 +25,13 @@ struct MapFilter {
     bool block_black_mode_{true};
     bool actor_black_mode_{true};
 
-    void renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
+    // block filter is the default: only excludes air + unknown in blacklist mode
+    [[nodiscard]] bool isBlockFilterDefault() const {
+        return block_black_mode_ && !enable_layer_ && blocks_list_.size() == 2 && blocks_list_.count("minecraft:air") &&
+               blocks_list_.count("minecraft:unknown");
+    }
 
-    void bakeChunkActors(bl::chunk *ch, ChunkRegion *region) const;
+    void renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
 
     void print() {
         LOG_F(INFO, "BlockList (%d)", block_black_mode_);

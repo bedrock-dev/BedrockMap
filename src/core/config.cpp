@@ -61,8 +61,9 @@ bool setting::OPEN_NBT_EDITOR_ONLY = false;
 
 // Map
 int setting::MAP_RENDER_STYLE = 1;
-int setting::SHADOW_RENDER_SCALE = 2;
-int setting::SHADOW_PCF_RADIUS = 1;
+int setting::TILE_RENDER_SCALE = 4;
+int setting::SHADOW_PCF_RADIUS = 0;
+int setting::SHADOW_MAP_SCALE = 2;
 int setting::SHADOW_LEVEL = 128;
 int setting::MINIMUM_SCALE_LEVEL = 4;
 int setting::MAXIMUM_SCALE_LEVEL = 1024;
@@ -82,11 +83,12 @@ int setting::THREAD_NUM = 8;
 int setting::REGION_CACHE_SIZE = 4096;
 int setting::EMPTY_REGION_CACHE_SIZE = 16384;
 int setting::THUMBNAIL_REION_CACHE_SIZE = 65536;
+int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 
 // Misc
 bool setting::LOAD_GLOBAL_DATA = true;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
-QString setting::ICON_THEME = "classic";
+QString setting::ICON_THEME = "new";
 
 // LeviLauncher
 bool setting::SCAN_LEVI_PATH = true;
@@ -138,10 +140,11 @@ void setting::load() {
     setting::SHADOW_LEVEL = s.value("terrian_shadow_level", setting::SHADOW_LEVEL).toInt();
     setting::MINIMUM_SCALE_LEVEL = s.value("min_scale_level", setting::MINIMUM_SCALE_LEVEL).toInt();
     setting::MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", setting::MAXIMUM_SCALE_LEVEL).toInt();
-    setting::ZOOM_SPEED = s.value("zoom_speed", setting::ZOOM_SPEED).toDouble();
+    setting::ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", setting::ZOOM_SPEED).toDouble()));
     setting::MAP_RENDER_STYLE = s.value("render_style", setting::MAP_RENDER_STYLE).toInt();
-    setting::SHADOW_RENDER_SCALE = std::clamp(s.value("shadow_render_scale", setting::SHADOW_RENDER_SCALE).toInt(), 1, 16);
+    setting::TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", setting::TILE_RENDER_SCALE).toInt(), 1, 16);
     setting::SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", setting::SHADOW_PCF_RADIUS).toInt(), 0, 8);
+    setting::SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", setting::SHADOW_MAP_SCALE).toInt(), 1, 8);
     setting::GRID_LINE_COLOR = s.value("grid_line_color", setting::GRID_LINE_COLOR).toString();
     setting::ACTOR_RENDER_STYLE = s.value("actor_render_style", setting::ACTOR_RENDER_STYLE).toInt();
     setting::ACTOR_BORDER_WIDTH = s.value("actor_border_width", setting::ACTOR_BORDER_WIDTH).toInt();
@@ -157,6 +160,7 @@ void setting::load() {
     setting::REGION_CACHE_SIZE = s.value("region_cache_size", setting::REGION_CACHE_SIZE).toInt();
     setting::EMPTY_REGION_CACHE_SIZE = s.value("empty_cache_size", setting::EMPTY_REGION_CACHE_SIZE).toInt();
     setting::THREAD_NUM = s.value("max_thread_num", setting::THREAD_NUM).toInt();
+    setting::HEIGHT_MAP_CACHE_SIZE = s.value("height_map_cache_size", setting::HEIGHT_MAP_CACHE_SIZE).toInt();
     s.endGroup();
 
     s.beginGroup("Misc");
@@ -201,8 +205,9 @@ void setting::save() {
 
     s.beginGroup("Map");
     s.setValue("render_style", setting::MAP_RENDER_STYLE);
-    s.setValue("shadow_render_scale", setting::SHADOW_RENDER_SCALE);
+    s.setValue("tile_render_scale", setting::TILE_RENDER_SCALE);
     s.setValue("shadow_pcf_radius", setting::SHADOW_PCF_RADIUS);
+    s.setValue("shadow_map_scale", setting::SHADOW_MAP_SCALE);
     s.setValue("terrian_shadow_level", setting::SHADOW_LEVEL);
     s.setValue("min_scale_level", setting::MINIMUM_SCALE_LEVEL);
     s.setValue("max_scale_level", setting::MAXIMUM_SCALE_LEVEL);
@@ -222,6 +227,7 @@ void setting::save() {
     s.setValue("region_cache_size", setting::REGION_CACHE_SIZE);
     s.setValue("empty_cache_size", setting::EMPTY_REGION_CACHE_SIZE);
     s.setValue("max_thread_num", setting::THREAD_NUM);
+    s.setValue("height_map_cache_size", setting::HEIGHT_MAP_CACHE_SIZE);
     s.endGroup();
 
     s.beginGroup("Misc");

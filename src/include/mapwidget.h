@@ -97,7 +97,7 @@ class MapWidget : public QWidget {
 
    public:
     struct RenderOption {
-        enum LayerType { Terrain = 0, Biome = 1, Height = 2, LayerLen = 3 };
+        enum LayerType { Terrain = 0, Biome = 1 };
         enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2, DimLen = 3 };
         enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, OtherLen = 6 };
 
@@ -298,8 +298,6 @@ class MapWidget : public QWidget {
     void drawBiome(QPaintEvent *event, QPainter *p);
 
     void drawTerrain(QPaintEvent *event, QPainter *p);
-
-    void drawHeight(QPaintEvent *event, QPainter *p);
 
     void drawActors(QPaintEvent *event, QPainter *p);
 

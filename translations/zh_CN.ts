@@ -1314,15 +1314,15 @@
     </message>
     <message>
         <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>SSAO+阴影贴图（实验性）</translation>
+        <translation type="unfinished">伪SSAO+阴影贴图（更多性能开销）</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowScale</source>
-        <translation>阴影分辨率</translation>
+        <translation type="unfinished">方块分辨率</translation>
     </message>
     <message>
-        <source>settingsDialog.map.shadowPCF</source>
-        <translation>阴影PCF模糊半径</translation>
+        <source>settingsDialog.map.shadowMapScale</source>
+        <translation>阴影贴图缩放</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowLevel</source>
@@ -1355,10 +1355,6 @@
     <message>
         <source>settingsDialog.map.voidColor</source>
         <translation>空白区域颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.transparentWater</source>
-        <translation>水下透视</translation>
     </message>
     <message>
         <source>settingsDialog.map.thumbnailMode</source>
