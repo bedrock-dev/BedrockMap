@@ -29,7 +29,7 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDia
     ui->contributor_intzot_link->setText(link(QStringLiteral("https://space.bilibili.com/382492603"), "INTZOT"));
     ui->contributor_oeyan_link->setText(link(QStringLiteral("https://github.com/OEOTYAN"), "OEOYAN"));
     ui->checkUpdateLink->setText(link(QStringLiteral("https://github.com/bedrock-dev/BedrockMap/releases"), tr("aboutDialog.checkUpdate")));
-    ui->joinQQGroupLink->setText(link(QStringLiteral("https://qm.qq.com/q/"), tr("aboutDialog.joinQQGroup")));
+    ui->joinQQGroupLink->setText(link(QStringLiteral("https://qm.qq.com/q/3KJZZCkDbW"), tr("aboutDialog.joinQQGroup")));
     ui->githubLink->setText(link(QStringLiteral("https://github.com/bedrock-dev/BedrockMap"), tr("aboutDialog.github")));
     // Close button
     connect(ui->closeBtn, &QPushButton::clicked, this, &QDialog::close);
