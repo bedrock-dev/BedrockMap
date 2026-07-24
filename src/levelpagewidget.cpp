@@ -114,6 +114,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : QWidget(paren
     connect(level_loader_.get(), &AsyncLevelLoader::dirtyChanged, this, [this]() {
         auto [e, ne] = level_loader_->chunkModifyCounts();
         status_bar_->setModifyInfo(ne, e);
+        refreshDirty();
     });
     connect(this->mapWidget_, &MapWidget::selectionChanged, this, [this]() {
         auto count = mapWidget_->selection().chunkCount();
