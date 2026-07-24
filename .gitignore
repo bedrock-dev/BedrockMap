@@ -78,6 +78,7 @@ cmake-build-release
 .debug
 build
 .cache
+config.ini
 logs
 !icon.rc
 build_rls
