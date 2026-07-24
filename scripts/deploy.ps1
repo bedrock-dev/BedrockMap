@@ -49,7 +49,6 @@ foreach ($dll in @("libwinpthread-1.dll", "libstdc++-6.dll", "libgcc_s_seh-1.dll
     }
 }
 
-Copy-Item -Path config.ini -Destination $release_dir
 Copy-Item -Path .\bedrock-level\data\colors\block_color.json -Destination $release_dir
 Copy-Item -Path .\bedrock-level\data\colors\biome_color.json -Destination $release_dir
 # 复制项目翻译文件
