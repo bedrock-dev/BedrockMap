@@ -24,7 +24,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     auto cursorPos = w->getCursorBlockPos();
     auto blockInfo = w->level_loader_->getBlockTips(cursorPos, w->option_.dim);
     bool insideSelection = w->selection_.contains(QPoint(clickChunk.x, clickChunk.z));
-    uint8_t dim = static_cast<uint8_t>(w->option_.dim);
+    int dim = w->option_.dim;
 
     // === Group 1: Goto ===
     menu.addAction(QObject::tr("mapWidget.rightMenu.gotoPosition"), [w] { w->gotoPositionAction(); });

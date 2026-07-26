@@ -98,12 +98,15 @@ class MapWidget : public QWidget {
    public:
     struct RenderOption {
         enum LayerType { Terrain = 0, Biome = 1 };
-        enum DimType { OverWorld = 0, Nether = 1, TheEnd = 2, DimLen = 3 };
         enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, OtherLen = 6 };
+
+        static constexpr int OverWorld = 0;
+        static constexpr int Nether = 1;
+        static constexpr int TheEnd = 2;
 
         RenderOption() { reset(); }
 
-        DimType dim{OverWorld};
+        int dim{OverWorld};
         LayerType layer{Terrain};
         std::array<bool, OtherType::OtherLen> others{};
         inline void reset() {
@@ -113,7 +116,7 @@ class MapWidget : public QWidget {
             setOther(Grid, true);
         }
 
-        inline void setDim(DimType nDim) { dim = nDim; }
+        inline void setDim(int nDim) { dim = nDim; }
         inline void setLayer(LayerType nLayer) { layer = nLayer; }
 
         inline bool toggleOther(OtherType type) {
@@ -178,6 +181,7 @@ class MapWidget : public QWidget {
 
     // getter
     MapWidget::RenderOption renderOption() { return option_; }
+    AsyncLevelLoader *getLevelLoader() { return level_loader_; }
 
     // event
 
@@ -197,7 +201,7 @@ class MapWidget : public QWidget {
 
     // signals
    public:
-    inline void changeDimension(RenderOption::DimType dim) {
+    inline void changeDimension(int dim) {
         option_.setDim(dim);
         this->update();
     }
@@ -218,7 +222,7 @@ class MapWidget : public QWidget {
         this->update();
     }
 
-    inline void setDim(RenderOption::DimType dim) { changeDimension(dim); }
+    inline void setDim(int dim) { changeDimension(dim); }
 
     inline void setLayer(RenderOption::LayerType layer) { changeLayer(layer); }
 
@@ -251,19 +255,19 @@ class MapWidget : public QWidget {
     inline void unselectChunk() { this->opened_chunk_ = false; }
 
     void clearSelection();
-    void copySelectionToClipboard(uint8_t dim);
-    void pasteFromClipboard(uint8_t dim);
-    void exportSelectionToFile(uint8_t dim);
-    void importFromFile(uint8_t dim);
-    void deleteSelection(uint8_t dim);
-    void createVoidSelection(uint8_t dim);
-    void setSelectionBiome(int biome, uint8_t dim);
-    void show3DView(uint8_t dim);
+    void copySelectionToClipboard(int dim);
+    void pasteFromClipboard(int dim);
+    void exportSelectionToFile(int dim);
+    void importFromFile(int dim);
+    void deleteSelection(int dim);
+    void createVoidSelection(int dim);
+    void setSelectionBiome(int biome, int dim);
+    void show3DView(int dim);
     void syncToolbars();
 
     // signals
    signals:
-    void mouseMove(int x, int z);  // NOLINT
+    void mouseMove(int x, int z, int dim);  // NOLINT
 
     void requestOpenChunkEditor(const bl::chunk_pos &pos);
 

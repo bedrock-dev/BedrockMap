@@ -226,7 +226,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
             update();
         }
         auto p = this->getCursorBlockPos();
-        emit this->mouseMove(p.x, p.z);
+        emit this->mouseMove(p.x, p.z, option_.dim);
     }
 }
 
@@ -401,7 +401,7 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
     const auto &vs = level_page_->getVillages();
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
     for (auto i = vs.cbegin(), end = vs.cend(); i != end; ++i) {
-        if (this->option_.dim != static_cast<RenderOption::DimType>(i.value().dim)) continue;
+        if (this->option_.dim != i.value().dim) continue;
         auto p1 = blockPosToFloatChunkPos(i->p1);
         auto p2 = blockPosToFloatChunkPos(i->p2);
         p->drawRect(QRectF(p1, p2));
@@ -569,7 +569,7 @@ void MapWidget::clearSelection() {
     emit selectionChanged();
 }
 
-void MapWidget::copySelectionToClipboard(uint8_t dim) {
+void MapWidget::copySelectionToClipboard(int dim) {
     if (selection_.isEmpty()) return;
     ExportedRegion region;
     auto sel = selection_.region();
@@ -591,7 +591,7 @@ void MapWidget::copySelectionToClipboard(uint8_t dim) {
     LOG_F(INFO, "MapWidget: copied %d chunks to clipboard", static_cast<int>(region.chunkCount()));
 }
 
-void MapWidget::pasteFromClipboard(uint8_t dim) {
+void MapWidget::pasteFromClipboard(int dim) {
     auto *clip = QApplication::clipboard();
     const auto *md = clip->mimeData();
     if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
@@ -611,7 +611,7 @@ void MapWidget::pasteFromClipboard(uint8_t dim) {
     update();
 }
 
-void MapWidget::exportSelectionToFile(uint8_t dim) {
+void MapWidget::exportSelectionToFile(int dim) {
     if (selection_.isEmpty()) return;
     auto fp = QFileDialog::getSaveFileName(nullptr, QObject::tr("mapWidget.rightMenu.exportRegion"), {}, msg::ALL_FILES());
     if (fp.isEmpty()) return;
@@ -619,7 +619,7 @@ void MapWidget::exportSelectionToFile(uint8_t dim) {
     INFO(msg::EXPORT_COMPLETE());
 }
 
-void MapWidget::importFromFile(uint8_t dim) {
+void MapWidget::importFromFile(int dim) {
     auto fp = QFileDialog::getOpenFileName(nullptr, QObject::tr("mapWidget.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
     if (fp.isEmpty()) return;
     bl::chunk_pos anchor(0, 0, dim);
@@ -627,25 +627,25 @@ void MapWidget::importFromFile(uint8_t dim) {
     update();
 }
 
-void MapWidget::deleteSelection(uint8_t dim) {
+void MapWidget::deleteSelection(int dim) {
     if (selection_.isEmpty()) return;
     ChunkOperator::deleteRegion(selection_.region(), *level_loader_, dim);
     update();
 }
 
-void MapWidget::createVoidSelection(uint8_t dim) {
+void MapWidget::createVoidSelection(int dim) {
     if (selection_.isEmpty()) return;
     ChunkOperator::createVoid(selection_.region(), *level_loader_, dim);
     update();
 }
 
-void MapWidget::setSelectionBiome(int biome, uint8_t dim) {
+void MapWidget::setSelectionBiome(int biome, int dim) {
     if (selection_.isEmpty()) return;
     ChunkOperator::setRegionBiome(selection_.region(), *level_loader_, static_cast<bl::biome>(biome), dim);
     update();
 }
 
-void MapWidget::show3DView(uint8_t dim) {
+void MapWidget::show3DView(int dim) {
     if (selection_.isEmpty() || selection_.rectCount() != 1) return;
     auto rect = selection_.region().boundingRect();
     bl::chunk_pos minPos(rect.x(), rect.y(), dim);

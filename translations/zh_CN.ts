@@ -447,6 +447,17 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.customDim</source>
+        <translation type="unfinished">自定义维度</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.customDim.empty</source>
+        <translation type="unfinished">无自定义维度</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
@@ -454,6 +465,11 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.layers</source>
         <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.customDim</source>
+        <translation type="unfinished">自定义维度</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>

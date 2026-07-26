@@ -12,6 +12,7 @@
 #include <array>
 #include <atomic>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include "bedrock_key.h"
@@ -135,16 +136,25 @@ class AsyncLevelLoader : public QObject {
     QImage *tryGetThumbnail(const region_pos &p);
 
    private:
+    template <typename T>
+    QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, QCache<region_pos, T> *> &caches, int dim, int maxCost) {
+        auto it = caches.find(dim);
+        if (it != caches.end()) return it->second;
+        auto *cache = new QCache<region_pos, T>(maxCost);
+        caches[dim] = cache;
+        return cache;
+    }
+
     std::atomic_bool loaded_{false};
     bl::bedrock_level level_{};
     RawChunkCache level_cache_;
     // map region cache
     TaskBuffer<region_pos> processing_;
-    std::vector<QCache<region_pos, ChunkRegion> *> region_cache_;
-    std::vector<QCache<region_pos, char> *> invalid_cache_;
+    std::unordered_map<int, QCache<region_pos, ChunkRegion> *> region_cache_;
+    std::unordered_map<int, QCache<region_pos, char> *> invalid_cache_;
     // map region thumbnails cache
     TaskBuffer<region_pos> thumbnail_processing_;
-    std::vector<QCache<region_pos, QImage> *> thumbnails_cache_;
+    std::unordered_map<int, QCache<region_pos, QImage> *> thumbnails_cache_;
 
     // 主要是缓存图像，计算不是重点
     QCache<region_pos, QImage> *slime_chunk_cache_;

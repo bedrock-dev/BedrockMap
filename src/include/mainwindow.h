@@ -80,6 +80,7 @@ class MainWindow : public QMainWindow {
     QAction *action_layers_overworld_;
     QAction *action_layers_nether_;
     QAction *action_layers_end_;
+    QAction *action_layers_custom_dim_;
     QAction *action_layers_terrain_;
     QAction *action_layers_biome_;
     QAction *action_layers_slime_;

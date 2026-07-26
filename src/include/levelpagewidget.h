@@ -30,7 +30,7 @@ class LevelStatusBar : public QWidget {
     void setModifyInfo(int modified, int deleted);
 
    public slots:
-    void onPosChanged(int x, int z);
+    void onPosChanged(int x, int z, int dim);
 
    private:
     QLabel *pos_;

@@ -127,7 +127,7 @@ bool LevelTabWidget::confirmCloseAllLevels() {
 
 void LevelTabWidget::onMapDimensionChanged(int dim) {
     if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->changeDimension(static_cast<MapWidget::RenderOption::DimType>(dim));
+        page->getMapWidget()->changeDimension(dim);
     }
 }
 

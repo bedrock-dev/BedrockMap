@@ -28,10 +28,10 @@
 
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(setting::THREAD_NUM);
-    for (int i = 0; i < 3; i++) {
-        this->region_cache_.push_back(new QCache<region_pos, ChunkRegion>(setting::REGION_CACHE_SIZE));
-        this->invalid_cache_.push_back(new QCache<region_pos, char>(setting::EMPTY_REGION_CACHE_SIZE));
-        this->thumbnails_cache_.push_back(new QCache<region_pos, QImage>(setting::THUMBNAIL_REION_CACHE_SIZE));
+    for (int dim : {0, 1, 2}) {
+        this->region_cache_[dim] = new QCache<region_pos, ChunkRegion>(setting::REGION_CACHE_SIZE);
+        this->invalid_cache_[dim] = new QCache<region_pos, char>(setting::EMPTY_REGION_CACHE_SIZE);
+        this->thumbnails_cache_[dim] = new QCache<region_pos, QImage>(setting::THUMBNAIL_REION_CACHE_SIZE);
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
@@ -44,13 +44,13 @@ AsyncLevelLoader::AsyncLevelLoader() {
 ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     empty = false;
     if (!this->loaded_) return nullptr;
-    auto *invalid = this->invalid_cache_[p.dim]->operator[](p);
+    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::EMPTY_REGION_CACHE_SIZE)->operator[](p);
     if (invalid) {
         empty = true;
         return nullptr;
     }
     // chunk cache
-    auto *region = this->region_cache_[p.dim]->operator[](p);
+    auto *region = ensureDimCache(region_cache_, p.dim, setting::REGION_CACHE_SIZE)->operator[](p);
     if (region) return region;
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
@@ -58,12 +58,12 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 if (!region || (!region->valid)) {
-                    this->invalid_cache_[dim]->insert(bl::chunk_pos(x, z, dim), new char(0));
+                    ensureDimCache(invalid_cache_, dim, setting::EMPTY_REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), new char(0));
                     delete region;
                 } else {
                     this->region_load_timer_.push(load_time);
                     this->region_render_timer_.push(render_time);
-                    this->region_cache_[dim]->insert(bl::chunk_pos(x, z, dim), region);
+                    ensureDimCache(region_cache_, dim, setting::REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), region);
                 }
                 this->processing_.remove(bl::chunk_pos(x, z, dim));
                 emit regionReady();
@@ -74,13 +74,13 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
 }
 
 QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
-    auto *img = this->thumbnails_cache_[p.dim]->operator[](p);
+    auto *img = ensureDimCache(thumbnails_cache_, p.dim, setting::THUMBNAIL_REION_CACHE_SIZE)->operator[](p);
     if (img) return img;
     if (this->thumbnail_processing_.contains(p)) return nullptr;
     auto *task = new LoadThumbnailTask(this, p);
     connect(task, &LoadThumbnailTask::finish, this, [this](int x, int z, int dim, QImage *img) {
         if (img) {
-            this->thumbnails_cache_[dim]->insert(bl::chunk_pos(x, z, dim), img);
+            ensureDimCache(thumbnails_cache_, dim, setting::THUMBNAIL_REION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), img);
         }
         this->thumbnail_processing_.remove(bl::chunk_pos(x, z, dim));
         emit regionReady();
@@ -165,9 +165,12 @@ bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome)
 
 void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
     auto rp = constant::c2r(p);
-    this->region_cache_[rp.dim]->remove(rp);
-    this->invalid_cache_[rp.dim]->remove(rp);
-    this->thumbnails_cache_[rp.dim]->remove(rp);
+    auto it = region_cache_.find(rp.dim);
+    if (it != region_cache_.end()) it->second->remove(rp);
+    auto it2 = invalid_cache_.find(rp.dim);
+    if (it2 != invalid_cache_.end()) it2->second->remove(rp);
+    auto it3 = thumbnails_cache_.find(rp.dim);
+    if (it3 != thumbnails_cache_.end()) it3->second->remove(rp);
 }
 
 void AsyncLevelLoader::commit() {
@@ -181,9 +184,9 @@ void AsyncLevelLoader::commit() {
 
 void AsyncLevelLoader::clearAllCache() {
     LOG_F(INFO, "Clear cache");
-    for (auto &cache : this->region_cache_) cache->clear();
-    for (auto cache : this->invalid_cache_) cache->clear();
-    for (auto cache : this->thumbnails_cache_) cache->clear();
+    for (auto &[dim, cache] : region_cache_) cache->clear();
+    for (auto &[dim, cache] : invalid_cache_) cache->clear();
+    for (auto &[dim, cache] : thumbnails_cache_) cache->clear();
     this->slime_chunk_cache_->clear();
     {
         QMutexLocker lock(&height_map_mutex_);
@@ -296,22 +299,19 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
 std::vector<QString> AsyncLevelLoader::debugInfo() {
     std::vector<QString> res;
     res.emplace_back("Region cache:");
-    for (int i = 0; i < 3; i++) {
-        res.push_back(QString(" - [%1]: %2/%3")
-                          .arg(QString::number(i), QString::number(this->region_cache_[i]->totalCost()),
-                               QString::number(this->region_cache_[i]->maxCost())));
+    for (auto &[dim, cache] : region_cache_) {
+        res.push_back(
+            QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }
     res.emplace_back("Null region cache:");
-    for (int i = 0; i < 3; i++) {
-        res.push_back(QString(" - [%1]: %2/%3")
-                          .arg(QString::number(i), QString::number(this->invalid_cache_[i]->totalCost()),
-                               QString::number(this->invalid_cache_[i]->maxCost())));
+    for (auto &[dim, cache] : invalid_cache_) {
+        res.push_back(
+            QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }
     res.emplace_back("Thumbnail region cache:");
-    for (int i = 0; i < 3; i++) {
-        res.push_back(QString(" - [%1]: %2/%3")
-                          .arg(QString::number(i), QString::number(this->thumbnails_cache_[i]->totalCost()),
-                               QString::number(this->thumbnails_cache_[i]->maxCost())));
+    for (auto &[dim, cache] : thumbnails_cache_) {
+        res.push_back(
+            QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }
 
     res.push_back(QString("Slime Chunk cache: %2/%3")

@@ -16,16 +16,16 @@ class ChunkOperator {
     ChunkOperator() = delete;
 
     /// Export all chunks inside the given QRegion to a binary file.
-    static void exportRegion(const QRegion &chunkRegion, const QString &filePath, AsyncLevelLoader &loader, uint8_t dim);
+    static void exportRegion(const QRegion &chunkRegion, const QString &filePath, AsyncLevelLoader &loader, int dim);
 
     /// Import all chunks from an ExportedRegion into the level.
     static void importRegion(const ExportedRegion &region, AsyncLevelLoader &loader);
 
-    static void deleteRegion(const QRegion &chunkRegion, AsyncLevelLoader &loader, uint8_t dim);
+    static void deleteRegion(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim);
 
-    static void createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loader, uint8_t dim);
+    static void createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim);
 
-    static void setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome, uint8_t dim);
+    static void setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome, int dim);
 };
 
 #endif  // CHUNKOPERATOR_H

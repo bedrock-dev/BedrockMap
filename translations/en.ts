@@ -447,6 +447,17 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.customDim</source>
+        <translation type="unfinished">Custom Dimensions</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.customDim.empty</source>
+        <translation type="unfinished">No custom dimensions</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation type="unfinished">(Empty)</translation>
     </message>
@@ -454,6 +465,11 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.layers</source>
         <translation type="unfinished">Layers</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.customDim</source>
+        <translation type="unfinished">Custom Dimensions</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>

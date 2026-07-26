@@ -89,6 +89,8 @@ WorldListItem::WorldListItem(const LevelPathInfo &info, QWidget *parent) : QWidg
 void WorldListItem::setupUI() {
     setFixedHeight(ITEM_HEIGHT);
     setCursor(Qt::PointingHandCursor);
+    setAttribute(Qt::WA_StyledBackground, true);
+    setStyleSheet("WorldListItem { background-color: transparent; }");
 
     auto *root = new QHBoxLayout(this);
     root->setContentsMargins(6, 3, 8, 3);
@@ -188,15 +190,13 @@ void WorldListItem::contextMenuEvent(QContextMenuEvent *event) {
 
 void WorldListItem::enterEvent(QEnterEvent *event) {
     QWidget::enterEvent(event);
-    QPalette pal = palette();
-    pal.setColor(QPalette::Window, QColor(42, 42, 42));
-    setPalette(pal);
-    setAutoFillBackground(true);
+    auto bg = qApp->palette().color(QPalette::Window);
+    setStyleSheet(QString("WorldListItem { background-color: %1; }").arg(bg.darker(110).name()));
 }
 
 void WorldListItem::leaveEvent(QEvent *event) {
     QWidget::leaveEvent(event);
-    setAutoFillBackground(false);
+    setStyleSheet("WorldListItem { background-color: transparent; }");
 }
 
 // ===========================================================================

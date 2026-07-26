@@ -44,9 +44,9 @@ LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
     setFixedHeight(14);
 }
 
-void LevelStatusBar::onPosChanged(int x, int z) {
+void LevelStatusBar::onPosChanged(int x, int z, int dim) {
     auto cp = bl::block_pos{x, 0, z}.to_chunk_pos();
-    this->pos_->setText(QString("Pos: %1,%2 / %3,%4").arg(cp.x).arg(cp.z).arg(x).arg(z));
+    this->pos_->setText(QString("Dim:%1 Pos: %2,%3 / %4,%5").arg(dim).arg(cp.x).arg(cp.z).arg(x).arg(z));
 }
 
 void LevelStatusBar::setSelectionInfo(int count) {
@@ -108,7 +108,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : QWidget(paren
         mapWidget_->update();
     });
     connect(chunkWidget_, &ChunkEditorWidget::locateChunk, this, [this](int x, int z, int dim) {
-        mapWidget_->setDim(static_cast<MapWidget::RenderOption::DimType>(dim));
+        mapWidget_->setDim(dim);
         mapWidget_->gotoBlockPos(x * 16 + 8, z * 16 + 8);
     });
     connect(level_loader_.get(), &AsyncLevelLoader::dirtyChanged, this, [this]() {
@@ -263,7 +263,7 @@ void LevelPageWidget::setupToolBar() {
                     mw->setOther(type, checked);
                     mw->update();
                 } else if (g == dimGrp && checked) {
-                    mw->setDim(static_cast<Mr::DimType>(b));
+                    mw->setDim(b);
                     mw->update();
                 } else if (g == layerGrp && checked) {
                     mw->setLayer(static_cast<Mr::LayerType>(b));
@@ -298,8 +298,8 @@ void LevelPageWidget::syncToolbars() {
         tb->blockSignals(true);
         tb->setButtonChecked(tb_view_grp_, 0, opt.getOther(Mr::Grid));
         tb->setButtonChecked(tb_view_grp_, 1, opt.getOther(Mr::Coords));
-        // Dimension group
-        for (int i = 0; i < 3; ++i) tb->setButtonChecked(tb_dim_grp_, i, static_cast<int>(opt.dim) == i);
+        // Dimension group — uncheck all if using a custom dimension
+        for (int i = 0; i < 3; ++i) tb->setButtonChecked(tb_dim_grp_, i, opt.dim == i);
         // Layer group
         for (int i = 0; i < 3; ++i) tb->setButtonChecked(tb_layer_grp_, i, static_cast<int>(opt.layer) == i);
         // Overlay group

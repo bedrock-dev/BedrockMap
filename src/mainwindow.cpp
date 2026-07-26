@@ -106,6 +106,8 @@ void MainWindow::setupMenuBar() {
     action_layers_nether_->setShortcut(QKeySequence("Alt+2"));
     action_layers_end_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.theend"));
     action_layers_end_->setShortcut(QKeySequence("Alt+3"));
+    action_layers_custom_dim_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.customDim"));
+    action_layers_custom_dim_->setShortcut(QKeySequence("Alt+4"));
     layers_menu_->addSeparator();
 
     action_layers_terrain_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.terrain"));
@@ -258,6 +260,39 @@ void MainWindow::setupMenuActions() {
             w->syncToolbars();
         }
     });
+    connect(action_layers_custom_dim_, &QAction::triggered, this, [this]() {
+        auto *w = getCurrentMapWidget();
+        if (!w) return;
+        auto *loader = w->getLevelLoader();
+        if (!loader) return;
+        const auto &dimTable = loader->level().custom_dimension_table();
+        if (dimTable.empty()) {
+            QMessageBox::information(this, tr("mainWindow.customDim"), tr("mainWindow.customDim.empty"));
+            return;
+        }
+        QDialog dlg(this);
+        dlg.setWindowTitle(tr("mainWindow.customDim"));
+        auto *layout = new QVBoxLayout(&dlg);
+        auto *list = new QListWidget(&dlg);
+        list->setSelectionMode(QAbstractItemView::SingleSelection);
+        std::vector<int> dimIds;
+        for (const auto &[name, id] : dimTable) {
+            list->addItem(QString("%1 (ID: %2)").arg(QString::fromStdString(name)).arg(id));
+            dimIds.push_back(id);
+        }
+        list->setCurrentRow(0);
+        layout->addWidget(list);
+        layout->setContentsMargins({2, 2, 2, 2});
+        auto *btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+        connect(btnBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+        connect(btnBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+        layout->addWidget(btnBox);
+        dlg.resize(320, 240);
+        if (dlg.exec() == QDialog::Accepted && list->currentRow() >= 0) {
+            w->setDim(dimIds[list->currentRow()]);
+            w->syncToolbars();
+        }
+    });
     connect(action_layers_terrain_, &QAction::triggered, this, [this]() {
         if (auto *w = getCurrentMapWidget()) {
             w->setLayer(Mr::Terrain);
@@ -333,16 +368,16 @@ void MainWindow::setupMenuActions() {
 
     // Chunk
     connect(action_ch_copy_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->copySelectionToClipboard(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto *w = getCurrentMapWidget()) w->copySelectionToClipboard(w->renderOption().dim);
     });
     connect(action_ch_paste_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->pasteFromClipboard(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto *w = getCurrentMapWidget()) w->pasteFromClipboard(w->renderOption().dim);
     });
     connect(action_ch_export_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->exportSelectionToFile(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto *w = getCurrentMapWidget()) w->exportSelectionToFile(w->renderOption().dim);
     });
     connect(action_ch_import_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->importFromFile(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto *w = getCurrentMapWidget()) w->importFromFile(w->renderOption().dim);
     });
     connect(action_ch_delete_, &QAction::triggered, this, [this]() {
         if (auto *w = getCurrentMapWidget()) w->deleteSelection(static_cast<uint8_t>(w->renderOption().dim));
