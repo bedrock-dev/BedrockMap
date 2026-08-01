@@ -598,6 +598,14 @@
         <translation type="unfinished">修改NBT</translation>
     </message>
     <message>
+        <source>nbtEditor.dialogTitle.create</source>
+        <translation type="unfinished">新建NBT</translation>
+    </message>
+    <message>
+        <source>nbtEditor.dialogTitle.modify</source>
+        <translation type="unfinished">修改NBT</translation>
+    </message>
+    <message>
         <source>nbtEditor.type</source>
         <translation type="unfinished">类型</translation>
     </message>

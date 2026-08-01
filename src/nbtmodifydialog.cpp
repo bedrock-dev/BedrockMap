@@ -58,6 +58,7 @@ NBTModifyDialog::NBTModifyDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
         ui->type_combobox->setItemIcon(ui->type_combobox->count() - 1, QIcon(QPixmap::fromImage(*TagIcon(type))));
     }
     ui->type_combobox->installEventFilter(this);
+    connect(ui->type_combobox, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int) { updateValueState(); });
 }
 
 void NBTModifyDialog::resetUI() const {
@@ -68,9 +69,18 @@ void NBTModifyDialog::resetUI() const {
     ui->type_combobox->setEnabled(true);
 }
 
-bool NBTModifyDialog::setCreateMode(abstract_tag *tag) const {
+void NBTModifyDialog::updateValueState() const {
+    const auto type = static_cast<tag_type>(ui->type_combobox->currentData().toInt());
+    ui->value_lineedit->setReadOnly(type == Compound || type == List);
+}
+
+bool NBTModifyDialog::setCreateMode(abstract_tag *tag) {
     resetUI();
+    setWindowTitle(tr("nbtEditor.dialogTitle.create"));
     if (!tag) return false;
+    // new child starts from a blank name and value
+    ui->name_lineedit->clear();
+    ui->value_lineedit->clear();
     if (const auto type = tag->type(); type == List) {
         const auto *list = dynamic_cast<list_tag *>(tag);
         if (!list) return false;
@@ -79,32 +89,33 @@ bool NBTModifyDialog::setCreateMode(abstract_tag *tag) const {
             ui->type_combobox->setCurrentText(tag_type_to_str(child_type).c_str());
             // child type is fixed for a non-empty list, keep colors but block changes
             lock_type_combobox_ = true;
+            updateValueState();
             return true;
         }
     }
     ui->type_combobox->setEnabled(true);
+    updateValueState();
     return true;
 }
 
-bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) const {
+bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) {
     resetUI();
+    setWindowTitle(tr("nbtEditor.dialogTitle.modify"));
     if (!tag) return false;
     const auto type = tag->type();
     // keep the combobox colorful but prevent changing the tag type
     lock_type_combobox_ = true;
-    if (type == Compound || type == List) {
-        ui->value_lineedit->setReadOnly(true);
-    }
     ui->type_combobox->setCurrentText(tag_type_to_str(type).c_str());
     ui->name_lineedit->setText(tag->key().c_str());
     ui->value_lineedit->setText(tag->restricted_value_string().c_str());
+    updateValueState();
     return true;
 }
 
 bool NBTModifyDialog::eventFilter(QObject *watched, QEvent *event) {
     if (watched == ui->type_combobox && lock_type_combobox_) {
-        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick ||
-            event->type() == QEvent::Wheel || event->type() == QEvent::KeyPress) {
+        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick || event->type() == QEvent::Wheel ||
+            event->type() == QEvent::KeyPress) {
             return true;
         }
     }
@@ -134,7 +145,7 @@ bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) c
         if (type == Byte) return new byte_tag(name, static_cast<int8_t>(values.front()));
         if (type == Short) return new short_tag(name, static_cast<int16_t>(values.front()));
         if (type == Int) return new int_tag(name, static_cast<int32_t>(values.front()));
-        if (type == Long) auto *tag = new long_tag(name, static_cast<int64_t>(values.front()));
+        if (type == Long) return new long_tag(name, static_cast<int64_t>(values.front()));
         if (type == ByteArray) {
             auto *tag = new byte_array_tag(name);
             for (auto &value : values) {

@@ -375,7 +375,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
         return;
     }
     auto type = nbtItem->root_->type();
-    auto attr = NBTNodeUIAttr::get(type);
+    auto attr = NBTNodeUIAttr::get(type, current->parent() == nullptr);
     if (attr.canAdd) menu.addAction(addAction);
     if (attr.canRemove) menu.addAction(removeAction);
     if (attr.canModify && !hex_mode_) menu.addAction(modifyAction);

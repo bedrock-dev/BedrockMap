@@ -598,6 +598,14 @@
         <translation type="unfinished">Modify NBT</translation>
     </message>
     <message>
+        <source>nbtEditor.dialogTitle.create</source>
+        <translation type="unfinished">Create NBT</translation>
+    </message>
+    <message>
+        <source>nbtEditor.dialogTitle.modify</source>
+        <translation type="unfinished">Modify NBT</translation>
+    </message>
+    <message>
         <source>nbtEditor.type</source>
         <translation type="unfinished">Type</translation>
     </message>

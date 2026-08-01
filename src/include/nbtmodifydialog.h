@@ -19,14 +19,15 @@ class NBTModifyDialog : public QDialog {
     bl::palette::abstract_tag *createTagWithCurrent(QString &err) const;
     bool modifyCurrentTag(bl::palette::abstract_tag *&tag, QString &err) const;
     ~NBTModifyDialog();
-    bool setCreateMode(bl::palette::abstract_tag *tag) const;
-    bool setModifyMode(const bl::palette::abstract_tag *tag) const;
+    bool setCreateMode(bl::palette::abstract_tag *tag);
+    bool setModifyMode(const bl::palette::abstract_tag *tag);
 
    protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
    private:
     void resetUI() const;
+    void updateValueState() const;
     Ui::NBTModifyDialog *ui;
     mutable bool lock_type_combobox_{false};
 };

@@ -84,10 +84,10 @@ struct NBTNodeUIAttr {
     bool canModify;  // modify current value
     bool canAdd;     // add child
     bool canClear;   // clear all children
-    static NBTNodeUIAttr get(bl::palette::tag_type type) {
+    static NBTNodeUIAttr get(bl::palette::tag_type type, bool is_root) {
         NBTNodeUIAttr attr{true, true, false, false};
         if (type == bl::palette::tag_type::Compound) {
-            attr.canRemove = false;
+            attr.canRemove = !is_root;
             attr.canAdd = true;
             attr.canClear = true;
         } else if (type == bl::palette::List) {
