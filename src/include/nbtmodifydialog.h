@@ -22,9 +22,13 @@ class NBTModifyDialog : public QDialog {
     bool setCreateMode(bl::palette::abstract_tag *tag) const;
     bool setModifyMode(const bl::palette::abstract_tag *tag) const;
 
+   protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
    private:
     void resetUI() const;
     Ui::NBTModifyDialog *ui;
+    mutable bool lock_type_combobox_{false};
 };
 
 #endif  // NBTMODIFYDIALOG_H

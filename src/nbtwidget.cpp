@@ -159,11 +159,12 @@ NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 2);
     QFont f;
-    f.setFamily("JetBrains Mono");
+    f.setFamilies({"JetBrains Mono", "Microsoft YaHei", "Microsoft YaHei UI"});
     ui->list_widget->setFont(f);
     ui->tree_widget->setFont(f);
     ui->tree_widget->setHeaderHidden(true);
     ui->tree_widget->setColumnCount(2);
+    ui->tree_widget->setExpandsOnDoubleClick(false);
     ui->tree_widget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->list_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -234,7 +235,7 @@ void NbtWidget::hideLoadDataBtn() const { ui->load_btn->setVisible(false); }
 void NbtWidget::on_save_btn_clicked() { this->saveNBTs(false); }
 
 void NbtWidget::tryModifyCurrentNode() {
-    if (!modify_allowed_) return;
+    if (!modify_allowed_ || hex_mode_) return;
     auto *current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
     if (!current || !current->root_) return;
     if (!modify_dialog_->setModifyMode(current->root_)) {
@@ -253,19 +254,23 @@ void NbtWidget::tryModifyCurrentNode() {
 }
 
 void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
-    if (!modify_allowed_ || column != 1) return;
+    if (hex_mode_) return;
+    if (!modify_allowed_ || column < 0 || column > 1) return;
     auto *nbtItem = dynamic_cast<NBTTreeItem *>(item);
     if (!nbtItem || !nbtItem->root_) return;
+
+    if (column == 0) {
+        // key editing is allowed for all tag types
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+        ui->tree_widget->editItem(item, 0);
+        return;
+    }
+
     auto type = nbtItem->root_->type();
     if (type == bl::palette::Compound || type == bl::palette::List || type == bl::palette::End) return;
 
-    // Always show decimal value in the editor
-    editing_in_progress_ = true;
-    nbtItem->setText(1, nbtItem->root_->value_string().c_str());
-    editing_in_progress_ = false;
-
     item->setFlags(item->flags() | Qt::ItemIsEditable);
-    ui->tree_widget->editItem(item, column);
+    ui->tree_widget->editItem(item, 1);
 }
 
 namespace {
@@ -320,9 +325,21 @@ namespace {
 }  // namespace
 
 void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {
-    if (column != 1 || editing_in_progress_) return;
+    if (editing_in_progress_) return;
     auto *nbtItem = dynamic_cast<NBTTreeItem *>(item);
     if (!nbtItem || !nbtItem->root_) return;
+    if (column == 0) {
+        auto new_key = item->text(0).toStdString();
+        if (new_key == nbtItem->root_->key()) return;
+        nbtItem->root_->set_key(new_key);
+        editing_in_progress_ = true;
+        nbtItem->updateLabel(hex_mode_);
+        editing_in_progress_ = false;
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+        emit nbtModified();
+        return;
+    }
+    if (column != 1) return;
 
     QString text = item->text(1);
     // Ignore if text hasn't actually changed from the raw value string
@@ -361,7 +378,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     auto attr = NBTNodeUIAttr::get(type);
     if (attr.canAdd) menu.addAction(addAction);
     if (attr.canRemove) menu.addAction(removeAction);
-    if (attr.canModify) menu.addAction(modifyAction);
+    if (attr.canModify && !hex_mode_) menu.addAction(modifyAction);
     if (attr.canClear) menu.addAction(clearAction);
 
     QObject::connect(addAction, &QAction::triggered, [this, pos](bool) {

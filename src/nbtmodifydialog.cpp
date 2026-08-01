@@ -57,11 +57,14 @@ NBTModifyDialog::NBTModifyDialog(QWidget *parent) : QDialog(parent), ui(new Ui::
         ui->type_combobox->addItem(tag_type_to_str(type).c_str(), QVariant::fromValue(i));
         ui->type_combobox->setItemIcon(ui->type_combobox->count() - 1, QIcon(QPixmap::fromImage(*TagIcon(type))));
     }
+    ui->type_combobox->installEventFilter(this);
 }
 
 void NBTModifyDialog::resetUI() const {
+    lock_type_combobox_ = false;
     ui->name_lineedit->setEnabled(true);
     ui->value_lineedit->setEnabled(true);
+    ui->value_lineedit->setReadOnly(false);
     ui->type_combobox->setEnabled(true);
 }
 
@@ -74,7 +77,8 @@ bool NBTModifyDialog::setCreateMode(abstract_tag *tag) const {
         if (!list->value.empty()) {
             const auto child_type = list->value[0]->type();
             ui->type_combobox->setCurrentText(tag_type_to_str(child_type).c_str());
-            ui->type_combobox->setEnabled(false);
+            // child type is fixed for a non-empty list, keep colors but block changes
+            lock_type_combobox_ = true;
             return true;
         }
     }
@@ -86,22 +90,29 @@ bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) const {
     resetUI();
     if (!tag) return false;
     const auto type = tag->type();
+    // keep the combobox colorful but prevent changing the tag type
+    lock_type_combobox_ = true;
     if (type == Compound || type == List) {
-        ui->value_lineedit->setEnabled(false);
+        ui->value_lineedit->setReadOnly(true);
     }
     ui->type_combobox->setCurrentText(tag_type_to_str(type).c_str());
     ui->name_lineedit->setText(tag->key().c_str());
     ui->value_lineedit->setText(tag->restricted_value_string().c_str());
-    ui->type_combobox->setEnabled(false);
     return true;
+}
+
+bool NBTModifyDialog::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == ui->type_combobox && lock_type_combobox_) {
+        if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick ||
+            event->type() == QEvent::Wheel || event->type() == QEvent::KeyPress) {
+            return true;
+        }
+    }
+    return QDialog::eventFilter(watched, event);
 }
 
 bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const {
     const auto name = ui->name_lineedit->text().toStdString();
-    if (name.empty()) {
-        err = msg::TAG_NAME_EMPTY();
-        return nullptr;
-    }
     const auto data = ui->type_combobox->currentData();
     if (!data.canConvert<int>()) {
         err = msg::TAG_TYPE_INVALID();
