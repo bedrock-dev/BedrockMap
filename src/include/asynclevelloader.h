@@ -156,7 +156,6 @@ class AsyncLevelLoader : public QObject {
     TaskBuffer<region_pos> thumbnail_processing_;
     std::unordered_map<int, QCache<region_pos, QImage> *> thumbnails_cache_;
 
-    // 主要是缓存图像，计算不是重点
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;

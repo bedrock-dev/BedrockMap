@@ -357,7 +357,7 @@ class MapWidget : public QWidget {
     bool draw_debug_window_{false};
     bool transparent_void_{false};
     QTransform world_to_view_xf_;
-    QRect camera_{-10, -10, width() + 10, height() + 10};  // 需要绘制的范围，后面设置成和widget等大即可
+    QRect camera_{-10, -10, width() + 10, height() + 10};  // drawable range, later set to match the widget size
     QTimer *sync_refresh_timer_;
 
     // opened chunk

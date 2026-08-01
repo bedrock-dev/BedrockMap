@@ -85,11 +85,11 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
         LOG_F(WARNING, "The parent widget of mapwidget is not LevelPageWidget!");
     }
 
-    // 异步 region 加载完成时触发重绘，替代旧的 100ms 定时轮询
+    // trigger redraw when an async region finishes loading, replacing the old 100ms timer polling
     if (this->level_loader_) {
         connect(this->level_loader_, &AsyncLevelLoader::regionReady, this, [this] { this->update(); });
     }
-    // 低频定时器仅用于刷新调试窗口信息（内存占用等）
+    // low-frequency timer only refreshes the debug window info (memory usage, etc.)
     this->sync_refresh_timer_ = new QTimer();
     connect(this->sync_refresh_timer_, &QTimer::timeout, this, [this] {
         if (this->draw_debug_window_) this->update();
@@ -127,9 +127,9 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
 // transform & position translation
 void MapWidget::doScale(const QPointF viewPos, qreal scale) {
     QPointF worldPos = world_to_view_xf_.inverted().map(viewPos);
-    world_to_view_xf_.translate(viewPos.x(), viewPos.y());      // 移到鼠标屏幕点
-    world_to_view_xf_.scale(scale, scale);                      // 缩放
-    world_to_view_xf_.translate(-worldPos.x(), -worldPos.y());  // 移回世界点
+    world_to_view_xf_.translate(viewPos.x(), viewPos.y());      // move to mouse screen point
+    world_to_view_xf_.scale(scale, scale);                      // zoom
+    world_to_view_xf_.translate(-worldPos.x(), -worldPos.y());  // move back to world point
 }
 
 void MapWidget::doTranslate(const QPointF &delta) { world_to_view_xf_.translate(delta.x(), delta.y()); }
@@ -365,7 +365,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
 }
 
 /**
- * 重写这里，采用缓存机制
+ * Rewritten here to use a caching mechanism
  * @param event
  * @param painter
  */
@@ -657,8 +657,7 @@ void MapWidget::syncToolbars() {
     if (level_page_) level_page_->syncToolbars();
 }
 
-// 显示右键菜单
-// 显示右键菜单
+// show right-click context menu
 void MapWidget::showContextMenu(const QPoint &p) { ContextMenuBuilder::show(this, this, mapToGlobal(p)); }
 
 void MapWidget::keyPressEvent(QKeyEvent *event) {

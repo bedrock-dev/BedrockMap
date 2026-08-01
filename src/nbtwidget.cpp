@@ -442,7 +442,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
 }
 
 void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
-    // 单选模式
+    // single selection mode
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
         auto *removeAction = new QAction(tr("nbtEditor.rightMenu.delete"), this);
         auto *exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
@@ -495,7 +495,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         });
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
-        // 多选模式
+        // multi-selection mode
         auto *removeSelect = new QAction(tr("nbtEditor.rightMenu.deleteSelected"), this);
         auto *unselectAll = new QAction(tr("nbtEditor.rightMenu.unselectAll"), this);
         auto *exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
@@ -505,7 +505,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             ui->list_widget->blockSignals(true);
             for (auto &item : ui->list_widget->selectedItems()) {
                 auto *nbtItem = dynamic_cast<NBTListItem *>(item);
-                // 防止闪退
+                // prevent crash
                 if (nbtItem == this->current_opened_) ui->tree_widget->clear();
                 putRemoveToCache(nbtItem->raw_key.toStdString());
                 ui->list_widget->removeItemWidget(item);
@@ -647,7 +647,7 @@ void NbtWidget::putModifyToCache(const std::string &key, const std::string &valu
     if (enable_modify_cache_) {
         this->modified_cache_[key] = value;
     };
-    // 日志不受影响
+    // logging is unaffected
     if (value.empty()) {
         LOG_F(INFO, "Delete key: %s", key.c_str());
     } else {

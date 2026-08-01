@@ -21,19 +21,19 @@
 #include "loguru/loguru.hpp"
 #include "voxelwidget.h"
 
-// 每个面的索引模板（2个三角形，6个索引）
+// index template for each face (2 triangles, 6 indices)
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
-// 类外初始化面模板（一维vector，每个面12个坐标值）
+// initialize the face template outside the class (1D vector, 12 coordinate values per face)
 const std::vector<std::vector<float>> VoxelWidget::m_faceTemplates = {
-    {-0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f},      // +Z 前面
-    {-0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f},  // -Z 后面
-    {-0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f},  // -X 左面
-    {0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f},      // +X 右面
-    {-0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f},      // +Y 上面
-    {-0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f}   // -Y 下面
+    {-0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f},      // +Z front
+    {-0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f},  // -Z back
+    {-0.5f, -0.5f, -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, -0.5f},  // -X left
+    {0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f},      // +X right
+    {-0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f},      // +Y top
+    {-0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f}   // -Y bottom
 };
 
-// 6个面的法线方向
+// normal directions of the 6 faces
 const std::vector<QVector3D> VoxelWidget::m_faceNormals = {QVector3D(0.0f, 0.0f, 1.0f),  QVector3D(0.0f, 0.0f, -1.0f),
                                                            QVector3D(-1.0f, 0.0f, 0.0f), QVector3D(1.0f, 0.0f, 0.0f),
                                                            QVector3D(0.0f, 1.0f, 0.0f),  QVector3D(0.0f, -1.0f, 0.0f)};
@@ -44,7 +44,7 @@ VoxelWidget::VoxelWidget(QWidget* parent) : QOpenGLWidget(parent) {
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
-    format.setSamples(8);  // 抗锯齿
+    format.setSamples(8);  // anti-aliasing
     setFormat(format);
     updateVoxelData({});
 }
@@ -74,14 +74,14 @@ VoxelWidget::~VoxelWidget() {
     }
 }
 
-// 设置渲染层范围
+// set render layer range
 void VoxelWidget::setLayer(int startLayer, int endLayer) {
     if (voxel_data_.empty()) return;
-    // 边界校验
+    // bounds check
     start_layer_ = std::max(0, startLayer);
     ender_layer_ = std::min(static_cast<int>(voxel_data_.size()) - 1, endLayer);
     start_layer_ = std::min(start_layer_, ender_layer_);
-    // 重建顶点并刷新
+    // rebuild vertices and refresh
     buildVoxelVertices();
     update();
 }
@@ -125,22 +125,22 @@ void VoxelWidget::generateOpenGLBuffers() {
 }
 
 void VoxelWidget::setupVertexAttributes() {
-    // 设置opaque对象的顶点属性
+    // set vertex attributes for opaque objects
     glBindVertexArray(vao_opaque_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_opaque_);
 
-    // 顶点位置
+    // vertex position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // 法线
+    // normal
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // 颜色
+    // color
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // 设置transparent对象的顶点属性
+    // set vertex attributes for transparent objects
     glBindVertexArray(vao_transparent_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_transparent_);
@@ -152,7 +152,7 @@ void VoxelWidget::setupVertexAttributes() {
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // 解绑VAO
+    // unbind VAO
     glBindVertexArray(0);
 }
 
@@ -161,7 +161,7 @@ void VoxelWidget::updateOpenGLBuffers() {
         LOG_F(WARNING, "OpenGL buffers not generated yet!");
         return;
     }
-    // 更新opaque对象的缓冲数据
+    // update buffer data for opaque objects
     if (vao_opaque_ != 0) {
         glBindBuffer(GL_ARRAY_BUFFER, vbo_opaque_);
         glBufferData(GL_ARRAY_BUFFER, verticles_opaque_.size() * sizeof(float), verticles_opaque_.data(), GL_DYNAMIC_DRAW);
@@ -170,7 +170,7 @@ void VoxelWidget::updateOpenGLBuffers() {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_opaque_.size() * sizeof(GLuint), indices_opaque_.data(), GL_DYNAMIC_DRAW);
     }
 
-    // 更新transparent对象的缓冲数据
+    // update buffer data for transparent objects
     if (vao_transparent_ != 0) {
         glBindBuffer(GL_ARRAY_BUFFER, vbo_transparent_);
         glBufferData(GL_ARRAY_BUFFER, verticles_transparent_.size() * sizeof(float), verticles_transparent_.data(), GL_DYNAMIC_DRAW);
@@ -179,14 +179,14 @@ void VoxelWidget::updateOpenGLBuffers() {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_transparent_.size() * sizeof(GLuint), indices_transparent_.data(), GL_DYNAMIC_DRAW);
     }
 
-    // 解绑缓冲
+    // unbind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void VoxelWidget::initializeGL() {
     initializeOpenGLFunctions();
-    // 设置OpenGL状态
+    // set OpenGL state
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -197,7 +197,7 @@ void VoxelWidget::initializeGL() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    // 编译着色器
+    // compile shaders
     gl_shader_ = new QOpenGLShaderProgram(this);
     gl_shader_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/shaders/voxel.vert");
     gl_shader_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/shaders/voxel.frag");
@@ -230,7 +230,7 @@ void VoxelWidget::updateModelMatrix() {
     m_model.rotate(rotate_y_, 0.0f, 1.0f, 0.0f);
     m_model.translate(m_cameraTranslate);
 
-    // 居中平移
+    // center translate
     if (!voxel_data_.empty() && !voxel_data_[0].empty() && !voxel_data_[0][0].empty()) {
         float cx = (voxel_data_[0].size() * voxel_size_) / 2.0f;
         float cy = (voxel_data_.size() * voxel_size_) / 2.0f;
@@ -265,7 +265,7 @@ void VoxelWidget::renderTransparentObjects() {
     glBindVertexArray(0);
 }
 
-// 添加一个辅助函数用于调试
+// add a helper function for debugging
 void VoxelWidget::checkOpenGLError(const char* location) {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
@@ -274,17 +274,17 @@ void VoxelWidget::checkOpenGLError(const char* location) {
 }
 
 void VoxelWidget::resizeGL(int w, int h) {
-    // 设置视口
+    // set viewport
     glViewport(0, 0, w, h);
-    // 投影矩阵（透视投影）
+    // projection matrix (perspective projection)
     m_projection.setToIdentity();
     m_projection.perspective(45.0f, (float)w / h, 0.1f, 1000.0f);
 
-    // 视图矩阵（相机位置）
+    // view matrix (camera position)
     m_view.setToIdentity();
-    m_view.lookAt(QVector3D(0.0f, 0.0f, 50.0f),  // 相机位置
-                  QVector3D(0.0f, 0.0f, 0.0f),   // 观察目标
-                  QVector3D(0.0f, 1.0f, 0.0f));  // 上方向
+    m_view.lookAt(QVector3D(0.0f, 0.0f, 50.0f),  // camera position
+                  QVector3D(0.0f, 0.0f, 0.0f),   // look target
+                  QVector3D(0.0f, 1.0f, 0.0f));  // up direction
 }
 
 bool VoxelWidget::hasNeighbor(int layer, int x, int z, int dy, int dx, int dz) {
@@ -317,7 +317,7 @@ void VoxelWidget::addFaceVertices(int layer, int x, int z, const Voxel& voxel, c
     float worldY = layer * voxel_size_;
     float worldZ = z * voxel_size_;
 
-    bool isOpaque = !voxel.transparent;  // transparent=false → 不透明层
+    bool isOpaque = !voxel.transparent;  // transparent=false → opaque layer
     auto& vertices = isOpaque ? verticles_opaque_ : verticles_transparent_;
     auto& indices = isOpaque ? indices_opaque_ : indices_transparent_;
 
@@ -364,15 +364,15 @@ void VoxelWidget::buildVoxelVertices() {
     static int dyArr[] = {0, 0, 0, 0, 1, -1};
     static int dzArr[] = {1, -1, 0, 0, 0, 0};
 
-    for (int layer = start_layer_; layer <= ender_layer_; ++layer) {  // Y轴（层）
+    for (int layer = start_layer_; layer <= ender_layer_; ++layer) {  // Y axis (layer)
         const auto& layerData = voxel_data_[layer];
         if (layerData.empty()) continue;
 
-        for (int x = 0; x < layerData.size(); ++x) {  // X轴
+        for (int x = 0; x < layerData.size(); ++x) {  // X axis
             const auto& rowData = layerData[x];
             if (rowData.empty()) continue;
 
-            for (int z = 0; z < rowData.size(); ++z) {  // Z轴
+            for (int z = 0; z < rowData.size(); ++z) {  // Z axis
                 const Voxel& voxel = rowData[z];
 
                 if (voxel.color.alpha() == 0) {
@@ -446,7 +446,7 @@ void VoxelWidget::wheelEvent(QWheelEvent* e) {
     } else {
         m_scale = std::max(m_scale - 0.1f, 0.1f);
     }
-    update();  // 刷新渲染
+    update();  // refresh render
 }
 
 void VoxelWidget::showEvent(QShowEvent* e) { QOpenGLWidget::showEvent(e); }
@@ -458,7 +458,7 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
         rotate_x_ = 0.0f;
         rotate_y_ = 0.0f;
         m_scale = 1.0f;
-        m_cameraTranslate = QVector3D(0.0f, 0.0f, 0.0f);  // 重置平移
+        m_cameraTranslate = QVector3D(0.0f, 0.0f, 0.0f);  // reset pan
         update();
     }
     QOpenGLWidget::keyPressEvent(e);
@@ -476,11 +476,11 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     if (chunks.empty() || chunks[0].empty()) {
         return {};
     }
-    const int width = chunks.size();     // Chunk的X方向数量
-    const int depth = chunks[0].size();  // Chunk的Z方向数量
-    const int CW = 16;                   // 每个Chunk的块尺寸（16x16xN）
+    const int width = chunks.size();     // number of chunks along X
+    const int depth = chunks[0].size();  // number of chunks along Z
+    const int CW = 16;                   // block size of each chunk (16x16xN)
 
-    // 2. 计算所有Chunk的Y轴范围（修复MIN/MAX初始化逻辑）
+    // 2. compute the Y range of all chunks (fixes the MIN/MAX init logic)
     int min_y = INT_MAX, max_y = INT_MIN;
     for (const auto& chunk_row : chunks) {
         for (const auto& ch : chunk_row) {
@@ -522,13 +522,13 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
             auto [min_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
             int y_range = max_y - min_y + 1;
 
-            // 预计算全局索引的基础偏移
+            // precompute the base offset of global indices
             int base_global_x = xIdx * CW;
             int base_global_z = zIdx * CW;
 
-            // 预检查y范围是否有效
+            // pre-check whether the y range is valid
             if (min_y < 0 || max_y >= total_layer) {
-                // 调整有效的y范围
+                // adjust the valid y range
                 min_y = std::max(min_y, 0);
                 max_y = std::min(max_y, total_layer - 1);
                 if (min_y > max_y) continue;
@@ -542,12 +542,12 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
                     int global_z_idx = base_global_z + z;
                     if (global_z_idx < 0 || global_z_idx >= data[0][0].size()) continue;
 
-                    // 内层遍历y（垂直方向）
+                    // inner loop over y (vertical direction)
                     for (int y = min_y; y <= max_y; ++y) {
                         int global_y_idx = y;
                         if (global_y_idx < 0 || global_y_idx >= total_layer) continue;
 
-                        // 检查边界
+                        // bounds check
                         if (global_y_idx >= data.size() || global_x_idx >= data[global_y_idx].size() ||
                             global_z_idx >= data[global_y_idx][global_x_idx].size()) {
                             continue;

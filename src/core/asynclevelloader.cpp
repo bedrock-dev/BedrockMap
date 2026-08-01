@@ -35,9 +35,7 @@ AsyncLevelLoader::AsyncLevelLoader() {
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
-    /**
-     * 不要相信bedrock_level的任何数据，不在库内做任何长期的缓存
-     */
+    // don't make cache in bedrock-level
     this->level_.set_cache(false);
 }
 
@@ -101,12 +99,12 @@ AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
     LOG_F(INFO, "Try close level");
-    this->loaded_ = false;      // 阻止UI层请求数据
-    this->processing_.clear();  // 队列清除
-    this->pool_.clear();        // 清除所有任务
-    this->pool_.waitForDone();  // 等待当前任务完成
+    this->loaded_ = false;      // blocking UI request
+    this->processing_.clear();  // clear queue
+    this->pool_.clear();        // clear and wait for done
+    this->pool_.waitForDone();
     LOG_F(INFO, "Clear work pool");
-    this->level_.close();  // 关闭存档
+    this->level_.close();  // close the level
     this->clearAllCache();
 }
 

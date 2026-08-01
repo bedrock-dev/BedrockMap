@@ -24,10 +24,9 @@
 #include "bedrock_key.h"
 #include "chunk.h"
 
-// 体素数据结构：恢复transparent参数，双判定（优先级：transparent > alpha）
 struct Voxel {
-    QColor color;              // 颜色（alpha通道辅助判定）
-    bool transparent = false;  // 主透明标记（true=透明，false=不透明）
+    QColor color;              // color (alpha channel assists transparency check)
+    bool transparent = false;  // primary transparency flag (true=transparent, false=opaque)
     Voxel() : color(Qt::white) {}
     Voxel(const QColor& c, bool trans = false) : color(c), transparent(trans) {}
 };
@@ -61,13 +60,13 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
    private:
     // opengl
     void generateOpenGLBuffers();
-    void setupVertexAttributes();                 // 设置顶点属性（只调用一次）
-    void updateOpenGLBuffers();                   // 更新OpenGL缓冲数据
-    void updateModelMatrix();                     // 更新模型矩阵
-    void setUniforms();                           // 设置着色器uniform变量
-    void renderOpaqueObjects();                   // 渲染不透明对象
-    void renderTransparentObjects();              // 渲染透明对象
-    void checkOpenGLError(const char* location);  // 调试用的错误检查（可
+    void setupVertexAttributes();                 // set vertex attributes (called once only)
+    void updateOpenGLBuffers();                   // update OpenGL buffer data
+    void updateModelMatrix();                     // update model matrix
+    void setUniforms();                           // set shader uniforms
+    void renderOpaqueObjects();                   // render opaque objects
+    void renderTransparentObjects();              // render transparent objects
+    void checkOpenGLError(const char* location);  // debug error checking
 
     // mesh building
     bool hasNeighbor(int layer, int x, int z, int dLayer, int dX, int dZ);
@@ -99,11 +98,11 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     float m_scale = 1.0f;
     float voxel_size_ = 1.0f;
 
-    QVector3D m_cameraTranslate;   // 相机平移偏移（X/Y/Z轴）
-    bool m_isPanDragging{false};   // 是否正在平移拖拽
-    QPoint m_panStartPos;          // 平移起始鼠标位置
-    float m_panSensitivity{0.3};   // 平移灵敏度
-    bool m_isShiftPressed{false};  // Shift键是否按下（区分前后/左右平移）
+    QVector3D m_cameraTranslate;   // camera pan offset (X/Y/Z axis)
+    bool m_isPanDragging{false};   // whether panning drag is active
+    QPoint m_panStartPos;          // mouse start position for pan
+    float m_panSensitivity{0.3};   // pan sensitivity
+    bool m_isShiftPressed{false};  // whether Shift is pressed (distinguishes forward/back vs left/right pan)
 
     // matrix
     QMatrix4x4 m_projection;

@@ -16,7 +16,6 @@
 #include "resourcemanager.h"
 #include "ui_nbtmodifydialog.h"
 
-
 namespace {
     template <typename T>
     using nl = std::numeric_limits<T>;

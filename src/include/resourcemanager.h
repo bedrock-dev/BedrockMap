@@ -34,8 +34,6 @@ QImage *EntityNBTIcon(const QString &key);
 
 QString ToolBarIcon(const QString &name);
 
-// 下面是新的API
-
 struct IconManager {
     IconManager() = delete;
 

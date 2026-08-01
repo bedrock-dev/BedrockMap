@@ -19,7 +19,7 @@ namespace Ui {
 
 using namespace bl::palette;
 
-// 不持有数据
+// does not own data
 class NBTTreeItem : public QTreeWidgetItem {
    public:
     bool tryAddChild(bl::palette::abstract_tag *tag, bool hex_mode);
@@ -52,7 +52,7 @@ class NBTTreeItem : public QTreeWidgetItem {
     bl::palette::abstract_tag *root_{nullptr};
 };
 
-// 持有数据
+// owns data
 
 struct NBTListItem : public QListWidgetItem {
     QString getLabel() {
@@ -60,14 +60,14 @@ struct NBTListItem : public QListWidgetItem {
         return dyn.size() == 0 ? default_label : dyn;
     }
 
-    bl::palette::compound_tag *root_{nullptr};                                                                   // 原始数据
-    std::function<QString(bl::palette::compound_tag *)> namer_{[](bl::palette::compound_tag *) { return ""; }};  // 动态标签
-    QString default_label;                                                                                       // 外显标签
-    QString raw_key;  // leveldb中key结构的原始key
+    bl::palette::compound_tag *root_{nullptr};                                                                   // raw data
+    std::function<QString(bl::palette::compound_tag *)> namer_{[](bl::palette::compound_tag *) { return ""; }};  // dynamic label
+    QString default_label;                                                                                       // display label
+    QString raw_key;  // original key in the leveldb key structure
     ~NBTListItem() override { delete this->root_; }
 
     /*
-     * 构造一一个没有动态标签和ICON的NBTListItem
+     * Construct an NBTListItem without a dynamic label or icon
      */
     static NBTListItem *from(bl::palette::compound_tag *data, const QString &default_label, const QString &key = "") {
         auto *it = new NBTListItem();
@@ -102,7 +102,7 @@ struct NBTNodeUIAttr {
     }
 };
 
-// 自身会持有数据，所以每次加载数据会析构之前的并复制一份
+// owns its own data, so every load destroys the previous one and copies a new one
 class NbtWidget : public QWidget {
     Q_OBJECT
    public:
@@ -181,7 +181,7 @@ class NbtWidget : public QWidget {
     void tryModifyCurrentNode();
 
    private:
-    // 不存数据，只引用数据
+    // does not store data, only references it
     Ui::NbtWidget *ui;
     NBTModifyDialog *modify_dialog_{nullptr};
     bool modify_allowed_{true};

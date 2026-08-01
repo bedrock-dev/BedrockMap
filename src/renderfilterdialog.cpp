@@ -75,15 +75,15 @@ void RenderFilterDialog::on_current_layer_lineedit_textEdited(const QString &arg
 void RenderFilterDialog::on_layer_slider_valueChanged(int value) { ui->current_layer_lineedit->setText(QString::number(value)); }
 
 /**
- * 根据查找情况渲染一个方块的数据
- * @param f  MapFilter 对象
- * @param ch 区块对象
- * @param chx 区块内x坐标
- * @param chz 区块内z坐标
- * @param y   y坐标
- * @param rw  区域坐标w
- * @param rh 区域坐标h
- * @param region  区域数据对象
+ * Render a block's data based on the filter lookup result
+ * @param f  MapFilter object
+ * @param ch chunk object
+ * @param chx x coordinate inside the chunk
+ * @param chz z coordinate inside the chunk
+ * @param y   y coordinate
+ * @param rw  region width
+ * @param rh  region height
+ * @param region  region data object
  */
 void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int y, int y_solid, int rw, int rh, ChunkRegion *region) {
     if (!ch || !f) return;
@@ -131,12 +131,12 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     tips.solid_height = solid_h;
 }
 
-// 地形，群系渲染以及坐标数据设置
+// terrain/biome rendering and coordinate data setup
 void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const {
     if (!ch || !region) return;
     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
     if (this->enable_layer_) {
-        // 选层模式
+        // layer selection mode
         if (this->layer > maxy || this->layer < miny) return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
@@ -147,7 +147,7 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
             }
         }
     } else {
-        // get_height() 缩小扫描区间，get_top_y 内部跳过 unknown/air
+        // get_height() narrows the scan range, get_top_y skips unknown/air internally
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 auto [top_y, solid_y] = ch->get_top_y(i, j, ch->get_height(i, j));
