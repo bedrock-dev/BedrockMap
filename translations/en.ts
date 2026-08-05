@@ -598,10 +598,12 @@
         <translation type="unfinished">Modify NBT</translation>
     </message>
     <message>
+        <location filename="../src/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.create</source>
         <translation type="unfinished">Create NBT</translation>
     </message>
     <message>
+        <location filename="../src/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.modify</source>
         <translation type="unfinished">Modify NBT</translation>
     </message>
