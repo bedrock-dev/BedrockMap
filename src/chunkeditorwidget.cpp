@@ -18,6 +18,7 @@
 #include "chunk.h"
 #include "chunkio.h"
 #include "chunksectionwidget.h"
+#include "hsaeditorwidget.h"
 #include "include/msg.h"
 #include "loguru/loguru.hpp"
 #include "msg.h"
@@ -30,7 +31,8 @@
 ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoader)
     : QWidget(parent), ui(new Ui::ChunkEditorWidget), level_loader_(levelLoader) {
     ui->setupUi(this);
-    // 3D render widget — no parent so it opens as a standalone window
+
+    // 3D render widget — no parent so it opens as a standalone wiAndow
     this->terrain_render_widget_ = new class VoxelWidget(nullptr);
     // terrain tab
     ui->base_info_label->clear();
@@ -51,6 +53,22 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     ui->block_actor_tab->layout()->replaceWidget(ui->empty_block_actor_editor_widget, this->block_entity_editor_);
     ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_editor_);
     ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
+
+    // hsa tab
+    this->hsa_editor_ = new HsaEditorWidget();
+    ui->hsa_tab->layout()->replaceWidget(ui->empty_hsa_editor_widget, this->hsa_editor_);
+    connect(this->hsa_editor_, &HsaEditorWidget::hsaModified, this, [this]() {
+        int idx = ui->tabWidget->indexOf(ui->hsa_tab);
+        if (idx < 0) return;
+        auto text = ui->tabWidget->tabText(idx);
+        if (hsa_editor_->dirty()) {
+            if (!text.endsWith(" *")) text += " *";
+        } else {
+            if (text.endsWith(" *")) text.chop(2);
+        }
+        ui->tabWidget->setTabText(idx, text);
+        setDirty(true);
+    });
 
     // dirty indicator on tab names
     auto setupDirtyTab = [this](NbtWidget *editor, QWidget *tab) {
@@ -93,6 +111,8 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     this->cv = chunk->get_version();
     this->cp_ = chunk->get_pos();
     this->refreshBasicData();
+    this->hsa_editor_->setChunk(this->cp_);
+    this->hsa_editor_->setData(chunk->HSAs().areas());
 
     // load data
     LOG_F(INFO, "Load basic chunk data");
@@ -200,10 +220,12 @@ void ChunkEditorWidget::saveChunk() {
         }
     }
     raw_chunk_.set_entities(actors);
+    raw_chunk_.set_normal(bl::chunk_key::HardCodedSpawnAreas, this->hsa_editor_->serialize());
     this->level_loader_->putRawChunk(this->raw_chunk_);
     actor_editor_->clearModifyCache();
     pending_tick_editor_->clearModifyCache();
     block_entity_editor_->clearModifyCache();
+    hsa_editor_->markClean();
     for (auto *actor : actors) delete actor;
     setDirty(false);
 }
@@ -247,6 +269,7 @@ void ChunkEditorWidget::clearData() {
     this->actor_editor_->clearData();
     this->block_entity_editor_->clearData();
     this->pending_tick_editor_->clearData();
+    this->hsa_editor_->clearData();
     this->has_chunk_ = false;
 }
 

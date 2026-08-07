@@ -17,6 +17,8 @@ class ChunkSectionWidget;
 
 class NbtWidget;
 
+class HsaEditorWidget;
+
 class MainWindow;
 
 class ChunkEditorWidget : public QWidget {
@@ -74,6 +76,7 @@ class ChunkEditorWidget : public QWidget {
     NbtWidget *actor_editor_{nullptr};
     NbtWidget *block_entity_editor_{nullptr};
     NbtWidget *pending_tick_editor_{nullptr};
+    HsaEditorWidget *hsa_editor_{nullptr};
     VoxelWidget *terrain_render_widget_{nullptr};
 
     Ui::ChunkEditorWidget *ui;

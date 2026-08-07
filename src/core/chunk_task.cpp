@@ -90,7 +90,7 @@ void LoadRegionTask::run() {
                 chunk_count++;
                 MapTile::bakeChunkTerrain(chunk, this->filter_, rw, rh, region);
                 MapTile::bakeChunkActors(chunk, this->filter_, region);
-                auto hss = chunk->HSAs();
+                auto &hss = chunk->HSAs();
                 region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
             }
         }

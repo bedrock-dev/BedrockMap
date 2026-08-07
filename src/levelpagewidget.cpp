@@ -402,6 +402,7 @@ void LevelPageWidget::commit() {
     if (!allModifies.empty()) {
         this->level_loader_->modifyDBGlobal(allModifies);
     }
+    level_dat_editor_->clearModifyCache();
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
     other_nbt_editor_->clearModifyCache();

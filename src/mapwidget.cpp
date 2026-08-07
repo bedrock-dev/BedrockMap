@@ -424,7 +424,10 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
             auto pen = QPen(outlineColor, 3);
             pen.setCosmetic(true);
             painter->setPen(pen);
-            auto rect = QRectF(blockPosToFloatChunkPos(hsa.min_pos), blockPosToFloatChunkPos(hsa.max_pos));
+            // max corner must be the far edge of the max block, otherwise the rect loses one block
+            auto minP = blockPosToFloatChunkPos(hsa.min_pos);
+            auto maxP = blockPosToFloatChunkPos(bl::block_pos(hsa.max_pos.x + 1, 0, hsa.max_pos.z + 1));
+            auto rect = QRectF(minP, maxP);
             painter->drawRect(rect);
             outlineColor.setAlpha(100);
             painter->fillRect(rect, QBrush(outlineColor));

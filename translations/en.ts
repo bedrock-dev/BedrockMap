@@ -134,6 +134,10 @@
         <source>chunkEditor.save</source>
         <translation type="unfinished">Save Chunk Data</translation>
     </message>
+    <message>
+        <source>chunkEditor.hsa</source>
+        <translation>HSA Areas</translation>
+    </message>
 </context>
 <context>
     <name>ChunkSectionWidget</name>
@@ -171,6 +175,39 @@
         <location filename="../src/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation type="unfinished">Go To Position</translation>
+    </message>
+</context>
+<context>
+    <name>HsaEditorWidget</name>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colIndex</source>
+        <translation>#</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colMin</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colMax</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colType</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.remove</source>
+        <translation>Remove</translation>
     </message>
 </context>
 <context>
@@ -1202,6 +1239,31 @@
         <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation type="unfinished">Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.netherFortress</source>
+        <translation>Nether Fortress</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.swampHut</source>
+        <translation>Swamp Hut</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.oceanMonument</source>
+        <translation>Ocean Monument</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.pillagerOutpost</source>
+        <translation>Pillager Outpost</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.unknown</source>
+        <translation>Unknown</translation>
     </message>
 </context>
 <context>

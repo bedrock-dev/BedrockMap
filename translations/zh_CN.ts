@@ -134,6 +134,10 @@
         <source>chunkEditor.save</source>
         <translation type="unfinished">保存区块数据</translation>
     </message>
+    <message>
+        <source>chunkEditor.hsa</source>
+        <translation>HSA区域</translation>
+    </message>
 </context>
 <context>
     <name>ChunkSectionWidget</name>
@@ -171,6 +175,39 @@
         <location filename="../src/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation>跳转到位置</translation>
+    </message>
+</context>
+<context>
+    <name>HsaEditorWidget</name>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colIndex</source>
+        <translation>序号</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colMin</source>
+        <translation>最小坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colMax</source>
+        <translation>最大坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.colType</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.remove</source>
+        <translation>删除</translation>
     </message>
 </context>
 <context>
@@ -1202,6 +1239,31 @@
         <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.netherFortress</source>
+        <translation>下界要塞</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.swampHut</source>
+        <translation>沼泽小屋</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.oceanMonument</source>
+        <translation>海底神殿</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.pillagerOutpost</source>
+        <translation>掠夺者前哨站</translation>
+    </message>
+    <message>
+        <location filename="../src/hsaeditorwidget.cpp"/>
+        <source>hsaEditor.type.unknown</source>
+        <translation>未知</translation>
     </message>
 </context>
 <context>

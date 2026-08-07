@@ -5,5 +5,11 @@
     },
     "files.associations": {
         "translations/*.ts": "xml"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "/^Push-Location \\.\\\\bedrock-level; cmake --build \\.\\\\build --target palette_test 2>&1 \\| Select-Object -Last 5; \\.\\\\build\\\\palette_test\\.exe 2>&1; Pop-Location$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
