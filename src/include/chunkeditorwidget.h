@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <cstddef>
+#include <functional>
 
 #include "asynclevelloader.h"
 #include "chunk.h"
@@ -20,6 +21,8 @@ class NbtWidget;
 class HsaEditorWidget;
 
 class MainWindow;
+
+class QStackedWidget;
 
 class ChunkEditorWidget : public QWidget {
     Q_OBJECT
@@ -70,12 +73,25 @@ class ChunkEditorWidget : public QWidget {
 
     void setDirty(bool bo) { dirty_ = bo; }
 
+    QWidget *makeOversizePlaceholder(const QString &msg, const std::function<void()> &onDelete);
+
+    void setTabDirtyText(QWidget *tab);
+
+    void deleteBlockEntityData();
+
+    void deletePendingTickData();
+
+    void deleteActorData();
+
    private:
     ChunkSectionWidget *chunk_section_{nullptr};
 
     NbtWidget *actor_editor_{nullptr};
     NbtWidget *block_entity_editor_{nullptr};
     NbtWidget *pending_tick_editor_{nullptr};
+    QStackedWidget *actor_stack_{nullptr};
+    QStackedWidget *block_entity_stack_{nullptr};
+    QStackedWidget *pending_tick_stack_{nullptr};
     HsaEditorWidget *hsa_editor_{nullptr};
     VoxelWidget *terrain_render_widget_{nullptr};
 

@@ -17,12 +17,12 @@ std::pair<int, int> RawChunkCache::chunkCounts() const {
 
 void RawChunkCache::putChunk(const bl::chunk_pos &pos, const bl::raw_chunk &chunk) { cache_.insert_or_assign(pos, CachedChunk{chunk}); }
 
-bl::chunk *RawChunkCache::getChunk(const bl::chunk_pos &pos) const {
+bl::chunk *RawChunkCache::getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy) const {
     auto it = cache_.find(pos);
     // if a chunk are mark as deleted in cache, we think is does not exist
     if (it == cache_.end() || it->second.shouldDelete) return nullptr;
     auto *c = new bl::chunk(pos);
-    c->load_from_raw_chunk(it->second.chunk);
+    c->load_from_raw_chunk(it->second.chunk, policy);
     return c;
 }
 

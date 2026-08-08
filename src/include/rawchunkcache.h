@@ -21,7 +21,7 @@ class RawChunkCache {
 
     void putChunk(const bl::chunk_pos &pos, const bl::raw_chunk &chunk);
 
-    bl::chunk *getChunk(const bl::chunk_pos &pos) const;
+    bl::chunk *getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy = bl::chunk_load_policy::All) const;
 
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &pos) const;
 

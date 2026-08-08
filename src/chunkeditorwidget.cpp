@@ -7,9 +7,13 @@
 #include <QCryptographicHash>
 #include <QFileDialog>
 #include <QHideEvent>
+#include <QLabel>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPushButton>
+#include <QStackedWidget>
 #include <QToolTip>
+#include <QVBoxLayout>
 #include <memory>
 #include <vector>
 
@@ -27,6 +31,19 @@
 #include "resourcemanager.h"
 #include "ui_chunkeditorwidget.h"
 #include "voxelwidget.h"
+
+namespace {
+    // data above this size is not parsed into the NBT editor
+    constexpr size_t kOversizeBytes = 16u * 1024u * 1024u;  // 16 MB
+
+    QString actorLabel(bl::palette::compound_tag *root) {
+        auto *id = root->get("identifier");
+        if (id && id->type() == bl::palette::tag_type::String) {
+            return QString(dynamic_cast<bl::palette::string_tag *>(id)->value.c_str()).replace("minecraft:", "");
+        }
+        return "unknown";
+    }
+}  // namespace
 
 ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoader)
     : QWidget(parent), ui(new Ui::ChunkEditorWidget), level_loader_(levelLoader) {
@@ -50,9 +67,23 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     this->pending_tick_editor_->hideLoadDataBtn();
     this->block_entity_editor_->hideLoadDataBtn();
 
-    ui->block_actor_tab->layout()->replaceWidget(ui->empty_block_actor_editor_widget, this->block_entity_editor_);
-    ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_editor_);
-    ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_editor_);
+    // each editor is stacked with an "oversized data" placeholder (label + delete button)
+    this->block_entity_stack_ = new QStackedWidget();
+    this->block_entity_stack_->addWidget(this->block_entity_editor_);
+    this->block_entity_stack_->addWidget(
+        makeOversizePlaceholder(tr("chunkEditor.blockEntity.tooLarge"), [this] { deleteBlockEntityData(); }));
+    ui->block_actor_tab->layout()->replaceWidget(ui->empty_block_actor_editor_widget, this->block_entity_stack_);
+
+    this->actor_stack_ = new QStackedWidget();
+    this->actor_stack_->addWidget(this->actor_editor_);
+    this->actor_stack_->addWidget(makeOversizePlaceholder(tr("chunkEditor.actor.tooLarge"), [this] { deleteActorData(); }));
+    ui->actor_tab->layout()->replaceWidget(ui->empyt_actor_editor_widget, this->actor_stack_);
+
+    this->pending_tick_stack_ = new QStackedWidget();
+    this->pending_tick_stack_->addWidget(this->pending_tick_editor_);
+    this->pending_tick_stack_->addWidget(
+        makeOversizePlaceholder(tr("chunkEditor.pendingTick.tooLarge"), [this] { deletePendingTickData(); }));
+    ui->pt_tab->layout()->replaceWidget(ui->empty_pt_editor_widget, this->pending_tick_stack_);
 
     // hsa tab
     this->hsa_editor_ = new HsaEditorWidget();
@@ -106,7 +137,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     this->has_chunk_ = true;
     auto ptr = std::make_unique<bl::chunk>(this->raw_chunk_.pos());
     auto *chunk = ptr.get();
-    if (!chunk->load_from_raw_chunk(this->raw_chunk_)) return;
+    if (!chunk->load_from_raw_chunk(this->raw_chunk_, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others)) return;
 
     this->cv = chunk->get_version();
     this->cp_ = chunk->get_pos();
@@ -125,49 +156,76 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     this->terrain_render_widget_->setWindowTitle(chunk->get_pos().to_string().c_str());
     {
         LOG_F(INFO, "Load chunk block entity data");
-        std::vector<NBTListItem *> block_entity_items;
-        auto &bes = chunk->block_entities();
-        for (auto &b : bes) {
-            auto id_tag = b->get("id");
-            QString name = "unknown";
-            if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
-                name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
+        auto raw = this->raw_chunk_.get_normal_key(bl::chunk_key::BlockEntity);
+        if (raw.size() > kOversizeBytes) {
+            this->block_entity_stack_->setCurrentIndex(1);
+        } else {
+            this->block_entity_stack_->setCurrentIndex(0);
+            std::vector<NBTListItem *> block_entity_items;
+            if (!raw.empty()) {
+                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                for (auto *b : palettes) {
+                    auto id_tag = b->get("id");
+                    QString name = "unknown";
+                    if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
+                        name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
+                    }
+                    auto *item = NBTListItem::from(b, name, QString::number(index));
+                    item->setIcon(QIcon(QPixmap::fromImage(*BlockActorNBTIcon(name.toLower().replace("minecraft:", "")))));
+                    block_entity_items.push_back(item);
+                    index++;
+                }
             }
-            auto *item = NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(b->copy()), name, QString::number(index));
-            item->setIcon(QIcon(QPixmap::fromImage(*BlockActorNBTIcon(name.toLower().replace("minecraft:", "")))));
-            block_entity_items.push_back(item);
-            index++;
+            this->block_entity_editor_->loadNewData(block_entity_items);
         }
-        this->block_entity_editor_->loadNewData(block_entity_items);
     }
 
     {
         LOG_F(INFO, "Load Chunk pending tick data");
-        std::vector<NBTListItem *> pt_items;
-        auto &pts = chunk->pending_ticks();
-        index = 0;
-        for (auto &b : pts) {
-            auto *item =
-                NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(b->copy()), QString::number(index), QString::number(index));
-            pt_items.push_back(item);
-            index++;
+        auto raw = this->raw_chunk_.get_normal_key(bl::chunk_key::PendingTicks);
+        if (raw.size() > kOversizeBytes) {
+            this->pending_tick_stack_->setCurrentIndex(1);
+        } else {
+            this->pending_tick_stack_->setCurrentIndex(0);
+            std::vector<NBTListItem *> pt_items;
+            if (!raw.empty()) {
+                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                index = 0;
+                for (auto *b : palettes) {
+                    auto *item = NBTListItem::from(b, QString::number(index), QString::number(index));
+                    pt_items.push_back(item);
+                    index++;
+                }
+            }
+            this->pending_tick_editor_->loadNewData(pt_items);
         }
-        this->pending_tick_editor_->loadNewData(pt_items);
     }
 
     {
         LOG_F(INFO, "Load chunk actors data");
-        auto actors = chunk->entities();
-        std::vector<NBTListItem *> actor_items;
-        index = 0;
-        for (auto &b : actors) {
-            auto id = QString(b->identifier().c_str()).replace("minecraft:", "");
-            auto *item = NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(b->root()->copy()), id, QString::number(index));
-            item->setIcon(QIcon(QPixmap::fromImage(*EntityNBTIcon(id))));
-            actor_items.push_back(item);
-            index++;
+        size_t actorBytes = this->raw_chunk_.get_normal_key(bl::chunk_key::Entity).size();
+        for (auto &[uid, data] : this->raw_chunk_.get_entities()) actorBytes += data.size();
+        if (actorBytes > kOversizeBytes) {
+            this->actor_stack_->setCurrentIndex(1);
+        } else {
+            this->actor_stack_->setCurrentIndex(0);
+            std::vector<NBTListItem *> actor_items;
+            auto addActorRaw = [&actor_items, &index](const std::string &raw) {
+                if (raw.empty()) return;
+                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                for (auto *b : palettes) {
+                    auto id = actorLabel(b);
+                    auto *item = NBTListItem::from(b, id, QString::number(index));
+                    item->setIcon(QIcon(QPixmap::fromImage(*EntityNBTIcon(id))));
+                    actor_items.push_back(item);
+                    index++;
+                }
+            };
+            index = 0;
+            addActorRaw(this->raw_chunk_.get_normal_key(bl::chunk_key::Entity));
+            for (auto &[uid, data] : this->raw_chunk_.get_entities()) addActorRaw(data);
+            this->actor_editor_->loadNewData(actor_items);
         }
-        this->actor_editor_->loadNewData(actor_items);
     }
 
     // stats
@@ -270,6 +328,9 @@ void ChunkEditorWidget::clearData() {
     this->block_entity_editor_->clearData();
     this->pending_tick_editor_->clearData();
     this->hsa_editor_->clearData();
+    if (this->actor_stack_) this->actor_stack_->setCurrentIndex(0);
+    if (this->block_entity_stack_) this->block_entity_stack_->setCurrentIndex(0);
+    if (this->pending_tick_stack_) this->pending_tick_stack_->setCurrentIndex(0);
     this->has_chunk_ = false;
 }
 
@@ -338,4 +399,56 @@ void ChunkEditorWidget::on_save_btn_clicked() {
         return;
     }
     saveChunk();
+}
+
+QWidget *ChunkEditorWidget::makeOversizePlaceholder(const QString &msg, const std::function<void()> &onDelete) {
+    auto *w = new QWidget(this);
+    auto *layout = new QVBoxLayout(w);
+    layout->setContentsMargins(12, 12, 12, 12);
+    auto *label = new QLabel(msg);
+    label->setWordWrap(true);
+    label->setAlignment(Qt::AlignCenter);
+    auto *delBtn = new QPushButton(tr("chunkEditor.tooLarge.delete"), w);
+    connect(delBtn, &QPushButton::clicked, w, [onDelete]() { onDelete(); });
+    layout->addStretch();
+    layout->addWidget(label);
+    layout->addWidget(delBtn, 0, Qt::AlignHCenter);
+    layout->addStretch();
+    return w;
+}
+
+void ChunkEditorWidget::setTabDirtyText(QWidget *tab) {
+    int idx = ui->tabWidget->indexOf(tab);
+    if (idx < 0) return;
+    auto text = ui->tabWidget->tabText(idx);
+    if (!text.endsWith(" *")) text += " *";
+    ui->tabWidget->setTabText(idx, text);
+}
+
+void ChunkEditorWidget::deleteBlockEntityData() {
+    if (!has_chunk_) return;
+    this->raw_chunk_.set_normal(bl::chunk_key::BlockEntity, "");
+    this->block_entity_editor_->clearData();
+    this->block_entity_stack_->setCurrentIndex(0);
+    this->setDirty(true);
+    this->setTabDirtyText(ui->block_actor_tab);
+}
+
+void ChunkEditorWidget::deletePendingTickData() {
+    if (!has_chunk_) return;
+    this->raw_chunk_.set_normal(bl::chunk_key::PendingTicks, "");
+    this->pending_tick_editor_->clearData();
+    this->pending_tick_stack_->setCurrentIndex(0);
+    this->setDirty(true);
+    this->setTabDirtyText(ui->pt_tab);
+}
+
+void ChunkEditorWidget::deleteActorData() {
+    if (!has_chunk_) return;
+    this->raw_chunk_.clear_entities();
+    this->raw_chunk_.set_normal(bl::chunk_key::Entity, "");
+    this->actor_editor_->clearData();
+    this->actor_stack_->setCurrentIndex(0);
+    this->setDirty(true);
+    this->setTabDirtyText(ui->actor_tab);
 }

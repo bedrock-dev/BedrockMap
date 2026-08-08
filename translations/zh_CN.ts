@@ -4,83 +4,78 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.title.about</source>
         <translation>关于</translation>
     </message>
     <message>
         <source>{NAME_VERSION}</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.developer</source>
-        <translation type="unfinished">由%1开发</translation>
+        <translation>由%1开发</translation>
     </message>
     <message>
         <source>aboutDialog.copyright</source>
-        <translation type="unfinished">采用GNU AGPL v3.0协议</translation>
+        <translation>采用GNU AGPL v3.0协议</translation>
     </message>
     <message>
         <source>aboutDialog.description</source>
-        <translation type="unfinished">BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++17 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
+        <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++17 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
     </message>
     <message>
         <source>aboutDialog.close</source>
-        <translation type="unfinished">关闭</translation>
+        <translation>关闭</translation>
     </message>
     <message>
         <source>aboutDialog.links</source>
-        <translation type="unfinished">链接</translation>
+        <translation>链接</translation>
     </message>
     <message>
         <source>aboutDialog.otherContributors</source>
-        <translation type="unfinished">其他贡献者</translation>
+        <translation>其他贡献者</translation>
     </message>
     <message>
         <source>aboutDialog.contributorIntzot</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>aboutDialog.contributorOeyan</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.checkUpdate</source>
-        <translation type="unfinished">检查更新</translation>
+        <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.joinQQGroup</source>
-        <translation type="unfinished">加入QQ群</translation>
+        <translation>加入QQ群</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.github</source>
-        <translation type="unfinished">Github</translation>
+        <translation>Github</translation>
     </message>
 </context>
 <context>
     <name>BiomePickerDialog</name>
     <message>
         <source>biomePicker.title</source>
-        <translation type="unfinished">群系选择器</translation>
+        <translation>群系选择器</translation>
     </message>
     <message>
         <source>biomePicker.name</source>
-        <translation type="unfinished">名称</translation>
+        <translation>名称</translation>
     </message>
     <message>
         <source>biomePicker.id</source>
-        <translation type="unfinished">ID</translation>
+        <translation>ID</translation>
     </message>
 </context>
 <context>
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <source>chunkEditor.view3D</source>
@@ -88,15 +83,15 @@
     </message>
     <message>
         <source>chunkEditor.exportChunkData</source>
-        <translation type="unfinished">导出</translation>
+        <translation>导出</translation>
     </message>
     <message>
         <source>chunkEditor.importChunkData</source>
-        <translation type="unfinished">导入</translation>
+        <translation>导入</translation>
     </message>
     <message>
         <source>chunkEditor.location</source>
-        <translation type="unfinished">定位</translation>
+        <translation>定位</translation>
     </message>
     <message>
         <source>chunkEditor.title</source>
@@ -138,21 +133,34 @@
         <source>chunkEditor.hsa</source>
         <translation>HSA区域</translation>
     </message>
+    <message>
+        <source>chunkEditor.blockEntity.tooLarge</source>
+        <translation>方块实体数据过大无法打开</translation>
+    </message>
+    <message>
+        <source>chunkEditor.actor.tooLarge</source>
+        <translation>实体数据过大无法打开</translation>
+    </message>
+    <message>
+        <source>chunkEditor.pendingTick.tooLarge</source>
+        <translation>计划刻数据过大无法打开</translation>
+    </message>
+    <message>
+        <source>chunkEditor.tooLarge.delete</source>
+        <translation type="unfinished">删除数据</translation>
+    </message>
 </context>
 <context>
     <name>ChunkSectionWidget</name>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.position</source>
         <translation>位置: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.blockName</source>
         <translation>方块: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation>群系: </translation>
     </message>
@@ -172,7 +180,6 @@
         <translation type="unfinished">X: </translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation>跳转到位置</translation>
     </message>
@@ -180,32 +187,26 @@
 <context>
     <name>HsaEditorWidget</name>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colIndex</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMin</source>
         <translation>最小坐标</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMax</source>
         <translation>最大坐标</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colType</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.remove</source>
         <translation>删除</translation>
     </message>
@@ -213,17 +214,14 @@
 <context>
     <name>ImageCropDialog</name>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.title.cropImage</source>
         <translation type="unfinished">裁剪图片</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.confirm</source>
         <translation type="unfinished">确定</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.cancel</source>
         <translation type="unfinished">取消</translation>
     </message>
@@ -231,87 +229,70 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation>替换</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation>减去</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>显示坐标</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>主世界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>下界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>末地</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>地形</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>群系</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>实体</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>村庄</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSA</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>过滤</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>全局NBT</translation>
     </message>
@@ -319,13 +300,10 @@
 <context>
     <name>LevelTabWidget</name>
     <message>
-        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation>欢迎</translation>
     </message>
     <message>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.pleaseWait</source>
         <translation>请稍候...</translation>
     </message>
@@ -333,258 +311,206 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.file</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.tool</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>透明虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation type="unfinished">显示网格</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation type="unfinished">显示坐标</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation type="unfinished">主世界</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation type="unfinished">下界</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation type="unfinished">末地</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation type="unfinished">地形</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation type="unfinished">群系</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation type="unfinished">史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation type="unfinished">实体</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation type="unfinished">村庄</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation type="unfinished">HSA</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation type="unfinished">过滤</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>显示LevelDB数据</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation>调试窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.goto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.helpAction</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.opensource</source>
         <translation>开源</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.about</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.openRecent</source>
         <translation>最近打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.customDim</source>
         <translation type="unfinished">自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.customDim.empty</source>
         <translation type="unfinished">无自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.layers</source>
         <translation>图层</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.customDim</source>
         <translation type="unfinished">自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selection</source>
         <translation>选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selReplace</source>
         <translation>添加选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selAdd</source>
         <translation type="unfinished">增量添加</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selSubtract</source>
         <translation>删除选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selClear</source>
         <translation>清空选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selCopy</source>
         <translation>复制选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selPaste</source>
         <translation>粘贴选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selExport</source>
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selImport</source>
         <translation>导入选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selDelete</source>
         <translation type="unfinished">删除选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selVoid</source>
         <translation>创建虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selBiome</source>
         <translation>修改群系</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selScreenshot</source>
         <translation>选区截图</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.sel3D</source>
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.chunk</source>
         <translation>区块</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
@@ -604,17 +530,14 @@
         <translation type="unfinished">修改图像</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation>地图物品编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation>打开文件</translation>
     </message>
@@ -622,8 +545,6 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
@@ -635,12 +556,10 @@
         <translation type="unfinished">修改NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.create</source>
         <translation type="unfinished">新建NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.modify</source>
         <translation type="unfinished">修改NBT</translation>
     </message>
@@ -688,56 +607,42 @@
         <translation type="unfinished">打印缓存</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.open</source>
         <translation>打开文件</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.modify</source>
         <translation>修改</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.exportSelected</source>
         <translation>导出选中</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.deleteSelected</source>
         <translation>删除选中</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.unselectAll</source>
         <translation>取消全选</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT文件 (*.*)</translation>
     </message>
@@ -872,396 +777,314 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.levelNotOpen</source>
         <translation type="unfinished">未打开存档</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation type="unfinished">无法打开存档</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>msg.clear</source>
         <translation type="unfinished">清空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.cannotOpenFile</source>
         <translation type="unfinished">无法保存文件</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.nbtDataCorrupted</source>
         <translation type="unfinished">NBT数据损坏</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.initFailed</source>
         <translation type="unfinished">初始化失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.cannotDeleteRoot</source>
         <translation type="unfinished">无法删除根节点</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.nbtParseFailed</source>
         <translation type="unfinished">NBT解析失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.emptyNbtData</source>
         <translation type="unfinished">空的NBT数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
-        <location filename="../src/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
         <translation type="unfinished">确认清空全部</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.nothingToSave</source>
         <translation type="unfinished">无需保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.levelSaved</source>
         <translation type="unfinished">存档已保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.importFailed</source>
         <translation type="unfinished">导入失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.invalidChunkFormat</source>
         <translation type="unfinished">不合法的区块格式</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChanges</source>
         <translation type="unfinished">未保存的修改</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation type="unfinished">发现未保存的修改，关闭之前要保存修改吗?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.exportSucc</source>
         <translation type="unfinished">导出成功</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.exportComplete</source>
         <translation type="unfinished">导出完成</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.noChunkFound</source>
         <translation type="unfinished">找不到区块</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.createNodeFailed</source>
         <translation type="unfinished">节点创建失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.modifyNodeFailed</source>
         <translation type="unfinished">修改节点失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.pleaseWait</source>
         <translation type="unfinished">请稍等</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG名字不能为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.tagTypeInvalid</source>
         <translation>TAG类型不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.tagValueInvalid</source>
         <translation>TAG的值不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.tagUnknownType</source>
         <translation>未知的TAG类型</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG的值为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.selectLevelDir</source>
         <translation type="unfinished">选择存档目录</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.invalidCoordinate</source>
         <translation>无效的坐标</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.openLevelSucc</source>
         <translation type="unfinished">成功打开存档</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.loadGlobalDataFailed</source>
         <translation type="unfinished">无法加载全局数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelNameEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelDirNotExist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelPathNotDir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelDirNotEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelNoWritePerm</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.newLevelInvalidVersion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.setScaleLevel</source>
         <translation type="unfinished">设置缩放等级</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.saveAs</source>
         <translation type="unfinished">另存为</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.warning</source>
         <translation type="unfinished">警告</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.info</source>
         <translation type="unfinished">信息</translation>
     </message>
     <message>
-        <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
         <source>msg.saveDataSucc</source>
         <translation type="unfinished">成功保存数据</translation>
     </message>
     <message>
-        <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
         <source>msg.saveDataFailed</source>
         <translation type="unfinished">成功保存数据</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.unselect</source>
         <translation type="unfinished">取消选择</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.selectionOps</source>
         <translation type="unfinished">选区操作</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.delete</source>
         <translation type="unfinished">删除选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.createVoid</source>
         <translation type="unfinished">创建虚空</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.export</source>
         <translation type="unfinished">导出选区</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation type="unfinished">导出选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.allFiles</source>
         <translation>所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copy</source>
         <translation type="unfinished">复制选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.paste</source>
         <translation type="unfinished">粘贴</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.pasteNoData</source>
         <translation>剪贴板中没有可粘贴的区块数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.pasteDataEmpty</source>
         <translation>剪贴板数据为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.pasteDataInvalid</source>
         <translation>剪贴板数据不合法，无法解析</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.import</source>
         <translation type="unfinished">导入</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation type="unfinished">导入选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS 文件 (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.gotoPosition</source>
         <translation type="unfinished">前往坐标</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
         <translation type="unfinished">选区截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.openchunkEditor</source>
         <translation type="unfinished">在区块编辑器中打开</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyInfo</source>
         <translation type="unfinished">复制信息</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.setBiome</source>
         <translation type="unfinished">设置选区群系</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyBlockName</source>
         <translation type="unfinished">方块名字: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyBiomeName</source>
         <translation type="unfinished">群系名字: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyAltitude</source>
         <translation type="unfinished">高度信息: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.copyTPCommand</source>
         <translation type="unfinished">复制TP命令: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.saveScreenshot</source>
         <translation type="unfinished">截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
         <source>mapWidget.rightMenu.view3D</source>
         <translation type="unfinished">3D视图</translation>
     </message>
     <message>
-        <location filename="../src/core/main.cpp"/>
         <source>nbtEditor.title.nbtEditor</source>
         <translation>NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.netherFortress</source>
         <translation>下界要塞</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.swampHut</source>
         <translation>沼泽小屋</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.oceanMonument</source>
         <translation>海底神殿</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.pillagerOutpost</source>
         <translation>掠夺者前哨站</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.unknown</source>
         <translation>未知</translation>
     </message>
@@ -1297,7 +1120,6 @@
         <translation type="unfinished">物品</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation>渲染过滤</translation>
     </message>
@@ -1305,37 +1127,30 @@
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.title</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.gui</source>
         <translation>界面设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.map</source>
         <translation>地图设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation>缓存设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.misc</source>
         <translation>杂项设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.debug</source>
         <translation>调试设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.lang</source>
         <translation>语言设置</translation>
     </message>
@@ -1348,7 +1163,6 @@
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.colorPicker.title</source>
         <translation>选择颜色</translation>
     </message>
@@ -1584,47 +1398,38 @@
 <context>
     <name>WelcomeTab</name>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.text</source>
         <translation type="unfinished">欢迎</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.start</source>
         <translation type="unfinished">开始</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.openLevel</source>
         <translation type="unfinished">打开</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.nbtEditor</source>
         <translation type="unfinished">NBT编辑器</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.recentLevels</source>
         <translation type="unfinished">最近存档</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.links</source>
         <translation type="unfinished">链接</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.tutorial</source>
         <translation type="unfinished">教程</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.github</source>
         <translation type="unfinished">Github</translation>
     </message>
     <message>
-        <location filename="../src/welcometab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">无近期文件</translation>
     </message>
@@ -1632,7 +1437,6 @@
 <context>
     <name>WorldListItem</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.openFolder</source>
         <translation type="unfinished">打开文件夹位置</translation>
     </message>
@@ -1640,22 +1444,18 @@
 <context>
     <name>WorldListTab</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.recentLevels</source>
         <translation type="unfinished">最近存档</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.release</source>
         <translation type="unfinished">正式版</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.preview</source>
         <translation type="unfinished">预览版</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation type="unfinished">无近期文件</translation>
     </message>

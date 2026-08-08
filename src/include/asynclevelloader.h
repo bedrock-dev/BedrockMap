@@ -104,7 +104,7 @@ class AsyncLevelLoader : public QObject {
 
     /*Modify*/
     // return a chunk from cache or loader; caller owns the returned pointer and must delete it
-    bl::chunk *getChunk(const bl::chunk_pos &p);
+    bl::chunk *getChunk(const bl::chunk_pos &p, bl::chunk_load_policy policy = bl::chunk_load_policy::All);
 
     // return a raw chunk from cache or loader
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &p);

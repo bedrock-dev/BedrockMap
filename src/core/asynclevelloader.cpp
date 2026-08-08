@@ -35,8 +35,6 @@ AsyncLevelLoader::AsyncLevelLoader() {
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
-    // don't make cache in bedrock-level
-    this->level_.set_cache(false);
 }
 
 ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
@@ -89,7 +87,6 @@ QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
 }
 
 bool AsyncLevelLoader::open(const std::string &path) {
-    this->level_.set_cache(false);
     this->loaded_ = this->level_.open(path);
     return this->loaded_;
 }
@@ -108,12 +105,12 @@ void AsyncLevelLoader::close() {
     this->clearAllCache();
 }
 
-bl::chunk *AsyncLevelLoader::getChunk(const bl::chunk_pos &p) {
+bl::chunk *AsyncLevelLoader::getChunk(const bl::chunk_pos &p, bl::chunk_load_policy policy) {
     if (!this->loaded_) return nullptr;
     if (this->level_cache_.hasChunk(p)) {
-        return this->level_cache_.getChunk(p);
+        return this->level_cache_.getChunk(p, policy);
     }
-    return this->level_.get_chunk(p, false);
+    return this->level_.get_chunk(p, policy);
 }
 
 std::optional<bl::raw_chunk> AsyncLevelLoader::getRawChunk(const bl::chunk_pos &p) {

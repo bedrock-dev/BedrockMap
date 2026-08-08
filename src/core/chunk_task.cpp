@@ -31,7 +31,9 @@ void LoadRegionTask::run() {
     for (int i = 0; i < constant::RW; i++) {
         for (int j = 0; j < constant::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            chunks_[i * constant::RW + j] = this->loader_->getChunk(p);
+            // map tiles only need terrain/biomes/HSAs/actors, not block entities/pending ticks
+            chunks_[i * constant::RW + j] =
+                this->loader_->getChunk(p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);
         }
     }
 
@@ -125,7 +127,8 @@ void LoadThumbnailTask::run() {
     for (int i = 0; i < constant::RW; i++) {
         for (int j = 0; j < constant::RW; j++) {
             bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            auto *ch = this->loader_->getChunk(p);
+            auto *ch =
+                this->loader_->getChunk(p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);
             bool load = (ch && ch->loaded());
             chunk_bit_map.set(i * constant::RW + j, load);
             delete ch;

@@ -297,17 +297,16 @@ MainWindow
 
 主要方法：
 
-| 方法                                              | 说明              |
-| ------------------------------------------------- | ----------------- |
-| `open(const std::string& root)`                   | 打开存档          |
-| `close()`                                         | 关闭存档          |
-| `get_chunk(const chunk_pos&, bool fast)`          | 加载区块          |
-| `load_raw(const std::string& key, string& value)` | 读取原始数据      |
-| `load_actor(const std::string& raw_uid)`          | 加载实体          |
-| `load_global_data()`                              | 加载全局数据      |
-| `foreach_global_keys(f)`                          | 遍历全局键        |
-| `remove_chunks(std::set<chunk_pos>&)`             | 删除区块          |
-| `set_cache(bool)`                                 | 启用/关闭内部缓存 |
+| 方法                                              | 说明                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------- |
+| `open(const std::string& root)`                   | 打开存档                                                                  |
+| `close()`                                         | 关闭存档                                                                  |
+| `get_chunk(const chunk_pos&, chunk_load_policy)`  | 加载区块（位掩码：Terrain/PendingTick/Actor/BlockActor/Others，默认 All） |
+| `load_raw(const std::string& key, string& value)` | 读取原始数据                                                              |
+| `load_actor(const std::string& raw_uid)`          | 加载实体                                                                  |
+| `load_global_data()`                              | 加载全局数据                                                              |
+| `foreach_global_keys(f)`                          | 遍历全局键                                                                |
+| `remove_chunks(std::set<chunk_pos>&)`             | 删除区块                                                                  |
 
 #### 5.1.2 `bl::chunk` — 区块
 
@@ -744,7 +743,9 @@ struct ChunkRegion {
 
 `LoadRegionTask::run()` 流程：
 
-1. 遍历 8×8 区块网格，调用 `level_->get_chunk(pos, true)` 加载区块
+1. 遍历 8×8 区块网格，调用
+   `level_->get_chunk(pos, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others)`
+   加载区块
 2. 对每个有效区块，调用 `filter_->renderImages(chunk, ...)` 渲染
 3. 调用 `filter_->bakeChunkActors(chunk, ...)` 收集实体信息
 4. 通过信号 `finish()` 将结果返回主线程
