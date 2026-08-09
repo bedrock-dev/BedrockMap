@@ -391,7 +391,8 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
 }
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {
-    if (rp.dim != 0) return &MapTile::UNLOADED_REGION_TILE();
+    // slime chunks only exist in the overworld
+    if (rp.dim != 0) return nullptr;
     auto *img = this->slime_chunk_cache_->operator[](rp);
     if (img) {
         return img;

@@ -96,8 +96,8 @@ bool setting::SCAN_LEVI_PATH = true;
 // Debug
 bool setting::LOG_OUT_MISSING_TEXTURE = false;
 
-// Lang
-QString setting::LANGUAGE = "zh_CN";
+// Lang (empty = auto-detect from the system locale)
+QString setting::LANGUAGE = "";
 
 // Utility functions
 void constant::initColorTable() {

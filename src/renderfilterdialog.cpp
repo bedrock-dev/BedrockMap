@@ -126,7 +126,8 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     auto &tips = region->tips_info_[X][Z];
     tips.block_name = render_info.name;
     tips.solid_block_name = solid_info.name;
-    tips.biome = biome;
+    // get_top_biome is robust when the exact surface layer stores none
+    tips.biome = ch->get_top_biome(chx, chz);
     tips.height = static_cast<int16_t>(y);
     tips.solid_height = solid_h;
 }

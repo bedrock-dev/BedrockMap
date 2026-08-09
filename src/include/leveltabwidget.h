@@ -81,7 +81,7 @@ class LevelTabWidget : public QTabWidget {
     void closeCurrentLevel();
 
    private slots:
-    void onTabClosed();
+    void onTabClosed(int index);
     void onCloseLevelFinished();
 
    private:
@@ -93,6 +93,7 @@ class LevelTabWidget : public QTabWidget {
     int index = 0;
     // close level handler
     QFutureWatcher<void> close_level_watcher_;
+    LevelPageWidget *closing_page_{nullptr};
     QDialog *close_level_mss_box_;
 };
 #endif

@@ -77,15 +77,15 @@ void LevelTabWidget::setEnableDebugWindow(bool bo) {
     }
 }
 
-void LevelTabWidget::onTabClosed() {
-    auto *tab = currentWidget();
+void LevelTabWidget::onTabClosed(int index) {
+    auto *tab = widget(index);
     if (!tab) return;
     if (tab == welcome_tab_) {
-        removeTab(currentIndex());
+        removeTab(index);
         return;
     }
 
-    auto *levelPage = currentLevelPage();
+    auto *levelPage = qobject_cast<LevelPageWidget *>(tab);
     if (!levelPage) return;
 
     if (levelPage->isDirty()) {
@@ -95,19 +95,26 @@ void LevelTabWidget::onTabClosed() {
         if (btn == QMessageBox::Yes) levelPage->commit();
     }
 
+    closing_page_ = levelPage;
     auto future = QtConcurrent::run([levelPage] { levelPage->closeLevel(); });
     this->close_level_watcher_.setFuture(future);
     close_level_mss_box_->show();
 }
 
 void LevelTabWidget::onCloseLevelFinished() {
-    auto page = currentWidget();
-    removeTab(currentIndex());
+    auto *page = closing_page_;
+    closing_page_ = nullptr;
+    if (!page) {
+        close_level_mss_box_->hide();
+        return;
+    }
+    int idx = indexOf(page);
+    if (idx >= 0) removeTab(idx);
     page->deleteLater();
     close_level_mss_box_->hide();
 }
 
-void LevelTabWidget::closeCurrentLevel() { onTabClosed(); }
+void LevelTabWidget::closeCurrentLevel() { onTabClosed(currentIndex()); }
 
 bool LevelTabWidget::confirmCloseAllLevels() {
     for (auto *page : level_pages_) {

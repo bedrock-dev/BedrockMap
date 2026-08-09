@@ -353,6 +353,7 @@ void LevelPageWidget::setupDataWidget() {
             nbtTabWidget_->setTabText(idx, text);
         });
     }
+    nbtTabWidget_->hide();
 }
 
 QString LevelPageWidget::getLevelName() {

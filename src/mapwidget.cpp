@@ -371,6 +371,8 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
  */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
     if (thumbnailMode()) return;
+    // slime chunks only exist in the overworld
+    if (option_.dim != 0) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
         auto top = level_loader_->bakedSlimeChunkImage(rp);
         this->drawImageInRegion(event, painter, rp, top);

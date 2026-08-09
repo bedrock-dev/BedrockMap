@@ -7,6 +7,7 @@
 #include <QFontDatabase>
 #include <QIcon>
 #include <QImage>
+#include <QLocale>
 #include <QTextStream>
 #include <Qapplication>
 #include <Qchar>
@@ -59,6 +60,13 @@ void setupFont(QApplication &a) {
     QApplication::setFont(font);
 }
 
+// empty setting -> auto-detect from the system locale (Chinese -> zh_CN, otherwise en)
+QString resolveLanguage() {
+    if (!setting::LANGUAGE.isEmpty()) return setting::LANGUAGE;
+    setting::LANGUAGE = QLocale::system().language() == QLocale::Chinese ? QString("zh_CN") : QString("en");
+    return setting::LANGUAGE;
+}
+
 int main(int argc, char *argv[]) {
     setupLog(argc, argv);
     LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
@@ -70,7 +78,7 @@ int main(int argc, char *argv[]) {
     setupTheme(a);
     setupFont(a);
     TranslatorMgr::init();
-    TranslatorMgr::setupTranslation(a, setting::LANGUAGE);
+    TranslatorMgr::setupTranslation(a, resolveLanguage());
     QTabWidget *w;
     if (!setting::OPEN_NBT_EDITOR_ONLY) {
         MainWindow w;
