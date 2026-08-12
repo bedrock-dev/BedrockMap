@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "bedrock_key.h"
-#include "palette.h"
+#include "nbt.h"
 
 void initResources();
 
@@ -24,7 +24,7 @@ QImage *OtherNBTIcon();
 
 QImage *PlayerNBTIcon();
 
-QImage *TagIcon(bl::palette::tag_type t);
+QImage *TagIcon(bl::nbt::tag_type t);
 
 QImage *VillageNBTIcon(bl::village_key::key_type t);
 

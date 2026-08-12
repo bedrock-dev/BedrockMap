@@ -117,7 +117,7 @@ BedrockMap/
 │   │   ├── bedrock_key.cpp     # LevelDB Key 编解码
 │   │   ├── chunk.cpp           # 区块数据
 │   │   ├── sub_chunk.cpp       # 子区块数据
-│   │   ├── palette.cpp         # NBT 标签库
+│   │   ├── nbt.cpp            # NBT 标签库
 │   │   ├── color.cpp           # 颜色表与颜色计算
 │   │   ├── data_3d.cpp         # 3D 数据（群系/高度图）
 │   │   ├── actor.cpp           # 实体解析
@@ -226,7 +226,7 @@ BedrockMap/
 │     ├── LevelDB 接口                                      │
 │     ├── bl::chunk / bl::sub_chunk                         │
 │     ├── bl::actor / bl::village_data                      │
-│     ├── bl::palette (NBT 编解码)                          │
+│     ├── bl::nbt (NBT 编解码)                          │
 │     └── bl::level_dat                                     │
 └──────────────────────┬────────────────────────────────────┘
                        │ LevelDB C API
@@ -381,10 +381,10 @@ sub_chunk
 | `get_block_fast(rx, ry, rz)` | 快速获取方块           |
 | `get_block_raw(rx, ry, rz)`  | 获取方块原始 NBT       |
 
-#### 5.1.4 `bl::palette` — NBT 标签库
+#### 5.1.4 `bl::nbt` — NBT 标签库
 
 ```
-路径: bedrock-level/src/palette.cpp / include/palette.h
+路径: bedrock-level/src/nbt.cpp / include/nbt.h
 ```
 
 自实现的 NBT（Named Binary Tag）编解码库，支持 Bedrock 版使用的所有标签类型。

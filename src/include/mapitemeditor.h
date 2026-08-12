@@ -12,8 +12,9 @@
 #include <Qt>
 
 #include "global.h"
+#include "nbt.h"
 #include "nbtwidget.h"
-#include "palette.h"
+
 
 namespace Ui {
     class MapItemEditor;

@@ -267,7 +267,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
         stop, setting::MAX_GLOBAL_DATA_LOAD_COUNT);
 }
 
-bool AsyncLevelLoader::modifyLeveldat(bl::palette::compound_tag *nbt) {
+bool AsyncLevelLoader::modifyLeveldat(bl::nbt::compound_tag *nbt) {
     if (!this->loaded_) return false;
     level_.dat().set_nbt(nbt);
     auto raw = level_.dat().to_raw();

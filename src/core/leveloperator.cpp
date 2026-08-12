@@ -12,7 +12,7 @@
 #include "leveldb/db.h"
 #include "loguru/loguru.hpp"
 #include "msg.h"
-#include "palette.h"
+#include "nbt.h"
 
 namespace {
 
@@ -165,14 +165,14 @@ bool LevelOperator::newLevel(const NewLevelParams &params) {
     LOG_F(INFO, "flag json: %s", params.toFlatJson().toStdString().c_str());
 
     auto *nbt = level.dat().root();
-    nbt->put(new bl::palette::int_tag("GameType", params.gameMode));
-    nbt->put(new bl::palette::int_tag("Difficulty", params.difficulty));
-    nbt->put(new bl::palette::byte_tag("dodaylightcycle", params.dayNightCycle));
-    nbt->put(new bl::palette::byte_tag("doweathercycle", params.weatherCycle));
-    nbt->put(new bl::palette::byte_tag("domobspawning", params.mobSpawning));
-    nbt->put(new bl::palette::string_tag("LevelName", params.levelName.toStdString()));
-    nbt->put(new bl::palette::int_tag("Generator", params.flat ? 2 : 1));
-    nbt->put(new bl::palette::string_tag("FlatWorldLayers", params.toFlatJson().toStdString()));
+    nbt->put(new bl::nbt::int_tag("GameType", params.gameMode));
+    nbt->put(new bl::nbt::int_tag("Difficulty", params.difficulty));
+    nbt->put(new bl::nbt::byte_tag("dodaylightcycle", params.dayNightCycle));
+    nbt->put(new bl::nbt::byte_tag("doweathercycle", params.weatherCycle));
+    nbt->put(new bl::nbt::byte_tag("domobspawning", params.mobSpawning));
+    nbt->put(new bl::nbt::string_tag("LevelName", params.levelName.toStdString()));
+    nbt->put(new bl::nbt::int_tag("Generator", params.flat ? 2 : 1));
+    nbt->put(new bl::nbt::string_tag("FlatWorldLayers", params.toFlatJson().toStdString()));
     auto raw = level.dat().header() + nbt->to_raw();
     level.close();
     bl::utils::write_file(dstPath.toStdString(), raw.data(), raw.size());

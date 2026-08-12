@@ -12,14 +12,14 @@
 #include <vector>
 
 #include "msg.h"
-#include "palette.h"
+#include "nbt.h"
 #include "resourcemanager.h"
 #include "ui_nbtmodifydialog.h"
 
 namespace {
     template <typename T>
     using nl = std::numeric_limits<T>;
-    using namespace bl::palette;
+    using namespace bl::nbt;
     bool parseIntegerValue(tag_type type, const QString &str, std::vector<int64_t> &values) {
         static std::unordered_map<tag_type, std::pair<int64_t, int64_t>> range_map{
             {Byte, {nl<int8_t>::min(), nl<int8_t>::max()}},       {ByteArray, {nl<int8_t>::min(), nl<int8_t>::max()}},
@@ -48,7 +48,7 @@ namespace {
 
 }  // namespace
 
-using namespace bl::palette;
+using namespace bl::nbt;
 NBTModifyDialog::NBTModifyDialog(QWidget *parent) : QDialog(parent), ui(new Ui::NBTModifyDialog) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
@@ -122,7 +122,7 @@ bool NBTModifyDialog::eventFilter(QObject *watched, QEvent *event) {
     return QDialog::eventFilter(watched, event);
 }
 
-bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const {
+bl::nbt::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const {
     const auto name = ui->name_lineedit->text().toStdString();
     const auto data = ui->type_combobox->currentData();
     if (!data.canConvert<int>()) {
@@ -191,7 +191,7 @@ bl::palette::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) c
     return nullptr;
 }
 
-bool NBTModifyDialog::modifyCurrentTag(bl::palette::abstract_tag *&tag, QString &err) const {
+bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err) const {
     tag->set_key(ui->name_lineedit->text().toStdString());
     auto vs = ui->value_lineedit->text();
     const auto type = tag->type();

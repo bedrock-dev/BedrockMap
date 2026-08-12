@@ -176,8 +176,8 @@ QImage *EntityNBTIcon(const QString &key) {
 
 QImage *PlayerNBTIcon() { return player_nbt; }
 
-QImage *TagIcon(bl::palette::tag_type t) {
-    using namespace bl::palette;
+QImage *TagIcon(bl::nbt::tag_type t) {
+    using namespace bl::nbt;
     std::unordered_map<tag_type, std::string> names{
         {tag_type::Int, "Int"},
         {tag_type::Byte, "Byte"},

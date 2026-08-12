@@ -5,7 +5,7 @@
 
 #include <QDialog>
 
-#include "palette.h"
+#include "nbt.h"
 
 namespace Ui {
     class NBTModifyDialog;
@@ -16,11 +16,11 @@ class NBTModifyDialog : public QDialog {
 
    public:
     explicit NBTModifyDialog(QWidget *parent = nullptr);
-    bl::palette::abstract_tag *createTagWithCurrent(QString &err) const;
-    bool modifyCurrentTag(bl::palette::abstract_tag *&tag, QString &err) const;
+    bl::nbt::abstract_tag *createTagWithCurrent(QString &err) const;
+    bool modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err) const;
     ~NBTModifyDialog();
-    bool setCreateMode(bl::palette::abstract_tag *tag);
-    bool setModifyMode(const bl::palette::abstract_tag *tag);
+    bool setCreateMode(bl::nbt::abstract_tag *tag);
+    bool setModifyMode(const bl::nbt::abstract_tag *tag);
 
    protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

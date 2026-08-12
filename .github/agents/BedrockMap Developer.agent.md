@@ -191,9 +191,9 @@ QThreadPool::globalInstance()->start(task);
 
 ```cpp
 auto& data = level->get_level_data();
-if (auto* playerList = data->get<bl::palette::list_tag>("PlayerIds")) {
+if (auto* playerList = data->get<bl::nbt::list_tag>("PlayerIds")) {
     for (auto& item : playerList->value()) {
-        auto* player = item->as<bl::palette::compound_tag>();
+        auto* player = item->as<bl::nbt::compound_tag>();
         // ...
     }
 }

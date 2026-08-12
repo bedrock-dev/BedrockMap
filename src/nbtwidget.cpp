@@ -17,29 +17,30 @@
 
 #include "loguru/loguru.hpp"
 #include "msg.h"
+#include "nbt.h"
 #include "nbtmodifydialog.h"
-#include "palette.h"
 #include "resourcemanager.h"
 #include "ui_nbtwidget.h"
 #include "utils.h"
 
+
 namespace {
 
-    NBTTreeItem *nbt2QTreeItem(bl::palette::abstract_tag *t, int index, int &ma, bool hex_mode) {
+    NBTTreeItem *nbt2QTreeItem(bl::nbt::abstract_tag *t, int index, int &ma, bool hex_mode) {
         ma = std::max(ma, index);
-        using namespace bl::palette;
+        using namespace bl::nbt;
         if (!t) return nullptr;
         auto *item = new NBTTreeItem();
         item->root_ = t;
         item->updateLabel(hex_mode);
         item->setIcon(0, QIcon(QPixmap::fromImage(*TagIcon(t->type()))));
-        if (t->type() == bl::palette::tag_type::Compound) {
-            const auto *ct = dynamic_cast<bl::palette::compound_tag *>(t);
+        if (t->type() == bl::nbt::tag_type::Compound) {
+            const auto *ct = dynamic_cast<bl::nbt::compound_tag *>(t);
             for (const auto &[fst, snd] : ct->value) {
                 item->addChild(nbt2QTreeItem(snd, index + 1, ma, hex_mode));
             }
-        } else if (t->type() == bl::palette::tag_type::List) {
-            auto *ct = dynamic_cast<bl::palette::list_tag *>(t);
+        } else if (t->type() == bl::nbt::tag_type::List) {
+            auto *ct = dynamic_cast<bl::nbt::list_tag *>(t);
             for (auto k : ct->value) {
                 item->addChild(nbt2QTreeItem(k, index + 1, ma, hex_mode));
             }
@@ -51,9 +52,9 @@ namespace {
 
 }  // namespace
 
-std::string NBTTreeItem::hexValueString(bl::palette::abstract_tag *tag) {
+std::string NBTTreeItem::hexValueString(bl::nbt::abstract_tag *tag) {
     if (!tag) return {};
-    using namespace bl::palette;
+    using namespace bl::nbt;
     switch (tag->type()) {
         case Byte: {
             auto v = static_cast<uint8_t>(dynamic_cast<byte_tag *>(tag)->value);
@@ -84,9 +85,9 @@ std::string NBTTreeItem::hexValueString(bl::palette::abstract_tag *tag) {
     }
 }
 
-std::string NBTTreeItem::hexArrayString(bl::palette::abstract_tag *tag) {
+std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag *tag) {
     if (!tag) return {};
-    using namespace bl::palette;
+    using namespace bl::nbt;
     std::string res;
     switch (tag->type()) {
         case ByteArray: {
@@ -131,7 +132,7 @@ std::string NBTTreeItem::hexArrayString(bl::palette::abstract_tag *tag) {
     return res;
 }
 
-bool NBTTreeItem::tryAddChild(bl::palette::abstract_tag *tag, bool hex_mode) {
+bool NBTTreeItem::tryAddChild(bl::nbt::abstract_tag *tag, bool hex_mode) {
     if (!tag || !root_) return false;
     const auto type = root_->type();
     int max;
@@ -190,7 +191,7 @@ void NbtWidget::on_load_btn_clicked() {
         return;
     }
 
-    auto palette = bl::palette::read_palette_to_end(data.data(), data.size());
+    auto palette = bl::nbt::read_palette_to_end(data.data(), data.size());
 
     if (palette.empty()) {
         WARN(msg::NBT_PARSE_FAILED());
@@ -206,7 +207,7 @@ void NbtWidget::on_load_btn_clicked() {
     this->loadNewData(items);
 }
 
-void NbtWidget::openNBTItem(bl::palette::compound_tag *root) const {
+void NbtWidget::openNBTItem(bl::nbt::compound_tag *root) const {
     assert(root);
     this->extra_load_event_(root);
     ui->tree_widget->clear();
@@ -267,15 +268,15 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
     }
 
     auto type = nbtItem->root_->type();
-    if (type == bl::palette::Compound || type == bl::palette::List || type == bl::palette::End) return;
+    if (type == bl::nbt::Compound || type == bl::nbt::List || type == bl::nbt::End) return;
 
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     ui->tree_widget->editItem(item, 1);
 }
 
 namespace {
-    bool parseAndSetTag(bl::palette::abstract_tag *tag, const QString &text, QString &err) {
-        using namespace bl::palette;
+    bool parseAndSetTag(bl::nbt::abstract_tag *tag, const QString &text, QString &err) {
+        using namespace bl::nbt;
         bool ok = false;
         switch (tag->type()) {
             case Byte: {
@@ -412,15 +413,15 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
             return;
         }
         auto parentType = parent->root_->type();
-        if (parentType == bl::palette::Compound) {
-            auto *tag = dynamic_cast<bl::palette::compound_tag *>(parent->root_);
+        if (parentType == bl::nbt::Compound) {
+            auto *tag = dynamic_cast<bl::nbt::compound_tag *>(parent->root_);
             if (!tag) {
                 WARN(msg::NBT_DATA_CORRUPTED());
                 return;
             }
             tag->remove(current->root_->key());
-        } else if (parentType == bl::palette::List) {
-            auto *tag = dynamic_cast<bl::palette::list_tag *>(parent->root_);
+        } else if (parentType == bl::nbt::List) {
+            auto *tag = dynamic_cast<bl::nbt::list_tag *>(parent->root_);
             if (!tag) {
                 WARN(msg::NBT_DATA_CORRUPTED());
                 return;
@@ -437,14 +438,14 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     QObject::connect(clearAction, &QAction::triggered, [this, pos](bool) {
         auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
         if (!current) return;
-        if (current->root_->type() == bl::palette::tag_type::Compound) {
-            auto *tag = dynamic_cast<bl::palette::compound_tag *>(current->root_);
+        if (current->root_->type() == bl::nbt::tag_type::Compound) {
+            auto *tag = dynamic_cast<bl::nbt::compound_tag *>(current->root_);
             for (auto &[fst, snd] : tag->value) {
                 delete snd;
             }
             tag->value.clear();
-        } else if (current->root_->type() == bl::palette::tag_type::List) {
-            auto *tag = dynamic_cast<bl::palette::list_tag *>(current->root_);
+        } else if (current->root_->type() == bl::nbt::tag_type::List) {
+            auto *tag = dynamic_cast<bl::nbt::list_tag *>(current->root_);
             for (const auto *child : tag->value) {
                 delete child;
             }
@@ -487,7 +488,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(createAction, &QAction::triggered, [this, pos](bool) {
             if (!this->modify_allowed_) return;
             // create a new NBT item and push back to the end
-            auto *nbtItem = NBTListItem::from(new bl::palette::compound_tag("New"), QString::number(ui->list_widget->count()));
+            auto *nbtItem = NBTListItem::from(new bl::nbt::compound_tag("New"), QString::number(ui->list_widget->count()));
             ui->list_widget->addItem(nbtItem);
             putModifyToCache(nbtItem->raw_key.toStdString(), nbtItem->root_->to_raw());
             this->refreshLabel();
@@ -608,7 +609,7 @@ std::vector<compound_tag *> NbtWidget::getPaletteCopy() const {
     return res;
 }
 
-void NbtWidget::foreachItem(const std::function<void(const std::string &, bl::palette::compound_tag *)> &func) const {
+void NbtWidget::foreachItem(const std::function<void(const std::string &, bl::nbt::compound_tag *)> &func) const {
     for (int i = 0; i < ui->list_widget->count(); ++i) {
         if (auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i))) {
             func(item->getLabel().toStdString(), item->root_);

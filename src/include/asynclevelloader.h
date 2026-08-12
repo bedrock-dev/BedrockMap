@@ -20,7 +20,7 @@
 #include "chunk.h"
 #include "chunk_task.h"
 #include "config.h"
-#include "palette.h"
+#include "nbt.h"
 #include "rawchunkcache.h"
 #include "renderfilterdialog.h"
 
@@ -124,7 +124,7 @@ class AsyncLevelLoader : public QObject {
 
     bool modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies);
 
-    bool modifyLeveldat(bl::palette::compound_tag *nbt);
+    bool modifyLeveldat(bl::nbt::compound_tag *nbt);
 
     std::vector<QString> debugInfo();
 

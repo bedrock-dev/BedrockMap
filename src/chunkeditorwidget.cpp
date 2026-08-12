@@ -26,20 +26,21 @@
 #include "include/msg.h"
 #include "loguru/loguru.hpp"
 #include "msg.h"
+#include "nbt.h"
 #include "nbtwidget.h"
-#include "palette.h"
 #include "resourcemanager.h"
 #include "ui_chunkeditorwidget.h"
 #include "voxelwidget.h"
+
 
 namespace {
     // data above this size is not parsed into the NBT editor
     constexpr size_t kOversizeBytes = 16u * 1024u * 1024u;  // 16 MB
 
-    QString actorLabel(bl::palette::compound_tag *root) {
+    QString actorLabel(bl::nbt::compound_tag *root) {
         auto *id = root->get("identifier");
-        if (id && id->type() == bl::palette::tag_type::String) {
-            return QString(dynamic_cast<bl::palette::string_tag *>(id)->value.c_str()).replace("minecraft:", "");
+        if (id && id->type() == bl::nbt::tag_type::String) {
+            return QString(dynamic_cast<bl::nbt::string_tag *>(id)->value.c_str()).replace("minecraft:", "");
         }
         return "unknown";
     }
@@ -163,12 +164,12 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->block_entity_stack_->setCurrentIndex(0);
             std::vector<NBTListItem *> block_entity_items;
             if (!raw.empty()) {
-                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
                 for (auto *b : palettes) {
                     auto id_tag = b->get("id");
                     QString name = "unknown";
-                    if (id_tag && id_tag->type() == bl::palette::tag_type::String) {
-                        name = dynamic_cast<bl::palette::string_tag *>(id_tag)->value.c_str();
+                    if (id_tag && id_tag->type() == bl::nbt::tag_type::String) {
+                        name = dynamic_cast<bl::nbt::string_tag *>(id_tag)->value.c_str();
                     }
                     auto *item = NBTListItem::from(b, name, QString::number(index));
                     item->setIcon(QIcon(QPixmap::fromImage(*BlockActorNBTIcon(name.toLower().replace("minecraft:", "")))));
@@ -189,7 +190,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->pending_tick_stack_->setCurrentIndex(0);
             std::vector<NBTListItem *> pt_items;
             if (!raw.empty()) {
-                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
                 index = 0;
                 for (auto *b : palettes) {
                     auto *item = NBTListItem::from(b, QString::number(index), QString::number(index));
@@ -212,7 +213,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             std::vector<NBTListItem *> actor_items;
             auto addActorRaw = [&actor_items, &index](const std::string &raw) {
                 if (raw.empty()) return;
-                auto palettes = bl::palette::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
                 for (auto *b : palettes) {
                     auto id = actorLabel(b);
                     auto *item = NBTListItem::from(b, id, QString::number(index));

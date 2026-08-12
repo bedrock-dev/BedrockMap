@@ -10,19 +10,20 @@
 #include <QWidget>
 #include <string>
 
+#include "nbt.h"
 #include "nbtmodifydialog.h"
-#include "palette.h"
+
 
 namespace Ui {
     class NbtWidget;
 }
 
-using namespace bl::palette;
+using namespace bl::nbt;
 
 // does not own data
 class NBTTreeItem : public QTreeWidgetItem {
    public:
-    bool tryAddChild(bl::palette::abstract_tag *tag, bool hex_mode);
+    bool tryAddChild(bl::nbt::abstract_tag *tag, bool hex_mode);
 
     void updateLabel(bool hex_mode) {
         if (!root_) return;
@@ -31,7 +32,7 @@ class NBTTreeItem : public QTreeWidgetItem {
             setText(0, dynamic_cast<compound_tag *>(root_)->key().c_str());
             setText(1, "");
         } else if (type == List) {
-            auto *list = dynamic_cast<bl::palette::list_tag *>(root_);
+            auto *list = dynamic_cast<bl::nbt::list_tag *>(root_);
             setText(0, list->key().c_str());
             setText(1, QString("[%1]").arg(QString::number(list->value.size())));
         } else if (hex_mode && (type >= Byte && type <= Long)) {
@@ -46,10 +47,10 @@ class NBTTreeItem : public QTreeWidgetItem {
         }
     }
 
-    static std::string hexValueString(bl::palette::abstract_tag *tag);
-    static std::string hexArrayString(bl::palette::abstract_tag *tag);
+    static std::string hexValueString(bl::nbt::abstract_tag *tag);
+    static std::string hexArrayString(bl::nbt::abstract_tag *tag);
 
-    bl::palette::abstract_tag *root_{nullptr};
+    bl::nbt::abstract_tag *root_{nullptr};
 };
 
 // owns data
@@ -60,16 +61,16 @@ struct NBTListItem : public QListWidgetItem {
         return dyn.size() == 0 ? default_label : dyn;
     }
 
-    bl::palette::compound_tag *root_{nullptr};                                                                   // raw data
-    std::function<QString(bl::palette::compound_tag *)> namer_{[](bl::palette::compound_tag *) { return ""; }};  // dynamic label
-    QString default_label;                                                                                       // display label
+    bl::nbt::compound_tag *root_{nullptr};                                                               // raw data
+    std::function<QString(bl::nbt::compound_tag *)> namer_{[](bl::nbt::compound_tag *) { return ""; }};  // dynamic label
+    QString default_label;                                                                               // display label
     QString raw_key;  // original key in the leveldb key structure
     ~NBTListItem() override { delete this->root_; }
 
     /*
      * Construct an NBTListItem without a dynamic label or icon
      */
-    static NBTListItem *from(bl::palette::compound_tag *data, const QString &default_label, const QString &key = "") {
+    static NBTListItem *from(bl::nbt::compound_tag *data, const QString &default_label, const QString &key = "") {
         auto *it = new NBTListItem();
         it->root_ = data;
         it->default_label = default_label;
@@ -84,16 +85,16 @@ struct NBTNodeUIAttr {
     bool canModify;  // modify current value
     bool canAdd;     // add child
     bool canClear;   // clear all children
-    static NBTNodeUIAttr get(bl::palette::tag_type type, bool is_root) {
+    static NBTNodeUIAttr get(bl::nbt::tag_type type, bool is_root) {
         NBTNodeUIAttr attr{true, true, false, false};
-        if (type == bl::palette::tag_type::Compound) {
+        if (type == bl::nbt::tag_type::Compound) {
             attr.canRemove = !is_root;
             attr.canAdd = true;
             attr.canClear = true;
-        } else if (type == bl::palette::List) {
+        } else if (type == bl::nbt::List) {
             attr.canAdd = true;
             attr.canClear = true;
-        } else if (type == bl::palette::End) {
+        } else if (type == bl::nbt::End) {
             attr.canRemove = false;
             attr.canModify = false;
             attr.canAdd = false;
@@ -177,7 +178,7 @@ class NbtWidget : public QWidget {
     void on_list_widget_itemSelectionChanged();
 
    private:
-    void openNBTItem(bl::palette::compound_tag *root) const;
+    void openNBTItem(bl::nbt::compound_tag *root) const;
     void tryModifyCurrentNode();
 
    private:

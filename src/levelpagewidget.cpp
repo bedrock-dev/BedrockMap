@@ -420,8 +420,8 @@ bool LevelPageWidget::loadLevel(const QString &path) {
     }
     auto &dat = level_loader_->level().dat();
     LOG_F(INFO, "Open level %s with version %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str());
-    auto *ld = dynamic_cast<bl::palette::compound_tag *>(dat.root());
-    this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::palette::compound_tag *>(ld->copy()), "level.dat")});
+    auto *ld = dynamic_cast<bl::nbt::compound_tag *>(dat.root());
+    this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::nbt::compound_tag *>(ld->copy()), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
     if (!setting::LOAD_GLOBAL_DATA) {
         return true;
@@ -498,10 +498,10 @@ void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_tab
         for (auto kv : villsInDim) {
             auto *nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
             if (!nbt) continue;
-            auto x0 = dynamic_cast<bl::palette::int_tag *>(nbt->get("X0"));
-            auto z0 = dynamic_cast<bl::palette::int_tag *>(nbt->get("Z0"));
-            auto x1 = dynamic_cast<bl::palette::int_tag *>(nbt->get("X1"));
-            auto z1 = dynamic_cast<bl::palette::int_tag *>(nbt->get("Z1"));
+            auto x0 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("X0"));
+            auto z0 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("Z0"));
+            auto x1 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("X1"));
+            auto z1 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("Z1"));
             if (!x0 || !z0 || !x1 || !z1) continue;
             auto pos0 = bl::block_pos(x0->value, 0, z0->value);
             auto pos1 = bl::block_pos(x1->value, 0, z1->value);
