@@ -8,6 +8,7 @@
 #include <QIcon>
 #include <QImage>
 #include <QLocale>
+#include <QSurfaceFormat>
 #include <QTextStream>
 #include <Qapplication>
 #include <Qchar>
@@ -70,6 +71,20 @@ QString resolveLanguage() {
 int main(int argc, char *argv[]) {
     setupLog(argc, argv);
     LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
+
+    // QOpenGLWidget is a native child window on Windows. The first time it is shown
+    // inside an already-visible top-level window whose pixel format does not match,
+    // Qt has to destroy and recreate the top-level HWND — visible as the main window
+    // closing and reopening. Pre-set the default surface format (matching VoxelWidget)
+    // so every top-level window is created with the right format from the start.
+    QSurfaceFormat gl_format;
+    gl_format.setVersion(3, 3);
+    gl_format.setProfile(QSurfaceFormat::CoreProfile);
+    gl_format.setDepthBufferSize(24);
+    gl_format.setStencilBufferSize(8);
+    gl_format.setSamples(8);
+    QSurfaceFormat::setDefaultFormat(gl_format);
+
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication a(argc, argv);
     setting::init();
@@ -79,21 +94,8 @@ int main(int argc, char *argv[]) {
     setupFont(a);
     TranslatorMgr::init();
     TranslatorMgr::setupTranslation(a, resolveLanguage());
-    QTabWidget *w;
-    if (!setting::OPEN_NBT_EDITOR_ONLY) {
-        MainWindow w;
-        w.setWindowTitle(constant::VERSION_STRING());
-        w.show();
-        return QApplication::exec();
-    } else {
-        auto *w = new NbtWidget();
-        const int ext = 100;
-        w->setWindowTitle(QObject::tr("nbtEditor.title.nbtEditor"));
-        auto const rec = QApplication::primaryScreen()->geometry();
-        auto const height = static_cast<int>(rec.height() * 0.6);
-        auto const width = static_cast<int>(rec.width() * 0.6);
-        w->setGeometry({(rec.width() - width) / 2, (rec.height() - height) / 2, width, height});
-        w->show();
-        return QApplication::exec();
-    };
+    MainWindow w;
+    w.setWindowTitle(constant::VERSION_STRING());
+    w.show();
+    return QApplication::exec();
 }

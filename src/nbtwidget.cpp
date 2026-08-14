@@ -204,7 +204,19 @@ void NbtWidget::on_load_btn_clicked() {
         items.push_back(NBTListItem::from(nbt, QString::number(i)));
         i++;
     }
+    file_path_ = fileName;
     this->loadNewData(items);
+    this->applyToolbarVisibility();
+}
+
+bool NbtWidget::openItem(int index) {
+    auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(index));
+    if (!item || !item->root_) return false;
+    this->current_opened_ = item;
+    LOG_F(INFO, "Open NBT item : [%s]", item->raw_key.toStdString().c_str());
+    this->openNBTItem(item->root_);
+    this->refreshLabel();
+    return true;
 }
 
 void NbtWidget::openNBTItem(bl::nbt::compound_tag *root) const {
@@ -231,9 +243,66 @@ void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
     this->refreshLabel();
 }
 
-void NbtWidget::hideLoadDataBtn() const { ui->load_btn->setVisible(false); }
+void NbtWidget::applyToolbarVisibility() {
+    // Load only makes sense when the widget itself reads files (File mode) and is
+    // not read-only. "Save As" (export) is always available.
+    ui->load_btn->setVisible(mode_ == NbtMode::File && !read_only_);
+    // In-place "Save" is available in File mode; without a source file it falls
+    // back to a Save As dialog so new (untitled) documents can still be saved.
+    ui->save_to_file_btn->setVisible(mode_ == NbtMode::File && !read_only_);
+    ui->multi_select_checkbox->setVisible(list_visible_ && !read_only_);
+    ui->search_edit->setVisible(list_visible_);
+    ui->item_num_label->setVisible(list_visible_);
+}
+
+void NbtWidget::setFilePath(const QString &path) {
+    file_path_ = path;
+    applyToolbarVisibility();
+}
+
+bool NbtWidget::saveToFile() {
+    if (file_path_.isEmpty()) {
+        const auto fileName = QFileDialog::getSaveFileName(this, tr("nbtEditor.fileDialog.save"), QDir::homePath(),
+                                                           tr("nbtEditor.fileDialog.nbtFiles"));
+        if (fileName.isEmpty()) return false;
+        file_path_ = fileName;
+        applyToolbarVisibility();
+    }
+    const auto res = collectRawNBT(false);
+    if (res.empty()) {
+        WARN(msg::NOTHING_TO_SAVE());
+        return false;
+    }
+    bl::utils::write_file(file_path_.toStdString(), res.data(), res.size());
+    clearModifyCache();  // persisted: the widget is no longer dirty
+    emit dataSaved();
+    return true;
+}
+
+void NbtWidget::setMode(NbtMode mode) {
+    mode_ = mode;
+    applyToolbarVisibility();
+}
+
+void NbtWidget::setReadOnly(bool read_only) {
+    read_only_ = read_only;
+    modify_allowed_ = !read_only;
+    applyToolbarVisibility();
+}
+
+void NbtWidget::setListVisible(bool visible) {
+    list_visible_ = visible;
+    ui->list_widget->setVisible(visible);
+    applyToolbarVisibility();
+}
 
 void NbtWidget::on_save_btn_clicked() { this->saveNBTs(false); }
+
+void NbtWidget::on_save_to_file_btn_clicked() {
+    if (saveToFile()) {
+        INFO(msg::SAVE_DATA_SUCC());
+    }
+}
 
 void NbtWidget::tryModifyCurrentNode() {
     if (!modify_allowed_ || hex_mode_) return;
@@ -327,6 +396,7 @@ namespace {
 
 void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {
     if (editing_in_progress_) return;
+    if (!modify_allowed_) return;
     auto *nbtItem = dynamic_cast<NBTTreeItem *>(item);
     if (!nbtItem || !nbtItem->root_) return;
     if (column == 0) {
@@ -579,6 +649,15 @@ void NbtWidget::saveNBTs(bool selectOnly) {
     const auto fileName =
         QFileDialog::getSaveFileName(this, tr("nbtEditor.fileDialog.save"), "C:/Users/xhy/Desktop/", tr("nbtEditor.fileDialog.nbtFiles"));
     if (fileName.size() == 0) return;
+    const auto res = collectRawNBT(selectOnly);
+    if (res.empty()) {
+        WARN(msg::NOTHING_TO_SAVE());
+        return;
+    }
+    bl::utils::write_file(fileName.toStdString(), res.data(), res.size());
+}
+
+std::string NbtWidget::collectRawNBT(bool selectOnly) const {
     std::string res;
     if (selectOnly) {
         for (const auto &item : ui->list_widget->selectedItems()) {
@@ -589,8 +668,7 @@ void NbtWidget::saveNBTs(bool selectOnly) {
             if (auto *item = ui->list_widget->item(i); !item->isHidden()) res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
         }
     }
-
-    bl::utils::write_file(fileName.toStdString(), res.data(), res.size());
+    return res;
 }
 
 std::string NbtWidget::getCurrentPaletteRaw() const {

@@ -121,6 +121,25 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="save_to_file_btn">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>nbtEditor.save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="save_btn">
        <property name="minimumSize">
         <size>

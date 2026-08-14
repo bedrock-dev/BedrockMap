@@ -57,7 +57,6 @@ QString constant::VERSION_STRING() {
 QString setting::COLOR_THEME = "system";
 QString setting::FONT_FAMILY;
 int setting::FONT_SIZE = -1;
-bool setting::OPEN_NBT_EDITOR_ONLY = false;
 
 // Map
 int setting::MAP_RENDER_STYLE = 1;
@@ -133,7 +132,6 @@ void setting::load() {
     setting::COLOR_THEME = s.value("theme", setting::COLOR_THEME).toString();
     setting::FONT_FAMILY = s.value("font_family", setting::FONT_FAMILY).toString();
     setting::FONT_SIZE = s.value("font_size", setting::FONT_SIZE).toInt();
-    setting::OPEN_NBT_EDITOR_ONLY = s.value("nbt_editor_mode", setting::OPEN_NBT_EDITOR_ONLY).toBool();
     s.endGroup();
 
     s.beginGroup("Map");
@@ -200,7 +198,6 @@ void setting::save() {
     s.setValue("theme", setting::COLOR_THEME);
     s.setValue("font_family", setting::FONT_FAMILY);
     s.setValue("font_size", setting::FONT_SIZE);
-    s.setValue("nbt_editor_mode", setting::OPEN_NBT_EDITOR_ONLY);
     s.endGroup();
 
     s.beginGroup("Map");

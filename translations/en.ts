@@ -364,8 +364,24 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.openFile</source>
+        <translation>Open File</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.openFile.filter</source>
+        <translation>Minecraft Data Files (*.mcstructure *.nbt *.nbts *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation>New</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.newNbt</source>
+        <translation>NBT File</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -391,11 +407,6 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>Transparent Void</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.nbtEditor</source>
-        <translation>NBT Editor</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -603,11 +614,6 @@
         <source>mainWindow.menu.chunk</source>
         <translation>Chunk</translation>
     </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>nbtEditor.title.nbtEditor</source>
-        <translation>NBT Editor</translation>
-    </message>
 </context>
 <context>
     <name>MapItemEditor</name>
@@ -690,6 +696,10 @@
     <message>
         <source>nbtEditor.load</source>
         <translation>Load</translation>
+    </message>
+    <message>
+        <source>nbtEditor.save</source>
+        <translation>Save</translation>
     </message>
     <message>
         <source>nbtEditor.saveAs</source>
@@ -900,6 +910,11 @@
         <location filename="../src/include/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation>Open level failed</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
+        <source>msg.openMcstructureFailed</source>
+        <translation>Failed to open structure file</translation>
     </message>
     <message>
         <location filename="../src/nbtwidget.cpp"/>
@@ -1246,11 +1261,6 @@
         <translation>3D View</translation>
     </message>
     <message>
-        <location filename="../src/core/main.cpp"/>
-        <source>nbtEditor.title.nbtEditor</source>
-        <translation>NBT Editor</translation>
-    </message>
-    <message>
         <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation>Confirm</translation>
@@ -1399,10 +1409,6 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>Font Size</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.nbtEditorMode</source>
-        <translation>Pure NBT Editor Mode</translation>
     </message>
     <message>
         <source>settingsDialog.map.renderGroup</source>
@@ -1599,54 +1605,6 @@
     <message>
         <source>中文 (zh_CN)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>WelcomeTab</name>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.text</source>
-        <translation>Welcome</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.openLevel</source>
-        <translation>Open</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.nbtEditor</source>
-        <translation>NBT Editor</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.recentLevels</source>
-        <translation>Recent Levels</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.links</source>
-        <translation>Links</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.tutorial</source>
-        <translation>Tutorial</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.github</source>
-        <translation>Github</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.noRecent</source>
-        <translation>No Recent</translation>
     </message>
 </context>
 <context>

@@ -64,9 +64,9 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     this->actor_editor_ = new NbtWidget();
     this->pending_tick_editor_ = new NbtWidget();
     this->block_entity_editor_ = new NbtWidget();
-    this->actor_editor_->hideLoadDataBtn();
-    this->pending_tick_editor_->hideLoadDataBtn();
-    this->block_entity_editor_->hideLoadDataBtn();
+    this->actor_editor_->setMode(NbtMode::Memory);
+    this->pending_tick_editor_->setMode(NbtMode::Memory);
+    this->block_entity_editor_->setMode(NbtMode::Memory);
 
     // each editor is stacked with an "oversized data" placeholder (label + delete button)
     this->block_entity_stack_ = new QStackedWidget();

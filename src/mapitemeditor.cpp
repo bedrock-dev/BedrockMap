@@ -254,7 +254,7 @@ MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent), ui(new Ui::MapI
     ui->setupUi(this);
     this->setWindowTitle(tr("mapItemEditor.title.mapItemEditor"));
     this->map_nbt_editor_ = new NbtWidget(this);
-    this->map_nbt_editor_->hideLoadDataBtn();
+    this->map_nbt_editor_->setMode(NbtMode::Memory);
     ui->splitter->insertWidget(0, this->map_nbt_editor_);
     ui->splitter->setStretchFactor(0, 2);
     ui->splitter->setStretchFactor(1, 1);

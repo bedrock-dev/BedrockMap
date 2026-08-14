@@ -89,7 +89,6 @@ void SettingsDialog::loadSettings() {
         ui->fontFamilyCombo->setCurrentFont(QFont(setting::FONT_FAMILY));
     }
     ui->fontSizeSpin->setValue(setting::FONT_SIZE > 0 ? setting::FONT_SIZE : ui->fontFamilyCombo->currentFont().pointSize());
-    ui->nbtEditorModeCheck->setChecked(setting::OPEN_NBT_EDITOR_ONLY);
 
     // --- Map ---
     ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::MAP_RENDER_STYLE, 0, 2));
@@ -201,7 +200,6 @@ void SettingsDialog::onSave() {
     }
     setting::FONT_FAMILY = ui->fontFamilyCombo->currentFont().family();
     setting::FONT_SIZE = ui->fontSizeSpin->value();
-    setting::OPEN_NBT_EDITOR_ONLY = ui->nbtEditorModeCheck->isChecked();
 
     setting::MAP_RENDER_STYLE = ui->renderStyleCombo->currentIndex();
     int scaleValues[] = {1, 2, 4, 8, 16, 32};

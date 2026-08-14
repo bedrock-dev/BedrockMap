@@ -18,6 +18,7 @@
 #include "mapwidget.h"
 #include "nbtwidget.h"
 #include "renderfilterdialog.h"
+#include "tabpagewidget.h"
 
 class LevelStatusBar : public QWidget {
     Q_OBJECT
@@ -39,7 +40,7 @@ class LevelStatusBar : public QWidget {
     QLabel *modify_info_;
 };
 class LevelTabWidget;
-class LevelPageWidget : public QWidget {
+class LevelPageWidget : public TabPageWidget {
     struct VillageDrawInfo {
         bl::block_pos p1;
         bl::block_pos p2;
@@ -64,7 +65,7 @@ class LevelPageWidget : public QWidget {
     inline MapWidget *getMapWidget() { return this->mapWidget_; }
     AsyncLevelLoader *levelLoader() { return this->level_loader_.get(); }
     const QMap<QString, VillageDrawInfo> &getVillages() const { return this->villages_; }
-    bool isDirty() const;
+    bool isDirty() const override;
 
     QString getLevelName();
     bool loadLevel(const QString &path);
@@ -80,7 +81,7 @@ class LevelPageWidget : public QWidget {
     }
 
     void refreshDirty();
-    void commit();
+    bool commit() override;
 
    private:
     // data

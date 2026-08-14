@@ -64,7 +64,8 @@ void LevelStatusBar::setModifyInfo(int modified, int deleted) {
 }
 
 // level widget
-LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : QWidget(parent), parent_(parent), tab_id_(id) {
+LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id)
+    : TabPageWidget(parent), parent_(parent), tab_id_(id) {
     level_loader_ = std::make_unique<AsyncLevelLoader>();
 
     // gui
@@ -327,6 +328,10 @@ void LevelPageWidget::setupDataWidget() {
     player_editor_ = new NbtWidget(nbtTabWidget_);
     village_editor_ = new NbtWidget(nbtTabWidget_);
     other_nbt_editor_ = new NbtWidget(nbtTabWidget_);
+    level_dat_editor_->setMode(NbtMode::Memory);
+    player_editor_->setMode(NbtMode::Memory);
+    village_editor_->setMode(NbtMode::Memory);
+    other_nbt_editor_->setMode(NbtMode::Memory);
     map_item_editor_ = new MapItemEditor(nbtTabWidget_);
 
     nbtTabWidget_->addTab(level_dat_editor_, "level.dat");
@@ -379,7 +384,7 @@ void LevelPageWidget::refreshDirty() {
     tw->setTabText(i, dirty ? name + " *" : name);
 }
 
-void LevelPageWidget::commit() {
+bool LevelPageWidget::commit() {
     LOG_F(INFO, "Commit modifications");
 
     //    sync level.dat change
@@ -410,6 +415,7 @@ void LevelPageWidget::commit() {
     map_item_editor_->nbtEditor()->clearModifyCache();
     level_loader_->commit();
     refreshDirty();
+    return true;
 }
 
 bool LevelPageWidget::loadLevel(const QString &path) {

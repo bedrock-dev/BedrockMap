@@ -24,6 +24,7 @@ namespace msg {
     inline QString LEVEL_NOT_OPEN() { return QObject::tr("msg.levelNotOpen"); }
     inline QString OPEN_LEVEL_FAILED() { return QObject::tr("msg.openLevelFailed"); }
     inline QString OPEN_LEVEL_SUCC() { return QObject::tr("msg.openLevelSucc"); }
+    inline QString OPEN_MCSTRUCTURE_FAILED() { return QObject::tr("msg.openMcstructureFailed"); }
     inline QString LOAD_GLOBAL_DATA_FAILED() { return QObject::tr("msg.loadGlobalDataFailed"); }
 
     // new level validation

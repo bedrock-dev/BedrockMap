@@ -41,16 +41,17 @@ class MainWindow : public QMainWindow {
 
    public slots:
     inline bool enable_write() const { return this->write_mode_; }
-    void openNBTEditor();
 
    private slots:
     void openLevel(const QString &startPath = QString());
+    void openFile();
     void close_and_exit();
     void setupShortcuts();
 
    private:
     QString getStaticTitle();
     MapWidget *getCurrentMapWidget();
+    bool openDataFile(const QString &path);
 
     // UI
     QMenuBar *menu_bar_;
@@ -63,12 +64,13 @@ class MainWindow : public QMainWindow {
     QMenu *recent_menu_{nullptr};
 
     QAction *action_open_;
-    QAction *action_new_;
+    QAction *action_open_file_;
+    QMenu *new_menu_{nullptr};
+    QAction *action_new_nbt_{nullptr};
     QAction *action_save_;
     QAction *action_close_;
     QAction *action_exit_;
     QAction *action_transparent_void_;
-    QAction *action_NBT_;
     QAction *action_settings_;
     QAction *action_help_;
     QAction *action_opensource_;

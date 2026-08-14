@@ -46,10 +46,17 @@ VoxelWidget::VoxelWidget(QWidget* parent) : QOpenGLWidget(parent) {
     format.setStencilBufferSize(8);
     format.setSamples(8);  // anti-aliasing
     setFormat(format);
-    updateVoxelData({});
+    // NOTE: do not touch the GL context here. Calling makeCurrent() before the widget
+    // is shown forces native window creation; on Windows, when the widget is embedded
+    // in an already-visible window this recreates the top-level window (visible as a
+    // close/reopen flicker). Vertex data is uploaded lazily from initializeGL().
 }
 
 VoxelWidget::~VoxelWidget() {
+    if (!context() || !context()->isValid()) {
+        // never shown / GL context never created: nothing to clean up
+        return;
+    }
     makeCurrent();
     GLuint vaos[] = {vao_opaque_, vao_transparent_};
     GLuint vbos[] = {vbo_opaque_, vbo_transparent_};
@@ -93,9 +100,13 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
         ender_layer_ = voxel_data_.size() - 1;
     }
     buildVoxelVertices();
-    makeCurrent();
-    updateOpenGLBuffers();
-    doneCurrent();
+    // Upload only after initializeGL() has created the GL objects; if this is called
+    // before the widget is shown, initializeGL() picks up the CPU-side buffers later.
+    if (gl_initialized_) {
+        makeCurrent();
+        updateOpenGLBuffers();
+        doneCurrent();
+    }
 
     // change scale
     if (!newData.empty() && !newData.begin()->empty()) {
@@ -208,6 +219,7 @@ void VoxelWidget::initializeGL() {
     }
 
     generateOpenGLBuffers();
+    gl_initialized_ = true;
     updateOpenGLBuffers();
 }
 
@@ -317,7 +329,7 @@ void VoxelWidget::addFaceVertices(int layer, int x, int z, const Voxel& voxel, c
     float worldY = layer * voxel_size_;
     float worldZ = z * voxel_size_;
 
-    bool isOpaque = !voxel.transparent;  // transparent=false → opaque layer
+    bool isOpaque = !voxel.transparent;  // transparent=false -> opaque layer
     auto& vertices = isOpaque ? verticles_opaque_ : verticles_transparent_;
     auto& indices = isOpaque ? indices_opaque_ : indices_transparent_;
 

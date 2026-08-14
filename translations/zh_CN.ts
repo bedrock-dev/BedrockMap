@@ -364,8 +364,24 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.openFile</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.openFile.filter</source>
+        <translation>Minecraft 数据文件 (*.mcstructure *.nbt *.nbts *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation>新建</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.newNbt</source>
+        <translation>NBT 文件</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -391,11 +407,6 @@
         <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>透明虚空</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.nbtEditor</source>
-        <translation>NBT编辑器</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
@@ -603,11 +614,6 @@
         <source>mainWindow.menu.chunk</source>
         <translation>区块</translation>
     </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>nbtEditor.title.nbtEditor</source>
-        <translation>NBT编辑器</translation>
-    </message>
 </context>
 <context>
     <name>MapItemEditor</name>
@@ -690,6 +696,10 @@
     <message>
         <source>nbtEditor.load</source>
         <translation>加载</translation>
+    </message>
+    <message>
+        <source>nbtEditor.save</source>
+        <translation>保存</translation>
     </message>
     <message>
         <source>nbtEditor.saveAs</source>
@@ -900,6 +910,11 @@
         <location filename="../src/include/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation>无法打开存档</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
+        <source>msg.openMcstructureFailed</source>
+        <translation>无法打开结构文件</translation>
     </message>
     <message>
         <location filename="../src/nbtwidget.cpp"/>
@@ -1246,11 +1261,6 @@
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/core/main.cpp"/>
-        <source>nbtEditor.title.nbtEditor</source>
-        <translation>NBT编辑器</translation>
-    </message>
-    <message>
         <location filename="../src/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation>确认</translation>
@@ -1399,10 +1409,6 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>字号</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.nbtEditorMode</source>
-        <translation>纯NBT编辑器模式</translation>
     </message>
     <message>
         <source>settingsDialog.map.renderGroup</source>
@@ -1599,54 +1605,6 @@
     <message>
         <source>中文 (zh_CN)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>WelcomeTab</name>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.text</source>
-        <translation>欢迎</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.start</source>
-        <translation>开始</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.openLevel</source>
-        <translation>打开</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.nbtEditor</source>
-        <translation>NBT编辑器</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.recentLevels</source>
-        <translation>最近存档</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.links</source>
-        <translation>链接</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.tutorial</source>
-        <translation>教程</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.github</source>
-        <translation>Github</translation>
-    </message>
-    <message>
-        <location filename="../src/welcometab.cpp"/>
-        <source>msg.welcome.noRecent</source>
-        <translation>无近期文件</translation>
     </message>
 </context>
 <context>

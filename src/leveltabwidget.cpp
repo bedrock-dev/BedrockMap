@@ -61,6 +61,52 @@ void LevelTabWidget::openNewLevel(const QString &path) {
     emit currentLevelChanged(page);
 }
 
+bool LevelTabWidget::openMcstructure(const QString &path) {
+    auto *page = new McstructurePageWidget(this);
+    if (!page->loadStructure(path)) {
+        WARN(msg::OPEN_MCSTRUCTURE_FAILED());
+        delete page;
+        return false;
+    }
+    int idx = this->addTab(page, page->getStructureName());
+    this->setCurrentIndex(idx);
+    return true;
+}
+
+bool LevelTabWidget::openNbtFile(const QString &path) {
+    auto *page = new NbtFilePageWidget(this);
+    connect(page, &NbtFilePageWidget::saved, this, [this](const QString &savedPath) { emit dataFileSaved(savedPath); });
+    connect(page, &NbtFilePageWidget::dirtyChanged, this, [this, page](bool dirty) {
+        int i = indexOf(page);
+        if (i >= 0) {
+            this->setTabText(i, page->getFileName() + (dirty ? " *" : ""));
+        }
+    });
+    if (!page->loadFile(path)) {
+        WARN(msg::CANNOT_OPEN_FILE());
+        delete page;
+        return false;
+    }
+    int idx = this->addTab(page, page->getFileName() + (page->isDirty() ? " *" : ""));
+    this->setCurrentIndex(idx);
+    return true;
+}
+
+bool LevelTabWidget::openNewNbtFile() {
+    auto *page = new NbtFilePageWidget(this);
+    connect(page, &NbtFilePageWidget::saved, this, [this](const QString &savedPath) { emit dataFileSaved(savedPath); });
+    connect(page, &NbtFilePageWidget::dirtyChanged, this, [this, page](bool dirty) {
+        int i = indexOf(page);
+        if (i >= 0) {
+            this->setTabText(i, page->getFileName() + (dirty ? " *" : ""));
+        }
+    });
+    page->createNew();
+    int idx = this->addTab(page, page->getFileName() + (page->isDirty() ? " *" : ""));
+    this->setCurrentIndex(idx);
+    return true;
+}
+
 void LevelTabWidget::openLevelDBDebugDialog() {
     auto *page = currentLevelPage();
     if (!page) {
@@ -85,20 +131,33 @@ void LevelTabWidget::onTabClosed(int index) {
         return;
     }
 
-    auto *levelPage = qobject_cast<LevelPageWidget *>(tab);
-    if (!levelPage) return;
-
-    if (levelPage->isDirty()) {
-        auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
-                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        if (btn == QMessageBox::Cancel) return;
-        if (btn == QMessageBox::Yes) levelPage->commit();
+    // World pages keep their async close flow (progress dialog + background close).
+    if (auto *levelPage = qobject_cast<LevelPageWidget *>(tab)) {
+        if (levelPage->isDirty()) {
+            auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                             QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (btn == QMessageBox::Cancel) return;
+            if (btn == QMessageBox::Yes) levelPage->commit();
+        }
+        closing_page_ = levelPage;
+        auto future = QtConcurrent::run([levelPage] { levelPage->closeLevel(); });
+        this->close_level_watcher_.setFuture(future);
+        close_level_mss_box_->show();
+        return;
     }
 
-    closing_page_ = levelPage;
-    auto future = QtConcurrent::run([levelPage] { levelPage->closeLevel(); });
-    this->close_level_watcher_.setFuture(future);
-    close_level_mss_box_->show();
+    // Generic data-file pages (NBT, mcstructure, future formats).
+    if (auto *page = qobject_cast<TabPageWidget *>(tab)) {
+        if (page->isDirty()) {
+            auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                             QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (btn == QMessageBox::Cancel) return;
+            if (btn == QMessageBox::Yes) page->commit();
+        }
+        removeTab(index);
+        tab->deleteLater();
+        return;
+    }
 }
 
 void LevelTabWidget::onCloseLevelFinished() {
@@ -117,17 +176,14 @@ void LevelTabWidget::onCloseLevelFinished() {
 void LevelTabWidget::closeCurrentLevel() { onTabClosed(currentIndex()); }
 
 bool LevelTabWidget::confirmCloseAllLevels() {
-    for (auto *page : level_pages_) {
-        if (!page) continue;
-        if (page->isDirty()) {
-            int idx = indexOf(page);
-            if (idx >= 0) setCurrentIndex(idx);
-
-            auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
-                                             QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-            if (btn == QMessageBox::Cancel) return false;
-            if (btn == QMessageBox::Yes) page->commit();
-        }
+    for (int i = 0; i < count(); ++i) {
+        auto *page = qobject_cast<TabPageWidget *>(widget(i));
+        if (!page || !page->isDirty()) continue;
+        setCurrentIndex(i);
+        auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
+                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        if (btn == QMessageBox::Cancel) return false;
+        if (btn == QMessageBox::Yes) page->commit();
     }
     return true;
 }

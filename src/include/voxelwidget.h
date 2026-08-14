@@ -77,6 +77,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     GLuint vao_opaque_ = 0, vao_transparent_ = 0;
     GLuint vbo_opaque_ = 0, vbo_transparent_ = 0;
     GLuint ebo_opaque_ = 0, ebo_transparent_ = 0;
+    bool gl_initialized_{false};  // true once initializeGL() has run and GL objects exist
 
     // vertices(opaque)
     std::vector<float> verticles_opaque_;

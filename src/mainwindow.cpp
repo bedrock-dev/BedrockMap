@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QOpenGLWidget>
 #include <QPalette>
 #include <QPixmap>
 #include <QScreen>
@@ -23,11 +24,8 @@
 #include "biomepickerdialog.h"
 #include "config.h"
 #include "include/leveltabwidget.h"
-#include "leveloperator.h"
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
-#include "nbtwidget.h"
-#include "newlevelform.h"
 #include "settingsdialog.h"
 
 namespace {
@@ -42,6 +40,16 @@ namespace {
 }  // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+    // HACK (Qt 6.4+): when the first QOpenGLWidget appears inside an already
+    // visible window, the top-level window switches its surface type from
+    // RasterSurface to OpenGLSurface, so Qt destroys and recreates the native
+    // window (visible as the main window closing and reopening). Keep a hidden
+    // QOpenGLWidget child that is created before the window is shown, so the
+    // main window is born as OpenGLSurface and later embedding a voxel view in
+    // a tab does not trigger a window recreation.
+    auto *gl_warmup = new QOpenGLWidget(this);
+    gl_warmup->hide();
+
     setGeometry(centerMainWindowGeometry(0.6));
     setWindowIcon(QIcon(":/res/ui/icon.png"));
 
@@ -79,9 +87,12 @@ void MainWindow::setupMenuBar() {
     action_open_ = file_menu_->addAction(tr("mainWindow.menu.open"));
     action_open_->setShortcut(QKeySequence("Ctrl+O"));
 
-    action_new_ = file_menu_->addAction(tr("mainWindow.menu.new"));
-    action_new_->setShortcut(QKeySequence("Ctrl+N"));
-    action_new_->setVisible(false);  // hidden — has bugs, disabled temporarily
+    action_open_file_ = file_menu_->addAction(tr("mainWindow.menu.openFile"));
+    action_open_file_->setShortcut(QKeySequence("Ctrl+Shift+O"));
+
+    new_menu_ = file_menu_->addMenu(tr("mainWindow.menu.new"));
+    action_new_nbt_ = new_menu_->addAction(tr("mainWindow.menu.newNbt"));
+    action_new_nbt_->setShortcut(QKeySequence("Ctrl+N"));
 
     action_save_ = file_menu_->addAction(tr("mainWindow.menu.save"));
     action_save_->setShortcut(QKeySequence("Ctrl+S"));
@@ -173,7 +184,6 @@ void MainWindow::setupMenuBar() {
     // --- Tool menu ---
     tool_menu_ = menu_bar_->addMenu(tr("mainWindow.menu.tool"));
 
-    action_NBT_ = tool_menu_->addAction(tr("mainWindow.menu.nbtEditor"));
     action_levelDB_ = tool_menu_->addAction(tr("mainWindow.menu.showLevelDBData"));
     action_settings_ = tool_menu_->addAction(tr("mainWindow.menu.openCfgFile"));
     action_settings_->setShortcut(QKeySequence("Ctrl+,"));
@@ -195,21 +205,23 @@ void MainWindow::setupMenuBar() {
 void MainWindow::setupMenuActions() {
     // File — insert recent menu between open and new
     recent_menu_ = new QMenu(tr("mainWindow.menu.openRecent"), this);
-    file_menu_->insertMenu(action_new_, recent_menu_);
+    file_menu_->insertMenu(new_menu_->menuAction(), recent_menu_);
     rebuildRecentMenu();
 
-    //    if (auto *m = buildLeviMenu()) file_menu_->insertMenu(action_new_, m);
+    //    if (auto *m = buildLeviMenu()) file_menu_->insertMenu(new_menu_, m);
 
     connect(action_open_, &QAction::triggered, this, [this]() { openLevel(); });
 
-    connect(action_new_, &QAction::triggered, this, [this]() {
-        NewLevelForm frm(this);
-        if (frm.exec() == QDialog::Accepted) {
-            LevelOperator::newLevel(frm.params());
-        }
+    connect(action_open_file_, &QAction::triggered, this, &MainWindow::openFile);
+
+    connect(action_new_nbt_, &QAction::triggered, this, [this]() { level_tab_widget_->openNewNbtFile(); });
+    connect(level_tab_widget_, &LevelTabWidget::dataFileSaved, this, [this](const QString &path) {
+        level_path_mgr_.addRecentPath(path);
+        rebuildRecentMenu();
     });
     connect(action_save_, &QAction::triggered, this, [this]() {
-        auto *page = level_tab_widget_->currentLevelPage();
+        // Save the current tab (world page or data-file page such as .nbt).
+        auto *page = qobject_cast<TabPageWidget *>(level_tab_widget_->currentWidget());
         if (page && page->isDirty()) {
             page->commit();
         }
@@ -218,7 +230,6 @@ void MainWindow::setupMenuActions() {
     connect(action_exit_, &QAction::triggered, this, &MainWindow::close_and_exit);
 
     // Tools
-    connect(action_NBT_, &QAction::triggered, this, &MainWindow::openNBTEditor);
     connect(action_goto_, &QAction::triggered, this, [this]() {
         if (auto *w = getCurrentMapWidget()) w->gotoPositionAction();
     });
@@ -417,9 +428,14 @@ void MainWindow::setupWelcomeTabActions() {
     // clicking any world item (recent / release / preview) opens the level
     connect(wt, &WorldListTab::openLevelRequested, this, [this](const QString &path) {
         LOG_F(INFO, "WorldListTab openLevelRequested path=%s", path.toStdString().c_str());
-        level_tab_widget_->openNewLevel(path);
-        level_path_mgr_.addRecentPath(path);
-        rebuildRecentMenu();  // also updates welcome tab
+        if (openDataFile(path)) {
+            level_path_mgr_.addRecentPath(path);
+            rebuildRecentMenu();  // also updates welcome tab
+        } else {
+            level_tab_widget_->openNewLevel(path);
+            level_path_mgr_.addRecentPath(path);
+            rebuildRecentMenu();  // also updates welcome tab
+        }
     });
 
     // populate data
@@ -442,9 +458,14 @@ void MainWindow::rebuildRecentMenu() {
         for (const auto &path : paths) {
             auto *a = recent_menu_->addAction(path);
             connect(a, &QAction::triggered, this, [this, path]() {
-                this->level_tab_widget_->openNewLevel(path);
-                level_path_mgr_.addRecentPath(path);
-                rebuildRecentMenu();
+                if (openDataFile(path)) {
+                    level_path_mgr_.addRecentPath(path);
+                    rebuildRecentMenu();
+                } else {
+                    this->level_tab_widget_->openNewLevel(path);
+                    level_path_mgr_.addRecentPath(path);
+                    rebuildRecentMenu();
+                }
             });
         }
         // refresh the welcome tab once
@@ -462,6 +483,25 @@ void MainWindow::openLevel(const QString &startPath) {
     rebuildRecentMenu();
 }
 
+void MainWindow::openFile() {
+    const auto path = QFileDialog::getOpenFileName(this, tr("mainWindow.menu.openFile"), {}, tr("mainWindow.openFile.filter"));
+    if (path.isEmpty()) return;
+    if (openDataFile(path)) {
+        level_path_mgr_.addRecentPath(path);
+        rebuildRecentMenu();
+    }
+}
+
+bool MainWindow::openDataFile(const QString &path) {
+    if (path.endsWith(".mcstructure", Qt::CaseInsensitive)) {
+        return level_tab_widget_->openMcstructure(path);
+    }
+    if (path.endsWith(".nbt", Qt::CaseInsensitive) || path.endsWith(".nbts", Qt::CaseInsensitive)) {
+        return level_tab_widget_->openNbtFile(path);
+    }
+    return false;
+}
+
 void MainWindow::close_and_exit() { this->close(); }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -470,15 +510,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         return;
     }
     QMainWindow::closeEvent(event);
-}
-
-void MainWindow::openNBTEditor() {
-    auto *w = new NbtWidget();
-    auto g = this->geometry();
-    const int ext = 100;
-    w->setWindowTitle(tr("nbtEditor.title.nbtEditor"));
-    w->setGeometry(QRect(g.x() + ext, g.y() + ext, g.width() - ext * 2, g.height() - ext * 2));
-    w->show();
 }
 
 QString MainWindow::getStaticTitle() { return constant::VERSION_STRING(); }

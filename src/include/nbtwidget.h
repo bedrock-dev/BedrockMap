@@ -103,6 +103,12 @@ struct NBTNodeUIAttr {
     }
 };
 
+// Where the NBT data displayed by the widget comes from.
+enum class NbtMode {
+    File,    // data is read from disk via the load button (or provided by the host)
+    Memory,  // data is injected directly via loadNewData(); the load button is hidden
+};
+
 // owns its own data, so every load destroys the previous one and copies a new one
 class NbtWidget : public QWidget {
     Q_OBJECT
@@ -113,9 +119,29 @@ class NbtWidget : public QWidget {
 
     void loadNewData(const std::vector<NBTListItem *> &items);
 
+    /// Open the NBT tree for the item at the given list index.
+    /// Used when the left item list is hidden (e.g. single-document viewers).
+    bool openItem(int index);
+
     void setExtraLoadEvent(const std::function<void(compound_tag *)> &event) { this->extra_load_event_ = event; }
 
-    void hideLoadDataBtn() const;
+    void setMode(NbtMode mode);
+    NbtMode mode() const { return mode_; }
+
+    /// Source file used by the in-place "Save" button (File mode only).
+    void setFilePath(const QString &path);
+    [[nodiscard]] QString filePath() const { return file_path_; }
+
+    /// Write all items back to the source file (File mode only).
+    /// Clears the modify cache on success so dirty() turns false.
+    bool saveToFile();
+
+    /// Disable in-place NBT editing (modify / add / remove / load).
+    /// "Save As" (export) stays available.
+    void setReadOnly(bool read_only);
+
+    /// Show or hide the left-side item list (and the toolbar controls tied to it).
+    void setListVisible(bool visible);
 
     std::string getCurrentPaletteRaw() const;
 
@@ -148,6 +174,8 @@ class NbtWidget : public QWidget {
 
    signals:
     void nbtModified();
+    /// Emitted after saveToFile() has written the data back to disk.
+    void dataSaved();
 
    private slots:
     void on_print_cache_btn_clicked();
@@ -162,6 +190,8 @@ class NbtWidget : public QWidget {
     void on_tree_widget_itemChanged(QTreeWidgetItem *item, int column);
 
     void on_save_btn_clicked();
+
+    void on_save_to_file_btn_clicked();
 
     void prepareTreeWidgetMenu(const QPoint &pos);
 
@@ -180,6 +210,8 @@ class NbtWidget : public QWidget {
    private:
     void openNBTItem(bl::nbt::compound_tag *root) const;
     void tryModifyCurrentNode();
+    void applyToolbarVisibility();
+    std::string collectRawNBT(bool selectOnly) const;
 
    private:
     // does not store data, only references it
@@ -193,6 +225,10 @@ class NbtWidget : public QWidget {
     bool hex_mode_{false};
     bool editing_in_progress_{false};
     std::string current_palette_path_;
+    NbtMode mode_{NbtMode::File};
+    bool read_only_{false};
+    bool list_visible_{true};
+    QString file_path_;
 };
 
 #endif  // NBTWIDGET_H

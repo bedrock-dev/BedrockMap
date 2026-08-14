@@ -10,7 +10,10 @@
 
 #include "levelpagewidget.h"
 #include "mapwidget.h"
+#include "mcstructurepagewidget.h"
+#include "nbtfilepagewidget.h"
 #include "renderfilterdialog.h"
+#include "tabpagewidget.h"
 #include "worldlisttab.h"
 
 class LevelDBDebugDialog : public QDialog {
@@ -60,6 +63,9 @@ class LevelTabWidget : public QTabWidget {
     LevelTabWidget(QWidget *parent);
 
     void openNewLevel(const QString &path);
+    bool openMcstructure(const QString &path);
+    bool openNbtFile(const QString &path);
+    bool openNewNbtFile();
     void openLevelDBDebugDialog();
     bool confirmCloseAllLevels();
 
@@ -71,6 +77,8 @@ class LevelTabWidget : public QTabWidget {
 
    signals:
     void currentLevelChanged(LevelPageWidget *levePage);
+    /// A data-file tab (e.g. .nbt / .nbts) was saved to disk.
+    void dataFileSaved(const QString &path);
 
    public slots:
     void onMapDimensionChanged(int);

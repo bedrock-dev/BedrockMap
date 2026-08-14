@@ -49,7 +49,6 @@ namespace setting {
     extern QString COLOR_THEME;
     extern QString FONT_FAMILY;
     extern int FONT_SIZE;
-    extern bool OPEN_NBT_EDITOR_ONLY;
 
     // Map
     extern int MAP_RENDER_STYLE;
