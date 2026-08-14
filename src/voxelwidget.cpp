@@ -23,6 +23,8 @@
 
 // index template for each face (2 triangles, 6 indices)
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
+// half height of the visible view at z=0: tan(fov/2) * camera distance (50)
+constexpr float kViewHalfHeight = 20.710678f;
 // initialize the face template outside the class (1D vector, 12 coordinate values per face)
 const std::vector<std::vector<float>> VoxelWidget::m_faceTemplates = {
     {-0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f},      // +Z front
@@ -46,6 +48,7 @@ VoxelWidget::VoxelWidget(QWidget* parent) : QOpenGLWidget(parent) {
     format.setStencilBufferSize(8);
     format.setSamples(8);  // anti-aliasing
     setFormat(format);
+    setFocusPolicy(Qt::StrongFocus);  // needed so R / O / arrow keys reach this widget
     // NOTE: do not touch the GL context here. Calling makeCurrent() before the widget
     // is shown forces native window creation; on Windows, when the widget is embedded
     // in an already-visible window this recreates the top-level window (visible as a
@@ -237,10 +240,11 @@ void VoxelWidget::paintGL() {
 
 void VoxelWidget::updateModelMatrix() {
     m_model.setToIdentity();
-    m_model.scale(m_scale);
-    m_model.rotate(rotate_x_, 1.0f, 0.0f, 0.0f);
-    m_model.rotate(rotate_y_, 0.0f, 1.0f, 0.0f);
+    // Pan is applied after the rotation, in the fixed view frame, so dragging
+    // always moves the model along the screen axes regardless of its rotation.
     m_model.translate(m_cameraTranslate);
+    m_model.rotate(m_rotation);
+    m_model.scale(m_scale);
 
     // center translate
     if (!voxel_data_.empty() && !voxel_data_[0].empty() && !voxel_data_[0][0].empty()) {
@@ -288,9 +292,21 @@ void VoxelWidget::checkOpenGLError(const char* location) {
 void VoxelWidget::resizeGL(int w, int h) {
     // set viewport
     glViewport(0, 0, w, h);
-    // projection matrix (perspective projection)
+    updateProjection();
+}
+
+void VoxelWidget::updateProjection() {
+    const float aspect = height() > 0 ? static_cast<float>(width()) / static_cast<float>(height()) : 1.0f;
     m_projection.setToIdentity();
-    m_projection.perspective(45.0f, (float)w / h, 0.1f, 1000.0f);
+    if (ortho_mode_) {
+        // same view size as the perspective mode, so toggling O never changes
+        // the apparent model size (zoom is handled by m_scale in both modes)
+        const float halfW = kViewHalfHeight * aspect;
+        m_projection.ortho(-halfW, halfW, -kViewHalfHeight, kViewHalfHeight, 0.1f, 1000.0f);
+    } else {
+        // perspective projection
+        m_projection.perspective(45.0f, aspect, 0.1f, 1000.0f);
+    }
 
     // view matrix (camera position)
     m_view.setToIdentity();
@@ -404,6 +420,7 @@ void VoxelWidget::buildVoxelVertices() {
 
 // Camera & Controlling
 void VoxelWidget::mousePressEvent(QMouseEvent* e) {
+    setFocus();  // make sure keyboard shortcuts (R / O / arrows) are received
     if (e->button() == Qt::LeftButton) {
         m_lastMousePos = e->pos();
     } else if (e->button() == Qt::RightButton) {
@@ -424,9 +441,10 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
     if (e->buttons() & Qt::LeftButton && !m_isPanDragging) {
         int dx = e->pos().x() - m_lastMousePos.x();
         int dy = e->pos().y() - m_lastMousePos.y();
-        rotate_y_ += dx * 0.5f;
-        rotate_x_ += dy * 0.5f;
-        rotate_x_ = std::clamp(rotate_x_, -90.0f, 90.0f);
+        // rotate around the screen axes (world space, composed on the left)
+        m_rotation = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, dx * 0.5f) * m_rotation;
+        m_rotation = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, dy * 0.5f) * m_rotation;
+        m_rotation.normalize();
         m_lastMousePos = e->pos();
         update();
         return;
@@ -436,7 +454,10 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
         int deltaX = e->pos().x() - m_panStartPos.x();
         int deltaY = e->pos().y() - m_panStartPos.y();
 
-        float sensitivity = m_panSensitivity / m_scale;
+        // 1:1 world-space drag: the model follows the cursor exactly,
+        // independent of the current zoom level.
+        const float worldPerPixel = (2.0f * kViewHalfHeight) / std::max(1, height());
+        const float sensitivity = worldPerPixel * m_panSensitivity;
 
         if (!m_isShiftPressed) {
             m_cameraTranslate.setX(m_cameraTranslate.x() + deltaX * sensitivity);
@@ -467,11 +488,60 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_Shift) {
         m_isShiftPressed = true;
     } else if (e->key() == Qt::Key_R) {
-        rotate_x_ = 0.0f;
-        rotate_y_ = 0.0f;
+        // reset to the default corner view (45 degrees); projection mode is kept
+        m_rotation = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 45.0f) *
+                     QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 45.0f);
         m_scale = 1.0f;
         m_cameraTranslate = QVector3D(0.0f, 0.0f, 0.0f);  // reset pan
+        updateProjection();
         update();
+    } else if (e->key() == Qt::Key_F) {
+        // focus the face that is currently most parallel to the screen: snap it
+        // flat AND align its four edges with the window axes, choosing the
+        // candidate with the smallest rotation from the current orientation.
+        // Zoom / pan / projection are kept.
+        const QVector3D local = localFaceClosestTo(QVector3D(0.0f, 0.0f, 1.0f));
+        QQuaternion base;
+        if (local.x() > 0.5f) {
+            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -90.0f);
+        } else if (local.x() < -0.5f) {
+            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 90.0f);
+        } else if (local.y() > 0.5f) {
+            base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 90.0f);
+        } else if (local.y() < -0.5f) {
+            base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, -90.0f);
+        } else if (local.z() < -0.5f) {
+            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 180.0f);
+        } else {
+            base = QQuaternion();
+        }
+        QQuaternion best = base;
+        float bestAngle = 1e9f;
+        for (float t = 0.0f; t < 360.0f; t += 90.0f) {
+            const QQuaternion candidate =
+                QQuaternion::fromAxisAndAngle(0.0f, 0.0f, 1.0f, t) * base;
+            const float dot = std::abs(QQuaternion::dotProduct(candidate, m_rotation));
+            const float angle = 2.0f * std::acos(std::clamp(dot, -1.0f, 1.0f));
+            if (angle < bestAngle) {
+                bestAngle = angle;
+                best = candidate;
+            }
+        }
+        m_rotation = best.normalized();
+        update();
+    } else if (e->key() == Qt::Key_O) {
+        // toggle orthographic / perspective projection
+        ortho_mode_ = !ortho_mode_;
+        updateProjection();
+        update();
+    } else if (e->key() == Qt::Key_Left) {
+        rotateScreenDirToFront(QVector3D(-1.0f, 0.0f, 0.0f));
+    } else if (e->key() == Qt::Key_Right) {
+        rotateScreenDirToFront(QVector3D(1.0f, 0.0f, 0.0f));
+    } else if (e->key() == Qt::Key_Up) {
+        rotateScreenDirToFront(QVector3D(0.0f, 1.0f, 0.0f));
+    } else if (e->key() == Qt::Key_Down) {
+        rotateScreenDirToFront(QVector3D(0.0f, -1.0f, 0.0f));
     }
     QOpenGLWidget::keyPressEvent(e);
 }
@@ -480,6 +550,49 @@ void VoxelWidget::keyReleaseEvent(QKeyEvent* e) {
         m_isShiftPressed = false;
     }
     QOpenGLWidget::keyReleaseEvent(e);
+}
+
+QVector3D VoxelWidget::faceWorldNormalClosestTo(const QVector3D &dir) const {
+    QMatrix4x4 rot;
+    rot.rotate(m_rotation);
+    const QVector3D localAxes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+    QVector3D best;
+    float bestDot = -2.0f;
+    for (const auto &a : localAxes) {
+        const QVector3D world = rot.mapVector(a);
+        const float d = QVector3D::dotProduct(world, dir);
+        if (d > bestDot) {
+            bestDot = d;
+            best = world;
+        }
+    }
+    return best;
+}
+
+QVector3D VoxelWidget::localFaceClosestTo(const QVector3D &dir) const {
+    QMatrix4x4 rot;
+    rot.rotate(m_rotation);
+    const QVector3D localAxes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+    QVector3D best;
+    float bestDot = -2.0f;
+    for (const auto &a : localAxes) {
+        const float d = QVector3D::dotProduct(rot.mapVector(a), dir);
+        if (d > bestDot) {
+            bestDot = d;
+            best = a;
+        }
+    }
+    return best;
+}
+
+void VoxelWidget::rotateScreenDirToFront(const QVector3D &screenDir) {
+    const QVector3D front(0.0f, 0.0f, 1.0f);
+    const QVector3D n = faceWorldNormalClosestTo(screenDir);
+    const QVector3D axis = QVector3D::crossProduct(n, front);
+    if (axis.lengthSquared() < 1e-6f) return;  // face already front / parallel
+    m_rotation = QQuaternion::fromAxisAndAngle(axis.normalized(), 90.0f) * m_rotation;
+    m_rotation.normalize();
+    update();
 }
 
 // helper

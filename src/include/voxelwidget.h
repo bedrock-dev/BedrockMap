@@ -14,6 +14,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
+#include <QQuaternion>
 #include <QVector3D>
 #include <QWidget>
 #include <QtOpenGLWidgets/QOpenGLWidget>
@@ -63,6 +64,10 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void setupVertexAttributes();                 // set vertex attributes (called once only)
     void updateOpenGLBuffers();                   // update OpenGL buffer data
     void updateModelMatrix();                     // update model matrix
+    void updateProjection();                      // rebuild projection from the current mode / size
+    QVector3D faceWorldNormalClosestTo(const QVector3D &dir) const;
+    QVector3D localFaceClosestTo(const QVector3D &dir) const;
+    void rotateScreenDirToFront(const QVector3D &screenDir);
     void setUniforms();                           // set shader uniforms
     void renderOpaqueObjects();                   // render opaque objects
     void renderTransparentObjects();              // render transparent objects
@@ -94,21 +99,22 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // camera
     QPoint m_lastMousePos;
-    float rotate_x_ = 45.f;
-    float rotate_y_ = 45.f;
+    QQuaternion m_rotation{QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 45.0f) *
+                           QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 45.0f)};
     float m_scale = 1.0f;
     float voxel_size_ = 1.0f;
 
     QVector3D m_cameraTranslate;   // camera pan offset (X/Y/Z axis)
     bool m_isPanDragging{false};   // whether panning drag is active
     QPoint m_panStartPos;          // mouse start position for pan
-    float m_panSensitivity{0.3};   // pan sensitivity
+    float m_panSensitivity{1.0};   // pan sensitivity multiplier (1.0 = model follows the cursor 1:1)
     bool m_isShiftPressed{false};  // whether Shift is pressed (distinguishes forward/back vs left/right pan)
 
     // matrix
     QMatrix4x4 m_projection;
     QMatrix4x4 m_view;
     QMatrix4x4 m_model;
+    bool ortho_mode_{false};  // false = perspective, true = orthographic
 
     // shadering
     QVector3D m_lightPos = QVector3D(8.0f, 384.0f, 8.0f);
