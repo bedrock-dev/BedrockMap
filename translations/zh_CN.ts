@@ -160,6 +160,47 @@
     </message>
 </context>
 <context>
+    <name>ChunkRenderWidget</name>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export .mcstructure</source>
+        <translation>导出 .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Compress</source>
+        <translation>压缩</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Import .mcstructure</source>
+        <translation>导入 .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export GLB</source>
+        <translation>导出 GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export as glTF Binary (.glb)</source>
+        <translation>导出为 glTF 二进制（.glb）</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB files (*.glb)</source>
+        <translation>GLB 文件 (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB export completed.</source>
+        <translation>GLB 导出完成。</translation>
+    </message>
+</context>
+<context>
     <name>ChunkSectionWidget</name>
     <message>
         <location filename="../src/chunksectionwidget.cpp"/>
@@ -763,10 +804,12 @@
     </message>
     <message>
         <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
+        <location filename="../src/nbtwidget.cpp"/>
         <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT文件 (*.*)</translation>
@@ -1605,6 +1648,64 @@
     <message>
         <source>中文 (zh_CN)</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VoxelWidget</name>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.buttonTooltip</source>
+        <translation>快捷键</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.title</source>
+        <translation>Voxel 快捷键</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.content</source>
+        <translation>左键拖动：旋转
+右键拖动：平移
+Shift + 右键拖动：沿 Z 轴平移
+中键拖动控制点：调整选区
+滚轮：缩放
+R：重置视图
+F：正视表面
+O：切换投影
+A：切换坐标轴
+L：锁定左键旋转
+方向键：旋转 90°</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Export path is empty.</source>
+        <translation>导出路径为空。</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>There is no voxel data to export.</source>
+        <translation>没有可导出的 voxel 数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>The selected range has no visible voxel faces.</source>
+        <translation>选中范围内没有可见 voxel 面。</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to open export file: %1</source>
+        <translation>无法打开导出文件：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to write export file: %1</source>
+        <translation>无法写入导出文件：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to finish export file: %1</source>
+        <translation>无法完成导出文件：%1</translation>
     </message>
 </context>
 <context>

@@ -160,6 +160,47 @@
     </message>
 </context>
 <context>
+    <name>ChunkRenderWidget</name>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export .mcstructure</source>
+        <translation>Export .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Compress</source>
+        <translation>Compress</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Import .mcstructure</source>
+        <translation>Import .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export GLB</source>
+        <translation>Export GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export as glTF Binary (.glb)</source>
+        <translation>Export as glTF Binary (.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB files (*.glb)</source>
+        <translation>GLB files (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB export completed.</source>
+        <translation>GLB export completed.</translation>
+    </message>
+</context>
+<context>
     <name>ChunkSectionWidget</name>
     <message>
         <location filename="../src/chunksectionwidget.cpp"/>
@@ -763,10 +804,12 @@
     </message>
     <message>
         <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation>Save File</translation>
     </message>
     <message>
+        <location filename="../src/nbtwidget.cpp"/>
         <location filename="../src/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT Files (*.*)</translation>
@@ -1605,6 +1648,64 @@
     <message>
         <source>中文 (zh_CN)</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VoxelWidget</name>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.buttonTooltip</source>
+        <translation>Shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.title</source>
+        <translation>Voxel Shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_controls.cpp"/>
+        <source>voxelWidget.shortcuts.content</source>
+        <translation>LMB drag: Rotate
+RMB drag: Pan
+Shift + RMB drag: Pan Z
+MMB drag handles: Resize selection
+Wheel: Zoom
+R: Reset view
+F: Face front
+O: Toggle projection
+A: Toggle axes
+L: Lock left-button rotation
+Arrow keys: Rotate 90 degrees</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Export path is empty.</source>
+        <translation>Export path is empty.</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>There is no voxel data to export.</source>
+        <translation>There is no voxel data to export.</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>The selected range has no visible voxel faces.</source>
+        <translation>The selected range has no visible voxel faces.</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to open export file: %1</source>
+        <translation>Failed to open export file: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to write export file: %1</source>
+        <translation>Failed to write export file: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelwidget_export.cpp"/>
+        <source>Failed to finish export file: %1</source>
+        <translation>Failed to finish export file: %1</translation>
     </message>
 </context>
 <context>
