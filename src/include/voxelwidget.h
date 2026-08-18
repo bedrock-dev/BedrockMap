@@ -33,8 +33,8 @@
 
 class QResizeEvent;
 namespace bl {
-class chunk;
-struct mcstructure;
+    class chunk;
+    struct mcstructure;
 }  // namespace bl
 class QLabel;
 

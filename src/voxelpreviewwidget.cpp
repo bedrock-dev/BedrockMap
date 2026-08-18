@@ -9,43 +9,43 @@
 #include "voxelwidget.h"
 
 namespace {
-VoxelPreviewWidget::VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
-    const int sx = structure.size_x;
-    const int sy = structure.size_y;
-    const int sz = structure.size_z;
+    VoxelPreviewWidget::VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
+        const int sx = structure.size_x;
+        const int sy = structure.size_y;
+        const int sz = structure.size_z;
 
-    std::vector<std::vector<std::vector<Voxel>>> data;
-    data.resize(sy);
-    for (auto& yLayer : data) {
-        yLayer.resize(sx);
-        for (auto& xRow : yLayer) {
-            xRow.resize(sz, Voxel(QColor(255, 255, 255, 0), true));
+        std::vector<std::vector<std::vector<Voxel>>> data;
+        data.resize(sy);
+        for (auto& yLayer : data) {
+            yLayer.resize(sx);
+            for (auto& xRow : yLayer) {
+                xRow.resize(sz, Voxel(QColor(255, 255, 255, 0), true));
+            }
         }
-    }
 
-    if (structure.palette.empty() || structure.layers[0].empty()) {
+        if (structure.palette.empty() || structure.layers[0].empty()) {
+            return data;
+        }
+
+        const auto& palette = structure.palette;
+        const auto& indices = structure.layers[0];
+        for (size_t i = 0; i < indices.size(); i++) {
+            const int idx = indices[i];
+            if (idx < 0 || idx >= static_cast<int>(palette.size())) continue;
+            const auto& name = palette[static_cast<size_t>(idx)].name;
+            if (name == "minecraft:air" || name == "minecraft:unknown") continue;
+
+            const int x = static_cast<int>(i) / (sz * sy);
+            const int y = (static_cast<int>(i) / sz) % sy;
+            const int z = static_cast<int>(i) % sz;
+            if (x < 0 || x >= sx || y < 0 || y >= sy || z < 0 || z >= sz) continue;
+
+            const auto c = bl::get_block_by_name_tag(name);
+            data[y][x][z] = Voxel(QColor(c.r, c.g, c.b, c.a), c.a < 255);
+        }
+
         return data;
     }
-
-    const auto& palette = structure.palette;
-    const auto& indices = structure.layers[0];
-    for (size_t i = 0; i < indices.size(); i++) {
-        const int idx = indices[i];
-        if (idx < 0 || idx >= static_cast<int>(palette.size())) continue;
-        const auto& name = palette[static_cast<size_t>(idx)].name;
-        if (name == "minecraft:air" || name == "minecraft:unknown") continue;
-
-        const int x = static_cast<int>(i) / (sz * sy);
-        const int y = (static_cast<int>(i) / sz) % sy;
-        const int z = static_cast<int>(i) % sz;
-        if (x < 0 || x >= sx || y < 0 || y >= sy || z < 0 || z >= sz) continue;
-
-        const auto c = bl::get_block_by_name_tag(name);
-        data[y][x][z] = Voxel(QColor(c.r, c.g, c.b, c.a), c.a < 255);
-    }
-
-    return data;
-}
 }  // namespace
 
 bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::chunk_pos& maxPos, AsyncLevelLoader& loader) {

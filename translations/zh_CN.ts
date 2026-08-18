@@ -1612,20 +1612,20 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
         <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>Export GLB</source>
         <translation type="unfinished">导出 GLB</translation>
     </message>
     <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>GLB files (*.glb)</source>
         <translation type="unfinished">GLB 文件 (*.glb)</translation>
     </message>
     <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>GLB export completed.</source>
         <translation type="unfinished">GLB 导出完成。</translation>
     </message>
