@@ -160,47 +160,6 @@
     </message>
 </context>
 <context>
-    <name>ChunkRenderWidget</name>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export .mcstructure</source>
-        <translation>导出 .mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Compress</source>
-        <translation>压缩</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Import .mcstructure</source>
-        <translation>导入 .mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export GLB</source>
-        <translation>导出 GLB</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export as glTF Binary (.glb)</source>
-        <translation>导出为 glTF 二进制（.glb）</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <source>GLB files (*.glb)</source>
-        <translation>GLB 文件 (*.glb)</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <source>GLB export completed.</source>
-        <translation>GLB 导出完成。</translation>
-    </message>
-</context>
-<context>
     <name>ChunkSectionWidget</name>
     <message>
         <location filename="../src/chunksectionwidget.cpp"/>
@@ -1651,6 +1610,47 @@
     </message>
 </context>
 <context>
+    <name>VoxelPreviewWidget</name>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export GLB</source>
+        <translation type="unfinished">导出 GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB files (*.glb)</source>
+        <translation type="unfinished">GLB 文件 (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB export completed.</source>
+        <translation type="unfinished">GLB 导出完成。</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export .mcstructure</source>
+        <translation type="unfinished">导出 .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Compress</source>
+        <translation type="unfinished">压缩</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Import .mcstructure</source>
+        <translation type="unfinished">导入 .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export as glTF Binary (.glb)</source>
+        <translation type="unfinished">导出为 glTF 二进制（.glb）</translation>
+    </message>
+</context>
+<context>
     <name>VoxelWidget</name>
     <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
@@ -1659,10 +1659,6 @@
     </message>
     <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
-        <source>voxelWidget.shortcuts.title</source>
-        <translation>Voxel 快捷键</translation>
-    </message>
-    <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.content</source>
         <translation>左键拖动：旋转
@@ -1675,6 +1671,7 @@ F：正视表面
 O：切换投影
 A：切换坐标轴
 L：锁定左键旋转
+S：切换选区启用
 方向键：旋转 90°</translation>
     </message>
     <message>

@@ -108,7 +108,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
             auto rect = w->selection_.region().boundingRect();
             bl::chunk_pos minPos(rect.x(), rect.y(), w->option_.dim);
             bl::chunk_pos maxPos(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1, w->option_.dim);
-            w->chunk_render_window_->showChunks(minPos, maxPos, *w->level_loader_);
+            w->voxel_preview_window_->loadChunksAsync(minPos, maxPos, *w->level_loader_);
         });
     }
 

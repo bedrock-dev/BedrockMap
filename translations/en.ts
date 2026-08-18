@@ -160,47 +160,6 @@
     </message>
 </context>
 <context>
-    <name>ChunkRenderWidget</name>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export .mcstructure</source>
-        <translation>Export .mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Compress</source>
-        <translation>Compress</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Import .mcstructure</source>
-        <translation>Import .mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export GLB</source>
-        <translation>Export GLB</translation>
-    </message>
-    <message>
-        <location filename="../src/include/voxelwidget.h"/>
-        <source>Export as glTF Binary (.glb)</source>
-        <translation>Export as glTF Binary (.glb)</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <source>GLB files (*.glb)</source>
-        <translation>GLB files (*.glb)</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkrenderwidget.cpp"/>
-        <source>GLB export completed.</source>
-        <translation>GLB export completed.</translation>
-    </message>
-</context>
-<context>
     <name>ChunkSectionWidget</name>
     <message>
         <location filename="../src/chunksectionwidget.cpp"/>
@@ -1651,6 +1610,47 @@
     </message>
 </context>
 <context>
+    <name>VoxelPreviewWidget</name>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export GLB</source>
+        <translation type="unfinished">Export GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB files (*.glb)</source>
+        <translation type="unfinished">GLB files (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkrenderwidget.cpp"/>
+        <source>GLB export completed.</source>
+        <translation type="unfinished">GLB export completed.</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export .mcstructure</source>
+        <translation type="unfinished">Export .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Compress</source>
+        <translation type="unfinished">Compress</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Import .mcstructure</source>
+        <translation type="unfinished">Import .mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export as glTF Binary (.glb)</source>
+        <translation type="unfinished">Export as glTF Binary (.glb)</translation>
+    </message>
+</context>
+<context>
     <name>VoxelWidget</name>
     <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
@@ -1659,10 +1659,6 @@
     </message>
     <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
-        <source>voxelWidget.shortcuts.title</source>
-        <translation>Voxel Shortcuts</translation>
-    </message>
-    <message>
         <location filename="../src/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.content</source>
         <translation>LMB drag: Rotate
@@ -1675,6 +1671,7 @@ F: Face front
 O: Toggle projection
 A: Toggle axes
 L: Lock left-button rotation
+S: Toggle selection
 Arrow keys: Rotate 90 degrees</translation>
     </message>
     <message>

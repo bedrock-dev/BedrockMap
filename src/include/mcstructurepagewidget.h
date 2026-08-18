@@ -2,6 +2,7 @@
 #define MCSTRUCTURE_PAGE_WIDGET_H
 
 #include <QString>
+#include <memory>
 #include <QWidget>
 
 #include "nbtwidget.h"
@@ -9,10 +10,7 @@
 #include "tabpagewidget.h"
 #include "voxelwidget.h"
 
-class QHBoxLayout;
-
-// Shows a parsed .mcstructure file: NBT editor (left) + 3D voxel view (right),
-// with a (currently empty) button bar at the bottom.
+// Shows a parsed .mcstructure file: NBT editor (left) + voxel preview / export UI (right).
 class McstructurePageWidget : public TabPageWidget {
     Q_OBJECT
 
@@ -25,16 +23,14 @@ class McstructurePageWidget : public TabPageWidget {
 
    private:
     void setupUI();
-    void buildVoxelData();
 
     // data
-    bl::mcstructure structure_;
+    std::shared_ptr<bl::mcstructure> structure_;
     QString structure_name_;
 
     // gui
     NbtWidget *nbt_editor_{nullptr};
-    VoxelWidget *voxel_widget_{nullptr};
-    QHBoxLayout *button_bar_{nullptr};
+    VoxelPreviewWidget *voxel_preview_widget_{nullptr};
 };
 
 #endif  // MCSTRUCTURE_PAGE_WIDGET_H

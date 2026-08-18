@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -31,6 +32,11 @@
 #include "chunk.h"
 
 class QResizeEvent;
+namespace bl {
+class chunk;
+struct mcstructure;
+}  // namespace bl
+class QLabel;
 
 struct Voxel {
     QColor color;              // color (alpha channel assists transparency check)
@@ -57,6 +63,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     void setLayer(int startLayer, int endLayer);
     void updateVoxelData(const std::vector<std::vector<std::vector<Voxel>>>& newData);
+    void updateVoxelData(std::vector<std::vector<std::vector<Voxel>>>&& newData);
     void setSelectionEnabled(bool enabled);
     [[nodiscard]] bool isSelectionEnabled() const { return selection_enabled_; }
     [[nodiscard]] VoxelSelection getSelection() const { return selection_; }
@@ -108,6 +115,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void showShortcutHelp();
     void updateSelectionOpenGLBuffer();
     void resetSelectionToModelBounds();
+    [[nodiscard]] float pixelsPerWorldUnitAt(const QVector3D& point) const;
+    [[nodiscard]] float selectionHandleHalfSizeAt(const QVector3D& point) const;
     [[nodiscard]] SelectionHandle pickSelectionHandle(const QPointF& position) const;
     [[nodiscard]] QVector3D selectionHandlePosition(SelectionHandle handle) const;
     [[nodiscard]] QVector3D selectionHandleAxis(SelectionHandle handle) const;
@@ -182,9 +191,10 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     bool axes_visible_{false};  // coordinate axes overlay (A key)
     bool rotation_locked_{false};
     QToolButton* shortcut_help_button_{nullptr};
+    QWidget* shortcut_help_popup_{nullptr};
 
     // voxel selection
-    bool selection_enabled_{true};
+    bool selection_enabled_{false};
     VoxelSelection selection_;
     SelectionHandle active_selection_handle_{SelectionHandle::None};
     QPointF selection_drag_start_;
@@ -201,10 +211,12 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     static const std::vector<QVector3D> m_faceNormals;
 };
 
-class ChunkRenderWidget : public QWidget {
+class VoxelPreviewWidget : public QWidget {
     Q_OBJECT
    public:
-    ChunkRenderWidget() : QWidget() {
+    using VoxelGrid = std::vector<std::vector<std::vector<Voxel>>>;
+
+    explicit VoxelPreviewWidget(QWidget* parent = nullptr) : QWidget(parent) {
         voxelWidget_ = new VoxelWidget(this);
         bar_ = new QProgressBar(this);
         auto* toolbar = new QWidget(this);
@@ -242,28 +254,35 @@ class ChunkRenderWidget : public QWidget {
         layout->addWidget(bar_, 0);
         setLayout(layout);
         setGeometry({0, 0, 1200, 900});
-        connect(&this->chunk_render_watcher_, &QFutureWatcher<bool>::finished, this, [this]() {
+        connect(&this->chunk_render_watcher_, &QFutureWatcher<VoxelGrid>::finished, this, [this]() {
             bar_->hide();
-            voxelWidget_->updateVoxelData(voxels_);
+            auto data = chunk_render_watcher_.future().result();
+            setVoxelData(std::move(data));
         });
-        connect(this, &ChunkRenderWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
+        connect(&this->mcstructure_render_watcher_, &QFutureWatcher<VoxelGrid>::finished, this, [this]() {
+            bar_->hide();
+            auto data = mcstructure_render_watcher_.future().result();
+            setVoxelData(std::move(data));
+        });
+        connect(this, &VoxelPreviewWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
     }
 
-    bool showChunks(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
+    bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
+    void loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure);
 
    signals:
     void chunkMeshBuilt(int n);
 
    private:
+    void setVoxelData(VoxelGrid&& data);
     void exportGlbModel();
 
     QProgressBar* bar_;
     VoxelWidget* voxelWidget_;
     QCheckBox* mcstructureCompressBox_{nullptr};
     // data
-    QFutureWatcher<bool> chunk_render_watcher_;
-    std::vector<std::vector<std::vector<Voxel>>> voxels_;
-    std::vector<std::vector<bl::chunk*>> chunks_;
+    QFutureWatcher<VoxelGrid> chunk_render_watcher_;
+    QFutureWatcher<VoxelGrid> mcstructure_render_watcher_;
 };
 
 #endif  // VOXELWIDGET_H

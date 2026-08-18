@@ -1,11 +1,14 @@
 #include "voxelwidget.h"
 
+#include <QGuiApplication>
 #include <QKeyEvent>
-#include <QMessageBox>
 #include <QMouseEvent>
+#include <QLabel>
 #include <QResizeEvent>
+#include <QScreen>
 #include <QShowEvent>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include <QVector4D>
 #include <QWheelEvent>
 #include <algorithm>
@@ -15,7 +18,8 @@
 namespace {
 // Keep panning consistent with the projection setup used by VoxelWidget.
 constexpr float kViewHalfHeight = 20.710678f;
-constexpr float kSelectionHandlePickRadius = 14.0f;
+constexpr float kSelectionHandleScreenSizePx = 12.0f;
+constexpr float kSelectionHandlePickRadius = kSelectionHandleScreenSizePx * 1.35f;
 }  // namespace
 
 void VoxelWidget::setupShortcutHelpButton() {
@@ -36,6 +40,29 @@ void VoxelWidget::setupShortcutHelpButton() {
         " background-color: rgba(255, 255, 255, 48);"
         "}"));
     connect(shortcut_help_button_, &QToolButton::clicked, this, &VoxelWidget::showShortcutHelp);
+    shortcut_help_popup_ = new QWidget(this, Qt::Popup | Qt::FramelessWindowHint);
+    shortcut_help_popup_->setObjectName(QStringLiteral("voxelShortcutHelpPopup"));
+    shortcut_help_popup_->setStyleSheet(QStringLiteral(
+        "QWidget#voxelShortcutHelpPopup {"
+        " background-color: rgba(16, 20, 24, 235);"
+        " border: 1px solid rgba(255, 255, 255, 72);"
+        " border-radius: 6px;"
+        "}"
+        "QWidget#voxelShortcutHelpPopup QLabel {"
+        " color: rgba(255, 255, 255, 235);"
+        " background: transparent;"
+        "}"));
+    auto* popupLayout = new QVBoxLayout(shortcut_help_popup_);
+    popupLayout->setContentsMargins(12, 10, 12, 10);
+    popupLayout->setSpacing(6);
+    auto* helpLabel = new QLabel(tr("voxelWidget.shortcuts.content"), shortcut_help_popup_);
+    helpLabel->setObjectName(QStringLiteral("shortcutHelpLabel"));
+    helpLabel->setWordWrap(true);
+    helpLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    helpLabel->setMinimumWidth(270);
+    helpLabel->setMaximumWidth(340);
+    popupLayout->addWidget(helpLabel);
+    shortcut_help_popup_->hide();
     updateShortcutHelpButtonGeometry();
 }
 
@@ -45,10 +72,74 @@ void VoxelWidget::updateShortcutHelpButtonGeometry() {
     constexpr int buttonSize = 28;
     constexpr int margin = 8;
     shortcut_help_button_->setGeometry(std::max(margin, width() - buttonSize - margin), margin, buttonSize, buttonSize);
+    if (shortcut_help_popup_ && shortcut_help_popup_->isVisible()) {
+        shortcut_help_popup_->adjustSize();
+        const QPoint anchor = shortcut_help_button_->mapToGlobal(QPoint(0, shortcut_help_button_->height() + 6));
+        QPoint popupPos = anchor;
+        if (auto* screen = QGuiApplication::screenAt(anchor)) {
+            const QRect available = screen->availableGeometry();
+            popupPos.setX(std::clamp(popupPos.x(), available.left() + 8, available.right() - shortcut_help_popup_->width() - 8));
+            popupPos.setY(std::clamp(popupPos.y(), available.top() + 8, available.bottom() - shortcut_help_popup_->height() - 8));
+        }
+        shortcut_help_popup_->move(popupPos);
+    }
 }
 
 void VoxelWidget::showShortcutHelp() {
-    QMessageBox::information(this, tr("voxelWidget.shortcuts.title"), tr("voxelWidget.shortcuts.content"));
+    if (!shortcut_help_popup_) return;
+    if (shortcut_help_popup_->isVisible()) {
+        shortcut_help_popup_->hide();
+        return;
+    }
+    if (auto* label = shortcut_help_popup_->findChild<QLabel*>(QStringLiteral("shortcutHelpLabel"))) {
+        label->setText(tr("voxelWidget.shortcuts.content"));
+    }
+    shortcut_help_popup_->adjustSize();
+    const QPoint anchor = shortcut_help_button_ ? shortcut_help_button_->mapToGlobal(QPoint(0, shortcut_help_button_->height() + 6))
+                                                : mapToGlobal(QPoint(8, 8));
+    QPoint popupPos = anchor;
+    if (auto* screen = QGuiApplication::screenAt(anchor)) {
+        const QRect available = screen->availableGeometry();
+        popupPos.setX(std::clamp(popupPos.x(), available.left() + 8, available.right() - shortcut_help_popup_->width() - 8));
+        popupPos.setY(std::clamp(popupPos.y(), available.top() + 8, available.bottom() - shortcut_help_popup_->height() - 8));
+    }
+    shortcut_help_popup_->move(popupPos);
+    shortcut_help_popup_->show();
+}
+
+float VoxelWidget::pixelsPerWorldUnitAt(const QVector3D& point) const {
+    bool originVisible = false;
+    const QPointF origin = projectToWidget(point, &originVisible);
+    if (!originVisible) return 0.0f;
+
+    float totalPixelsPerWorld = 0.0f;
+    int sampleCount = 0;
+    const QVector3D axes[] = {
+        QVector3D(voxel_size_, 0.0f, 0.0f),
+        QVector3D(0.0f, voxel_size_, 0.0f),
+        QVector3D(0.0f, 0.0f, voxel_size_),
+    };
+    for (const auto& axis : axes) {
+        bool axisVisible = false;
+        const QPointF projected = projectToWidget(point + axis, &axisVisible);
+        if (!axisVisible) continue;
+        const float dx = static_cast<float>(projected.x() - origin.x());
+        const float dy = static_cast<float>(projected.y() - origin.y());
+        const float pixels = std::sqrt(dx * dx + dy * dy);
+        if (pixels <= 1e-3f) continue;
+        totalPixelsPerWorld += pixels / voxel_size_;
+        ++sampleCount;
+    }
+    if (sampleCount == 0) return 0.0f;
+    return totalPixelsPerWorld / static_cast<float>(sampleCount);
+}
+
+float VoxelWidget::selectionHandleHalfSizeAt(const QVector3D& point) const {
+    const float pixelsPerWorld = pixelsPerWorldUnitAt(point);
+    if (pixelsPerWorld <= 1e-3f) {
+        return 0.20f * voxel_size_;
+    }
+    return (kSelectionHandleScreenSizePx * 0.5f) / pixelsPerWorld;
 }
 
 QVector3D VoxelWidget::selectionHandleAxis(SelectionHandle handle) const {
@@ -110,7 +201,7 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
 
     const float axisLengthSquared = static_cast<float>(selection_drag_axis_screen_.x() * selection_drag_axis_screen_.x() +
                                                        selection_drag_axis_screen_.y() * selection_drag_axis_screen_.y());
-    if (axisLengthSquared < 1e-6f) return;
+    if (axisLengthSquared < 1e-10f) return;
     const QPointF mouseDelta = position - selection_drag_start_;
     const float voxelDelta = static_cast<float>((mouseDelta.x() * selection_drag_axis_screen_.x() +
                                                  mouseDelta.y() * selection_drag_axis_screen_.y()) /
@@ -177,14 +268,44 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
             selection_drag_start_ = e->position();
             const QVector3D handlePosition = selectionHandlePosition(active_selection_handle_);
             const QVector3D handleAxis = selectionHandleAxis(active_selection_handle_);
+            const auto projectedAxisForVoxelStep = [this, &handlePosition, &handleAxis](float voxelStep) {
+                return projectToWidget(handlePosition + handleAxis * voxel_size_ * voxelStep) - projectToWidget(handlePosition);
+            };
             selection_drag_axis_screen_ =
-                projectToWidget(handlePosition + handleAxis * voxel_size_) - projectToWidget(handlePosition);
+                projectedAxisForVoxelStep(1.0f);
             const float axisLengthSquared = static_cast<float>(selection_drag_axis_screen_.x() * selection_drag_axis_screen_.x() +
                                                                selection_drag_axis_screen_.y() * selection_drag_axis_screen_.y());
             if (axisLengthSquared < 4.0f) {
-                // An axis pointing into the camera has no useful screen projection.
-                // In that view, upward motion increases the selected coordinate.
-                selection_drag_axis_screen_ = QPointF(0.0, -12.0);
+                const int sizeX = static_cast<int>(voxel_data_[0].size());
+                const int sizeY = static_cast<int>(voxel_data_.size());
+                const int sizeZ = static_cast<int>(voxel_data_[0][0].size());
+                int axisVoxelCount = 1;
+                switch (active_selection_handle_) {
+                    case SelectionHandle::MinX:
+                    case SelectionHandle::MaxX:
+                        axisVoxelCount = sizeX;
+                        break;
+                    case SelectionHandle::MinY:
+                    case SelectionHandle::MaxY:
+                        axisVoxelCount = sizeY;
+                        break;
+                    case SelectionHandle::MinZ:
+                    case SelectionHandle::MaxZ:
+                        axisVoxelCount = sizeZ;
+                        break;
+                    case SelectionHandle::None:
+                        break;
+                }
+                const float sampleVoxelStep = static_cast<float>(std::clamp(axisVoxelCount, 1, 256));
+                const QPointF sampledAxis = projectedAxisForVoxelStep(sampleVoxelStep);
+                const float sampledAxisLengthSquared = static_cast<float>(sampledAxis.x() * sampledAxis.x() + sampledAxis.y() * sampledAxis.y());
+                if (sampledAxisLengthSquared > 1e-6f) {
+                    selection_drag_axis_screen_ = sampledAxis / sampleVoxelStep;
+                } else {
+                    // An axis pointing into the camera has no useful screen projection.
+                    // In that view, upward motion increases the selected coordinate.
+                    selection_drag_axis_screen_ = QPointF(0.0, -12.0);
+                }
             }
             switch (active_selection_handle_) {
                 case SelectionHandle::MinX:
@@ -365,6 +486,10 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
     } else if (e->key() == Qt::Key_L) {
         rotation_locked_ = !rotation_locked_;
         update();
+    } else if (e->key() == Qt::Key_S) {
+        setSelectionEnabled(!selection_enabled_);
+        e->accept();
+        return;
     } else if (e->key() == Qt::Key_Left) {
         orbitRotate(-90.0f, 0.0f);
     } else if (e->key() == Qt::Key_Right) {

@@ -144,6 +144,13 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
     buildVoxelVertices();
     buildAxisVertices();
     resetSelectionToModelBounds();
+    if (!newData.empty() && !newData.begin()->empty()) {
+        auto sz1 = newData.size();
+        auto sz2 = newData.begin()->size();
+        auto sz = ::sqrt(sz1 * sz1 + sz2 * sz2);
+        m_scale = 24. / sz;
+    }
+
     buildSelectionVertices();
     // Upload only after initializeGL() has created the GL objects; if this is called
     // before the widget is shown, initializeGL() picks up the CPU-side buffers later.
@@ -153,12 +160,30 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
         doneCurrent();
     }
 
-    // change scale
-    if (!newData.empty() && !newData.begin()->empty()) {
-        auto sz1 = newData.size();
-        auto sz2 = newData.begin()->size();
+    update();
+}
+
+void VoxelWidget::updateVoxelData(std::vector<std::vector<std::vector<Voxel>>>&& newData) {
+    voxel_data_ = std::move(newData);
+    if (!voxel_data_.empty()) {
+        start_layer_ = 0;
+        ender_layer_ = voxel_data_.size() - 1;
+    }
+    buildVoxelVertices();
+    buildAxisVertices();
+    resetSelectionToModelBounds();
+    if (!voxel_data_.empty() && !voxel_data_.begin()->empty()) {
+        auto sz1 = voxel_data_.size();
+        auto sz2 = voxel_data_.begin()->size();
         auto sz = ::sqrt(sz1 * sz1 + sz2 * sz2);
         m_scale = 24. / sz;
+    }
+
+    buildSelectionVertices();
+    if (gl_initialized_) {
+        makeCurrent();
+        updateOpenGLBuffers();
+        doneCurrent();
     }
 
     update();
@@ -321,6 +346,8 @@ void VoxelWidget::paintGL() {
     if (!gl_shader_ || !gl_shader_->isLinked()) return;
     gl_shader_->bind();
     updateModelMatrix();
+    buildSelectionVertices();
+    updateSelectionOpenGLBuffer();
     setUniforms();
     renderOpaqueObjects();
     renderTransparentObjects();
@@ -484,10 +511,10 @@ void VoxelWidget::buildSelectionVertices() {
         SelectionHandle::MinX, SelectionHandle::MaxX, SelectionHandle::MinY,
         SelectionHandle::MaxY, SelectionHandle::MinZ, SelectionHandle::MaxZ,
     };
-    const float handleHalfSize = 0.22f * voxel_size_;
     for (const SelectionHandle handle : handles) {
-        const QColor color = handle == active_selection_handle_ ? QColor(245, 245, 225, 245) : QColor(210, 155, 45, 225);
-        appendColoredBox(selection_vertices_, selectionHandlePosition(handle), handleHalfSize, color);
+        const QColor color = handle == active_selection_handle_ ? QColor(255, 245, 195, 250) : QColor(230, 170, 55, 235);
+        const QVector3D handlePosition = selectionHandlePosition(handle);
+        appendColoredBox(selection_vertices_, handlePosition, selectionHandleHalfSizeAt(handlePosition), color);
     }
 }
 

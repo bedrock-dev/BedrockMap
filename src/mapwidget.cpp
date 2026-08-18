@@ -102,12 +102,12 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
 
     // dialog
     this->goto_dialog_ = new GoToPositionDialog(this);
-    chunk_render_window_ = new ChunkRenderWidget();
+    voxel_preview_window_ = new VoxelPreviewWidget();
     // Center and resize to ~80% of the parent window once
     if (auto *win = window()) {
         QSize sz = win->size() * 0.8;
-        chunk_render_window_->resize(sz);
-        chunk_render_window_->move(win->geometry().center() - QPoint(sz.width() / 2, sz.height() / 2));
+        voxel_preview_window_->resize(sz);
+        voxel_preview_window_->move(win->geometry().center() - QPoint(sz.width() / 2, sz.height() / 2));
     }
 
     // chunk widget
@@ -655,7 +655,7 @@ void MapWidget::show3DView(int dim) {
     auto rect = selection_.region().boundingRect();
     bl::chunk_pos minPos(rect.x(), rect.y(), dim);
     bl::chunk_pos maxPos(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1, dim);
-    chunk_render_window_->showChunks(minPos, maxPos, *level_loader_);
+    voxel_preview_window_->loadChunksAsync(minPos, maxPos, *level_loader_);
 }
 
 void MapWidget::syncToolbars() {
@@ -716,5 +716,5 @@ void MapWidget::onPanTick() {
 
 MapWidget::~MapWidget() {
     delete this->sync_refresh_timer_;
-    delete chunk_render_window_;
+    delete voxel_preview_window_;
 }

@@ -365,7 +365,7 @@ class MapWidget : public QWidget {
     bl::chunk_pos opened_chunk_pos_;
 
     // 3d
-    ChunkRenderWidget *chunk_render_window_{nullptr};
+    VoxelPreviewWidget *voxel_preview_window_{nullptr};
 
     // import
     ImportOverlay *import_overlay_{nullptr};
