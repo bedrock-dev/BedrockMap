@@ -32,7 +32,6 @@
 #include "ui_chunkeditorwidget.h"
 #include "voxelwidget.h"
 
-
 namespace {
     // data above this size is not parsed into the NBT editor
     constexpr size_t kOversizeBytes = 16u * 1024u * 1024u;  // 16 MB

@@ -1,9 +1,7 @@
-#include "voxelwidget.h"
-
 #include <QGuiApplication>
 #include <QKeyEvent>
-#include <QMouseEvent>
 #include <QLabel>
+#include <QMouseEvent>
 #include <QResizeEvent>
 #include <QScreen>
 #include <QShowEvent>
@@ -15,11 +13,13 @@
 #include <array>
 #include <cmath>
 
+#include "voxelwidget.h"
+
 namespace {
-// Keep panning consistent with the projection setup used by VoxelWidget.
-constexpr float kViewHalfHeight = 20.710678f;
-constexpr float kSelectionHandleScreenSizePx = 12.0f;
-constexpr float kSelectionHandlePickRadius = kSelectionHandleScreenSizePx * 1.35f;
+    // Keep panning consistent with the projection setup used by VoxelWidget.
+    constexpr float kViewHalfHeight = 20.710678f;
+    constexpr float kSelectionHandleScreenSizePx = 12.0f;
+    constexpr float kSelectionHandlePickRadius = kSelectionHandleScreenSizePx * 1.35f;
 }  // namespace
 
 void VoxelWidget::setupShortcutHelpButton() {
@@ -28,30 +28,30 @@ void VoxelWidget::setupShortcutHelpButton() {
     shortcut_help_button_->setToolTip(tr("voxelWidget.shortcuts.buttonTooltip"));
     shortcut_help_button_->setFocusPolicy(Qt::NoFocus);
     shortcut_help_button_->setCursor(Qt::ArrowCursor);
-    shortcut_help_button_->setStyleSheet(QStringLiteral(
-        "QToolButton {"
-        " background-color: rgba(16, 20, 24, 170);"
-        " border: 1px solid rgba(255, 255, 255, 80);"
-        " border-radius: 4px;"
-        " color: rgba(255, 255, 255, 235);"
-        " font-weight: 700;"
-        "}"
-        "QToolButton:hover {"
-        " background-color: rgba(255, 255, 255, 48);"
-        "}"));
+    shortcut_help_button_->setStyleSheet(
+        QStringLiteral("QToolButton {"
+                       " background-color: rgba(16, 20, 24, 170);"
+                       " border: 1px solid rgba(255, 255, 255, 80);"
+                       " border-radius: 4px;"
+                       " color: rgba(255, 255, 255, 235);"
+                       " font-weight: 700;"
+                       "}"
+                       "QToolButton:hover {"
+                       " background-color: rgba(255, 255, 255, 48);"
+                       "}"));
     connect(shortcut_help_button_, &QToolButton::clicked, this, &VoxelWidget::showShortcutHelp);
     shortcut_help_popup_ = new QWidget(this, Qt::Popup | Qt::FramelessWindowHint);
     shortcut_help_popup_->setObjectName(QStringLiteral("voxelShortcutHelpPopup"));
-    shortcut_help_popup_->setStyleSheet(QStringLiteral(
-        "QWidget#voxelShortcutHelpPopup {"
-        " background-color: rgba(16, 20, 24, 235);"
-        " border: 1px solid rgba(255, 255, 255, 72);"
-        " border-radius: 6px;"
-        "}"
-        "QWidget#voxelShortcutHelpPopup QLabel {"
-        " color: rgba(255, 255, 255, 235);"
-        " background: transparent;"
-        "}"));
+    shortcut_help_popup_->setStyleSheet(
+        QStringLiteral("QWidget#voxelShortcutHelpPopup {"
+                       " background-color: rgba(16, 20, 24, 235);"
+                       " border: 1px solid rgba(255, 255, 255, 72);"
+                       " border-radius: 6px;"
+                       "}"
+                       "QWidget#voxelShortcutHelpPopup QLabel {"
+                       " color: rgba(255, 255, 255, 235);"
+                       " background: transparent;"
+                       "}"));
     auto* popupLayout = new QVBoxLayout(shortcut_help_popup_);
     popupLayout->setContentsMargins(12, 10, 12, 10);
     popupLayout->setSpacing(6);
@@ -203,9 +203,8 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
                                                        selection_drag_axis_screen_.y() * selection_drag_axis_screen_.y());
     if (axisLengthSquared < 1e-10f) return;
     const QPointF mouseDelta = position - selection_drag_start_;
-    const float voxelDelta = static_cast<float>((mouseDelta.x() * selection_drag_axis_screen_.x() +
-                                                 mouseDelta.y() * selection_drag_axis_screen_.y()) /
-                                                axisLengthSquared);
+    const float voxelDelta = static_cast<float>(
+        (mouseDelta.x() * selection_drag_axis_screen_.x() + mouseDelta.y() * selection_drag_axis_screen_.y()) / axisLengthSquared);
     const int value = qRound(static_cast<float>(selection_drag_start_value_) + voxelDelta);
 
     const int sizeX = static_cast<int>(voxel_data_[0].size());
@@ -271,8 +270,7 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
             const auto projectedAxisForVoxelStep = [this, &handlePosition, &handleAxis](float voxelStep) {
                 return projectToWidget(handlePosition + handleAxis * voxel_size_ * voxelStep) - projectToWidget(handlePosition);
             };
-            selection_drag_axis_screen_ =
-                projectedAxisForVoxelStep(1.0f);
+            selection_drag_axis_screen_ = projectedAxisForVoxelStep(1.0f);
             const float axisLengthSquared = static_cast<float>(selection_drag_axis_screen_.x() * selection_drag_axis_screen_.x() +
                                                                selection_drag_axis_screen_.y() * selection_drag_axis_screen_.y());
             if (axisLengthSquared < 4.0f) {
@@ -298,7 +296,8 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
                 }
                 const float sampleVoxelStep = static_cast<float>(std::clamp(axisVoxelCount, 1, 256));
                 const QPointF sampledAxis = projectedAxisForVoxelStep(sampleVoxelStep);
-                const float sampledAxisLengthSquared = static_cast<float>(sampledAxis.x() * sampledAxis.x() + sampledAxis.y() * sampledAxis.y());
+                const float sampledAxisLengthSquared =
+                    static_cast<float>(sampledAxis.x() * sampledAxis.x() + sampledAxis.y() * sampledAxis.y());
                 if (sampledAxisLengthSquared > 1e-6f) {
                     selection_drag_axis_screen_ = sampledAxis / sampleVoxelStep;
                 } else {
@@ -435,8 +434,7 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
         m_isShiftPressed = true;
     } else if (e->key() == Qt::Key_R) {
         // Reset to the default corner view (45 degrees); projection mode is kept.
-        m_rotation = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 45.0f) *
-                     QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 45.0f);
+        m_rotation = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 45.0f) * QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 45.0f);
         orbit_yaw_degrees_ = 45.0f;
         orbit_pitch_degrees_ = 45.0f;
         m_scale = 1.0f;
