@@ -25,7 +25,6 @@ else()
 endif()
 
 
-
 #bedrock-level
 set(BEDROCK_LEVEL_ROOT "${PROJECT_SOURCE_DIR}/bedrock-level")
 

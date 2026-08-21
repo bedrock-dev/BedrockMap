@@ -1,6 +1,7 @@
 #ifndef MCSTRUCTURE_PAGE_WIDGET_H
 #define MCSTRUCTURE_PAGE_WIDGET_H
 
+#include <QByteArray>
 #include <QString>
 #include <memory>
 #include <QWidget>
@@ -23,9 +24,11 @@ class McstructurePageWidget : public TabPageWidget {
 
    private:
     void setupUI();
+    void exportMcstructure(const VoxelSelection &selection, bool hasSelection, bool compress);
 
     // data
     std::shared_ptr<bl::mcstructure> structure_;
+    QByteArray original_raw_;
     QString structure_name_;
 
     // gui

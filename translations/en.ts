@@ -655,6 +655,19 @@
     </message>
 </context>
 <context>
+    <name>McstructurePageWidget</name>
+    <message>
+        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <source>Export mcstructure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NBTModifyDialog</name>
     <message>
         <source>nbtEditor.dialogTitle</source>

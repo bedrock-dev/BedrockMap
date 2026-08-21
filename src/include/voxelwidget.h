@@ -54,6 +54,8 @@ struct VoxelSelection {
     [[nodiscard]] bool isValid() const { return minimum.x() < maximum.x() && minimum.y() < maximum.y() && minimum.z() < maximum.z(); }
 };
 
+Q_DECLARE_METATYPE(VoxelSelection)
+
 class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     Q_OBJECT
 
@@ -89,17 +91,6 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
    private:
     enum class SelectionHandle { None, MinX, MaxX, MinY, MaxY, MinZ, MaxZ };
 
-    struct VoxelBounds {
-        int minimumX{0};
-        int minimumY{0};
-        int minimumZ{0};
-        int maximumX{0};
-        int maximumY{0};
-        int maximumZ{0};
-
-        [[nodiscard]] bool isValid() const { return minimumX < maximumX && minimumY < maximumY && minimumZ < maximumZ; }
-    };
-
     enum class MeshOcclusionMode { RenderView, OccupiedVoxelShell };
 
     // opengl
@@ -132,13 +123,13 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void checkOpenGLError(const char* location);  // debug error checking
 
     // mesh building
-    [[nodiscard]] bool hasNeighborInBounds(int layer, int x, int z, int dLayer, int dX, int dZ, const VoxelBounds& bounds,
+    [[nodiscard]] bool hasNeighborInBounds(int layer, int x, int z, int dLayer, int dX, int dZ, const bl::block_box& bounds,
                                            MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
-    [[nodiscard]] std::optional<VoxelBounds> fullVoxelBounds() const;
-    [[nodiscard]] std::optional<VoxelBounds> currentExportBounds() const;
+    [[nodiscard]] std::optional<bl::block_box> fullVoxelBounds() const;
+    [[nodiscard]] std::optional<bl::block_box> currentExportBounds() const;
     void addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
                                   const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices) const;
-    void appendVisibleVoxelMesh(const VoxelBounds& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
+    void appendVisibleVoxelMesh(const bl::block_box& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
                                 std::vector<float>* transparentVertices = nullptr, std::vector<GLuint>* transparentIndices = nullptr,
                                 MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
     void buildVoxelVertices();
@@ -227,7 +218,10 @@ class VoxelPreviewWidget : public QWidget {
 
         auto* exportMcstructureButton = new QToolButton(toolbar);
         exportMcstructureButton->setText(tr("Export .mcstructure"));
-        connect(exportMcstructureButton, &QToolButton::clicked, this, []() {});
+        connect(exportMcstructureButton, &QToolButton::clicked, this, [this]() {
+            emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
+                                            mcstructureCompressBox_->isChecked());
+        });
 
         mcstructureCompressBox_ = new QCheckBox(tr("Compress"), toolbar);
 
@@ -272,6 +266,7 @@ class VoxelPreviewWidget : public QWidget {
 
    signals:
     void chunkMeshBuilt(int n);
+    void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress);
 
    private:
     void setVoxelData(VoxelGrid&& data);

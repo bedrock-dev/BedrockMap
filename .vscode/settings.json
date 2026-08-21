@@ -1,5 +1,5 @@
 {
-    "cmake.generator": "MinGW Makefiles",
+    "cmake.generator": "Ninja",
     "cmake.configureEnvironment": {
         "QT_ROOT": "C:\\noinstall\\Qt\\6.11.0\\mingw_64"
     },

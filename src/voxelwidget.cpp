@@ -635,7 +635,7 @@ void VoxelWidget::updateProjection() {
                   QVector3D(0.0f, 1.0f, 0.0f));  // up direction
 }
 
-bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, int dz, const VoxelBounds& bounds,
+bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
                                       MeshOcclusionMode mode) const {
     const auto& current = voxel_data_[layer][x][z];
 
@@ -643,9 +643,9 @@ bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, i
     int nx = x + dx;      // x-offset
     int nz = z + dz;      // z-offset
 
-    if (ny < bounds.minimumY || ny >= bounds.maximumY ||  //
-        nx < bounds.minimumX || nx >= bounds.maximumX ||  //
-        nz < bounds.minimumZ || nz >= bounds.maximumZ ||  //
+    if (ny < bounds.min_pos.y || ny >= bounds.max_pos.y ||  //
+        nx < bounds.min_pos.x || nx >= bounds.max_pos.x ||  //
+        nz < bounds.min_pos.z || nz >= bounds.max_pos.z ||  //
         ny < 0 || ny >= static_cast<int>(voxel_data_.size()) || nx < 0 || nx >= static_cast<int>(voxel_data_[ny].size()) || nz < 0 ||
         nz >= static_cast<int>(voxel_data_[ny][nx].size())) {
         return false;
@@ -671,28 +671,28 @@ bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, i
     return neighbor.color.alpha() != 0;
 }
 
-std::optional<VoxelWidget::VoxelBounds> VoxelWidget::fullVoxelBounds() const {
+std::optional<bl::block_box> VoxelWidget::fullVoxelBounds() const {
     if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) {
         return std::nullopt;
     }
 
-    return VoxelBounds{
-        0, 0, 0, static_cast<int>(voxel_data_[0].size()), static_cast<int>(voxel_data_.size()), static_cast<int>(voxel_data_[0][0].size())};
+    return bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(voxel_data_[0].size()), static_cast<int>(voxel_data_.size()),
+                                            static_cast<int>(voxel_data_[0][0].size()));
 }
 
-std::optional<VoxelWidget::VoxelBounds> VoxelWidget::currentExportBounds() const {
+std::optional<bl::block_box> VoxelWidget::currentExportBounds() const {
     const auto fullBounds = fullVoxelBounds();
     if (!fullBounds) return std::nullopt;
     if (!selection_enabled_ || !selection_.isValid()) return fullBounds;
 
-    VoxelBounds bounds;
-    bounds.minimumX = std::clamp(static_cast<int>(std::floor(selection_.minimum.x())), fullBounds->minimumX, fullBounds->maximumX);
-    bounds.minimumY = std::clamp(static_cast<int>(std::floor(selection_.minimum.y())), fullBounds->minimumY, fullBounds->maximumY);
-    bounds.minimumZ = std::clamp(static_cast<int>(std::floor(selection_.minimum.z())), fullBounds->minimumZ, fullBounds->maximumZ);
-    bounds.maximumX = std::clamp(static_cast<int>(std::ceil(selection_.maximum.x())), fullBounds->minimumX, fullBounds->maximumX);
-    bounds.maximumY = std::clamp(static_cast<int>(std::ceil(selection_.maximum.y())), fullBounds->minimumY, fullBounds->maximumY);
-    bounds.maximumZ = std::clamp(static_cast<int>(std::ceil(selection_.maximum.z())), fullBounds->minimumZ, fullBounds->maximumZ);
-    if (!bounds.isValid()) return std::nullopt;
+    bl::block_box bounds{
+        {std::clamp(static_cast<int>(std::floor(selection_.minimum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
+         std::clamp(static_cast<int>(std::floor(selection_.minimum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
+         std::clamp(static_cast<int>(std::floor(selection_.minimum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)},
+        {std::clamp(static_cast<int>(std::ceil(selection_.maximum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
+         std::clamp(static_cast<int>(std::ceil(selection_.maximum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
+         std::clamp(static_cast<int>(std::ceil(selection_.maximum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)}};
+    if (!bounds.is_valid()) return std::nullopt;
     return bounds;
 }
 
@@ -733,27 +733,27 @@ void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel&
     }
 }
 
-void VoxelWidget::appendVisibleVoxelMesh(const VoxelBounds& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
+void VoxelWidget::appendVisibleVoxelMesh(const bl::block_box& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
                                          std::vector<float>* transparentVertices, std::vector<GLuint>* transparentIndices,
                                          MeshOcclusionMode mode) const {
-    if (!bounds.isValid()) return;
+    if (!bounds.is_valid()) return;
 
     static int dxArr[] = {0, 0, -1, 1, 0, 0};
     static int dyArr[] = {0, 0, 0, 0, 1, -1};
     static int dzArr[] = {1, -1, 0, 0, 0, 0};
 
-    const int maxLayer = std::min(bounds.maximumY, static_cast<int>(voxel_data_.size()));
-    for (int layer = std::max(0, bounds.minimumY); layer < maxLayer; ++layer) {  // Y axis (layer)
+    const int maxLayer = std::min(bounds.max_pos.y, static_cast<int>(voxel_data_.size()));
+    for (int layer = std::max(0, bounds.min_pos.y); layer < maxLayer; ++layer) {  // Y axis (layer)
         const auto& layerData = voxel_data_[layer];
         if (layerData.empty()) continue;
 
-        const int maxX = std::min(bounds.maximumX, static_cast<int>(layerData.size()));
-        for (int x = std::max(0, bounds.minimumX); x < maxX; ++x) {  // X axis
+        const int maxX = std::min(bounds.max_pos.x, static_cast<int>(layerData.size()));
+        for (int x = std::max(0, bounds.min_pos.x); x < maxX; ++x) {  // X axis
             const auto& rowData = layerData[x];
             if (rowData.empty()) continue;
 
-            const int maxZ = std::min(bounds.maximumZ, static_cast<int>(rowData.size()));
-            for (int z = std::max(0, bounds.minimumZ); z < maxZ; ++z) {  // Z axis
+            const int maxZ = std::min(bounds.max_pos.z, static_cast<int>(rowData.size()));
+            for (int z = std::max(0, bounds.min_pos.z); z < maxZ; ++z) {  // Z axis
                 const Voxel& voxel = rowData[z];
 
                 if (voxel.color.alpha() == 0) {
@@ -785,9 +785,9 @@ void VoxelWidget::buildVoxelVertices() {
     if (voxel_data_.empty() || start_layer_ > ender_layer_) return;
 
     if (const auto fullBounds = fullVoxelBounds()) {
-        VoxelBounds layerBounds = *fullBounds;
-        layerBounds.minimumY = std::clamp(start_layer_, fullBounds->minimumY, fullBounds->maximumY);
-        layerBounds.maximumY = std::clamp(ender_layer_ + 1, fullBounds->minimumY, fullBounds->maximumY);
+        bl::block_box layerBounds = *fullBounds;
+        layerBounds.min_pos.y = std::clamp(start_layer_, fullBounds->min_pos.y, fullBounds->max_pos.y);
+        layerBounds.max_pos.y = std::clamp(ender_layer_ + 1, fullBounds->min_pos.y, fullBounds->max_pos.y);
         appendVisibleVoxelMesh(layerBounds, verticles_opaque_, indices_opaque_, &verticles_transparent_, &indices_transparent_);
     }
 }
