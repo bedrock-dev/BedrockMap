@@ -42,7 +42,7 @@ bool McstructurePageWidget::loadStructure(const QString &path) {
     const auto len = static_cast<size_t>(raw.size());
 
     structure_ = std::make_shared<bl::mcstructure>(bl::parse_mcstructure(data, len));
-    if (structure_->size_x <= 0 || structure_->size_y <= 0 || structure_->size_z <= 0) {
+    if (structure_->size_x() <= 0 || structure_->size_y() <= 0 || structure_->size_z() <= 0) {
         LOG_F(WARNING, "Invalid mcstructure file: %s", path.toStdString().c_str());
         return false;
     }

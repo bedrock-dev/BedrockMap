@@ -10,9 +10,9 @@
 
 namespace {
     VoxelPreviewWidget::VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
-        const int sx = structure.size_x;
-        const int sy = structure.size_y;
-        const int sz = structure.size_z;
+        const int sx = structure.size_x();
+        const int sy = structure.size_y();
+        const int sz = structure.size_z();
 
         std::vector<std::vector<std::vector<Voxel>>> data;
         data.resize(sy);
@@ -23,25 +23,21 @@ namespace {
             }
         }
 
-        if (structure.palette.empty() || structure.layers[0].empty()) {
+        if (sx <= 0 || sy <= 0 || sz <= 0 || structure.palette_size() == 0) {
             return data;
         }
 
-        const auto& palette = structure.palette;
-        const auto& indices = structure.layers[0];
-        for (size_t i = 0; i < indices.size(); i++) {
-            const int idx = indices[i];
-            if (idx < 0 || idx >= static_cast<int>(palette.size())) continue;
-            const auto& name = palette[static_cast<size_t>(idx)].name;
-            if (name == "minecraft:air" || name == "minecraft:unknown") continue;
+        for (int x = 0; x < sx; ++x) {
+            for (int y = 0; y < sy; ++y) {
+                for (int z = 0; z < sz; ++z) {
+                    const auto* block = structure.block_at(x, y, z);
+                    if (!block) continue;
+                    if (block->name == "minecraft:air" || block->name == "minecraft:unknown") continue;
 
-            const int x = static_cast<int>(i) / (sz * sy);
-            const int y = (static_cast<int>(i) / sz) % sy;
-            const int z = static_cast<int>(i) % sz;
-            if (x < 0 || x >= sx || y < 0 || y >= sy || z < 0 || z >= sz) continue;
-
-            const auto c = bl::get_block_by_name_tag(name);
-            data[y][x][z] = Voxel(QColor(c.r, c.g, c.b, c.a), c.a < 255);
+                    const auto c = bl::get_block_by_name_tag(block->name);
+                    data[y][x][z] = Voxel(QColor(c.r, c.g, c.b, c.a), c.a < 255);
+                }
+            }
         }
 
         return data;
