@@ -34,7 +34,9 @@ namespace {
                     if (!block) continue;
                     if (block->name == "minecraft:air" || block->name == "minecraft:unknown") continue;
 
-                    const auto c = bl::get_block_by_name_tag(block->name);
+                    const auto baseColor = bl::get_block_by_name_tag(block->name);
+                    // mcstructure files do not carry biome data; use plains as a stable preview biome.
+                    const auto c = bl::blend_color_with_biome(block->name, baseColor, bl::biome::plains);
                     data[y][x][z] = Voxel(QColor(c.r, c.g, c.b, c.a), c.a < 255);
                 }
             }
@@ -61,7 +63,7 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
     bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
 
     voxelWidget_->updateVoxelData({});
-    chunk_render_watcher_.setFuture(QtConcurrent::run([this, minPos, maxPos, &loader]() {
+    chunk_render_watcher_.setFuture(QtConcurrent::run([this, minPos, maxPos, &loader]() -> VoxelLoadResult {
         std::vector<std::vector<bl::chunk*>> chunks;
         chunks.resize(maxPos.x - minPos.x + 1);
         for (auto& row : chunks) {
@@ -76,17 +78,19 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
                 emit chunkMeshBuilt(chunk_loaded);
             }
         }
-        auto voxelData = VoxelWidget::createVoxelDataFromChunks(chunks, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); });
+        int firstWorldY = 0;
+        auto voxelData = VoxelWidget::createVoxelDataFromChunks(chunks, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); }, &firstWorldY);
         for (auto& row : chunks)
             for (auto* c : row) delete c;
-        return voxelData;
+        return {std::move(voxelData), {minPos.x * 16, firstWorldY, minPos.z * 16}};
     }));
     show();
     return true;
 }
 
-void VoxelPreviewWidget::setVoxelData(VoxelGrid&& data) {
+void VoxelPreviewWidget::setVoxelData(VoxelGrid&& data, const bl::block_pos& origin) {
     bar_->hide();
+    voxel_origin_ = origin;
     voxelWidget_->updateVoxelData(std::move(data));
 }
 
@@ -100,7 +104,8 @@ void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstruct
     }
     bar_->show();
     bar_->setRange(0, 0);
-    mcstructure_render_watcher_.setFuture(QtConcurrent::run([structure]() { return buildVoxelDataFromMcstructure(*structure); }));
+    mcstructure_render_watcher_.setFuture(
+        QtConcurrent::run([structure]() -> VoxelLoadResult { return {buildVoxelDataFromMcstructure(*structure), structure->origin()}; }));
 }
 
 void VoxelPreviewWidget::exportGlbModel() {

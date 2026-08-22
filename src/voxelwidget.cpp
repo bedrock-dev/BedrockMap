@@ -794,7 +794,8 @@ void VoxelWidget::buildVoxelVertices() {
 
 // helper
 std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                                                                    const std::function<void(int)>& f) {
+                                                                                    const std::function<void(int)>& f,
+                                                                                    int* firstWorldY) {
     if (chunks.empty() || chunks[0].empty()) {
         return {};
     }
@@ -896,8 +897,11 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     auto lastIt = std::find_if(data.crbegin(), data.crend(), layerCheck).base();
 
     if (firstIt == data.cend()) {
+        if (firstWorldY) *firstWorldY = world_min_y;
         return {};
     }
+
+    if (firstWorldY) *firstWorldY = world_min_y + static_cast<int>(std::distance(data.cbegin(), firstIt));
 
     std::vector<std::vector<std::vector<Voxel>>> ret(firstIt, lastIt);
     LOG_F(INFO, "Real Voxel Size: %zu (Y) * %zu (X) * %zu (Z)", ret.size(), ret[0].size(), ret[0][0].size());

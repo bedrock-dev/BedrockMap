@@ -12,6 +12,7 @@
 #include <QColor>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <QLabel>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
@@ -72,7 +73,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     [[nodiscard]] bool exportGlb(const QString& filePath, QString* errorMessage = nullptr) const;
 
     static std::vector<std::vector<std::vector<Voxel>>> createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                                                                  const std::function<void(int)>& f);
+                                                                                  const std::function<void(int)>& f,
+                                                                                  int* firstWorldY = nullptr);
 
    protected:
     void initializeGL() override;
@@ -206,6 +208,10 @@ class VoxelPreviewWidget : public QWidget {
     Q_OBJECT
    public:
     using VoxelGrid = std::vector<std::vector<std::vector<Voxel>>>;
+    struct VoxelLoadResult {
+        VoxelGrid data;
+        bl::block_pos origin;
+    };
 
     explicit VoxelPreviewWidget(QWidget* parent = nullptr) : QWidget(parent) {
         voxelWidget_ = new VoxelWidget(this);
@@ -220,10 +226,16 @@ class VoxelPreviewWidget : public QWidget {
         exportMcstructureButton->setText(tr("Export .mcstructure"));
         connect(exportMcstructureButton, &QToolButton::clicked, this, [this]() {
             emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
-                                            mcstructureCompressBox_->isChecked());
+                                            mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
+                                            mcstructureNewFormatBox_->isChecked());
         });
 
         mcstructureCompressBox_ = new QCheckBox(tr("Compress"), toolbar);
+        mcstructureEntitiesBox_ = new QCheckBox(tr("Export entities"), toolbar);
+        mcstructureNewFormatBox_ = new QCheckBox(tr("Use new format"), toolbar);
+        mcstructureCompressBox_->setChecked(false);
+        mcstructureEntitiesBox_->setChecked(false);
+        mcstructureNewFormatBox_->setChecked(false);
 
         auto* importMcstructureButton = new QToolButton(toolbar);
         importMcstructureButton->setText(tr("Import .mcstructure"));
@@ -235,6 +247,8 @@ class VoxelPreviewWidget : public QWidget {
         connect(exportModelButton, &QToolButton::clicked, this, [this]() { exportGlbModel(); });
 
         toolbarLayout->addWidget(exportMcstructureButton);
+        toolbarLayout->addWidget(mcstructureEntitiesBox_);
+        toolbarLayout->addWidget(mcstructureNewFormatBox_);
         toolbarLayout->addWidget(mcstructureCompressBox_);
         toolbarLayout->addWidget(importMcstructureButton);
         toolbarLayout->addWidget(exportModelButton);
@@ -248,36 +262,40 @@ class VoxelPreviewWidget : public QWidget {
         layout->addWidget(bar_, 0);
         setLayout(layout);
         setGeometry({0, 0, 1200, 900});
-        connect(&this->chunk_render_watcher_, &QFutureWatcher<VoxelGrid>::finished, this, [this]() {
+        connect(&this->chunk_render_watcher_, &QFutureWatcher<VoxelLoadResult>::finished, this, [this]() {
             bar_->hide();
-            auto data = chunk_render_watcher_.future().result();
-            setVoxelData(std::move(data));
+            auto result = chunk_render_watcher_.future().result();
+            setVoxelData(std::move(result.data), result.origin);
         });
-        connect(&this->mcstructure_render_watcher_, &QFutureWatcher<VoxelGrid>::finished, this, [this]() {
+        connect(&this->mcstructure_render_watcher_, &QFutureWatcher<VoxelLoadResult>::finished, this, [this]() {
             bar_->hide();
-            auto data = mcstructure_render_watcher_.future().result();
-            setVoxelData(std::move(data));
+            auto result = mcstructure_render_watcher_.future().result();
+            setVoxelData(std::move(result.data), result.origin);
         });
         connect(this, &VoxelPreviewWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
     }
 
     bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
     void loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure);
+    [[nodiscard]] bl::block_pos voxelOrigin() const { return voxel_origin_; }
 
    signals:
     void chunkMeshBuilt(int n);
-    void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress);
+    void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
 
    private:
-    void setVoxelData(VoxelGrid&& data);
+    void setVoxelData(VoxelGrid&& data, const bl::block_pos& origin);
     void exportGlbModel();
 
     QProgressBar* bar_;
     VoxelWidget* voxelWidget_;
     QCheckBox* mcstructureCompressBox_{nullptr};
+    QCheckBox* mcstructureEntitiesBox_{nullptr};
+    QCheckBox* mcstructureNewFormatBox_{nullptr};
     // data
-    QFutureWatcher<VoxelGrid> chunk_render_watcher_;
-    QFutureWatcher<VoxelGrid> mcstructure_render_watcher_;
+    bl::block_pos voxel_origin_;
+    QFutureWatcher<VoxelLoadResult> chunk_render_watcher_;
+    QFutureWatcher<VoxelLoadResult> mcstructure_render_watcher_;
 };
 
 #endif  // VOXELWIDGET_H

@@ -653,6 +653,22 @@
         <source>mapWidget.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
+    <message>
+        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget.cpp"/>
+        <source>mapWidget.rightMenu.exportMcstructure</source>
+        <translation>导出 mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/mapwidget.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation>MCStructure 文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/mapwidget.cpp"/>
+        <source>mapWidget.rightMenu.exportMcstructureFailed</source>
+        <translation>mcstructure 导出失败</translation>
+    </message>
 </context>
 <context>
     <name>McstructurePageWidget</name>
@@ -664,7 +680,7 @@
     <message>
         <location filename="../src/mcstructurepagewidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MCStructure 文件 (*.mcstructure)</translation>
     </message>
 </context>
 <context>
@@ -1651,6 +1667,16 @@
         <location filename="../src/include/voxelwidget.h"/>
         <source>Compress</source>
         <translation type="unfinished">压缩</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Export entities</source>
+        <translation>导出实体</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>Use new format</source>
+        <translation>使用新格式</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>

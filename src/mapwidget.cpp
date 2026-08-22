@@ -103,6 +103,20 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
     // dialog
     this->goto_dialog_ = new GoToPositionDialog(this);
     voxel_preview_window_ = new VoxelPreviewWidget();
+    connect(voxel_preview_window_, &VoxelPreviewWidget::exportMcstructureRequested, this,
+            [this](VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat) {
+                std::optional<bl::block_box> blockBounds;
+                if (hasSelection && selection.isValid()) {
+                    const auto origin = voxel_preview_window_->voxelOrigin();
+                    blockBounds = bl::block_box{origin + bl::block_pos{static_cast<int>(std::floor(selection.minimum.x())),
+                                                                       static_cast<int>(std::floor(selection.minimum.y())),
+                                                                       static_cast<int>(std::floor(selection.minimum.z()))},
+                                                origin + bl::block_pos{static_cast<int>(std::ceil(selection.maximum.x())),
+                                                                       static_cast<int>(std::ceil(selection.maximum.y())),
+                                                                       static_cast<int>(std::ceil(selection.maximum.z()))}};
+                }
+                exportSelectionToMcstructure(option_.dim, compress, exportEntities, blockBounds, useNewFormat ? 2 : 1);
+            });
     // Center and resize to ~80% of the parent window once
     if (auto *win = window()) {
         QSize sz = win->size() * 0.8;
@@ -621,6 +635,25 @@ void MapWidget::exportSelectionToFile(int dim) {
     auto fp = QFileDialog::getSaveFileName(nullptr, QObject::tr("mapWidget.rightMenu.exportRegion"), {}, msg::ALL_FILES());
     if (fp.isEmpty()) return;
     ChunkOperator::exportRegion(selection_.region(), fp, *level_loader_, dim);
+    INFO(msg::EXPORT_COMPLETE());
+}
+
+void MapWidget::exportSelectionToMcstructure(int dim, bool compress, bool exportEntities, const std::optional<bl::block_box> &blockBounds,
+                                             int32_t version) {
+    if (selection_.isEmpty() || !level_loader_) return;
+
+    const auto filePath =
+        QFileDialog::getSaveFileName(this, tr("mapWidget.rightMenu.exportMcstructure"), {}, tr("MCStructure files (*.mcstructure)"));
+    if (filePath.isEmpty()) return;
+
+    QString outputPath = filePath;
+    if (QFileInfo(outputPath).suffix().isEmpty()) outputPath += QStringLiteral(".mcstructure");
+
+    if (!BlockRegionOperator::exportMcstructure(selection_.region(), outputPath, *level_loader_, dim, compress, blockBounds, version,
+                                                exportEntities)) {
+        QMessageBox::warning(this, tr("mapWidget.rightMenu.exportMcstructure"), tr("mapWidget.rightMenu.exportMcstructureFailed"));
+        return;
+    }
     INFO(msg::EXPORT_COMPLETE());
 }
 
