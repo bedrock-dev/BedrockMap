@@ -223,27 +223,27 @@ class VoxelPreviewWidget : public QWidget {
         toolbarLayout->setSpacing(6);
 
         auto* exportMcstructureButton = new QToolButton(toolbar);
-        exportMcstructureButton->setText(tr("Export .mcstructure"));
+        exportMcstructureButton->setText(tr("voxelPreviewWidget.exportMcstructure"));
         connect(exportMcstructureButton, &QToolButton::clicked, this, [this]() {
             emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
                                             mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
                                             mcstructureNewFormatBox_->isChecked());
         });
 
-        mcstructureCompressBox_ = new QCheckBox(tr("Compress"), toolbar);
-        mcstructureEntitiesBox_ = new QCheckBox(tr("Export entities"), toolbar);
-        mcstructureNewFormatBox_ = new QCheckBox(tr("Use new format"), toolbar);
+        mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), toolbar);
+        mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), toolbar);
+        mcstructureNewFormatBox_ = new QCheckBox(tr("voxelPreviewWidget.useNewFormat"), toolbar);
         mcstructureCompressBox_->setChecked(false);
         mcstructureEntitiesBox_->setChecked(false);
         mcstructureNewFormatBox_->setChecked(false);
 
         auto* importMcstructureButton = new QToolButton(toolbar);
-        importMcstructureButton->setText(tr("Import .mcstructure"));
+        importMcstructureButton->setText(tr("voxelPreviewWidget.importMcstructure"));
         connect(importMcstructureButton, &QToolButton::clicked, this, []() {});
 
         auto* exportModelButton = new QToolButton(toolbar);
-        exportModelButton->setText(tr("Export GLB"));
-        exportModelButton->setToolTip(tr("Export as glTF Binary (.glb)"));
+        exportModelButton->setText(tr("voxelPreviewWidget.exportGlb.title"));
+        exportModelButton->setToolTip(tr("voxelPreviewWidget.exportGlb.tooltip"));
         connect(exportModelButton, &QToolButton::clicked, this, [this]() { exportGlbModel(); });
 
         toolbarLayout->addWidget(exportMcstructureButton);
@@ -273,6 +273,10 @@ class VoxelPreviewWidget : public QWidget {
             setVoxelData(std::move(result.data), result.origin);
         });
         connect(this, &VoxelPreviewWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
+        importMcstructureButton->hide();
+        mcstructureCompressBox_->hide();
+        mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
+        mcstructureEntitiesBox_->setChecked(true);
     }
 
     bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);

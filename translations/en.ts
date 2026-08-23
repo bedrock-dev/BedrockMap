@@ -1645,48 +1645,53 @@
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>Export GLB</source>
-        <translation type="unfinished">Export GLB</translation>
+        <source>voxelPreviewWidget.exportGlb.title</source>
+        <translation>Export GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>voxelPreviewWidget.exportGlb.tooltip</source>
+        <translation>Export as glTF Binary (.glb)</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>GLB files (*.glb)</source>
-        <translation type="unfinished">GLB files (*.glb)</translation>
+        <source>voxelPreviewWidget.exportGlb.fileFilter</source>
+        <translation>GLB files (*.glb)</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>GLB export completed.</source>
-        <translation type="unfinished">GLB export completed.</translation>
+        <source>voxelPreviewWidget.exportGlb.completed</source>
+        <translation>GLB export completed.</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export .mcstructure</source>
-        <translation type="unfinished">Export .mcstructure</translation>
+        <source>voxelPreviewWidget.exportMcstructure</source>
+        <translation>Export .mcstructure</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Compress</source>
-        <translation type="unfinished">Compress</translation>
+        <source>voxelPreviewWidget.compress</source>
+        <translation>Compress</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export entities</source>
+        <source>voxelPreviewWidget.exportEntities</source>
         <translation>Export entities</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Use new format</source>
+        <source>voxelPreviewWidget.useNewFormat</source>
         <translation>Use new format</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Import .mcstructure</source>
-        <translation type="unfinished">Import .mcstructure</translation>
+        <source>voxelPreviewWidget.importMcstructure</source>
+        <translation>Import .mcstructure</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export as glTF Binary (.glb)</source>
-        <translation type="unfinished">Export as glTF Binary (.glb)</translation>
+        <source>voxelPreviewWidget.useNewFormat.tooltip</source>
+        <translation>The new format can only be used in version &gt;= 26.50.24</translation>
     </message>
 </context>
 <context>

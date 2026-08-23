@@ -1645,48 +1645,53 @@
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>Export GLB</source>
-        <translation type="unfinished">导出 GLB</translation>
+        <source>voxelPreviewWidget.exportGlb.title</source>
+        <translation>导出 GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/include/voxelwidget.h"/>
+        <source>voxelPreviewWidget.exportGlb.tooltip</source>
+        <translation>导出为 glTF 二进制（.glb）</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>GLB files (*.glb)</source>
-        <translation type="unfinished">GLB 文件 (*.glb)</translation>
+        <source>voxelPreviewWidget.exportGlb.fileFilter</source>
+        <translation>GLB 文件 (*.glb)</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>GLB export completed.</source>
-        <translation type="unfinished">GLB 导出完成。</translation>
+        <source>voxelPreviewWidget.exportGlb.completed</source>
+        <translation>GLB 导出完成。</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export .mcstructure</source>
-        <translation type="unfinished">导出 .mcstructure</translation>
+        <source>voxelPreviewWidget.exportMcstructure</source>
+        <translation>导出 .mcstructure</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Compress</source>
-        <translation type="unfinished">压缩</translation>
+        <source>voxelPreviewWidget.compress</source>
+        <translation>压缩</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export entities</source>
+        <source>voxelPreviewWidget.exportEntities</source>
         <translation>导出实体</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Use new format</source>
+        <source>voxelPreviewWidget.useNewFormat</source>
         <translation>使用新格式</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Import .mcstructure</source>
-        <translation type="unfinished">导入 .mcstructure</translation>
+        <source>voxelPreviewWidget.importMcstructure</source>
+        <translation>导入 .mcstructure</translation>
     </message>
     <message>
         <location filename="../src/include/voxelwidget.h"/>
-        <source>Export as glTF Binary (.glb)</source>
-        <translation type="unfinished">导出为 glTF 二进制（.glb）</translation>
+        <source>voxelPreviewWidget.useNewFormat.tooltip</source>
+        <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
     </message>
 </context>
 <context>

@@ -79,7 +79,8 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
             }
         }
         int firstWorldY = 0;
-        auto voxelData = VoxelWidget::createVoxelDataFromChunks(chunks, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); }, &firstWorldY);
+        auto voxelData =
+            VoxelWidget::createVoxelDataFromChunks(chunks, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); }, &firstWorldY);
         for (auto& row : chunks)
             for (auto* c : row) delete c;
         return {std::move(voxelData), {minPos.x * 16, firstWorldY, minPos.z * 16}};
@@ -109,7 +110,8 @@ void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstruct
 }
 
 void VoxelPreviewWidget::exportGlbModel() {
-    QString filePath = QFileDialog::getSaveFileName(this, tr("Export GLB"), QString(), tr("GLB files (*.glb)"));
+    QString filePath =
+        QFileDialog::getSaveFileName(this, tr("voxelPreviewWidget.exportGlb.title"), QString(), tr("voxelPreviewWidget.exportGlb.fileFilter"));
     if (filePath.isEmpty()) return;
 
     if (QFileInfo(filePath).suffix().isEmpty()) {
@@ -118,9 +120,9 @@ void VoxelPreviewWidget::exportGlbModel() {
 
     QString errorMessage;
     if (!voxelWidget_->exportGlb(filePath, &errorMessage)) {
-        QMessageBox::warning(this, tr("Export GLB"), errorMessage);
+        QMessageBox::warning(this, tr("voxelPreviewWidget.exportGlb.title"), errorMessage);
         return;
     }
 
-    QMessageBox::information(this, tr("Export GLB"), tr("GLB export completed."));
+    QMessageBox::information(this, tr("voxelPreviewWidget.exportGlb.title"), tr("voxelPreviewWidget.exportGlb.completed"));
 }
