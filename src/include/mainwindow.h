@@ -3,12 +3,16 @@
 
 #include <QCloseEvent>
 #include <QDialog>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QFutureWatcher>
 #include <QKeyEvent>
 #include <QLayout>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMimeData>
 #include <QMessageBox>
 #include <QPainter>
 #include <QPushButton>
@@ -29,7 +33,11 @@ class MainWindow : public QMainWindow {
     ~MainWindow() override;
 
    protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
    private:
     void setupUI();
@@ -52,6 +60,11 @@ class MainWindow : public QMainWindow {
     QString getStaticTitle();
     MapWidget *getCurrentMapWidget();
     bool openDataFile(const QString &path);
+    bool canOpenDroppedPath(const QString &path) const;
+    void openDroppedPath(const QString &path);
+    bool hasOpenableDrop(const QMimeData *mimeData) const;
+    bool handleDragEnter(QDragEnterEvent *event);
+    bool handleDrop(QDropEvent *event);
 
     // UI
     QMenuBar *menu_bar_;

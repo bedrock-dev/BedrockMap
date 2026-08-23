@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QGridLayout>
 #include <QIcon>
 #include <QJsonDocument>
@@ -40,6 +41,9 @@ namespace {
 }  // namespace
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+    setAcceptDrops(true);
+    qApp->installEventFilter(this);
+
     // HACK (Qt 6.4+): when the first QOpenGLWidget appears inside an already
     // visible window, the top-level window switches its surface type from
     // RasterSurface to OpenGLSurface, so Qt destroys and recreates the native
@@ -64,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     this->about_dialog_ = new AboutDialog(this);
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() { qApp->removeEventFilter(this); }
 
 void MainWindow::setupUI() {
     auto *cw = new QWidget(this);
@@ -500,6 +504,102 @@ bool MainWindow::openDataFile(const QString &path) {
         return level_tab_widget_->openNbtFile(path);
     }
     return false;
+}
+
+bool MainWindow::canOpenDroppedPath(const QString &path) const {
+    const QFileInfo info(path);
+    if (!info.exists()) return false;
+    if (info.isDir()) return true;
+
+    return path.endsWith(QStringLiteral(".mcstructure"), Qt::CaseInsensitive) ||
+           path.endsWith(QStringLiteral(".nbt"), Qt::CaseInsensitive) || path.endsWith(QStringLiteral(".nbts"), Qt::CaseInsensitive);
+}
+
+void MainWindow::openDroppedPath(const QString &path) {
+    const QFileInfo info(path);
+    if (info.isDir()) {
+        level_tab_widget_->openNewLevel(path);
+        level_path_mgr_.addRecentPath(path);
+        rebuildRecentMenu();
+        return;
+    }
+
+    if (openDataFile(path)) {
+        level_path_mgr_.addRecentPath(path);
+        rebuildRecentMenu();
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    if (!handleDragEnter(event)) event->ignore();
+}
+
+void MainWindow::dragMoveEvent(QDragMoveEvent *event) {
+    if (hasOpenableDrop(event->mimeData())) {
+        event->acceptProposedAction();
+    } else {
+        event->ignore();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+    if (!handleDrop(event)) event->ignore();
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
+    auto *widget = qobject_cast<QWidget *>(watched);
+    if (!widget || (widget != this && !isAncestorOf(widget))) return QMainWindow::eventFilter(watched, event);
+
+    if (event->type() == QEvent::DragEnter) {
+        auto *dragEvent = static_cast<QDragEnterEvent *>(event);
+        if (handleDragEnter(dragEvent)) return true;
+    } else if (event->type() == QEvent::DragMove) {
+        auto *dragEvent = static_cast<QDragMoveEvent *>(event);
+        if (hasOpenableDrop(dragEvent->mimeData())) {
+            dragEvent->acceptProposedAction();
+            return true;
+        }
+    } else if (event->type() == QEvent::Drop) {
+        auto *dropEvent = static_cast<QDropEvent *>(event);
+        if (handleDrop(dropEvent)) return true;
+    }
+    return QMainWindow::eventFilter(watched, event);
+}
+
+bool MainWindow::hasOpenableDrop(const QMimeData *mimeData) const {
+    if (!mimeData || !mimeData->hasUrls()) return false;
+    for (const auto &url : mimeData->urls()) {
+        if (url.isLocalFile() && canOpenDroppedPath(url.toLocalFile())) return true;
+    }
+    return false;
+}
+
+bool MainWindow::handleDragEnter(QDragEnterEvent *event) {
+    if (!hasOpenableDrop(event->mimeData())) return false;
+    event->acceptProposedAction();
+    return true;
+}
+
+bool MainWindow::handleDrop(QDropEvent *event) {
+    if (!event->mimeData()->hasUrls()) {
+        return false;
+    }
+
+    bool openedAny = false;
+    for (const auto &url : event->mimeData()->urls()) {
+        if (!url.isLocalFile()) continue;
+        const auto path = url.toLocalFile();
+        if (!canOpenDroppedPath(path)) continue;
+        openDroppedPath(path);
+        openedAny = true;
+    }
+
+    if (openedAny) {
+        event->acceptProposedAction();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void MainWindow::close_and_exit() { this->close(); }
