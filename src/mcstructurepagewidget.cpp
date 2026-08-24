@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 
+#include "chunk_data_position.h"
 #include "loguru/loguru.hpp"
 
 namespace {
@@ -40,12 +41,7 @@ namespace {
                                                                       const bl::block_pos &worldPosition) {
         if (!source) return {};
         auto copy = std::unique_ptr<bl::nbt::compound_tag>(static_cast<bl::nbt::compound_tag *>(source->copy()));
-        copy->remove("x");
-        copy->remove("y");
-        copy->remove("z");
-        copy->put(new bl::nbt::int_tag("x", worldPosition.x));
-        copy->put(new bl::nbt::int_tag("y", worldPosition.y));
-        copy->put(new bl::nbt::int_tag("z", worldPosition.z));
+        bl::set_block_entity_pos(copy.get(), worldPosition);
         return copy;
     }
 

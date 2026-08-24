@@ -79,9 +79,9 @@ bool setting::ENABLE_THUMBNAIL_MODE = true;
 
 // Cache
 int setting::THREAD_NUM = 8;
-int setting::REGION_CACHE_SIZE = 4096;
-int setting::EMPTY_REGION_CACHE_SIZE = 16384;
-int setting::THUMBNAIL_REION_CACHE_SIZE = 65536;
+int setting::REGION_CACHE_SIZE = 1024;
+int setting::EMPTY_REGION_CACHE_SIZE = 8192;
+int setting::THUMBNAIL_REION_CACHE_SIZE = 16384;
 int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 
 // Misc
