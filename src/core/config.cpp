@@ -23,7 +23,7 @@
 
 // constant namespace
 const std::string constant::SOFTWARE_NAME = "BedrockMap";
-const std::string constant::SOFTWARE_VERSION = "v1.0.0-beta5";
+const std::string constant::SOFTWARE_VERSION = "v1.0.0-beta8";
 const int constant::GRID_WIDTH = 32;
 
 #ifdef QT_DEBUG
