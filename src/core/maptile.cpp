@@ -162,8 +162,8 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     }
 
     auto &tips = region->tips_info_[X][Z];
-    tips.block_name = render_info.name;
-    tips.solid_block_name = solid_info.name;
+    tips.block_id = region->internBlockName(render_info.name);
+    tips.solid_block_id = region->internBlockName(solid_info.name);
     // get_top_biome is robust when the exact surface layer stores none
     tips.biome = ch->get_top_biome(chx, chz);
     tips.height = static_cast<int16_t>(y);

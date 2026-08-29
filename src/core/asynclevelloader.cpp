@@ -69,6 +69,17 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     return nullptr;
 }
 
+ChunkRegion *AsyncLevelLoader::peekRegion(const region_pos &p, bool &empty) {
+    empty = false;
+    if (!this->loaded_) return nullptr;
+    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::EMPTY_REGION_CACHE_SIZE)->operator[](p);
+    if (invalid) {
+        empty = true;
+        return nullptr;
+    }
+    return ensureDimCache(region_cache_, p.dim, setting::REGION_CACHE_SIZE)->operator[](p);
+}
+
 QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
     auto *img = ensureDimCache(thumbnails_cache_, p.dim, setting::THUMBNAIL_REION_CACHE_SIZE)->operator[](p);
     if (img) return img;
@@ -388,6 +399,20 @@ BlockTipsInfo AsyncLevelLoader::getBlockTips(const bl::block_pos &p, int dim) {
     auto &info = region->tips_info_;
     auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
     return region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
+}
+
+std::string AsyncLevelLoader::getBlockName(const bl::block_pos &p, int dim) {
+    if (!this->loaded_) return {};
+    auto cp = p.to_chunk_pos();
+    cp.dim = dim;
+    auto rp = constant::c2r(cp);
+    bool null_region{false};
+    // only query already-cached regions; an unloaded region stays unloaded
+    auto *region = this->peekRegion(rp, null_region);
+    if (null_region || (!region)) return {};
+    auto min_block_pos = rp.get_min_pos(bl::ChunkVersion::New);
+    const auto &info = region->tips_info_[p.x - min_block_pos.x][p.z - min_block_pos.z];
+    return region->blockName(info.block_id);
 }
 
 QImage *AsyncLevelLoader::bakedSlimeChunkImage(const region_pos &rp) {

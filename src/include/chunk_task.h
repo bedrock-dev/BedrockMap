@@ -29,11 +29,11 @@ namespace bl {
 struct BlockTipsInfo {
     // top
     int16_t height{-128};
-    std::string block_name{"?"};
+    int16_t block_id{-1};
     bl::biome biome{bl::none};
     // top solid
     int16_t solid_height{-128};
-    std::string solid_block_name{"?"};
+    int16_t solid_block_id{-1};
 
     uint32_t water_surface_color{0};  // QRgb packed, 0 = no water overlay
 };
@@ -53,6 +53,18 @@ struct ChunkRegion {
     std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;             // for render mode 0
     std::map<bl::chunk_pos, std::map<QImage *, ActorCount>> actors_counts_;  // for render mode 1
     std::vector<bl::hardcoded_spawn_area> HSAs_;
+
+    // Resolve a block name to an id. Known blocks get a global id >= 0 (from the bedrock-level
+    // table, stored without "minecraft:"); unknown/mod blocks get a negative local id backed by
+    // local_block_names_ which keeps the full name (with namespace) for later display.
+    int internBlockName(const std::string &name);
+    // Reverse of internBlockName; returns the full display name ("minecraft:" + name or the
+    // original mod name), empty string if the id is invalid.
+    std::string blockName(int id) const;
+
+    // Region-local table for block names that are absent from the global color table.
+    std::vector<std::string> local_block_names_;
+    std::unordered_map<std::string, int> local_block_ids_;
 };
 
 struct RegionTimer {

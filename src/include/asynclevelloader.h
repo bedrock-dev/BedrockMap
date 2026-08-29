@@ -87,6 +87,8 @@ class AsyncLevelLoader : public QObject {
 
     BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
 
+    std::string getBlockName(const bl::block_pos &p, int dim);
+
     std::unordered_map<QImage *, std::vector<bl::vec3>> getActorList(const region_pos &rp);
 
     std::map<bl::chunk_pos, std::map<QImage *, ChunkRegion::ActorCount>> getActorCountList(const region_pos &rp);
@@ -132,6 +134,9 @@ class AsyncLevelLoader : public QObject {
 
    private:
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
+
+    // Look up an already-cached region without scheduling a load; empty=true for known-empty.
+    ChunkRegion *peekRegion(const region_pos &p, bool &empty);
 
     QImage *tryGetThumbnail(const region_pos &p);
 

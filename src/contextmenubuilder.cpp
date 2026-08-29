@@ -84,8 +84,9 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
 
     // === Group 3: Copy info ===
     auto *copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBlockName") + QString(blockInfo.block_name.c_str()),
-                        [cb, &blockInfo] { cb->setText(blockInfo.block_name.c_str()); });
+    auto blockName = w->level_loader_->getBlockName(cursorPos, w->option_.dim);
+    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBlockName") + QString(blockName.c_str()),
+                        [cb, blockName] { cb->setText(QString::fromStdString(blockName)); });
     copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName") + QString(bl::get_biome_name(blockInfo.biome).c_str()),
                         [cb, &blockInfo] { cb->setText(bl::get_biome_name(blockInfo.biome).c_str()); });
     copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyAltitude") + QString::number(blockInfo.height),

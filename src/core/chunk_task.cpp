@@ -10,6 +10,7 @@
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
 #include "chunk_task.h"
+#include "color.h"
 #include "config.h"
 #include "maptile.h"
 
@@ -21,6 +22,27 @@ void RegionTimer::push(int64_t value) {
 }
 
 ChunkRegion::~ChunkRegion() = default;
+
+int ChunkRegion::internBlockName(const std::string &name) {
+    const int gid = bl::block_name_to_runtime_id(name);
+    if (gid >= 0) return gid;
+    // unknown / mod block: keep the full name (with namespace) in the region-local table
+    auto it = this->local_block_ids_.find(name);
+    if (it != this->local_block_ids_.end()) return it->second;
+    this->local_block_names_.push_back(name);
+    const int lid = -static_cast<int>(this->local_block_names_.size());
+    this->local_block_ids_.emplace(name, lid);
+    return lid;
+}
+
+std::string ChunkRegion::blockName(int id) const {
+    if (id >= 0) return bl::block_runtime_id_to_full_name(id);
+    const int idx = -id - 1;
+    if (idx >= 0 && idx < static_cast<int>(this->local_block_names_.size())) {
+        return this->local_block_names_[idx];
+    }
+    return std::string();
+}
 
 void LoadRegionTask::run() {
     auto begin = std::chrono::steady_clock::now();
