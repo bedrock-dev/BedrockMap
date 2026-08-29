@@ -26,10 +26,11 @@ namespace {
 FloatingToolBar::FloatingToolBar(QWidget *parent) : QFrame(parent) {
     setAttribute(Qt::WA_TranslucentBackground, false);
     setCursor(Qt::ArrowCursor);
+    setProperty("vertical", true);
 
     layout_ = new QVBoxLayout(this);
-    layout_->setContentsMargins(2, 4, 2, 4);
-    layout_->setSpacing(1);
+    layout_->setContentsMargins(0, 0, 0, 0);
+    layout_->setSpacing(0);
 
     setupStyleSheet();
 
@@ -49,14 +50,30 @@ void FloatingToolBar::setupStyleSheet() {
         }
         FloatingToolBar QToolButton {
             border: none;
-            border-radius: 4px;
+            border-radius: 0px;
             icon-size: %6px %6px;
         }
         FloatingToolBar QToolButton:hover {
             background-color: rgba(160, 160, 160, 100);
         }
         FloatingToolBar QToolButton:checked {
-            background-color: rgba(160, 160, 160, 180);
+            background-color: rgba(160, 160, 160, 130);
+        }
+        FloatingToolBar[vertical="true"] QToolButton[groupStart="true"] {
+            border-top-left-radius: %5px;
+            border-top-right-radius: %5px;
+        }
+        FloatingToolBar[vertical="true"] QToolButton[groupEnd="true"] {
+            border-bottom-left-radius: %5px;
+            border-bottom-right-radius: %5px;
+        }
+        FloatingToolBar[vertical="false"] QToolButton[groupStart="true"] {
+            border-top-left-radius: %5px;
+            border-bottom-left-radius: %5px;
+        }
+        FloatingToolBar[vertical="false"] QToolButton[groupEnd="true"] {
+            border-top-right-radius: %5px;
+            border-bottom-right-radius: %5px;
         }
     )")
                       .arg(bgColor.red())
@@ -75,12 +92,12 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
     auto *oldLayout = layout_;
     if (orientation == Qt::Horizontal) {
         layout_ = new QHBoxLayout();
-        layout_->setContentsMargins(4, 2, 4, 2);
-        layout_->setSpacing(1);
+        layout_->setContentsMargins(0, 0, 0, 0);
+        layout_->setSpacing(0);
     } else {
         layout_ = new QVBoxLayout();
-        layout_->setContentsMargins(2, 4, 2, 4);
-        layout_->setSpacing(1);
+        layout_->setContentsMargins(0, 0, 0, 0);
+        layout_->setSpacing(0);
     }
 
     // Move all existing widgets to new layout
@@ -94,8 +111,10 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
     delete oldLayout;
     setLayout(layout_);
 
+    setProperty("vertical", orientation == Qt::Vertical);
     // Update separator styling
     setupStyleSheet();
+    refreshButtonStyleProperties();
     for (auto *sep : separators_) {
         if (orientation == Qt::Horizontal) {
             sep->setFixedHeight(BTN_SIZE);
@@ -135,6 +154,8 @@ int FloatingToolBar::addGroup(const GroupConfig &group) {
         btn->setCheckable(cfg.checkable);
         btn->setAutoRaise(true);
         btn->setAutoExclusive(false);  // we handle exclusivity manually
+        btn->setProperty("groupStart", i == 0);
+        btn->setProperty("groupEnd", i == group.buttons.size() - 1);
 
         int flatIdx = buttons_.size();
         buttons_.append(btn);
@@ -175,12 +196,24 @@ int FloatingToolBar::addGroup(const GroupConfig &group) {
     }
 
     groups_.append({startIdx, (int)group.buttons.size(), group.mode});
+    refreshButtonStyleProperties();
 
     // Force layout computation even if hidden, so adjustSize() works
     layout_->activate();
     adjustSize();
 
     return groupIdx;
+}
+
+void FloatingToolBar::refreshButtonStyleProperties() {
+    // Dynamic QSS properties need a repolish after changing orientation or group membership.
+    style()->unpolish(this);
+    style()->polish(this);
+    for (auto *button : buttons_) {
+        button->style()->unpolish(button);
+        button->style()->polish(button);
+        button->update();
+    }
 }
 
 void FloatingToolBar::addSeparator() {

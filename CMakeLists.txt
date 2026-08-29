@@ -51,6 +51,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Concurrent 
     OpenGL 
     OpenGLWidgets
+    Svg
     LinguistTools
 )
 
@@ -66,9 +67,10 @@ file(GLOB_RECURSE SRC_FILES
 )
 
 # 收集资源文件
-file(GLOB_RECURSE RESOURCE_FILES
+file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.png
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.jpg
+    ${CMAKE_CURRENT_SOURCE_DIR}/res/*.svg
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.ttf
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.frag
@@ -110,6 +112,7 @@ target_link_libraries(BedrockMap PRIVATE
     Qt6::Concurrent
     Qt6::OpenGL
     Qt6::OpenGLWidgets
+    Qt6::Svg
     ${BEDROCK_LIBS}
 )
 

@@ -87,7 +87,7 @@ int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 // Misc
 bool setting::LOAD_GLOBAL_DATA = true;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
-QString setting::ICON_THEME = "new";
+QString setting::ICON_THEME = "default";
 
 // LeviLauncher
 bool setting::SCAN_LEVI_PATH = true;

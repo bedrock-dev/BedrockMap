@@ -1637,6 +1637,10 @@
         <source>中文 (zh_CN)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>default</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>VoxelPreviewWidget</name>

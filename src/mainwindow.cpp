@@ -84,6 +84,25 @@ void MainWindow::setupUI() {
 
 void MainWindow::setupMenuBar() {
     menu_bar_ = menuBar();
+    menu_bar_->setStyleSheet(R"(
+        QMenuBar {
+            padding: 0px;
+        }
+        QMenuBar::item {
+            padding: 2px 8px;
+            margin: 0px;
+        }
+        QMenu {
+            padding: 2px 0px;
+        }
+        QMenu::item {
+            padding: 3px 24px 3px 8px;
+        }
+        QMenu::separator {
+            height: 1px;
+            margin: 2px 6px;
+        }
+    )");
 
     // --- File menu ---
     file_menu_ = menu_bar_->addMenu(tr("mainWindow.menu.file"));

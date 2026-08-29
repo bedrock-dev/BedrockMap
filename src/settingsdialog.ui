@@ -865,6 +865,11 @@
             <widget class="QComboBox" name="iconThemeCombo">
              <item>
               <property name="text">
+               <string>default</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>classic</string>
               </property>
              </item>

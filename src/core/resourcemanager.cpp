@@ -15,6 +15,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QDirIterator>
+#include <QFile>
 #include <QIcon>
 #include <QMap>
 #include <QString>
@@ -197,7 +198,22 @@ QImage *TagIcon(bl::nbt::tag_type t) {
     auto it = tag_icon_pool.find(QString(names[t].c_str()));
     return it == tag_icon_pool.end() ? unknown_img : it.value();
 }
-QString ToolBarIcon(const QString &name) { return QString(":/res/ui/%1/%2.png").arg(setting::ICON_THEME).arg(name); }
+QString ToolBarIcon(const QString &name) {
+    const auto findIcon = [&name](const QString &theme) {
+        const auto basePath = QString(":/res/ui/%1/%2").arg(theme, name);
+        for (const auto &suffix : {QStringLiteral(".svg"), QStringLiteral(".png")}) {
+            const auto path = basePath + suffix;
+            if (QFile::exists(path)) return path;
+        }
+        return QString{};
+    };
+
+    auto path = findIcon(setting::ICON_THEME);
+    if (path.isEmpty() && setting::ICON_THEME != QStringLiteral("new")) {
+        path = findIcon(QStringLiteral("new"));
+    }
+    return path.isEmpty() ? QString(":/res/ui/%1/%2.png").arg(setting::ICON_THEME, name) : path;
+}
 void TranslatorMgr::init() {
     const auto &langs = constant::TRANSLATION_FILES_PATH;
     // tranverse all the .qm files and load them into the translations map

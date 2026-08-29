@@ -61,6 +61,7 @@ class FloatingToolBar : public QFrame {
 
    private:
     void setupStyleSheet();
+    void refreshButtonStyleProperties();
     void reposition();
 
     struct GroupInfo {
