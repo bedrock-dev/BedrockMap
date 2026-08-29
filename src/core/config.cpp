@@ -87,7 +87,7 @@ int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 // Misc
 bool setting::LOAD_GLOBAL_DATA = true;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
-QString setting::ICON_THEME = "default";
+QString setting::ICON_THEME = "new";
 
 // LeviLauncher
 bool setting::SCAN_LEVI_PATH = true;
@@ -106,7 +106,8 @@ void constant::initColorTable() {
     if (!bl::init_block_color_from_file(constant::BLOCK_FILE_PATH)) {
         LOG_F(WARNING, "Can not load block color file in path: %s", BLOCK_FILE_PATH.c_str());
     }
-    bl::setUseColorDebugMode(setting::LOG_OUT_MISSING_TEXTURE);
+    bl::config::set_log_missing_block_color(false);
+    bl::config::set_log_mismatched_actor(false);
 }
 
 void setting::init() {

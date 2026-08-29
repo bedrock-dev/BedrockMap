@@ -23,7 +23,6 @@
 #include "ui_nbtwidget.h"
 #include "utils.h"
 
-
 namespace {
 
     NBTTreeItem *nbt2QTreeItem(bl::nbt::abstract_tag *t, int index, int &ma, bool hex_mode) {
@@ -262,8 +261,8 @@ void NbtWidget::setFilePath(const QString &path) {
 
 bool NbtWidget::saveToFile() {
     if (file_path_.isEmpty()) {
-        const auto fileName = QFileDialog::getSaveFileName(this, tr("nbtEditor.fileDialog.save"), QDir::homePath(),
-                                                           tr("nbtEditor.fileDialog.nbtFiles"));
+        const auto fileName =
+            QFileDialog::getSaveFileName(this, tr("nbtEditor.fileDialog.save"), QDir::homePath(), tr("nbtEditor.fileDialog.nbtFiles"));
         if (fileName.isEmpty()) return false;
         file_path_ = fileName;
         applyToolbarVisibility();
@@ -575,7 +574,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
                 if (const auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i))) {
                     putRemoveToCache(item->raw_key.toStdString());
                 } else {
-                    BL_ERROR("当前NBT数据已损坏");
+                    LOG_F(ERROR, "当前NBT数据已损坏");
                 }
             }
             ui->list_widget->clear();
