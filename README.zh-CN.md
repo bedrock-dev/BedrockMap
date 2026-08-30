@@ -1,8 +1,13 @@
 <p align="center">
-  <img src="./imgs/sample2.png" alt="BedrockMap 截图" width="720">
+  <img src="./imgs/sample.png" alt="BedrockMap 截图" width="720">
 </p>
 
 # BedrockMap
+
+<p align="center">
+  <img src="https://img.shields.io/github/license/bedrock-dev/BedrockMap" alt="License">
+  <img src="https://img.shields.io/github/v/release/bedrock-dev/BedrockMap" alt="Release">
+</p>
 
 [English](./README.md) | **简体中文**
 
@@ -23,6 +28,28 @@
 
 从 [Release 页面](https://github.com/bedrock-dev/BedrockMap/releases) 下载最新版本。
 
+## 系统要求
+
+- **操作系统** — Windows 10
+
+## 快速上手
+
+通过 **文件 → 打开世界**（`Ctrl+O`）打开世界，或直接将世界文件夹、`.mcstructure`、`.nbt` 文件拖入窗口。
+
+地图视图中：**左键拖动**平移，**右键**打开菜单，**滚轮按下拖动**框选区域，**滚动滚轮**缩放。
+
+常用快捷键：
+
+| 快捷键                    | 功能                                                   |
+| ------------------------- | ------------------------------------------------------ |
+| `Ctrl+O` / `Ctrl+Shift+O` | 打开世界 / 打开文件（`.mcstructure`、`.nbt`、`.nbts`） |
+| `Ctrl+C` / `Ctrl+V`       | 复制 / 粘贴选中区域（支持跨存档）                      |
+| `Ctrl+E` / `Ctrl+I`       | 导出 / 导入选区                                        |
+| `Ctrl+D`                  | 删除选中的区块                                         |
+| `Ctrl+H`                  | 打开 3D 体素视图                                       |
+| `Alt+1`–`Alt+4`           | 切换维度（主世界 / 下界 / 末地 / 自定义）              |
+| `Ctrl+G`                  | 跳转到坐标                                             |
+
 ## 构建
 
 ```powershell
@@ -32,6 +59,14 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 # 构建 BedrockMap
 .\scripts\build.ps1 -buildBL
 ```
+
+## 支持的 MCBE 版本
+
+支持 Minecraft 基岩版 1.2（可能更早）及以后的世界，直到 1.21 系列（不同版本的区块格式可能不同）。
+
+## 参与贡献
+
+欢迎通过 [Issues](https://github.com/bedrock-dev/BedrockMap/issues) 提交 Bug 报告和功能建议。规划中的功能和已知问题见 [TODO.md](./TODO.md)。
 
 ## 许可证
 

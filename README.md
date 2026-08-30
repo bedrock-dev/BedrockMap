@@ -1,8 +1,13 @@
 <p align="center">
-  <img src="./imgs/sample2.png" alt="BedrockMap Screenshot" width="720">
+  <img src="./imgs/sample.png" alt="BedrockMap Screenshot" width="720">
 </p>
 
 # BedrockMap
+
+<p align="center">
+  <img src="https://img.shields.io/github/license/bedrock-dev/BedrockMap" alt="License">
+  <img src="https://img.shields.io/github/v/release/bedrock-dev/BedrockMap" alt="Release">
+</p>
 
 **English** | [简体中文](./README.zh-CN.md)
 
@@ -23,6 +28,28 @@
 
 Grab the latest release from the [Releases page](https://github.com/bedrock-dev/BedrockMap/releases).
 
+## System Requirements
+
+- **OS** — Windows 10
+
+## Quick Start
+
+Open a world via **File → Open World** (`Ctrl+O`), or drag & drop a world folder, `.mcstructure` or `.nbt` file onto the window.
+
+In the map view: **left-drag** to pan, **right-click** for the context menu, **middle-mouse drag** to select a region, and **scroll** to zoom.
+
+Key shortcuts:
+
+| Shortcut                  | Action                                                   |
+| ------------------------- | -------------------------------------------------------- |
+| `Ctrl+O` / `Ctrl+Shift+O` | Open world / open file (`.mcstructure`, `.nbt`, `.nbts`) |
+| `Ctrl+C` / `Ctrl+V`       | Copy / paste selected region (works across worlds)       |
+| `Ctrl+E` / `Ctrl+I`       | Export / import selection                                |
+| `Ctrl+D`                  | Delete selected chunks                                   |
+| `Ctrl+H`                  | Open 3D voxel view                                       |
+| `Alt+1`–`Alt+4`           | Switch dimension (Overworld / Nether / The End / custom) |
+| `Ctrl+G`                  | Go to coordinates                                        |
+
 ## Build
 
 ```powershell
@@ -32,6 +59,14 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 # Build BedrockMap
 .\scripts\build.ps1 -buildBL
 ```
+
+## Supported MCBE Versions
+
+Worlds from Minecraft Bedrock 1.2 (and possibly earlier) are supported, up to the 1.21 series (the chunk format varies by version).
+
+## Contributing
+
+Bug reports and feature requests are welcome via [Issues](https://github.com/bedrock-dev/BedrockMap/issues). See [TODO.md](./TODO.md) for planned features and known issues.
 
 ## License
 
