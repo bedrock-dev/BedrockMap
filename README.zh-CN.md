@@ -19,7 +19,11 @@
 - **体素渲染** — 选中区域的 3D 体素可视化，可导出为 GLB 模型
 - **多标签工作区** — 同时打开和管理多个世界
 
-### 构建
+## 下载
+
+从 [Release 页面](https://github.com/bedrock-dev/BedrockMap/releases) 下载最新版本。
+
+## 构建
 
 ```powershell
 # 使用子模块克隆
@@ -32,3 +36,8 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 ## 许可证
 
 BedrockMap 基于 [GNU Affero General Public License v3.0](./LICENSE) 许可证发布。
+
+## Credits
+
+- [bedrock level](https://github.com/bedrock-dev/bedrock-level) 用于软件后端
+- [Minecraft Wiki](https://minecraft.wiki/) 提供生物、NBT以及方块实体等图标

@@ -19,7 +19,11 @@
 - **Voxel Rendering** — 3D voxel visualization of selected regions, exportable as GLB models
 - **Multi-Tab Workspace** — Open and manage multiple worlds simultaneously
 
-### Build
+## Download
+
+Grab the latest release from the [Releases page](https://github.com/bedrock-dev/BedrockMap/releases).
+
+## Build
 
 ```powershell
 # Clone with submodules
@@ -32,3 +36,8 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 ## License
 
 BedrockMap is licensed under the [GNU Affero General Public License v3.0](./LICENSE).
+
+## Credits
+
+- [bedrock level](https://github.com/bedrock-dev/bedrock-level) for the software backend
+- [Minecraft Wiki](https://minecraft.wiki/) for mob, NBT, and block entity icons
