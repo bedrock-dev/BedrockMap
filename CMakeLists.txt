@@ -52,6 +52,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     OpenGL 
     OpenGLWidgets
     Svg
+    Network
     LinguistTools
 )
 
@@ -113,6 +114,7 @@ target_link_libraries(BedrockMap PRIVATE
     Qt6::OpenGL
     Qt6::OpenGLWidgets
     Qt6::Svg
+    Qt6::Network
     ${BEDROCK_LIBS}
 )
 

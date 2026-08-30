@@ -47,6 +47,8 @@
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.checkUpdate</source>
         <translation>Check Update</translation>
     </message>
@@ -59,6 +61,21 @@
         <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.github</source>
         <translation>Github</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.checkingUpdate</source>
+        <translation>Checking…</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>updateChecker.upToDate</source>
+        <translation>You are up to date</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>updateChecker.checkFailed</source>
+        <translation>Failed to check for updates: %1</translation>
     </message>
 </context>
 <context>
@@ -1639,6 +1656,49 @@
     </message>
     <message>
         <source>default</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UpdateChecker</name>
+    <message>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <source>updateChecker.parseFailed</source>
+        <translation>Unable to parse update data</translation>
+    </message>
+    <message>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <source>updateChecker.invalidVersion</source>
+        <translation>Unable to compare versions</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../src/updatedialog.cpp"/>
+        <source>updateDialog.title</source>
+        <translation>New Version Available</translation>
+    </message>
+    <message>
+        <location filename="../src/updatedialog.cpp"/>
+        <source>updateDialog.newVersion</source>
+        <translation>A new version is available: %1 (current: %2)</translation>
+    </message>
+    <message>
+        <source>updateDialog.download</source>
+        <translation>Download</translation>
+    </message>
+    <message>
+        <source>updateDialog.close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <source>updateDialog.noUpdateCheck</source>
+        <translation>Don&apos;t check for updates at startup</translation>
+    </message>
+    <message>
+        <source>{VERSION}</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

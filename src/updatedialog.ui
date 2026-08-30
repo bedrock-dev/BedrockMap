@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UpdateDialog</class>
+ <widget class="QDialog" name="UpdateDialog">
+  <property name="windowTitle">
+   <string>updateDialog.title</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/res/ui/classic/icon.png</normaloff>:/res/ui/classic/icon.png</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="spacing">
+    <number>8</number>
+   </property>
+   <property name="leftMargin">
+    <number>12</number>
+   </property>
+   <property name="topMargin">
+    <number>12</number>
+   </property>
+   <property name="rightMargin">
+    <number>12</number>
+   </property>
+   <property name="bottomMargin">
+    <number>12</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="version_label">
+     <property name="text">
+      <string>{VERSION}</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::TextFormat::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextBrowser" name="notes_browser">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>440</width>
+       <height>300</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="noUpdateCheckBox">
+     <property name="text">
+      <string>updateDialog.noUpdateCheck</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="buttonSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="downloadBtn">
+       <property name="text">
+        <string>updateDialog.download</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeBtn">
+       <property name="text">
+        <string>updateDialog.close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

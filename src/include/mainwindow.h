@@ -12,8 +12,8 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
-#include <QMimeData>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QPainter>
 #include <QPushButton>
 #include <QShortcut>
@@ -24,6 +24,9 @@
 #include "chunkeditorwidget.h"
 #include "levelpathmanager.h"
 #include "leveltabwidget.h"
+
+
+class UpdateChecker;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -55,6 +58,7 @@ class MainWindow : public QMainWindow {
     void openFile();
     void close_and_exit();
     void setupShortcuts();
+    void onUpdateAvailable(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl);
 
    private:
     QString getStaticTitle();
@@ -123,6 +127,7 @@ class MainWindow : public QMainWindow {
     bool write_mode_{false};
 
     AboutDialog *about_dialog_{nullptr};
+    UpdateChecker *updater_{nullptr};
     std::vector<QShortcut *> shortcuts_;
     LevelPathManager level_path_mgr_;
 };

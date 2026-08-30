@@ -28,6 +28,8 @@
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
 #include "settingsdialog.h"
+#include "updatechecker.h"
+#include "updatedialog.h"
 
 namespace {
 
@@ -66,9 +68,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // level_path_mgr_.dumpPaths();
     setupWelcomeTabActions();
     this->about_dialog_ = new AboutDialog(this);
+
+    // Background update check at startup; silent unless a newer release is found.
+    updater_ = new UpdateChecker(this);
+    connect(updater_, &UpdateChecker::updateAvailable, this, &MainWindow::onUpdateAvailable);
+    if (setting::CHECK_UPDATE) updater_->checkForUpdates();
 }
 
 MainWindow::~MainWindow() { qApp->removeEventFilter(this); }
+
+void MainWindow::onUpdateAvailable(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl) {
+    UpdateDialog dlg(newVersion, releaseNotes, htmlUrl, this);
+    dlg.exec();
+}
 
 void MainWindow::setupUI() {
     auto *cw = new QWidget(this);

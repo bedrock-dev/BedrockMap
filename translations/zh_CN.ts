@@ -47,6 +47,8 @@
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.checkUpdate</source>
         <translation>检查更新</translation>
     </message>
@@ -59,6 +61,21 @@
         <location filename="../src/aboutdialog.cpp"/>
         <source>aboutDialog.github</source>
         <translation>Github</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>aboutDialog.checkingUpdate</source>
+        <translation>检查中…</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>updateChecker.upToDate</source>
+        <translation>当前已是最新版本</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp"/>
+        <source>updateChecker.checkFailed</source>
+        <translation>检查更新失败：%1</translation>
     </message>
 </context>
 <context>
@@ -1639,6 +1656,49 @@
     </message>
     <message>
         <source>default</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UpdateChecker</name>
+    <message>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <source>updateChecker.parseFailed</source>
+        <translation>无法解析更新数据</translation>
+    </message>
+    <message>
+        <location filename="../src/core/updatechecker.cpp"/>
+        <source>updateChecker.invalidVersion</source>
+        <translation>无法比较版本号</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../src/updatedialog.cpp"/>
+        <source>updateDialog.title</source>
+        <translation>发现新版本</translation>
+    </message>
+    <message>
+        <location filename="../src/updatedialog.cpp"/>
+        <source>updateDialog.newVersion</source>
+        <translation>发现新版本 %1（当前版本 %2）</translation>
+    </message>
+    <message>
+        <source>updateDialog.download</source>
+        <translation>下载</translation>
+    </message>
+    <message>
+        <source>updateDialog.close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>updateDialog.noUpdateCheck</source>
+        <translation>启动时不再检查更新</translation>
+    </message>
+    <message>
+        <source>{VERSION}</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

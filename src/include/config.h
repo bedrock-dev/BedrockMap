@@ -8,17 +8,27 @@
 
 #include <QColor>
 #include <QImage>
+#include <array>
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "bedrock_key.h"
 
 typedef bl::chunk_pos region_pos;
 
+struct AppVersion {
+    std::array<int, 3> core{};  // a.b.c
+    int beta = -1;              // -1 = no beta suffix
+    [[nodiscard]] static std::optional<AppVersion> parse(const QString &text);
+    [[nodiscard]] QString toString() const;
+    [[nodiscard]] int compare(const AppVersion &other) const;
+};
+
 // Compile-time constants (unchanging)
 namespace constant {
     extern const std::string SOFTWARE_NAME;
-    extern const std::string SOFTWARE_VERSION;
+    extern const AppVersion SOFTWARE_VERSION;
 
     extern const std::string CONFIG_FILE_PATH;
     extern const std::string BLOCK_FILE_PATH;
@@ -80,6 +90,7 @@ namespace setting {
     extern bool LOAD_GLOBAL_DATA;
     extern int MAX_GLOBAL_DATA_LOAD_COUNT;
     extern QString ICON_THEME;
+    extern bool CHECK_UPDATE;
 
     // LeviLauncher
     extern bool SCAN_LEVI_PATH;

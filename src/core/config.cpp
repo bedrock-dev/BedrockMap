@@ -21,9 +21,53 @@
 #include "color.h"
 #include "loguru/loguru.hpp"
 
+std::optional<AppVersion> AppVersion::parse(const QString &text) {
+    QString s = text.trimmed();
+    if (s.startsWith('v') || s.startsWith('V')) s = s.mid(1);
+
+    AppVersion ver;
+    const int dash = s.indexOf('-');
+    const QString core = dash >= 0 ? s.left(dash) : s;
+    if (dash >= 0) {
+        const QString suffix = s.mid(dash + 1);
+        if (!suffix.startsWith("beta", Qt::CaseInsensitive)) return std::nullopt;  // unknown suffix, cannot compare
+        bool ok = false;
+        const int n = suffix.mid(4).toInt(&ok);
+        if (!ok || n < 0) return std::nullopt;
+        ver.beta = n;
+    }
+
+    const QStringList parts = core.split('.');
+    if (parts.isEmpty() || parts.size() > static_cast<int>(ver.core.size())) return std::nullopt;
+    for (int i = 0; i < parts.size(); ++i) {
+        bool ok = false;
+        const int n = parts[i].toInt(&ok);
+        if (!ok || n < 0) return std::nullopt;
+        ver.core[i] = n;
+    }
+    return ver;
+}
+
+QString AppVersion::toString() const {
+    QString s = QString("v%1.%2.%3").arg(core[0]).arg(core[1]).arg(core[2]);
+    if (beta >= 0) s += QString("-beta%1").arg(beta);
+    return s;
+}
+
+int AppVersion::compare(const AppVersion &other) const {
+    for (size_t i = 0; i < core.size(); ++i) {
+        if (core[i] != other.core[i]) return core[i] < other.core[i] ? -1 : 1;
+    }
+    if (beta != other.beta) {
+        if (beta >= 0 && other.beta >= 0) return beta < other.beta ? -1 : 1;
+        return beta < 0 ? 1 : -1;
+    }
+    return 0;
+}
+
 // constant namespace
 const std::string constant::SOFTWARE_NAME = "BedrockMap";
-const std::string constant::SOFTWARE_VERSION = "v1.0.0-beta8";
+const AppVersion constant::SOFTWARE_VERSION{{1, 0, 0}, 8};
 const int constant::GRID_WIDTH = 32;
 
 #ifdef QT_DEBUG
@@ -49,7 +93,7 @@ region_pos constant::c2r(const bl::chunk_pos &ch) {
 }
 
 QString constant::VERSION_STRING() {
-    return QString(constant::SOFTWARE_NAME.c_str()) + " " + QString(constant::SOFTWARE_VERSION.c_str()) + "." + QString(GIT_COMMIT_HASH);
+    return QString(constant::SOFTWARE_NAME.c_str()) + " " + constant::SOFTWARE_VERSION.toString() + "." + QString(GIT_COMMIT_HASH);
 }
 
 // setting namespace — defaults
@@ -88,6 +132,7 @@ int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 bool setting::LOAD_GLOBAL_DATA = true;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
 QString setting::ICON_THEME = "new";
+bool setting::CHECK_UPDATE = true;
 
 // LeviLauncher
 bool setting::SCAN_LEVI_PATH = true;
@@ -166,6 +211,7 @@ void setting::load() {
     setting::LOAD_GLOBAL_DATA = s.value("load_global_data", setting::LOAD_GLOBAL_DATA).toBool();
     setting::MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
     setting::ICON_THEME = s.value("icon_theme", setting::ICON_THEME).toString();
+    setting::CHECK_UPDATE = s.value("check_update", setting::CHECK_UPDATE).toBool();
     s.endGroup();
 
     s.beginGroup("Debug");
@@ -232,6 +278,7 @@ void setting::save() {
     s.setValue("load_global_data", setting::LOAD_GLOBAL_DATA);
     s.setValue("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT);
     s.setValue("icon_theme", setting::ICON_THEME);
+    s.setValue("check_update", setting::CHECK_UPDATE);
     s.endGroup();
 
     s.beginGroup("Debug");
