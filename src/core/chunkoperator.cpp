@@ -90,8 +90,8 @@ void ChunkOperator::exportRegion(const QRegion &chunkRegion, const QString &file
 }
 
 bool BlockRegionOperator::exportMcstructure(const QRegion &chunkRegion, const QString &filePath, AsyncLevelLoader &loader, int dim,
-                                             bool /*compress*/, const std::optional<bl::block_box> &blockBounds, int32_t version,
-                                             bool exportEntities) {
+                                            bool /*compress*/, const std::optional<bl::block_box> &blockBounds, int32_t version,
+                                            bool exportEntities) {
     if (chunkRegion.isEmpty()) return false;
 
     const auto chunkBounds = chunkRegion.boundingRect();

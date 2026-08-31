@@ -9,11 +9,9 @@
 #include <qwidget.h>
 
 #include <QVBoxLayout>
-#include <QtConcurrent/QtConcurrent>
 
 #include "asynclevelloader.h"
 #include "levelpagewidget.h"
-#include "levelpathmanager.h"
 #include "mapwidget.h"
 #include "msg.h"
 
@@ -38,7 +36,8 @@ LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
 
     // connect
     connect(this, &QTabWidget::tabCloseRequested, this, &LevelTabWidget::onTabClosed);
-    connect(&this->close_level_watcher_, &QFutureWatcher<void>::finished, this, &LevelTabWidget::onCloseLevelFinished);
+    connect(&this->close_level_task_, &AsyncTaskRunner::started, this, [this]() { close_level_mss_box_->show(); });
+    connect(&this->close_level_task_, &AsyncTaskRunner::finished, this, &LevelTabWidget::onCloseLevelFinished);
     connect(this, &QTabWidget::currentChanged, this, [&]() {
         auto *page = qobject_cast<LevelPageWidget *>(currentWidget());
         emit currentLevelChanged(page);
@@ -140,9 +139,7 @@ void LevelTabWidget::onTabClosed(int index) {
             if (btn == QMessageBox::Yes) levelPage->commit();
         }
         closing_page_ = levelPage;
-        auto future = QtConcurrent::run([levelPage] { levelPage->closeLevel(); });
-        this->close_level_watcher_.setFuture(future);
-        close_level_mss_box_->show();
+        close_level_task_.start([levelPage](AsyncTaskRunner *) { levelPage->closeLevel(); });
         return;
     }
 

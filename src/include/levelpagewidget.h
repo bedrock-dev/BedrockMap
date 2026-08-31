@@ -11,6 +11,7 @@
 #include <atomic>
 
 #include "asynclevelloader.h"
+#include "asynctask.h"
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
 #include "floatingtoolbar.h"
@@ -93,13 +94,14 @@ class LevelPageWidget : public TabPageWidget {
 
    private slots:
     void onLoadGlobalDataFinished();
+    void onLoadGlobalDataFailed(const QString &error);
 
    private:
     // data source
     std::unique_ptr<AsyncLevelLoader> level_loader_;
 
     // global data
-    QFutureWatcher<bool> load_global_data_watcher_;
+    AsyncTaskRunner global_data_task_;
     std::atomic_bool stop_loading_global_data_{false};
     GlobalNBTLoadResult global_data_;
     QMap<QString, VillageDrawInfo> villages_;

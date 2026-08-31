@@ -13,7 +13,6 @@
 #include <QSpacerItem>
 #include <QSplitter>
 #include <QToolButton>
-#include <QtConcurrent/QtConcurrent>
 #include <functional>
 #include <memory>
 
@@ -64,8 +63,7 @@ void LevelStatusBar::setModifyInfo(int modified, int deleted) {
 }
 
 // level widget
-LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id)
-    : TabPageWidget(parent), parent_(parent), tab_id_(id) {
+LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget(parent), parent_(parent), tab_id_(id) {
     level_loader_ = std::make_unique<AsyncLevelLoader>();
 
     // gui
@@ -101,7 +99,9 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id)
     layout->setContentsMargins(0, 0, 0, 0);
 
     // connect signals
-    connect(&this->load_global_data_watcher_, &QFutureWatcher<bool>::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
+    // global data load runs as a silent background task; the signals fill the editors
+    connect(&this->global_data_task_, &AsyncTaskRunner::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
+    connect(&this->global_data_task_, &AsyncTaskRunner::failed, this, &LevelPageWidget::onLoadGlobalDataFailed);
     connect(this->mapWidget_, &MapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
     connect(this->mapWidget_, &MapWidget::requestOpenChunkEditor, this, &LevelPageWidget::showChunkEditor);
     connect(chunkWidget_, &ChunkEditorWidget::editorClosed, this, [this]() {
@@ -124,8 +124,9 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id)
 }
 
 LevelPageWidget::~LevelPageWidget() {
-    this->level_loader_->close();
     this->stop_loading_global_data_ = true;
+    this->global_data_task_.waitForFinished();
+    this->level_loader_->close();
 }
 
 void LevelPageWidget::setupMapWidget() {
@@ -429,28 +430,20 @@ bool LevelPageWidget::loadLevel(const QString &path) {
     auto *ld = dynamic_cast<bl::nbt::compound_tag *>(dat.root());
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::nbt::compound_tag *>(ld->copy()), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
-    if (!setting::LOAD_GLOBAL_DATA) {
-        return true;
-    }
-    auto future = QtConcurrent::run(
-        [this](const QString &path) {
-            try {
-                level_loader_->loadGlobalData(std::ref(this->global_data_), std::ref(stop_loading_global_data_));
-                LOG_F(INFO, "Load global data finished");
-                return true;
-            } catch (std::exception &e) {
-                LOG_F(WARNING, "Can not fully load global data: %s", e.what());
-                return false;
-            }
-        },
-        path);
-    this->load_global_data_watcher_.setFuture(future);
+    if (!setting::LOAD_GLOBAL_DATA) return true;
+    global_data_task_.start([this](AsyncTaskRunner *task) {
+        try {
+            level_loader_->loadGlobalData(std::ref(this->global_data_), std::ref(stop_loading_global_data_));
+        } catch (std::exception &e) {
+            LOG_F(WARNING, "Can not fully load global data: %s", e.what());
+        }
+    });
     return true;
 }
 
 void LevelPageWidget::closeLevel() {
     this->stop_loading_global_data_ = true;
-    load_global_data_watcher_.waitForFinished();
+    global_data_task_.waitForFinished();
     if (level_loader_->isOpen()) level_loader_->close();
 }
 
@@ -562,8 +555,11 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult &res) {
 }
 
 void LevelPageWidget::onLoadGlobalDataFinished() {
-    const auto res = this->load_global_data_watcher_.result();
-    auto msg = res ? msg::OPEN_LEVEL_SUCC() : msg::LOAD_GLOBAL_DATA_FAILED();
     fillGlobalData(this->global_data_);
     this->global_data_.clear();
+}
+
+void LevelPageWidget::onLoadGlobalDataFailed(const QString &error) {
+    LOG_F(WARNING, "Load global data failed: %s", error.toStdString().c_str());
+    onLoadGlobalDataFinished();  // still fill whatever was loaded
 }

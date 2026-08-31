@@ -1,7 +1,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
-#include <QtConcurrent>
 #include <memory>
 
 #include "color.h"
@@ -48,7 +47,7 @@ namespace {
 
 bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::chunk_pos& maxPos, AsyncLevelLoader& loader) {
     setWindowTitle(QString("%1 ~ %2").arg(minPos.to_string().c_str()).arg(maxPos.to_string().c_str()));
-    if (!chunk_render_watcher_.isFinished()) {
+    if (chunk_task_.isRunning()) {
         LOG_F(WARNING, "Current render task is not finished");
         return false;
     }
@@ -63,7 +62,7 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
     bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
 
     voxelWidget_->updateVoxelData({});
-    chunk_render_watcher_.setFuture(QtConcurrent::run([this, minPos, maxPos, &loader]() -> VoxelLoadResult {
+    chunk_task_.start([this, minPos, maxPos, &loader](AsyncTaskRunner* task) {
         std::vector<std::vector<bl::chunk*>> chunks;
         chunks.resize(maxPos.x - minPos.x + 1);
         for (auto& row : chunks) {
@@ -75,16 +74,16 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
             for (int j = minPos.z; j <= maxPos.z; j++) {
                 chunks[i - minPos.x][j - minPos.z] = loader.getChunk(bl::chunk_pos{i, j, dim});
                 chunk_loaded++;
-                emit chunkMeshBuilt(chunk_loaded);
+                task->reportProgress(static_cast<int>(chunk_loaded));
             }
         }
         int firstWorldY = 0;
-        auto voxelData =
-            VoxelWidget::createVoxelDataFromChunks(chunks, [&](int cnt) { emit chunkMeshBuilt(cnt + chunk_loaded); }, &firstWorldY);
+        auto voxelData = VoxelWidget::createVoxelDataFromChunks(
+            chunks, [&](int cnt) { task->reportProgress(cnt + static_cast<int>(chunk_loaded)); }, &firstWorldY);
         for (auto& row : chunks)
             for (auto* c : row) delete c;
-        return {std::move(voxelData), {minPos.x * 16, firstWorldY, minPos.z * 16}};
-    }));
+        pending_chunk_result_ = {std::move(voxelData), {minPos.x * 16, firstWorldY, minPos.z * 16}};
+    });
     show();
     return true;
 }
@@ -99,19 +98,20 @@ void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstruct
     if (!structure) {
         return;
     }
-    if (!mcstructure_render_watcher_.isFinished()) {
+    if (mcstructure_task_.isRunning()) {
         LOG_F(WARNING, "Current mcstructure render task is not finished");
         return;
     }
     bar_->show();
     bar_->setRange(0, 0);
-    mcstructure_render_watcher_.setFuture(
-        QtConcurrent::run([structure]() -> VoxelLoadResult { return {buildVoxelDataFromMcstructure(*structure), structure->origin()}; }));
+    mcstructure_task_.start([this, structure](AsyncTaskRunner*) {
+        pending_mcstructure_result_ = {buildVoxelDataFromMcstructure(*structure), structure->origin()};
+    });
 }
 
 void VoxelPreviewWidget::exportGlbModel() {
-    QString filePath =
-        QFileDialog::getSaveFileName(this, tr("voxelPreviewWidget.exportGlb.title"), QString(), tr("voxelPreviewWidget.exportGlb.fileFilter"));
+    QString filePath = QFileDialog::getSaveFileName(this, tr("voxelPreviewWidget.exportGlb.title"), QString(),
+                                                    tr("voxelPreviewWidget.exportGlb.fileFilter"));
     if (filePath.isEmpty()) return;
 
     if (QFileInfo(filePath).suffix().isEmpty()) {

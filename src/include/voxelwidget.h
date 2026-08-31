@@ -11,7 +11,6 @@
 #include <QCheckBox>
 #include <QColor>
 #include <QFuture>
-#include <QFutureWatcher>
 #include <QLabel>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
@@ -29,6 +28,7 @@
 #include <vector>
 
 #include "asynclevelloader.h"
+#include "asynctask.h"
 #include "bedrock_key.h"
 #include "chunk.h"
 
@@ -262,17 +262,17 @@ class VoxelPreviewWidget : public QWidget {
         layout->addWidget(bar_, 0);
         setLayout(layout);
         setGeometry({0, 0, 1200, 900});
-        connect(&this->chunk_render_watcher_, &QFutureWatcher<VoxelLoadResult>::finished, this, [this]() {
+        connect(&this->chunk_task_, &AsyncTaskRunner::progressChanged, this, [this](int value, const QString&) { bar_->setValue(value); });
+        connect(&this->chunk_task_, &AsyncTaskRunner::finished, this, [this]() {
             bar_->hide();
-            auto result = chunk_render_watcher_.future().result();
-            setVoxelData(std::move(result.data), result.origin);
+            setVoxelData(std::move(pending_chunk_result_.data), pending_chunk_result_.origin);
         });
-        connect(&this->mcstructure_render_watcher_, &QFutureWatcher<VoxelLoadResult>::finished, this, [this]() {
+        connect(&this->chunk_task_, &AsyncTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
+        connect(&this->mcstructure_task_, &AsyncTaskRunner::finished, this, [this]() {
             bar_->hide();
-            auto result = mcstructure_render_watcher_.future().result();
-            setVoxelData(std::move(result.data), result.origin);
+            setVoxelData(std::move(pending_mcstructure_result_.data), pending_mcstructure_result_.origin);
         });
-        connect(this, &VoxelPreviewWidget::chunkMeshBuilt, this, [this](int n) { bar_->setValue(n); });
+        connect(&this->mcstructure_task_, &AsyncTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
         importMcstructureButton->hide();
         mcstructureCompressBox_->hide();
         mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
@@ -284,7 +284,6 @@ class VoxelPreviewWidget : public QWidget {
     [[nodiscard]] bl::block_pos voxelOrigin() const { return voxel_origin_; }
 
    signals:
-    void chunkMeshBuilt(int n);
     void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
 
    private:
@@ -298,8 +297,10 @@ class VoxelPreviewWidget : public QWidget {
     QCheckBox* mcstructureNewFormatBox_{nullptr};
     // data
     bl::block_pos voxel_origin_;
-    QFutureWatcher<VoxelLoadResult> chunk_render_watcher_;
-    QFutureWatcher<VoxelLoadResult> mcstructure_render_watcher_;
+    AsyncTaskRunner chunk_task_;
+    VoxelLoadResult pending_chunk_result_;
+    AsyncTaskRunner mcstructure_task_;
+    VoxelLoadResult pending_mcstructure_result_;
 };
 
 #endif  // VOXELWIDGET_H

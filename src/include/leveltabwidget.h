@@ -1,13 +1,13 @@
 #ifndef LEVE_TAB_WIDGET_H
 #define LEVE_TAB_WIDGET_H
 
-#include <qfuturewatcher.h>
 #include <qmessagebox.h>
 #include <qtmetamacros.h>
 #include <qwidget.h>
 
 #include <QTableWidget>
 
+#include "asynctask.h"
 #include "levelpagewidget.h"
 #include "mapwidget.h"
 #include "mcstructurepagewidget.h"
@@ -100,7 +100,7 @@ class LevelTabWidget : public QTabWidget {
 
     int index = 0;
     // close level handler
-    QFutureWatcher<void> close_level_watcher_;
+    AsyncTaskRunner close_level_task_;
     LevelPageWidget *closing_page_{nullptr};
     QDialog *close_level_mss_box_;
 };
