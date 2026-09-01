@@ -1017,6 +1017,16 @@
     </message>
     <message>
         <location filename="../src/include/msg.h"/>
+        <source>msg.readOnly</source>
+        <translation>只读</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
+        <source>msg.editingDisabledDuringCoordsLoading</source>
+        <translation>全局坐标加载期间禁止修改。</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
         <source>msg.importFailed</source>
         <translation>导入失败</translation>
     </message>

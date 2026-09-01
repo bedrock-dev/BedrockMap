@@ -94,6 +94,22 @@ QImage &MapTile::NULL_REGION_TILE() {
     return img;
 }
 
+QImage &MapTile::COORDS_LOADING_TILE() {
+    static const auto color1 = QColor(128, 128, 128).rgb();
+    static const auto color2 = QColor(148, 148, 148).rgb();
+    static QImage image = createQuadChessTile(2, color1, color2, constant::COORDS_REGION_SIZE / 2);
+    return image;
+}
+
+QImage &MapTile::COORDS_EMPTY_TILE() {
+    static QImage image = [] {
+        QImage result(constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE, QImage::Format_RGB32);
+        result.fill(0xff000000u);
+        return result;
+    }();
+    return image;
+}
+
 QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &chunk_bit_map, bool fill) {
     static auto color = QColor(setting::VOID_MAP_COLOR).rgb();
     auto img = NULL_REGION_TILE().copy();

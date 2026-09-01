@@ -37,6 +37,8 @@ namespace constant {
     extern const QString TRANSLATION_FILES_PATH;
 
     constexpr uint8_t RW = 8u;
+    constexpr int COORDS_REGION_SIZE = 128;
+    static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     extern const int GRID_WIDTH;
 
     // 45°-only sun direction for basic shadow (renderStyle1)
@@ -55,6 +57,9 @@ namespace setting {
     void init();
     void load();
     void save();
+
+    constexpr double MINIMUM_ZOOM_SCALE = 4.0 / constant::COORDS_REGION_SIZE;
+
     // Gui
     extern QString COLOR_THEME;
     extern QString FONT_FAMILY;
@@ -88,6 +93,7 @@ namespace setting {
 
     // Misc
     extern bool LOAD_GLOBAL_DATA;
+    extern bool PRELOAD_ALL_CHUNK_COORDS;
     extern int MAX_GLOBAL_DATA_LOAD_COUNT;
     extern QString ICON_THEME;
     extern bool CHECK_UPDATE;

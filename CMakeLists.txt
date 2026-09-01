@@ -60,7 +60,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
 # 收集源文件
-file(GLOB_RECURSE SRC_FILES
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
         src/*.ui
         src/*.cpp
         src/include/*.h

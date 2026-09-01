@@ -283,9 +283,15 @@ class MapWidget : public QWidget {
     void gotoBlockPos(int x, int z);
 
    private:
+    [[nodiscard]] inline bool coordsOverviewMode() const {
+        return level_loader_ && level_loader_->preloadAllChunkCoords() && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
+    }
+
     [[nodiscard]] inline bool thumbnailMode() const {
         return setting::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
     }
+
+    [[nodiscard]] inline bool lowScaleMode() const { return coordsOverviewMode() || thumbnailMode(); }
 
    private:
     // for debug
@@ -305,6 +311,10 @@ class MapWidget : public QWidget {
     void drawBiome(QPaintEvent *event, QPainter *p);
 
     void drawTerrain(QPaintEvent *event, QPainter *p);
+
+    void drawCoordsBoundingBox(QPainter *p);
+
+    bool modificationBlocked();
 
     void drawActors(QPaintEvent *event, QPainter *p);
 

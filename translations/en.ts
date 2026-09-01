@@ -1017,6 +1017,16 @@
     </message>
     <message>
         <location filename="../src/include/msg.h"/>
+        <source>msg.readOnly</source>
+        <translation>Read-only</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
+        <source>msg.editingDisabledDuringCoordsLoading</source>
+        <translation>Editing is disabled while global coordinates are loading.</translation>
+    </message>
+    <message>
+        <location filename="../src/include/msg.h"/>
         <source>msg.importFailed</source>
         <translation>Import failed</translation>
     </message>

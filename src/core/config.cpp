@@ -130,6 +130,7 @@ int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 
 // Misc
 bool setting::LOAD_GLOBAL_DATA = true;
+bool setting::PRELOAD_ALL_CHUNK_COORDS = true;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
 QString setting::ICON_THEME = "new";
 bool setting::CHECK_UPDATE = true;
@@ -209,6 +210,7 @@ void setting::load() {
 
     s.beginGroup("Misc");
     setting::LOAD_GLOBAL_DATA = s.value("load_global_data", setting::LOAD_GLOBAL_DATA).toBool();
+    setting::PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", setting::PRELOAD_ALL_CHUNK_COORDS).toBool();
     setting::MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
     setting::ICON_THEME = s.value("icon_theme", setting::ICON_THEME).toString();
     setting::CHECK_UPDATE = s.value("check_update", setting::CHECK_UPDATE).toBool();
@@ -276,6 +278,7 @@ void setting::save() {
 
     s.beginGroup("Misc");
     s.setValue("load_global_data", setting::LOAD_GLOBAL_DATA);
+    s.setValue("preload_all_chunk_coords", setting::PRELOAD_ALL_CHUNK_COORDS);
     s.setValue("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT);
     s.setValue("icon_theme", setting::ICON_THEME);
     s.setValue("check_update", setting::CHECK_UPDATE);

@@ -66,6 +66,10 @@ class MapTile {
     static QImage &UNLOADED_REGION_TILE();
     // reegion that are loaded but have no valid chunk
     static QImage &NULL_REGION_TILE();
+    // coordinate-index region while the background scan is running
+    static QImage &COORDS_LOADING_TILE();
+    // coordinate-index region with no stored chunks
+    static QImage &COORDS_EMPTY_TILE();
 
     static QImage CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &region_bit_map, bool fillChunk);
 

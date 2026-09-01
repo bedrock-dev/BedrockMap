@@ -263,8 +263,12 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     }
 }
 
-void ChunkEditorWidget::saveChunk() {
-    if (!dirty_) return;
+bool ChunkEditorWidget::saveChunk() {
+    if (!dirty_) return true;
+    if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
+        QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+        return false;
+    }
     auto pt = this->pending_tick_editor_->getCurrentPaletteRaw();
     raw_chunk_.set_normal(bl::chunk_key::PendingTicks, pt);
     auto be = this->block_entity_editor_->getCurrentPaletteRaw();
@@ -279,13 +283,18 @@ void ChunkEditorWidget::saveChunk() {
     }
     raw_chunk_.set_entities(actors);
     raw_chunk_.set_normal(bl::chunk_key::HardCodedSpawnAreas, this->hsa_editor_->serialize());
-    this->level_loader_->putRawChunk(this->raw_chunk_);
+    const bool saved = this->level_loader_->putRawChunk(this->raw_chunk_);
+    if (!saved) {
+        for (auto *actor : actors) delete actor;
+        return false;
+    }
     actor_editor_->clearModifyCache();
     pending_tick_editor_->clearModifyCache();
     block_entity_editor_->clearModifyCache();
     hsa_editor_->markClean();
     for (auto *actor : actors) delete actor;
     setDirty(false);
+    return true;
 }
 
 void ChunkEditorWidget::on_close_btn_clicked() {
@@ -293,7 +302,7 @@ void ChunkEditorWidget::on_close_btn_clicked() {
         auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (btn == QMessageBox::Cancel) return;
-        if (btn == QMessageBox::Yes) saveChunk();
+        if (btn == QMessageBox::Yes && !saveChunk()) return;
     }
     terrain_render_widget_->hide();
     hide();

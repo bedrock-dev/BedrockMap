@@ -56,6 +56,10 @@ namespace msg {
     // operations
     inline QString NOTHING_TO_SAVE() { return QObject::tr("msg.nothingToSave"); }
     inline QString LEVEL_SAVED() { return QObject::tr("msg.levelSaved"); }
+    inline QString READ_ONLY() { return QObject::tr("msg.readOnly"); }
+    inline QString EDITING_DISABLED_DURING_COORDS_LOADING() {
+        return QObject::tr("msg.editingDisabledDuringCoordsLoading");
+    }
     inline QString IMPORT_FAILED() { return QObject::tr("msg.importFailed"); }
     inline QString INVALID_CHUNK_FORMAT() { return QObject::tr("msg.invalidChunkFormat"); }
     inline QString UNSAVED_CHANGES() { return QObject::tr("msg.unsavedChanges"); }

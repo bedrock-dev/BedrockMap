@@ -283,7 +283,7 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     QPointF world = world_to_view_xf_.inverted().map(pos);
 
     double scale = world_to_view_xf_.m11() * factor;
-    scale = std::clamp(scale, (qreal)setting::MINIMUM_SCALE_LEVEL, (qreal)setting::MAXIMUM_SCALE_LEVEL);
+    scale = std::clamp(scale, static_cast<qreal>(setting::MINIMUM_ZOOM_SCALE), static_cast<qreal>(setting::MAXIMUM_SCALE_LEVEL));
 
     world_to_view_xf_ = QTransform();
     world_to_view_xf_.translate(pos.x(), pos.y());
@@ -301,7 +301,7 @@ void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_
 }
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
+    if (lowScaleMode()) return;
     auto pen = QPen(QColor(setting::GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setBrush(Qt::NoBrush);
     pen.setCosmetic(true);
@@ -338,7 +338,7 @@ void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
 }
 
 void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
+    if (lowScaleMode()) return;
     QFontMetrics fm(CHUNK_TEXT_FONT);
     painter->setFont(CHUNK_TEXT_FONT);
     QPen pen(Qt::white);
@@ -384,7 +384,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
  * @param painter
  */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
+    if (lowScaleMode()) return;
     // slime chunks only exist in the overworld
     if (option_.dim != 0) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
@@ -394,7 +394,7 @@ void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
+    if (lowScaleMode()) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
         auto top = level_loader_->bakedBiomeImage(rp);
         this->drawImageInRegion(event, painter, rp, top);
@@ -402,10 +402,47 @@ void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
+    if (coordsOverviewMode()) {
+        auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
+        (void)renderRange;
+        const auto alignToCoordsRegion = [](int value) {
+            constexpr int size = constant::COORDS_REGION_SIZE;
+            const int quotient = value / size;
+            return (value % size < 0 ? quotient - 1 : quotient) * size;
+        };
+        const int minX = alignToCoordsRegion(minChunk.x);
+        const int minZ = alignToCoordsRegion(minChunk.z);
+        const int maxX = alignToCoordsRegion(maxChunk.x);
+        const int maxZ = alignToCoordsRegion(maxChunk.z);
+        for (int x = minX; x <= maxX; x += constant::COORDS_REGION_SIZE) {
+            for (int z = minZ; z <= maxZ; z += constant::COORDS_REGION_SIZE) {
+                const bl::chunk_pos rp{x, z, minChunk.dim};
+                auto *image = level_loader_->chunkCoordsImage(rp);
+                if (image) {
+                    painter->drawImage(QRectF(x, z, constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE), *image, image->rect());
+                }
+            }
+        }
+        this->drawCoordsBoundingBox(painter);
+        return;
+    }
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp) {
         auto terrain = thumbnailMode() ? level_loader_->bakeThumbnailImage(rp) : level_loader_->bakedTerrainImage(rp);
         this->drawImageInRegion(event, painter, rp, terrain);
     });
+}
+
+void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
+    if (!level_loader_->chunkCoordsReady()) return;
+    const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
+    if (!bounds || !bounds->valid) return;
+
+    QPen pen(QColor(0, 223, 162, 220), 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin);
+    pen.setCosmetic(true);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(QRectF(bounds->min_x, bounds->min_z, static_cast<qreal>(bounds->max_x - bounds->min_x + 1),
+                             static_cast<qreal>(bounds->max_z - bounds->min_z + 1)));
 }
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
@@ -452,7 +489,7 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
-    if (thumbnailMode()) return;
+    if (lowScaleMode()) return;
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch) {
@@ -611,6 +648,7 @@ void MapWidget::copySelectionToClipboard(int dim) {
 }
 
 void MapWidget::pasteFromClipboard(int dim) {
+    if (modificationBlocked()) return;
     auto *clip = QApplication::clipboard();
     const auto *md = clip->mimeData();
     if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
@@ -658,6 +696,7 @@ void MapWidget::exportSelectionToMcstructure(int dim, bool compress, bool export
 }
 
 void MapWidget::importFromFile(int dim) {
+    if (modificationBlocked()) return;
     auto fp = QFileDialog::getOpenFileName(nullptr, QObject::tr("mapWidget.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
     if (fp.isEmpty()) return;
     bl::chunk_pos anchor(0, 0, dim);
@@ -666,21 +705,27 @@ void MapWidget::importFromFile(int dim) {
 }
 
 void MapWidget::deleteSelection(int dim) {
-    if (selection_.isEmpty()) return;
+    if (selection_.isEmpty() || modificationBlocked()) return;
     ChunkOperator::deleteRegion(selection_.region(), *level_loader_, dim);
     update();
 }
 
 void MapWidget::createVoidSelection(int dim) {
-    if (selection_.isEmpty()) return;
+    if (selection_.isEmpty() || modificationBlocked()) return;
     ChunkOperator::createVoid(selection_.region(), *level_loader_, dim);
     update();
 }
 
 void MapWidget::setSelectionBiome(int biome, int dim) {
-    if (selection_.isEmpty()) return;
+    if (selection_.isEmpty() || modificationBlocked()) return;
     ChunkOperator::setRegionBiome(selection_.region(), *level_loader_, static_cast<bl::biome>(biome), dim);
     update();
+}
+
+bool MapWidget::modificationBlocked() {
+    if (!level_loader_ || !level_loader_->chunkCoordsLoading()) return false;
+    QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+    return true;
 }
 
 void MapWidget::show3DView(int dim) {

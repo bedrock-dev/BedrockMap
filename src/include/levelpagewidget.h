@@ -28,6 +28,10 @@ class LevelStatusBar : public QWidget {
     LevelStatusBar(QWidget *parent);
 
     void setStatus(const QString &status) { status_msg_->setText(status); }
+    void setCoordsLoading(bool loading) {
+        coords_loading_->setVisible(loading);
+        if (loading) coords_loading_->setText("Loading global coordinates...");
+    }
     void setSelectionInfo(int count);
     void setModifyInfo(int modified, int deleted);
 
@@ -37,6 +41,7 @@ class LevelStatusBar : public QWidget {
    private:
     QLabel *pos_;
     QLabel *status_msg_;
+    QLabel *coords_loading_;
     QLabel *sel_info_;
     QLabel *modify_info_;
 };

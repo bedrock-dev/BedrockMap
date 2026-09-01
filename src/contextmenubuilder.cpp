@@ -35,14 +35,13 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
         menu.addAction(QObject::tr("mapWidget.rightMenu.unselect"), [w] { w->clearSelection(); });
 
         auto *selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"),
-                           [w, dim] { ChunkOperator::deleteRegion(w->selection_.region(), *w->level_loader_, dim); });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"),
-                           [w, dim] { ChunkOperator::createVoid(w->selection_.region(), *w->level_loader_, dim); });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"), [w, dim] { w->deleteSelection(dim); });
+        selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"), [w, dim] { w->createVoidSelection(dim); });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w, dim] {
+            if (w->modificationBlocked()) return;
             BiomePickerDialog dlg(w);
             if (dlg.exec() == QDialog::Accepted) {
-                ChunkOperator::setRegionBiome(w->selection_.region(), *w->level_loader_, dlg.selectedBiome(), dim);
+                w->setSelectionBiome(dlg.selectedBiome(), dim);
             }
         });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] { w->copySelectionToClipboard(dim); });
@@ -54,6 +53,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     const auto *pasteMd = cb->mimeData();
     if (pasteMd && pasteMd->hasFormat("application/x-bedrockmap-region") && !pasteMd->data("application/x-bedrockmap-region").isEmpty()) {
         menu.addAction(QObject::tr("mapWidget.rightMenu.paste"), [w, clickChunk, dim] {
+            if (w->modificationBlocked()) return;
             auto *clip = QApplication::clipboard();
             const auto *md = clip->mimeData();
             if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
@@ -75,6 +75,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
 
     // Import
     menu.addAction(QObject::tr("mapWidget.rightMenu.import"), [w, clickChunk, dim] {
+        if (w->modificationBlocked()) return;
         auto fp = QFileDialog::getOpenFileName(nullptr, QObject::tr("mapWidget.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
         if (fp.isEmpty()) return;
         w->import_overlay_->startImport(fp, dim, clickChunk);

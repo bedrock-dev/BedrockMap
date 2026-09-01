@@ -10,6 +10,7 @@
 
 #include <QDialog>
 #include <QLayout>
+#include <QMessageBox>
 #include <QSpacerItem>
 #include <QSplitter>
 #include <QToolButton>
@@ -29,6 +30,9 @@
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
     status_msg_ = new QLabel(this);
+    coords_loading_ = new QLabel(this);
+    coords_loading_->setStyleSheet("QLabel { color: #b8860b; }");
+    coords_loading_->hide();
     sel_info_ = new QLabel(this);
     modify_info_ = new QLabel(this);
     pos_ = new QLabel(this);
@@ -37,6 +41,7 @@ LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
     layout->setContentsMargins(10, 0, 10, 0);
     layout->addWidget(status_msg_);
     layout->addStretch();
+    layout->addWidget(coords_loading_);
     layout->addWidget(sel_info_);
     layout->addWidget(modify_info_);
     layout->addWidget(pos_);
@@ -116,6 +121,9 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
         auto [e, ne] = level_loader_->chunkModifyCounts();
         status_bar_->setModifyInfo(ne, e);
         refreshDirty();
+    });
+    connect(level_loader_.get(), &AsyncLevelLoader::regionReady, this, [this]() {
+        if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     });
     connect(this->mapWidget_, &MapWidget::selectionChanged, this, [this]() {
         auto count = mapWidget_->selection().chunkCount();
@@ -387,6 +395,10 @@ void LevelPageWidget::refreshDirty() {
 
 bool LevelPageWidget::commit() {
     LOG_F(INFO, "Commit modifications");
+    if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
+        QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+        return false;
+    }
 
     //    sync level.dat change
     auto nbts = this->level_dat_editor_->getPaletteCopy();
@@ -420,11 +432,15 @@ bool LevelPageWidget::commit() {
 }
 
 bool LevelPageWidget::loadLevel(const QString &path) {
+    level_loader_->setPreloadAllChunkCoords(setting::PRELOAD_ALL_CHUNK_COORDS);
+    status_bar_->setCoordsLoading(setting::PRELOAD_ALL_CHUNK_COORDS);
     auto ret = level_loader_->open(path.toStdString());
     if (!ret) {
+        status_bar_->setCoordsLoading(false);
         LOG_F(WARNING, "Can not open level: %s", path.toStdString().c_str());
         return false;
     }
+    if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     auto &dat = level_loader_->level().dat();
     LOG_F(INFO, "Open level %s with version %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str());
     auto *ld = dynamic_cast<bl::nbt::compound_tag *>(dat.root());
@@ -445,6 +461,7 @@ void LevelPageWidget::closeLevel() {
     this->stop_loading_global_data_ = true;
     global_data_task_.waitForFinished();
     if (level_loader_->isOpen()) level_loader_->close();
+    status_bar_->setCoordsLoading(false);
 }
 
 void LevelPageWidget::toggleGlobalDataWidget() {
@@ -469,17 +486,21 @@ void LevelPageWidget::openFilterDialog() {
 
 void LevelPageWidget::showChunkEditor(const bl::chunk_pos &pos) {
     auto opt = level_loader_->getRawChunk(pos);
-    if (!opt || !opt->loaded()) {
+    if (!opt) {
         WARN(msg::NO_CHUNK_FOUND());
         return;
     }
 
     // if the chunk editor has unsaved changes, prompt the user
     if (chunkWidget_->isVisible() && chunkWidget_->isDirty()) {
+        if (level_loader_->chunkCoordsLoading()) {
+            QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+            return;
+        }
         auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (btn == QMessageBox::Cancel) return;
-        if (btn == QMessageBox::Yes) chunkWidget_->saveChunk();
+        if (btn == QMessageBox::Yes && !chunkWidget_->saveChunk()) return;
     }
 
     chunkWidget_->loadChunkData(std::move(*opt));

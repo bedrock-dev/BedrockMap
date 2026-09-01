@@ -99,6 +99,19 @@ QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
 
 bool AsyncLevelLoader::open(const std::string &path) {
     this->loaded_ = this->level_.open(path);
+    if (this->loaded_) {
+        this->stop_chunk_coords_preload_ = false;
+        this->chunk_coords_ready_ = false;
+        this->chunk_coords_.clear();
+        if (this->preload_all_chunk_coords_) {
+            this->pool_.start(QRunnable::create([this]() {
+                if (this->chunk_coords_.load(this->level_.db(), this->stop_chunk_coords_preload_)) {
+                    this->chunk_coords_ready_.store(true, std::memory_order_release);
+                    emit regionReady();
+                }
+            }));
+        }
+    }
     return this->loaded_;
 }
 
@@ -107,12 +120,14 @@ AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 void AsyncLevelLoader::close() {
     if (!this->loaded_) return;
     LOG_F(INFO, "Try close level");
-    this->loaded_ = false;      // blocking UI request
+    this->loaded_ = false;  // blocking UI request
+    this->stop_chunk_coords_preload_ = true;
     this->processing_.clear();  // clear queue
     this->pool_.clear();        // clear and wait for done
     this->pool_.waitForDone();
-    LOG_F(INFO, "Clear work pool");
     this->level_.close();  // close the level
+    this->chunk_coords_ready_ = false;
+    this->chunk_coords_.clear();
     this->clearAllCache();
 }
 
@@ -128,29 +143,36 @@ std::optional<bl::raw_chunk> AsyncLevelLoader::getRawChunk(const bl::chunk_pos &
     if (!this->loaded_) return std::nullopt;
     if (this->level_cache_.hasChunk(p)) return this->level_cache_.getRawChunk(p);
     bl::raw_chunk rc(p);
-    rc.read(level_);
-    return rc;
+    if (rc.read(level_)) return rc;
+    return std::nullopt;
 }
 
 bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos &p) {
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     this->level_cache_.putMissing(level_, p);
     clearChunkCache(p);
+    updateChunkCoords(p, false);
     emit dirtyChanged();
     return true;
 }
 
 bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk &raw) {
     LOG_F(INFO, "put raw chunk %s", raw.pos().to_string().c_str());
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     this->level_cache_.putChunk(raw.pos(), raw);
     clearChunkCache(raw.pos());
+    updateChunkCoords(raw.pos(), true);
     emit dirtyChanged();
     return true;
 }
 
+void AsyncLevelLoader::updateChunkCoords(const bl::chunk_pos &pos, bool present) {
+    if (!preload_all_chunk_coords_ || !chunkCoordsReady()) return;
+    chunk_coords_.enqueueUpdate(pos, present, [this]() { emit regionReady(); });
+}
+
 bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) {
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     auto raw = getRawChunk(p);
     if (raw.has_value()) {
         raw->clear_terrain();
@@ -162,7 +184,7 @@ bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) {
 }
 
 bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome) {
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     auto raw = getRawChunk(p);
     if (!raw.has_value()) return false;
     raw->set_biome(biome);
@@ -181,7 +203,7 @@ void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
 
 void AsyncLevelLoader::commit() {
     LOG_F(INFO, "Commit chunks change");
-    if (!this->loaded_ || this->level_cache_.empty()) return;
+    if (!this->loaded_ || chunkCoordsLoading() || this->level_cache_.empty()) return;
     leveldb::WriteBatch batch;
     this->level_cache_.commit(batch);
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
@@ -279,7 +301,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
 }
 
 bool AsyncLevelLoader::modifyLeveldat(bl::nbt::compound_tag *nbt) {
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     level_.dat().set_nbt(nbt);
     auto raw = level_.dat().to_raw();
     bl::utils::write_file(level_.root_path() + "/" + bl::bedrock_level::LEVEL_DATA, raw.data(), raw.size());
@@ -287,7 +309,7 @@ bool AsyncLevelLoader::modifyLeveldat(bl::nbt::compound_tag *nbt) {
 }
 
 bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies) {
-    if (!this->loaded_) return false;
+    if (!this->loaded_ || chunkCoordsLoading()) return false;
     leveldb::WriteBatch batch;
     for (auto &kv : modifies) {
         if (kv.second.empty()) {
@@ -362,6 +384,13 @@ QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
 QImage *AsyncLevelLoader::bakeThumbnailImage(const region_pos &rp) {
     if (!this->loaded_) return &MapTile::UNLOADED_REGION_TILE();
     return this->tryGetThumbnail(rp);
+}
+
+const QImage *AsyncLevelLoader::chunkCoordsImage(const region_pos &rp) const {
+    if (!this->loaded_) return &MapTile::UNLOADED_REGION_TILE();
+    if (!this->chunk_coords_ready_.load(std::memory_order_acquire)) return &MapTile::COORDS_LOADING_TILE();
+    if (const auto *image = this->chunk_coords_.image(rp)) return image;
+    return &MapTile::COORDS_EMPTY_TILE();
 }
 
 std::unordered_map<QImage *, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos &rp) {

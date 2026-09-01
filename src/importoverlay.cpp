@@ -3,12 +3,14 @@
 #include <QFile>
 #include <QPainter>
 #include <QPainterPath>
+#include <QMessageBox>
 
 #include "asynclevelloader.h"
 #include "chunkoperator.h"
 #include "floatingtoolbar.h"
 #include "levelpagewidget.h"
 #include "loguru/loguru.hpp"
+#include "msg.h"
 #include "resourcemanager.h"
 
 ImportOverlay::ImportOverlay(QWidget *parent, AsyncLevelLoader *loader, LevelPageWidget *levelPage)
@@ -123,6 +125,10 @@ void ImportOverlay::resize(int, int) {
 
 void ImportOverlay::confirm() {
     if (preview_.isEmpty()) return;
+    if (loader_ && loader_->chunkCoordsLoading()) {
+        QMessageBox::warning(parent_, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+        return;
+    }
 
     for (auto &chunk : preview_.chunks()) {
         auto cp = chunk.pos();

@@ -11,14 +11,18 @@
 #include <QThreadPool>
 #include <array>
 #include <atomic>
+#include <cstdint>
+#include <functional>
 #include <optional>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "bedrock_key.h"
 #include "bedrock_level.h"
 #include "chunk.h"
 #include "chunk_task.h"
+#include "chunkcoords.h"
 #include "config.h"
 #include "nbt.h"
 #include "rawchunkcache.h"
@@ -72,6 +76,22 @@ class AsyncLevelLoader : public QObject {
     void setTransparentVoid(bool v) { transparent_void_.store(v); }
 
     bool transparentVoid() const { return transparent_void_.load(); }
+
+    /// Enable or disable indexing all chunk coordinates after opening a level.
+    /// This setting must be applied before open().
+    void setPreloadAllChunkCoords(bool enabled) { preload_all_chunk_coords_ = enabled; }
+
+    bool preloadAllChunkCoords() const { return preload_all_chunk_coords_; }
+
+    bool chunkCoordsReady() const { return chunk_coords_ready_.load(std::memory_order_acquire); }
+
+    bool chunkCoordsLoading() const {
+        return loaded_.load(std::memory_order_acquire) && preload_all_chunk_coords_ && !chunkCoordsReady();
+    }
+
+    const ChunkCoordsIndex &chunkCoords() const { return chunk_coords_; }
+
+    const QImage *chunkCoordsImage(const region_pos &rp) const;
 
     void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
 
@@ -133,6 +153,8 @@ class AsyncLevelLoader : public QObject {
     std::pair<int, int> chunkModifyCounts() const { return level_cache_.chunkCounts(); }
 
    private:
+    void updateChunkCoords(const bl::chunk_pos &pos, bool present);
+
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
 
     // Look up an already-cached region without scheduling a load; empty=true for known-empty.
@@ -165,6 +187,10 @@ class AsyncLevelLoader : public QObject {
     QThreadPool pool_;
     MapFilter map_filter_;
     std::atomic_bool transparent_void_{false};
+    bool preload_all_chunk_coords_{false};
+    std::atomic_bool stop_chunk_coords_preload_{false};
+    std::atomic_bool chunk_coords_ready_{false};
+    ChunkCoordsIndex chunk_coords_;
 
     // Height-map cache for shadow rendering (keyed by chunk_pos).
     // Values are raw Data3D/Data2D height_map arrays (256 × int16_t, ~512 bytes each).
