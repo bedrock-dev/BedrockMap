@@ -119,27 +119,22 @@ QString setting::CHUNK_EDITOR_HIGHLIGHT_COLOR = "#ffaa00";
 int setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH = 8;
 QString setting::VOID_MAP_COLOR = "#dddddd";
 bool setting::TRANSPARENT_WATER = true;
-bool setting::ENABLE_THUMBNAIL_MODE = true;
 
 // Cache
 int setting::THREAD_NUM = 8;
 int setting::REGION_CACHE_SIZE = 1024;
 int setting::EMPTY_REGION_CACHE_SIZE = 8192;
-int setting::THUMBNAIL_REION_CACHE_SIZE = 16384;
 int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
 
 // Misc
 bool setting::LOAD_GLOBAL_DATA = true;
-bool setting::PRELOAD_ALL_CHUNK_COORDS = true;
+bool setting::PRELOAD_ALL_CHUNK_COORDS = false;
 int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
 QString setting::ICON_THEME = "new";
 bool setting::CHECK_UPDATE = true;
 
 // LeviLauncher
 bool setting::SCAN_LEVI_PATH = true;
-
-// Debug
-bool setting::LOG_OUT_MISSING_TEXTURE = false;
 
 // Lang (empty = auto-detect from the system locale)
 QString setting::LANGUAGE = "";
@@ -198,7 +193,6 @@ void setting::load() {
     setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH = s.value("chunk_editor_highlight_width", setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
     setting::VOID_MAP_COLOR = s.value("void_color", setting::VOID_MAP_COLOR).toString();
     setting::TRANSPARENT_WATER = s.value("transparent_water", setting::TRANSPARENT_WATER).toBool();
-    setting::ENABLE_THUMBNAIL_MODE = s.value("enable_thumbnail_mode", setting::ENABLE_THUMBNAIL_MODE).toBool();
     s.endGroup();
 
     s.beginGroup("Cache");
@@ -214,10 +208,6 @@ void setting::load() {
     setting::MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
     setting::ICON_THEME = s.value("icon_theme", setting::ICON_THEME).toString();
     setting::CHECK_UPDATE = s.value("check_update", setting::CHECK_UPDATE).toBool();
-    s.endGroup();
-
-    s.beginGroup("Debug");
-    setting::LOG_OUT_MISSING_TEXTURE = s.value("log_out_missng_texture", setting::LOG_OUT_MISSING_TEXTURE).toBool();
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
@@ -240,60 +230,92 @@ void setting::load() {
     }
 }
 
-void setting::save() {
+setting::SettingsSnapshot setting::snapshot() {
+    SettingsSnapshot values;
+    values.COLOR_THEME = COLOR_THEME;
+    values.FONT_FAMILY = FONT_FAMILY;
+    values.FONT_SIZE = FONT_SIZE;
+    values.MAP_RENDER_STYLE = MAP_RENDER_STYLE;
+    values.TILE_RENDER_SCALE = TILE_RENDER_SCALE;
+    values.SHADOW_PCF_RADIUS = SHADOW_PCF_RADIUS;
+    values.SHADOW_MAP_SCALE = SHADOW_MAP_SCALE;
+    values.SHADOW_LEVEL = SHADOW_LEVEL;
+    values.MINIMUM_SCALE_LEVEL = MINIMUM_SCALE_LEVEL;
+    values.MAXIMUM_SCALE_LEVEL = MAXIMUM_SCALE_LEVEL;
+    values.ZOOM_SPEED = ZOOM_SPEED;
+    values.GRID_LINE_COLOR = GRID_LINE_COLOR;
+    values.ACTOR_RENDER_STYLE = ACTOR_RENDER_STYLE;
+    values.ACTOR_BORDER_WIDTH = ACTOR_BORDER_WIDTH;
+    values.ACTOR_BORDER_COLOR = ACTOR_BORDER_COLOR;
+    values.CHUNK_EDITOR_HIGHLIGHT_COLOR = CHUNK_EDITOR_HIGHLIGHT_COLOR;
+    values.CHUNK_EDITOR_HIGHLIGHT_WIDTH = CHUNK_EDITOR_HIGHLIGHT_WIDTH;
+    values.VOID_MAP_COLOR = VOID_MAP_COLOR;
+    values.TRANSPARENT_WATER = TRANSPARENT_WATER;
+    values.THREAD_NUM = THREAD_NUM;
+    values.REGION_CACHE_SIZE = REGION_CACHE_SIZE;
+    values.EMPTY_REGION_CACHE_SIZE = EMPTY_REGION_CACHE_SIZE;
+    values.HEIGHT_MAP_CACHE_SIZE = HEIGHT_MAP_CACHE_SIZE;
+    values.LOAD_GLOBAL_DATA = LOAD_GLOBAL_DATA;
+    values.PRELOAD_ALL_CHUNK_COORDS = PRELOAD_ALL_CHUNK_COORDS;
+    values.MAX_GLOBAL_DATA_LOAD_COUNT = MAX_GLOBAL_DATA_LOAD_COUNT;
+    values.ICON_THEME = ICON_THEME;
+    values.CHECK_UPDATE = CHECK_UPDATE;
+    values.SCAN_LEVI_PATH = SCAN_LEVI_PATH;
+    values.LANGUAGE = LANGUAGE;
+    return values;
+}
+
+void setting::save() { save(snapshot()); }
+
+void setting::save(const SettingsSnapshot &values) {
     QSettings s(constant::CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
 
     s.beginGroup("Gui");
-    s.setValue("theme", setting::COLOR_THEME);
-    s.setValue("font_family", setting::FONT_FAMILY);
-    s.setValue("font_size", setting::FONT_SIZE);
+    s.setValue("theme", values.COLOR_THEME);
+    s.setValue("font_family", values.FONT_FAMILY);
+    s.setValue("font_size", values.FONT_SIZE);
     s.endGroup();
 
     s.beginGroup("Map");
-    s.setValue("render_style", setting::MAP_RENDER_STYLE);
-    s.setValue("tile_render_scale", setting::TILE_RENDER_SCALE);
-    s.setValue("shadow_pcf_radius", setting::SHADOW_PCF_RADIUS);
-    s.setValue("shadow_map_scale", setting::SHADOW_MAP_SCALE);
-    s.setValue("terrian_shadow_level", setting::SHADOW_LEVEL);
-    s.setValue("min_scale_level", setting::MINIMUM_SCALE_LEVEL);
-    s.setValue("max_scale_level", setting::MAXIMUM_SCALE_LEVEL);
-    s.setValue("zoom_speed", setting::ZOOM_SPEED);
-    s.setValue("grid_line_color", setting::GRID_LINE_COLOR);
-    s.setValue("actor_render_style", setting::ACTOR_RENDER_STYLE);
-    s.setValue("actor_border_width", setting::ACTOR_BORDER_WIDTH);
-    s.setValue("actor_border_color", setting::ACTOR_BORDER_COLOR);
-    s.setValue("chunk_editor_highlight_color", setting::CHUNK_EDITOR_HIGHLIGHT_COLOR);
-    s.setValue("chunk_editor_highlight_width", setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
-    s.setValue("void_color", setting::VOID_MAP_COLOR);
-    s.setValue("transparent_water", setting::TRANSPARENT_WATER);
-    s.setValue("enable_thumbnail_mode", setting::ENABLE_THUMBNAIL_MODE);
+    s.setValue("render_style", values.MAP_RENDER_STYLE);
+    s.setValue("tile_render_scale", values.TILE_RENDER_SCALE);
+    s.setValue("shadow_pcf_radius", values.SHADOW_PCF_RADIUS);
+    s.setValue("shadow_map_scale", values.SHADOW_MAP_SCALE);
+    s.setValue("terrian_shadow_level", values.SHADOW_LEVEL);
+    s.setValue("min_scale_level", values.MINIMUM_SCALE_LEVEL);
+    s.setValue("max_scale_level", values.MAXIMUM_SCALE_LEVEL);
+    s.setValue("zoom_speed", values.ZOOM_SPEED);
+    s.setValue("grid_line_color", values.GRID_LINE_COLOR);
+    s.setValue("actor_render_style", values.ACTOR_RENDER_STYLE);
+    s.setValue("actor_border_width", values.ACTOR_BORDER_WIDTH);
+    s.setValue("actor_border_color", values.ACTOR_BORDER_COLOR);
+    s.setValue("chunk_editor_highlight_color", values.CHUNK_EDITOR_HIGHLIGHT_COLOR);
+    s.setValue("chunk_editor_highlight_width", values.CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    s.setValue("void_color", values.VOID_MAP_COLOR);
+    s.setValue("transparent_water", values.TRANSPARENT_WATER);
     s.endGroup();
 
     s.beginGroup("Cache");
-    s.setValue("region_cache_size", setting::REGION_CACHE_SIZE);
-    s.setValue("empty_cache_size", setting::EMPTY_REGION_CACHE_SIZE);
-    s.setValue("max_thread_num", setting::THREAD_NUM);
-    s.setValue("height_map_cache_size", setting::HEIGHT_MAP_CACHE_SIZE);
+    s.setValue("region_cache_size", values.REGION_CACHE_SIZE);
+    s.setValue("empty_cache_size", values.EMPTY_REGION_CACHE_SIZE);
+    s.setValue("max_thread_num", values.THREAD_NUM);
+    s.setValue("height_map_cache_size", values.HEIGHT_MAP_CACHE_SIZE);
     s.endGroup();
 
     s.beginGroup("Misc");
-    s.setValue("load_global_data", setting::LOAD_GLOBAL_DATA);
-    s.setValue("preload_all_chunk_coords", setting::PRELOAD_ALL_CHUNK_COORDS);
-    s.setValue("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT);
-    s.setValue("icon_theme", setting::ICON_THEME);
-    s.setValue("check_update", setting::CHECK_UPDATE);
-    s.endGroup();
-
-    s.beginGroup("Debug");
-    s.setValue("log_out_missng_texture", setting::LOG_OUT_MISSING_TEXTURE);
+    s.setValue("load_global_data", values.LOAD_GLOBAL_DATA);
+    s.setValue("preload_all_chunk_coords", values.PRELOAD_ALL_CHUNK_COORDS);
+    s.setValue("max_global_data_load_count", values.MAX_GLOBAL_DATA_LOAD_COUNT);
+    s.setValue("icon_theme", values.ICON_THEME);
+    s.setValue("check_update", values.CHECK_UPDATE);
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
-    s.setValue("scan_levi_path", setting::SCAN_LEVI_PATH);
+    s.setValue("scan_levi_path", values.SCAN_LEVI_PATH);
     s.endGroup();
 
     s.beginGroup("Lang");
-    s.setValue("lang", setting::LANGUAGE);
+    s.setValue("lang", values.LANGUAGE);
     s.endGroup();
 
     s.sync();

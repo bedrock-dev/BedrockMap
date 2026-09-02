@@ -85,9 +85,7 @@ class AsyncLevelLoader : public QObject {
 
     bool chunkCoordsReady() const { return chunk_coords_ready_.load(std::memory_order_acquire); }
 
-    bool chunkCoordsLoading() const {
-        return loaded_.load(std::memory_order_acquire) && preload_all_chunk_coords_ && !chunkCoordsReady();
-    }
+    bool chunkCoordsLoading() const { return loaded_.load(std::memory_order_acquire) && preload_all_chunk_coords_ && !chunkCoordsReady(); }
 
     const ChunkCoordsIndex &chunkCoords() const { return chunk_coords_; }
 
@@ -100,8 +98,6 @@ class AsyncLevelLoader : public QObject {
     QImage *bakedBiomeImage(const region_pos &rp);
 
     QImage *bakedTerrainImage(const region_pos &rp);
-
-    QImage *bakeThumbnailImage(const region_pos &rp);
 
     QImage *bakedSlimeChunkImage(const region_pos &rp);
 
@@ -160,8 +156,6 @@ class AsyncLevelLoader : public QObject {
     // Look up an already-cached region without scheduling a load; empty=true for known-empty.
     ChunkRegion *peekRegion(const region_pos &p, bool &empty);
 
-    QImage *tryGetThumbnail(const region_pos &p);
-
    private:
     template <typename T>
     QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, QCache<region_pos, T> *> &caches, int dim, int maxCost) {
@@ -179,10 +173,6 @@ class AsyncLevelLoader : public QObject {
     TaskBuffer<region_pos> processing_;
     std::unordered_map<int, QCache<region_pos, ChunkRegion> *> region_cache_;
     std::unordered_map<int, QCache<region_pos, char> *> invalid_cache_;
-    // map region thumbnails cache
-    TaskBuffer<region_pos> thumbnail_processing_;
-    std::unordered_map<int, QCache<region_pos, QImage> *> thumbnails_cache_;
-
     QCache<region_pos, QImage> *slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;

@@ -39,11 +39,12 @@ UpdateDialog::UpdateDialog(const QString &newVersion, const QString &releaseNote
     ui->notes_browser->setMarkdown(selectReleaseNotes(releaseNotes));
     ui->notes_browser->moveCursor(QTextCursor::Start);
 
-    // "Don't check for updates" — persist immediately on toggle (no settings GUI)
+    // "Don't check for updates" — persist the pending value without changing runtime state.
     ui->noUpdateCheckBox->setChecked(!setting::CHECK_UPDATE);
     connect(ui->noUpdateCheckBox, &QCheckBox::toggled, this, [](bool checked) {
-        setting::CHECK_UPDATE = !checked;
-        setting::save();
+        auto values = setting::snapshot();
+        values.CHECK_UPDATE = !checked;
+        setting::save(values);
     });
 
     connect(ui->downloadBtn, &QPushButton::clicked, this, [this] {

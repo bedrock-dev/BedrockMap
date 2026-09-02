@@ -134,20 +134,4 @@ class LoadRegionTask : public QObject, public QRunnable {
     const MapFilter *filter_;
 };
 
-class LoadThumbnailTask : public QObject, public QRunnable {
-    Q_OBJECT
-
-   public:
-    LoadThumbnailTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos) : QRunnable(), loader_(loader), pos_(pos) {}
-    void run() override;
-
-   signals:
-
-    void finish(int x, int z, int dim, QImage *thumbnail);
-
-   private:
-    AsyncLevelLoader *loader_;
-    region_pos pos_;
-};
-
 #endif

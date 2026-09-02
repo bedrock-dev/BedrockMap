@@ -283,7 +283,7 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     QPointF world = world_to_view_xf_.inverted().map(pos);
 
     double scale = world_to_view_xf_.m11() * factor;
-    scale = std::clamp(scale, static_cast<qreal>(setting::MINIMUM_ZOOM_SCALE), static_cast<qreal>(setting::MAXIMUM_SCALE_LEVEL));
+    scale = std::clamp(scale, minimumZoomScale(), static_cast<qreal>(setting::MAXIMUM_SCALE_LEVEL));
 
     world_to_view_xf_ = QTransform();
     world_to_view_xf_.translate(pos.x(), pos.y());
@@ -301,7 +301,7 @@ void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_
 }
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
-    if (lowScaleMode()) return;
+    if (coordsOverviewMode()) return;
     auto pen = QPen(QColor(setting::GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setBrush(Qt::NoBrush);
     pen.setCosmetic(true);
@@ -338,7 +338,7 @@ void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
 }
 
 void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
-    if (lowScaleMode()) return;
+    if (coordsOverviewMode()) return;
     QFontMetrics fm(CHUNK_TEXT_FONT);
     painter->setFont(CHUNK_TEXT_FONT);
     QPen pen(Qt::white);
@@ -384,7 +384,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
  * @param painter
  */
 void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
-    if (lowScaleMode()) return;
+    if (coordsOverviewMode()) return;
     // slime chunks only exist in the overworld
     if (option_.dim != 0) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
@@ -394,7 +394,7 @@ void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
-    if (lowScaleMode()) return;
+    if (coordsOverviewMode()) return;
     this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
         auto top = level_loader_->bakedBiomeImage(rp);
         this->drawImageInRegion(event, painter, rp, top);
@@ -427,7 +427,7 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         return;
     }
     this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp) {
-        auto terrain = thumbnailMode() ? level_loader_->bakeThumbnailImage(rp) : level_loader_->bakedTerrainImage(rp);
+        auto terrain = level_loader_->bakedTerrainImage(rp);
         this->drawImageInRegion(event, painter, rp, terrain);
     });
 }
@@ -489,7 +489,7 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
-    if (lowScaleMode()) return;
+    if (coordsOverviewMode()) return;
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch) {

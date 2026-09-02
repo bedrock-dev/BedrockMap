@@ -215,7 +215,7 @@ BedrockMap/
 │                  数据加载层 (src/)                         │
 │  AsyncLevelLoader                                         │
 │     ├── LoadRegionTask/ChunkRegion (异步渲染任务)         │
-│     ├── 多级缓存 (region_cache, thumbnail_cache, ...)     │
+│     ├── 多级缓存 (region_cache, ...)                       │
 │     └── MapFilter (渲染过滤控制)                          │
 └──────────────────────┬────────────────────────────────────┘
                        │ bl::bedrock_level
@@ -698,13 +698,11 @@ struct RenderOption {
 | -------------------- | --------------------------------- | ---------------- |
 | `region_cache_`      | `QCache<region_pos, ChunkRegion>` | 区域渲染图像缓存 |
 | `invalid_cache_`     | `QCache<region_pos, char>`        | 空区域缓存       |
-| `thumbnails_cache_`  | `QCache<region_pos, QImage>`      | 缩略图缓存       |
 | `slime_chunk_cache_` | `QCache<region_pos, QImage>`      | 史莱姆区块缓存   |
 
 **异步任务：**
 
 - `LoadRegionTask`：加载并渲染 8×8 区块区域（通过 `QThreadPool` 执行）
-- `LoadThumbnailTask`：生成区域缩略图
 - `TaskBuffer<T>`：防止同一区域重复加载
 
 **数据修改方法：**
@@ -843,7 +841,6 @@ struct MapFilter {
 | `MAXIMUM_SCALE_LEVEL`   | 1024     | 最大缩放级别           |
 | `MAP_RENDER_STYLE`      | 1        | 渲染风格               |
 | `TRANSPARENT_WATER`     | true     | 透明水渲染             |
-| `ENABLE_THUMBNAIL_MODE` | true     | 启用缩略图模式         |
 | `THREAD_NUM`            | 8        | 线程数                 |
 | `REGION_CACHE_SIZE`     | 4096     | 区域缓存容量           |
 | `OPEN_NBT_EDITOR_ONLY`  | false    | 仅 NBT 编辑器模式      |
@@ -954,11 +951,7 @@ tryGetRegion(region_pos)
         └── emit finish() 通知主线程
 ```
 
-### 7.3 缩略图模式
-
-当缩放级别低于 `cfg::MINIMUM_SCALE_LEVEL`（默认 4）时，启用缩略图模式。使用 `LoadThumbnailTask` 生成低分辨率的缩略图替代完整区域渲染，以提高性能。
-
-### 7.4 地形渲染风格
+### 7.3 地形渲染风格
 
 | 风格值 | 说明                             |
 | ------ | -------------------------------- |
@@ -1024,13 +1017,11 @@ tryGetRegion(region_pos)
 |           | `actor_border_color`         | `#000000` | 实体边界颜色          |
 |           | `void_color`                 | `#dddddd` | 空白区域颜色          |
 |           | `transparent_water`          | `true`    | 透明水渲染            |
-|           | `enable_thumbnail_mode`      | `true`    | 启用缩略图模式        |
 | `[Cache]` | `region_cache_size`          | `4096`    | 区域渲染缓存容量      |
 |           | `empty_cache_size`           | `16384`   | 空区域缓存容量        |
 |           | `max_thread_num`             | `8`       | 最大线程数            |
 | `[Misc]`  | `load_global_data`           | `true`    | 加载全局数据          |
 |           | `max_global_data_load_count` | `4096`    | 全局数据最大加载数量  |
-| `[Debug]` | `log_out_missng_texture`     | `false`   | 调试：日志缺失纹理    |
 | `[Lang]`  | `lang`                       | `zh_CN`   | 语言设置              |
 
 ---

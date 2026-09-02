@@ -1419,8 +1419,8 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.debug</source>
-        <translation>调试设置</translation>
+        <source>settingsDialog.category.extra</source>
+        <translation>额外功能</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
@@ -1529,10 +1529,6 @@
         <translation>空白区域颜色</translation>
     </message>
     <message>
-        <source>settingsDialog.map.thumbnailMode</source>
-        <translation>启用缩略图模式</translation>
-    </message>
-    <message>
         <source>settingsDialog.map.actorGroup</source>
         <translation>实体显示</translation>
     </message>
@@ -1605,12 +1601,12 @@
         <translation>图标主题</translation>
     </message>
     <message>
-        <source>settingsDialog.debug.groupTitle</source>
-        <translation>调试选项</translation>
+        <source>settingsDialog.extra.groupTitle</source>
+        <translation>额外功能</translation>
     </message>
     <message>
-        <source>settingsDialog.debug.logMissingTexture</source>
-        <translation>记录缺失纹理/颜色</translation>
+        <source>settingsDialog.extra.preloadCoords</source>
+        <translation>预读取全局区块坐标</translation>
     </message>
     <message>
         <source>settingsDialog.lang.groupTitle</source>

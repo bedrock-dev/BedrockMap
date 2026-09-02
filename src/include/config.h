@@ -54,9 +54,48 @@ namespace constant {
 
 // Runtime settings (read from / written to config.ini)
 namespace setting {
+    struct SettingsSnapshot {
+        QString COLOR_THEME;
+        QString FONT_FAMILY;
+        int FONT_SIZE;
+
+        int MAP_RENDER_STYLE;
+        int TILE_RENDER_SCALE;
+        int SHADOW_PCF_RADIUS;
+        int SHADOW_MAP_SCALE;
+        int SHADOW_LEVEL;
+        int MINIMUM_SCALE_LEVEL;
+        int MAXIMUM_SCALE_LEVEL;
+        float ZOOM_SPEED;
+        QString GRID_LINE_COLOR;
+        int ACTOR_RENDER_STYLE;
+        int ACTOR_BORDER_WIDTH;
+        QString ACTOR_BORDER_COLOR;
+        QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
+        int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
+        QString VOID_MAP_COLOR;
+        bool TRANSPARENT_WATER;
+
+        int THREAD_NUM;
+        int REGION_CACHE_SIZE;
+        int EMPTY_REGION_CACHE_SIZE;
+        int HEIGHT_MAP_CACHE_SIZE;
+
+        bool LOAD_GLOBAL_DATA;
+        bool PRELOAD_ALL_CHUNK_COORDS;
+        int MAX_GLOBAL_DATA_LOAD_COUNT;
+        QString ICON_THEME;
+        bool CHECK_UPDATE;
+
+        bool SCAN_LEVI_PATH;
+        QString LANGUAGE;
+    };
+
     void init();
     void load();
     void save();
+    void save(const SettingsSnapshot &snapshot);
+    [[nodiscard]] SettingsSnapshot snapshot();
 
     constexpr double MINIMUM_ZOOM_SCALE = 4.0 / constant::COORDS_REGION_SIZE;
 
@@ -82,13 +121,11 @@ namespace setting {
     extern int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
     extern QString VOID_MAP_COLOR;
     extern bool TRANSPARENT_WATER;
-    extern bool ENABLE_THUMBNAIL_MODE;
 
     // Cache
     extern int THREAD_NUM;
     extern int REGION_CACHE_SIZE;
     extern int EMPTY_REGION_CACHE_SIZE;
-    extern int THUMBNAIL_REION_CACHE_SIZE;
     extern int HEIGHT_MAP_CACHE_SIZE;
 
     // Misc
@@ -100,9 +137,6 @@ namespace setting {
 
     // LeviLauncher
     extern bool SCAN_LEVI_PATH;
-
-    // Debug
-    extern bool LOG_OUT_MISSING_TEXTURE;
 
     // Lang
     extern QString LANGUAGE;

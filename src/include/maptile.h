@@ -72,8 +72,6 @@ class MapTile {
     static QImage &COORDS_EMPTY_TILE();
 
     static QImage CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &region_bit_map, bool fillChunk);
-
-    static QImage *CREATE_REGION_THUMBNAIL(std::bitset<constant::RW * constant::RW> &region_bit_map);
 };
 
 #endif

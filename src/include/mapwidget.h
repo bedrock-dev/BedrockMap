@@ -287,11 +287,10 @@ class MapWidget : public QWidget {
         return level_loader_ && level_loader_->preloadAllChunkCoords() && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
     }
 
-    [[nodiscard]] inline bool thumbnailMode() const {
-        return setting::ENABLE_THUMBNAIL_MODE && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
+    [[nodiscard]] inline qreal minimumZoomScale() const {
+        if (level_loader_ && level_loader_->preloadAllChunkCoords()) return static_cast<qreal>(setting::MINIMUM_ZOOM_SCALE);
+        return static_cast<qreal>(setting::MINIMUM_SCALE_LEVEL);
     }
-
-    [[nodiscard]] inline bool lowScaleMode() const { return coordsOverviewMode() || thumbnailMode(); }
 
    private:
     // for debug

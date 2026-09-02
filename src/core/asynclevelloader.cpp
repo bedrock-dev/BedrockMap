@@ -31,7 +31,6 @@ AsyncLevelLoader::AsyncLevelLoader() {
     for (int dim : {0, 1, 2}) {
         this->region_cache_[dim] = new QCache<region_pos, ChunkRegion>(setting::REGION_CACHE_SIZE);
         this->invalid_cache_[dim] = new QCache<region_pos, char>(setting::EMPTY_REGION_CACHE_SIZE);
-        this->thumbnails_cache_[dim] = new QCache<region_pos, QImage>(setting::THUMBNAIL_REION_CACHE_SIZE);
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
     this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
@@ -80,23 +79,6 @@ ChunkRegion *AsyncLevelLoader::peekRegion(const region_pos &p, bool &empty) {
     return ensureDimCache(region_cache_, p.dim, setting::REGION_CACHE_SIZE)->operator[](p);
 }
 
-QImage *AsyncLevelLoader::tryGetThumbnail(const region_pos &p) {
-    auto *img = ensureDimCache(thumbnails_cache_, p.dim, setting::THUMBNAIL_REION_CACHE_SIZE)->operator[](p);
-    if (img) return img;
-    if (this->thumbnail_processing_.contains(p)) return nullptr;
-    auto *task = new LoadThumbnailTask(this, p);
-    connect(task, &LoadThumbnailTask::finish, this, [this](int x, int z, int dim, QImage *img) {
-        if (img) {
-            ensureDimCache(thumbnails_cache_, dim, setting::THUMBNAIL_REION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), img);
-        }
-        this->thumbnail_processing_.remove(bl::chunk_pos(x, z, dim));
-        emit regionReady();
-    });
-    this->thumbnail_processing_.add(p);
-    this->pool_.start(task);
-    return nullptr;
-}
-
 bool AsyncLevelLoader::open(const std::string &path) {
     this->loaded_ = this->level_.open(path);
     if (this->loaded_) {
@@ -104,6 +86,7 @@ bool AsyncLevelLoader::open(const std::string &path) {
         this->chunk_coords_ready_ = false;
         this->chunk_coords_.clear();
         if (this->preload_all_chunk_coords_) {
+            LOG_F(INFO, "Start loading all chunk cooords");
             this->pool_.start(QRunnable::create([this]() {
                 if (this->chunk_coords_.load(this->level_.db(), this->stop_chunk_coords_preload_)) {
                     this->chunk_coords_ready_.store(true, std::memory_order_release);
@@ -197,8 +180,6 @@ void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
     if (it != region_cache_.end()) it->second->remove(rp);
     auto it2 = invalid_cache_.find(rp.dim);
     if (it2 != invalid_cache_.end()) it2->second->remove(rp);
-    auto it3 = thumbnails_cache_.find(rp.dim);
-    if (it3 != thumbnails_cache_.end()) it3->second->remove(rp);
 }
 
 void AsyncLevelLoader::commit() {
@@ -214,7 +195,6 @@ void AsyncLevelLoader::clearAllCache() {
     LOG_F(INFO, "Clear cache");
     for (auto &[dim, cache] : region_cache_) cache->clear();
     for (auto &[dim, cache] : invalid_cache_) cache->clear();
-    for (auto &[dim, cache] : thumbnails_cache_) cache->clear();
     this->slime_chunk_cache_->clear();
     {
         QMutexLocker lock(&height_map_mutex_);
@@ -336,12 +316,6 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
         res.push_back(
             QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }
-    res.emplace_back("Thumbnail region cache:");
-    for (auto &[dim, cache] : thumbnails_cache_) {
-        res.push_back(
-            QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
-    }
-
     res.push_back(QString("Slime Chunk cache: %2/%3")
                       .arg(QString::number(this->slime_chunk_cache_->totalCost()), QString::number(this->slime_chunk_cache_->maxCost())));
 
@@ -379,11 +353,6 @@ QImage *AsyncLevelLoader::bakedBiomeImage(const region_pos &rp) {
     auto *region = this->tryGetRegion(rp, null_region);
     if (null_region) return &MapTile::NULL_REGION_TILE();
     return region ? &region->biome_bake_image_ : &MapTile::UNLOADED_REGION_TILE();
-}
-
-QImage *AsyncLevelLoader::bakeThumbnailImage(const region_pos &rp) {
-    if (!this->loaded_) return &MapTile::UNLOADED_REGION_TILE();
-    return this->tryGetThumbnail(rp);
 }
 
 const QImage *AsyncLevelLoader::chunkCoordsImage(const region_pos &rp) const {

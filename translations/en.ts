@@ -1419,8 +1419,8 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.debug</source>
-        <translation>Debug</translation>
+        <source>settingsDialog.category.extra</source>
+        <translation>Extra Features</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
@@ -1529,10 +1529,6 @@
         <translation>Void Color</translation>
     </message>
     <message>
-        <source>settingsDialog.map.thumbnailMode</source>
-        <translation>Enable Thumbnail Mode</translation>
-    </message>
-    <message>
         <source>settingsDialog.map.actorGroup</source>
         <translation>Actors</translation>
     </message>
@@ -1605,12 +1601,12 @@
         <translation>Icon Theme</translation>
     </message>
     <message>
-        <source>settingsDialog.debug.groupTitle</source>
-        <translation>Debug Options</translation>
+        <source>settingsDialog.extra.groupTitle</source>
+        <translation>Extra Features</translation>
     </message>
     <message>
-        <source>settingsDialog.debug.logMissingTexture</source>
-        <translation>Log Missing Textures</translation>
+        <source>settingsDialog.extra.preloadCoords</source>
+        <translation>Preload Global Chunk Coordinates</translation>
     </message>
     <message>
         <source>settingsDialog.lang.groupTitle</source>

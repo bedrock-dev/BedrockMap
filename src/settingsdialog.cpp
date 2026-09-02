@@ -67,9 +67,9 @@ void SettingsDialog::setupCategories() {
     miscItem->setText(0, tr("settingsDialog.category.misc"));
     miscItem->setData(0, Qt::UserRole, 3);
 
-    auto *debugItem = new QTreeWidgetItem(ui->categoryTree);
-    debugItem->setText(0, tr("settingsDialog.category.debug"));
-    debugItem->setData(0, Qt::UserRole, 4);
+    auto *extraItem = new QTreeWidgetItem(ui->categoryTree);
+    extraItem->setText(0, tr("settingsDialog.category.extra"));
+    extraItem->setData(0, Qt::UserRole, 4);
 
     auto *langItem = new QTreeWidgetItem(ui->categoryTree);
     langItem->setText(0, tr("settingsDialog.category.lang"));
@@ -120,7 +120,6 @@ void SettingsDialog::loadSettings() {
     ui->zoomSpeedEdit->setText(QString::number(setting::ZOOM_SPEED, 'f', 1));
     ui->gridColorEdit->setText(setting::GRID_LINE_COLOR);
     ui->voidColorEdit->setText(setting::VOID_MAP_COLOR);
-    ui->thumbnailModeCheck->setChecked(setting::ENABLE_THUMBNAIL_MODE);
     ui->actorStyleCombo->setCurrentIndex(std::clamp(setting::ACTOR_RENDER_STYLE, 0, 1));
     ui->actorBorderWidthSpin->setValue(setting::ACTOR_BORDER_WIDTH);
     ui->actorBorderColorEdit->setText(setting::ACTOR_BORDER_COLOR);
@@ -137,8 +136,8 @@ void SettingsDialog::loadSettings() {
     ui->maxGlobalDataSpin->setValue(setting::MAX_GLOBAL_DATA_LOAD_COUNT);
     ui->iconThemeCombo->setCurrentText(setting::ICON_THEME);
 
-    // --- Debug ---
-    ui->logMissingTextureCheck->setChecked(setting::LOG_OUT_MISSING_TEXTURE);
+    // --- Extra features ---
+    ui->preloadCoordsCheck->setChecked(setting::PRELOAD_ALL_CHUNK_COORDS);
 
     // --- Lang ---
     ui->langCombo->setCurrentIndex(setting::LANGUAGE == "en" ? 1 : 0);
@@ -186,58 +185,58 @@ void SettingsDialog::updateGlobalDataOptions() {
 }
 
 void SettingsDialog::onSave() {
-    // Write UI values to cfg statics
+    // Build a pending configuration without changing the active runtime settings.
+    auto values = setting::snapshot();
     switch (ui->themeCombo->currentIndex()) {
         case 0:
-            setting::COLOR_THEME = "light";
+            values.COLOR_THEME = "light";
             break;
         case 1:
-            setting::COLOR_THEME = "dark";
+            values.COLOR_THEME = "dark";
             break;
         case 2:
-            setting::COLOR_THEME = "system";
+            values.COLOR_THEME = "system";
             break;
     }
-    setting::FONT_FAMILY = ui->fontFamilyCombo->currentFont().family();
-    setting::FONT_SIZE = ui->fontSizeSpin->value();
+    values.FONT_FAMILY = ui->fontFamilyCombo->currentFont().family();
+    values.FONT_SIZE = ui->fontSizeSpin->value();
 
-    setting::MAP_RENDER_STYLE = ui->renderStyleCombo->currentIndex();
+    values.MAP_RENDER_STYLE = ui->renderStyleCombo->currentIndex();
     int scaleValues[] = {1, 2, 4, 8, 16, 32};
     int scaleIdx = std::clamp(ui->shadowScaleCombo->currentIndex(), 0, 5);
-    setting::TILE_RENDER_SCALE = scaleValues[scaleIdx];
+    values.TILE_RENDER_SCALE = scaleValues[scaleIdx];
     {
         const int mapScaleVals[] = {1, 2, 4, 8};
         int idx = std::clamp(ui->shadowMapScaleCombo->currentIndex(), 0, 3);
-        setting::SHADOW_MAP_SCALE = mapScaleVals[idx];
+        values.SHADOW_MAP_SCALE = mapScaleVals[idx];
     }
-    setting::SHADOW_LEVEL = ui->shadowLevelSpin->value();
-    setting::MINIMUM_SCALE_LEVEL = ui->minScaleSpin->value();
-    setting::MAXIMUM_SCALE_LEVEL = ui->maxScaleSpin->value();
+    values.SHADOW_LEVEL = ui->shadowLevelSpin->value();
+    values.MINIMUM_SCALE_LEVEL = ui->minScaleSpin->value();
+    values.MAXIMUM_SCALE_LEVEL = ui->maxScaleSpin->value();
     {
         bool ok = false;
         float val = ui->zoomSpeedEdit->text().toFloat(&ok);
-        setting::ZOOM_SPEED = ok ? std::clamp(val, 0.1f, 5.0f) : 1.2f;
+        values.ZOOM_SPEED = ok ? std::clamp(val, 0.1f, 5.0f) : 1.2f;
     }
-    setting::GRID_LINE_COLOR = ui->gridColorEdit->text();
-    setting::VOID_MAP_COLOR = ui->voidColorEdit->text();
-    setting::ENABLE_THUMBNAIL_MODE = ui->thumbnailModeCheck->isChecked();
-    setting::ACTOR_RENDER_STYLE = ui->actorStyleCombo->currentIndex();
-    setting::ACTOR_BORDER_WIDTH = ui->actorBorderWidthSpin->value();
-    setting::ACTOR_BORDER_COLOR = ui->actorBorderColorEdit->text();
-    setting::CHUNK_EDITOR_HIGHLIGHT_COLOR = ui->chunkEditorColorEdit->text();
-    setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH = ui->chunkEditorWidthSpin->value();
+    values.GRID_LINE_COLOR = ui->gridColorEdit->text();
+    values.VOID_MAP_COLOR = ui->voidColorEdit->text();
+    values.ACTOR_RENDER_STYLE = ui->actorStyleCombo->currentIndex();
+    values.ACTOR_BORDER_WIDTH = ui->actorBorderWidthSpin->value();
+    values.ACTOR_BORDER_COLOR = ui->actorBorderColorEdit->text();
+    values.CHUNK_EDITOR_HIGHLIGHT_COLOR = ui->chunkEditorColorEdit->text();
+    values.CHUNK_EDITOR_HIGHLIGHT_WIDTH = ui->chunkEditorWidthSpin->value();
 
-    setting::REGION_CACHE_SIZE = ui->regionCacheSpin->value();
-    setting::EMPTY_REGION_CACHE_SIZE = ui->emptyCacheSpin->value();
-    setting::THREAD_NUM = ui->threadNumSpin->value();
+    values.REGION_CACHE_SIZE = ui->regionCacheSpin->value();
+    values.EMPTY_REGION_CACHE_SIZE = ui->emptyCacheSpin->value();
+    values.THREAD_NUM = ui->threadNumSpin->value();
 
-    setting::LOAD_GLOBAL_DATA = ui->loadGlobalDataCheck->isChecked();
-    setting::MAX_GLOBAL_DATA_LOAD_COUNT = ui->maxGlobalDataSpin->value();
-    setting::ICON_THEME = ui->iconThemeCombo->currentText();
+    values.LOAD_GLOBAL_DATA = ui->loadGlobalDataCheck->isChecked();
+    values.MAX_GLOBAL_DATA_LOAD_COUNT = ui->maxGlobalDataSpin->value();
+    values.ICON_THEME = ui->iconThemeCombo->currentText();
 
-    setting::LOG_OUT_MISSING_TEXTURE = ui->logMissingTextureCheck->isChecked();
+    values.PRELOAD_ALL_CHUNK_COORDS = ui->preloadCoordsCheck->isChecked();
 
-    setting::LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
+    values.LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
 
-    setting::save();
+    setting::save(values);
 }

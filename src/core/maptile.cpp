@@ -102,11 +102,9 @@ QImage &MapTile::COORDS_LOADING_TILE() {
 }
 
 QImage &MapTile::COORDS_EMPTY_TILE() {
-    static QImage image = [] {
-        QImage result(constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE, QImage::Format_RGB32);
-        result.fill(0xff000000u);
-        return result;
-    }();
+    static const auto color1 = QColor(20, 20, 20).rgb();
+    static const auto color2 = QColor(40, 40, 40).rgb();
+    static QImage image = createQuadChessTile(2, color1, color2, constant::COORDS_REGION_SIZE / 2);
     return image;
 }
 
@@ -124,22 +122,6 @@ QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW
                 if (chunk_bit_map[gridX * constant::RW + gridY]) {
                     line[x] = color;
                 }
-            }
-        }
-    }
-    return img;
-}
-
-QImage *MapTile::CREATE_REGION_THUMBNAIL(std::bitset<constant::RW * constant::RW> &region_bit_map) {
-    static auto c1 = QColor(20, 20, 20).rgb();
-    static auto c2 = QColor(40, 40, 40).rgb();
-    static auto color = QColor(setting::VOID_MAP_COLOR).rgb();
-    auto *img = new QImage(MapTile::createQuadChessTile(constant::RW, c1, c2));
-    for (int y = 0; y < constant::RW; ++y) {
-        QRgb *line = (QRgb *)img->scanLine(y);
-        for (int x = 0; x < constant::RW; ++x) {
-            if (region_bit_map[x * constant::RW + y]) {
-                line[x] = color;
             }
         }
     }

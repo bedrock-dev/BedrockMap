@@ -143,18 +143,3 @@ void LoadRegionTask::run() {
 int64_t RegionTimer::mean() const {
     return this->values.empty() ? 0 : std::accumulate(values.begin(), values.end(), 0ll) / static_cast<int64_t>(values.size());
 }
-
-void LoadThumbnailTask::run() {
-    std::bitset<constant::RW * constant::RW> chunk_bit_map;
-    for (int i = 0; i < constant::RW; i++) {
-        for (int j = 0; j < constant::RW; j++) {
-            bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            auto *ch =
-                this->loader_->getChunk(p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);
-            bool load = (ch && ch->loaded());
-            chunk_bit_map.set(i * constant::RW + j, load);
-            delete ch;
-        }
-    }
-    emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, MapTile::CREATE_REGION_THUMBNAIL(chunk_bit_map));
-}

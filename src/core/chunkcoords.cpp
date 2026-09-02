@@ -8,7 +8,7 @@
 #include "maptile.h"
 
 namespace bl::config {
-bool strict_chunk_existence();
+    bool strict_chunk_existence();
 }
 
 void CoordsRegion::generateImage() const {
