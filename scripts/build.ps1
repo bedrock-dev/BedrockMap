@@ -1,17 +1,12 @@
 param(
-    [switch]$BuildBL,
     [ValidateRange(1, 256)]
     [int]$Jobs = 0
 )
 
 $qtPath = $env:QT_ROOT
 
-# Optionally build bedrock-level first.
-if ($BuildBL) {
-    Push-Location ./bedrock-level
-    .\build.ps1
-    Pop-Location
-}
+# bedrock-level is built from source via add_subdirectory in CMakeLists.txt,
+# so no separate pre-build step is needed (the old -BuildBL flag is gone).
 
 # Update language files.
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"
