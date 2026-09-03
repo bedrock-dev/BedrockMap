@@ -66,6 +66,8 @@ namespace setting {
         int SHADOW_LEVEL;
         int MINIMUM_SCALE_LEVEL;
         int MAXIMUM_SCALE_LEVEL;
+        int COORDS_MINIMAP_WIDTH;
+        int COORDS_MINIMAP_HEIGHT;
         float ZOOM_SPEED;
         QString GRID_LINE_COLOR;
         int ACTOR_RENDER_STYLE;
@@ -112,6 +114,8 @@ namespace setting {
     extern int SHADOW_LEVEL;
     extern int MINIMUM_SCALE_LEVEL;
     extern int MAXIMUM_SCALE_LEVEL;
+    extern int COORDS_MINIMAP_WIDTH;
+    extern int COORDS_MINIMAP_HEIGHT;
     extern float ZOOM_SPEED;
     extern QString GRID_LINE_COLOR;
     extern int ACTOR_RENDER_STYLE;

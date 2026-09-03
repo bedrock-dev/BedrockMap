@@ -502,6 +502,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.coordsMiniMap</source>
+        <translation>坐标范围小窗</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.goto</source>
         <translation>前往</translation>
     </message>

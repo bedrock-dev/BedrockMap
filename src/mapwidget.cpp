@@ -207,6 +207,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     p.resetTransform();
     if (option_.getOther(RenderOption::Actors)) this->drawActors(event, &p);
     if (option_.getOther(RenderOption::Coords)) this->drawChunkPosText(event, &p);
+    this->drawCoordsMiniMap(&p);
     if (draw_debug_window_) this->drawDebugWindow(event, &p);
     p.end();
 }
@@ -443,6 +444,64 @@ void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(QRectF(bounds->min_x, bounds->min_z, static_cast<qreal>(bounds->max_x - bounds->min_x + 1),
                              static_cast<qreal>(bounds->max_z - bounds->min_z + 1)));
+}
+
+void MapWidget::drawCoordsMiniMap(QPainter *painter) {
+    if (!level_loader_ || !level_loader_->preloadAllChunkCoords() || !level_loader_->chunkCoordsReady()) return;
+
+    const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
+    if (!bounds || !bounds->valid) return;
+
+    constexpr int padding = 6;
+    const int availableWidth = std::min(setting::COORDS_MINIMAP_WIDTH, width());
+    const int availableHeight = std::min(setting::COORDS_MINIMAP_HEIGHT, height());
+    // Keep the minimap panel at a 16:9 aspect ratio while fitting the configured bounds.
+    const int panelWidth = std::min(availableWidth, static_cast<int>(std::floor(availableHeight * 16.0 / 9.0)));
+    const int panelHeight = static_cast<int>(std::floor(panelWidth * 9.0 / 16.0));
+    if (panelWidth <= padding * 2 || panelHeight <= padding * 2) return;
+
+    const QRectF panel(width() - panelWidth, height() - panelHeight, panelWidth, panelHeight);
+    const QRectF area = panel.adjusted(padding, padding, -padding, -padding);
+    const qreal boundsWidth = static_cast<qreal>(bounds->max_x) - bounds->min_x + 1.0;
+    const qreal boundsHeight = static_cast<qreal>(bounds->max_z) - bounds->min_z + 1.0;
+    if (boundsWidth <= 0.0 || boundsHeight <= 0.0) return;
+
+    const qreal scale = std::min(area.width() / boundsWidth, area.height() / boundsHeight);
+    if (scale <= 0.0) return;
+
+    const QSizeF mapSize(boundsWidth * scale, boundsHeight * scale);
+    const QPointF mapTopLeft(area.center().x() - mapSize.width() * 0.5, area.center().y() - mapSize.height() * 0.5);
+    const QRectF globalRect(mapTopLeft, mapSize);
+
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->fillRect(panel, QColor(20, 20, 20, 190));
+
+    painter->setPen(QPen(QColor(0, 223, 162, 230), 2));
+    painter->setBrush(QColor(0, 170, 120, 45));
+    painter->drawRect(globalRect);
+
+    const QTransform inverse = world_to_view_xf_.inverted();
+    const QPointF viewCorners[] = {inverse.map(QPointF(0, 0)), inverse.map(QPointF(width(), 0)), inverse.map(QPointF(0, height())),
+                                   inverse.map(QPointF(width(), height()))};
+    qreal minX = viewCorners[0].x();
+    qreal maxX = minX;
+    qreal minZ = viewCorners[0].y();
+    qreal maxZ = minZ;
+    for (const auto &corner : viewCorners) {
+        minX = std::min(minX, corner.x());
+        maxX = std::max(maxX, corner.x());
+        minZ = std::min(minZ, corner.y());
+        maxZ = std::max(maxZ, corner.y());
+    }
+
+    const QRectF viewportRect(mapTopLeft.x() + (minX - bounds->min_x) * scale, mapTopLeft.y() + (minZ - bounds->min_z) * scale,
+                              (maxX - minX) * scale, (maxZ - minZ) * scale);
+    painter->setClipRect(area);
+    painter->setPen(QPen(QColor(255, 196, 64, 240), 2));
+    painter->setBrush(QColor(255, 196, 64, 45));
+    painter->drawRect(viewportRect);
+    painter->restore();
 }
 
 void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {

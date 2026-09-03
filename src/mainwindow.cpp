@@ -180,6 +180,8 @@ void MainWindow::setupMenuBar() {
 
     action_debug_ = layers_menu_->addAction(tr("mainWindow.menu.debugWindow"));
     action_debug_->setShortcut(QKeySequence("Alt+D"));
+    action_coords_minimap_ = layers_menu_->addAction(tr("mainWindow.menu.coordsMiniMap"));
+    action_coords_minimap_->setShortcut(QKeySequence("Alt+O"));
 
     // --- Selection menu ---
     selection_menu_ = menu_bar_->addMenu(tr("mainWindow.menu.selection"));
@@ -387,6 +389,11 @@ void MainWindow::setupMenuActions() {
         if (!w) return;
         w->setDrawDebug(!w->isDebugEnabled());
         w->syncToolbars();
+    });
+    connect(action_coords_minimap_, &QAction::triggered, this, [this]() {
+        auto *w = getCurrentMapWidget();
+        if (!w) return;
+        w->toggleCoordsMiniMap();
     });
 
     // Selection

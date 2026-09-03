@@ -502,6 +502,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.coordsMiniMap</source>
+        <translation>Coordinates Minimap</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.goto</source>
         <translation>Goto</translation>
     </message>

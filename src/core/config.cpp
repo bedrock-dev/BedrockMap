@@ -110,6 +110,8 @@ int setting::SHADOW_MAP_SCALE = 2;
 int setting::SHADOW_LEVEL = 128;
 int setting::MINIMUM_SCALE_LEVEL = 4;
 int setting::MAXIMUM_SCALE_LEVEL = 1024;
+int setting::COORDS_MINIMAP_WIDTH = 320;
+int setting::COORDS_MINIMAP_HEIGHT = 180;
 float setting::ZOOM_SPEED = 1.2f;
 QString setting::GRID_LINE_COLOR = "#bbbbbb";
 int setting::ACTOR_RENDER_STYLE = 0;
@@ -180,6 +182,8 @@ void setting::load() {
     setting::SHADOW_LEVEL = s.value("terrian_shadow_level", setting::SHADOW_LEVEL).toInt();
     setting::MINIMUM_SCALE_LEVEL = s.value("min_scale_level", setting::MINIMUM_SCALE_LEVEL).toInt();
     setting::MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", setting::MAXIMUM_SCALE_LEVEL).toInt();
+    setting::COORDS_MINIMAP_WIDTH = std::clamp(s.value("coords_minimap_width", setting::COORDS_MINIMAP_WIDTH).toInt(), 64, 1024);
+    setting::COORDS_MINIMAP_HEIGHT = std::clamp(s.value("coords_minimap_height", setting::COORDS_MINIMAP_HEIGHT).toInt(), 64, 1024);
     setting::ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", setting::ZOOM_SPEED).toDouble()));
     setting::MAP_RENDER_STYLE = s.value("render_style", setting::MAP_RENDER_STYLE).toInt();
     setting::TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", setting::TILE_RENDER_SCALE).toInt(), 1, 16);
@@ -242,6 +246,8 @@ setting::SettingsSnapshot setting::snapshot() {
     values.SHADOW_LEVEL = SHADOW_LEVEL;
     values.MINIMUM_SCALE_LEVEL = MINIMUM_SCALE_LEVEL;
     values.MAXIMUM_SCALE_LEVEL = MAXIMUM_SCALE_LEVEL;
+    values.COORDS_MINIMAP_WIDTH = COORDS_MINIMAP_WIDTH;
+    values.COORDS_MINIMAP_HEIGHT = COORDS_MINIMAP_HEIGHT;
     values.ZOOM_SPEED = ZOOM_SPEED;
     values.GRID_LINE_COLOR = GRID_LINE_COLOR;
     values.ACTOR_RENDER_STYLE = ACTOR_RENDER_STYLE;
@@ -284,6 +290,8 @@ void setting::save(const SettingsSnapshot &values) {
     s.setValue("terrian_shadow_level", values.SHADOW_LEVEL);
     s.setValue("min_scale_level", values.MINIMUM_SCALE_LEVEL);
     s.setValue("max_scale_level", values.MAXIMUM_SCALE_LEVEL);
+    s.setValue("coords_minimap_width", values.COORDS_MINIMAP_WIDTH);
+    s.setValue("coords_minimap_height", values.COORDS_MINIMAP_HEIGHT);
     s.setValue("zoom_speed", values.ZOOM_SPEED);
     s.setValue("grid_line_color", values.GRID_LINE_COLOR);
     s.setValue("actor_render_style", values.ACTOR_RENDER_STYLE);

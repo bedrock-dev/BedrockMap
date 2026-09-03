@@ -94,6 +94,7 @@ class MainWindow : public QMainWindow {
     QAction *action_about_;
     QAction *action_levelDB_;
     QAction *action_debug_;
+    QAction *action_coords_minimap_;
     QAction *action_layers_grid_;
     QAction *action_layers_coords_;
     QAction *action_layers_overworld_;

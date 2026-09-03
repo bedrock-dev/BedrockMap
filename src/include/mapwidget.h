@@ -230,6 +230,17 @@ class MapWidget : public QWidget {
     inline void setDrawDebug(bool enable) { this->draw_debug_window_ = enable; }
     inline bool isDebugEnabled() const { return draw_debug_window_; }
 
+    inline void setCoordsMiniMap(bool enable) {
+        if (draw_coords_minimap_ == enable) return;
+        draw_coords_minimap_ = enable;
+        update();
+    }
+    inline bool isCoordsMiniMapEnabled() const { return draw_coords_minimap_; }
+    inline bool toggleCoordsMiniMap() {
+        setCoordsMiniMap(!draw_coords_minimap_);
+        return draw_coords_minimap_;
+    }
+
     inline void setTransparentVoid(bool v) {
         if (transparent_void_ == v) return;
         transparent_void_ = v;
@@ -313,6 +324,8 @@ class MapWidget : public QWidget {
 
     void drawCoordsBoundingBox(QPainter *p);
 
+    void drawCoordsMiniMap(QPainter *p);
+
     bool modificationBlocked();
 
     void drawActors(QPaintEvent *event, QPainter *p);
@@ -367,6 +380,7 @@ class MapWidget : public QWidget {
     // render control
     RenderOption option_;
     bool draw_debug_window_{false};
+    bool draw_coords_minimap_{false};
     bool transparent_void_{false};
     QTransform world_to_view_xf_;
     QRect camera_{-10, -10, width() + 10, height() + 10};  // drawable range, later set to match the widget size
