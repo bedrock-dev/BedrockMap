@@ -119,11 +119,11 @@ void LoadRegionTask::run() {
         }
 
         // blender
-        if (setting::MAP_RENDER_STYLE == 0) {
+        if (setting::current().MAP_RENDER_STYLE == 0) {
             MapTile::renderStyle0(region, IMG_WIDTH);
-        } else if (setting::MAP_RENDER_STYLE == 1) {
+        } else if (setting::current().MAP_RENDER_STYLE == 1) {
             MapTile::renderStyle1(region, IMG_WIDTH);
-        } else if (setting::MAP_RENDER_STYLE == 2) {
+        } else if (setting::current().MAP_RENDER_STYLE == 2) {
             MapTile::renderStyle2(region, IMG_WIDTH, this->loader_, this->pos_);
         }
     }

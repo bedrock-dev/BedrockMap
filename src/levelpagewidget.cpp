@@ -196,7 +196,7 @@ void LevelPageWidget::setupToolBar() {
     toolbar_ = new FloatingToolBar(mapWidget_);
     toolbar_->setAnchorMargins(6);
 
-    using Mr = MapWidget::RenderOption;
+    using Mr = RenderOption;
     using GC = FloatingToolBar::GroupConfig;
 
     // View group (toggle) — grid & coordinates, placed above all
@@ -300,7 +300,7 @@ void LevelPageWidget::setupToolBar() {
 void LevelPageWidget::syncToolbars() {
     if (!mapWidget_) return;
 
-    using Mr = MapWidget::RenderOption;
+    using Mr = RenderOption;
     auto opt = mapWidget_->renderOption();
 
     // View group
@@ -432,8 +432,8 @@ bool LevelPageWidget::commit() {
 }
 
 bool LevelPageWidget::loadLevel(const QString &path) {
-    level_loader_->setPreloadAllChunkCoords(setting::PRELOAD_ALL_CHUNK_COORDS);
-    status_bar_->setCoordsLoading(setting::PRELOAD_ALL_CHUNK_COORDS);
+    level_loader_->setPreloadAllChunkCoords(setting::current().PRELOAD_ALL_CHUNK_COORDS);
+    status_bar_->setCoordsLoading(setting::current().PRELOAD_ALL_CHUNK_COORDS);
     auto ret = level_loader_->open(path.toStdString());
     if (!ret) {
         status_bar_->setCoordsLoading(false);
@@ -446,7 +446,7 @@ bool LevelPageWidget::loadLevel(const QString &path) {
     auto *ld = dynamic_cast<bl::nbt::compound_tag *>(dat.root());
     this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::nbt::compound_tag *>(ld->copy()), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
-    if (!setting::LOAD_GLOBAL_DATA) return true;
+    if (!setting::current().LOAD_GLOBAL_DATA) return true;
     global_data_task_.start([this](AsyncTaskRunner *task) {
         try {
             level_loader_->loadGlobalData(std::ref(this->global_data_), std::ref(stop_loading_global_data_));

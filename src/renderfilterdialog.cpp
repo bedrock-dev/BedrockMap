@@ -106,7 +106,7 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     bl::block_info render_info = info;
     int render_y = y;
 
-    if (setting::TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
+    if (setting::current().TRANSPARENT_WATER && info.name == "minecraft:water" && solid_h >= 0 && solid_h < y) {
         uint32_t wc = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
         render_info = solid_info;
         render_y = solid_h;

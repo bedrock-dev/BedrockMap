@@ -15,7 +15,6 @@
 #include <QWidget>
 #include <QtDebug>
 #include <QtOpenGLWidgets/QtOpenGLWidgets>
-#include <algorithm>
 #include <array>
 #include <optional>
 #include <tuple>
@@ -27,6 +26,7 @@
 #include "contextmenubuilder.h"
 #include "gotopositiondialog.h"
 #include "importoverlay.h"
+#include "render_options.h"
 #include "selectionregion.h"
 #include "utils.h"
 #include "voxelwidget.h"
@@ -97,45 +97,6 @@ class MapWidget : public QWidget {
     friend class ContextMenuBuilder;
 
    public:
-    struct RenderOption {
-        enum LayerType { Terrain = 0, Biome = 1 };
-        enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, OtherLen = 6 };
-
-        static constexpr int OverWorld = 0;
-        static constexpr int Nether = 1;
-        static constexpr int TheEnd = 2;
-
-        RenderOption() { reset(); }
-
-        int dim{OverWorld};
-        LayerType layer{Terrain};
-        std::array<bool, OtherType::OtherLen> others{};
-        inline void reset() {
-            dim = OverWorld;
-            layer = Terrain;
-            std::fill(others.begin(), others.end(), false);
-            setOther(Grid, true);
-        }
-
-        inline void setDim(int nDim) { dim = nDim; }
-        inline void setLayer(LayerType nLayer) { layer = nLayer; }
-
-        inline bool toggleOther(OtherType type) {
-            if (type < 0 || type >= OtherType::OtherLen) return true;
-            others[type] = !others[type];
-            return others[type];
-        }
-
-        inline void setOther(OtherType type, bool value) {
-            if (type < 0 || type >= OtherType::OtherLen) return;
-            others[type] = value;
-        }
-        inline bool getOther(OtherType type) {
-            if (type < 0 || type >= OtherType::OtherLen) return false;
-            return others[type];
-        }
-    };
-
     static QFont CHUNK_TEXT_FONT;
 
     // ctor
@@ -181,7 +142,7 @@ class MapWidget : public QWidget {
     }
 
     // getter
-    MapWidget::RenderOption renderOption() { return option_; }
+    RenderOption renderOption() { return option_; }
     AsyncLevelLoader *getLevelLoader() { return level_loader_; }
 
     // event
@@ -295,12 +256,12 @@ class MapWidget : public QWidget {
 
    private:
     [[nodiscard]] inline bool coordsOverviewMode() const {
-        return level_loader_ && level_loader_->preloadAllChunkCoords() && this->scaleLevel() < setting::MINIMUM_SCALE_LEVEL;
+        return level_loader_ && level_loader_->preloadAllChunkCoords() && this->scaleLevel() < setting::current().MINIMUM_SCALE_LEVEL;
     }
 
     [[nodiscard]] inline qreal minimumZoomScale() const {
-        if (level_loader_ && level_loader_->preloadAllChunkCoords()) return static_cast<qreal>(setting::MINIMUM_ZOOM_SCALE);
-        return static_cast<qreal>(setting::MINIMUM_SCALE_LEVEL);
+        if (level_loader_ && level_loader_->preloadAllChunkCoords()) return static_cast<qreal>(constant::MINIMUM_ZOOM_SCALE);
+        return static_cast<qreal>(setting::current().MINIMUM_SCALE_LEVEL);
     }
 
    private:

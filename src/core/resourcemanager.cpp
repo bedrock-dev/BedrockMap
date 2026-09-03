@@ -61,7 +61,7 @@ namespace {
                     for (int j = -bw; j <= bw; ++j) {
                         if (cx + i >= 0 && cx + i < origin->width() && cz + j >= 0 && cz + j < origin->height() &&
                             origin->pixelColor(cx + i, cz + j).alpha() != 0) {
-                            mask->setPixelColor(x, z, QColor(setting::ACTOR_BORDER_COLOR));
+                            mask->setPixelColor(x, z, QColor(setting::current().ACTOR_BORDER_COLOR));
                             return;
                         }
                     }
@@ -98,7 +98,7 @@ void initResources() {
     while (it.hasNext()) {
         auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
-        auto masked = addBorder(img, setting::ACTOR_BORDER_WIDTH);
+        auto masked = addBorder(img, setting::current().ACTOR_BORDER_WIDTH);
         entity_icon_pool[key] = masked;
         if (masked) {
             actor_img_pool[key] = masked;
@@ -208,11 +208,11 @@ QString ToolBarIcon(const QString &name) {
         return QString{};
     };
 
-    auto path = findIcon(setting::ICON_THEME);
-    if (path.isEmpty() && setting::ICON_THEME != QStringLiteral("new")) {
+    auto path = findIcon(setting::current().ICON_THEME);
+    if (path.isEmpty() && setting::current().ICON_THEME != QStringLiteral("new")) {
         path = findIcon(QStringLiteral("new"));
     }
-    return path.isEmpty() ? QString(":/res/ui/%1/%2.png").arg(setting::ICON_THEME, name) : path;
+    return path.isEmpty() ? QString(":/res/ui/%1/%2.png").arg(setting::current().ICON_THEME, name) : path;
 }
 void TranslatorMgr::init() {
     const auto &langs = constant::TRANSLATION_FILES_PATH;

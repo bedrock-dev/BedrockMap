@@ -26,7 +26,7 @@
 #include "config.h"
 #include "nbt.h"
 #include "rawchunkcache.h"
-#include "renderfilterdialog.h"
+#include "render_options.h"
 
 class AsyncLevelLoader;
 

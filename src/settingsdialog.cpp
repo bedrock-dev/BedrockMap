@@ -78,25 +78,26 @@ void SettingsDialog::setupCategories() {
 
 void SettingsDialog::loadSettings() {
     // --- Gui ---
-    if (setting::COLOR_THEME == "light")
+    if (setting::current().COLOR_THEME == "light")
         ui->themeCombo->setCurrentIndex(0);
-    else if (setting::COLOR_THEME == "dark")
+    else if (setting::current().COLOR_THEME == "dark")
         ui->themeCombo->setCurrentIndex(1);
-    else if (setting::COLOR_THEME == "system")
+    else if (setting::current().COLOR_THEME == "system")
         ui->themeCombo->setCurrentIndex(2);
 
-    if (!setting::FONT_FAMILY.isEmpty()) {
-        ui->fontFamilyCombo->setCurrentFont(QFont(setting::FONT_FAMILY));
+    if (!setting::current().FONT_FAMILY.isEmpty()) {
+        ui->fontFamilyCombo->setCurrentFont(QFont(setting::current().FONT_FAMILY));
     }
-    ui->fontSizeSpin->setValue(setting::FONT_SIZE > 0 ? setting::FONT_SIZE : ui->fontFamilyCombo->currentFont().pointSize());
+    ui->fontSizeSpin->setValue(setting::current().FONT_SIZE > 0 ? setting::current().FONT_SIZE
+                                                                : ui->fontFamilyCombo->currentFont().pointSize());
 
     // --- Map ---
-    ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::MAP_RENDER_STYLE, 0, 2));
+    ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::current().MAP_RENDER_STYLE, 0, 2));
     {
         const int scaleVals[] = {1, 2, 4, 8, 16, 32};
         int idx = 0;
         for (int i = 0; i < 6; i++) {
-            if (scaleVals[i] == setting::TILE_RENDER_SCALE) {
+            if (scaleVals[i] == setting::current().TILE_RENDER_SCALE) {
                 idx = i;
                 break;
             }
@@ -107,40 +108,40 @@ void SettingsDialog::loadSettings() {
         const int mapScaleVals[] = {1, 2, 4, 8};
         int idx = 0;
         for (int i = 0; i < 4; i++) {
-            if (mapScaleVals[i] == setting::SHADOW_MAP_SCALE) {
+            if (mapScaleVals[i] == setting::current().SHADOW_MAP_SCALE) {
                 idx = i;
                 break;
             }
         }
         ui->shadowMapScaleCombo->setCurrentIndex(idx);
     }
-    ui->shadowLevelSpin->setValue(setting::SHADOW_LEVEL);
-    ui->minScaleSpin->setValue(setting::MINIMUM_SCALE_LEVEL);
-    ui->maxScaleSpin->setValue(setting::MAXIMUM_SCALE_LEVEL);
-    ui->zoomSpeedEdit->setText(QString::number(setting::ZOOM_SPEED, 'f', 1));
-    ui->gridColorEdit->setText(setting::GRID_LINE_COLOR);
-    ui->voidColorEdit->setText(setting::VOID_MAP_COLOR);
-    ui->actorStyleCombo->setCurrentIndex(std::clamp(setting::ACTOR_RENDER_STYLE, 0, 1));
-    ui->actorBorderWidthSpin->setValue(setting::ACTOR_BORDER_WIDTH);
-    ui->actorBorderColorEdit->setText(setting::ACTOR_BORDER_COLOR);
-    ui->chunkEditorColorEdit->setText(setting::CHUNK_EDITOR_HIGHLIGHT_COLOR);
-    ui->chunkEditorWidthSpin->setValue(setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    ui->shadowLevelSpin->setValue(setting::current().SHADOW_LEVEL);
+    ui->minScaleSpin->setValue(setting::current().MINIMUM_SCALE_LEVEL);
+    ui->maxScaleSpin->setValue(setting::current().MAXIMUM_SCALE_LEVEL);
+    ui->zoomSpeedEdit->setText(QString::number(setting::current().ZOOM_SPEED, 'f', 1));
+    ui->gridColorEdit->setText(setting::current().GRID_LINE_COLOR);
+    ui->voidColorEdit->setText(setting::current().VOID_MAP_COLOR);
+    ui->actorStyleCombo->setCurrentIndex(std::clamp(setting::current().ACTOR_RENDER_STYLE, 0, 1));
+    ui->actorBorderWidthSpin->setValue(setting::current().ACTOR_BORDER_WIDTH);
+    ui->actorBorderColorEdit->setText(setting::current().ACTOR_BORDER_COLOR);
+    ui->chunkEditorColorEdit->setText(setting::current().CHUNK_EDITOR_HIGHLIGHT_COLOR);
+    ui->chunkEditorWidthSpin->setValue(setting::current().CHUNK_EDITOR_HIGHLIGHT_WIDTH);
 
     // --- Cache ---
-    ui->regionCacheSpin->setValue(setting::REGION_CACHE_SIZE);
-    ui->emptyCacheSpin->setValue(setting::EMPTY_REGION_CACHE_SIZE);
-    ui->threadNumSpin->setValue(setting::THREAD_NUM);
+    ui->regionCacheSpin->setValue(setting::current().REGION_CACHE_SIZE);
+    ui->emptyCacheSpin->setValue(setting::current().EMPTY_REGION_CACHE_SIZE);
+    ui->threadNumSpin->setValue(setting::current().THREAD_NUM);
 
     // --- Misc ---
-    ui->loadGlobalDataCheck->setChecked(setting::LOAD_GLOBAL_DATA);
-    ui->maxGlobalDataSpin->setValue(setting::MAX_GLOBAL_DATA_LOAD_COUNT);
-    ui->iconThemeCombo->setCurrentText(setting::ICON_THEME);
+    ui->loadGlobalDataCheck->setChecked(setting::current().LOAD_GLOBAL_DATA);
+    ui->maxGlobalDataSpin->setValue(setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
+    ui->iconThemeCombo->setCurrentText(setting::current().ICON_THEME);
 
     // --- Extra features ---
-    ui->preloadCoordsCheck->setChecked(setting::PRELOAD_ALL_CHUNK_COORDS);
+    ui->preloadCoordsCheck->setChecked(setting::current().PRELOAD_ALL_CHUNK_COORDS);
 
     // --- Lang ---
-    ui->langCombo->setCurrentIndex(setting::LANGUAGE == "en" ? 1 : 0);
+    ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
 }
 
 void SettingsDialog::onCategoryChanged(QTreeWidgetItem *current, QTreeWidgetItem * /*previous*/) {
@@ -186,7 +187,7 @@ void SettingsDialog::updateGlobalDataOptions() {
 
 void SettingsDialog::onSave() {
     // Build a pending configuration without changing the active runtime settings.
-    auto values = setting::snapshot();
+    auto values = setting::current();
     switch (ui->themeCombo->currentIndex()) {
         case 0:
             values.COLOR_THEME = "light";

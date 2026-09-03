@@ -41,109 +41,78 @@ namespace constant {
     static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     extern const int GRID_WIDTH;
 
+    // Floor zoom for the whole-world overview mode, derived from region size.
+    constexpr double MINIMUM_ZOOM_SCALE = 4.0 / COORDS_REGION_SIZE;
+
     // 45°-only sun direction for basic shadow (renderStyle1)
     enum class SunDir { NW = 0, NE = 1, SW = 2, SE = 3 };
     constexpr SunDir SUN_DIRECTION = SunDir::NW;
 
-    extern QString MCBE_LEVEL_PATH;
+    extern const QString MCBE_LEVEL_PATH;
 
     region_pos c2r(const bl::chunk_pos &ch);
     void initColorTable();
     QString VERSION_STRING();
 }  // namespace constant
 
-// Runtime settings (read from / written to config.ini)
+// Runtime settings (read from / written to config.ini). The active values live
+// in one immutable snapshot; readers go through setting::current() so render
+// workers always observe a single consistent configuration. The snapshot is
+// only replaced during startup (load/apply), never mutated field-by-field.
 namespace setting {
-    struct SettingsSnapshot {
-        QString COLOR_THEME;
+    struct Settings {
+        // Gui
+        QString COLOR_THEME{"system"};
         QString FONT_FAMILY;
-        int FONT_SIZE;
+        int FONT_SIZE{-1};
 
-        int MAP_RENDER_STYLE;
-        int TILE_RENDER_SCALE;
-        int SHADOW_PCF_RADIUS;
-        int SHADOW_MAP_SCALE;
-        int SHADOW_LEVEL;
-        int MINIMUM_SCALE_LEVEL;
-        int MAXIMUM_SCALE_LEVEL;
-        int COORDS_MINIMAP_WIDTH;
-        int COORDS_MINIMAP_HEIGHT;
-        float ZOOM_SPEED;
-        QString GRID_LINE_COLOR;
-        int ACTOR_RENDER_STYLE;
-        int ACTOR_BORDER_WIDTH;
-        QString ACTOR_BORDER_COLOR;
-        QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
-        int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
-        QString VOID_MAP_COLOR;
-        bool TRANSPARENT_WATER;
+        // Map
+        int MAP_RENDER_STYLE{1};
+        int TILE_RENDER_SCALE{4};
+        int SHADOW_PCF_RADIUS{0};
+        int SHADOW_MAP_SCALE{2};
+        int SHADOW_LEVEL{128};
+        int MINIMUM_SCALE_LEVEL{4};
+        int MAXIMUM_SCALE_LEVEL{1024};
+        int COORDS_MINIMAP_WIDTH{320};
+        int COORDS_MINIMAP_HEIGHT{180};
+        float ZOOM_SPEED{1.2f};
+        QString GRID_LINE_COLOR{"#bbbbbb"};
+        int ACTOR_RENDER_STYLE{0};
+        int ACTOR_BORDER_WIDTH{2};
+        QString ACTOR_BORDER_COLOR{"#ff000000"};
+        QString CHUNK_EDITOR_HIGHLIGHT_COLOR{"#ffaa00"};
+        int CHUNK_EDITOR_HIGHLIGHT_WIDTH{8};
+        QString VOID_MAP_COLOR{"#dddddd"};
+        bool TRANSPARENT_WATER{true};
 
-        int THREAD_NUM;
-        int REGION_CACHE_SIZE;
-        int EMPTY_REGION_CACHE_SIZE;
-        int HEIGHT_MAP_CACHE_SIZE;
+        // Cache
+        int THREAD_NUM{8};
+        int REGION_CACHE_SIZE{1024};
+        int EMPTY_REGION_CACHE_SIZE{8192};
+        int HEIGHT_MAP_CACHE_SIZE{500000};
 
-        bool LOAD_GLOBAL_DATA;
-        bool PRELOAD_ALL_CHUNK_COORDS;
-        int MAX_GLOBAL_DATA_LOAD_COUNT;
-        QString ICON_THEME;
-        bool CHECK_UPDATE;
+        // Misc
+        bool LOAD_GLOBAL_DATA{true};
+        bool PRELOAD_ALL_CHUNK_COORDS{false};
+        int MAX_GLOBAL_DATA_LOAD_COUNT{4096};
+        QString ICON_THEME{"new"};
+        bool CHECK_UPDATE{true};
 
-        bool SCAN_LEVI_PATH;
+        // LeviLauncher
+        bool SCAN_LEVI_PATH{true};
+
+        // Lang (empty = auto-detect from the system locale)
         QString LANGUAGE;
     };
 
     void init();
     void load();
     void save();
-    void save(const SettingsSnapshot &snapshot);
-    [[nodiscard]] SettingsSnapshot snapshot();
+    void save(const Settings &settings);
 
-    constexpr double MINIMUM_ZOOM_SCALE = 4.0 / constant::COORDS_REGION_SIZE;
-
-    // Gui
-    extern QString COLOR_THEME;
-    extern QString FONT_FAMILY;
-    extern int FONT_SIZE;
-
-    // Map
-    extern int MAP_RENDER_STYLE;
-    extern int TILE_RENDER_SCALE;
-    extern int SHADOW_PCF_RADIUS;
-    extern int SHADOW_MAP_SCALE;
-    extern int SHADOW_LEVEL;
-    extern int MINIMUM_SCALE_LEVEL;
-    extern int MAXIMUM_SCALE_LEVEL;
-    extern int COORDS_MINIMAP_WIDTH;
-    extern int COORDS_MINIMAP_HEIGHT;
-    extern float ZOOM_SPEED;
-    extern QString GRID_LINE_COLOR;
-    extern int ACTOR_RENDER_STYLE;
-    extern int ACTOR_BORDER_WIDTH;
-    extern QString ACTOR_BORDER_COLOR;
-    extern QString CHUNK_EDITOR_HIGHLIGHT_COLOR;
-    extern int CHUNK_EDITOR_HIGHLIGHT_WIDTH;
-    extern QString VOID_MAP_COLOR;
-    extern bool TRANSPARENT_WATER;
-
-    // Cache
-    extern int THREAD_NUM;
-    extern int REGION_CACHE_SIZE;
-    extern int EMPTY_REGION_CACHE_SIZE;
-    extern int HEIGHT_MAP_CACHE_SIZE;
-
-    // Misc
-    extern bool LOAD_GLOBAL_DATA;
-    extern bool PRELOAD_ALL_CHUNK_COORDS;
-    extern int MAX_GLOBAL_DATA_LOAD_COUNT;
-    extern QString ICON_THEME;
-    extern bool CHECK_UPDATE;
-
-    // LeviLauncher
-    extern bool SCAN_LEVI_PATH;
-
-    // Lang
-    extern QString LANGUAGE;
+    [[nodiscard]] const Settings &current();
+    void apply(const Settings &settings);
 }  // namespace setting
 
 #endif  // BEDROCKMAP_CONFIG_H

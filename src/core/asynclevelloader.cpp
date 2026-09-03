@@ -26,25 +26,25 @@
 #include "maptile.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
-    this->pool_.setMaxThreadCount(setting::THREAD_NUM);
+    this->pool_.setMaxThreadCount(setting::current().THREAD_NUM);
     for (int dim : {0, 1, 2}) {
-        this->region_cache_[dim] = new QCache<region_pos, ChunkRegion>(setting::REGION_CACHE_SIZE);
-        this->invalid_cache_[dim] = new QCache<region_pos, char>(setting::EMPTY_REGION_CACHE_SIZE);
+        this->region_cache_[dim] = new QCache<region_pos, ChunkRegion>(setting::current().REGION_CACHE_SIZE);
+        this->invalid_cache_[dim] = new QCache<region_pos, char>(setting::current().EMPTY_REGION_CACHE_SIZE);
     }
     this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
-    this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::HEIGHT_MAP_CACHE_SIZE);
+    this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::current().HEIGHT_MAP_CACHE_SIZE);
 }
 
 ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     empty = false;
     if (!this->loaded_) return nullptr;
-    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::EMPTY_REGION_CACHE_SIZE)->operator[](p);
+    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::current().EMPTY_REGION_CACHE_SIZE)->operator[](p);
     if (invalid) {
         empty = true;
         return nullptr;
     }
     // chunk cache
-    auto *region = ensureDimCache(region_cache_, p.dim, setting::REGION_CACHE_SIZE)->operator[](p);
+    auto *region = ensureDimCache(region_cache_, p.dim, setting::current().REGION_CACHE_SIZE)->operator[](p);
     if (region) return region;
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
@@ -52,12 +52,12 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 if (!region || (!region->valid)) {
-                    ensureDimCache(invalid_cache_, dim, setting::EMPTY_REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), new char(0));
+                    ensureDimCache(invalid_cache_, dim, setting::current().EMPTY_REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), new char(0));
                     delete region;
                 } else {
                     this->region_load_timer_.push(load_time);
                     this->region_render_timer_.push(render_time);
-                    ensureDimCache(region_cache_, dim, setting::REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), region);
+                    ensureDimCache(region_cache_, dim, setting::current().REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), region);
                 }
                 this->processing_.remove(bl::chunk_pos(x, z, dim));
                 emit regionReady();
@@ -70,12 +70,12 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
 ChunkRegion *AsyncLevelLoader::peekRegion(const region_pos &p, bool &empty) {
     empty = false;
     if (!this->loaded_) return nullptr;
-    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::EMPTY_REGION_CACHE_SIZE)->operator[](p);
+    auto *invalid = ensureDimCache(invalid_cache_, p.dim, setting::current().EMPTY_REGION_CACHE_SIZE)->operator[](p);
     if (invalid) {
         empty = true;
         return nullptr;
     }
-    return ensureDimCache(region_cache_, p.dim, setting::REGION_CACHE_SIZE)->operator[](p);
+    return ensureDimCache(region_cache_, p.dim, setting::current().REGION_CACHE_SIZE)->operator[](p);
 }
 
 bool AsyncLevelLoader::open(const std::string &path) {
@@ -261,12 +261,12 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
             auto vk = bl::village_key::parse(key);
             if (vk.valid()) result.villageData.append_village(vk, value);
         },
-        stop, setting::MAX_GLOBAL_DATA_LOAD_COUNT);
+        stop, setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
 
     LOG_F(INFO, "Loading Global Data(Map)");
     level_.foreach_key_with_prefix(
         "map_", [&result, &stop](const auto &key, const auto &value) { result.mapData.append_nbt(key, value); }, stop,
-        setting::MAX_GLOBAL_DATA_LOAD_COUNT);
+        setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
 
     LOG_F(INFO, "Loading Global Data(Player)");
     level_.foreach_key_with_prefix(
@@ -276,7 +276,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
             if (key.size() != 43) return;
             result.playerData.append_nbt(key, value);
         },
-        stop, setting::MAX_GLOBAL_DATA_LOAD_COUNT);
+        stop, setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
 }
 
 bool AsyncLevelLoader::modifyLeveldat(bl::nbt::compound_tag *nbt) {
@@ -319,7 +319,7 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
                       .arg(QString::number(this->slime_chunk_cache_->totalCost()), QString::number(this->slime_chunk_cache_->maxCost())));
 
     res.emplace_back("Background thread pool:");
-    res.push_back(QString(" - Total threads: %1").arg(QString::number(setting::THREAD_NUM)));
+    res.push_back(QString(" - Total threads: %1").arg(QString::number(setting::current().THREAD_NUM)));
 
     res.emplace_back("Chunk Modify Cache");
     auto [e, ne] = level_cache_.chunkCounts();

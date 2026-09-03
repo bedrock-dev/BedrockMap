@@ -21,7 +21,7 @@ namespace {
         }
         if (separator < 0) return notes;  // not bilingual, show everything
 
-        const bool isChinese = setting::LANGUAGE.startsWith("zh", Qt::CaseInsensitive);
+        const bool isChinese = setting::current().LANGUAGE.startsWith("zh", Qt::CaseInsensitive);
         return (isChinese ? lines.mid(0, separator) : lines.mid(separator + 1)).join('\n').trimmed();
     }
 }  // namespace
@@ -40,9 +40,9 @@ UpdateDialog::UpdateDialog(const QString &newVersion, const QString &releaseNote
     ui->notes_browser->moveCursor(QTextCursor::Start);
 
     // "Don't check for updates" — persist the pending value without changing runtime state.
-    ui->noUpdateCheckBox->setChecked(!setting::CHECK_UPDATE);
+    ui->noUpdateCheckBox->setChecked(!setting::current().CHECK_UPDATE);
     connect(ui->noUpdateCheckBox, &QCheckBox::toggled, this, [](bool checked) {
-        auto values = setting::snapshot();
+        auto values = setting::current();
         values.CHECK_UPDATE = !checked;
         setting::save(values);
     });

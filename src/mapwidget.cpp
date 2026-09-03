@@ -264,7 +264,7 @@ void MapWidget::wheelEvent(QWheelEvent *event) {
     QPointF world = world_to_view_xf_.inverted().map(pos);
 
     double scale = world_to_view_xf_.m11() * factor;
-    scale = std::clamp(scale, minimumZoomScale(), static_cast<qreal>(setting::MAXIMUM_SCALE_LEVEL));
+    scale = std::clamp(scale, minimumZoomScale(), static_cast<qreal>(setting::current().MAXIMUM_SCALE_LEVEL));
 
     world_to_view_xf_ = QTransform();
     world_to_view_xf_.translate(pos.x(), pos.y());
@@ -283,7 +283,7 @@ void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     if (coordsOverviewMode()) return;
-    auto pen = QPen(QColor(setting::GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    auto pen = QPen(QColor(setting::current().GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setBrush(Qt::NoBrush);
     pen.setCosmetic(true);
 
@@ -310,8 +310,8 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
 }
 
 void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
-    QColor color(setting::CHUNK_EDITOR_HIGHLIGHT_COLOR);
-    QPen pen(color, setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    QColor color(setting::current().CHUNK_EDITOR_HIGHLIGHT_COLOR);
+    QPen pen(color, setting::current().CHUNK_EDITOR_HIGHLIGHT_WIDTH);
     pen.setCosmetic(true);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
@@ -433,8 +433,8 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     if (!bounds || !bounds->valid) return;
 
     constexpr int padding = 6;
-    const int availableWidth = std::min(setting::COORDS_MINIMAP_WIDTH, width());
-    const int availableHeight = std::min(setting::COORDS_MINIMAP_HEIGHT, height());
+    const int availableWidth = std::min(setting::current().COORDS_MINIMAP_WIDTH, width());
+    const int availableHeight = std::min(setting::current().COORDS_MINIMAP_HEIGHT, height());
     // Keep the minimap panel at a 16:9 aspect ratio while fitting the configured bounds.
     const int panelWidth = std::min(availableWidth, static_cast<int>(std::floor(availableHeight * 16.0 / 9.0)));
     const int panelHeight = static_cast<int>(std::floor(panelWidth * 9.0 / 16.0));
@@ -532,7 +532,7 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
     this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch) {
-        if (setting::ACTOR_RENDER_STYLE == 0) {
+        if (setting::current().ACTOR_RENDER_STYLE == 0) {
             // draw all
             auto actors = level_loader_->getActorList(ch);
             for (auto &kv : actors) {

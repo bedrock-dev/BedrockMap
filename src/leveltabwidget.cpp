@@ -193,13 +193,13 @@ void LevelTabWidget::onMapDimensionChanged(int dim) {
 
 void LevelTabWidget::onMapLayerChanged(int layer) {
     if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->changeLayer(static_cast<MapWidget::RenderOption::LayerType>(layer));
+        page->getMapWidget()->changeLayer(static_cast<RenderOption::LayerType>(layer));
     }
 }
 
 void LevelTabWidget::onMapToggleOtherLayer(int other) {
     if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->toggleOther(static_cast<MapWidget::RenderOption::OtherType>(other));
+        page->getMapWidget()->toggleOther(static_cast<RenderOption::OtherType>(other));
     }
 }
 

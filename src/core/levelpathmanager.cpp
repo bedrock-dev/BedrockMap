@@ -143,7 +143,7 @@ void LevelPathManager::init() {
 
     scan_paths_.push_back({appData.toStdString(), {}, "Official", true, false});
 
-    if (setting::SCAN_LEVI_PATH) {
+    if (setting::current().SCAN_LEVI_PATH) {
         initLeviPath();
     }
 }

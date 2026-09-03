@@ -9,7 +9,7 @@
 
 #include "chunk.h"
 #include "config.h"
-#include "renderfilterdialog.h"
+#include "render_options.h"
 #include "resourcemanager.h"
 
 class AsyncLevelLoader;

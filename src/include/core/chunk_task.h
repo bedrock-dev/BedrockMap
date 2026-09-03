@@ -12,7 +12,7 @@
 #include "chunk.h"
 #include "config.h"
 #include "data_3d.h"
-#include "renderfilterdialog.h"
+#include "render_options.h"
 class AsyncLevelLoader;
 
 namespace bl {

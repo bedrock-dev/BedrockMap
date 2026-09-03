@@ -36,9 +36,9 @@ void setupLog(int argc, char *argv[]) {
 
 void setupTheme(QApplication &a) {
     auto *hints = a.styleHints();
-    if (setting::COLOR_THEME == "dark") {
+    if (setting::current().COLOR_THEME == "dark") {
         hints->setColorScheme(Qt::ColorScheme::Dark);
-    } else if (setting::COLOR_THEME == "light") {
+    } else if (setting::current().COLOR_THEME == "light") {
         hints->setColorScheme(Qt::ColorScheme::Light);
     } else {
         hints->setColorScheme(Qt::ColorScheme::Unknown);
@@ -51,8 +51,8 @@ void setupFont(QApplication &a) {
         LOG_F(WARNING, "Can not load font");
     }
     QFont font;
-    auto sz = setting::FONT_SIZE > 0 ? setting::FONT_SIZE : 10;
-    auto family = !setting::FONT_FAMILY.isEmpty() ? setting::FONT_FAMILY : "微软雅黑";
+    auto sz = setting::current().FONT_SIZE > 0 ? setting::current().FONT_SIZE : 10;
+    auto family = !setting::current().FONT_FAMILY.isEmpty() ? setting::current().FONT_FAMILY : "微软雅黑";
     font.setHintingPreference(QFont::PreferNoHinting);
     font.setStyleStrategy(QFont::PreferAntialias);
     font.setPointSize(sz);
@@ -62,9 +62,11 @@ void setupFont(QApplication &a) {
 
 // empty setting -> auto-detect from the system locale (Chinese -> zh_CN, otherwise en)
 QString resolveLanguage() {
-    if (!setting::LANGUAGE.isEmpty()) return setting::LANGUAGE;
-    setting::LANGUAGE = QLocale::system().language() == QLocale::Chinese ? QString("zh_CN") : QString("en");
-    return setting::LANGUAGE;
+    auto s = setting::current();
+    if (!s.LANGUAGE.isEmpty()) return s.LANGUAGE;
+    s.LANGUAGE = QLocale::system().language() == QLocale::Chinese ? QString("zh_CN") : QString("en");
+    setting::apply(s);
+    return s.LANGUAGE;
 }
 
 int main(int argc, char *argv[]) {

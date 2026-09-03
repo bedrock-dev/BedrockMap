@@ -91,7 +91,7 @@ const QString constant::SHADER_FILE_PATH = "shaders/voxel";
 const QString constant::TRANSLATION_FILES_PATH = R"(./translations)";
 #endif
 
-QString constant::MCBE_LEVEL_PATH = "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
+const QString constant::MCBE_LEVEL_PATH = "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
 
 region_pos constant::c2r(const bl::chunk_pos &ch) {
     auto cx = ch.x < 0 ? ch.x - constant::RW + 1 : ch.x;
@@ -103,50 +103,16 @@ QString constant::VERSION_STRING() {
     return QString(constant::SOFTWARE_NAME.c_str()) + " " + constant::SOFTWARE_VERSION.toString() + "." + QString(GIT_COMMIT_HASH);
 }
 
-// setting namespace — defaults
-// Gui
-QString setting::COLOR_THEME = "system";
-QString setting::FONT_FAMILY;
-int setting::FONT_SIZE = -1;
+namespace {
+    setting::Settings &mutableSettings() {
+        static setting::Settings instance;
+        return instance;
+    }
+}  // namespace
 
-// Map
-int setting::MAP_RENDER_STYLE = 1;
-int setting::TILE_RENDER_SCALE = 4;
-int setting::SHADOW_PCF_RADIUS = 0;
-int setting::SHADOW_MAP_SCALE = 2;
-int setting::SHADOW_LEVEL = 128;
-int setting::MINIMUM_SCALE_LEVEL = 4;
-int setting::MAXIMUM_SCALE_LEVEL = 1024;
-int setting::COORDS_MINIMAP_WIDTH = 320;
-int setting::COORDS_MINIMAP_HEIGHT = 180;
-float setting::ZOOM_SPEED = 1.2f;
-QString setting::GRID_LINE_COLOR = "#bbbbbb";
-int setting::ACTOR_RENDER_STYLE = 0;
-int setting::ACTOR_BORDER_WIDTH = 2;
-QString setting::ACTOR_BORDER_COLOR = "#ff000000";
-QString setting::CHUNK_EDITOR_HIGHLIGHT_COLOR = "#ffaa00";
-int setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH = 8;
-QString setting::VOID_MAP_COLOR = "#dddddd";
-bool setting::TRANSPARENT_WATER = true;
+void setting::apply(const Settings &settings) { mutableSettings() = settings; }
 
-// Cache
-int setting::THREAD_NUM = 8;
-int setting::REGION_CACHE_SIZE = 1024;
-int setting::EMPTY_REGION_CACHE_SIZE = 8192;
-int setting::HEIGHT_MAP_CACHE_SIZE = 500000;
-
-// Misc
-bool setting::LOAD_GLOBAL_DATA = true;
-bool setting::PRELOAD_ALL_CHUNK_COORDS = false;
-int setting::MAX_GLOBAL_DATA_LOAD_COUNT = 4096;
-QString setting::ICON_THEME = "new";
-bool setting::CHECK_UPDATE = true;
-
-// LeviLauncher
-bool setting::SCAN_LEVI_PATH = true;
-
-// Lang (empty = auto-detect from the system locale)
-QString setting::LANGUAGE = "";
+const setting::Settings &setting::current() { return mutableSettings(); }
 
 // Utility functions
 void constant::initColorTable() {
@@ -179,54 +145,57 @@ void setting::load() {
         LOG_F(INFO, "Config key: %s, value: %s", key.toStdString().c_str(), s.value(key).toString().toStdString().c_str());
     }
 
+    // Parse into a copy so a partial/failed read can never tear the live snapshot.
+    Settings loaded = current();
+
     s.beginGroup("Gui");
-    setting::COLOR_THEME = s.value("theme", setting::COLOR_THEME).toString();
-    setting::FONT_FAMILY = s.value("font_family", setting::FONT_FAMILY).toString();
-    setting::FONT_SIZE = s.value("font_size", setting::FONT_SIZE).toInt();
+    loaded.COLOR_THEME = s.value("theme", loaded.COLOR_THEME).toString();
+    loaded.FONT_FAMILY = s.value("font_family", loaded.FONT_FAMILY).toString();
+    loaded.FONT_SIZE = s.value("font_size", loaded.FONT_SIZE).toInt();
     s.endGroup();
 
     s.beginGroup("Map");
-    setting::SHADOW_LEVEL = s.value("terrian_shadow_level", setting::SHADOW_LEVEL).toInt();
-    setting::MINIMUM_SCALE_LEVEL = s.value("min_scale_level", setting::MINIMUM_SCALE_LEVEL).toInt();
-    setting::MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", setting::MAXIMUM_SCALE_LEVEL).toInt();
-    setting::COORDS_MINIMAP_WIDTH = std::clamp(s.value("coords_minimap_width", setting::COORDS_MINIMAP_WIDTH).toInt(), 64, 1024);
-    setting::COORDS_MINIMAP_HEIGHT = std::clamp(s.value("coords_minimap_height", setting::COORDS_MINIMAP_HEIGHT).toInt(), 64, 1024);
-    setting::ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", setting::ZOOM_SPEED).toDouble()));
-    setting::MAP_RENDER_STYLE = s.value("render_style", setting::MAP_RENDER_STYLE).toInt();
-    setting::TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", setting::TILE_RENDER_SCALE).toInt(), 1, 16);
-    setting::SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", setting::SHADOW_PCF_RADIUS).toInt(), 0, 8);
-    setting::SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", setting::SHADOW_MAP_SCALE).toInt(), 1, 8);
-    setting::GRID_LINE_COLOR = s.value("grid_line_color", setting::GRID_LINE_COLOR).toString();
-    setting::ACTOR_RENDER_STYLE = s.value("actor_render_style", setting::ACTOR_RENDER_STYLE).toInt();
-    setting::ACTOR_BORDER_WIDTH = s.value("actor_border_width", setting::ACTOR_BORDER_WIDTH).toInt();
-    setting::ACTOR_BORDER_COLOR = s.value("actor_border_color", setting::ACTOR_BORDER_COLOR).toString();
-    setting::CHUNK_EDITOR_HIGHLIGHT_COLOR = s.value("chunk_editor_highlight_color", setting::CHUNK_EDITOR_HIGHLIGHT_COLOR).toString();
-    setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH = s.value("chunk_editor_highlight_width", setting::CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
-    setting::VOID_MAP_COLOR = s.value("void_color", setting::VOID_MAP_COLOR).toString();
-    setting::TRANSPARENT_WATER = s.value("transparent_water", setting::TRANSPARENT_WATER).toBool();
+    loaded.SHADOW_LEVEL = s.value("terrian_shadow_level", loaded.SHADOW_LEVEL).toInt();
+    loaded.MINIMUM_SCALE_LEVEL = s.value("min_scale_level", loaded.MINIMUM_SCALE_LEVEL).toInt();
+    loaded.MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", loaded.MAXIMUM_SCALE_LEVEL).toInt();
+    loaded.COORDS_MINIMAP_WIDTH = std::clamp(s.value("coords_minimap_width", loaded.COORDS_MINIMAP_WIDTH).toInt(), 64, 1024);
+    loaded.COORDS_MINIMAP_HEIGHT = std::clamp(s.value("coords_minimap_height", loaded.COORDS_MINIMAP_HEIGHT).toInt(), 64, 1024);
+    loaded.ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", loaded.ZOOM_SPEED).toDouble()));
+    loaded.MAP_RENDER_STYLE = s.value("render_style", loaded.MAP_RENDER_STYLE).toInt();
+    loaded.TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", loaded.TILE_RENDER_SCALE).toInt(), 1, 16);
+    loaded.SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", loaded.SHADOW_PCF_RADIUS).toInt(), 0, 8);
+    loaded.SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", loaded.SHADOW_MAP_SCALE).toInt(), 1, 8);
+    loaded.GRID_LINE_COLOR = s.value("grid_line_color", loaded.GRID_LINE_COLOR).toString();
+    loaded.ACTOR_RENDER_STYLE = s.value("actor_render_style", loaded.ACTOR_RENDER_STYLE).toInt();
+    loaded.ACTOR_BORDER_WIDTH = s.value("actor_border_width", loaded.ACTOR_BORDER_WIDTH).toInt();
+    loaded.ACTOR_BORDER_COLOR = s.value("actor_border_color", loaded.ACTOR_BORDER_COLOR).toString();
+    loaded.CHUNK_EDITOR_HIGHLIGHT_COLOR = s.value("chunk_editor_highlight_color", loaded.CHUNK_EDITOR_HIGHLIGHT_COLOR).toString();
+    loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH = s.value("chunk_editor_highlight_width", loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
+    loaded.VOID_MAP_COLOR = s.value("void_color", loaded.VOID_MAP_COLOR).toString();
+    loaded.TRANSPARENT_WATER = s.value("transparent_water", loaded.TRANSPARENT_WATER).toBool();
     s.endGroup();
 
     s.beginGroup("Cache");
-    setting::REGION_CACHE_SIZE = s.value("region_cache_size", setting::REGION_CACHE_SIZE).toInt();
-    setting::EMPTY_REGION_CACHE_SIZE = s.value("empty_cache_size", setting::EMPTY_REGION_CACHE_SIZE).toInt();
-    setting::THREAD_NUM = s.value("max_thread_num", setting::THREAD_NUM).toInt();
-    setting::HEIGHT_MAP_CACHE_SIZE = s.value("height_map_cache_size", setting::HEIGHT_MAP_CACHE_SIZE).toInt();
+    loaded.REGION_CACHE_SIZE = s.value("region_cache_size", loaded.REGION_CACHE_SIZE).toInt();
+    loaded.EMPTY_REGION_CACHE_SIZE = s.value("empty_cache_size", loaded.EMPTY_REGION_CACHE_SIZE).toInt();
+    loaded.THREAD_NUM = s.value("max_thread_num", loaded.THREAD_NUM).toInt();
+    loaded.HEIGHT_MAP_CACHE_SIZE = s.value("height_map_cache_size", loaded.HEIGHT_MAP_CACHE_SIZE).toInt();
     s.endGroup();
 
     s.beginGroup("Misc");
-    setting::LOAD_GLOBAL_DATA = s.value("load_global_data", setting::LOAD_GLOBAL_DATA).toBool();
-    setting::PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", setting::PRELOAD_ALL_CHUNK_COORDS).toBool();
-    setting::MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", setting::MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
-    setting::ICON_THEME = s.value("icon_theme", setting::ICON_THEME).toString();
-    setting::CHECK_UPDATE = s.value("check_update", setting::CHECK_UPDATE).toBool();
+    loaded.LOAD_GLOBAL_DATA = s.value("load_global_data", loaded.LOAD_GLOBAL_DATA).toBool();
+    loaded.PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", loaded.PRELOAD_ALL_CHUNK_COORDS).toBool();
+    loaded.MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", loaded.MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
+    loaded.ICON_THEME = s.value("icon_theme", loaded.ICON_THEME).toString();
+    loaded.CHECK_UPDATE = s.value("check_update", loaded.CHECK_UPDATE).toBool();
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
-    setting::SCAN_LEVI_PATH = s.value("scan_levi_path", setting::SCAN_LEVI_PATH).toBool();
+    loaded.SCAN_LEVI_PATH = s.value("scan_levi_path", loaded.SCAN_LEVI_PATH).toBool();
     s.endGroup();
 
     s.beginGroup("Lang");
-    setting::LANGUAGE = s.value("lang", setting::LANGUAGE).toString();
+    loaded.LANGUAGE = s.value("lang", loaded.LANGUAGE).toString();
     s.endGroup();
 
     if (s.status() != QSettings::NoError) {
@@ -235,52 +204,17 @@ void setting::load() {
 
     LOG_F(INFO, "all keys: %d", static_cast<int>(s.allKeys().size()));
 
-    if (setting::THREAD_NUM < 1) {
-        setting::THREAD_NUM = 2;
+    if (loaded.THREAD_NUM < 1) {
+        loaded.THREAD_NUM = 2;
         LOG_F(WARNING, "Invalid background thread number, reset it to default(2)");
     }
+
+    apply(loaded);
 }
 
-setting::SettingsSnapshot setting::snapshot() {
-    SettingsSnapshot values;
-    values.COLOR_THEME = COLOR_THEME;
-    values.FONT_FAMILY = FONT_FAMILY;
-    values.FONT_SIZE = FONT_SIZE;
-    values.MAP_RENDER_STYLE = MAP_RENDER_STYLE;
-    values.TILE_RENDER_SCALE = TILE_RENDER_SCALE;
-    values.SHADOW_PCF_RADIUS = SHADOW_PCF_RADIUS;
-    values.SHADOW_MAP_SCALE = SHADOW_MAP_SCALE;
-    values.SHADOW_LEVEL = SHADOW_LEVEL;
-    values.MINIMUM_SCALE_LEVEL = MINIMUM_SCALE_LEVEL;
-    values.MAXIMUM_SCALE_LEVEL = MAXIMUM_SCALE_LEVEL;
-    values.COORDS_MINIMAP_WIDTH = COORDS_MINIMAP_WIDTH;
-    values.COORDS_MINIMAP_HEIGHT = COORDS_MINIMAP_HEIGHT;
-    values.ZOOM_SPEED = ZOOM_SPEED;
-    values.GRID_LINE_COLOR = GRID_LINE_COLOR;
-    values.ACTOR_RENDER_STYLE = ACTOR_RENDER_STYLE;
-    values.ACTOR_BORDER_WIDTH = ACTOR_BORDER_WIDTH;
-    values.ACTOR_BORDER_COLOR = ACTOR_BORDER_COLOR;
-    values.CHUNK_EDITOR_HIGHLIGHT_COLOR = CHUNK_EDITOR_HIGHLIGHT_COLOR;
-    values.CHUNK_EDITOR_HIGHLIGHT_WIDTH = CHUNK_EDITOR_HIGHLIGHT_WIDTH;
-    values.VOID_MAP_COLOR = VOID_MAP_COLOR;
-    values.TRANSPARENT_WATER = TRANSPARENT_WATER;
-    values.THREAD_NUM = THREAD_NUM;
-    values.REGION_CACHE_SIZE = REGION_CACHE_SIZE;
-    values.EMPTY_REGION_CACHE_SIZE = EMPTY_REGION_CACHE_SIZE;
-    values.HEIGHT_MAP_CACHE_SIZE = HEIGHT_MAP_CACHE_SIZE;
-    values.LOAD_GLOBAL_DATA = LOAD_GLOBAL_DATA;
-    values.PRELOAD_ALL_CHUNK_COORDS = PRELOAD_ALL_CHUNK_COORDS;
-    values.MAX_GLOBAL_DATA_LOAD_COUNT = MAX_GLOBAL_DATA_LOAD_COUNT;
-    values.ICON_THEME = ICON_THEME;
-    values.CHECK_UPDATE = CHECK_UPDATE;
-    values.SCAN_LEVI_PATH = SCAN_LEVI_PATH;
-    values.LANGUAGE = LANGUAGE;
-    return values;
-}
+void setting::save() { save(current()); }
 
-void setting::save() { save(snapshot()); }
-
-void setting::save(const SettingsSnapshot &values) {
+void setting::save(const Settings &values) {
     QSettings s(constant::CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
 
     s.beginGroup("Gui");

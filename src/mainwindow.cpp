@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Background update check at startup; silent unless a newer release is found.
     updater_ = new UpdateChecker(this);
     connect(updater_, &UpdateChecker::updateAvailable, this, &MainWindow::onUpdateAvailable);
-    if (setting::CHECK_UPDATE) updater_->checkForUpdates();
+    if (setting::current().CHECK_UPDATE) updater_->checkForUpdates();
 }
 
 MainWindow::~MainWindow() { qApp->removeEventFilter(this); }
@@ -276,7 +276,7 @@ void MainWindow::setupMenuActions() {
     });
 
     // Layers
-    using Mr = MapWidget::RenderOption;
+    using Mr = RenderOption;
     connect(action_layers_grid_, &QAction::triggered, this, [this]() {
         if (auto *w = getCurrentMapWidget()) {
             w->toggleOther(Mr::Grid);

@@ -108,7 +108,7 @@ QImage &MapTile::COORDS_EMPTY_TILE() {
 }
 
 QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &chunk_bit_map, bool fill) {
-    static auto color = QColor(setting::VOID_MAP_COLOR).rgb();
+    static auto color = QColor(setting::current().VOID_MAP_COLOR).rgb();
     auto img = NULL_REGION_TILE().copy();
     if (fill) {
         int gridSize = img.width() / constant::RW;
@@ -143,7 +143,7 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     }
 
     bl::block_info render_info = info;
-    if (setting::TRANSPARENT_WATER && info.name == "minecraft:water" && y_solid >= 0 && y_solid < y) {
+    if (setting::current().TRANSPARENT_WATER && info.name == "minecraft:water" && y_solid >= 0 && y_solid < y) {
         auto &tips = region->tips_info_[X][Z];
         tips.water_surface_color = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
         render_info = solid_info;
@@ -234,7 +234,7 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, i
 void MapTile::bakeChunkActors(bl::chunk *ch, const MapFilter *filter, ChunkRegion *region) {
     if (!ch) return;
     auto entities = ch->entities();
-    auto mode = setting::ACTOR_RENDER_STYLE;
+    auto mode = setting::current().ACTOR_RENDER_STYLE;
     for (auto &e : entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
         if ((filter->actors_list_.count(key.toStdString()) == 0) == filter->actor_black_mode_) {
@@ -262,7 +262,7 @@ void MapTile::renderStyle1(ChunkRegion *region, int IMG_WIDTH) {
     // (their colour comes from the sea floor, not the water surface).
     auto &tp = region->tips_info_;
     auto [sx, sy] = sunVector();
-    const int kLevel = setting::SHADOW_LEVEL;
+    const int kLevel = setting::current().SHADOW_LEVEL;
 
     for (int i = 0; i < IMG_WIDTH; i++) {
         for (int j = 0; j < IMG_WIDTH; j++) {
@@ -287,7 +287,7 @@ void MapTile::renderStyle1(ChunkRegion *region, int IMG_WIDTH) {
 }
 
 void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader *loader, const bl::chunk_pos &region_pos) {
-    const int scale = std::clamp(setting::TILE_RENDER_SCALE, 1, 32);
+    const int scale = std::clamp(setting::current().TILE_RENDER_SCALE, 1, 32);
     const int HR = IMG_WIDTH * scale;
 
     QImage hr_t = region->terrain_bake_image_.scaled(HR, HR, Qt::IgnoreAspectRatio, Qt::FastTransformation);
@@ -378,8 +378,8 @@ void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader 
 
     // ---- cross-region shadow (unified Data3D height source via cache) ----
     auto [sx, sy] = sunVector();
-    const float kShadowDarkness = 1.0f - std::clamp(setting::SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f;
-    const int shadow_scale = setting::SHADOW_MAP_SCALE;
+    const float kShadowDarkness = 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f;
+    const int shadow_scale = setting::current().SHADOW_MAP_SCALE;
     const int SM = IMG_WIDTH * shadow_scale;
     constexpr int NH = 4;                   // neighbour chunks per side
     const int BORDER = NH * 16;             // border blocks per side
