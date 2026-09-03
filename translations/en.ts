@@ -955,17 +955,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.levelNotOpen</source>
         <translation>Level is not opened</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation>Open level failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openMcstructureFailed</source>
         <translation>Failed to open structure file</translation>
     </message>
@@ -975,220 +975,220 @@
         <translation>Clear</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.cannotOpenFile</source>
         <translation>Can not open file</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nbtDataCorrupted</source>
         <translation>NBT data is corrupted</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.initFailed</source>
         <translation>Initilize Failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.cannotDeleteRoot</source>
         <translation>Can not remove root noed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nbtParseFailed</source>
         <translation>Parse NBT failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.emptyNbtData</source>
         <translation>Empty NBT data</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <location filename="../src/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
         <translation>       </translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nothingToSave</source>
         <translation>Nothing to Save</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.levelSaved</source>
         <translation>Level Saved</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.readOnly</source>
         <translation>Read-only</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.editingDisabledDuringCoordsLoading</source>
         <translation>Editing is disabled while global coordinates are loading.</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.importFailed</source>
         <translation>Import failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.invalidChunkFormat</source>
         <translation>Invalid chunk format</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.unsavedChanges</source>
         <translation>Unsaved Changes</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation>Unsaved changes found, would you like to save before closing?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.exportSucc</source>
         <translation>Export successfully</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.exportComplete</source>
         <translation>Done</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.noChunkFound</source>
         <translation>No chunk found</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.createNodeFailed</source>
         <translation>Create node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.modifyNodeFailed</source>
         <translation>Modify node failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pleaseWait</source>
         <translation>Please wait</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG name cannot be empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagTypeInvalid</source>
         <translation>Invalid TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagValueInvalid</source>
         <translation>Invalid TAG value</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagUnknownType</source>
         <translation>Unknown TAG type</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG value is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.selectLevelDir</source>
         <translation>Select Level Directory</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.invalidCoordinate</source>
         <translation>Invalid coordinate</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openLevelSucc</source>
         <translation>Open Level Successfully</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.loadGlobalDataFailed</source>
         <translation>Load global data failed</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelNameEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelDirNotExist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelPathNotDir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelDirNotEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelNoWritePerm</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelInvalidVersion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.setScaleLevel</source>
         <translation>Set scale level</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveAs</source>
         <translation>Save As</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.info</source>
         <translation>Information</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveDataSucc</source>
         <translation>Save data failed</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveDataFailed</source>
         <translation>Save data successfully</translation>
     </message>
@@ -1223,7 +1223,7 @@
         <translation>Export Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.allFiles</source>
         <translation>All files (*)</translation>
     </message>
@@ -1238,17 +1238,17 @@
         <translation>Paste</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteNoData</source>
         <translation>No chunk data on clipboard</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteDataEmpty</source>
         <translation>Clipboard data is empty</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteDataInvalid</source>
         <translation>Invalid clipboard data, cannot parse</translation>
     </message>
@@ -1264,7 +1264,7 @@
         <translation>Import Region</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS Files (*.bchks)</translation>
     </message>
@@ -1716,7 +1716,7 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1724,7 +1724,7 @@
         <translation>Export GLB</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>Export as glTF Binary (.glb)</translation>
     </message>
@@ -1739,32 +1739,32 @@
         <translation>GLB export completed.</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
         <translation>Export .mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>Compress</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportEntities</source>
         <translation>Export entities</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>Use new format</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>Import .mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>The new format can only be used in version &gt;= 26.50.24</translation>
     </message>

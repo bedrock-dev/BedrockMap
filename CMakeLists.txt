@@ -35,10 +35,15 @@ set(BEDROCK_LIBS
 )
 
 #dir
+# App include subfolders come first so app headers (e.g. core/config.h) win over
+# same-named bedrock-level headers; bedrock headers still resolve their own
+# includes via same-directory lookup.
 include_directories(
+        ${PROJECT_SOURCE_DIR}/src/include/core
+        ${PROJECT_SOURCE_DIR}/src/include/ui
+        ${PROJECT_SOURCE_DIR}/src/include
         ${BEDROCK_LEVEL_ROOT}/src/include
         ${BEDROCK_LEVEL_ROOT}/third
-        ${PROJECT_SOURCE_DIR}/src/include
         ${PROJECT_SOURCE_DIR}/third
         # for clangd
         ${CMAKE_CURRENT_BINARY_DIR}/BedrockMap_autogen/include

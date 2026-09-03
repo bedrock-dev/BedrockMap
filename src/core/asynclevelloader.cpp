@@ -24,7 +24,6 @@
 #include "leveldb/write_batch.h"
 #include "loguru/loguru.hpp"
 #include "maptile.h"
-#include "utils.h"
 
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(setting::THREAD_NUM);

@@ -21,7 +21,6 @@
 #include "nbtmodifydialog.h"
 #include "resourcemanager.h"
 #include "ui_nbtwidget.h"
-#include "utils.h"
 
 namespace {
 

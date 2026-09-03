@@ -955,17 +955,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.levelNotOpen</source>
         <translation>未打开存档</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openLevelFailed</source>
         <translation>无法打开存档</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openMcstructureFailed</source>
         <translation>无法打开结构文件</translation>
     </message>
@@ -975,220 +975,220 @@
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.cannotOpenFile</source>
         <translation>无法保存文件</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nbtDataCorrupted</source>
         <translation>NBT数据损坏</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.initFailed</source>
         <translation>初始化失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.cannotDeleteRoot</source>
         <translation>无法删除根节点</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nbtParseFailed</source>
         <translation>NBT解析失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.emptyNbtData</source>
         <translation>空的NBT数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <location filename="../src/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
         <translation>确认清空全部</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.nothingToSave</source>
         <translation>无需保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.levelSaved</source>
         <translation>存档已保存</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.readOnly</source>
         <translation>只读</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.editingDisabledDuringCoordsLoading</source>
         <translation>全局坐标加载期间禁止修改。</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.importFailed</source>
         <translation>导入失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.invalidChunkFormat</source>
         <translation>不合法的区块格式</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.unsavedChanges</source>
         <translation>未保存的修改</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.unsavedChangesPrompt</source>
         <translation>发现未保存的修改，关闭之前要保存修改吗?</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.exportSucc</source>
         <translation>导出成功</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.exportComplete</source>
         <translation>导出完成</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.noChunkFound</source>
         <translation>找不到区块</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.createNodeFailed</source>
         <translation>节点创建失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.modifyNodeFailed</source>
         <translation>修改节点失败</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.imageAspectMismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pleaseWait</source>
         <translation>请稍等</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagNameEmpty</source>
         <translation>TAG名字不能为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagTypeInvalid</source>
         <translation>TAG类型不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagValueInvalid</source>
         <translation>TAG的值不合法</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagUnknownType</source>
         <translation>未知的TAG类型</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.tagValueEmpty</source>
         <translation>TAG的值为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.selectLevelDir</source>
         <translation>选择存档目录</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.invalidCoordinate</source>
         <translation>无效的坐标</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.openLevelSucc</source>
         <translation>成功打开存档</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.loadGlobalDataFailed</source>
         <translation>无法加载全局数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelNameEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelDirNotExist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelPathNotDir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelDirNotEmpty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelNoWritePerm</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.newLevelInvalidVersion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.setScaleLevel</source>
         <translation>设置缩放等级</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveAs</source>
         <translation>另存为</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.info</source>
         <translation>信息</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveDataSucc</source>
         <translation>成功保存数据</translation>
     </message>
     <message>
         <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.saveDataFailed</source>
         <translation>成功保存数据</translation>
     </message>
@@ -1223,7 +1223,7 @@
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.allFiles</source>
         <translation>所有文件 (*)</translation>
     </message>
@@ -1238,17 +1238,17 @@
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteNoData</source>
         <translation>剪贴板中没有可粘贴的区块数据</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteDataEmpty</source>
         <translation>剪贴板数据为空</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.pasteDataInvalid</source>
         <translation>剪贴板数据不合法，无法解析</translation>
     </message>
@@ -1264,7 +1264,7 @@
         <translation>导入选区</translation>
     </message>
     <message>
-        <location filename="../src/include/msg.h"/>
+        <location filename="../src/include/core/msg.h"/>
         <source>msg.bchksFiles</source>
         <translation>BCHKS 文件 (*.bchks)</translation>
     </message>
@@ -1716,7 +1716,7 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1724,7 +1724,7 @@
         <translation>导出 GLB</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>导出为 glTF 二进制（.glb）</translation>
     </message>
@@ -1739,32 +1739,32 @@
         <translation>GLB 导出完成。</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
         <translation>导出 .mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>压缩</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.exportEntities</source>
         <translation>导出实体</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>使用新格式</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>导入 .mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/include/voxelwidget.h"/>
+        <location filename="../src/include/ui/voxelwidget.h"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
     </message>

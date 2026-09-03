@@ -1,3 +1,5 @@
+#include "mapwidget.h"
+
 #include <qcolor.h>
 #include <qlogging.h>
 #include <qnamespace.h>
@@ -5,22 +7,6 @@
 #include <qpoint.h>
 #include <qtypes.h>
 #include <qvectornd.h>
-
-#include <QtOpenGLWidgets/QtOpenGLWidgets>
-#include <cmath>
-
-#include "asynclevelloader.h"
-#include "chunkoperator.h"
-#include "levelpagewidget.h"
-
-#ifdef WIN32
-#define NOMINMAX
-// clang-format off
-#include <Windows.h>
-#include <Psapi.h>
-#include <Pdh.h>
-// clang-format on
-#endif
 
 #include <QAction>
 #include <QApplication>
@@ -42,32 +28,26 @@
 #include <QPen>
 #include <QRectF>
 #include <QRgb>
-#include <Qaction>
-#include <Qimage>
 #include <Qmainwindow>
+#include <QtOpenGLWidgets/QtOpenGLWidgets>
 #include <Qwidget>
+#include <cmath>
 #include <utility>
 #include <vector>
 
+#include "asynclevelloader.h"
 #include "bedrock_key.h"
+#include "chunkoperator.h"
 #include "config.h"
 #include "gotopositiondialog.h"
+#include "levelpagewidget.h"
 #include "loguru/loguru.hpp"
-#include "mapwidget.h"
 #include "msg.h"
+#include "processmonitor.h"
 #include "voxelwidget.h"
 
-namespace {
 
-    double getMemUsage() {
-#ifdef WIN32
-        PROCESS_MEMORY_COUNTERS_EX pmc;
-        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
-        return static_cast<double>(pmc.WorkingSetSize >> 20);
-#else
-        return 0;
-#endif
-    }
+namespace {
 
     QPointF blockPosToFloatChunkPos(const bl::block_pos &pos) {
         auto cp = pos.to_chunk_pos();
@@ -361,7 +341,7 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
     painter->setFont(font);
     QFontMetrics fm(font);
     auto dbgInfo = level_loader_->debugInfo();
-    dbgInfo.push_back(QString("Memory usage: %1 MiB").arg(QString::number(getMemUsage())));
+    dbgInfo.push_back(QString("Memory usage: %1 MiB").arg(QString::number(processmonitor::memoryUsageMiB())));
     int maxWidth = 1;
     for (auto &s : dbgInfo) maxWidth = std::max(maxWidth, fm.horizontalAdvance(s));
     constexpr int kMargin = 8;

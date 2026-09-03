@@ -9,7 +9,6 @@
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
-#include "chunk_task.h"
 #include "color.h"
 #include "config.h"
 #include "maptile.h"

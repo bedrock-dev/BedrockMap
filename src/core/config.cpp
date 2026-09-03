@@ -21,6 +21,13 @@
 #include "color.h"
 #include "loguru/loguru.hpp"
 
+// bedrock-level's config.h is shadowed by the app config.h on the include path;
+// declare the two tunables used here (same pattern as chunkcoords.cpp).
+namespace bl::config {
+    void set_log_mismatched_actor(bool);
+    void set_log_missing_block_color(bool);
+}  // namespace bl::config
+
 std::optional<AppVersion> AppVersion::parse(const QString &text) {
     QString s = text.trimmed();
     if (s.startsWith('v') || s.startsWith('V')) s = s.mid(1);

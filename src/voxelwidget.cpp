@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "loguru/loguru.hpp"
-#include "voxelwidget.h"
 
 // index template for each face (2 triangles, 6 indices)
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};

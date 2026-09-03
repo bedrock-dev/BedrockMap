@@ -10,7 +10,6 @@
 #include <QLocale>
 #include <QSurfaceFormat>
 #include <QTextStream>
-#include <Qapplication>
 #include <Qchar>
 #include <Qtranslator>
 #include <chrono>

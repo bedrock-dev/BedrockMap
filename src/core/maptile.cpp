@@ -11,7 +11,6 @@
 #include "bedrock_level.h"
 #include "color.h"  // bl::blend_color_with_biome, bl::get_biome_color
 #include "config.h"
-#include "maptile.h"
 #include "sub_chunk.h"  // bl::block_info
 
 // ---- helpers ----
