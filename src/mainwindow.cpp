@@ -159,6 +159,8 @@ void MainWindow::setupMenuBar() {
     action_layers_terrain_->setShortcut(QKeySequence("Alt+T"));
     action_layers_biome_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.biome"));
     action_layers_biome_->setShortcut(QKeySequence("Alt+B"));
+    action_coords_minimap_ = layers_menu_->addAction(tr("mainWindow.menu.coordsMiniMap"));
+    action_coords_minimap_->setShortcut(QKeySequence("Alt+O"));
     layers_menu_->addSeparator();
 
     action_layers_slime_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.slimeChunks"));
@@ -179,9 +181,6 @@ void MainWindow::setupMenuBar() {
 
     action_debug_ = layers_menu_->addAction(tr("mainWindow.menu.debugWindow"));
     action_debug_->setShortcut(QKeySequence("Alt+D"));
-    action_coords_minimap_ = layers_menu_->addAction(tr("mainWindow.menu.coordsMiniMap"));
-    action_coords_minimap_->setShortcut(QKeySequence("Alt+O"));
-
     // --- Selection menu ---
     selection_menu_ = menu_bar_->addMenu(tr("mainWindow.menu.selection"));
 

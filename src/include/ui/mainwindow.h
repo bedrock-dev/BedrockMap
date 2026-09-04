@@ -25,7 +25,6 @@
 #include "levelpathmanager.h"
 #include "leveltabwidget.h"
 
-
 class UpdateChecker;
 
 class MainWindow : public QMainWindow {

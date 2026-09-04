@@ -203,6 +203,7 @@ void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
 
 void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     if (!level_loader_ || !level_loader_->preloadAllChunkCoords() || !level_loader_->chunkCoordsReady()) return;
+    if (!isCoordsMiniMapEnabled()) return;
 
     const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
     if (!bounds || !bounds->valid) return;
