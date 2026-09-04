@@ -184,10 +184,13 @@ void setting::load() {
 
     s.beginGroup("Misc");
     loaded.LOAD_GLOBAL_DATA = s.value("load_global_data", loaded.LOAD_GLOBAL_DATA).toBool();
-    loaded.PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", loaded.PRELOAD_ALL_CHUNK_COORDS).toBool();
     loaded.MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", loaded.MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
     loaded.ICON_THEME = s.value("icon_theme", loaded.ICON_THEME).toString();
     loaded.CHECK_UPDATE = s.value("check_update", loaded.CHECK_UPDATE).toBool();
+    s.endGroup();
+
+    s.beginGroup("Extra functions");
+    loaded.PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", loaded.PRELOAD_ALL_CHUNK_COORDS).toBool();
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
@@ -253,10 +256,13 @@ void setting::save(const Settings &values) {
 
     s.beginGroup("Misc");
     s.setValue("load_global_data", values.LOAD_GLOBAL_DATA);
-    s.setValue("preload_all_chunk_coords", values.PRELOAD_ALL_CHUNK_COORDS);
     s.setValue("max_global_data_load_count", values.MAX_GLOBAL_DATA_LOAD_COUNT);
     s.setValue("icon_theme", values.ICON_THEME);
     s.setValue("check_update", values.CHECK_UPDATE);
+    s.endGroup();
+
+    s.beginGroup("Extra functions");
+    s.setValue("preload_all_chunk_coords", values.PRELOAD_ALL_CHUNK_COORDS);
     s.endGroup();
 
     s.beginGroup("LeviLauncher");

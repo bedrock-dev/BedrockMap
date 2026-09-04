@@ -74,8 +74,8 @@ namespace setting {
         int SHADOW_LEVEL{128};
         int MINIMUM_SCALE_LEVEL{4};
         int MAXIMUM_SCALE_LEVEL{1024};
-        int COORDS_MINIMAP_WIDTH{320};
-        int COORDS_MINIMAP_HEIGHT{180};
+        int COORDS_MINIMAP_WIDTH{100};
+        int COORDS_MINIMAP_HEIGHT{100};
         float ZOOM_SPEED{1.2f};
         QString GRID_LINE_COLOR{"#bbbbbb"};
         int ACTOR_RENDER_STYLE{0};

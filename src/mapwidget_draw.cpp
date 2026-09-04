@@ -208,30 +208,26 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
     if (!bounds || !bounds->valid) return;
 
-    constexpr int padding = 6;
-    const int availableWidth = std::min(setting::current().COORDS_MINIMAP_WIDTH, width());
-    const int availableHeight = std::min(setting::current().COORDS_MINIMAP_HEIGHT, height());
-    // Keep the minimap panel at a 16:9 aspect ratio while fitting the configured bounds.
-    const int panelWidth = std::min(availableWidth, static_cast<int>(std::floor(availableHeight * 16.0 / 9.0)));
-    const int panelHeight = static_cast<int>(std::floor(panelWidth * 9.0 / 16.0));
-    if (panelWidth <= padding * 2 || panelHeight <= padding * 2) return;
-
-    const QRectF panel(width() - panelWidth, height() - panelHeight, panelWidth, panelHeight);
-    const QRectF area = panel.adjusted(padding, padding, -padding, -padding);
     const qreal boundsWidth = static_cast<qreal>(bounds->max_x) - bounds->min_x + 1.0;
     const qreal boundsHeight = static_cast<qreal>(bounds->max_z) - bounds->min_z + 1.0;
     if (boundsWidth <= 0.0 || boundsHeight <= 0.0) return;
 
-    const qreal scale = std::min(area.width() / boundsWidth, area.height() / boundsHeight);
+    // The configured dimensions limit the minimap's side lengths. Its aspect ratio
+    // follows the world's bounding box instead of a fixed panel ratio.
+    const qreal maxWidth = static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_WIDTH, width()));
+    const qreal maxHeight = static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_HEIGHT, height()));
+    if (maxWidth <= 0.0 || maxHeight <= 0.0) return;
+
+    const qreal scale = std::min(maxWidth / boundsWidth, maxHeight / boundsHeight);
     if (scale <= 0.0) return;
 
     const QSizeF mapSize(boundsWidth * scale, boundsHeight * scale);
-    const QPointF mapTopLeft(area.center().x() - mapSize.width() * 0.5, area.center().y() - mapSize.height() * 0.5);
+    const QPointF mapTopLeft(static_cast<qreal>(width()) - mapSize.width(), static_cast<qreal>(height()) - mapSize.height());
     const QRectF globalRect(mapTopLeft, mapSize);
 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, false);
-    painter->fillRect(panel, QColor(20, 20, 20, 190));
+    painter->fillRect(globalRect, QColor(20, 20, 20, 190));
 
     painter->setPen(QPen(QColor(0, 223, 162, 230), 2));
     painter->setBrush(QColor(0, 170, 120, 45));
@@ -253,7 +249,7 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
 
     const QRectF viewportRect(mapTopLeft.x() + (minX - bounds->min_x) * scale, mapTopLeft.y() + (minZ - bounds->min_z) * scale,
                               (maxX - minX) * scale, (maxZ - minZ) * scale);
-    painter->setClipRect(area);
+    painter->setClipRect(globalRect);
     painter->setPen(QPen(QColor(255, 196, 64, 240), 2));
     painter->setBrush(QColor(255, 196, 64, 45));
     painter->drawRect(viewportRect);

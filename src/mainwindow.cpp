@@ -153,16 +153,15 @@ void MainWindow::setupMenuBar() {
     action_layers_end_->setShortcut(QKeySequence("Alt+3"));
     action_layers_custom_dim_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.customDim"));
     action_layers_custom_dim_->setShortcut(QKeySequence("Alt+4"));
+    action_coords_minimap_ = layers_menu_->addAction(tr("mainWindow.menu.coordsMiniMap"));
+    action_coords_minimap_->setShortcut(QKeySequence("Alt+O"));
+    layers_menu_->addSeparator();
     layers_menu_->addSeparator();
 
     action_layers_terrain_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.terrain"));
     action_layers_terrain_->setShortcut(QKeySequence("Alt+T"));
     action_layers_biome_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.biome"));
     action_layers_biome_->setShortcut(QKeySequence("Alt+B"));
-    action_coords_minimap_ = layers_menu_->addAction(tr("mainWindow.menu.coordsMiniMap"));
-    action_coords_minimap_->setShortcut(QKeySequence("Alt+O"));
-    layers_menu_->addSeparator();
-
     action_layers_slime_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.slimeChunks"));
     action_layers_slime_->setShortcut(QKeySequence("Alt+S"));
     action_layers_actors_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.entities"));
