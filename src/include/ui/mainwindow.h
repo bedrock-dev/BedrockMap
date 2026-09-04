@@ -89,7 +89,8 @@ class MainWindow : public QMainWindow {
     QAction *action_transparent_void_;
     QAction *action_settings_;
     QAction *action_help_;
-    QAction *action_opensource_;
+    QAction *action_join_qq_group_;
+    QAction *action_feedback_;
     QAction *action_about_;
     QAction *action_levelDB_;
     QAction *action_debug_;

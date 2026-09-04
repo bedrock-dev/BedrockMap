@@ -231,7 +231,8 @@ void MainWindow::setupMenuBar() {
     help_menu_ = menu_bar_->addMenu(tr("mainWindow.menu.help"));
 
     action_help_ = help_menu_->addAction(tr("mainWindow.menu.helpAction"));
-    action_opensource_ = help_menu_->addAction(tr("mainWindow.menu.opensource"));
+    action_join_qq_group_ = help_menu_->addAction(tr("mainWindow.menu.joinQQGroup"));
+    action_feedback_ = help_menu_->addAction(tr("mainWindow.menu.feedback"));
     help_menu_->addSeparator();
     action_about_ = help_menu_->addAction(tr("mainWindow.menu.about"));
 }
@@ -454,9 +455,11 @@ void MainWindow::setupMenuActions() {
 
     // Help
     connect(action_help_, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl("https://github.com/bedrock-dev/BedrockMap")); });
-    connect(action_opensource_, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl("https://github.com/bedrock-dev/BedrockMap")); });
+            []() { QDesktopServices::openUrl(QUrl("https://bedrock-dev.github.io/bm/")); });
+    connect(action_join_qq_group_, &QAction::triggered, this,
+            []() { QDesktopServices::openUrl(QUrl("https://qm.qq.com/q/3KJZZCkDbW")); });
+    connect(action_feedback_, &QAction::triggered, this,
+            []() { QDesktopServices::openUrl(QUrl("https://github.com/bedrock-dev/BedrockMap/issues")); });
     connect(action_about_, &QAction::triggered, this, [&]() { about_dialog_->exec(); });
 }
 

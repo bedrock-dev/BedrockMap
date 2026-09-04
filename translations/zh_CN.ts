@@ -522,8 +522,13 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.opensource</source>
-        <translation>开源</translation>
+        <source>mainWindow.menu.joinQQGroup</source>
+        <translation>加入QQ群</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.feedback</source>
+        <translation>反馈</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>

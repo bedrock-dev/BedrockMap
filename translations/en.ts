@@ -522,8 +522,13 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.opensource</source>
-        <translation>Open Source</translation>
+        <source>mainWindow.menu.joinQQGroup</source>
+        <translation>Join QQ Group</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
+        <source>mainWindow.menu.feedback</source>
+        <translation>Feedback</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
