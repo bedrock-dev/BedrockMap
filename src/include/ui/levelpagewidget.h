@@ -47,12 +47,6 @@ class LevelStatusBar : public QWidget {
 };
 class LevelTabWidget;
 class LevelPageWidget : public TabPageWidget {
-    struct VillageDrawInfo {
-        bl::block_pos p1;
-        bl::block_pos p2;
-        int dim{0};
-    };
-
     Q_OBJECT
 
    public:

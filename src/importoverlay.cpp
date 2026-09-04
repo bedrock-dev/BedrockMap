@@ -1,20 +1,19 @@
 #include "importoverlay.h"
 
 #include <QFile>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPainterPath>
-#include <QMessageBox>
 
 #include "asynclevelloader.h"
 #include "chunkoperator.h"
 #include "floatingtoolbar.h"
-#include "levelpagewidget.h"
 #include "loguru/loguru.hpp"
 #include "msg.h"
 #include "resourcemanager.h"
 
-ImportOverlay::ImportOverlay(QWidget *parent, AsyncLevelLoader *loader, LevelPageWidget *levelPage)
-    : QObject(parent), parent_(parent), loader_(loader), level_page_(levelPage) {}
+
+ImportOverlay::ImportOverlay(QWidget *parent, AsyncLevelLoader *loader) : QObject(parent), parent_(parent), loader_(loader) {}
 
 void ImportOverlay::startImport(const QString &filePath, uint8_t dim, const bl::chunk_pos &initialCp) {
     QFile file(filePath);
@@ -43,7 +42,7 @@ bool ImportOverlay::startPaste(const QByteArray &data, uint8_t dim, const bl::ch
     placed_ = false;
     mode_ = true;
 
-    level_page_->setToolBarsVisible(false);
+    emit toolbarsVisibleRequested(false);
 
     // Lazy-create confirm bar using FloatingToolBar
     if (!confirm_bar_) {
@@ -137,7 +136,7 @@ void ImportOverlay::confirm() {
         cp.dim = static_cast<int8_t>(dim_);
         // BUG here, the imported enitites will be mixed with original, so we disabled it now
         // chunk.clear_entities();
-        chunk.set_pos(cp, &this->level_page_->levelLoader()->level());
+        chunk.set_pos(cp, &loader_->level());
     }
 
     ChunkOperator::importRegion(preview_, *loader_);
@@ -153,5 +152,5 @@ void ImportOverlay::cleanup() {
     placed_ = false;
     preview_.clear();
     if (confirm_bar_) confirm_bar_->hide();
-    level_page_->setToolBarsVisible(true);
+    emit toolbarsVisibleRequested(true);
 }

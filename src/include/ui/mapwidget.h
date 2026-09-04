@@ -8,6 +8,7 @@
 #include <qtransform.h>
 #include <qtypes.h>
 
+#include <QMap>
 #include <QObject>
 #include <QPaintEvent>
 #include <QSet>
@@ -90,7 +91,13 @@ class SelectionController {
     bool dragging_{false};
 };
 
-class LevelPageWidget;
+/// Bounding rect of one village, used as map overlay draw data.
+struct VillageDrawInfo {
+    bl::block_pos p1;
+    bl::block_pos p2;
+    int dim{0};
+};
+
 class MapWidget : public QWidget {
     Q_OBJECT
 
@@ -144,6 +151,12 @@ class MapWidget : public QWidget {
     // getter
     RenderOption renderOption() { return option_; }
     AsyncLevelLoader *getLevelLoader() { return level_loader_; }
+
+    /// Villages overlay data; pushed by the page once global data is loaded.
+    void setVillages(const QMap<QString, VillageDrawInfo> &villages) {
+        villages_ = villages;
+        update();
+    }
 
     // event
 
@@ -248,6 +261,12 @@ class MapWidget : public QWidget {
 
     void selectionChanged();
 
+    /// Ask the owning page to show/hide its toolbars (e.g. while capturing).
+    void toolbarsVisibleRequested(bool visible);
+
+    /// Ask the owning page to re-sync toolbar checked state after a view change.
+    void syncToolbarsRequested();
+
    public slots:
 
     void asyncRefresh();
@@ -322,11 +341,11 @@ class MapWidget : public QWidget {
     void onPanTick();
 
    private:
-    // parent widget
-    LevelPageWidget *level_page_{nullptr};
-
     // data source
     AsyncLevelLoader *level_loader_{nullptr};
+
+    // village overlay data (pushed via setVillages)
+    QMap<QString, VillageDrawInfo> villages_;
 
     // selection
     SelectionController selection_;

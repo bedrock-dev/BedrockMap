@@ -129,6 +129,9 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
         auto count = mapWidget_->selection().chunkCount();
         status_bar_->setSelectionInfo(static_cast<int>(count));
     });
+    // MapWidget asks for page chrome (toolbars) around captures / view syncs.
+    connect(this->mapWidget_, &MapWidget::toolbarsVisibleRequested, this, &LevelPageWidget::setToolBarsVisible);
+    connect(this->mapWidget_, &MapWidget::syncToolbarsRequested, this, &LevelPageWidget::syncToolbars);
 }
 
 LevelPageWidget::~LevelPageWidget() {
@@ -554,6 +557,7 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult &res) {
     LOG_F(INFO, "Filling village data (%zu)...", res.villageData.data().size());
     auto &villData = res.villageData.data();
     this->collectVillagesGuiData(villData);
+    mapWidget_->setVillages(this->villages_);
     std::vector<NBTListItem *> villNBTList;
     for (const auto &dim : villData) {
         for (const auto &kv : dim) {

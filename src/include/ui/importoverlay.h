@@ -10,13 +10,12 @@
 class QPainter;
 class AsyncLevelLoader;
 class FloatingToolBar;
-class LevelPageWidget;
 
 class ImportOverlay : public QObject {
     Q_OBJECT
 
    public:
-    ImportOverlay(QWidget *parent, AsyncLevelLoader *loader, LevelPageWidget *levelPage);
+    ImportOverlay(QWidget *parent, AsyncLevelLoader *loader);
 
     bool active() const { return mode_; }
     bool placed() const { return placed_; }
@@ -49,6 +48,7 @@ class ImportOverlay : public QObject {
 
    signals:
     void confirmed();
+    void toolbarsVisibleRequested(bool visible);
 
    private slots:
     void confirm();
@@ -59,7 +59,6 @@ class ImportOverlay : public QObject {
 
     QWidget *parent_;
     AsyncLevelLoader *loader_;
-    LevelPageWidget *level_page_;
 
     bool mode_{false};
     bool placed_{false};
