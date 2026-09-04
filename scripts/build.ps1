@@ -1,4 +1,5 @@
 param(
+    [switch]$Rel,
     [ValidateRange(1, 256)]
     [int]$Jobs = 0
 )
@@ -17,17 +18,20 @@ Get-ChildItem translations/*.ts | ForEach-Object {
     [System.IO.File]::WriteAllText($_.FullName, $content, [System.Text.UTF8Encoding]::new($false))
 }
 
+# Release (-Rel) builds go to build_rls/, debug builds to build/.
+$build_dir = Join-Path (Get-Location) $(if ($Rel) { "build_rls" } else { "build" })
+$config_type = if ($Rel) { "Release" } else { "Debug" }
+
 # Configure only when this build directory has no CMake cache. The generator
 # is selected by the initial configure and must not be inferred from stale files.
-$build_dir = Join-Path (Get-Location) "build"
 if (!(Test-Path $build_dir)) {
     New-Item -Path $build_dir -ItemType Directory | Out-Null
 }
 if (!(Test-Path (Join-Path $build_dir "CMakeCache.txt"))) {
-    cmake -G "Ninja" -B $build_dir .
+    cmake -G "Ninja" -B $build_dir -DCMAKE_BUILD_TYPE=$config_type .
 }
 
 if ($Jobs -eq 0) {
     $Jobs = [Environment]::ProcessorCount
 }
-cmake --build $build_dir --config Debug --parallel $Jobs
+cmake --build $build_dir --config $config_type --parallel $Jobs

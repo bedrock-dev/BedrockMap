@@ -1,7 +1,12 @@
+param(
+    [switch]$Rel
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$buildDir = Join-Path $projectRoot "build"
+# Release runs (-Rel) use the build_rls/ output.
+$buildDir = Join-Path $projectRoot $(if ($Rel) { "build_rls" } else { "build" })
 $exePath = Join-Path $buildDir "BedrockMap.exe"
 $qtPath = $env:QT_ROOT
 

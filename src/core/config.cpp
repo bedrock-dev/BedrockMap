@@ -189,7 +189,7 @@ void setting::load() {
     loaded.CHECK_UPDATE = s.value("check_update", loaded.CHECK_UPDATE).toBool();
     s.endGroup();
 
-    s.beginGroup("Extra functions");
+    s.beginGroup("ExtraFunctions");
     loaded.PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", loaded.PRELOAD_ALL_CHUNK_COORDS).toBool();
     s.endGroup();
 
@@ -261,7 +261,7 @@ void setting::save(const Settings &values) {
     s.setValue("check_update", values.CHECK_UPDATE);
     s.endGroup();
 
-    s.beginGroup("Extra functions");
+    s.beginGroup("ExtraFunctions");
     s.setValue("preload_all_chunk_coords", values.PRELOAD_ALL_CHUNK_COORDS);
     s.endGroup();
 
