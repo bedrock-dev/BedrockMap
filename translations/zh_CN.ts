@@ -670,24 +670,24 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportMcstructure</source>
         <translation>导出 mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportMcstructureFailed</source>
         <translation>mcstructure 导出失败</translation>
     </message>
@@ -1218,7 +1218,7 @@
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation>导出选区</translation>
     </message>
@@ -1259,7 +1259,7 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation>导入选区</translation>
     </message>

@@ -670,24 +670,24 @@
 <context>
     <name>MapWidget</name>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.fileDialog.save</source>
         <translation>Save File</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportMcstructure</source>
         <translation>Export mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure files (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportMcstructureFailed</source>
         <translation>Failed to export mcstructure</translation>
     </message>
@@ -1218,7 +1218,7 @@
         <translation>Export Region</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.exportRegion</source>
         <translation>Export Region</translation>
     </message>
@@ -1259,7 +1259,7 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/mapwidget.cpp"/>
+        <location filename="../src/mapwidget_actions.cpp"/>
         <source>mapWidget.rightMenu.importRegion</source>
         <translation>Import Region</translation>
     </message>

@@ -52,7 +52,8 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 if (!region || (!region->valid)) {
-                    ensureDimCache(invalid_cache_, dim, setting::current().EMPTY_REGION_CACHE_SIZE)->insert(bl::chunk_pos(x, z, dim), new char(0));
+                    ensureDimCache(invalid_cache_, dim, setting::current().EMPTY_REGION_CACHE_SIZE)
+                        ->insert(bl::chunk_pos(x, z, dim), new char(0));
                     delete region;
                 } else {
                     this->region_load_timer_.push(load_time);
@@ -269,11 +270,17 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult &result, std::atomic_b
         setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
 
     LOG_F(INFO, "Loading Global Data(Player)");
+
+    std::string local_player;
+    if (level_.load_raw("~local_player", local_player)) {
+        result.playerData.append_nbt("~local_player", local_player);
+    }
     level_.foreach_key_with_prefix(
         "player_",
         [&result, &stop](const std::string &key, const std::string &value) {
-            // key with player_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
-            if (key.size() != 43) return;
+            // 43:key with player_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
+            // 50:key with player_server_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
+            if (key.size() != 43 && key.size() != 50) return;
             result.playerData.append_nbt(key, value);
         },
         stop, setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
