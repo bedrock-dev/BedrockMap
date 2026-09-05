@@ -1,32 +1,28 @@
 #ifndef BEDROCKMAP_ASYNCLEVELLOADER_H
 #define BEDROCKMAP_ASYNCLEVELLOADER_H
 
-#include <qcache.h>
 #include <qimage.h>
 
-#include <QCache>
 #include <QFuture>
-#include <QMutex>
 #include <QRunnable>
 #include <QThreadPool>
-#include <array>
 #include <atomic>
-#include <cstdint>
 #include <functional>
-#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "bedrock_key.h"
-#include "bedrock_level.h"
 #include "chunk.h"
 #include "chunk_task.h"
-#include "chunkcoords.h"
+#include "chunkcoordsservice.h"
+#include "chunkeditservice.h"
+#include "chunkstorage.h"
 #include "config.h"
 #include "nbt.h"
-#include "rawchunkcache.h"
+#include "regioncachemanager.h"
+#include "regionrenderscheduler.h"
 #include "render_options.h"
 
 class AsyncLevelLoader;
@@ -54,6 +50,9 @@ class AsyncLevelLoader : public QObject {
     void regionReady();
 
    public:
+    // AsyncLevelLoader and its region scheduler/cache are UI-thread owned.
+    // Chunk tasks run on the scheduler pool and may only use the explicitly
+    // thread-safe height-map APIs while the loader remains open.
     AsyncLevelLoader();
 
     ~AsyncLevelLoader() override;
@@ -64,11 +63,11 @@ class AsyncLevelLoader : public QObject {
 
     void close();
 
-    bl::bedrock_level &level() { return this->level_; }
+    bl::bedrock_level &level() { return storage_.level(); }
 
     inline bool isOpen() const { return this->loaded_; }
 
-    inline bool isDirty() const { return level_cache_.isDirty(); }
+    inline bool isDirty() const { return storage_.isDirty(); }
 
     void setFilter(const MapFilter &f) { this->map_filter_ = f; }
 
@@ -84,23 +83,29 @@ class AsyncLevelLoader : public QObject {
 
     bool preloadAllChunkCoords() const { return preload_all_chunk_coords_; }
 
-    bool chunkCoordsReady() const { return chunk_coords_ready_.load(std::memory_order_acquire); }
+    void setRenderViewport(const region_pos &minRegion, const region_pos &maxRegion);
 
-    bool chunkCoordsLoading() const { return loaded_.load(std::memory_order_acquire) && preload_all_chunk_coords_ && !chunkCoordsReady(); }
+    bool chunkCoordsReady() const { return chunk_coords_service_.ready(); }
 
-    const ChunkCoordsIndex &chunkCoords() const { return chunk_coords_; }
+    bool chunkCoordsLoading() const {
+        return loaded_.load(std::memory_order_acquire) && chunk_coords_service_.loading(preload_all_chunk_coords_);
+    }
 
-    const QImage *chunkCoordsImage(const region_pos &rp) const;
+    const ChunkCoordsIndex &chunkCoords() const { return chunk_coords_service_.index(); }
+
+    QImage chunkCoordsImage(const region_pos &rp) const;
+
+    std::optional<ChunkCoordsBoundingBox> chunkCoordsBoundingBox(int dim) const;
 
     void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
 
    public:
     /*region cache*/
-    QImage *bakedBiomeImage(const region_pos &rp);
+    QImage bakedBiomeImage(const region_pos &rp);
 
-    QImage *bakedTerrainImage(const region_pos &rp);
+    QImage bakedTerrainImage(const region_pos &rp);
 
-    QImage *bakedSlimeChunkImage(const region_pos &rp);
+    QImage bakedSlimeChunkImage(const region_pos &rp);
 
     BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
 
@@ -141,16 +146,16 @@ class AsyncLevelLoader : public QObject {
 
     bool commit();
 
-    bool modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies);
+    bool commitEdits(const std::unordered_map<std::string, std::string> &globalModifies, const bl::nbt::compound_tag *levelDat);
 
-    bool modifyLeveldat(bl::nbt::compound_tag *nbt);
+    ChunkStorage::CommitError lastCommitError() const { return edit_service_.lastCommitError(); }
 
     std::vector<QString> debugInfo();
 
-    std::pair<int, int> chunkModifyCounts() const { return level_cache_.chunkCounts(); }
+    std::pair<int, int> chunkModifyCounts() const { return storage_.chunkModifyCounts(); }
 
    private:
-    void updateChunkCoords(const bl::chunk_pos &pos, bool present);
+    void closeImpl();
 
     ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
 
@@ -158,38 +163,15 @@ class AsyncLevelLoader : public QObject {
     ChunkRegion *peekRegion(const region_pos &p, bool &empty);
 
    private:
-    template <typename T>
-    QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>> &caches, int dim, int maxCost) {
-        auto it = caches.find(dim);
-        if (it != caches.end()) return it->second.get();
-        auto cache = std::make_unique<QCache<region_pos, T>>(maxCost);
-        auto *result = cache.get();
-        caches.emplace(dim, std::move(cache));
-        return result;
-    }
-
     std::atomic_bool loaded_{false};
-    bl::bedrock_level level_{};
-    RawChunkCache level_cache_;
-    // map region cache
-    TaskBuffer<region_pos> processing_;
-    std::unordered_map<int, std::unique_ptr<QCache<region_pos, ChunkRegion>>> region_cache_;
-    std::unordered_map<int, std::unique_ptr<QCache<region_pos, char>>> invalid_cache_;
-    std::unique_ptr<QCache<region_pos, QImage>> slime_chunk_cache_;
-    QThreadPool pool_;
+    ChunkStorage storage_;
+    RegionCacheManager cache_manager_;
+    RegionRenderScheduler region_scheduler_;
     MapFilter map_filter_;
     std::atomic_bool transparent_void_{false};
     bool preload_all_chunk_coords_{false};
-    std::atomic_bool stop_chunk_coords_preload_{false};
-    std::atomic_bool chunk_coords_ready_{false};
-    ChunkCoordsIndex chunk_coords_;
-
-    // Height-map cache for shadow rendering (keyed by chunk_pos).
-    // Values are raw Data3D/Data2D height_map arrays (256 × int16_t, ~512 bytes each).
-    // Populated on first access, survives across region loads.
-    // Protected by height_map_mutex_ for worker-thread safety; uses QCache auto-LRU.
-    std::unique_ptr<QCache<bl::chunk_pos, std::array<int16_t, 256>>> height_map_cache_;
-    mutable QMutex height_map_mutex_;
+    ChunkCoordsService chunk_coords_service_;
+    ChunkEditService edit_service_;
 
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;

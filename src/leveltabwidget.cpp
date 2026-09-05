@@ -36,8 +36,8 @@ LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
 
     // connect
     connect(this, &QTabWidget::tabCloseRequested, this, &LevelTabWidget::onTabClosed);
-    connect(&this->close_level_task_, &AsyncTaskRunner::started, this, [this]() { close_level_mss_box_->show(); });
-    connect(&this->close_level_task_, &AsyncTaskRunner::finished, this, &LevelTabWidget::onCloseLevelFinished);
+    connect(&this->close_level_task_, &GuiTaskRunner::started, this, [this]() { close_level_mss_box_->show(); });
+    connect(&this->close_level_task_, &GuiTaskRunner::finished, this, &LevelTabWidget::onCloseLevelFinished);
     connect(this, &QTabWidget::currentChanged, this, [&]() {
         auto *page = qobject_cast<LevelPageWidget *>(currentWidget());
         emit currentLevelChanged(page);
@@ -139,7 +139,7 @@ void LevelTabWidget::onTabClosed(int index) {
             if (btn == QMessageBox::Yes) levelPage->commit();
         }
         closing_page_ = levelPage;
-        close_level_task_.start([levelPage](AsyncTaskRunner *) { levelPage->closeLevel(); });
+        close_level_task_.start([levelPage](GuiTaskRunner *) { levelPage->closeLevel(); });
         return;
     }
 
@@ -164,6 +164,10 @@ void LevelTabWidget::onCloseLevelFinished() {
         close_level_mss_box_->hide();
         return;
     }
+    // The close worker has finished all LevelDB/task work. Clear the
+    // UI-thread-owned caches before the page is scheduled for deletion.
+    if (auto *loader = page->levelLoader()) loader->clearAllCache();
+    if (auto *status = page->findChild<LevelStatusBar *>()) status->setCoordsLoading(false);
     int idx = indexOf(page);
     if (idx >= 0) removeTab(idx);
     page->deleteLater();

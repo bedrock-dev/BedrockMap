@@ -154,6 +154,9 @@ void MapWidget::resizeEvent(QResizeEvent *event) {
 
 void MapWidget::paintEvent(QPaintEvent *event) {
     if (!level_loader_ || !level_loader_->isOpen()) return;
+    auto [minChunk, maxChunk, renderRange] = getRenderRange(camera_);
+    (void)renderRange;
+    level_loader_->setRenderViewport(constant::c2r(minChunk), constant::c2r(maxChunk));
     QPainter p(this);
     p.setTransform(world_to_view_xf_);
 

@@ -35,7 +35,7 @@ bool ChunkCoordsIndex::load(leveldb::DB *db, const std::atomic_bool &stop) {
         const auto chunk_key = bl::chunk_key::parse(iterator->key().ToString());
         for (auto marker : bl::raw_chunk::MARKER_KEYS) {
             if (chunk_key.type == marker && (!bl::config::strict_chunk_existence() || !iterator->value().empty())) {
-                insert(chunk_key.cp);
+                insertUnlocked(chunk_key.cp);
                 break;
             }
         }
@@ -49,14 +49,24 @@ bool ChunkCoordsIndex::load(leveldb::DB *db, const std::atomic_bool &stop) {
     }
     if (stop.load(std::memory_order_acquire)) return false;
 
-    generateImages();
+    for (auto &[dim, regions] : regions_by_dimension_) {
+        (void)dim;
+        for (auto &region : regions) region.generateImage();
+    }
     for (const auto &[dim, count] : dimensionCounts()) {
         LOG_F(INFO, "Preloaded chunk coordinates: dimension %d, %zu chunks", dim, count);
     }
+    beginInteractivePhase();
     return true;
 }
 
 bool ChunkCoordsIndex::remove(const bl::chunk_pos &pos) {
+    auto lock = lockForInteractive();
+    if (!lock.owns_lock()) return false;
+    return removeUnlocked(pos);
+}
+
+bool ChunkCoordsIndex::removeUnlocked(const bl::chunk_pos &pos) {
     if (!validDimension(pos.dim)) return false;
     const auto dim_it = regions_by_dimension_.find(pos.dim);
     if (dim_it == regions_by_dimension_.end()) return false;
@@ -75,7 +85,9 @@ bool ChunkCoordsIndex::remove(const bl::chunk_pos &pos) {
 }
 
 bool ChunkCoordsIndex::updateChunk(const bl::chunk_pos &pos, bool present) {
-    const bool changed = present ? insert(pos) : remove(pos);
+    auto lock = lockForInteractive();
+    if (!lock.owns_lock()) return false;
+    const bool changed = present ? insertUnlocked(pos) : removeUnlocked(pos);
     if (!changed) return false;
 
     if (present) {

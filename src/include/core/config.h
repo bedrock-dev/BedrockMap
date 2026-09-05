@@ -88,8 +88,8 @@ namespace setting {
 
         // Cache
         int THREAD_NUM{8};
-        int REGION_CACHE_SIZE{1024};
-        int EMPTY_REGION_CACHE_SIZE{8192};
+        int REGION_CACHE_SIZE{4096};
+        int EMPTY_REGION_CACHE_SIZE{16384};
         int HEIGHT_MAP_CACHE_SIZE{500000};
 
         // Misc

@@ -11,10 +11,10 @@
 #include <atomic>
 
 #include "asynclevelloader.h"
-#include "asynctask.h"
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
 #include "floatingtoolbar.h"
+#include "guitaskrunner.h"
 #include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "nbtwidget.h"
@@ -100,7 +100,7 @@ class LevelPageWidget : public TabPageWidget {
     std::unique_ptr<AsyncLevelLoader> level_loader_;
 
     // global data
-    AsyncTaskRunner global_data_task_;
+    GuiTaskRunner global_data_task_;
     std::atomic_bool stop_loading_global_data_{false};
     GlobalNBTLoadResult global_data_;
     QMap<QString, VillageDrawInfo> villages_;

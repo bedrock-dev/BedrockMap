@@ -289,7 +289,7 @@ class MapWidget : public QWidget {
     void drawDebugWindow(QPaintEvent *event, QPainter *p);
 
     // helper
-    void drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, QImage *img) const;
+    void drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QImage &image) const;
 
     // function drawS
     void drawGrid(QPaintEvent *event, QPainter *p);

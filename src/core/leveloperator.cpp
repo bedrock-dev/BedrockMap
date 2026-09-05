@@ -175,6 +175,5 @@ bool LevelOperator::newLevel(const NewLevelParams &params) {
     nbt->put(new bl::nbt::string_tag("FlatWorldLayers", params.toFlatJson().toStdString()));
     auto raw = level.dat().header() + nbt->to_raw();
     level.close();
-    bl::utils::write_file(dstPath.toStdString(), raw.data(), raw.size());
-    return true;
+    return bl::utils::write_file(dstPath.toStdString(), raw.data(), raw.size());
 }

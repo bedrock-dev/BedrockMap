@@ -7,7 +7,7 @@
 
 #include <QTableWidget>
 
-#include "asynctask.h"
+#include "guitaskrunner.h"
 #include "levelpagewidget.h"
 #include "mapwidget.h"
 #include "mcstructurepagewidget.h"
@@ -100,7 +100,7 @@ class LevelTabWidget : public QTabWidget {
 
     int index = 0;
     // close level handler
-    AsyncTaskRunner close_level_task_;
+    GuiTaskRunner close_level_task_;
     LevelPageWidget *closing_page_{nullptr};
     QDialog *close_level_mss_box_;
 };

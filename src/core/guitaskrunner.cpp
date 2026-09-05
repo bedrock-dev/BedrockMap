@@ -1,12 +1,12 @@
-#include "asynctask.h"
+#include "guitaskrunner.h"
 
 #include <QtConcurrent>
 
-AsyncTaskRunner::AsyncTaskRunner(QObject *parent) : QObject(parent) {}
+GuiTaskRunner::GuiTaskRunner(QObject *parent) : QObject(parent) {}
 
-AsyncTaskRunner::~AsyncTaskRunner() = default;
+GuiTaskRunner::~GuiTaskRunner() = default;
 
-bool AsyncTaskRunner::start(Worker worker) {
+bool GuiTaskRunner::start(Worker worker) {
     if (running_.load()) return false;
     running_.store(true);
     cancel_requested_.store(false);
@@ -34,9 +34,9 @@ bool AsyncTaskRunner::start(Worker worker) {
     return true;
 }
 
-void AsyncTaskRunner::cancel() { cancel_requested_.store(true); }
+void GuiTaskRunner::cancel() { cancel_requested_.store(true); }
 
-void AsyncTaskRunner::waitForFinished() {
+void GuiTaskRunner::waitForFinished() {
     QFuture<void> future;
     {
         std::lock_guard<std::mutex> lk(future_mu_);
@@ -45,19 +45,19 @@ void AsyncTaskRunner::waitForFinished() {
     if (future.isValid()) future.waitForFinished();
 }
 
-void AsyncTaskRunner::reportProgress(int value) { emit progressChanged(value, QString()); }
+void GuiTaskRunner::reportProgress(int value) { emit progressChanged(value, QString()); }
 
-void AsyncTaskRunner::fail(const QString &error) {
+void GuiTaskRunner::fail(const QString &error) {
     failed_.store(true);
     std::lock_guard<std::mutex> lk(text_mu_);
     error_ = error;
 }
 
-bool AsyncTaskRunner::isCancelRequested() const { return cancel_requested_.load(); }
+bool GuiTaskRunner::isCancelRequested() const { return cancel_requested_.load(); }
 
-bool AsyncTaskRunner::isRunning() const { return running_.load(); }
+bool GuiTaskRunner::isRunning() const { return running_.load(); }
 
-void AsyncTaskRunner::onWorkerFinished() {
+void GuiTaskRunner::onWorkerFinished() {
     if (!running_.load()) return;
     running_.store(false);
 

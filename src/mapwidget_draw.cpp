@@ -52,8 +52,8 @@ namespace {
         return QPointF{cp.x + offset.x / 16., cp.z + offset.z / 16.};
     }
 }  // namespace
-void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, QImage *img) const {
-    if (img) p->drawImage(QRectF(pos.x, pos.z, constant::RW, constant::RW), *img, img->rect());
+void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QImage &image) const {
+    if (!image.isNull()) p->drawImage(QRectF(pos.x, pos.z, constant::RW, constant::RW), image, image.rect());
 }
 
 void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
@@ -173,10 +173,8 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         for (int x = minX; x <= maxX; x += constant::COORDS_REGION_SIZE) {
             for (int z = minZ; z <= maxZ; z += constant::COORDS_REGION_SIZE) {
                 const bl::chunk_pos rp{x, z, minChunk.dim};
-                auto *image = level_loader_->chunkCoordsImage(rp);
-                if (image) {
-                    painter->drawImage(QRectF(x, z, constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE), *image, image->rect());
-                }
+                auto image = level_loader_->chunkCoordsImage(rp);
+                painter->drawImage(QRectF(x, z, constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE), image, image.rect());
             }
         }
         this->drawCoordsBoundingBox(painter);
@@ -190,7 +188,7 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
 
 void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
     if (!level_loader_->chunkCoordsReady()) return;
-    const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
+    const auto bounds = level_loader_->chunkCoordsBoundingBox(option_.dim);
     if (!bounds || !bounds->valid) return;
 
     QPen pen(QColor(0, 223, 162, 220), 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin);
@@ -205,7 +203,7 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     if (!level_loader_ || !level_loader_->preloadAllChunkCoords() || !level_loader_->chunkCoordsReady()) return;
     if (!isCoordsMiniMapEnabled()) return;
 
-    const auto *bounds = level_loader_->chunkCoords().boundingBox(option_.dim);
+    const auto bounds = level_loader_->chunkCoordsBoundingBox(option_.dim);
     if (!bounds || !bounds->valid) return;
 
     const qreal boundsWidth = static_cast<qreal>(bounds->max_x) - bounds->min_x + 1.0;

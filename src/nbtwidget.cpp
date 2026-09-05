@@ -271,7 +271,7 @@ bool NbtWidget::saveToFile() {
         WARN(msg::NOTHING_TO_SAVE());
         return false;
     }
-    bl::utils::write_file(file_path_.toStdString(), res.data(), res.size());
+    if (!bl::utils::write_file(file_path_.toStdString(), res.data(), res.size())) return false;
     clearModifyCache();  // persisted: the widget is no longer dirty
     emit dataSaved();
     return true;
@@ -618,10 +618,12 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
 }
 
 void NbtWidget::loadNewData(const std::vector<NBTListItem *> &items) {
+    ui->list_widget->setUpdatesEnabled(false);
     this->clearData();
     for (auto *item : items) {
         ui->list_widget->addItem(item);
     }
+    ui->list_widget->setUpdatesEnabled(true);
     this->refreshLabel();
 }
 
@@ -652,7 +654,7 @@ void NbtWidget::saveNBTs(bool selectOnly) {
         WARN(msg::NOTHING_TO_SAVE());
         return;
     }
-    bl::utils::write_file(fileName.toStdString(), res.data(), res.size());
+    (void)bl::utils::write_file(fileName.toStdString(), res.data(), res.size());
 }
 
 std::string NbtWidget::collectRawNBT(bool selectOnly) const {

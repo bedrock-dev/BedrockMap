@@ -62,7 +62,7 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
     bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
 
     voxelWidget_->updateVoxelData({});
-    chunk_task_.start([this, minPos, maxPos, &loader](AsyncTaskRunner* task) {
+    chunk_task_.start([this, minPos, maxPos, &loader](GuiTaskRunner* task) {
         std::vector<std::vector<bl::chunk*>> chunks;
         chunks.resize(maxPos.x - minPos.x + 1);
         for (auto& row : chunks) {
@@ -104,7 +104,7 @@ void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstruct
     }
     bar_->show();
     bar_->setRange(0, 0);
-    mcstructure_task_.start([this, structure](AsyncTaskRunner*) {
+    mcstructure_task_.start([this, structure](GuiTaskRunner*) {
         pending_mcstructure_result_ = {buildVoxelDataFromMcstructure(*structure), structure->origin()};
     });
 }

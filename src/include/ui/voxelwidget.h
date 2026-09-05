@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "asynclevelloader.h"
-#include "asynctask.h"
+#include "guitaskrunner.h"
 #include "bedrock_key.h"
 #include "chunk.h"
 
@@ -262,17 +262,17 @@ class VoxelPreviewWidget : public QWidget {
         layout->addWidget(bar_, 0);
         setLayout(layout);
         setGeometry({0, 0, 1200, 900});
-        connect(&this->chunk_task_, &AsyncTaskRunner::progressChanged, this, [this](int value, const QString&) { bar_->setValue(value); });
-        connect(&this->chunk_task_, &AsyncTaskRunner::finished, this, [this]() {
+        connect(&this->chunk_task_, &GuiTaskRunner::progressChanged, this, [this](int value, const QString&) { bar_->setValue(value); });
+        connect(&this->chunk_task_, &GuiTaskRunner::finished, this, [this]() {
             bar_->hide();
             setVoxelData(std::move(pending_chunk_result_.data), pending_chunk_result_.origin);
         });
-        connect(&this->chunk_task_, &AsyncTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
-        connect(&this->mcstructure_task_, &AsyncTaskRunner::finished, this, [this]() {
+        connect(&this->chunk_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
+        connect(&this->mcstructure_task_, &GuiTaskRunner::finished, this, [this]() {
             bar_->hide();
             setVoxelData(std::move(pending_mcstructure_result_.data), pending_mcstructure_result_.origin);
         });
-        connect(&this->mcstructure_task_, &AsyncTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
+        connect(&this->mcstructure_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
         importMcstructureButton->hide();
         mcstructureCompressBox_->hide();
         mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
@@ -297,9 +297,9 @@ class VoxelPreviewWidget : public QWidget {
     QCheckBox* mcstructureNewFormatBox_{nullptr};
     // data
     bl::block_pos voxel_origin_;
-    AsyncTaskRunner chunk_task_;
+    GuiTaskRunner chunk_task_;
     VoxelLoadResult pending_chunk_result_;
-    AsyncTaskRunner mcstructure_task_;
+    GuiTaskRunner mcstructure_task_;
     VoxelLoadResult pending_mcstructure_result_;
 };
 

@@ -1,5 +1,5 @@
-#ifndef BEDROCKMAP_ASYNCTASK_H
-#define BEDROCKMAP_ASYNCTASK_H
+#ifndef BEDROCKMAP_GUITASKRUNNER_H
+#define BEDROCKMAP_GUITASKRUNNER_H
 
 #include <QFuture>
 #include <QObject>
@@ -8,14 +8,16 @@
 #include <functional>
 #include <mutex>
 
-class AsyncTaskRunner : public QObject {
+/// Runs a background function and forwards lifecycle/progress signals to GUI
+/// objects through the owning Qt thread.
+class GuiTaskRunner : public QObject {
     Q_OBJECT
 
    public:
-    using Worker = std::function<void(AsyncTaskRunner *)>;
+    using Worker = std::function<void(GuiTaskRunner *)>;
 
-    explicit AsyncTaskRunner(QObject *parent = nullptr);
-    ~AsyncTaskRunner() override;
+    explicit GuiTaskRunner(QObject *parent = nullptr);
+    ~GuiTaskRunner() override;
 
     bool start(Worker worker);
     void cancel();
@@ -46,4 +48,4 @@ class AsyncTaskRunner : public QObject {
     QFuture<void> current_future_;
 };
 
-#endif  // BEDROCKMAP_ASYNCTASK_H
+#endif  // BEDROCKMAP_GUITASKRUNNER_H

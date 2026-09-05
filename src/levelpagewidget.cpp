@@ -26,6 +26,7 @@
 #include "mapwidget.h"
 #include "msg.h"
 #include "resourcemanager.h"
+#include "utils.h"
 
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
@@ -105,8 +106,8 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
 
     // connect signals
     // global data load runs as a silent background task; the signals fill the editors
-    connect(&this->global_data_task_, &AsyncTaskRunner::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
-    connect(&this->global_data_task_, &AsyncTaskRunner::failed, this, &LevelPageWidget::onLoadGlobalDataFailed);
+    connect(&this->global_data_task_, &GuiTaskRunner::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
+    connect(&this->global_data_task_, &GuiTaskRunner::failed, this, &LevelPageWidget::onLoadGlobalDataFailed);
     connect(this->mapWidget_, &MapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
     connect(this->mapWidget_, &MapWidget::requestOpenChunkEditor, this, &LevelPageWidget::showChunkEditor);
     connect(chunkWidget_, &ChunkEditorWidget::editorClosed, this, [this]() {
@@ -403,13 +404,16 @@ bool LevelPageWidget::commit() {
         return false;
     }
 
-    //    sync level.dat change
-    auto nbts = this->level_dat_editor_->getPaletteCopy();
-    if (nbts.size() == 1 && nbts[0]) {
-        this->level_loader_->modifyLeveldat(nbts[0]);
-        nbts[0] = nullptr;  // ownership transferred to modifyLeveldat
-    } else {
-        LOG_F(WARNING, "level.dat is not invalid, skip saving level.dat");
+    std::unique_ptr<bl::nbt::compound_tag> levelDat;
+    if (this->level_dat_editor_->dirty()) {
+        auto nbts = this->level_dat_editor_->getPaletteCopy();
+        if (nbts.size() == 1 && nbts[0]) {
+            levelDat.reset(nbts[0]);
+        } else {
+            LOG_F(WARNING, "level.dat data is invalid, skip saving level.dat");
+            for (auto *nbt : nbts) delete nbt;
+            return false;
+        }
     }
 
     std::unordered_map<std::string, std::string> allModifies;
@@ -421,8 +425,7 @@ bool LevelPageWidget::commit() {
         }
     }
 
-    if (!allModifies.empty() && !this->level_loader_->modifyDBGlobal(allModifies)) return false;
-    if (!level_loader_->commit()) return false;
+    if (!level_loader_->commitEdits(allModifies, levelDat.get())) return false;
     level_dat_editor_->clearModifyCache();
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
@@ -444,11 +447,12 @@ bool LevelPageWidget::loadLevel(const QString &path) {
     if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     auto &dat = level_loader_->level().dat();
     LOG_F(INFO, "Open level %s with version %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str());
-    auto *ld = dynamic_cast<bl::nbt::compound_tag *>(dat.root());
-    this->level_dat_editor_->loadNewData({NBTListItem::from(dynamic_cast<bl::nbt::compound_tag *>(ld->copy()), "level.dat")});
+    Assert(dat.root() != nullptr, "The level.dat file is nullptr");
+    auto *ld = dat.root()->as<bl::nbt::compound_tag *>();
+    this->level_dat_editor_->loadNewData({NBTListItem::from(ld->copy()->as<bl::nbt::compound_tag *>(), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
     if (!setting::current().LOAD_GLOBAL_DATA) return true;
-    global_data_task_.start([this](AsyncTaskRunner *task) {
+    global_data_task_.start([this](GuiTaskRunner *task) {
         try {
             level_loader_->loadGlobalData(std::ref(this->global_data_), std::ref(stop_loading_global_data_));
         } catch (std::exception &e) {
@@ -462,7 +466,6 @@ void LevelPageWidget::closeLevel() {
     this->stop_loading_global_data_ = true;
     global_data_task_.waitForFinished();
     if (level_loader_->isOpen()) level_loader_->close();
-    status_bar_->setCoordsLoading(false);
 }
 
 void LevelPageWidget::toggleGlobalDataWidget() {
