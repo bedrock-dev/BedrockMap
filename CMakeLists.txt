@@ -9,6 +9,7 @@ endif()
 
 project(BedrockMap VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -16,6 +17,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
@@ -27,20 +29,10 @@ endif()
 # bedrock-level is built from source as a subdirectory so app headers and the
 # library can never drift apart. Its sample apps/unit tests are opt-in (OFF).
 set(BEDROCK_LEVEL_ROOT "${PROJECT_SOURCE_DIR}/bedrock-level")
+# The library's standalone scripts own its unit-test builds; keep the GUI build
+# focused on the application and never pull GoogleTest into this build tree.
+set(BEDROCK_LEVEL_BUILD_TESTS OFF CACHE BOOL "Disable bedrock-level tests in the GUI build" FORCE)
 add_subdirectory(${BEDROCK_LEVEL_ROOT} bedrock-level)
-
-include_directories(
-        # App include subfolders come first so app headers (e.g. core/config.h)
-        # win over same-named bedrock-level headers.
-        ${PROJECT_SOURCE_DIR}/src/include/core
-        ${PROJECT_SOURCE_DIR}/src/include/ui
-        ${PROJECT_SOURCE_DIR}/src/include
-        ${BEDROCK_LEVEL_ROOT}/src/include
-        ${BEDROCK_LEVEL_ROOT}/third
-        ${PROJECT_SOURCE_DIR}/third
-        # for clangd
-        ${CMAKE_CURRENT_BINARY_DIR}/BedrockMap_autogen/include
-)
 
 find_package(Qt6 REQUIRED COMPONENTS 
     Core 
@@ -72,12 +64,15 @@ file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.dat
 )
 
-set(QRC_FILE ${PROJECT_SOURCE_DIR}/res.qrc)
+# Generate the resource manifest in the build tree so configuring CMake never
+# modifies a tracked source file.
+set(QRC_FILE ${CMAKE_CURRENT_BINARY_DIR}/res.qrc)
 file(WRITE ${QRC_FILE} "<RCC>\n    <qresource prefix=\"/\">\n")
 foreach(FILE ${RESOURCE_FILES})
     file(RELATIVE_PATH REL_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${FILE})
     string(REPLACE "\\" "/" REL_PATH ${REL_PATH})
-    file(APPEND ${QRC_FILE} "        <file>${REL_PATH}</file>\n")
+    string(REPLACE "\\" "/" RESOURCE_PATH ${FILE})
+    file(APPEND ${QRC_FILE} "        <file alias=\"${REL_PATH}\">${RESOURCE_PATH}</file>\n")
 endforeach()
 file(APPEND ${QRC_FILE} "    </qresource>\n</RCC>\n")
 
@@ -94,6 +89,13 @@ add_executable(BedrockMap
     ${SRC_FILES}
     ${APP_ICON_RESOURCE_WINDOWS}
     ${QRC_FILE}
+)
+
+target_include_directories(BedrockMap PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include/core
+    ${PROJECT_SOURCE_DIR}/src/include/ui
+    ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/third
 )
 
 target_link_libraries(BedrockMap PRIVATE

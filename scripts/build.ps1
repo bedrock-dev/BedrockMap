@@ -28,7 +28,7 @@ if (!(Test-Path $build_dir)) {
     New-Item -Path $build_dir -ItemType Directory | Out-Null
 }
 if (!(Test-Path (Join-Path $build_dir "CMakeCache.txt"))) {
-    # Quote the -D arg: PS 5.1 passes -DNAME=$var through unexpanded otherwise.
+    # Use the Qt/MinGW64 toolchain available in the current environment.
     cmake -G "Ninja" -B $build_dir "-DCMAKE_BUILD_TYPE=$config_type" .
 }
 
