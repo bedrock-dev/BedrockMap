@@ -143,7 +143,9 @@ if(WIN32)
             set(_dbg_flag -g1)
         endif()
         target_compile_options(BedrockMap PRIVATE ${_dbg_flag} -fno-omit-frame-pointer)
-        target_link_libraries(BedrockMap PRIVATE backtrace)
+        # ntdll exports RtlLookupFunctionEntry/RtlVirtualUnwind, which the crash
+        # handler uses to unwind via the per-function .pdata/.xdata metadata.
+        target_link_libraries(BedrockMap PRIVATE backtrace ntdll)
     endif()
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_options(BedrockMap PRIVATE

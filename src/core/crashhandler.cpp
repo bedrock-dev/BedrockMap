@@ -59,25 +59,22 @@ namespace crashhandler {
 
         void symbol_pc(Sink *sink, uintptr_t pc) { backtrace_pcinfo(g_state, pc, frame_cb, backtrace_error_cb, sink); }
 
-        bool is_readable(const void *p) {
-            MEMORY_BASIC_INFORMATION mi;
-            if (VirtualQuery(p, &mi, sizeof mi) == 0) return false;
-            return mi.State == MEM_COMMIT && (mi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READ |
-                                                            PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)) != 0;
-        }
-
-        // x64: each frame stores its return address at [RBP+8] and the caller's RBP
-        // at [RBP]. Walk that chain; stop early if a link points outside readable
-        // memory (tail-call/leaf frames may be skipped, that is fine for diagnostics).
-        void unwind_from_context(Sink *sink, DWORD64 rip, DWORD64 rbp) {
-            for (int frame = 0; frame < 64 && rip != 0; ++frame) {
-                symbol_pc(sink, static_cast<uintptr_t>(rip));
-                if (rbp == 0) break;
-                auto *ret = reinterpret_cast<const DWORD64 *>(rbp + 8);
-                auto *prev = reinterpret_cast<const DWORD64 *>(rbp);
-                if (!is_readable(ret) || !is_readable(prev)) break;
-                rip = *ret;
-                rbp = *prev;
+        // x64 unwinding uses the per-function .pdata/.xdata unwind info via
+        // RtlLookupFunctionEntry/RtlVirtualUnwind (the same metadata the OS uses for
+        // SEH), not a hand-rolled RBP chain. MinGW GCC builds many frames with RBP as
+        // a plain base register for locals (push regs; lea rbp,[rsp+N]), so walking
+        // [RBP] -> caller RBP reads garbage and stops after the first frame, while the
+        // unwind codes in .pdata describe the real frame layout for every function.
+        void unwind_from_context(Sink *sink, PCONTEXT ctx, int skip_frames) {
+            for (int frame = 0; frame < 64 && ctx->Rip != 0; ++frame) {
+                if (frame >= skip_frames) symbol_pc(sink, static_cast<uintptr_t>(ctx->Rip));
+                DWORD64 image_base = 0;
+                auto *entry = RtlLookupFunctionEntry(ctx->Rip, &image_base, nullptr);
+                if (entry == nullptr) break;  // leaf frame, no unwind metadata
+                PVOID handler_data = nullptr;
+                DWORD64 establisher_frame = 0;
+                // Handler type 0 = UNW_FLAG_NHANDLER: never run registered handlers.
+                RtlVirtualUnwind(0, image_base, ctx->Rip, entry, ctx, &handler_data, &establisher_frame, nullptr);
             }
         }
 
@@ -116,9 +113,10 @@ namespace crashhandler {
             }
             sink_printf(&sink, "Stack trace:\n");
             if (g_state) {
-                // ep->ContextRecord->Rip is inside the faulting instruction; start the
-                // frame chain from there so the crashing function appears first.
-                unwind_from_context(&sink, ep->ContextRecord->Rip, ep->ContextRecord->Rbp);
+                // Start from the faulting instruction's register context so the crashing
+                // function is printed first.
+                CONTEXT ctx = *ep->ContextRecord;
+                unwind_from_context(&sink, &ctx, 0);
             } else {
                 sink_printf(&sink, "  (backtrace state not initialized)\n");
             }
@@ -143,8 +141,12 @@ namespace crashhandler {
             sink_printf(&sink, "\n===== signal %d caught =====\n", sig);
             sink_printf(&sink, "Stack trace:\n");
             if (g_state) {
-                // Synchronous call from the aborting code: walk the live stack.
-                backtrace_full(g_state, 2, frame_cb, backtrace_error_cb, &sink);
+                // Synchronous call from the aborting code: snapshot the live stack and
+                // walk it with the same metadata-driven unwinder as the SEH path.
+                // libbacktrace cannot walk a MinGW PE stack on its own.
+                CONTEXT ctx;
+                RtlCaptureContext(&ctx);
+                unwind_from_context(&sink, &ctx, 1);  // skip this handler's own frame
             } else {
                 sink_printf(&sink, "  (backtrace state not initialized)\n");
             }
