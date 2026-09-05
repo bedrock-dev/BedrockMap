@@ -30,8 +30,11 @@ class RawChunkCache {
     // Put an explicit missing marker for the given position (cache key present with nullopt).
     void putMissing(bl::bedrock_level &level, const bl::chunk_pos &pos);
 
-    // Write all cached raw_chunks into the batch, then clear the cache.
+    // Write all cached raw_chunks into the batch. The cache is retained until
+    // the database confirms the batch succeeded.
     void commit(leveldb::WriteBatch &batch);
+
+    void clear() { cache_.clear(); }
 
     // Returns (empty_chunk_count, non_empty_chunk_count)
     std::pair<int, int> chunkCounts() const;

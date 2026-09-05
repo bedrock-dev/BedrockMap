@@ -51,5 +51,4 @@ void RawChunkCache::commit(leveldb::WriteBatch &batch) {
     for (auto &[pos, entry] : cache_) {
         entry.chunk.write(batch, entry.shouldDelete);
     }
-    cache_.clear();
 }

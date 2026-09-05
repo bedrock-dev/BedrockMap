@@ -421,15 +421,13 @@ bool LevelPageWidget::commit() {
         }
     }
 
-    if (!allModifies.empty()) {
-        this->level_loader_->modifyDBGlobal(allModifies);
-    }
+    if (!allModifies.empty() && !this->level_loader_->modifyDBGlobal(allModifies)) return false;
+    if (!level_loader_->commit()) return false;
     level_dat_editor_->clearModifyCache();
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
     other_nbt_editor_->clearModifyCache();
     map_item_editor_->nbtEditor()->clearModifyCache();
-    level_loader_->commit();
     refreshDirty();
     return true;
 }

@@ -127,7 +127,7 @@ QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW
     return img;
 }
 
-void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapFilter *filter, int rw, int rh, int chx, int chz, int y,
+void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapFilter &filter, int rw, int rh, int chx, int chz, int y,
                                   int y_solid) {
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
@@ -152,7 +152,7 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] =
         qRgba(render_info.color.r, render_info.color.g, render_info.color.b, render_info.color.a);
 
-    if ((filter->biomes_list_.count(biome) == 0) == filter->biome_black_mode_) {
+    if ((filter.biomes_list_.count(biome) == 0) == filter.biome_black_mode_) {
         auto biome_color = bl::get_biome_color(biome);
         reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(Z))[X] =
             qRgba(biome_color.r, biome_color.g, biome_color.b, biome_color.a);
@@ -167,18 +167,18 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     tips.solid_height = solid_h;
 }
 
-void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, int rh, ChunkRegion *region) {
-    if (!ch || !region || !filter) return;
+void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, int rh, ChunkRegion *region) {
+    if (!ch || !region) return;
     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
 
     // enable filter
-    if (filter->enable_layer_) {
-        if (filter->layer > maxy || filter->layer < miny) return;
+    if (filter.enable_layer_) {
+        if (filter.layer > maxy || filter.layer < miny) return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                auto b = ch->get_block_fast(i, filter->layer, j);
-                if ((filter->blocks_list_.count(b.name) == 0) == filter->block_black_mode_) {
-                    renderTerrainColumn(region, ch, filter, rw, rh, i, j, filter->layer, -1);
+                auto b = ch->get_block_fast(i, filter.layer, j);
+                if ((filter.blocks_list_.count(b.name) == 0) == filter.block_black_mode_) {
+                    renderTerrainColumn(region, ch, filter, rw, rh, i, j, filter.layer, -1);
                 }
             }
         }
@@ -186,7 +186,7 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, i
     }
 
     // disable filter
-    if (filter->isBlockFilterDefault()) {
+    if (filter.isBlockFilterDefault()) {
         // Fast path: get_height() O(1) + get_top_y() scans only from surface
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
@@ -208,7 +208,7 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, i
             int found_y = miny - 1, solid_y = miny - 1;
             while (y >= miny) {
                 auto b = ch->get_block_fast(i, y, j);
-                if (!found && (filter->blocks_list_.count(b.name) == 0) == filter->block_black_mode_) {
+                if (!found && (filter.blocks_list_.count(b.name) == 0) == filter.block_black_mode_) {
                     found = true;
                     found_y = y;
                     if (b.name != "minecraft:water") {
@@ -231,13 +231,13 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter *filter, int rw, i
     }
 }
 
-void MapTile::bakeChunkActors(bl::chunk *ch, const MapFilter *filter, ChunkRegion *region) {
+void MapTile::bakeChunkActors(bl::chunk *ch, const MapFilter &filter, ChunkRegion *region) {
     if (!ch) return;
     auto entities = ch->entities();
     auto mode = setting::current().ACTOR_RENDER_STYLE;
     for (auto &e : entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
-        if ((filter->actors_list_.count(key.toStdString()) == 0) == filter->actor_black_mode_) {
+        if ((filter.actors_list_.count(key.toStdString()) == 0) == filter.actor_black_mode_) {
             if (mode == 0) {
                 region->actors_[ActorImage(key)].push_back(e->pos());
             } else {

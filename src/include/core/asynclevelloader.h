@@ -13,6 +13,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -138,7 +139,7 @@ class AsyncLevelLoader : public QObject {
 
     void clearChunkCache(const bl::chunk_pos &p);
 
-    void commit();
+    bool commit();
 
     bool modifyDBGlobal(const std::unordered_map<std::string, std::string> &modifies);
 
@@ -158,12 +159,13 @@ class AsyncLevelLoader : public QObject {
 
    private:
     template <typename T>
-    QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, QCache<region_pos, T> *> &caches, int dim, int maxCost) {
+    QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>> &caches, int dim, int maxCost) {
         auto it = caches.find(dim);
-        if (it != caches.end()) return it->second;
-        auto *cache = new QCache<region_pos, T>(maxCost);
-        caches[dim] = cache;
-        return cache;
+        if (it != caches.end()) return it->second.get();
+        auto cache = std::make_unique<QCache<region_pos, T>>(maxCost);
+        auto *result = cache.get();
+        caches.emplace(dim, std::move(cache));
+        return result;
     }
 
     std::atomic_bool loaded_{false};
@@ -171,9 +173,9 @@ class AsyncLevelLoader : public QObject {
     RawChunkCache level_cache_;
     // map region cache
     TaskBuffer<region_pos> processing_;
-    std::unordered_map<int, QCache<region_pos, ChunkRegion> *> region_cache_;
-    std::unordered_map<int, QCache<region_pos, char> *> invalid_cache_;
-    QCache<region_pos, QImage> *slime_chunk_cache_;
+    std::unordered_map<int, std::unique_ptr<QCache<region_pos, ChunkRegion>>> region_cache_;
+    std::unordered_map<int, std::unique_ptr<QCache<region_pos, char>>> invalid_cache_;
+    std::unique_ptr<QCache<region_pos, QImage>> slime_chunk_cache_;
     QThreadPool pool_;
     MapFilter map_filter_;
     std::atomic_bool transparent_void_{false};
@@ -186,7 +188,7 @@ class AsyncLevelLoader : public QObject {
     // Values are raw Data3D/Data2D height_map arrays (256 × int16_t, ~512 bytes each).
     // Populated on first access, survives across region loads.
     // Protected by height_map_mutex_ for worker-thread safety; uses QCache auto-LRU.
-    QCache<bl::chunk_pos, std::array<int16_t, 256>> *height_map_cache_ = nullptr;
+    std::unique_ptr<QCache<bl::chunk_pos, std::array<int16_t, 256>>> height_map_cache_;
     mutable QMutex height_map_mutex_;
 
     RegionTimer region_load_timer_;

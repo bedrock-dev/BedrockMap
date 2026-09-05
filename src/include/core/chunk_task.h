@@ -119,8 +119,8 @@ class LoadRegionTask : public QObject, public QRunnable {
     Q_OBJECT
 
    public:
-    LoadRegionTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos, const MapFilter *filter)
-        : QRunnable(), loader_(loader), pos_(pos), filter_(filter) {}
+    LoadRegionTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos, MapFilter filter)
+        : QRunnable(), loader_(loader), pos_(pos), filter_(std::move(filter)) {}
     void run() override;
 
    public:
@@ -131,7 +131,7 @@ class LoadRegionTask : public QObject, public QRunnable {
    private:
     AsyncLevelLoader *loader_;
     region_pos pos_;
-    const MapFilter *filter_;
+    MapFilter filter_;
 };
 
 #endif

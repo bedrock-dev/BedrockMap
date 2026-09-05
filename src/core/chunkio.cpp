@@ -53,7 +53,7 @@ std::vector<char> ExportedRegion::serialize() {
 
 ExportedRegion ExportedRegion::deserialize(const char *data, size_t size) {
     ExportedRegion reg;
-    if (size < 10) return reg;
+    if (!data || size < 10) return reg;
 
     const char *p = data;
     if (std::memcmp(p, MAGIC, 5) != 0) return reg;
@@ -63,18 +63,23 @@ ExportedRegion ExportedRegion::deserialize(const char *data, size_t size) {
     int32_t chunkCount;
     std::memcpy(&chunkCount, p, 4);
     p += 4;
+    if (chunkCount < 0 || static_cast<size_t>(chunkCount) > (size - 10) / 4) return {};
 
     for (int32_t i = 0; i < chunkCount; i++) {
-        if (p + 4 > data + size) break;
+        const size_t offset = static_cast<size_t>(p - data);
+        if (offset > size || size - offset < 4) return {};
         int32_t chunkSize;
         std::memcpy(&chunkSize, p, 4);
         p += 4;
+        if (chunkSize < 0) return {};
 
-        if (p + chunkSize > data + size) break;
+        const size_t payloadOffset = static_cast<size_t>(p - data);
+        const size_t payloadSize = static_cast<size_t>(chunkSize);
+        if (payloadOffset > size || payloadSize > size - payloadOffset) return {};
 
         bl::raw_chunk chunk;
         std::vector<byte_t> raw(p, p + chunkSize);
-        if (!chunk.from_raw(raw)) break;
+        if (!chunk.from_raw(raw)) return {};
         p += chunkSize;
 
         reg.chunks_.push_back(std::move(chunk));

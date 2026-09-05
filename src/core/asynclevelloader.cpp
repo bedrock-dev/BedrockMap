@@ -28,11 +28,11 @@
 AsyncLevelLoader::AsyncLevelLoader() {
     this->pool_.setMaxThreadCount(setting::current().THREAD_NUM);
     for (int dim : {0, 1, 2}) {
-        this->region_cache_[dim] = new QCache<region_pos, ChunkRegion>(setting::current().REGION_CACHE_SIZE);
-        this->invalid_cache_[dim] = new QCache<region_pos, char>(setting::current().EMPTY_REGION_CACHE_SIZE);
+        this->region_cache_[dim] = std::make_unique<QCache<region_pos, ChunkRegion>>(setting::current().REGION_CACHE_SIZE);
+        this->invalid_cache_[dim] = std::make_unique<QCache<region_pos, char>>(setting::current().EMPTY_REGION_CACHE_SIZE);
     }
-    this->slime_chunk_cache_ = new QCache<region_pos, QImage>(8192);
-    this->height_map_cache_ = new QCache<bl::chunk_pos, std::array<int16_t, 256>>(setting::current().HEIGHT_MAP_CACHE_SIZE);
+    this->slime_chunk_cache_ = std::make_unique<QCache<region_pos, QImage>>(8192);
+    this->height_map_cache_ = std::make_unique<QCache<bl::chunk_pos, std::array<int16_t, 256>>>(setting::current().HEIGHT_MAP_CACHE_SIZE);
 }
 
 ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
@@ -48,7 +48,7 @@ ChunkRegion *AsyncLevelLoader::tryGetRegion(const region_pos &p, bool &empty) {
     if (region) return region;
     // not in cache but in queue
     if (this->processing_.contains(p)) return nullptr;
-    auto *task = new LoadRegionTask(this, p, &this->map_filter_);
+    auto *task = new LoadRegionTask(this, p, this->map_filter_);
     connect(task, &LoadRegionTask::finish, this,
             [this](int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks) {
                 if (!region || (!region->valid)) {
@@ -182,13 +182,19 @@ void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) {
     if (it2 != invalid_cache_.end()) it2->second->remove(rp);
 }
 
-void AsyncLevelLoader::commit() {
+bool AsyncLevelLoader::commit() {
     LOG_F(INFO, "Commit chunks change");
-    if (!this->loaded_ || chunkCoordsLoading() || this->level_cache_.empty()) return;
+    if (!this->loaded_ || chunkCoordsLoading() || this->level_cache_.empty()) return true;
     leveldb::WriteBatch batch;
     this->level_cache_.commit(batch);
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    if (!s.ok()) {
+        LOG_F(ERROR, "Failed to commit chunk changes: %s", s.ToString().c_str());
+        return false;
+    }
+    this->level_cache_.clear();
     emit dirtyChanged();
+    return true;
 }
 
 void AsyncLevelLoader::clearAllCache() {
@@ -307,6 +313,10 @@ bool AsyncLevelLoader::modifyDBGlobal(const std::unordered_map<std::string, std:
         }
     }
     auto s = this->level_.db()->Write(leveldb::WriteOptions(), &batch);
+    if (!s.ok()) {
+        LOG_F(ERROR, "Failed to modify global data: %s", s.ToString().c_str());
+        return false;
+    }
     return true;
 }
 
