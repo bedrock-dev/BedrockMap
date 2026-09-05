@@ -17,6 +17,7 @@
 #include <string>
 
 #include "config.h"
+#include "crashhandler.h"
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
 #include "resourcemanager.h"
@@ -72,6 +73,7 @@ QString resolveLanguage() {
 int main(int argc, char *argv[]) {
     setupLog(argc, argv);
     LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
+    crashhandler::install();
 
     // QOpenGLWidget is a native child window on Windows. The first time it is shown
     // inside an already-visible top-level window whose pixel format does not match,

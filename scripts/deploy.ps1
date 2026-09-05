@@ -56,5 +56,13 @@ Copy-Item -Path .\bedrock-level\data\colors\biome_color.json -Destination $relea
 Copy-Item -Path "$build_dir\en.qm" -Destination "$release_dir\translations\" -ErrorAction Stop
 Copy-Item -Path "$build_dir\zh_CN.qm" -Destination "$release_dir\translations\" -ErrorAction Stop
 
-Compress-Archive -Path $release_dir -DestinationPath BedrockMap.zip -Force
+# Name the archive after the most recent version tag, e.g. BedrockMap-v1.0.0-beta10.zip
+$versionTag = git describe --tags --abbrev=0 2>$null
+if (-not $versionTag) {
+    $versionTag = "unknown"
+    Write-Warning "No git tag found; archive will be named with 'unknown'"
+}
+$archiveName = "BedrockMap-$versionTag.zip"
+
+Compress-Archive -Path $release_dir -DestinationPath $archiveName -Force
 Remove-Item -Path $release_dir -Recurse -Force

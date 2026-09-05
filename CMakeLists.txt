@@ -126,7 +126,25 @@ endif()
 message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
 target_compile_definitions(BedrockMap PRIVATE GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 
+# OFF by default: -g1 keeps crash-handler backtraces symbolized without the
+# ~90MB of full debug info. ON gives full -g for gdb local-variable debugging.
+option(BEDROCKMAP_FULL_DEBUG "Build with full -g debug info (for gdb)" OFF)
+
 if(WIN32)
+    if(MINGW)
+        # crashhandler.cpp unwinds via the RBP frame chain and symbolizes with
+        # libbacktrace (reads the DWARF from the exe). -g1 is enough for that:
+        # it keeps function names + file/line but drops local vars & full type
+        # info, which slashes the ~90MB of debug bloat. Turn BEDROCKMAP_FULL_DEBUG
+        # on (cmake -DBEDROCKMAP_FULL_DEBUG=ON) if you need full -g for gdb.
+        if(BEDROCKMAP_FULL_DEBUG)
+            set(_dbg_flag -g)
+        else()
+            set(_dbg_flag -g1)
+        endif()
+        target_compile_options(BedrockMap PRIVATE ${_dbg_flag} -fno-omit-frame-pointer)
+        target_link_libraries(BedrockMap PRIVATE backtrace)
+    endif()
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_options(BedrockMap PRIVATE
             -static-libgcc

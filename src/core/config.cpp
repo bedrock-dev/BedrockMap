@@ -17,6 +17,7 @@
 #include <QFile>
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "color.h"
 #include "loguru/loguru.hpp"
@@ -134,7 +135,6 @@ void setting::init() {
         LOG_F(INFO, "Config file not found, writing defaults");
         setting::save();
     }
-
     setting::load();
 }
 
