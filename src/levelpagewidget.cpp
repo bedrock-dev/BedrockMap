@@ -25,6 +25,7 @@
 #include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "msg.h"
+#include "pleasewaitdialog.h"
 #include "resourcemanager.h"
 #include "utils.h"
 
@@ -69,7 +70,7 @@ void LevelStatusBar::setModifyInfo(int modified, int deleted) {
 }
 
 // level widget
-LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget(parent), parent_(parent), tab_id_(id) {
+LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget(parent), parent_(parent), tab_id_(id), commit_task_(this) {
     level_loader_ = std::make_unique<AsyncLevelLoader>();
 
     // gui
@@ -79,6 +80,9 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
 
     // status bar
     status_bar_ = new LevelStatusBar(this);
+    connect(&commit_task_, &GuiTaskRunner::started, this, []() { PleaseWaitDialog::instance().showBusy(); });
+    connect(&commit_task_, &GuiTaskRunner::finished, this, &LevelPageWidget::onCommitFinished);
+    connect(&commit_task_, &GuiTaskRunner::failed, this, &LevelPageWidget::onCommitFailed);
 
     // vertical splitter: map + nbt tabs
     vertSplitter_ = new QSplitter(Qt::Vertical, this);
@@ -138,6 +142,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
 LevelPageWidget::~LevelPageWidget() {
     this->stop_loading_global_data_ = true;
     this->global_data_task_.waitForFinished();
+    this->commit_task_.waitForFinished();
     this->level_loader_->close();
 }
 
@@ -184,8 +189,13 @@ void LevelPageWidget::setupSelectionToolBar() {
             if (!isDirty()) {
                 INFO(msg::NOTHING_TO_SAVE());
             } else {
+                connect(
+                    this, &LevelPageWidget::commitFinished, this,
+                    [this](bool success) {
+                        if (success) INFO(msg::LEVEL_SAVED());
+                    },
+                    Qt::SingleShotConnection);
                 commit();
-                INFO(msg::LEVEL_SAVED());
             }
             // save action
         }
@@ -399,6 +409,7 @@ void LevelPageWidget::refreshDirty() {
 
 bool LevelPageWidget::commit() {
     LOG_F(INFO, "Commit modifications");
+    if (commit_task_.isRunning() || (mapWidget_ && mapWidget_->chunkEditRunning())) return false;
     if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
         QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
         return false;
@@ -425,14 +436,36 @@ bool LevelPageWidget::commit() {
         }
     }
 
-    if (!level_loader_->commitEdits(allModifies, levelDat.get())) return false;
+    pending_level_dat_ = std::move(levelDat);
+    pending_global_modifies_ = std::move(allModifies);
+    const auto globalModifies = pending_global_modifies_;
+    commit_task_.start([this, globalModifies](GuiTaskRunner *task) {
+        const bool success = level_loader_->commitEdits(globalModifies, pending_level_dat_.get());
+        if (!success) task->fail(tr("Save failed"));
+    });
+    return true;
+}
+
+void LevelPageWidget::onCommitFinished() {
+    PleaseWaitDialog::instance().hideBusy();
     level_dat_editor_->clearModifyCache();
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
     other_nbt_editor_->clearModifyCache();
     map_item_editor_->nbtEditor()->clearModifyCache();
+    pending_level_dat_.reset();
+    pending_global_modifies_.clear();
     refreshDirty();
-    return true;
+    emit commitFinished(true);
+}
+
+void LevelPageWidget::onCommitFailed(const QString &error) {
+    PleaseWaitDialog::instance().hideBusy();
+    pending_level_dat_.reset();
+    pending_global_modifies_.clear();
+    QMessageBox::warning(this, tr("Save failed"), error);
+    refreshDirty();
+    emit commitFinished(false);
 }
 
 bool LevelPageWidget::loadLevel(const QString &path) {
@@ -465,6 +498,7 @@ bool LevelPageWidget::loadLevel(const QString &path) {
 void LevelPageWidget::closeLevel() {
     this->stop_loading_global_data_ = true;
     global_data_task_.waitForFinished();
+    if (mapWidget_) mapWidget_->waitForChunkEditTask();
     if (level_loader_->isOpen()) level_loader_->close();
 }
 

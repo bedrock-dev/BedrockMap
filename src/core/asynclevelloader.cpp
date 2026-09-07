@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QtConcurrent>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -19,17 +20,12 @@
 #include "chunkio.h"
 #include "config.h"
 #include "data_3d.h"
-#include "leveldb/write_batch.h"
 #include "loguru/loguru.hpp"
 #include "maptile.h"
 
 AsyncLevelLoader::AsyncLevelLoader()
-    : region_scheduler_(this),
-      edit_service_(
-          storage_, cache_manager_, chunk_coords_service_, loaded_, preload_all_chunk_coords_, [this]() { emit dirtyChanged(); },
-          [this]() {
-              if (loaded_.load(std::memory_order_acquire)) emit regionReady();
-          }) {
+    : region_scheduler_(this), edit_service_(storage_, cache_manager_, chunk_coords_service_, loaded_, preload_all_chunk_coords_) {
+    connect(&chunk_coords_service_, &ChunkCoordsService::coordsUpdated, this, &AsyncLevelLoader::requestRefresh, Qt::DirectConnection);
     connect(
         &region_scheduler_, &RegionRenderScheduler::regionFinished, this,
         [this](region_pos pos, ChunkRegion *region, long long loadTime, long long renderTime) {
@@ -41,7 +37,7 @@ AsyncLevelLoader::AsyncLevelLoader()
                 region_render_timer_.push(renderTime);
                 cache_manager_.insertRegion(pos, region);
             }
-            emit regionReady();
+            requestRefresh();
         },
         Qt::DirectConnection);
 }
@@ -68,9 +64,7 @@ bool AsyncLevelLoader::open(const std::string &path) {
     if (this->loaded_) {
         if (this->preload_all_chunk_coords_) {
             LOG_F(INFO, "Start loading all chunk cooords");
-            chunk_coords_service_.start(storage_.level().db(), true, [this]() {
-                if (loaded_) emit regionReady();
-            });
+            chunk_coords_service_.start(storage_.level().db(), true, [this]() { requestRefresh(); });
         }
     }
     return this->loaded_;
@@ -106,26 +100,87 @@ bl::chunk *AsyncLevelLoader::getChunk(const bl::chunk_pos &p, bl::chunk_load_pol
 
 std::optional<bl::raw_chunk> AsyncLevelLoader::getRawChunk(const bl::chunk_pos &p) { return edit_service_.getRawChunk(p); }
 
-bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos &p) { return edit_service_.deleteChunk(p); }
+bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos &p) {
+    if (!edit_service_.deleteChunk(p)) return false;
+    emit dirtyChanged();
+    return true;
+}
 
-bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk &raw) { return edit_service_.putRawChunk(raw); }
+bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk &raw) {
+    if (!edit_service_.putRawChunk(raw)) return false;
+    emit dirtyChanged();
+    return true;
+}
 
 void AsyncLevelLoader::setRenderViewport(const region_pos &minRegion, const region_pos &maxRegion) {
     if (!loaded_.load(std::memory_order_acquire)) return;
     region_scheduler_.setViewport(minRegion, maxRegion);
 }
 
-bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) { return edit_service_.createVoid(p); }
+bool AsyncLevelLoader::createVoid(const bl::chunk_pos &p) {
+    if (!edit_service_.createVoid(p)) return false;
+    emit dirtyChanged();
+    return true;
+}
 
-bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome) { return edit_service_.setRawChunkBiome(p, biome); }
+bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome) {
+    if (!edit_service_.setRawChunkBiome(p, biome)) return false;
+    emit dirtyChanged();
+    return true;
+}
+
+void AsyncLevelLoader::requestRefresh() {
+    // Drop late notifications once the level is being closed.
+    if (!loaded_.load(std::memory_order_acquire)) return;
+    emit regionReady();
+}
+
+void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos> &chunks) {
+    // Coordinate index writes are queued independently; drain them so the
+    // refresh that follows sees a consistent chunk presence snapshot.
+    chunk_coords_service_.waitForUpdates();
+
+    // Collapse the edited chunks onto the 8x8-chunk region tiles covering them.
+    std::set<bl::chunk_pos> regions;
+    for (const auto &c : chunks) regions.insert(constant::c2r(c));
+    if (regions.empty()) return;
+
+    // Region cache is GUI-thread owned.
+    const auto drop = [this, regions]() {
+        for (const auto &r : regions) cache_manager_.removeRegion(r);
+    };
+    if (QThread::currentThread() == thread()) {
+        drop();
+    } else {
+        QMetaObject::invokeMethod(this, drop, Qt::BlockingQueuedConnection);
+    }
+}
+
+void AsyncLevelLoader::invalidateRegionTiles(const QRegion &chunkRegion, int dim) {
+    std::vector<bl::chunk_pos> chunks;
+    for (const auto &rect : chunkRegion) {
+        for (int x = rect.x(); x <= rect.x() + rect.width() - 1; ++x) {
+            for (int z = rect.y(); z <= rect.y() + rect.height() - 1; ++z) {
+                chunks.emplace_back(x, z, dim);
+            }
+        }
+    }
+    invalidateRegionTiles(chunks);
+}
 
 void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos &p) { edit_service_.clearChunkCache(p); }
 
-bool AsyncLevelLoader::commit() { return edit_service_.commit(); }
+bool AsyncLevelLoader::commit() {
+    if (!edit_service_.commit()) return false;
+    emit dirtyChanged();
+    return true;
+}
 
 bool AsyncLevelLoader::commitEdits(const std::unordered_map<std::string, std::string> &globalModifies,
                                    const bl::nbt::compound_tag *levelDat) {
-    return edit_service_.commitEdits(globalModifies, levelDat);
+    if (!edit_service_.commitEdits(globalModifies, levelDat)) return false;
+    emit dirtyChanged();
+    return true;
 }
 
 void AsyncLevelLoader::clearAllCache() {

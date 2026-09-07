@@ -9,6 +9,7 @@
 #include "chunkoperator.h"
 #include "floatingtoolbar.h"
 #include "loguru/loguru.hpp"
+#include "mapwidget.h"
 #include "msg.h"
 #include "resourcemanager.h"
 
@@ -139,7 +140,11 @@ void ImportOverlay::confirm() {
         chunk.set_pos(cp, &loader_->level());
     }
 
-    ChunkOperator::importRegion(preview_, *loader_);
+    if (auto *map = qobject_cast<MapWidget *>(parent_)) {
+        map->applyImportedRegionAsync(preview_);
+    } else {
+        ChunkOperator::importRegion(preview_, *loader_);
+    }
 
     emit confirmed();
     cleanup();

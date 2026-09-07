@@ -352,6 +352,12 @@
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>Global NBT</translation>
     </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>Save failed</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LevelTabWidget</name>
@@ -359,12 +365,6 @@
         <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation>Welcome</translation>
-    </message>
-    <message>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <source>levelTabWidget.title.pleaseWait</source>
-        <translation>Please wait...</translation>
     </message>
 </context>
 <context>
@@ -696,6 +696,11 @@
         <source>mapWidget.rightMenu.exportMcstructureFailed</source>
         <translation>Failed to export mcstructure</translation>
     </message>
+    <message>
+        <location filename="../src/mapwidget.cpp"/>
+        <source>mapWidget.editFailed</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>McstructurePageWidget</name>
@@ -954,6 +959,14 @@
     </message>
     <message>
         <source>newLevelForm.biome</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PleaseWaitDialog</name>
+    <message>
+        <location filename="../src/pleasewaitdialog.cpp"/>
+        <source>Please wait...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

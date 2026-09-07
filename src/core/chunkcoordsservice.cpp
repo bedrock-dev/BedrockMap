@@ -32,7 +32,9 @@ void ChunkCoordsService::close() {
     index_.clear();
 }
 
-void ChunkCoordsService::enqueueUpdate(const bl::chunk_pos &pos, bool present, std::function<void()> finished) {
+void ChunkCoordsService::enqueueUpdate(const bl::chunk_pos &pos, bool present) {
     if (!ready()) return;
-    index_.enqueueUpdate(pos, present, std::move(finished));
+    index_.enqueueUpdate(pos, present, [this]() { emit coordsUpdated(); });
 }
+
+void ChunkCoordsService::waitForUpdates() { index_.waitForTasks(); }

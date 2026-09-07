@@ -2,7 +2,6 @@
 #define BEDROCKMAP_CHUNKEDITORWIDGET_H
 
 #include <QWidget>
-#include <cstddef>
 #include <functional>
 
 #include "asynclevelloader.h"

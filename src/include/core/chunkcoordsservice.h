@@ -1,6 +1,7 @@
 #ifndef BEDROCKMAP_CHUNKCOORDSSERVICE_H
 #define BEDROCKMAP_CHUNKCOORDSSERVICE_H
 
+#include <QObject>
 #include <QThreadPool>
 #include <atomic>
 #include <functional>
@@ -13,7 +14,9 @@ namespace leveldb {
 }
 
 /// Coordinates the two-stage chunk coordinate index lifecycle for one level.
-class ChunkCoordsService {
+class ChunkCoordsService : public QObject {
+    Q_OBJECT
+
    public:
     ChunkCoordsService();
     ~ChunkCoordsService();
@@ -24,11 +27,18 @@ class ChunkCoordsService {
     bool ready() const { return ready_.load(std::memory_order_acquire); }
     bool loading(bool preloadAll) const { return preloadAll && !ready(); }
 
-    void enqueueUpdate(const bl::chunk_pos &pos, bool present, std::function<void()> finished = {});
+    void enqueueUpdate(const bl::chunk_pos &pos, bool present);
+
+    /// Wait until all interactive coordinate updates queued so far are applied.
+    void waitForUpdates();
 
     const ChunkCoordsIndex &index() const { return index_; }
     QImage image(const region_pos &pos) const { return index_.image(pos); }
     std::optional<ChunkCoordsBoundingBox> boundingBox(int dim) const { return index_.boundingBox(dim); }
+
+   signals:
+    /// One interactive coordinate-index update finished applying on its worker.
+    void coordsUpdated();
 
    private:
     QThreadPool preload_pool_;

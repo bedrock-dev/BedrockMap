@@ -1,7 +1,7 @@
 #ifndef BEDROCKMAP_CHUNKSTORAGE_H
 #define BEDROCKMAP_CHUNKSTORAGE_H
 
-#include <array>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -27,8 +27,14 @@ class ChunkStorage {
     const bl::bedrock_level &level() const { return level_; }
 
     bool isOpen() const { return level_.is_open(); }
-    bool isDirty() const { return cache_.isDirty(); }
-    std::pair<int, int> chunkModifyCounts() const { return cache_.chunkCounts(); }
+    bool isDirty() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return cache_.isDirty();
+    }
+    std::pair<int, int> chunkModifyCounts() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return cache_.chunkCounts();
+    }
     CommitError lastCommitError() const { return last_commit_error_; }
 
     bl::chunk *getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy);
@@ -44,6 +50,7 @@ class ChunkStorage {
    private:
     bl::bedrock_level level_{};
     RawChunkCache cache_;
+    mutable std::mutex mutex_;
     CommitError last_commit_error_{CommitError::None};
 };
 

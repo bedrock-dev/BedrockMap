@@ -1,42 +1,31 @@
 #include "leveltabwidget.h"
 
 #include <qdialog.h>
-#include <qlabel.h>
 #include <qlogging.h>
 #include <qmessagebox.h>
 #include <qnamespace.h>
 #include <qtmetamacros.h>
 #include <qwidget.h>
 
-#include <QVBoxLayout>
-
 #include "asynclevelloader.h"
 #include "levelpagewidget.h"
 #include "mapwidget.h"
 #include "msg.h"
+#include "nbtfilepagewidget.h"
+#include "nbtwidget.h"
+#include "pleasewaitdialog.h"
 
 LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
     setTabsClosable(true);
     this->welcome_tab_ = new WorldListTab(this);
     this->addTab(this->welcome_tab_, tr("levelTabWidget.title.welcome"));
 
-    close_level_mss_box_ = new QDialog(this);
-    close_level_mss_box_->setWindowTitle(tr("levelTabWidget.title.pleaseWait"));
-    close_level_mss_box_->setFixedSize(200, 80);
-    auto *layout = new QVBoxLayout(close_level_mss_box_);
-    auto *label = new QLabel(tr("levelTabWidget.title.pleaseWait"), close_level_mss_box_);
-    label->setAlignment(Qt::AlignCenter);
-    layout->addWidget(label);
-    close_level_mss_box_->setLayout(layout);
-    close_level_mss_box_->setModal(false);
-    close_level_mss_box_->setWindowFlags(Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-
     this->levedb_debug_widget_ = new LevelDBDebugDialog(this);
     this->render_filter_dialog_ = new RenderFilterDialog(this);
 
     // connect
     connect(this, &QTabWidget::tabCloseRequested, this, &LevelTabWidget::onTabClosed);
-    connect(&this->close_level_task_, &GuiTaskRunner::started, this, [this]() { close_level_mss_box_->show(); });
+    connect(&this->close_level_task_, &GuiTaskRunner::started, this, []() { PleaseWaitDialog::instance().showBusy(); });
     connect(&this->close_level_task_, &GuiTaskRunner::finished, this, &LevelTabWidget::onCloseLevelFinished);
     connect(this, &QTabWidget::currentChanged, this, [&]() {
         auto *page = qobject_cast<LevelPageWidget *>(currentWidget());
@@ -136,10 +125,14 @@ void LevelTabWidget::onTabClosed(int index) {
             auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
             if (btn == QMessageBox::Cancel) return;
-            if (btn == QMessageBox::Yes) levelPage->commit();
+            if (btn == QMessageBox::Yes) {
+                pending_close_page_ = levelPage;
+                connect(levelPage, &LevelPageWidget::commitFinished, this, &LevelTabWidget::onPageCommitFinished, Qt::SingleShotConnection);
+                if (!levelPage->commit()) pending_close_page_ = nullptr;
+                return;
+            }
         }
-        closing_page_ = levelPage;
-        close_level_task_.start([levelPage](GuiTaskRunner *) { levelPage->closeLevel(); });
+        startCloseLevel(levelPage);
         return;
     }
 
@@ -157,11 +150,24 @@ void LevelTabWidget::onTabClosed(int index) {
     }
 }
 
+void LevelTabWidget::startCloseLevel(LevelPageWidget *page) {
+    if (!page) return;
+    closing_page_ = page;
+    close_level_task_.start([page](GuiTaskRunner *) { page->closeLevel(); });
+}
+
+void LevelTabWidget::onPageCommitFinished(bool success) {
+    auto *page = qobject_cast<LevelPageWidget *>(sender());
+    if (!page || page != pending_close_page_) return;
+    pending_close_page_ = nullptr;
+    if (success) startCloseLevel(page);
+}
+
 void LevelTabWidget::onCloseLevelFinished() {
     auto *page = closing_page_;
     closing_page_ = nullptr;
     if (!page) {
-        close_level_mss_box_->hide();
+        PleaseWaitDialog::instance().hideBusy();
         return;
     }
     // The close worker has finished all LevelDB/task work. Clear the
@@ -171,7 +177,7 @@ void LevelTabWidget::onCloseLevelFinished() {
     int idx = indexOf(page);
     if (idx >= 0) removeTab(idx);
     page->deleteLater();
-    close_level_mss_box_->hide();
+    PleaseWaitDialog::instance().hideBusy();
 }
 
 void LevelTabWidget::closeCurrentLevel() { onTabClosed(currentIndex()); }
@@ -184,7 +190,13 @@ bool LevelTabWidget::confirmCloseAllLevels() {
         auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (btn == QMessageBox::Cancel) return false;
-        if (btn == QMessageBox::Yes) page->commit();
+        if (btn == QMessageBox::Yes) {
+            // Saving is asynchronous. The close event must be retried after
+            // the progress dialog completes, otherwise the window could exit
+            // while the worker still owns the level data.
+            page->commit();
+            return false;
+        }
     }
     return true;
 }

@@ -283,15 +283,15 @@ bool ChunkEditorWidget::saveChunk() {
     raw_chunk_.set_entities(actors);
     raw_chunk_.set_normal(bl::chunk_key::HardCodedSpawnAreas, this->hsa_editor_->serialize());
     const bool saved = this->level_loader_->putRawChunk(this->raw_chunk_);
-    if (!saved) {
-        for (auto *actor : actors) delete actor;
-        return false;
-    }
+    for (auto *actor : actors) delete actor;
+    if (!saved) return false;
+    // GUI-thread single-chunk edit: drop the cached region tile so the map
+    // re-renders this chunk on its next paint.
+    this->level_loader_->clearChunkCache(this->raw_chunk_.pos());
     actor_editor_->clearModifyCache();
     pending_tick_editor_->clearModifyCache();
     block_entity_editor_->clearModifyCache();
     hsa_editor_->markClean();
-    for (auto *actor : actors) delete actor;
     setDirty(false);
     return true;
 }

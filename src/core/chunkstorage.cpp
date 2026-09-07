@@ -15,67 +15,80 @@
 
 namespace {
 
-bool writeLevelDatAtomically(const std::string &fileName, const std::string &data) {
-    namespace fs = std::filesystem;
-    const fs::path target(fileName);
-    fs::path temporary = target;
-    temporary += ".tmp";
+    bool writeLevelDatAtomically(const std::string &fileName, const std::string &data) {
+        namespace fs = std::filesystem;
+        const fs::path target(fileName);
+        fs::path temporary = target;
+        temporary += ".tmp";
 
-    {
-        std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
-        if (!output.is_open()) {
-            LOG_F(ERROR, "Can not open temporary level.dat file %s", temporary.string().c_str());
-            return false;
+        {
+            std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
+            if (!output.is_open()) {
+                LOG_F(ERROR, "Can not open temporary level.dat file %s", temporary.string().c_str());
+                return false;
+            }
+            output.write(data.data(), static_cast<std::streamsize>(data.size()));
+            output.flush();
+            if (!output.good()) {
+                LOG_F(ERROR, "Can not write temporary level.dat file %s", temporary.string().c_str());
+                std::error_code removeError;
+                fs::remove(temporary, removeError);
+                return false;
+            }
         }
-        output.write(data.data(), static_cast<std::streamsize>(data.size()));
-        output.flush();
-        if (!output.good()) {
-            LOG_F(ERROR, "Can not write temporary level.dat file %s", temporary.string().c_str());
-            std::error_code removeError;
-            fs::remove(temporary, removeError);
-            return false;
-        }
-    }
 
 #ifdef _WIN32
-    // MoveFileEx replaces the destination in one filesystem operation. The
-    // write-through flag also asks Windows to flush the replacement metadata.
-    if (!MoveFileExW(temporary.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-        LOG_F(ERROR, "Can not atomically replace level.dat (error %lu); temporary file kept at %s", GetLastError(),
-              temporary.string().c_str());
-        return false;
-    }
+        // MoveFileEx replaces the destination in one filesystem operation. The
+        // write-through flag also asks Windows to flush the replacement metadata.
+        if (!MoveFileExW(temporary.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+            LOG_F(ERROR, "Can not atomically replace level.dat (error %lu); temporary file kept at %s", GetLastError(),
+                  temporary.string().c_str());
+            return false;
+        }
 #else
-    std::error_code renameError;
-    fs::rename(temporary, target, renameError);
-    if (renameError) {
-        LOG_F(ERROR, "Can not atomically replace level.dat: %s; temporary file kept at %s", renameError.message().c_str(),
-              temporary.string().c_str());
-        return false;
-    }
+        std::error_code renameError;
+        fs::rename(temporary, target, renameError);
+        if (renameError) {
+            LOG_F(ERROR, "Can not atomically replace level.dat: %s; temporary file kept at %s", renameError.message().c_str(),
+                  temporary.string().c_str());
+            return false;
+        }
 #endif
-    return true;
-}
+        return true;
+    }
 
 }  // namespace
 
 bl::chunk *ChunkStorage::getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy) {
-    if (cache_.hasChunk(pos)) return cache_.getChunk(pos, policy);
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (cache_.hasChunk(pos)) return cache_.getChunk(pos, policy);
+    }
     return level_.get_chunk(pos, policy);
 }
 
 std::optional<bl::raw_chunk> ChunkStorage::getRawChunk(const bl::chunk_pos &pos) {
-    if (cache_.hasChunk(pos)) return cache_.getRawChunk(pos);
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (cache_.hasChunk(pos)) return cache_.getRawChunk(pos);
+    }
     bl::raw_chunk raw(pos);
     if (raw.read(level_)) return raw;
     return std::nullopt;
 }
 
-void ChunkStorage::putMissing(const bl::chunk_pos &pos) { cache_.putMissing(level_, pos); }
+void ChunkStorage::putMissing(const bl::chunk_pos &pos) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    cache_.putMissing(level_, pos);
+}
 
-void ChunkStorage::putRawChunk(const bl::raw_chunk &raw) { cache_.putChunk(raw.pos(), raw); }
+void ChunkStorage::putRawChunk(const bl::raw_chunk &raw) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    cache_.putChunk(raw.pos(), raw);
+}
 
 bool ChunkStorage::commit(const std::unordered_map<std::string, std::string> &globalModifies, const bl::nbt::compound_tag *levelDat) {
+    std::lock_guard<std::mutex> lock(mutex_);
     last_commit_error_ = CommitError::None;
     if (cache_.empty() && globalModifies.empty() && !levelDat) return true;
 

@@ -169,21 +169,28 @@ bool BlockRegionOperator::exportMcstructure(const QRegion &chunkRegion, const QS
 }
 
 void ChunkOperator::importRegion(const ExportedRegion &region, AsyncLevelLoader &loader) {
+    std::vector<bl::chunk_pos> edited;
+    edited.reserve(region.chunks().size());
     for (const auto &chunk : region.chunks()) {
         loader.putRawChunk(chunk);
+        edited.push_back(chunk.pos());
     }
+    loader.invalidateRegionTiles(edited);
     LOG_F(INFO, "ChunkOperator: imported %d chunks", static_cast<int>(region.chunkCount()));
 }
 
 void ChunkOperator::deleteRegion(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim) {
     forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.deleteChunk(cp); });
+    loader.invalidateRegionTiles(chunkRegion, dim);
 }
 
 void ChunkOperator::createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim) {
     LOG_F(INFO, "Create void!");
     forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.createVoid(cp); });
+    loader.invalidateRegionTiles(chunkRegion, dim);
 }
 
 void ChunkOperator::setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome, int dim) {
     forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.setRawChunkBiome(cp, biome); });
+    loader.invalidateRegionTiles(chunkRegion, dim);
 }

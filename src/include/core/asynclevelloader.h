@@ -4,10 +4,10 @@
 #include <qimage.h>
 
 #include <QFuture>
+#include <QRegion>
 #include <QRunnable>
 #include <QThreadPool>
 #include <atomic>
-#include <functional>
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -46,7 +46,8 @@ class AsyncLevelLoader : public QObject {
 
    signals:
     void dirtyChanged();
-    /// Emitted when a new region tile finishes loading/rendering in the background.
+    /// Map content changed (a region tile finished, chunk coordinates were
+    /// updated, or a preload completed) — listeners should refresh the view.
     void regionReady();
 
    public:
@@ -142,6 +143,13 @@ class AsyncLevelLoader : public QObject {
 
     bool setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome);
 
+    /// Drop cached region tiles covering the given edited chunks. Thread-safe:
+    /// safe to call from the bulk-edit worker threads after the edits land.
+    void invalidateRegionTiles(const std::vector<bl::chunk_pos> &chunks);
+
+    /// Convenience overload for a rectangular chunk selection.
+    void invalidateRegionTiles(const QRegion &chunkRegion, int dim);
+
     void clearChunkCache(const bl::chunk_pos &p);
 
     bool commit();
@@ -172,6 +180,8 @@ class AsyncLevelLoader : public QObject {
     bool preload_all_chunk_coords_{false};
     ChunkCoordsService chunk_coords_service_;
     ChunkEditService edit_service_;
+
+    void requestRefresh();
 
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;

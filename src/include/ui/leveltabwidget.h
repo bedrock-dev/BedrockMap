@@ -9,11 +9,8 @@
 
 #include "guitaskrunner.h"
 #include "levelpagewidget.h"
-#include "mapwidget.h"
 #include "mcstructurepagewidget.h"
-#include "nbtfilepagewidget.h"
 #include "renderfilterdialog.h"
-#include "tabpagewidget.h"
 #include "worldlisttab.h"
 
 class LevelDBDebugDialog : public QDialog {
@@ -91,6 +88,7 @@ class LevelTabWidget : public QTabWidget {
    private slots:
     void onTabClosed(int index);
     void onCloseLevelFinished();
+    void onPageCommitFinished(bool success);
 
    private:
     LevelDBDebugDialog *levedb_debug_widget_;
@@ -102,6 +100,8 @@ class LevelTabWidget : public QTabWidget {
     // close level handler
     GuiTaskRunner close_level_task_;
     LevelPageWidget *closing_page_{nullptr};
-    QDialog *close_level_mss_box_;
+    LevelPageWidget *pending_close_page_{nullptr};
+
+    void startCloseLevel(LevelPageWidget *page);
 };
 #endif

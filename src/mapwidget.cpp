@@ -40,15 +40,22 @@
 #include "config.h"
 #include "gotopositiondialog.h"
 #include "loguru/loguru.hpp"
+#include "pleasewaitdialog.h"
 #include "voxelwidget.h"
 
 QFont MapWidget::CHUNK_TEXT_FONT = QFont("JetBrains Mono", 8);
 
 // ctor
-MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent), level_loader_(loader) {
+MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent), level_loader_(loader), chunk_edit_task_(this) {
     // trigger redraw when an async region finishes loading, replacing the old 100ms timer polling
     if (this->level_loader_) {
-        connect(this->level_loader_, &AsyncLevelLoader::regionReady, this, [this] { this->update(); });
+        connect(this->level_loader_, &AsyncLevelLoader::regionReady, this, [this] {
+            // Bulk edit tasks invalidate many regions and update the chunk
+            // coordinate index one item at a time. Defer map repainting until
+            // the batch completes to avoid a full redraw for every chunk.
+            if (chunk_edit_task_.isRunning()) return;
+            this->update();
+        });
     }
     // low-frequency timer only refreshes the debug window info (memory usage, etc.)
     this->sync_refresh_timer_ = new QTimer();
@@ -64,6 +71,14 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
     // dialog
     this->goto_dialog_ = new GoToPositionDialog(this);
     voxel_preview_window_ = new VoxelPreviewWidget();
+    connect(&chunk_edit_task_, &GuiTaskRunner::finished, this, [this]() {
+        PleaseWaitDialog::instance().hideBusy();
+        update();
+    });
+    connect(&chunk_edit_task_, &GuiTaskRunner::failed, this, [this](const QString &error) {
+        PleaseWaitDialog::instance().hideBusy();
+        QMessageBox::warning(this, tr("mapWidget.editFailed"), error);
+    });
     connect(voxel_preview_window_, &VoxelPreviewWidget::exportMcstructureRequested, this,
             [this](VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat) {
                 std::optional<bl::block_box> blockBounds;
@@ -91,7 +106,12 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
 
     // import overlay
     import_overlay_ = new ImportOverlay(this, loader);
-    connect(import_overlay_, &ImportOverlay::confirmed, this, [this] { update(); });
+    connect(import_overlay_, &ImportOverlay::confirmed, this, [this] {
+        // Async imports invalidate many regions; the batch completion handler
+        // performs the single authoritative repaint after all updates finish.
+        if (chunk_edit_task_.isRunning()) return;
+        update();
+    });
     connect(import_overlay_, &ImportOverlay::toolbarsVisibleRequested, this, &MapWidget::toolbarsVisibleRequested);
 
     // keyboard pan timer: ~60fps for smooth arrow-key movement
@@ -319,6 +339,7 @@ void MapWidget::onPanTick() {
 }
 
 MapWidget::~MapWidget() {
+    chunk_edit_task_.waitForFinished();
     delete this->sync_refresh_timer_;
     delete voxel_preview_window_;
 }

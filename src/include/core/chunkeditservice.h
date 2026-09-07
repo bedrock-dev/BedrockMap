@@ -2,7 +2,6 @@
 #define BEDROCKMAP_CHUNKEDITSERVICE_H
 
 #include <atomic>
-#include <functional>
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -19,10 +18,8 @@ class RegionCacheManager;
 /// persistence concerns independent from region rendering and scheduling.
 class ChunkEditService {
    public:
-    using Callback = std::function<void()>;
-
     ChunkEditService(ChunkStorage &storage, RegionCacheManager &cacheManager, ChunkCoordsService &coordsService,
-                     const std::atomic_bool &loaded, const bool &preloadAllChunkCoords, Callback dirtyChanged, Callback coordsChanged);
+                     const std::atomic_bool &loaded, const bool &preloadAllChunkCoords);
 
     bl::chunk *getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy);
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &pos);
@@ -43,15 +40,12 @@ class ChunkEditService {
    private:
     bool canEdit() const;
     void markChanged(const bl::chunk_pos &pos, bool present);
-    void notifyDirty();
 
     ChunkStorage &storage_;
     RegionCacheManager &cache_manager_;
     ChunkCoordsService &coords_service_;
     const std::atomic_bool &loaded_;
     const bool &preload_all_chunk_coords_;
-    Callback dirty_changed_;
-    Callback coords_changed_;
 };
 
 #endif  // BEDROCKMAP_CHUNKEDITSERVICE_H

@@ -17,7 +17,6 @@
 #include <QFile>
 #include <algorithm>
 #include <string>
-#include <vector>
 
 #include "color.h"
 #include "loguru/loguru.hpp"

@@ -83,6 +83,9 @@ class LevelPageWidget : public TabPageWidget {
     void refreshDirty();
     bool commit() override;
 
+   signals:
+    void commitFinished(bool success);
+
    private:
     // data
     void collectVillagesGuiData(const bl::village_data::village_table_type &vs);
@@ -94,6 +97,8 @@ class LevelPageWidget : public TabPageWidget {
    private slots:
     void onLoadGlobalDataFinished();
     void onLoadGlobalDataFailed(const QString &error);
+    void onCommitFinished();
+    void onCommitFailed(const QString &error);
 
    private:
     // data source
@@ -101,6 +106,9 @@ class LevelPageWidget : public TabPageWidget {
 
     // global data
     GuiTaskRunner global_data_task_;
+    GuiTaskRunner commit_task_;
+    std::unique_ptr<bl::nbt::compound_tag> pending_level_dat_;
+    std::unordered_map<std::string, std::string> pending_global_modifies_;
     std::atomic_bool stop_loading_global_data_{false};
     GlobalNBTLoadResult global_data_;
     QMap<QString, VillageDrawInfo> villages_;

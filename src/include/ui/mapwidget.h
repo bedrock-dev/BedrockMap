@@ -26,6 +26,7 @@
 #include "config.h"
 #include "contextmenubuilder.h"
 #include "gotopositiondialog.h"
+#include "guitaskrunner.h"
 #include "importoverlay.h"
 #include "render_options.h"
 #include "selectionregion.h"
@@ -250,6 +251,9 @@ class MapWidget : public QWidget {
     void deleteSelection(int dim);
     void createVoidSelection(int dim);
     void setSelectionBiome(int biome, int dim);
+    void applyImportedRegionAsync(ExportedRegion region);
+    bool chunkEditRunning() const { return chunk_edit_task_.isRunning(); }
+    void waitForChunkEditTask() { chunk_edit_task_.waitForFinished(); }
     void show3DView(int dim);
     void syncToolbars();
 
@@ -307,6 +311,7 @@ class MapWidget : public QWidget {
     void drawCoordsMiniMap(QPainter *p);
 
     bool modificationBlocked();
+    bool startChunkTask(GuiTaskRunner::Worker worker);
 
     void drawActors(QPaintEvent *event, QPainter *p);
 
@@ -375,6 +380,7 @@ class MapWidget : public QWidget {
 
     // import
     ImportOverlay *import_overlay_{nullptr};
+    GuiTaskRunner chunk_edit_task_;
 
     // keyboard pan
     QTimer *pan_timer_{nullptr};

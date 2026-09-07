@@ -1,5 +1,3 @@
-#include "mapwidget.h"
-
 #include <qcolor.h>
 #include <qlogging.h>
 #include <qnamespace.h>
@@ -38,13 +36,12 @@
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
 #include "chunkoperator.h"
-#include "config.h"
 #include "gotopositiondialog.h"
 #include "loguru/loguru.hpp"
+#include "mapwidget.h"
 #include "msg.h"
-#include "processmonitor.h"
+#include "pleasewaitdialog.h"
 #include "voxelwidget.h"
-
 
 QImage MapWidget::captureSelectionToImage(double scale) {
     if (selection_.isEmpty()) {
@@ -219,20 +216,34 @@ void MapWidget::importFromFile(int dim) {
 
 void MapWidget::deleteSelection(int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
-    ChunkOperator::deleteRegion(selection_.region(), *level_loader_, dim);
-    update();
+    const auto region = selection_.region();
+    startChunkTask([this, region, dim](GuiTaskRunner * /*task*/) { ChunkOperator::deleteRegion(region, *level_loader_, dim); });
 }
 
 void MapWidget::createVoidSelection(int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
-    ChunkOperator::createVoid(selection_.region(), *level_loader_, dim);
-    update();
+    const auto region = selection_.region();
+    startChunkTask([this, region, dim](GuiTaskRunner * /*task*/) { ChunkOperator::createVoid(region, *level_loader_, dim); });
 }
 
 void MapWidget::setSelectionBiome(int biome, int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
-    ChunkOperator::setRegionBiome(selection_.region(), *level_loader_, static_cast<bl::biome>(biome), dim);
-    update();
+    const auto region = selection_.region();
+    startChunkTask([this, region, biome, dim](GuiTaskRunner * /*task*/) {
+        ChunkOperator::setRegionBiome(region, *level_loader_, static_cast<bl::biome>(biome), dim);
+    });
+}
+
+bool MapWidget::startChunkTask(GuiTaskRunner::Worker worker) {
+    if (!level_loader_ || chunk_edit_task_.isRunning()) return false;
+    PleaseWaitDialog::instance().showBusy();
+    return chunk_edit_task_.start(std::move(worker));
+}
+
+void MapWidget::applyImportedRegionAsync(ExportedRegion region) {
+    if (!level_loader_ || chunk_edit_task_.isRunning() || region.isEmpty()) return;
+    startChunkTask(
+        [this, region = std::move(region)](GuiTaskRunner * /*task*/) mutable { ChunkOperator::importRegion(region, *level_loader_); });
 }
 
 bool MapWidget::modificationBlocked() {
@@ -249,9 +260,7 @@ void MapWidget::show3DView(int dim) {
     voxel_preview_window_->loadChunksAsync(minPos, maxPos, *level_loader_);
 }
 
-void MapWidget::syncToolbars() {
-    emit syncToolbarsRequested();
-}
+void MapWidget::syncToolbars() { emit syncToolbarsRequested(); }
 
 // show right-click context menu
 void MapWidget::showContextMenu(const QPoint &p) { ContextMenuBuilder::show(this, this, mapToGlobal(p)); }

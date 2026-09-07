@@ -239,5 +239,6 @@ void SettingsDialog::onSave() {
 
     values.LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
 
+    setting::apply(values);
     setting::save(values);
 }

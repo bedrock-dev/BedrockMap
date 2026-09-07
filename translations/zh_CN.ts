@@ -352,6 +352,12 @@
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>全局NBT</translation>
     </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>Save failed</source>
+        <translation>保存失败</translation>
+    </message>
 </context>
 <context>
     <name>LevelTabWidget</name>
@@ -359,12 +365,6 @@
         <location filename="../src/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation>欢迎</translation>
-    </message>
-    <message>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <source>levelTabWidget.title.pleaseWait</source>
-        <translation>请稍候...</translation>
     </message>
 </context>
 <context>
@@ -696,6 +696,11 @@
         <source>mapWidget.rightMenu.exportMcstructureFailed</source>
         <translation>mcstructure 导出失败</translation>
     </message>
+    <message>
+        <location filename="../src/mapwidget.cpp"/>
+        <source>mapWidget.editFailed</source>
+        <translation>编辑失败</translation>
+    </message>
 </context>
 <context>
     <name>McstructurePageWidget</name>
@@ -955,6 +960,14 @@
     <message>
         <source>newLevelForm.biome</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PleaseWaitDialog</name>
+    <message>
+        <location filename="../src/pleasewaitdialog.cpp"/>
+        <source>Please wait...</source>
+        <translation>请稍候...</translation>
     </message>
 </context>
 <context>
