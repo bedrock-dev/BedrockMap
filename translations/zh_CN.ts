@@ -132,6 +132,14 @@
         <translation>显示网格</translation>
     </message>
     <message>
+        <source>chunkEditor.layer</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <source>chunkEditor.height</source>
+        <translation>高度 Y</translation>
+    </message>
+    <message>
         <source>chunkEditor.entities</source>
         <translation>实体</translation>
     </message>
@@ -192,6 +200,11 @@
         <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation>群系: </translation>
+    </message>
+    <message>
+        <location filename="../src/chunksectionwidget.cpp"/>
+        <source>chunkSectionWidget.tooltip.palette</source>
+        <translation>调色板: </translation>
     </message>
 </context>
 <context>

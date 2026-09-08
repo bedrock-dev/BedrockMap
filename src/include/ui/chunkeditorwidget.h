@@ -49,6 +49,9 @@ class ChunkEditorWidget : public QWidget {
     void on_terrain_level_edit_valueChanged(int arg1);
 
    private slots:
+    void on_terrain_layer_edit_valueChanged(int arg1);
+
+   private slots:
     void on_terrain_show_grid_cb_stateChanged(int arg1);
 
    private slots:

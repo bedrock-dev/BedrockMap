@@ -58,6 +58,8 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     ui->terrain_level_slider->setRange(-64, 319);
     ui->terrain_level_slider->setSingleStep(1);
     ui->terrain_level_edit->setRange(-64, 319);
+    ui->terrain_layer_edit->setRange(0, 255);
+    ui->terrain_layer_edit->setValue(0);
     // actor tab
     this->actor_editor_ = new NbtWidget();
     this->pending_tick_editor_ = new NbtWidget();
@@ -353,6 +355,11 @@ void ChunkEditorWidget::on_terrain_level_edit_valueChanged(int arg1) {
     ui->terrain_level_slider->setValue(ui->terrain_level_edit->value());
     auto y = ui->terrain_level_edit->value();
     this->chunk_section_->setYLevel(y);
+    this->chunk_section_->update();
+}
+
+void ChunkEditorWidget::on_terrain_layer_edit_valueChanged(int arg1) {
+    this->chunk_section_->setLayer(ui->terrain_layer_edit->value());
     this->chunk_section_->update();
 }
 

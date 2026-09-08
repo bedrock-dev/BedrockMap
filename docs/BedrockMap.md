@@ -332,8 +332,7 @@ MainWindow
 
 | 方法                                  | 说明                          |
 | ------------------------------------- | ----------------------------- |
-| `get_block(cx, y, cz)`                | 获取方块信息（名称+颜色）     |
-| `get_block_fast(cx, y, cz)`           | 快速获取方块（无回退查找）    |
+| `get_block_with_color(cx, y, cz)`     | 获取方块信息（名称+颜色）     |
 | `get_block_raw(cx, y, cz)`            | 获取方块原始 NBT              |
 | `get_block_color(cx, y, cz)`          | 获取方块颜色                  |
 | `get_biome(cx, y, cz)`                | 获取群系                      |
@@ -374,12 +373,11 @@ sub_chunk
 
 主要方法：
 
-| 方法                         | 说明                   |
-| ---------------------------- | ---------------------- |
-| `load(data, len)`            | 从二进制数据加载子区块 |
-| `get_block(rx, ry, rz)`      | 获取方块（含回退查找） |
-| `get_block_fast(rx, ry, rz)` | 快速获取方块           |
-| `get_block_raw(rx, ry, rz)`  | 获取方块原始 NBT       |
+| 方法                               | 说明                   |
+| ---------------------------------- | ---------------------- |
+| `load(data, len)`                  | 从二进制数据加载子区块 |
+| `get_block_with_color(rx, ry, rz)` | 获取方块（名称+颜色）  |
+| `get_block_raw(rx, ry, rz)`        | 获取方块原始 NBT       |
 
 #### 5.1.4 `bl::nbt` — NBT 标签库
 
@@ -830,23 +828,23 @@ struct MapFilter {
 
 命名空间 `cfg` 中的关键配置：
 
-| 变量                    | 默认值   | 说明                   |
-| ----------------------- | -------- | ---------------------- |
-| `FONT_FAMILY`           | 微软雅黑 | 字体族                 |
-| `FONT_SIZE`             | 10       | 字体大小               |
-| `GRID_WIDTH`            | 1        | 网格宽度（单位：区块） |
-| `SHADOW_LEVEL`          | 150      | 阴影强度 (0-255)       |
-| `ZOOM_SPEED`            | 1.2      | 缩放速度               |
-| `MINIMUM_SCALE_LEVEL`   | 4        | 最小缩放级别           |
-| `MAXIMUM_SCALE_LEVEL`   | 1024     | 最大缩放级别           |
-| `MAP_RENDER_STYLE`      | 1        | 渲染风格               |
-| `TRANSPARENT_WATER`     | true     | 透明水渲染             |
-| `THREAD_NUM`            | 8        | 线程数                 |
-| `REGION_CACHE_SIZE`     | 4096     | 区域缓存容量           |
-| `OPEN_NBT_EDITOR_ONLY`  | false    | 仅 NBT 编辑器模式      |
-| `LANGUAGE`              | zh_CN    | 语言                   |
-| `LOAD_GLOBAL_DATA`      | true     | 加载全局数据           |
-| `RW`                    | 8        | 区域大小（区块数）     |
+| 变量                   | 默认值   | 说明                   |
+| ---------------------- | -------- | ---------------------- |
+| `FONT_FAMILY`          | 微软雅黑 | 字体族                 |
+| `FONT_SIZE`            | 10       | 字体大小               |
+| `GRID_WIDTH`           | 1        | 网格宽度（单位：区块） |
+| `SHADOW_LEVEL`         | 150      | 阴影强度 (0-255)       |
+| `ZOOM_SPEED`           | 1.2      | 缩放速度               |
+| `MINIMUM_SCALE_LEVEL`  | 4        | 最小缩放级别           |
+| `MAXIMUM_SCALE_LEVEL`  | 1024     | 最大缩放级别           |
+| `MAP_RENDER_STYLE`     | 1        | 渲染风格               |
+| `TRANSPARENT_WATER`    | true     | 透明水渲染             |
+| `THREAD_NUM`           | 8        | 线程数                 |
+| `REGION_CACHE_SIZE`    | 4096     | 区域缓存容量           |
+| `OPEN_NBT_EDITOR_ONLY` | false    | 仅 NBT 编辑器模式      |
+| `LANGUAGE`             | zh_CN    | 语言                   |
+| `LOAD_GLOBAL_DATA`     | true     | 加载全局数据           |
+| `RW`                   | 8        | 区域大小（区块数）     |
 
 ---
 
@@ -941,7 +939,7 @@ tryGetRegion(region_pos)
         ├── MapFilter::renderImages()
         │   ├── 确定 Y 层（固定层或最高非空方块）
         │   ├── 遍历 16×16 柱状区域
-        │   │   ├── get_block() 获取方块
+        │   │   ├── get_block_with_color() 获取方块（名称+颜色）
         │   │   ├── 应用方块/群系过滤
         │   │   └── 设置像素颜色
         │   └── 生成 terrain/biome/height 三张图像

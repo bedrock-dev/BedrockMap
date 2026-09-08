@@ -684,13 +684,12 @@ std::optional<bl::block_box> VoxelWidget::currentExportBounds() const {
     if (!fullBounds) return std::nullopt;
     if (!selection_enabled_ || !selection_.isValid()) return fullBounds;
 
-    bl::block_box bounds{
-        {std::clamp(static_cast<int>(std::floor(selection_.minimum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
-         std::clamp(static_cast<int>(std::floor(selection_.minimum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
-         std::clamp(static_cast<int>(std::floor(selection_.minimum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)},
-        {std::clamp(static_cast<int>(std::ceil(selection_.maximum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
-         std::clamp(static_cast<int>(std::ceil(selection_.maximum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
-         std::clamp(static_cast<int>(std::ceil(selection_.maximum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)}};
+    bl::block_box bounds{{std::clamp(static_cast<int>(std::floor(selection_.minimum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
+                          std::clamp(static_cast<int>(std::floor(selection_.minimum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
+                          std::clamp(static_cast<int>(std::floor(selection_.minimum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)},
+                         {std::clamp(static_cast<int>(std::ceil(selection_.maximum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
+                          std::clamp(static_cast<int>(std::ceil(selection_.maximum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
+                          std::clamp(static_cast<int>(std::ceil(selection_.maximum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)}};
     if (!bounds.is_valid()) return std::nullopt;
     return bounds;
 }
@@ -793,8 +792,7 @@ void VoxelWidget::buildVoxelVertices() {
 
 // helper
 std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                                                                    const std::function<void(int)>& f,
-                                                                                    int* firstWorldY) {
+                                                                                    const std::function<void(int)>& f, int* firstWorldY) {
     if (chunks.empty() || chunks[0].empty()) {
         return {};
     }
@@ -867,7 +865,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
                         }
 
                         Voxel& voxel = data[global_y_idx][global_x_idx][global_z_idx];
-                        auto block_info = ch->get_block(x, world_y, z);
+                        auto block_info = ch->get_block_with_color(x, world_y, z);
                         auto biome = ch->get_biome(x, world_y, z);
 
                         if (block_info.name == "minecraft:unknown" || block_info.name == "minecraft:air") continue;

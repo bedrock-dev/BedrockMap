@@ -131,14 +131,14 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
                                   int y_solid) {
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
-    auto info = ch->get_block(chx, y, chz);
+    auto info = ch->get_block_with_color(chx, y, chz);
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
     bl::block_info solid_info = info;
     int16_t solid_h = static_cast<int16_t>(y);
     if (y_solid >= 0 && y_solid < y) {
-        solid_info = ch->get_block(chx, y_solid, chz);
+        solid_info = ch->get_block_with_color(chx, y_solid, chz);
         solid_h = static_cast<int16_t>(y_solid);
     }
 
@@ -176,8 +176,8 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
         if (filter.layer > maxy || filter.layer < miny) return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                auto b = ch->get_block_fast(i, filter.layer, j);
-                if ((filter.blocks_list_.count(b.name) == 0) == filter.block_black_mode_) {
+                const auto &b = ch->get_block_name(i, filter.layer, j);
+                if ((filter.blocks_list_.count(b) == 0) == filter.block_black_mode_) {
                     renderTerrainColumn(region, ch, filter, rw, rh, i, j, filter.layer, -1);
                 }
             }
@@ -207,18 +207,18 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
             bool found = false;
             int found_y = miny - 1, solid_y = miny - 1;
             while (y >= miny) {
-                auto b = ch->get_block_fast(i, y, j);
-                if (!found && (filter.blocks_list_.count(b.name) == 0) == filter.block_black_mode_) {
+                const auto &b = ch->get_block_name(i, y, j);
+                if (!found && (filter.blocks_list_.count(b) == 0) == filter.block_black_mode_) {
                     found = true;
                     found_y = y;
-                    if (b.name != "minecraft:water") {
+                    if (b != "minecraft:water") {
                         solid_y = y;
                         break;
                     }
                     y--;
                     continue;
                 }
-                if (found && b.name != "minecraft:air" && b.name != "minecraft:water") {
+                if (found && b != "minecraft:air" && b != "minecraft:water") {
                     solid_y = y;
                     break;
                 }

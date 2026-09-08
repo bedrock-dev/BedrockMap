@@ -89,14 +89,14 @@ void setRegionBlockData(const MapFilter *f, bl::chunk *ch, int chx, int chz, int
     if (!ch || !f) return;
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
-    auto info = ch->get_block(chx, y, chz);
+    auto info = ch->get_block_with_color(chx, y, chz);
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
     bl::block_info solid_info;
     int16_t solid_h = -1;
     if (y_solid >= 0 && y_solid < y) {
-        solid_info = ch->get_block(chx, y_solid, chz);
+        solid_info = ch->get_block_with_color(chx, y_solid, chz);
         solid_h = static_cast<int16_t>(y_solid);
     } else {
         solid_info = info;
@@ -141,8 +141,8 @@ void MapFilter::renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region)
         if (this->layer > maxy || this->layer < miny) return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                auto b = ch->get_block_fast(i, this->layer, j);
-                if ((this->blocks_list_.count(b.name) == 0) == this->block_black_mode_) {
+                const auto &b = ch->get_block_name(i, this->layer, j);
+                if ((this->blocks_list_.count(b) == 0) == this->block_black_mode_) {
                     setRegionBlockData(this, ch, i, j, this->layer, -1, rw, rh, region);
                 }
             }

@@ -40,9 +40,11 @@ void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             QRect rect(x_start + i * bw, j * bw + z_start, bw, bw);
-            auto data = this->get_layer_data(this->y_level_)[i][j];
-            if (data.block_name == "minecraft:air") continue;
-            auto c = data.block_color;
+            const auto &data = this->get_layer_data(this->y_level_)[i][j];
+            if (this->layer_ >= static_cast<int>(data.layers.size())) continue;
+            const auto &layer = data.layers[this->layer_];
+            if (layer.block_name == "minecraft:air") continue;
+            auto c = layer.block_color;
             p.fillRect(rect, QBrush(QColor(c.r, c.g, c.b)));
             p.setPen(pen);
             if (draw_grid_) p.drawRect(rect);
@@ -82,13 +84,18 @@ void ChunkSectionWidget::load_data(bl::chunk *ch) {
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
                 auto &data = this->get_layer_data(y)[x][z];
+                data.layers.clear();
                 data.biome = ch->get_biome(x, y, z);
-                auto *raw = ch->get_block_raw(x, y, z);
-                auto info = ch->get_block(x, y, z);
-                data.block_name = info.name;
-                data.block_color = bl::blend_color_with_biome(data.block_name, info.color, data.biome);
-                if (raw) {
-                    data.block_palette = raw->to_readable_string();
+                // collect every block layer (0..n); stop when the layer index runs out
+                for (int layer = 0;; layer++) {
+                    auto *raw = ch->get_block_raw(x, y, z, layer);
+                    if (!raw) break;
+                    auto info = ch->get_block_with_color(x, y, z, layer);
+                    TerrainLayerData layer_data;
+                    layer_data.block_name = info.name;
+                    layer_data.block_color = bl::blend_color_with_biome(layer_data.block_name, info.color, data.biome);
+                    layer_data.block_palette = raw->to_readable_string();
+                    data.layers.push_back(std::move(layer_data));
                 }
             }
         }
@@ -118,21 +125,22 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     auto &data = this->get_layer_data(this->y_level_)[rx][rz];
     auto posString = QString("%1,%2,%3").arg(QString::number(rx), QString::number(this->y_level_), QString::number(rz));
     auto biomeString = QString("%1 (%2)").arg(data.biome).arg(bl::get_biome_name(data.biome).c_str());
-    auto paletteString = QString(data.block_palette.c_str());
-    auto blockNameString = QString(data.block_name.c_str());
+
+    bool hasLayer = this->layer_ < static_cast<int>(data.layers.size());
+    auto blockNameString = QString(hasLayer ? data.layers[this->layer_].block_name.c_str() : "minecraft:air");
+    auto paletteString = QString(hasLayer ? data.layers[this->layer_].block_palette.c_str() : "");
 
     QAction posAction(tr("chunkSectionWidget.tooltip.position") + posString, this);
     QAction blockNameAction(tr("chunkSectionWidget.tooltip.blockName") + blockNameString, this);
-    QAction blockPaletteAction(("Palette: " + getDisplayedPalette(paletteString.toStdString())).c_str(), this);
+    QAction blockPaletteAction(tr("chunkSectionWidget.tooltip.palette") + QString(getDisplayedPalette(paletteString.toStdString()).c_str()),
+                               this);
     QAction biomeAction(tr("chunkSectionWidget.tooltip.biome") + biomeString, this);
 
     auto *cb = QApplication::clipboard();
 
     connect(&posAction, &QAction::triggered, this, [cb, &posString] { cb->setText(posString); });
-
-    connect(&blockPaletteAction, &QAction::triggered, this, [cb, &paletteString] { cb->setText(paletteString); });
     connect(&blockNameAction, &QAction::triggered, this, [cb, &blockNameString] { cb->setText(blockNameString); });
-
+    connect(&blockPaletteAction, &QAction::triggered, this, [cb, &paletteString] { cb->setText(paletteString); });
     connect(&biomeAction, &QAction::triggered, this, [cb, &biomeString] { cb->setText(biomeString); });
 
     contextMenu.addAction(&posAction);

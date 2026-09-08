@@ -132,6 +132,14 @@
         <translation>Show Grid</translation>
     </message>
     <message>
+        <source>chunkEditor.layer</source>
+        <translation>Layer</translation>
+    </message>
+    <message>
+        <source>chunkEditor.height</source>
+        <translation>Height Y</translation>
+    </message>
+    <message>
         <source>chunkEditor.entities</source>
         <translation>Entities</translation>
     </message>
@@ -192,6 +200,11 @@
         <location filename="../src/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation>Biome: </translation>
+    </message>
+    <message>
+        <location filename="../src/chunksectionwidget.cpp"/>
+        <source>chunkSectionWidget.tooltip.palette</source>
+        <translation>Palette: </translation>
     </message>
 </context>
 <context>

@@ -2,13 +2,19 @@
 #define BEDROCKMAP_CHUNKSECTIONWIDGET_H
 
 #include <QWidget>
+#include <vector>
 
 #include "chunk.h"
 
-struct TerrainData {
+
+struct TerrainLayerData {
     std::string block_palette{};
     std::string block_name{};
     bl::color block_color{0, 0, 0, 255};
+};
+
+struct TerrainData {
+    std::vector<TerrainLayerData> layers{};
     bl::biome biome{bl::none};
 };
 
@@ -26,6 +32,11 @@ class ChunkSectionWidget : public QWidget {
         this->update();
     }
 
+    inline void setLayer(int layer) {
+        this->layer_ = layer;
+        this->update();
+    }
+
     void load_data(bl::chunk *ch);
 
     int get_block_pix();
@@ -34,7 +45,7 @@ class ChunkSectionWidget : public QWidget {
 
     void showContextMenu(const QPoint &p);
 
-    void setDrawGrid(bool draw_grid){this->draw_grid_ = draw_grid;}
+    void setDrawGrid(bool draw_grid) { this->draw_grid_ = draw_grid; }
 
    private:
     inline std::array<std::array<TerrainData, 16>, 16> &get_layer_data(int y) { return this->data_[y + 64]; }
@@ -42,6 +53,7 @@ class ChunkSectionWidget : public QWidget {
    signals:
    private:
     int y_level_{0};
+    int layer_{0};
     bool draw_grid_{false};
     std::array<std::array<std::array<TerrainData, 16>, 16>, 384> data_;
 };

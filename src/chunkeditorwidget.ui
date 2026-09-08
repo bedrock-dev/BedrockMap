@@ -141,30 +141,48 @@
         <number>2</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,1">
-         <property name="spacing">
-          <number>1</number>
+        <layout class="QGridLayout" name="gridLayout_terrain">
+         <property name="horizontalSpacing">
+          <number>6</number>
          </property>
-         <item>
-          <widget class="QCheckBox" name="terrain_show_grid_cb">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+         <property name="verticalSpacing">
+          <number>4</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="terrain_layer_label">
+           <property name="text">
+            <string>chunkEditor.layer</string>
            </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="terrain_layer_edit">
+           <property name="maximum">
+            <number>15</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QCheckBox" name="terrain_show_grid_cb">
            <property name="text">
             <string>chunkEditor.showGrid</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="terrain_height_label">
+           <property name="text">
+            <string>chunkEditor.height</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
           <widget class="QSpinBox" name="terrain_level_edit"/>
          </item>
-         <item>
+         <item row="1" column="2">
           <widget class="QSlider" name="terrain_level_slider">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
