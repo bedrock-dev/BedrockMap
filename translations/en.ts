@@ -156,6 +156,36 @@
         <translation>Stats</translation>
     </message>
     <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.size</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.hash</source>
+        <translation>Hash</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.action</source>
+        <translation>Action</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.export</source>
+        <translation>Export</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.exportTitle</source>
+        <translation>Export Data</translation>
+    </message>
+    <message>
         <source>chunkEditor.save</source>
         <translation>Save Chunk Data</translation>
     </message>

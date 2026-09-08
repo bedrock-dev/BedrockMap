@@ -1,8 +1,11 @@
 #ifndef BEDROCKMAP_CHUNKEDITORWIDGET_H
 #define BEDROCKMAP_CHUNKEDITORWIDGET_H
 
+#include <QString>
 #include <QWidget>
 #include <functional>
+#include <utility>
+#include <vector>
 
 #include "asynclevelloader.h"
 #include "chunk.h"
@@ -85,6 +88,8 @@ class ChunkEditorWidget : public QWidget {
 
     void deleteActorData();
 
+    void exportStatRow(int row);
+
    private:
     ChunkSectionWidget *chunk_section_{nullptr};
 
@@ -105,6 +110,8 @@ class ChunkEditorWidget : public QWidget {
     bl::raw_chunk raw_chunk_;
     bool has_chunk_{false};
     bool dirty_{false};
+    // per-row payload of the stats table (suggested file name + raw bytes)
+    std::vector<std::pair<QString, std::string>> stats_export_rows_;
 };
 
 #endif  // BEDROCKMAP_CHUNKEDITORWIDGET_H

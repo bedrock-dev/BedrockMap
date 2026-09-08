@@ -156,6 +156,36 @@
         <translation>统计数据</translation>
     </message>
     <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.size</source>
+        <translation>大小</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.hash</source>
+        <translation>哈希</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.action</source>
+        <translation>操作</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.exportTitle</source>
+        <translation>导出数据</translation>
+    </message>
+    <message>
         <source>chunkEditor.save</source>
         <translation>保存区块数据</translation>
     </message>

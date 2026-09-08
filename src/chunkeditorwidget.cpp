@@ -5,13 +5,16 @@
 #include <qnamespace.h>
 
 #include <QCryptographicHash>
+#include <QFile>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QHideEvent>
 #include <QLabel>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QStackedWidget>
+#include <QTableWidget>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <memory>
@@ -120,10 +123,21 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     setupDirtyTab(this->actor_editor_, ui->actor_tab);
     setupDirtyTab(this->block_entity_editor_, ui->block_actor_tab);
     setupDirtyTab(this->pending_tick_editor_, ui->pt_tab);
-    //
+    // stats table: name / size / hash / export
+    ui->stats_table->setColumnCount(4);
+    ui->stats_table->setHorizontalHeaderLabels(
+        {tr("chunkEditor.stats.name"), tr("chunkEditor.stats.size"), tr("chunkEditor.stats.hash"), tr("chunkEditor.stats.action")});
+    ui->stats_table->verticalHeader()->setVisible(false);
+    ui->stats_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->stats_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->stats_table->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->stats_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->stats_table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->stats_table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->stats_table->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     QFont f;
-    f.setFamily("JetBrains Mono");
-    ui->stats_label->setFont(f);
+    f.setFamilies({"JetBrains Mono", "Microsoft YaHei", "Microsoft YaHei UI"});
+    ui->stats_table->setFont(f);
 }
 
 ChunkEditorWidget::~ChunkEditorWidget() {
@@ -237,19 +251,33 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             return QString(hash.toHex().left(8));
         };
 
-        QStringList lines;
+        // one table row per data key: name / size / hash + an export button
+        ui->stats_table->setRowCount(0);
+        stats_export_rows_.clear();
+        auto addStatRow = [&](const QString &name, const std::string &data) {
+            int row = ui->stats_table->rowCount();
+            ui->stats_table->insertRow(row);
+            stats_export_rows_.emplace_back(name, data);
+            auto *nameItem = new QTableWidgetItem(name);
+            nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+            ui->stats_table->setItem(row, 0, nameItem);
+            ui->stats_table->setItem(row, 1, new QTableWidgetItem(QString::number(static_cast<qlonglong>(data.size()))));
+            auto *hashItem = new QTableWidgetItem(shortHash(data));
+            hashItem->setFlags(hashItem->flags() & ~Qt::ItemIsEditable);
+            ui->stats_table->setItem(row, 2, hashItem);
+            auto *exportBtn = new QPushButton(tr("chunkEditor.stats.export"), ui->stats_table);
+            connect(exportBtn, &QPushButton::clicked, this, [this, row] { this->exportStatRow(row); });
+            ui->stats_table->setCellWidget(row, 3, exportBtn);
+        };
         for (auto &[kt, data] : this->raw_chunk_.get_normal_data()) {
-            lines.append(
-                QString("%1: %2 bytes [%3]").arg(bl::chunk_key::chunk_key_to_str(kt).c_str()).arg(data.size()).arg(shortHash(data)));
+            addStatRow(bl::chunk_key::chunk_key_to_str(kt).c_str(), data);
         }
         for (auto &[y, data] : this->raw_chunk_.get_sub_chunks()) {
-            if (!data.empty())
-                lines.append(
-                    QString("SubChunk[%1 ~ %2]: %3 bytes [%4]").arg(y * 16).arg((y + 1) * 16 - 1).arg(data.size()).arg(shortHash(data)));
+            if (data.empty()) continue;
+            addStatRow(QString("SubChunk[%1 ~ %2]").arg(y * 16).arg((y + 1) * 16 - 1), data);
         }
         if (!this->raw_chunk_.get_actor_digest().empty()) {
-            auto &d = this->raw_chunk_.get_actor_digest();
-            lines.append(QString("ActorDigest: %1 bytes [%2]").arg(d.size()).arg(shortHash(d)));
+            addStatRow("ActorDigest", this->raw_chunk_.get_actor_digest());
         }
         for (auto &[key, data] : this->raw_chunk_.get_entities()) {
             if (key.size() != 8) {
@@ -257,10 +285,8 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
                 continue;
             }
             QString hexKey = QString::fromLatin1(QByteArray::fromRawData(key.data(), 8).toHex());
-            lines.append(QString("Entity[%1]: %2 bytes [%3]").arg(hexKey).arg(data.size()).arg(shortHash(data)));
+            addStatRow(QString("Entity[%1]").arg(hexKey), data);
         }
-
-        ui->stats_label->setText(lines.join('\n'));
     }
 }
 
@@ -341,6 +367,8 @@ void ChunkEditorWidget::clearData() {
     if (this->actor_stack_) this->actor_stack_->setCurrentIndex(0);
     if (this->block_entity_stack_) this->block_entity_stack_->setCurrentIndex(0);
     if (this->pending_tick_stack_) this->pending_tick_stack_->setCurrentIndex(0);
+    this->ui->stats_table->setRowCount(0);
+    this->stats_export_rows_.clear();
     this->has_chunk_ = false;
 }
 
@@ -466,4 +494,16 @@ void ChunkEditorWidget::deleteActorData() {
     this->actor_stack_->setCurrentIndex(0);
     this->setDirty(true);
     this->setTabDirtyText(ui->actor_tab);
+}
+
+void ChunkEditorWidget::exportStatRow(int row) {
+    if (row < 0 || row >= static_cast<int>(this->stats_export_rows_.size())) return;
+    auto &[name, data] = this->stats_export_rows_[row];
+    auto fileName = QFileDialog::getSaveFileName(this, tr("chunkEditor.stats.exportTitle"), name);
+    if (fileName.isEmpty()) return;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) return;
+    file.write(data.data(), static_cast<qint64>(data.size()));
+    file.close();
 }
