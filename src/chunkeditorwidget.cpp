@@ -7,6 +7,7 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QFileDialog>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QHideEvent>
 #include <QLabel>
@@ -25,6 +26,7 @@
 #include "chunk.h"
 #include "chunkio.h"
 #include "chunksectionwidget.h"
+#include "hexviewerdialog.h"
 #include "hsaeditorwidget.h"
 #include "loguru/loguru.hpp"
 #include "msg.h"
@@ -265,9 +267,26 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             auto *hashItem = new QTableWidgetItem(shortHash(data));
             hashItem->setFlags(hashItem->flags() & ~Qt::ItemIsEditable);
             ui->stats_table->setItem(row, 2, hashItem);
-            auto *exportBtn = new QPushButton(tr("chunkEditor.stats.export"), ui->stats_table);
+            // action column: open in a read-only hex viewer / export raw bytes
+            auto *actions = new QWidget(ui->stats_table);
+            auto *actionsLayout = new QHBoxLayout(actions);
+            actionsLayout->setContentsMargins(2, 0, 2, 0);
+            actionsLayout->setSpacing(2);
+            auto *viewBtn = new QPushButton(tr("chunkEditor.stats.view"), actions);
+            viewBtn->setCursor(Qt::PointingHandCursor);
+            connect(viewBtn, &QPushButton::clicked, this, [this, name, data] {
+                HexViewerDialog dialog(this);
+                dialog.setWindowTitle(name);
+                dialog.setData(QByteArray::fromRawData(data.data(), static_cast<int>(data.size())));
+                dialog.setReadOnly(true);
+                dialog.exec();
+            });
+            auto *exportBtn = new QPushButton(tr("chunkEditor.stats.export"), actions);
+            exportBtn->setCursor(Qt::PointingHandCursor);
             connect(exportBtn, &QPushButton::clicked, this, [this, row] { this->exportStatRow(row); });
-            ui->stats_table->setCellWidget(row, 3, exportBtn);
+            actionsLayout->addWidget(viewBtn);
+            actionsLayout->addWidget(exportBtn);
+            ui->stats_table->setCellWidget(row, 3, actions);
         };
         for (auto &[kt, data] : this->raw_chunk_.get_normal_data()) {
             addStatRow(bl::chunk_key::chunk_key_to_str(kt).c_str(), data);

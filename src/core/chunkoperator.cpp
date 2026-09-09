@@ -126,9 +126,13 @@ bool BlockRegionOperator::exportMcstructure(const QRegion &chunkRegion, const QS
         for (int y = intersection.min_pos.y; y < intersection.max_pos.y; ++y) {
             for (int x = intersection.min_pos.x; x < intersection.max_pos.x; ++x) {
                 for (int z = intersection.min_pos.z; z < intersection.max_pos.z; ++z) {
-                    const auto *block = chunk->get_block_raw(x - baseX, y, z - baseZ);
-                    if (isAirBlock(block)) continue;
-                    builder.set_block({x - origin.x, y - origin.y, z - origin.z}, block);
+                    // Write every block layer (0..n); stop when the layer runs out.
+                    for (int layer = 0;; ++layer) {
+                        const auto *block = chunk->get_block_raw(x - baseX, y, z - baseZ, layer);
+                        if (!block) break;
+                        if (isAirBlock(block)) continue;
+                        builder.set_block(layer, {x - origin.x, y - origin.y, z - origin.z}, block);
+                    }
                 }
             }
         }

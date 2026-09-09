@@ -45,13 +45,19 @@ find_package(Qt6 REQUIRED COMPONENTS
     LinguistTools
 )
 
+# QHexView hex widget library (vendored in third/). Disable its bundled example
+# app (removed) and keep the find/replace dialogs which QHexView core needs.
+set(QHEXVIEW_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(QHEXVIEW_ENABLE_DIALOGS ON CACHE BOOL "" FORCE)
+set(QHEXVIEW_USE_QT5 OFF CACHE BOOL "" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/third/QHexView third/QHexView)
+
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
         src/*.ui
         src/*.cpp
         src/include/*.h
-        third/*.cpp
 )
 
 file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS
@@ -106,6 +112,7 @@ target_link_libraries(BedrockMap PRIVATE
     Qt6::OpenGLWidgets
     Qt6::Svg
     Qt6::Network
+    QHexView
     bedrock-level
 )
 

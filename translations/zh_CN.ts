@@ -182,6 +182,11 @@
     </message>
     <message>
         <location filename="../src/chunkeditorwidget.cpp"/>
+        <source>chunkEditor.stats.view</source>
+        <translation>查看</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.exportTitle</source>
         <translation>导出数据</translation>
     </message>
