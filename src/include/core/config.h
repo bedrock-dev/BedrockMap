@@ -96,7 +96,7 @@ namespace setting {
         bool LOAD_GLOBAL_DATA{true};
         bool PRELOAD_ALL_CHUNK_COORDS{false};
         int MAX_GLOBAL_DATA_LOAD_COUNT{4096};
-        QString ICON_THEME{"new"};
+        QString ICON_THEME{"default"};
         bool CHECK_UPDATE{true};
 
         // LeviLauncher

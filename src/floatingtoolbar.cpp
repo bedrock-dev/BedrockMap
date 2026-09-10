@@ -17,7 +17,7 @@
 
 namespace {
     constexpr int BTN_SIZE = 28;
-    constexpr int ICON_SIZE = 22;
+    constexpr int ICON_SIZE = 20;
     constexpr int SEPARATOR_HEIGHT = 6;
     constexpr int CORNER_RADIUS = 4;
     constexpr int BG_ALPHA = 255;

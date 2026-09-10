@@ -1,1 +1,309 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dog-icon lucide-dog"><path d="M11.25 16.25h1.5L12 17z"/><path d="M16 14v.5"/><path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309"/><path d="M8 14v.5"/><path d="M8.5 8.5c-.384 1.05-1.083 2.028-2.344 2.5-1.931.722-3.576-.297-3.656-1-.113-.994 1.177-6.53 4-7 1.923-.321 3.651.845 3.651 2.235A7.497 7.497 0 0 1 14 5.277c0-1.39 1.844-2.598 3.767-2.277 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   class="lucide lucide-actor-icon lucide-actor"
+   version="1.1"
+   id="svg18"
+   sodipodi:docname="actor.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs18" />
+  <sodipodi:namedview
+     id="namedview18"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="181.01934"
+     inkscape:cx="20.876223"
+     inkscape:cy="8.620626"
+     inkscape:window-width="3840"
+     inkscape:window-height="2036"
+     inkscape:window-x="-12"
+     inkscape:window-y="-12"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg18"
+     showgrid="false">
+    <inkscape:grid
+       id="grid20"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="false" />
+  </sodipodi:namedview>
+  <path
+     d="M2 0h10v12H0V2A2 2 0 0 1 2 0Z"
+     fill="#E68583"
+     id="path1" />
+  <path
+     d="M12 0h10a2 2 0 0 1 2 2v10H12V0Z"
+     fill="#FFFFFF"
+     id="path2" />
+  <path
+     d="M0 12h12v12H2a2 2 0 0 1-2-2V12Z"
+     fill="#FFFFFF"
+     id="path3" />
+  <path
+     d="M12 12h12v10a2 2 0 0 1-2 2H12V12Z"
+     fill="#443626"
+     id="path4" />
+  <!-- Pig -->
+  <rect
+     x="3.0067723"
+     y="7.5021157"
+     width="1.5"
+     height="1.5"
+     fill="#894746"
+     id="rect6"
+     style="stroke-width:1.07143" />
+  <rect
+     x="7.5"
+     y="7.5"
+     width="1.5"
+     height="1.5"
+     fill="#894746"
+     id="rect7"
+     style="stroke-width:1.07143" />
+  <!-- Villager -->
+  <path
+     d="M 13.5,3 V 4.4921875 7.5 H 15 v 0.9941406 2.0019534 h 1.5 V 8.4941406 7.5 h 3 V 8.4960938 10.5 H 21 V 8.4960938 7.5 h 1.5 V 4.4921875 3 Z"
+     style="fill:#c09e86;stroke-width:0.34702"
+     id="path12" />
+  <rect
+     x="16.5"
+     y="7.5"
+     width="3"
+     height="3"
+     fill="#ffb8b8"
+     id="rect9"
+     style="stroke-width:1.04348;fill:#ffb8b8;fill-opacity:1" />
+  <!-- Small gold-and-red entity -->
+  <!-- Skeleton-like entity -->
+  <path
+     d="m 15,12 v 1.5 h 1.5 V 15 16.5 18 H 18 v -1.5 h 1.5 V 15 H 21 v -1.5 h 1.5 V 12 Z"
+     style="fill:#b3b3b3;stroke-width:1.0453"
+     id="path10" />
+  <path
+     d="m 15,19.5 h 6 V 21 h -6 z"
+     fill="#b3b3b3"
+     id="path15-2-4"
+     style="stroke-width:0.934945" />
+  <path
+     d="M 13.5,24 V 21 H 15 v 3 z"
+     fill="#b3b3b3"
+     id="path15-2-4-1"
+     style="stroke-width:0.661106" />
+  <path
+     d="m 21,24 v -3 h 1.5 v 3 z"
+     fill="#b3b3b3"
+     id="path15-2-4-1-8"
+     style="stroke-width:0.661106" />
+  <g
+     id="g24"
+     transform="translate(0.18000031,0.79999924)">
+    <rect
+       x="14.82"
+       y="20.200001"
+       width="6"
+       height="3"
+       fill="#606060"
+       id="rect16"
+       style="stroke-width:1.04957" />
+    <rect
+       x="14.82"
+       y="20.200001"
+       width="1.5"
+       height="1.5"
+       fill="#000000"
+       id="rect17"
+       style="stroke-width:1.05633" />
+    <rect
+       x="19.32"
+       y="20.200001"
+       width="1.5"
+       height="1.5"
+       fill="#000000"
+       id="rect17-3"
+       style="stroke-width:1.05633" />
+  </g>
+  <g
+     id="g20">
+    <rect
+       style="fill:#000000"
+       id="rect19"
+       width="1.5"
+       height="1.5"
+       x="0"
+       y="4.5" />
+    <rect
+       style="fill:#ffffff"
+       id="rect19-8"
+       width="1.5"
+       height="1.5"
+       x="1.5"
+       y="4.5" />
+  </g>
+  <g
+     id="g22"
+     transform="translate(0.75,-1.5)">
+    <path
+       d="m 11.25,16.5 h 3 V 18 h -3 z"
+       fill="#b3b3b3"
+       id="path15"
+       style="stroke-width:0.661107" />
+    <g
+       id="g20-57"
+       transform="translate(11.25,13.5)">
+      <rect
+         style="fill:#000000"
+         id="rect19-6"
+         width="1.5"
+         height="1.5"
+         x="0"
+         y="4.5" />
+      <rect
+         style="fill:#ffffff"
+         id="rect19-8-18"
+         width="1.5"
+         height="1.5"
+         x="1.5"
+         y="4.5" />
+    </g>
+  </g>
+  <g
+     id="g23"
+     transform="translate(0,-0.5)">
+    <path
+       d="m 21,15.5 h 3 V 17 h -3 z"
+       fill="#b3b3b3"
+       id="path15-5"
+       style="stroke-width:0.661107" />
+    <g
+       id="g20-57-4"
+       transform="rotate(180,12,11.5)">
+      <rect
+         style="fill:#000000"
+         id="rect19-6-3"
+         width="1.5"
+         height="1.5"
+         x="0"
+         y="4.5" />
+      <rect
+         style="fill:#ffffff"
+         id="rect19-8-18-1"
+         width="1.5"
+         height="1.5"
+         x="1.5"
+         y="4.5" />
+    </g>
+  </g>
+  <g
+     id="g21"
+     transform="translate(0.45499992,0.945)">
+    <path
+       d="m 2.5450001,14.055 h 6 v 7.5 h -6 z"
+       fill="#e2e2e2"
+       id="path13"
+       style="stroke-width:1.46291" />
+    <path
+       d="m 2.5450001,15.555 h 6 v 3 h -6 z"
+       fill="#c19343"
+       id="path11"
+       style="stroke-width:1.04896" />
+    <rect
+       x="4.7950001"
+       y="18.555"
+       width="1.5"
+       height="3.0000002"
+       fill="#ff0000"
+       id="rect13"
+       style="stroke-width:0.796651" />
+    <rect
+       style="fill:#000000"
+       id="rect19-3"
+       width="1.5"
+       height="1.5"
+       x="2.5450001"
+       y="14.055" />
+    <rect
+       style="fill:#000000"
+       id="rect19-3-6"
+       width="1.5"
+       height="1.5"
+       x="7.0450001"
+       y="14.055" />
+  </g>
+  <g
+     id="g20-5"
+     transform="translate(13.5,-0.0034803)">
+    <rect
+       style="fill:#000000"
+       id="rect19-5"
+       width="1.5"
+       height="1.5"
+       x="0"
+       y="4.5" />
+    <rect
+       style="fill:#ffffff"
+       id="rect19-8-1"
+       width="1.5"
+       height="1.5"
+       x="1.5"
+       y="4.5" />
+  </g>
+  <g
+     id="g20-5-1"
+     transform="rotate(180,11.25,5.2482598)">
+    <rect
+       style="fill:#000000"
+       id="rect19-5-1"
+       width="1.5"
+       height="1.5"
+       x="0"
+       y="4.5" />
+    <rect
+       style="fill:#ffffff"
+       id="rect19-8-1-5"
+       width="1.5"
+       height="1.5"
+       x="1.5"
+       y="4.5" />
+  </g>
+  <rect
+     style="fill:#ffffff"
+     id="rect19-8-2"
+     width="1.5"
+     height="1.5"
+     x="9"
+     y="4.5" />
+  <rect
+     style="fill:#000000"
+     id="rect19-9"
+     width="1.5"
+     height="1.5"
+     x="10.5"
+     y="4.5" />
+  <rect
+     style="fill:#ffb8b8;fill-opacity:1"
+     id="rect20"
+     x="17.346212"
+     y="9.1150484" />
+</svg>

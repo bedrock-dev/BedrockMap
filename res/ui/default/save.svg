@@ -1,1 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save-icon lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   class="lucide lucide-save-icon lucide-save"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="save.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="52.001811"
+     inkscape:cx="6.9997562"
+     inkscape:cy="12.047657"
+     inkscape:window-width="3840"
+     inkscape:window-height="2036"
+     inkscape:window-x="-12"
+     inkscape:window-y="-12"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <rect
+     x="0"
+     y="0"
+     width="24"
+     height="24"
+     rx="2"
+     fill="#3A78C0"
+     id="rect1" />
+  <rect
+     x="7.5"
+     y="0"
+     width="9"
+     height="6"
+     rx="0.89999998"
+     fill="#2a5c96"
+     id="rect2"
+     style="stroke-width:0.948683" />
+  <rect
+     x="4"
+     y="13"
+     width="16.5"
+     height="11"
+     rx="1.03125"
+     fill="#dce3ea"
+     id="rect3"
+     style="stroke-width:1.0155" />
+  <rect
+     x="9"
+     y="16"
+     width="6"
+     height="5"
+     rx="0.75"
+     fill="#2a5c96"
+     id="rect4" />
+</svg>

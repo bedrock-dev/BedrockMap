@@ -1,1 +1,72 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move3d-icon lucide-move-3d"><path d="M5 3v16h16"/><path d="m5 19 6-6"/><path d="m2 6 3-3 3 3"/><path d="m18 16 3 3-3 3"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   class="lucide lucide-coordinate-icon lucide-coordinate"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="coord.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="36.770833"
+     inkscape:cx="-2.9915014"
+     inkscape:cy="7.8730878"
+     inkscape:window-width="3840"
+     inkscape:window-height="2036"
+     inkscape:window-x="-12"
+     inkscape:window-y="-12"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <rect
+     x="0"
+     y="0"
+     width="24"
+     height="24"
+     rx="2"
+     fill="#645F5E"
+     id="rect1"
+     style="fill:#7a7a7b;fill-opacity:1" />
+  <path
+     d="M5 3v16h16"
+     stroke="#14B485"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     fill="none"
+     id="path1"
+     style="stroke:#fffcfc;stroke-opacity:1" />
+  <path
+     d="m2 6 3-3 3 3"
+     stroke="#14B485"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     fill="none"
+     id="path2"
+     style="stroke:#fffcfc;stroke-opacity:1" />
+  <path
+     d="m18 16 3 3-3 3"
+     stroke="#14B485"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     fill="none"
+     id="path3"
+     style="stroke:#fffcfc;stroke-opacity:1" />
+</svg>

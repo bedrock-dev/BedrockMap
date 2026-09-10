@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid2x2-icon lucide-grid-2x2"><path d="M12 3v18"/><path d="M3 12h18"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="lucide lucide-hsa-icon lucide-hsa">
+  <path d="M2 0h10v12H0V2A2 2 0 0 1 2 0Z" fill="#00dfa2"/>
+  <path d="M12 0h10a2 2 0 0 1 2 2v10H12V0Z" fill="#ff0060"/>
+  <path d="M0 12h12v12H2a2 2 0 0 1-2-2V12Z" fill="#f6fa70"/>
+  <path d="M12 12h12v10a2 2 0 0 1-2 2H12V12Z" fill="#0079ff"/>
+</svg>
