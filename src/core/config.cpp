@@ -74,7 +74,7 @@ int AppVersion::compare(const AppVersion &other) const {
 
 // constant namespace
 const std::string constant::SOFTWARE_NAME = "BedrockMap";
-const AppVersion constant::SOFTWARE_VERSION{{1, 0, 0}, 10};
+const AppVersion constant::SOFTWARE_VERSION{{1, 0, 0}, 11};
 const int constant::GRID_WIDTH = 32;
 
 #ifdef QT_DEBUG
