@@ -74,8 +74,6 @@ struct MapFilter {
                blocks_list_.count("minecraft:unknown");
     }
 
-    void renderImages(bl::chunk *ch, int rw, int rh, ChunkRegion *region) const;
-
     void print() {
         LOG_F(INFO, "BlockList (%d)", block_black_mode_);
         for (const auto &block : blocks_list_) {

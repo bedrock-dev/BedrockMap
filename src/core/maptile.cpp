@@ -11,6 +11,7 @@
 #include "bedrock_level.h"
 #include "color.h"  // bl::blend_color_with_biome, bl::get_biome_color
 #include "config.h"
+#include "data_3d.h"
 #include "sub_chunk.h"  // bl::block_info
 
 // ---- helpers ----
@@ -171,7 +172,7 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
     if (!ch || !region) return;
     auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
 
-    // enable filter
+    // enable layer
     if (filter.enable_layer_) {
         if (filter.layer > maxy || filter.layer < miny) return;
         for (int i = 0; i < 16; i++) {
@@ -185,12 +186,15 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
         return;
     }
 
-    // disable filter
+    // disable layer
+
+    // no block filter
     if (filter.isBlockFilterDefault()) {
         // Fast path: get_height() O(1) + get_top_y() scans only from surface
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                auto [top_y, solid_y] = ch->get_top_y(i, j, ch->get_height(i, j));
+                auto height = ch->get_height(i, j);
+                auto [top_y, solid_y] = ch->get_top_y(i, j, height);
                 if (top_y < miny) continue;
                 renderTerrainColumn(region, ch, filter, rw, rh, i, j, top_y, solid_y);
             }
@@ -198,12 +202,12 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
         return;
     }
 
+    // block filter
     // Slow path: custom filter — scan down from the height map
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             int y = ch->get_height(i, j);
             if (y < miny) continue;
-
             bool found = false;
             int found_y = miny - 1, solid_y = miny - 1;
             while (y >= miny) {

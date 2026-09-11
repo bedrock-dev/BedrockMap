@@ -197,15 +197,14 @@ std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl:
 
     if (!loaded_.load(std::memory_order_acquire)) return std::nullopt;
 
-    // Cache miss — load from LevelDB (Data3D preferred, Data2D fallback)
+    // Cache miss — load from LevelDB (Data3D preferred, legacy Data2D fallback)
     std::string raw;
     bl::biome3d b3d;
-    for (auto kt : {bl::chunk_key::Data3D, bl::chunk_key::Data2D}) {
+    for (auto kt : {bl::chunk_key::Data3D, bl::chunk_key::Data2D, bl::chunk_key::Data2DLegacy}) {
         bl::chunk_key key{kt, pos};
         if (storage_.level().load_raw(key.to_raw(), raw) && !raw.empty()) {
             b3d.set_chunk_pos(pos);
             auto version = kt == bl::chunk_key::Data3D ? bl::New : bl::Old;
-            b3d.set_version(version);
             bool ok = (kt == bl::chunk_key::Data3D) ? b3d.load_from_d3d(raw.data(), raw.size()) : b3d.load_from_d2d(raw.data(), raw.size());
             if (ok) {
                 auto hm = b3d.height_map();
