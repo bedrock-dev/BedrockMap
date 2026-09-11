@@ -6,6 +6,7 @@
 RenderFilterDialog::RenderFilterDialog(QWidget *parent) : QDialog(parent), ui(new Ui::RenderFilterDialog) {
     ui->setupUi(this);
     this->setWindowTitle(tr("renderFilterDialog.title.filter"));
+    this->setWindowIcon(QIcon(ToolBarIcon("filter")));
     ui->layer_slider->setSingleStep(1);
     ui->layer_slider->setRange(-63, 319);
 }

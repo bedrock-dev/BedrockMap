@@ -5,6 +5,7 @@
 
 #include "color.h"
 #include "magic-enum/magic_enum.hpp"
+#include "resourcemanager.h"
 #include "ui_biomepickerdialog.h"
 
 namespace {
@@ -26,6 +27,7 @@ std::vector<bl::biome> BiomePickerDialog::allBiomes() {
 
 BiomePickerDialog::BiomePickerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::BiomePickerDialog) {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon(ToolBarIcon("biome")));
 
     auto setupTable = [](QTableWidget *t) {
         t->horizontalHeader()->setVisible(true);
