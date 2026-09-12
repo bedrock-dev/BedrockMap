@@ -199,10 +199,47 @@ VoxelWidget::SelectionHandle VoxelWidget::pickSelectionHandle(const QPointF& pos
 void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
     if (active_selection_handle_ == SelectionHandle::None) return;
 
+    const QPointF mouseDelta = position - selection_drag_start_;
+
+    if (selection_move_mode_) {
+        // Move mode: keep the size, follow the cursor in the selected voxel grid.
+        const float sizeX = static_cast<float>(voxel_data_[0].size());
+        const float sizeY = static_cast<float>(voxel_data_.size());
+        const float sizeZ = static_cast<float>(voxel_data_[0][0].size());
+        const QVector3D span = selection_drag_start_maximum_ - selection_drag_start_minimum_;
+
+        QVector3D offset;
+        for (int axis = 0; axis < 3; ++axis) {
+            const QPointF screenAxis = selection_drag_screen_axes_[axis];
+            const float axisLengthSquared = static_cast<float>(screenAxis.x() * screenAxis.x() + screenAxis.y() * screenAxis.y());
+            if (axisLengthSquared < 1e-6f) continue;  // axis points into the camera, it cannot be dragged
+            const float voxelDelta =
+                static_cast<float>((mouseDelta.x() * screenAxis.x() + mouseDelta.y() * screenAxis.y()) / axisLengthSquared);
+            offset[axis] = std::round(voxelDelta);
+        }
+
+        QVector3D minimum = selection_drag_start_minimum_ + offset;
+        minimum.setX(std::clamp(minimum.x(), 0.0f, sizeX - span.x()));
+        minimum.setY(std::clamp(minimum.y(), 0.0f, sizeY - span.y()));
+        minimum.setZ(std::clamp(minimum.z(), 0.0f, sizeZ - span.z()));
+        if (minimum == selection_.minimum) return;
+
+        selection_.minimum = minimum;
+        selection_.maximum = minimum + span;
+        buildSelectionVertices();
+        if (gl_initialized_) {
+            makeCurrent();
+            updateSelectionOpenGLBuffer();
+            doneCurrent();
+        }
+        update();
+        emit selectionChanged(selection_);
+        return;
+    }
+
     const float axisLengthSquared = static_cast<float>(selection_drag_axis_screen_.x() * selection_drag_axis_screen_.x() +
                                                        selection_drag_axis_screen_.y() * selection_drag_axis_screen_.y());
     if (axisLengthSquared < 1e-10f) return;
-    const QPointF mouseDelta = position - selection_drag_start_;
     const float voxelDelta = static_cast<float>(
         (mouseDelta.x() * selection_drag_axis_screen_.x() + mouseDelta.y() * selection_drag_axis_screen_.y()) / axisLengthSquared);
     const int value = qRound(static_cast<float>(selection_drag_start_value_) + voxelDelta);
@@ -256,6 +293,7 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
         doneCurrent();
     }
     update();
+    emit selectionChanged(selection_);
 }
 
 void VoxelWidget::mousePressEvent(QMouseEvent* e) {
@@ -265,6 +303,32 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
         active_selection_handle_ = pickSelectionHandle(e->position());
         if (active_selection_handle_ != SelectionHandle::None) {
             selection_drag_start_ = e->position();
+            if (selection_move_mode_) {
+                // Move mode: sample how one voxel step of each world axis is projected,
+                // then translate the whole box by the drag delta.
+                const QVector3D worldAxes[3] = {
+                    QVector3D(voxel_size_, 0.0f, 0.0f),
+                    QVector3D(0.0f, voxel_size_, 0.0f),
+                    QVector3D(0.0f, 0.0f, voxel_size_),
+                };
+                const QVector3D center = (selection_.minimum + selection_.maximum) * 0.5f * voxel_size_;
+                const QPointF projectedCenter = projectToWidget(center);
+                for (int axis = 0; axis < 3; ++axis) {
+                    selection_drag_screen_axes_[axis] = projectToWidget(center + worldAxes[axis]) - projectedCenter;
+                }
+                selection_drag_start_minimum_ = selection_.minimum;
+                selection_drag_start_maximum_ = selection_.maximum;
+                setCursor(Qt::SizeAllCursor);
+                buildSelectionVertices();
+                if (gl_initialized_) {
+                    makeCurrent();
+                    updateSelectionOpenGLBuffer();
+                    doneCurrent();
+                }
+                update();
+                e->accept();
+                return;
+            }
             const QVector3D handlePosition = selectionHandlePosition(active_selection_handle_);
             const QVector3D handleAxis = selectionHandleAxis(active_selection_handle_);
             const auto projectedAxisForVoxelStep = [this, &handlePosition, &handleAxis](float voxelStep) {
@@ -415,7 +479,7 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
 void VoxelWidget::wheelEvent(QWheelEvent* e) {
     int delta = e->angleDelta().y();
     if (delta > 0) {
-        m_scale = std::min(m_scale + 0.1f, 10.0f);
+        m_scale = std::min(m_scale + 0.1f, maxZoomScale());
     } else {
         m_scale = std::max(m_scale - 0.1f, 0.1f);
     }
@@ -437,57 +501,28 @@ void VoxelWidget::keyPressEvent(QKeyEvent* e) {
         m_rotation = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 45.0f) * QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 45.0f);
         orbit_yaw_degrees_ = 45.0f;
         orbit_pitch_degrees_ = 45.0f;
-        m_scale = 1.0f;
+        // frame the model again: the fit scale adapts to the region size, so a
+        // large region does not end up massively zoomed in
+        m_scale = fit_scale_;
         m_cameraTranslate = QVector3D(0.0f, 0.0f, 0.0f);
         updateProjection();
         update();
     } else if (e->key() == Qt::Key_F) {
-        // Focus the face that is currently most parallel to the screen: snap it
-        // flat and align its four edges with the window axes, choosing the
-        // candidate with the smallest rotation from the current orientation.
-        const QVector3D local = localFaceClosestTo(QVector3D(0.0f, 0.0f, 1.0f));
-        QQuaternion base;
-        if (local.x() > 0.5f) {
-            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -90.0f);
-        } else if (local.x() < -0.5f) {
-            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 90.0f);
-        } else if (local.y() > 0.5f) {
-            base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 90.0f);
-        } else if (local.y() < -0.5f) {
-            base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, -90.0f);
-        } else if (local.z() < -0.5f) {
-            base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 180.0f);
-        } else {
-            base = QQuaternion();
-        }
-        QQuaternion best = base;
-        float bestAngle = 1e9f;
-        for (float t = 0.0f; t < 360.0f; t += 90.0f) {
-            const QQuaternion candidate = QQuaternion::fromAxisAndAngle(0.0f, 0.0f, 1.0f, t) * base;
-            const float dot = std::abs(QQuaternion::dotProduct(candidate, m_rotation));
-            const float angle = 2.0f * std::acos(std::clamp(dot, -1.0f, 1.0f));
-            if (angle < bestAngle) {
-                bestAngle = angle;
-                best = candidate;
-            }
-        }
-        m_rotation = best.normalized();
-        setOrbitAnglesFromRotation();
-        update();
+        focusFrontFace();
     } else if (e->key() == Qt::Key_O) {
-        ortho_mode_ = !ortho_mode_;
-        updateProjection();
-        update();
+        setOrthoMode(!ortho_mode_);
     } else if (e->key() == Qt::Key_A) {
-        axes_visible_ = !axes_visible_;
-        update();
+        setAxesVisible(!axes_visible_);
     } else if (e->key() == Qt::Key_L) {
-        rotation_locked_ = !rotation_locked_;
-        update();
+        setRotationLocked(!rotation_locked_);
     } else if (e->key() == Qt::Key_S) {
         setSelectionEnabled(!selection_enabled_);
         e->accept();
         return;
+    } else if (e->key() == Qt::Key_M) {
+        // Move mode: middle-dragging a handle translates the selection box
+        // instead of resizing it.
+        setSelectionMoveMode(!selection_move_mode_);
     } else if (e->key() == Qt::Key_Left) {
         orbitRotate(-90.0f, 0.0f);
     } else if (e->key() == Qt::Key_Right) {
@@ -545,5 +580,42 @@ void VoxelWidget::orbitRotate(float yawDegrees, float pitchDegrees) {
     orbit_yaw_degrees_ += yawDegrees;
     orbit_pitch_degrees_ += pitchDegrees;
     updateRotationFromOrbitAngles();
+    update();
+}
+
+void VoxelWidget::rotateView(float yawDegrees, float pitchDegrees) { orbitRotate(yawDegrees, pitchDegrees); }
+
+void VoxelWidget::focusFrontFace() {
+    // Focus the face that is currently most parallel to the screen: snap it
+    // flat and align its four edges with the window axes, choosing the
+    // candidate with the smallest rotation from the current orientation.
+    const QVector3D local = localFaceClosestTo(QVector3D(0.0f, 0.0f, 1.0f));
+    QQuaternion base;
+    if (local.x() > 0.5f) {
+        base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, -90.0f);
+    } else if (local.x() < -0.5f) {
+        base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 90.0f);
+    } else if (local.y() > 0.5f) {
+        base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, 90.0f);
+    } else if (local.y() < -0.5f) {
+        base = QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, -90.0f);
+    } else if (local.z() < -0.5f) {
+        base = QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, 180.0f);
+    } else {
+        base = QQuaternion();
+    }
+    QQuaternion best = base;
+    float bestAngle = 1e9f;
+    for (float t = 0.0f; t < 360.0f; t += 90.0f) {
+        const QQuaternion candidate = QQuaternion::fromAxisAndAngle(0.0f, 0.0f, 1.0f, t) * base;
+        const float dot = std::abs(QQuaternion::dotProduct(candidate, m_rotation));
+        const float angle = 2.0f * std::acos(std::clamp(dot, -1.0f, 1.0f));
+        if (angle < bestAngle) {
+            bestAngle = angle;
+            best = candidate;
+        }
+    }
+    m_rotation = best.normalized();
+    setOrbitAnglesFromRotation();
     update();
 }

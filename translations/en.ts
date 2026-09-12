@@ -1782,7 +1782,7 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1790,7 +1790,7 @@
         <translation>Export GLB</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>Export as glTF Binary (.glb)</translation>
     </message>
@@ -1805,34 +1805,136 @@
         <translation>GLB export completed.</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
-        <translation>Export .mcstructure</translation>
+        <translation>Export</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>Compress</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportEntities</source>
         <translation>Export entities</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>Use new format</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
-        <translation>Import .mcstructure</translation>
+        <translation>Import</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>The new format can only be used in version &gt;= 26.50.24</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.modelGroup</source>
+        <translation>Model</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.model.empty</source>
+        <translation>No model loaded</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.model.info</source>
+        <translation>World origin: (%1, %2, %3)
+Size: %4 x %5 x %6
+World end: (%7, %8, %9)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selectionGroup</source>
+        <translation>Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.tooltip</source>
+        <translation>Coordinates match the in-game world coordinates; the maximum boundary is exclusive</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.moveMode</source>
+        <translation>Move mode</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.moveMode.tooltip</source>
+        <translation>Middle-dragging a handle moves the whole selection without resizing it</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.viewGroup</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.axes</source>
+        <translation>Axes</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.ortho</source>
+        <translation>Ortho</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.lockRotation</source>
+        <translation>Lock</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.lockRotation.tooltip</source>
+        <translation>Prevents rotating the view with a left-button drag</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateUp</source>
+        <translation>Rotate up 90 degrees</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateDown</source>
+        <translation>Rotate down 90 degrees</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateLeft</source>
+        <translation>Rotate left 90 degrees</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateRight</source>
+        <translation>Rotate right 90 degrees</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.faceFront</source>
+        <translation>Face the side currently closest to the screen (F)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.placeholder</source>
+        <translation>Import is not implemented yet</translation>
     </message>
 </context>
 <context>
@@ -1857,6 +1959,7 @@ O: Toggle projection
 A: Toggle axes
 L: Lock left-button rotation
 S: Toggle selection
+M: Toggle move mode (drag a handle to move the selection)
 Arrow keys: Rotate 90 degrees</translation>
     </message>
     <message>

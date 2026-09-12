@@ -1,6 +1,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QScrollArea>
+#include <QSplitter>
 #include <memory>
 
 #include "color.h"
@@ -8,6 +10,17 @@
 #include "voxelwidget.h"
 
 namespace {
+    // The selection is stored in model-local voxel coordinates; the panel edits
+    // world coordinates so the numbers match the in-game positions.
+    QVector3D toVector(const bl::block_pos& pos) { return {static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z)}; }
+
+    QSpinBox* makeCoordinateBox(QWidget* parent) {
+        auto* box = new QSpinBox(parent);
+        box->setKeyboardTracking(false);  // only commit a typed value once it is complete
+        box->setMinimumWidth(72);
+        return box;
+    }
+
     VoxelPreviewWidget::VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
         const int sx = structure.size_x();
         const int sy = structure.size_y();
@@ -44,6 +57,316 @@ namespace {
         return data;
     }
 }  // namespace
+
+VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
+    voxelWidget_ = new VoxelWidget(this);
+    voxelWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    bar_ = new QProgressBar(this);
+    bar_->hide();
+
+    auto* splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->addWidget(voxelWidget_);
+
+    auto* panel = new QWidget(splitter);
+    auto* panelLayout = new QVBoxLayout(panel);
+    panelLayout->setContentsMargins(8, 8, 8, 8);
+    panelLayout->setSpacing(8);
+    panelLayout->addWidget(buildModelPanel());
+    panelLayout->addWidget(buildSelectionPanel());
+    panelLayout->addWidget(buildViewPanel());
+    panelLayout->addWidget(buildMcstructurePanel());
+    panelLayout->addWidget(buildGlbPanel());
+    panelLayout->addStretch();
+
+    auto* panelScroll = new QScrollArea(splitter);
+    panelScroll->setWidgetResizable(true);
+    panelScroll->setWidget(panel);
+    panelScroll->setMinimumWidth(260);
+    splitter->addWidget(panelScroll);
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 0);
+    splitter->setChildrenCollapsible(false);
+    splitter->setSizes({900, 300});
+
+    auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->addWidget(splitter, 1);
+    layout->addWidget(bar_, 0);
+    setLayout(layout);
+    setGeometry({0, 0, 1200, 900});
+
+    connect(voxelWidget_, &VoxelWidget::selectionChanged, this, [this](VoxelSelection) { refreshSelectionFields(); });
+    connect(voxelWidget_, &VoxelWidget::selectionEnabledChanged, this, [this](bool enabled) {
+        if (selection_group_ && selection_group_->isChecked() != enabled) {
+            QSignalBlocker blocker(selection_group_);
+            selection_group_->setChecked(enabled);
+        }
+        refreshSelectionFields();
+    });
+    connect(voxelWidget_, &VoxelWidget::viewOptionsChanged, this, &VoxelPreviewWidget::refreshViewOptions);
+
+    connect(&this->chunk_task_, &GuiTaskRunner::progressChanged, this, [this](int value, const QString&) { bar_->setValue(value); });
+    connect(&this->chunk_task_, &GuiTaskRunner::finished, this, [this]() {
+        bar_->hide();
+        setVoxelData(std::move(pending_chunk_result_.data), pending_chunk_result_.origin);
+    });
+    connect(&this->chunk_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
+    connect(&this->mcstructure_task_, &GuiTaskRunner::finished, this, [this]() {
+        bar_->hide();
+        setVoxelData(std::move(pending_mcstructure_result_.data), pending_mcstructure_result_.origin);
+    });
+    connect(&this->mcstructure_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
+}
+
+QVector3D VoxelPreviewWidget::worldOrigin() const { return toVector(voxel_origin_); }
+
+QWidget* VoxelPreviewWidget::buildModelPanel() {
+    auto* group = new QGroupBox(tr("voxelPreviewWidget.modelGroup"), this);
+    auto* layout = new QVBoxLayout(group);
+    layout->setContentsMargins(8, 6, 8, 6);
+
+    model_info_label_ = new QLabel(group);
+    model_info_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    QFont font;
+    font.setFamilies({QStringLiteral("JetBrains Mono"), QStringLiteral("Microsoft YaHei"), QStringLiteral("Microsoft YaHei UI")});
+    model_info_label_->setFont(font);
+    layout->addWidget(model_info_label_);
+    refreshModelInfo();
+    return group;
+}
+
+QWidget* VoxelPreviewWidget::buildSelectionPanel() {
+    selection_group_ = new QGroupBox(tr("voxelPreviewWidget.selectionGroup"), this);
+    selection_group_->setCheckable(true);
+    selection_group_->setChecked(voxelWidget_->isSelectionEnabled());
+    selection_group_->setToolTip(tr("voxelPreviewWidget.selection.tooltip"));
+
+    auto* layout = new QGridLayout(selection_group_);
+    layout->setContentsMargins(8, 6, 8, 6);
+    layout->setHorizontalSpacing(6);
+    layout->setVerticalSpacing(4);
+    const QString axisLabels[3] = {QStringLiteral("X"), QStringLiteral("Y"), QStringLiteral("Z")};
+    for (int axis = 0; axis < 3; ++axis) {
+        layout->addWidget(new QLabel(axisLabels[axis], selection_group_), 0, axis + 1);
+    }
+    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.min"), selection_group_), 1, 0);
+    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.max"), selection_group_), 2, 0);
+    for (int axis = 0; axis < 3; ++axis) {
+        selection_min_boxes_[axis] = makeCoordinateBox(selection_group_);
+        selection_max_boxes_[axis] = makeCoordinateBox(selection_group_);
+        layout->addWidget(selection_min_boxes_[axis], 1, axis + 1);
+        layout->addWidget(selection_max_boxes_[axis], 2, axis + 1);
+        connect(selection_min_boxes_[axis], &QSpinBox::valueChanged, this, [this](int) { applySelectionFields(); });
+        connect(selection_max_boxes_[axis], &QSpinBox::valueChanged, this, [this](int) { applySelectionFields(); });
+    }
+
+    selection_move_box_ = new QCheckBox(tr("voxelPreviewWidget.selection.moveMode"), selection_group_);
+    selection_move_box_->setToolTip(tr("voxelPreviewWidget.selection.moveMode.tooltip"));
+    connect(selection_move_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setSelectionMoveMode(checked); });
+    layout->addWidget(selection_move_box_, 3, 0, 1, 4);
+
+    // A checkable group box disables its children while unchecked, which is
+    // exactly the wanted behaviour for a disabled selection.
+    connect(selection_group_, &QGroupBox::toggled, this, [this](bool enabled) { voxelWidget_->setSelectionEnabled(enabled); });
+    refreshSelectionFields();
+    return selection_group_;
+}
+
+QWidget* VoxelPreviewWidget::buildViewPanel() {
+    auto* group = new QGroupBox(tr("voxelPreviewWidget.viewGroup"), this);
+    auto* layout = new QVBoxLayout(group);
+    layout->setContentsMargins(8, 6, 8, 6);
+    layout->setSpacing(4);
+
+    axes_box_ = new QCheckBox(tr("voxelPreviewWidget.view.axes"), group);
+    ortho_box_ = new QCheckBox(tr("voxelPreviewWidget.view.ortho"), group);
+    rotation_lock_box_ = new QCheckBox(tr("voxelPreviewWidget.view.lockRotation"), group);
+    rotation_lock_box_->setToolTip(tr("voxelPreviewWidget.view.lockRotation.tooltip"));
+    axes_box_->setChecked(voxelWidget_->isAxesVisible());
+    ortho_box_->setChecked(voxelWidget_->isOrthoMode());
+    rotation_lock_box_->setChecked(voxelWidget_->isRotationLocked());
+    connect(axes_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setAxesVisible(checked); });
+    connect(ortho_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setOrthoMode(checked); });
+    connect(rotation_lock_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setRotationLocked(checked); });
+    auto* optionsRow = new QHBoxLayout();
+    optionsRow->setContentsMargins(0, 0, 0, 0);
+    optionsRow->setSpacing(8);
+    optionsRow->addWidget(axes_box_);
+    optionsRow->addWidget(ortho_box_);
+    optionsRow->addWidget(rotation_lock_box_);
+    optionsRow->addStretch();
+    layout->addLayout(optionsRow);
+
+    auto* rotateGrid = new QGridLayout();
+    rotateGrid->setContentsMargins(0, 0, 0, 0);
+    rotateGrid->setSpacing(2);
+    // Text arrows instead of QStyle standard icons: the standard pixmaps are
+    // drawn in black and become invisible on a dark theme.
+    const struct {
+        int row, column;
+        QString label;
+        QString tooltip;
+        float yaw, pitch;
+    } arrows[] = {
+        {0, 1, QStringLiteral("\u25B2"), tr("voxelPreviewWidget.view.rotateUp"), 0.0f, -90.0f},
+        {1, 0, QStringLiteral("\u25C0"), tr("voxelPreviewWidget.view.rotateLeft"), -90.0f, 0.0f},
+        {1, 2, QStringLiteral("\u25B6"), tr("voxelPreviewWidget.view.rotateRight"), 90.0f, 0.0f},
+        {2, 1, QStringLiteral("\u25BC"), tr("voxelPreviewWidget.view.rotateDown"), 0.0f, 90.0f},
+    };
+    for (const auto& arrow : arrows) {
+        auto* button = new QToolButton(group);
+        button->setText(arrow.label);
+        button->setFixedSize(28, 28);
+        button->setToolTip(arrow.tooltip);
+        button->setFocusPolicy(Qt::NoFocus);
+        const float yaw = arrow.yaw;
+        const float pitch = arrow.pitch;
+        connect(button, &QToolButton::clicked, this, [this, yaw, pitch]() { voxelWidget_->rotateView(yaw, pitch); });
+        rotateGrid->addWidget(button, arrow.row, arrow.column);
+    }
+
+    auto* faceFrontButton = new QToolButton(group);
+    faceFrontButton->setText(QStringLiteral("\u2299"));
+    faceFrontButton->setFixedSize(28, 28);
+    faceFrontButton->setToolTip(tr("voxelPreviewWidget.view.faceFront"));
+    faceFrontButton->setFocusPolicy(Qt::NoFocus);
+    connect(faceFrontButton, &QToolButton::clicked, this, [this]() { voxelWidget_->focusFrontFace(); });
+    rotateGrid->addWidget(faceFrontButton, 1, 1);
+    rotateGrid->setColumnStretch(0, 1);
+    rotateGrid->setColumnStretch(2, 1);
+    layout->addLayout(rotateGrid);
+    return group;
+}
+
+QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
+    auto* group = new QGroupBox(QStringLiteral("mcstructure"), this);
+    auto* layout = new QVBoxLayout(group);
+    layout->setContentsMargins(8, 6, 8, 6);
+    layout->setSpacing(4);
+
+    auto* importButton = new QPushButton(tr("voxelPreviewWidget.importMcstructure"), group);
+    importButton->setEnabled(false);
+    importButton->setToolTip(tr("voxelPreviewWidget.import.placeholder"));
+    auto* exportButton = new QPushButton(tr("voxelPreviewWidget.exportMcstructure"), group);
+    mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), group);
+    mcstructureEntitiesBox_->setChecked(true);
+    mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), group);
+    mcstructureNewFormatBox_ = new QCheckBox(tr("voxelPreviewWidget.useNewFormat"), group);
+    mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
+    connect(exportButton, &QPushButton::clicked, this, [this]() {
+        emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
+                                        mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
+                                        mcstructureNewFormatBox_->isChecked());
+    });
+
+    auto* buttonRow = new QHBoxLayout();
+    buttonRow->setContentsMargins(0, 0, 0, 0);
+    buttonRow->setSpacing(4);
+    buttonRow->addWidget(importButton);
+    buttonRow->addWidget(exportButton);
+
+    auto* optionRow = new QHBoxLayout();
+    optionRow->setContentsMargins(0, 0, 0, 0);
+    optionRow->setSpacing(8);
+    optionRow->addWidget(mcstructureEntitiesBox_);
+    optionRow->addWidget(mcstructureNewFormatBox_);
+    optionRow->addStretch();
+
+    layout->addLayout(buttonRow);
+    layout->addLayout(optionRow);
+    layout->addWidget(mcstructureCompressBox_);
+    // not ready to be exposed in the UI yet
+    mcstructureCompressBox_->hide();
+    return group;
+}
+
+QWidget* VoxelPreviewWidget::buildGlbPanel() {
+    auto* group = new QGroupBox(QStringLiteral("GLB"), this);
+    auto* layout = new QVBoxLayout(group);
+    layout->setContentsMargins(8, 6, 8, 6);
+
+    auto* exportButton = new QPushButton(tr("voxelPreviewWidget.exportGlb.title"), group);
+    exportButton->setToolTip(tr("voxelPreviewWidget.exportGlb.tooltip"));
+    connect(exportButton, &QPushButton::clicked, this, [this]() { exportGlbModel(); });
+    layout->addWidget(exportButton);
+    return group;
+}
+
+void VoxelPreviewWidget::refreshModelInfo() {
+    if (!model_info_label_) return;
+    const QVector3D size = voxelWidget_->modelSize();
+    if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) {
+        model_info_label_->setText(tr("voxelPreviewWidget.model.empty"));
+        return;
+    }
+
+    const QVector3D origin = worldOrigin();
+    const QVector3D end = origin + size;
+    model_info_label_->setText(tr("voxelPreviewWidget.model.info")
+                                   .arg(static_cast<int>(origin.x()))
+                                   .arg(static_cast<int>(origin.y()))
+                                   .arg(static_cast<int>(origin.z()))
+                                   .arg(static_cast<int>(size.x()))
+                                   .arg(static_cast<int>(size.y()))
+                                   .arg(static_cast<int>(size.z()))
+                                   .arg(static_cast<int>(end.x()))
+                                   .arg(static_cast<int>(end.y()))
+                                   .arg(static_cast<int>(end.z())));
+}
+
+void VoxelPreviewWidget::refreshSelectionFields() {
+    if (!selection_group_) return;
+    const QVector3D size = voxelWidget_->modelSize();
+    const bool hasModel = size.x() > 0.0f && size.y() > 0.0f && size.z() > 0.0f;
+    const QVector3D origin = worldOrigin();
+    const VoxelSelection selection = voxelWidget_->getSelection();
+
+    syncing_selection_fields_ = true;
+    for (int axis = 0; axis < 3; ++axis) {
+        const int low = static_cast<int>(std::round(origin[axis]));
+        const int high = static_cast<int>(std::round(origin[axis] + size[axis]));
+        // the maximum boundary is exclusive, so it can never equal the minimum
+        selection_min_boxes_[axis]->setRange(low, std::max(low, high - 1));
+        selection_max_boxes_[axis]->setRange(std::min(low + 1, high), high);
+        if (!hasModel) continue;
+        selection_min_boxes_[axis]->setValue(low + static_cast<int>(std::round(selection.minimum[axis])));
+        selection_max_boxes_[axis]->setValue(low + static_cast<int>(std::round(selection.maximum[axis])));
+    }
+    syncing_selection_fields_ = false;
+}
+
+void VoxelPreviewWidget::applySelectionFields() {
+    if (syncing_selection_fields_) return;
+    const QVector3D origin = worldOrigin();
+    VoxelSelection selection;
+    for (int axis = 0; axis < 3; ++axis) {
+        int low = selection_min_boxes_[axis]->value();
+        int high = selection_max_boxes_[axis]->value();
+        if (low >= high) {
+            // moving one boundary past the other drags it along instead of
+            // rejecting the value
+            if (selection_min_boxes_[axis]->hasFocus()) {
+                low = high - 1;
+            } else {
+                high = low + 1;
+            }
+        }
+        selection.minimum[axis] = static_cast<float>(low);
+        selection.maximum[axis] = static_cast<float>(high);
+    }
+    selection.minimum -= origin;
+    selection.maximum -= origin;
+    voxelWidget_->setSelection(selection);
+    refreshSelectionFields();  // the widget clamps, so mirror the committed values back
+}
+
+void VoxelPreviewWidget::refreshViewOptions() {
+    if (axes_box_) axes_box_->setChecked(voxelWidget_->isAxesVisible());
+    if (ortho_box_) ortho_box_->setChecked(voxelWidget_->isOrthoMode());
+    if (rotation_lock_box_) rotation_lock_box_->setChecked(voxelWidget_->isRotationLocked());
+    if (selection_move_box_) selection_move_box_->setChecked(voxelWidget_->isSelectionMoveMode());
+}
 
 bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::chunk_pos& maxPos, AsyncLevelLoader& loader) {
     setWindowTitle(QString("%1 ~ %2").arg(minPos.to_string().c_str()).arg(maxPos.to_string().c_str()));
@@ -92,6 +415,8 @@ void VoxelPreviewWidget::setVoxelData(VoxelGrid&& data, const bl::block_pos& ori
     bar_->hide();
     voxel_origin_ = origin;
     voxelWidget_->updateVoxelData(std::move(data));
+    refreshModelInfo();
+    refreshSelectionFields();
 }
 
 void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure) {

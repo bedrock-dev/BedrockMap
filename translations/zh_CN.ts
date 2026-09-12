@@ -1782,7 +1782,7 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1790,7 +1790,7 @@
         <translation>导出 GLB</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>导出为 glTF 二进制（.glb）</translation>
     </message>
@@ -1805,34 +1805,136 @@
         <translation>GLB 导出完成。</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
-        <translation>导出 .mcstructure</translation>
+        <translation>导出</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>压缩</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportEntities</source>
         <translation>导出实体</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>使用新格式</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
-        <translation>导入 .mcstructure</translation>
+        <translation>导入</translation>
     </message>
     <message>
-        <location filename="../src/include/ui/voxelwidget.h"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.modelGroup</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.model.empty</source>
+        <translation>未加载模型</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.model.info</source>
+        <translation>世界原点: (%1, %2, %3)
+区域尺寸: %4 x %5 x %6
+世界终点: (%7, %8, %9)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selectionGroup</source>
+        <translation>选区</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.tooltip</source>
+        <translation>坐标与游戏内的世界坐标一致；最大边界不包含在内</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.min</source>
+        <translation>最小</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.max</source>
+        <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.moveMode</source>
+        <translation>移动模式</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.selection.moveMode.tooltip</source>
+        <translation>中键拖动控制点时整体平移选区，不改变大小</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.viewGroup</source>
+        <translation>视图</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.axes</source>
+        <translation>坐标轴</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.ortho</source>
+        <translation>正交投影</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.lockRotation</source>
+        <translation>锁定旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.lockRotation.tooltip</source>
+        <translation>禁止用左键拖动旋转视角</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateUp</source>
+        <translation>向上旋转 90°</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateDown</source>
+        <translation>向下旋转 90°</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateLeft</source>
+        <translation>向左旋转 90°</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.rotateRight</source>
+        <translation>向右旋转 90°</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.view.faceFront</source>
+        <translation>正视当前最接近屏幕的面 (F)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.placeholder</source>
+        <translation>导入功能尚未实现</translation>
     </message>
 </context>
 <context>
@@ -1857,6 +1959,7 @@ O：切换投影
 A：切换坐标轴
 L：锁定左键旋转
 S：切换选区启用
+M：切换移动模式（拖动控制点平移选区）
 方向键：旋转 90°</translation>
     </message>
     <message>

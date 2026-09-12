@@ -22,6 +22,10 @@
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
 // half height of the visible view at z=0: tan(fov/2) * camera distance (50)
 constexpr float kViewHalfHeight = 20.710678f;
+// distance from the camera to the origin of the model space
+constexpr float kCameraDistance = 50.0f;
+// upper zoom bound, shared by the mouse wheel and the zoom clamp
+constexpr float kMaxScaleLevel = 10.0f;
 
 void appendColoredVertex(std::vector<float>& vertices, const QVector3D& position, const QColor& color) {
     vertices.push_back(position.x());
@@ -147,7 +151,8 @@ void VoxelWidget::updateVoxelData(const std::vector<std::vector<std::vector<Voxe
         auto sz1 = newData.size();
         auto sz2 = newData.begin()->size();
         auto sz = ::sqrt(sz1 * sz1 + sz2 * sz2);
-        m_scale = 24. / sz;
+        fit_scale_ = static_cast<float>(24. / sz);
+        m_scale = fit_scale_;
     }
 
     buildSelectionVertices();
@@ -175,7 +180,8 @@ void VoxelWidget::updateVoxelData(std::vector<std::vector<std::vector<Voxel>>>&&
         auto sz1 = voxel_data_.size();
         auto sz2 = voxel_data_.begin()->size();
         auto sz = ::sqrt(sz1 * sz1 + sz2 * sz2);
-        m_scale = 24. / sz;
+        fit_scale_ = static_cast<float>(24. / sz);
+        m_scale = fit_scale_;
     }
 
     buildSelectionVertices();
@@ -453,11 +459,15 @@ void VoxelWidget::buildAxisVertices() {
 void VoxelWidget::resetSelectionToModelBounds() {
     active_selection_handle_ = SelectionHandle::None;
     selection_ = {};
-    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return;
+    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) {
+        emit selectionChanged(selection_);
+        return;
+    }
 
     selection_.minimum = QVector3D(0.0f, 0.0f, 0.0f);
     selection_.maximum = QVector3D(static_cast<float>(voxel_data_[0].size()), static_cast<float>(voxel_data_.size()),
                                    static_cast<float>(voxel_data_[0][0].size()));
+    emit selectionChanged(selection_);
 }
 
 void VoxelWidget::buildSelectionVertices() {
@@ -541,6 +551,7 @@ QVector3D VoxelWidget::selectionHandlePosition(SelectionHandle handle) const {
 }
 
 void VoxelWidget::setSelectionEnabled(bool enabled) {
+    if (selection_enabled_ == enabled) return;
     selection_enabled_ = enabled;
     active_selection_handle_ = SelectionHandle::None;
     unsetCursor();
@@ -554,6 +565,70 @@ void VoxelWidget::setSelectionEnabled(bool enabled) {
         doneCurrent();
     }
     update();
+    emit selectionEnabledChanged(selection_enabled_);
+    emit selectionChanged(selection_);
+}
+
+void VoxelWidget::setSelection(const VoxelSelection& selection) {
+    const QVector3D size = modelSize();
+    if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) return;
+
+    const auto clampBoundary = [](float value, float maximum) {
+        return std::clamp(std::round(value), 0.0f, maximum);
+    };
+    VoxelSelection candidate;
+    candidate.minimum = QVector3D(clampBoundary(selection.minimum.x(), size.x()), clampBoundary(selection.minimum.y(), size.y()),
+                                  clampBoundary(selection.minimum.z(), size.z()));
+    candidate.maximum = QVector3D(clampBoundary(selection.maximum.x(), size.x()), clampBoundary(selection.maximum.y(), size.y()),
+                                  clampBoundary(selection.maximum.z(), size.z()));
+    if (!candidate.isValid() || (candidate.minimum == selection_.minimum && candidate.maximum == selection_.maximum)) return;
+
+    selection_ = candidate;
+    buildSelectionVertices();
+    if (gl_initialized_) {
+        makeCurrent();
+        updateSelectionOpenGLBuffer();
+        doneCurrent();
+    }
+    update();
+    emit selectionChanged(selection_);
+}
+
+void VoxelWidget::setSelectionMoveMode(bool enabled) {
+    if (selection_move_mode_ == enabled) return;
+    selection_move_mode_ = enabled;
+    active_selection_handle_ = SelectionHandle::None;
+    unsetCursor();
+    update();
+    emit viewOptionsChanged();
+}
+
+void VoxelWidget::setAxesVisible(bool visible) {
+    if (axes_visible_ == visible) return;
+    axes_visible_ = visible;
+    update();
+    emit viewOptionsChanged();
+}
+
+void VoxelWidget::setOrthoMode(bool ortho) {
+    if (ortho_mode_ == ortho) return;
+    ortho_mode_ = ortho;
+    updateProjection();
+    update();
+    emit viewOptionsChanged();
+}
+
+void VoxelWidget::setRotationLocked(bool locked) {
+    if (rotation_locked_ == locked) return;
+    rotation_locked_ = locked;
+    update();
+    emit viewOptionsChanged();
+}
+
+QVector3D VoxelWidget::modelSize() const {
+    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return {};
+    return {static_cast<float>(voxel_data_[0].size()), static_cast<float>(voxel_data_.size()),
+            static_cast<float>(voxel_data_[0][0].size())};
 }
 
 void VoxelWidget::updateModelMatrix() {
@@ -629,9 +704,27 @@ void VoxelWidget::updateProjection() {
 
     // view matrix (camera position)
     m_view.setToIdentity();
-    m_view.lookAt(QVector3D(0.0f, 0.0f, 50.0f),  // camera position
-                  QVector3D(0.0f, 0.0f, 0.0f),   // look target
-                  QVector3D(0.0f, 1.0f, 0.0f));  // up direction
+    m_view.lookAt(QVector3D(0.0f, 0.0f, kCameraDistance),  // camera position
+                  QVector3D(0.0f, 0.0f, 0.0f),             // look target
+                  QVector3D(0.0f, 1.0f, 0.0f));            // up direction
+}
+
+// Faces shared by two solid voxels are dropped by the mesher, so the model is a
+// shell with no interior geometry. Zooming far enough moves the camera inside
+// that shell, where it shows nothing but the background (the model looks
+// see-through). Keep the camera outside the model's bounding sphere to prevent it.
+float VoxelWidget::maxZoomScale() const {
+    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return kMaxScaleLevel;
+
+    const float sx = static_cast<float>(voxel_data_[0].size()) * voxel_size_;
+    const float sy = static_cast<float>(voxel_data_.size()) * voxel_size_;
+    const float sz = static_cast<float>(voxel_data_[0][0].size()) * voxel_size_;
+    const float radius = 0.5f * std::sqrt(sx * sx + sy * sy + sz * sz);
+    if (radius <= 0.0f) return kMaxScaleLevel;
+
+    // the model center sits at the pan offset, the camera on the +Z axis
+    const float cameraDistance = std::max(1.0f, (QVector3D(0.0f, 0.0f, kCameraDistance) - m_cameraTranslate).length());
+    return std::clamp(cameraDistance * 0.9f / radius, 0.1f, kMaxScaleLevel);
 }
 
 bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,

@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QColor>
 #include <QFuture>
+#include <QGroupBox>
 #include <QLabel>
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_3_Core>
@@ -18,19 +19,21 @@
 #include <QPointF>
 #include <QQuaternion>
 #include <QSizePolicy>
+#include <QSpinBox>
 #include <QToolButton>
 #include <QVector3D>
 #include <QWidget>
 #include <QtOpenGLWidgets/QOpenGLWidget>
+#include <array>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
 
 #include "asynclevelloader.h"
-#include "guitaskrunner.h"
 #include "bedrock_key.h"
 #include "chunk.h"
+#include "guitaskrunner.h"
 
 class QResizeEvent;
 namespace bl {
@@ -70,11 +73,28 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void setSelectionEnabled(bool enabled);
     [[nodiscard]] bool isSelectionEnabled() const { return selection_enabled_; }
     [[nodiscard]] VoxelSelection getSelection() const { return selection_; }
+    void setSelection(const VoxelSelection& selection);
+    void setSelectionMoveMode(bool enabled);
+    [[nodiscard]] bool isSelectionMoveMode() const { return selection_move_mode_; }
+    void setAxesVisible(bool visible);
+    [[nodiscard]] bool isAxesVisible() const { return axes_visible_; }
+    void setOrthoMode(bool ortho);
+    [[nodiscard]] bool isOrthoMode() const { return ortho_mode_; }
+    void setRotationLocked(bool locked);
+    [[nodiscard]] bool isRotationLocked() const { return rotation_locked_; }
+    void rotateView(float yawDegrees, float pitchDegrees);
+    void focusFrontFace();  // snap the face closest to the screen flat (the F key)
+    [[nodiscard]] QVector3D modelSize() const;  // voxel dimensions of the loaded model
     [[nodiscard]] bool exportGlb(const QString& filePath, QString* errorMessage = nullptr) const;
 
     static std::vector<std::vector<std::vector<Voxel>>> createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
                                                                                   const std::function<void(int)>& f,
                                                                                   int* firstWorldY = nullptr);
+
+   signals:
+    void selectionChanged(VoxelSelection selection);
+    void selectionEnabledChanged(bool enabled);
+    void viewOptionsChanged();  // axes visibility, projection mode, or selection move mode
 
    protected:
     void initializeGL() override;
@@ -97,12 +117,13 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // opengl
     void generateOpenGLBuffers();
-    void setupVertexAttributes();   // set vertex attributes (called once only)
-    void updateOpenGLBuffers();     // update OpenGL buffer data
-    void updateModelMatrix();       // update model matrix
-    void updateProjection();        // rebuild projection from the current mode / size
-    void buildAxisVertices();       // rebuild the coordinate axis line vertices
-    void buildSelectionVertices();  // rebuild the selection fill, outline, and handles
+    void setupVertexAttributes();              // set vertex attributes (called once only)
+    void updateOpenGLBuffers();                // update OpenGL buffer data
+    void updateModelMatrix();                  // update model matrix
+    void updateProjection();                   // rebuild projection from the current mode / size
+    [[nodiscard]] float maxZoomScale() const;  // zoom bound that keeps the camera outside the model
+    void buildAxisVertices();                  // rebuild the coordinate axis line vertices
+    void buildSelectionVertices();             // rebuild the selection fill, outline, and handles
     void setupShortcutHelpButton();
     void updateShortcutHelpButtonGeometry();
     void showShortcutHelp();
@@ -168,6 +189,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     float orbit_yaw_degrees_{45.0f};
     float orbit_pitch_degrees_{45.0f};
     float m_scale = 1.0f;
+    float fit_scale_ = 1.0f;  // zoom that frames a newly loaded model (the R key target)
     float voxel_size_ = 1.0f;
 
     QVector3D m_cameraTranslate;   // camera pan offset (X/Y/Z axis)
@@ -188,11 +210,15 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // voxel selection
     bool selection_enabled_{false};
+    bool selection_move_mode_{false};  // true: dragging a handle moves the selection instead of resizing it
     VoxelSelection selection_;
     SelectionHandle active_selection_handle_{SelectionHandle::None};
     QPointF selection_drag_start_;
     QPointF selection_drag_axis_screen_;
     int selection_drag_start_value_{0};
+    QVector3D selection_drag_start_minimum_;
+    QVector3D selection_drag_start_maximum_;
+    std::array<QPointF, 3> selection_drag_screen_axes_{};  // screen-space step per world axis, for move mode
 
     // shadering
     QVector3D m_lightPos = QVector3D(8.0f, 384.0f, 8.0f);
@@ -213,71 +239,7 @@ class VoxelPreviewWidget : public QWidget {
         bl::block_pos origin;
     };
 
-    explicit VoxelPreviewWidget(QWidget* parent = nullptr) : QWidget(parent) {
-        voxelWidget_ = new VoxelWidget(this);
-        bar_ = new QProgressBar(this);
-        auto* toolbar = new QWidget(this);
-        toolbar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        auto* toolbarLayout = new QHBoxLayout(toolbar);
-        toolbarLayout->setContentsMargins(0, 0, 0, 0);
-        toolbarLayout->setSpacing(6);
-
-        auto* exportMcstructureButton = new QToolButton(toolbar);
-        exportMcstructureButton->setText(tr("voxelPreviewWidget.exportMcstructure"));
-        connect(exportMcstructureButton, &QToolButton::clicked, this, [this]() {
-            emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
-                                            mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
-                                            mcstructureNewFormatBox_->isChecked());
-        });
-
-        mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), toolbar);
-        mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), toolbar);
-        mcstructureNewFormatBox_ = new QCheckBox(tr("voxelPreviewWidget.useNewFormat"), toolbar);
-        mcstructureCompressBox_->setChecked(false);
-        mcstructureEntitiesBox_->setChecked(false);
-        mcstructureNewFormatBox_->setChecked(false);
-
-        auto* importMcstructureButton = new QToolButton(toolbar);
-        importMcstructureButton->setText(tr("voxelPreviewWidget.importMcstructure"));
-        connect(importMcstructureButton, &QToolButton::clicked, this, []() {});
-
-        auto* exportModelButton = new QToolButton(toolbar);
-        exportModelButton->setText(tr("voxelPreviewWidget.exportGlb.title"));
-        exportModelButton->setToolTip(tr("voxelPreviewWidget.exportGlb.tooltip"));
-        connect(exportModelButton, &QToolButton::clicked, this, [this]() { exportGlbModel(); });
-
-        toolbarLayout->addWidget(exportMcstructureButton);
-        toolbarLayout->addWidget(mcstructureEntitiesBox_);
-        toolbarLayout->addWidget(mcstructureNewFormatBox_);
-        toolbarLayout->addWidget(mcstructureCompressBox_);
-        toolbarLayout->addWidget(importMcstructureButton);
-        toolbarLayout->addWidget(exportModelButton);
-        toolbarLayout->addStretch();
-        toolbar->setFixedHeight(toolbar->sizeHint().height());
-        voxelWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-        auto* layout = new QVBoxLayout();
-        layout->addWidget(toolbar, 0);
-        layout->addWidget(voxelWidget_, 1);
-        layout->addWidget(bar_, 0);
-        setLayout(layout);
-        setGeometry({0, 0, 1200, 900});
-        connect(&this->chunk_task_, &GuiTaskRunner::progressChanged, this, [this](int value, const QString&) { bar_->setValue(value); });
-        connect(&this->chunk_task_, &GuiTaskRunner::finished, this, [this]() {
-            bar_->hide();
-            setVoxelData(std::move(pending_chunk_result_.data), pending_chunk_result_.origin);
-        });
-        connect(&this->chunk_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
-        connect(&this->mcstructure_task_, &GuiTaskRunner::finished, this, [this]() {
-            bar_->hide();
-            setVoxelData(std::move(pending_mcstructure_result_.data), pending_mcstructure_result_.origin);
-        });
-        connect(&this->mcstructure_task_, &GuiTaskRunner::failed, this, [this](const QString&) { bar_->hide(); });
-        importMcstructureButton->hide();
-        mcstructureCompressBox_->hide();
-        mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
-        mcstructureEntitiesBox_->setChecked(true);
-    }
+    explicit VoxelPreviewWidget(QWidget* parent = nullptr);
 
     bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
     void loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure);
@@ -289,12 +251,32 @@ class VoxelPreviewWidget : public QWidget {
    private:
     void setVoxelData(VoxelGrid&& data, const bl::block_pos& origin);
     void exportGlbModel();
+    // side panel
+    [[nodiscard]] QWidget* buildModelPanel();
+    [[nodiscard]] QWidget* buildSelectionPanel();
+    [[nodiscard]] QWidget* buildViewPanel();
+    [[nodiscard]] QWidget* buildMcstructurePanel();
+    [[nodiscard]] QWidget* buildGlbPanel();
+    [[nodiscard]] QVector3D worldOrigin() const;
+    void refreshModelInfo();
+    void refreshSelectionFields();
+    void refreshViewOptions();
+    void applySelectionFields();
 
     QProgressBar* bar_;
     VoxelWidget* voxelWidget_;
+    QLabel* model_info_label_{nullptr};
+    QGroupBox* selection_group_{nullptr};
+    std::array<QSpinBox*, 3> selection_min_boxes_{};
+    std::array<QSpinBox*, 3> selection_max_boxes_{};
+    QCheckBox* selection_move_box_{nullptr};
+    QCheckBox* axes_box_{nullptr};
+    QCheckBox* ortho_box_{nullptr};
+    QCheckBox* rotation_lock_box_{nullptr};
     QCheckBox* mcstructureCompressBox_{nullptr};
     QCheckBox* mcstructureEntitiesBox_{nullptr};
     QCheckBox* mcstructureNewFormatBox_{nullptr};
+    bool syncing_selection_fields_{false};  // true while the panel writes into the spin boxes
     // data
     bl::block_pos voxel_origin_;
     GuiTaskRunner chunk_task_;
