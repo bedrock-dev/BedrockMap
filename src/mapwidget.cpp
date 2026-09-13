@@ -93,6 +93,13 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
                 }
                 exportSelectionToMcstructure(option_.dim, compress, exportEntities, blockBounds, useNewFormat ? 2 : 1);
             });
+    connect(voxel_preview_window_, &VoxelPreviewWidget::importConfirmed, this,
+            [this](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
+                // TODO: write the imported structure into the level at the placement
+                // position, then refresh the affected regions.
+                Q_UNUSED(placement);
+                Q_UNUSED(imported);
+            });
     // Center and resize to ~80% of the parent window once
     if (auto *win = window()) {
         QSize sz = win->size() * 0.8;

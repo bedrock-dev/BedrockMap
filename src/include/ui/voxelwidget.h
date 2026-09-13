@@ -17,6 +17,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QPointF>
+#include <QPushButton>
 #include <QQuaternion>
 #include <QSizePolicy>
 #include <QSpinBox>
@@ -60,6 +61,8 @@ struct VoxelSelection {
 
 Q_DECLARE_METATYPE(VoxelSelection)
 
+using VoxelGrid = std::vector<std::vector<std::vector<Voxel>>>;
+
 class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     Q_OBJECT
 
@@ -76,6 +79,14 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void setSelection(const VoxelSelection& selection);
     void setSelectionMoveMode(bool enabled);
     [[nodiscard]] bool isSelectionMoveMode() const { return selection_move_mode_; }
+    /// Import placement lock: the selection keeps its size and can only be moved.
+    void setSelectionLocked(bool locked);
+    [[nodiscard]] bool isSelectionLocked() const { return selection_locked_; }
+    /// Ghost mesh of a structure being placed. It is a separate grid, so it is not
+    /// occluded by the model and is drawn with reduced opacity.
+    void setPreviewVoxelData(VoxelGrid data);
+    void setPreviewOffset(const QVector3D& offsetVoxels);
+    void clearPreviewVoxelData();
     void setAxesVisible(bool visible);
     [[nodiscard]] bool isAxesVisible() const { return axes_visible_; }
     void setOrthoMode(bool ortho);
@@ -83,7 +94,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void setRotationLocked(bool locked);
     [[nodiscard]] bool isRotationLocked() const { return rotation_locked_; }
     void rotateView(float yawDegrees, float pitchDegrees);
-    void focusFrontFace();  // snap the face closest to the screen flat (the F key)
+    void focusFrontFace();                      // snap the face closest to the screen flat (the F key)
     [[nodiscard]] QVector3D modelSize() const;  // voxel dimensions of the loaded model
     [[nodiscard]] bool exportGlb(const QString& filePath, QString* errorMessage = nullptr) const;
 
@@ -128,6 +139,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void updateShortcutHelpButtonGeometry();
     void showShortcutHelp();
     void updateSelectionOpenGLBuffer();
+    void updatePreviewOpenGLBuffer();
     void resetSelectionToModelBounds();
     [[nodiscard]] float pixelsPerWorldUnitAt(const QVector3D& point) const;
     [[nodiscard]] float selectionHandleHalfSizeAt(const QVector3D& point) const;
@@ -146,16 +158,19 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void checkOpenGLError(const char* location);  // debug error checking
 
     // mesh building
-    [[nodiscard]] bool hasNeighborInBounds(int layer, int x, int z, int dLayer, int dX, int dZ, const bl::block_box& bounds,
-                                           MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
+    [[nodiscard]] bool hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dLayer, int dX, int dZ,
+                                           const bl::block_box& bounds, MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
     [[nodiscard]] std::optional<bl::block_box> fullVoxelBounds() const;
     [[nodiscard]] std::optional<bl::block_box> currentExportBounds() const;
     void addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                  const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices) const;
-    void appendVisibleVoxelMesh(const bl::block_box& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
-                                std::vector<float>* transparentVertices = nullptr, std::vector<GLuint>* transparentIndices = nullptr,
-                                MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
+                                  const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices,
+                                  float alphaScale = 1.0f) const;
+    void appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_box& bounds, std::vector<float>& vertices,
+                                std::vector<GLuint>& indices, std::vector<float>* transparentVertices = nullptr,
+                                std::vector<GLuint>* transparentIndices = nullptr,
+                                MeshOcclusionMode mode = MeshOcclusionMode::RenderView, float alphaScale = 1.0f) const;
     void buildVoxelVertices();
+    void buildPreviewVertices();
     // OpenGL obj (opaque, transparent)
     QOpenGLShaderProgram* gl_shader_ = nullptr;
     QOpenGLShaderProgram* axis_shader_ = nullptr;
@@ -164,6 +179,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     GLuint ebo_opaque_ = 0, ebo_transparent_ = 0;
     GLuint vao_axes_ = 0, vbo_axes_ = 0;
     GLuint vao_selection_ = 0, vbo_selection_ = 0;
+    GLuint vao_preview_ = 0, vbo_preview_ = 0, ebo_preview_ = 0;
     bool gl_initialized_{false};  // true once initializeGL() has run and GL objects exist
 
     // vertices(opaque)
@@ -178,6 +194,10 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     std::vector<std::vector<std::vector<Voxel>>> voxel_data_;
     std::vector<float> axes_vertices_;       // 7 floats per vertex: pos3 + rgba4
     std::vector<float> selection_vertices_;  // 7 floats per vertex: pos3 + rgba4
+    VoxelGrid preview_data_;                 // structure being placed, empty when not previewing
+    std::vector<float> preview_vertices_;    // 10 floats per vertex: pos3 + normal3 + rgba4
+    std::vector<GLuint> preview_indices_;
+    QVector3D preview_offset_;               // placement offset in voxel units
     GLsizei selection_fill_vertex_count_{0};
     GLsizei selection_line_vertex_count_{0};
     int start_layer_ = 0;
@@ -202,6 +222,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     QMatrix4x4 m_projection;
     QMatrix4x4 m_view;
     QMatrix4x4 m_model;
+    QMatrix4x4 m_preview_model;  // m_model with the placement offset applied
     bool ortho_mode_{false};    // false = perspective, true = orthographic
     bool axes_visible_{false};  // coordinate axes overlay (A key)
     bool rotation_locked_{false};
@@ -211,6 +232,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     // voxel selection
     bool selection_enabled_{false};
     bool selection_move_mode_{false};  // true: dragging a handle moves the selection instead of resizing it
+    bool selection_locked_{false};     // true: the selection size is fixed and it cannot be disabled
     VoxelSelection selection_;
     SelectionHandle active_selection_handle_{SelectionHandle::None};
     QPointF selection_drag_start_;
@@ -244,19 +266,28 @@ class VoxelPreviewWidget : public QWidget {
     bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
     void loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure);
     [[nodiscard]] bl::block_pos voxelOrigin() const { return voxel_origin_; }
+    /// Import placement mode: the selection is locked to the size of the model to
+    /// be imported and can only be moved. Export controls stay disabled until the
+    /// mode ends, which happens on confirm or cancel.
+    void beginImportMode(const bl::block_pos& importedSize);
 
    signals:
     void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
+    /// World-space placement of the imported model. The actual write is not implemented yet.
+    void importConfirmed(VoxelSelection placement, std::shared_ptr<const bl::mcstructure> structure);
 
    private:
     void setVoxelData(VoxelGrid&& data, const bl::block_pos& origin);
     void exportGlbModel();
+    void chooseImportFile();
+    void endImportMode();
     // side panel
     [[nodiscard]] QWidget* buildModelPanel();
     [[nodiscard]] QWidget* buildSelectionPanel();
     [[nodiscard]] QWidget* buildViewPanel();
     [[nodiscard]] QWidget* buildMcstructurePanel();
     [[nodiscard]] QWidget* buildGlbPanel();
+    [[nodiscard]] QWidget* buildImportBar();
     [[nodiscard]] QVector3D worldOrigin() const;
     void refreshModelInfo();
     void refreshSelectionFields();
@@ -276,6 +307,12 @@ class VoxelPreviewWidget : public QWidget {
     QCheckBox* mcstructureCompressBox_{nullptr};
     QCheckBox* mcstructureEntitiesBox_{nullptr};
     QCheckBox* mcstructureNewFormatBox_{nullptr};
+    QPushButton* mcstructure_import_button_{nullptr};
+    QPushButton* mcstructure_export_button_{nullptr};
+    QPushButton* glb_export_button_{nullptr};
+    QWidget* import_bar_{nullptr};
+    std::shared_ptr<const bl::mcstructure> import_structure_;
+    bool import_mode_{false};
     bool syncing_selection_fields_{false};  // true while the panel writes into the spin boxes
     // data
     bl::block_pos voxel_origin_;

@@ -1826,6 +1826,9 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>Import</translation>
     </message>
@@ -1933,8 +1936,33 @@ World end: (%7, %8, %9)</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.placeholder</source>
-        <translation>Import is not implemented yet</translation>
+        <source>voxelPreviewWidget.import.tooltip</source>
+        <translation>Enter placement mode and drag the selection to choose where to import</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.confirm</source>
+        <translation>Confirm</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation>MCStructure files (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.openFailed</source>
+        <translation>The file could not be opened.</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.invalidFile</source>
+        <translation>Not a valid mcstructure file.</translation>
     </message>
 </context>
 <context>

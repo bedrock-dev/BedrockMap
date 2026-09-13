@@ -1826,6 +1826,9 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>导入</translation>
     </message>
@@ -1933,8 +1936,33 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.placeholder</source>
-        <translation>导入功能尚未实现</translation>
+        <source>voxelPreviewWidget.import.tooltip</source>
+        <translation>进入放置模式，拖动选框选择导入位置</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.confirm</source>
+        <translation>确认</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation>MCStructure 文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.openFailed</source>
+        <translation>无法打开文件。</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.import.invalidFile</source>
+        <translation>不是有效的 mcstructure 文件。</translation>
     </message>
 </context>
 <context>

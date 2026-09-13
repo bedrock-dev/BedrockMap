@@ -147,7 +147,7 @@ bool VoxelWidget::exportGlb(const QString& filePath, QString* errorMessage) cons
     std::vector<GLuint> opaqueIndices;
     std::vector<float> transparentVertices;
     std::vector<GLuint> transparentIndices;
-    appendVisibleVoxelMesh(*bounds, opaqueVertices, opaqueIndices, &transparentVertices, &transparentIndices,
+    appendVisibleVoxelMesh(voxel_data_, *bounds, opaqueVertices, opaqueIndices, &transparentVertices, &transparentIndices,
                            MeshOcclusionMode::RenderView);
 
     if ((opaqueVertices.empty() || opaqueIndices.empty()) && (transparentVertices.empty() || transparentIndices.empty())) {

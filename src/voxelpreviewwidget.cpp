@@ -1,3 +1,4 @@
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -12,7 +13,9 @@
 namespace {
     // The selection is stored in model-local voxel coordinates; the panel edits
     // world coordinates so the numbers match the in-game positions.
-    QVector3D toVector(const bl::block_pos& pos) { return {static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z)}; }
+    QVector3D toVector(const bl::block_pos& pos) {
+        return {static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z)};
+    }
 
     QSpinBox* makeCoordinateBox(QWidget* parent) {
         auto* box = new QSpinBox(parent);
@@ -77,6 +80,8 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     panelLayout->addWidget(buildMcstructurePanel());
     panelLayout->addWidget(buildGlbPanel());
     panelLayout->addStretch();
+    import_bar_ = buildImportBar();
+    panelLayout->addWidget(import_bar_);
 
     auto* panelScroll = new QScrollArea(splitter);
     panelScroll->setWidgetResizable(true);
@@ -96,7 +101,10 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     setLayout(layout);
     setGeometry({0, 0, 1200, 900});
 
-    connect(voxelWidget_, &VoxelWidget::selectionChanged, this, [this](VoxelSelection) { refreshSelectionFields(); });
+    connect(voxelWidget_, &VoxelWidget::selectionChanged, this, [this](VoxelSelection) {
+        refreshSelectionFields();
+        if (import_mode_) voxelWidget_->setPreviewOffset(voxelWidget_->getSelection().minimum);
+    });
     connect(voxelWidget_, &VoxelWidget::selectionEnabledChanged, this, [this](bool enabled) {
         if (selection_group_ && selection_group_->isChecked() != enabled) {
             QSignalBlocker blocker(selection_group_);
@@ -247,8 +255,11 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
 
     auto* importButton = new QPushButton(tr("voxelPreviewWidget.importMcstructure"), group);
     importButton->setEnabled(false);
-    importButton->setToolTip(tr("voxelPreviewWidget.import.placeholder"));
+    importButton->setToolTip(tr("voxelPreviewWidget.import.tooltip"));
+    connect(importButton, &QPushButton::clicked, this, [this]() { chooseImportFile(); });
+    mcstructure_import_button_ = importButton;
     auto* exportButton = new QPushButton(tr("voxelPreviewWidget.exportMcstructure"), group);
+    mcstructure_export_button_ = exportButton;
     mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), group);
     mcstructureEntitiesBox_->setChecked(true);
     mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), group);
@@ -263,8 +274,8 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
     auto* buttonRow = new QHBoxLayout();
     buttonRow->setContentsMargins(0, 0, 0, 0);
     buttonRow->setSpacing(4);
-    buttonRow->addWidget(importButton);
     buttonRow->addWidget(exportButton);
+    buttonRow->addWidget(importButton);
 
     auto* optionRow = new QHBoxLayout();
     optionRow->setContentsMargins(0, 0, 0, 0);
@@ -289,8 +300,113 @@ QWidget* VoxelPreviewWidget::buildGlbPanel() {
     auto* exportButton = new QPushButton(tr("voxelPreviewWidget.exportGlb.title"), group);
     exportButton->setToolTip(tr("voxelPreviewWidget.exportGlb.tooltip"));
     connect(exportButton, &QPushButton::clicked, this, [this]() { exportGlbModel(); });
+    glb_export_button_ = exportButton;
     layout->addWidget(exportButton);
     return group;
+}
+
+void VoxelPreviewWidget::chooseImportFile() {
+    const QString filePath = QFileDialog::getOpenFileName(this, tr("voxelPreviewWidget.importMcstructure"), QString(),
+                                                          tr("MCStructure files (*.mcstructure)"));
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        LOG_F(WARNING, "Can not open mcstructure file: %s", filePath.toStdString().c_str());
+        QMessageBox::warning(this, tr("voxelPreviewWidget.importMcstructure"), tr("voxelPreviewWidget.import.openFailed"));
+        return;
+    }
+    const QByteArray raw = file.readAll();
+    auto structure = std::make_shared<bl::mcstructure>(
+        bl::parse_mcstructure(reinterpret_cast<const byte_t*>(raw.constData()), static_cast<size_t>(raw.size())));
+    if (structure->size_x() <= 0 || structure->size_y() <= 0 || structure->size_z() <= 0) {
+        LOG_F(WARNING, "Invalid mcstructure file: %s", filePath.toStdString().c_str());
+        QMessageBox::warning(this, tr("voxelPreviewWidget.importMcstructure"), tr("voxelPreviewWidget.import.invalidFile"));
+        return;
+    }
+
+    import_structure_ = std::move(structure);
+    beginImportMode(import_structure_->size());
+}
+
+void VoxelPreviewWidget::beginImportMode(const bl::block_pos& importedSize) {
+    if (import_mode_ || importedSize.x <= 0 || importedSize.y <= 0 || importedSize.z <= 0) return;
+    import_mode_ = true;
+
+    // The placement box matches the imported model, centred on the preview, and
+    // can only be moved from there.
+    const QVector3D model = voxelWidget_->modelSize();
+    const QVector3D span(static_cast<float>(importedSize.x), static_cast<float>(importedSize.y), static_cast<float>(importedSize.z));
+    const QVector3D center = (model - span) * 0.5f;
+    const QVector3D minimum(std::round(center.x()), std::round(center.y()), std::round(center.z()));
+    // ghost mesh of the structure to place, reusing the same voxel conversion as
+    // the load path
+    voxelWidget_->setPreviewVoxelData(buildVoxelDataFromMcstructure(*import_structure_));
+    // lock before setting the box: a locked selection may exceed the model bounds
+    voxelWidget_->setSelectionLocked(true);
+    voxelWidget_->setSelectionEnabled(true);
+    voxelWidget_->setSelection({minimum, minimum + span});
+    voxelWidget_->setSelectionMoveMode(true);
+    voxelWidget_->setPreviewOffset(voxelWidget_->getSelection().minimum);
+
+    // The selection must stay on while placing, so the group checkbox is removed
+    // instead of disabled (disabling it would grey out the position fields too).
+    selection_group_->setCheckable(false);
+    for (QSpinBox* box : selection_min_boxes_) box->setEnabled(false);
+    for (QSpinBox* box : selection_max_boxes_) box->setEnabled(false);
+    selection_move_box_->setEnabled(false);
+    mcstructure_import_button_->setEnabled(false);
+    mcstructure_export_button_->setEnabled(false);
+    glb_export_button_->setEnabled(false);
+    mcstructureEntitiesBox_->setEnabled(false);
+    mcstructureNewFormatBox_->setEnabled(false);
+    import_bar_->show();
+}
+
+void VoxelPreviewWidget::endImportMode() {
+    if (!import_mode_) return;
+    import_mode_ = false;
+
+    voxelWidget_->setSelectionLocked(false);
+    voxelWidget_->setSelectionMoveMode(false);
+
+    selection_group_->setCheckable(true);
+    selection_group_->setChecked(voxelWidget_->isSelectionEnabled());
+    for (QSpinBox* box : selection_min_boxes_) box->setEnabled(true);
+    for (QSpinBox* box : selection_max_boxes_) box->setEnabled(true);
+    selection_move_box_->setEnabled(true);
+    mcstructure_export_button_->setEnabled(true);
+    glb_export_button_->setEnabled(true);
+    mcstructureEntitiesBox_->setEnabled(true);
+    mcstructureNewFormatBox_->setEnabled(true);
+    import_bar_->hide();
+    import_structure_.reset();
+    voxelWidget_->clearPreviewVoxelData();
+    refreshModelInfo();        // restores the import button state
+    refreshSelectionFields();  // the placement box may have left the model bounds
+}
+
+QWidget* VoxelPreviewWidget::buildImportBar() {
+    auto* bar = new QWidget(this);
+    auto* layout = new QHBoxLayout(bar);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(4);
+
+    auto* confirmButton = new QPushButton(tr("voxelPreviewWidget.import.confirm"), bar);
+    connect(confirmButton, &QPushButton::clicked, this, [this]() {
+        VoxelSelection placement = voxelWidget_->getSelection();
+        placement.minimum += worldOrigin();
+        placement.maximum += worldOrigin();
+        emit importConfirmed(placement, import_structure_);
+        endImportMode();
+    });
+    auto* cancelButton = new QPushButton(tr("voxelPreviewWidget.import.cancel"), bar);
+    connect(cancelButton, &QPushButton::clicked, this, [this]() { endImportMode(); });
+
+    layout->addWidget(confirmButton);
+    layout->addWidget(cancelButton);
+    bar->hide();
+    return bar;
 }
 
 void VoxelPreviewWidget::refreshModelInfo() {
@@ -298,8 +414,10 @@ void VoxelPreviewWidget::refreshModelInfo() {
     const QVector3D size = voxelWidget_->modelSize();
     if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) {
         model_info_label_->setText(tr("voxelPreviewWidget.model.empty"));
+        if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(false);
         return;
     }
+    if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(!import_mode_);
 
     const QVector3D origin = worldOrigin();
     const QVector3D end = origin + size;
@@ -324,14 +442,20 @@ void VoxelPreviewWidget::refreshSelectionFields() {
 
     syncing_selection_fields_ = true;
     for (int axis = 0; axis < 3; ++axis) {
-        const int low = static_cast<int>(std::round(origin[axis]));
-        const int high = static_cast<int>(std::round(origin[axis] + size[axis]));
+        const int modelLow = static_cast<int>(std::round(origin[axis]));
+        const int modelHigh = static_cast<int>(std::round(origin[axis] + size[axis]));
+        // an import placement box may extend past the model bounds, so the fields
+        // cover the model and the current selection
+        const int selectionLow = modelLow + static_cast<int>(std::round(selection.minimum[axis]));
+        const int selectionHigh = modelLow + static_cast<int>(std::round(selection.maximum[axis]));
+        const int low = std::min(modelLow, selectionLow);
+        const int high = std::max(modelHigh, selectionHigh);
         // the maximum boundary is exclusive, so it can never equal the minimum
         selection_min_boxes_[axis]->setRange(low, std::max(low, high - 1));
         selection_max_boxes_[axis]->setRange(std::min(low + 1, high), high);
         if (!hasModel) continue;
-        selection_min_boxes_[axis]->setValue(low + static_cast<int>(std::round(selection.minimum[axis])));
-        selection_max_boxes_[axis]->setValue(low + static_cast<int>(std::round(selection.maximum[axis])));
+        selection_min_boxes_[axis]->setValue(selectionLow);
+        selection_max_boxes_[axis]->setValue(selectionHigh);
     }
     syncing_selection_fields_ = false;
 }

@@ -155,6 +155,13 @@ void McstructurePageWidget::setupUI() {
             [this](VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat) {
                 exportMcstructure(selection, hasSelection, compress, exportEntities, useNewFormat);
             });
+    connect(voxel_preview_widget_, &VoxelPreviewWidget::importConfirmed, this,
+            [](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
+                // TODO: write the imported structure into this structure at the
+                // placement position and refresh the preview.
+                Q_UNUSED(placement);
+                Q_UNUSED(imported);
+            });
     topSplitter->addWidget(leftPanel);
     topSplitter->addWidget(voxel_preview_widget_);
     topSplitter->setStretchFactor(0, 1);

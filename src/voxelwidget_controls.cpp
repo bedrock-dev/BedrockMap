@@ -219,9 +219,13 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
         }
 
         QVector3D minimum = selection_drag_start_minimum_ + offset;
-        minimum.setX(std::clamp(minimum.x(), 0.0f, sizeX - span.x()));
-        minimum.setY(std::clamp(minimum.y(), 0.0f, sizeY - span.y()));
-        minimum.setZ(std::clamp(minimum.z(), 0.0f, sizeZ - span.z()));
+        // A locked selection is a fixed-size import placement box: it is free to
+        // move anywhere, including past the model bounds.
+        if (!selection_locked_) {
+            minimum.setX(std::clamp(minimum.x(), 0.0f, sizeX - span.x()));
+            minimum.setY(std::clamp(minimum.y(), 0.0f, sizeY - span.y()));
+            minimum.setZ(std::clamp(minimum.z(), 0.0f, sizeZ - span.z()));
+        }
         if (minimum == selection_.minimum) return;
 
         selection_.minimum = minimum;

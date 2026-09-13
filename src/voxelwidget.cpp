@@ -26,6 +26,8 @@ constexpr float kViewHalfHeight = 20.710678f;
 constexpr float kCameraDistance = 50.0f;
 // upper zoom bound, shared by the mouse wheel and the zoom clamp
 constexpr float kMaxScaleLevel = 10.0f;
+// opacity of the import placement ghost mesh
+constexpr float kPreviewAlphaScale = 0.55f;
 
 void appendColoredVertex(std::vector<float>& vertices, const QVector3D& position, const QColor& color) {
     vertices.push_back(position.x());
@@ -217,6 +219,12 @@ void VoxelWidget::generateOpenGLBuffers() {
         glGenBuffers(1, &vbo_selection_);
     }
 
+    if (vao_preview_ == 0) {
+        glGenVertexArrays(1, &vao_preview_);
+        glGenBuffers(1, &vbo_preview_);
+        glGenBuffers(1, &ebo_preview_);
+    }
+
     setupVertexAttributes();
 }
 
@@ -264,6 +272,17 @@ void VoxelWidget::setupVertexAttributes() {
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    // import preview: same layout as the voxel mesh
+    glBindVertexArray(vao_preview_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_preview_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_preview_);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
     // unbind VAO
     glBindVertexArray(0);
 }
@@ -298,6 +317,7 @@ void VoxelWidget::updateOpenGLBuffers() {
     }
 
     updateSelectionOpenGLBuffer();
+    updatePreviewOpenGLBuffer();
 
     // unbind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -309,6 +329,16 @@ void VoxelWidget::updateSelectionOpenGLBuffer() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo_selection_);
     glBufferData(GL_ARRAY_BUFFER, selection_vertices_.size() * sizeof(float), selection_vertices_.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void VoxelWidget::updatePreviewOpenGLBuffer() {
+    if (vbo_preview_ == 0) return;
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_preview_);
+    glBufferData(GL_ARRAY_BUFFER, preview_vertices_.size() * sizeof(float), preview_vertices_.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_preview_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, preview_indices_.size() * sizeof(GLuint), preview_indices_.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void VoxelWidget::initializeGL() {
@@ -356,6 +386,18 @@ void VoxelWidget::paintGL() {
     setUniforms();
     renderOpaqueObjects();
     renderTransparentObjects();
+
+    // import placement ghost, drawn on top of the model
+    if (!preview_indices_.empty() && gl_shader_->isLinked()) {
+        gl_shader_->setUniformValue("model", m_preview_model);
+        glDepthMask(GL_FALSE);
+        glDisable(GL_CULL_FACE);  // the ghost shell is open where it meets the model
+        glBindVertexArray(vao_preview_);
+        glDrawElements(GL_TRIANGLES, preview_indices_.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        glEnable(GL_CULL_FACE);
+        glDepthMask(GL_TRUE);
+    }
 
     if (selection_enabled_ && selection_.isValid() && axis_shader_ && axis_shader_->isLinked() && !selection_vertices_.empty()) {
         axis_shader_->bind();
@@ -551,7 +593,7 @@ QVector3D VoxelWidget::selectionHandlePosition(SelectionHandle handle) const {
 }
 
 void VoxelWidget::setSelectionEnabled(bool enabled) {
-    if (selection_enabled_ == enabled) return;
+    if (selection_enabled_ == enabled || (selection_locked_ && !enabled)) return;
     selection_enabled_ = enabled;
     active_selection_handle_ = SelectionHandle::None;
     unsetCursor();
@@ -573,14 +615,16 @@ void VoxelWidget::setSelection(const VoxelSelection& selection) {
     const QVector3D size = modelSize();
     if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) return;
 
-    const auto clampBoundary = [](float value, float maximum) {
-        return std::clamp(std::round(value), 0.0f, maximum);
-    };
     VoxelSelection candidate;
-    candidate.minimum = QVector3D(clampBoundary(selection.minimum.x(), size.x()), clampBoundary(selection.minimum.y(), size.y()),
-                                  clampBoundary(selection.minimum.z(), size.z()));
-    candidate.maximum = QVector3D(clampBoundary(selection.maximum.x(), size.x()), clampBoundary(selection.maximum.y(), size.y()),
-                                  clampBoundary(selection.maximum.z(), size.z()));
+    for (int axis = 0; axis < 3; ++axis) {
+        candidate.minimum[axis] = std::round(selection.minimum[axis]);
+        candidate.maximum[axis] = std::round(selection.maximum[axis]);
+        // A locked selection has a fixed size for import placement, so it may
+        // extend past the model bounds.
+        if (selection_locked_) continue;
+        candidate.minimum[axis] = std::clamp(candidate.minimum[axis], 0.0f, size[axis]);
+        candidate.maximum[axis] = std::clamp(candidate.maximum[axis], 0.0f, size[axis]);
+    }
     if (!candidate.isValid() || (candidate.minimum == selection_.minimum && candidate.maximum == selection_.maximum)) return;
 
     selection_ = candidate;
@@ -595,13 +639,15 @@ void VoxelWidget::setSelection(const VoxelSelection& selection) {
 }
 
 void VoxelWidget::setSelectionMoveMode(bool enabled) {
-    if (selection_move_mode_ == enabled) return;
+    if (selection_move_mode_ == enabled || (selection_locked_ && !enabled)) return;
     selection_move_mode_ = enabled;
     active_selection_handle_ = SelectionHandle::None;
     unsetCursor();
     update();
     emit viewOptionsChanged();
 }
+
+void VoxelWidget::setSelectionLocked(bool locked) { selection_locked_ = locked; }
 
 void VoxelWidget::setAxesVisible(bool visible) {
     if (axes_visible_ == visible) return;
@@ -647,6 +693,39 @@ void VoxelWidget::updateModelMatrix() {
         float cz = static_cast<float>(voxel_data_[0][0].size()) * voxel_size_ * 0.5f;
         m_model.translate(-cx, -cy, -cz);
     }
+
+    // the ghost mesh has its own local origin, so it is offset in voxel space
+    m_preview_model = m_model;
+    m_preview_model.translate(preview_offset_ * voxel_size_);
+}
+
+void VoxelWidget::setPreviewVoxelData(VoxelGrid data) {
+    preview_data_ = std::move(data);
+    buildPreviewVertices();
+    if (gl_initialized_) {
+        makeCurrent();
+        updatePreviewOpenGLBuffer();
+        doneCurrent();
+    }
+    update();
+}
+
+void VoxelWidget::setPreviewOffset(const QVector3D& offsetVoxels) {
+    preview_offset_ = offsetVoxels;
+    update();
+}
+
+void VoxelWidget::clearPreviewVoxelData() {
+    preview_data_.clear();
+    preview_data_.shrink_to_fit();
+    preview_offset_ = {};
+    buildPreviewVertices();
+    if (gl_initialized_) {
+        makeCurrent();
+        updatePreviewOpenGLBuffer();
+        doneCurrent();
+    }
+    update();
 }
 
 void VoxelWidget::setUniforms() {
@@ -727,9 +806,9 @@ float VoxelWidget::maxZoomScale() const {
     return std::clamp(cameraDistance * 0.9f / radius, 0.1f, kMaxScaleLevel);
 }
 
-bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
-                                      MeshOcclusionMode mode) const {
-    const auto& current = voxel_data_[layer][x][z];
+bool VoxelWidget::hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz,
+                                      const bl::block_box& bounds, MeshOcclusionMode mode) const {
+    const auto& current = grid[layer][x][z];
 
     int ny = layer + dy;  // y-offset
     int nx = x + dx;      // x-offset
@@ -738,12 +817,12 @@ bool VoxelWidget::hasNeighborInBounds(int layer, int x, int z, int dy, int dx, i
     if (ny < bounds.min_pos.y || ny >= bounds.max_pos.y ||  //
         nx < bounds.min_pos.x || nx >= bounds.max_pos.x ||  //
         nz < bounds.min_pos.z || nz >= bounds.max_pos.z ||  //
-        ny < 0 || ny >= static_cast<int>(voxel_data_.size()) || nx < 0 || nx >= static_cast<int>(voxel_data_[ny].size()) || nz < 0 ||
-        nz >= static_cast<int>(voxel_data_[ny][nx].size())) {
+        ny < 0 || ny >= static_cast<int>(grid.size()) || nx < 0 || nx >= static_cast<int>(grid[ny].size()) || nz < 0 ||
+        nz >= static_cast<int>(grid[ny][nx].size())) {
         return false;
     }
 
-    const auto& neighbor = voxel_data_[ny][nx][nz];
+    const auto& neighbor = grid[ny][nx][nz];
     if (neighbor.color.alpha() == 0) {
         return false;
     }
@@ -788,7 +867,8 @@ std::optional<bl::block_box> VoxelWidget::currentExportBounds() const {
 }
 
 void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                           const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices) const {
+                                           const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices,
+                                           float alphaScale) const {
     // block (x, layer, z) occupies [x, x+1] x [y, y+1] x [z, z+1], so the model
     // grid aligns with the world coordinate grid (min corner at 0,0,0)
     float worldX = x * voxel_size_ + 0.5f * voxel_size_;
@@ -815,7 +895,7 @@ void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel&
         vertices.push_back(voxel.color.redF());
         vertices.push_back(voxel.color.greenF());
         vertices.push_back(voxel.color.blueF());
-        vertices.push_back(voxel.color.alphaF());
+        vertices.push_back(voxel.color.alphaF() * alphaScale);
     }
 
     // indices
@@ -824,18 +904,18 @@ void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel&
     }
 }
 
-void VoxelWidget::appendVisibleVoxelMesh(const bl::block_box& bounds, std::vector<float>& vertices, std::vector<GLuint>& indices,
-                                         std::vector<float>* transparentVertices, std::vector<GLuint>* transparentIndices,
-                                         MeshOcclusionMode mode) const {
+void VoxelWidget::appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_box& bounds, std::vector<float>& vertices,
+                                         std::vector<GLuint>& indices, std::vector<float>* transparentVertices,
+                                         std::vector<GLuint>* transparentIndices, MeshOcclusionMode mode, float alphaScale) const {
     if (!bounds.is_valid()) return;
 
     static int dxArr[] = {0, 0, -1, 1, 0, 0};
     static int dyArr[] = {0, 0, 0, 0, 1, -1};
     static int dzArr[] = {1, -1, 0, 0, 0, 0};
 
-    const int maxLayer = std::min(bounds.max_pos.y, static_cast<int>(voxel_data_.size()));
+    const int maxLayer = std::min(bounds.max_pos.y, static_cast<int>(grid.size()));
     for (int layer = std::max(0, bounds.min_pos.y); layer < maxLayer; ++layer) {  // Y axis (layer)
-        const auto& layerData = voxel_data_[layer];
+        const auto& layerData = grid[layer];
         if (layerData.empty()) continue;
 
         const int maxX = std::min(bounds.max_pos.x, static_cast<int>(layerData.size()));
@@ -853,11 +933,11 @@ void VoxelWidget::appendVisibleVoxelMesh(const bl::block_box& bounds, std::vecto
 
                 for (int faceIdx = 0; faceIdx < 6; ++faceIdx) {
                     int dLayer = dyArr[faceIdx], dX = dxArr[faceIdx], dZ = dzArr[faceIdx];
-                    if (!hasNeighborInBounds(layer, x, z, dLayer, dX, dZ, bounds, mode)) {
+                    if (!hasNeighborInBounds(grid, layer, x, z, dLayer, dX, dZ, bounds, mode)) {
                         auto& targetVertices = (voxel.transparent && transparentVertices) ? *transparentVertices : vertices;
                         auto& targetIndices = (voxel.transparent && transparentIndices) ? *transparentIndices : indices;
                         addFaceVerticesToBuffers(layer, x, z, voxel, m_faceTemplates[faceIdx], m_faceNormals[faceIdx], targetVertices,
-                                                 targetIndices);
+                                                 targetIndices, alphaScale);
                     }
                 }
             }
@@ -879,8 +959,22 @@ void VoxelWidget::buildVoxelVertices() {
         bl::block_box layerBounds = *fullBounds;
         layerBounds.min_pos.y = std::clamp(start_layer_, fullBounds->min_pos.y, fullBounds->max_pos.y);
         layerBounds.max_pos.y = std::clamp(ender_layer_ + 1, fullBounds->min_pos.y, fullBounds->max_pos.y);
-        appendVisibleVoxelMesh(layerBounds, verticles_opaque_, indices_opaque_, &verticles_transparent_, &indices_transparent_);
+        appendVisibleVoxelMesh(voxel_data_, layerBounds, verticles_opaque_, indices_opaque_, &verticles_transparent_,
+                               &indices_transparent_);
     }
+}
+
+void VoxelWidget::buildPreviewVertices() {
+    preview_vertices_.clear();
+    preview_indices_.clear();
+    if (preview_data_.empty() || preview_data_[0].empty() || preview_data_[0][0].empty()) return;
+
+    // Transparent blocks go into the opaque list: the ghost is blended as a whole.
+    const bl::block_box bounds = bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(preview_data_[0].size()),
+                                                                  static_cast<int>(preview_data_.size()),
+                                                                  static_cast<int>(preview_data_[0][0].size()));
+    appendVisibleVoxelMesh(preview_data_, bounds, preview_vertices_, preview_indices_, nullptr, nullptr,
+                           MeshOcclusionMode::RenderView, kPreviewAlphaScale);
 }
 
 // helper
