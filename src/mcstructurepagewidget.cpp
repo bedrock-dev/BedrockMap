@@ -91,7 +91,7 @@ namespace {
         for (size_t i = 0; i < blockEntities.size(); ++i) {
             const auto *entity = blockEntities[i];
             if (!entity) continue;
-            const auto pos = structure.block_entity_position(i);
+            const auto pos = structure.block_entity_local_position(i);
             if (!bounds.contains(pos)) continue;
             const auto newLocalPos = pos - bounds.min_pos;
             const auto newWorldPos = newOrigin + newLocalPos;

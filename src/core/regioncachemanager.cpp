@@ -19,10 +19,10 @@ void RegionCacheManager::assertOwnerThread() const {
            "region and image caches must be accessed from the owning thread");
 }
 
-ChunkRegion *RegionCacheManager::findRegion(const region_pos &pos, bool &empty) {
+ChunkRegion* RegionCacheManager::findRegion(const region_pos& pos, bool& empty) {
     assertOwnerThread();
     empty = false;
-    auto *invalid = ensureDimCache(invalid_cache_, pos.dim, setting::current().EMPTY_REGION_CACHE_SIZE)->operator[](pos);
+    auto* invalid = ensureDimCache(invalid_cache_, pos.dim, setting::current().EMPTY_REGION_CACHE_SIZE)->operator[](pos);
     if (invalid) {
         empty = true;
         return nullptr;
@@ -30,19 +30,19 @@ ChunkRegion *RegionCacheManager::findRegion(const region_pos &pos, bool &empty) 
     return ensureDimCache(region_cache_, pos.dim, setting::current().REGION_CACHE_SIZE)->operator[](pos);
 }
 
-ChunkRegion *RegionCacheManager::peekRegion(const region_pos &pos, bool &empty) { return findRegion(pos, empty); }
+ChunkRegion* RegionCacheManager::peekRegion(const region_pos& pos, bool& empty) { return findRegion(pos, empty); }
 
-void RegionCacheManager::insertRegion(const region_pos &pos, ChunkRegion *region) {
+void RegionCacheManager::insertRegion(const region_pos& pos, ChunkRegion* region) {
     assertOwnerThread();
     ensureDimCache(region_cache_, pos.dim, setting::current().REGION_CACHE_SIZE)->insert(pos, region);
 }
 
-void RegionCacheManager::insertEmpty(const region_pos &pos) {
+void RegionCacheManager::insertEmpty(const region_pos& pos) {
     assertOwnerThread();
     ensureDimCache(invalid_cache_, pos.dim, setting::current().EMPTY_REGION_CACHE_SIZE)->insert(pos, new char(0));
 }
 
-void RegionCacheManager::removeRegion(const region_pos &pos) {
+void RegionCacheManager::removeRegion(const region_pos& pos) {
     assertOwnerThread();
     auto regionIt = region_cache_.find(pos.dim);
     if (regionIt != region_cache_.end()) regionIt->second->remove(pos);
@@ -52,29 +52,34 @@ void RegionCacheManager::removeRegion(const region_pos &pos) {
 
 void RegionCacheManager::clear() {
     assertOwnerThread();
-    for (auto &[dim, cache] : region_cache_) cache->clear();
-    for (auto &[dim, cache] : invalid_cache_) cache->clear();
+    for (auto& [dim, cache] : region_cache_) cache->clear();
+    for (auto& [dim, cache] : invalid_cache_) cache->clear();
     slime_chunk_cache_->clear();
     QMutexLocker lock(&height_map_mutex_);
     height_map_cache_->clear();
 }
 
-std::optional<std::array<int16_t, 256>> RegionCacheManager::heightMap(const bl::chunk_pos &pos) {
+std::optional<std::array<int16_t, 256>> RegionCacheManager::heightMap(const bl::chunk_pos& pos) {
     QMutexLocker lock(&height_map_mutex_);
-    auto *cached = height_map_cache_->object(pos);
+    auto* cached = height_map_cache_->object(pos);
     if (cached) return *cached;
     return std::nullopt;
 }
 
-void RegionCacheManager::putHeightMap(const bl::chunk_pos &pos, const std::array<int16_t, 256> &heightMap) {
+void RegionCacheManager::putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& heightMap) {
     QMutexLocker lock(&height_map_mutex_);
     if (!height_map_cache_->object(pos)) height_map_cache_->insert(pos, new std::array<int16_t, 256>(heightMap));
 }
 
-QImage RegionCacheManager::slimeChunkImage(const region_pos &pos) {
+void RegionCacheManager::removeHeightMap(const bl::chunk_pos& pos) {
+    QMutexLocker lock(&height_map_mutex_);
+    height_map_cache_->remove(pos);
+}
+
+QImage RegionCacheManager::slimeChunkImage(const region_pos& pos) {
     assertOwnerThread();
     if (pos.dim != 0) return {};
-    auto *image = slime_chunk_cache_->operator[](pos);
+    auto* image = slime_chunk_cache_->operator[](pos);
     if (image) return *image;
 
     QImage result(constant::RW << 4, constant::RW << 4, QImage::Format_Indexed8);
@@ -97,12 +102,12 @@ std::vector<QString> RegionCacheManager::debugInfo() const {
     assertOwnerThread();
     std::vector<QString> result;
     result.emplace_back("Region cache:");
-    for (const auto &[dim, cache] : region_cache_) {
+    for (const auto& [dim, cache] : region_cache_) {
         result.push_back(
             QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }
     result.emplace_back("Null region cache:");
-    for (const auto &[dim, cache] : invalid_cache_) {
+    for (const auto& [dim, cache] : invalid_cache_) {
         result.push_back(
             QString(" - [%1]: %2/%3").arg(QString::number(dim), QString::number(cache->totalCost()), QString::number(cache->maxCost())));
     }

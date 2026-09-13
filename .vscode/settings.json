@@ -3,6 +3,15 @@
     "cmake.configureEnvironment": {
         "QT_ROOT": "C:\\noinstall\\Qt\\6.11.0\\mingw_64"
     },
+    // This project builds with GCC (msys64 UCRT64), but clangd learns the toolchain from
+    // compile_commands.json only. GCC's system include paths live inside the driver rather
+    // than in the compile command, so without --query-driver clangd falls back to its own
+    // default target -- windows-msvc here -- pulls in MSVC's STL, and trips MSVC's
+    // "STL1000: expected Clang 19.0.0 or newer" gate.
+    // Keeping the driver list narrow matters: clangd EXECUTES every matching driver.
+    "clangd.arguments": [
+        "--query-driver=C:/msys64/ucrt64/bin/g++.exe,C:/msys64/ucrt64/bin/gcc.exe"
+    ],
     "files.associations": {
         "translations/*.ts": "xml"
     },

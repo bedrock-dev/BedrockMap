@@ -40,7 +40,7 @@ class SelectionController {
 
     bool isEmpty() const { return region_.isEmpty() && !dragging_; }
     bool isDragging() const { return dragging_; }
-    const QRegion &region() const { return region_.region(); }
+    const QRegion& region() const { return region_.region(); }
     Mode mode() const { return region_.mode(); }
     void setMode(Mode m) { region_.setMode(m); }
     void clear() { region_.clear(); }
@@ -61,13 +61,13 @@ class SelectionController {
         return rect;
     }
 
-    bool contains(const QPoint &p) const { return !region_.isEmpty() && region_.region().contains(p); }
+    bool contains(const QPoint& p) const { return !region_.isEmpty() && region_.region().contains(p); }
 
-    void draw(QPainter *p, qreal scaleLevel) const {
+    void draw(QPainter* p, qreal scaleLevel) const {
         if (region_.isEmpty() && !dragging_) return;
 
         QPainterPath path;
-        for (const auto &r : region_.region()) {
+        for (const auto& r : region_.region()) {
             path.addRect(QRectF(static_cast<qreal>(r.x()), static_cast<qreal>(r.y()), static_cast<qreal>(r.width()),
                                 static_cast<qreal>(r.height())));
         }
@@ -108,41 +108,41 @@ class MapWidget : public QWidget {
     static QFont CHUNK_TEXT_FONT;
 
     // ctor
-    MapWidget(QWidget *parent, AsyncLevelLoader *loader = nullptr);
+    MapWidget(QWidget* parent, AsyncLevelLoader* loader = nullptr);
 
     // transform & position translation
     void doScale(const QPointF viewCenter, qreal scale);
 
-    void doTranslate(const QPointF &delta);
+    void doTranslate(const QPointF& delta);
 
-    std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(const QRect &camera);
+    std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> getRenderRange(const QRect& camera);
 
     qreal chunkWidthInPixel() const { return world_to_view_xf_.m11(); }
 
     qreal scaleLevel() const { return world_to_view_xf_.m11(); }
 
-    void forEachChunkInCamera(const std::function<void(const region_pos &p)> &f);
+    void forEachChunkInCamera(const std::function<void(const region_pos& p)>& f);
 
-    void foreachRegionInCamera(const std::function<void(const region_pos &p)> &f);
+    void foreachRegionInCamera(const std::function<void(const region_pos& p)>& f);
 
     bl::block_pos getCursorBlockPos();
 
-    QPointF blockPosToViewPos(const bl::block_pos &bp) {
+    QPointF blockPosToViewPos(const bl::block_pos& bp) {
         auto worldPos = QPointF(static_cast<qreal>(bp.x) / 16.0, static_cast<qreal>(bp.z) / 16.0);
         return world_to_view_xf_.map(worldPos);
     }
 
-    QPointF chunkPosToViewPos(const bl::chunk_pos &cp) {
+    QPointF chunkPosToViewPos(const bl::chunk_pos& cp) {
         auto worldPos = QPointF(static_cast<qreal>(cp.x), static_cast<qreal>(cp.z));
         return world_to_view_xf_.map(worldPos);
     }
 
-    bl::chunk_pos viewPosToChunkPos(const QPointF &vp) {
+    bl::chunk_pos viewPosToChunkPos(const QPointF& vp) {
         auto worldPos = world_to_view_xf_.inverted().map(vp);
         return bl::chunk_pos(static_cast<int>(std::floor(worldPos.x())), static_cast<int>(std::floor(worldPos.y())), option_.dim);
     }
 
-    QPoint viewPosToBlockPos(const QPointF &vp) {
+    QPoint viewPosToBlockPos(const QPointF& vp) {
         auto worldPos = world_to_view_xf_.inverted().map(vp);
         auto x = static_cast<int>(std::floor(worldPos.x() * 16.0f));
         auto z = static_cast<int>(std::floor(worldPos.y() * 16.0f));
@@ -151,29 +151,29 @@ class MapWidget : public QWidget {
 
     // getter
     RenderOption renderOption() { return option_; }
-    AsyncLevelLoader *getLevelLoader() { return level_loader_; }
+    AsyncLevelLoader* getLevelLoader() { return level_loader_; }
 
     /// Villages overlay data; pushed by the page once global data is loaded.
-    void setVillages(const QMap<QString, VillageDrawInfo> &villages) {
+    void setVillages(const QMap<QString, VillageDrawInfo>& villages) {
         villages_ = villages;
         update();
     }
 
     // event
 
-    void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
-    void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
 
-    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
 
-    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
-    void wheelEvent(QWheelEvent *event) override;
+    void wheelEvent(QWheelEvent* event) override;
 
-    void keyPressEvent(QKeyEvent *event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
-    void keyReleaseEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
 
     // signals
    public:
@@ -234,10 +234,10 @@ class MapWidget : public QWidget {
     inline bool transparentVoid() const { return transparent_void_; }
 
     // selection
-    inline SelectionController &selection() { return selection_; }
+    inline SelectionController& selection() { return selection_; }
     inline void setSelectionMode(SelectionController::Mode mode) { selection_.setMode(mode); }
 
-    inline void selectChunk(const bl::chunk_pos &p) { this->opened_chunk_ = true, this->opened_chunk_pos_ = p; }
+    inline void selectChunk(const bl::chunk_pos& p) { this->opened_chunk_ = true, this->opened_chunk_pos_ = p; }
 
     inline void unselectChunk() { this->opened_chunk_ = false; }
 
@@ -246,7 +246,7 @@ class MapWidget : public QWidget {
     void pasteFromClipboard(int dim);
     void exportSelectionToFile(int dim);
     void exportSelectionToMcstructure(int dim, bool compress = false, bool exportEntities = false,
-                                      const std::optional<bl::block_box> &blockBounds = std::nullopt, int32_t version = 1);
+                                      const std::optional<bl::block_box>& blockBounds = std::nullopt, int32_t version = 1);
     void importFromFile(int dim);
     void deleteSelection(int dim);
     void createVoidSelection(int dim);
@@ -261,7 +261,7 @@ class MapWidget : public QWidget {
    signals:
     void mouseMove(int x, int z, int dim);  // NOLINT
 
-    void requestOpenChunkEditor(const bl::chunk_pos &pos);
+    void requestOpenChunkEditor(const bl::chunk_pos& pos);
 
     void selectionChanged();
 
@@ -290,38 +290,38 @@ class MapWidget : public QWidget {
    private:
     // for debug
 
-    void drawDebugWindow(QPaintEvent *event, QPainter *p);
+    void drawDebugWindow(QPaintEvent* event, QPainter* p);
 
     // helper
-    void drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QImage &image) const;
+    void drawImageInRegion(QPaintEvent* event, QPainter* p, const region_pos& pos, const QImage& image) const;
 
     // function drawS
-    void drawGrid(QPaintEvent *event, QPainter *p);
+    void drawGrid(QPaintEvent* event, QPainter* p);
 
-    void drawChunkPosText(QPaintEvent *event, QPainter *painter);
+    void drawChunkPosText(QPaintEvent* event, QPainter* painter);
 
-    void drawSlimeChunks(QPaintEvent *event, QPainter *p);
+    void drawSlimeChunks(QPaintEvent* event, QPainter* p);
 
-    void drawBiome(QPaintEvent *event, QPainter *p);
+    void drawBiome(QPaintEvent* event, QPainter* p);
 
-    void drawTerrain(QPaintEvent *event, QPainter *p);
+    void drawTerrain(QPaintEvent* event, QPainter* p);
 
-    void drawCoordsBoundingBox(QPainter *p);
+    void drawCoordsBoundingBox(QPainter* p);
 
-    void drawCoordsMiniMap(QPainter *p);
+    void drawCoordsMiniMap(QPainter* p);
 
     bool modificationBlocked();
     bool startChunkTask(GuiTaskRunner::Worker worker);
 
-    void drawActors(QPaintEvent *event, QPainter *p);
+    void drawActors(QPaintEvent* event, QPainter* p);
 
-    void drawHSAs(QPaintEvent *event, QPainter *p);
+    void drawHSAs(QPaintEvent* event, QPainter* p);
 
-    void drawVillages(QPaintEvent *event, QPainter *p);
+    void drawVillages(QPaintEvent* event, QPainter* p);
 
-    void drawSelection(QPainter *p) { selection_.draw(p, scaleLevel()); }
+    void drawSelection(QPainter* p) { selection_.draw(p, scaleLevel()); }
 
-    void drawOpenedChunkHighlight(QPainter *p);
+    void drawOpenedChunkHighlight(QPainter* p);
 
    public:
     ~MapWidget() override;
@@ -340,14 +340,14 @@ class MapWidget : public QWidget {
 
    private slots:
     // Menu & Action
-    void showContextMenu(const QPoint &p);
+    void showContextMenu(const QPoint& p);
 
     // Keyboard pan tick
     void onPanTick();
 
    private:
     // data source
-    AsyncLevelLoader *level_loader_{nullptr};
+    AsyncLevelLoader* level_loader_{nullptr};
 
     // village overlay data (pushed via setVillages)
     QMap<QString, VillageDrawInfo> villages_;
@@ -360,7 +360,7 @@ class MapWidget : public QWidget {
     bool capturing_{false};
 
     // gui
-    GoToPositionDialog *goto_dialog_{nullptr};
+    GoToPositionDialog* goto_dialog_{nullptr};
 
     // render control
     RenderOption option_;
@@ -369,21 +369,23 @@ class MapWidget : public QWidget {
     bool transparent_void_{false};
     QTransform world_to_view_xf_;
     QRect camera_{-10, -10, width() + 10, height() + 10};  // drawable range, later set to match the widget size
-    QTimer *sync_refresh_timer_;
+    QTimer* sync_refresh_timer_;
 
     // opened chunk
     bool opened_chunk_{false};
     bl::chunk_pos opened_chunk_pos_;
 
     // 3d
-    VoxelPreviewWidget *voxel_preview_window_{nullptr};
+    VoxelPreviewWidget* voxel_preview_window_{nullptr};
 
     // import
-    ImportOverlay *import_overlay_{nullptr};
+    ImportOverlay* import_overlay_{nullptr};
     GuiTaskRunner chunk_edit_task_;
+    // true while an edit that changed the 3D preview's chunks is in flight
+    bool reload_voxel_preview_pending_{false};
 
     // keyboard pan
-    QTimer *pan_timer_{nullptr};
+    QTimer* pan_timer_{nullptr};
     QSet<int> pressed_keys_;
 
     // exporter

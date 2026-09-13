@@ -361,7 +361,6 @@ MainWindow
 sub_chunk
 ├── version_: uint8_t
 ├── y_index_: int8_t          // 子区块 Y 索引
-├── layers_num_: uint8_t      // 图层数（通常为 1）
 └── layers_: vector<layer*>
      └── layer
           ├── bits: uint8_t           // 每个方块的位数

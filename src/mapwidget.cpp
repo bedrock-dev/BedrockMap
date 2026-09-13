@@ -36,17 +36,19 @@
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
+#include "blockregionoperator.h"
 #include "chunkoperator.h"
 #include "config.h"
 #include "gotopositiondialog.h"
 #include "loguru/loguru.hpp"
+#include "mcstructure.h"
 #include "pleasewaitdialog.h"
 #include "voxelwidget.h"
 
 QFont MapWidget::CHUNK_TEXT_FONT = QFont("JetBrains Mono", 8);
 
 // ctor
-MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent), level_loader_(loader), chunk_edit_task_(this) {
+MapWidget::MapWidget(QWidget* parent, AsyncLevelLoader* loader) : QWidget(parent), level_loader_(loader), chunk_edit_task_(this) {
     // trigger redraw when an async region finishes loading, replacing the old 100ms timer polling
     if (this->level_loader_) {
         connect(this->level_loader_, &AsyncLevelLoader::regionReady, this, [this] {
@@ -73,10 +75,15 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
     voxel_preview_window_ = new VoxelPreviewWidget();
     connect(&chunk_edit_task_, &GuiTaskRunner::finished, this, [this]() {
         PleaseWaitDialog::instance().hideBusy();
+        if (reload_voxel_preview_pending_) {
+            reload_voxel_preview_pending_ = false;
+            voxel_preview_window_->reloadChunks();
+        }
         update();
     });
-    connect(&chunk_edit_task_, &GuiTaskRunner::failed, this, [this](const QString &error) {
+    connect(&chunk_edit_task_, &GuiTaskRunner::failed, this, [this](const QString& error) {
         PleaseWaitDialog::instance().hideBusy();
+        reload_voxel_preview_pending_ = false;
         QMessageBox::warning(this, tr("mapWidget.editFailed"), error);
     });
     connect(voxel_preview_window_, &VoxelPreviewWidget::exportMcstructureRequested, this,
@@ -95,13 +102,21 @@ MapWidget::MapWidget(QWidget *parent, AsyncLevelLoader *loader) : QWidget(parent
             });
     connect(voxel_preview_window_, &VoxelPreviewWidget::importConfirmed, this,
             [this](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
-                // TODO: write the imported structure into the level at the placement
-                // position, then refresh the affected regions.
-                Q_UNUSED(placement);
-                Q_UNUSED(imported);
+                if (!imported || modificationBlocked()) return;
+                const bl::block_pos origin{static_cast<int>(std::floor(placement.minimum.x())),
+                                           static_cast<int>(std::floor(placement.minimum.y())),
+                                           static_cast<int>(std::floor(placement.minimum.z()))};
+                const int dim = static_cast<int>(option_.dim);
+                if (!startChunkTask([this, origin, dim, imported = std::move(imported)](GuiTaskRunner*) {
+                        // Replace-air stays on until a GUI option exists for it.
+                        BlockRegionOperator::importMcstructure(*imported, origin, *level_loader_, dim, true);
+                    })) {
+                    return;
+                }
+                reload_voxel_preview_pending_ = true;
             });
     // Center and resize to ~80% of the parent window once
-    if (auto *win = window()) {
+    if (auto* win = window()) {
         QSize sz = win->size() * 0.8;
         voxel_preview_window_->resize(sz);
         voxel_preview_window_->move(win->geometry().center() - QPoint(sz.width() / 2, sz.height() / 2));
@@ -135,9 +150,9 @@ void MapWidget::doScale(const QPointF viewPos, qreal scale) {
     world_to_view_xf_.translate(-worldPos.x(), -worldPos.y());  // move back to world point
 }
 
-void MapWidget::doTranslate(const QPointF &delta) { world_to_view_xf_.translate(delta.x(), delta.y()); }
+void MapWidget::doTranslate(const QPointF& delta) { world_to_view_xf_.translate(delta.x(), delta.y()); }
 
-std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect &camera) {
+std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const QRect& camera) {
     auto viewToWorldXf = world_to_view_xf_.inverted();
     auto topLeft = viewToWorldXf.map(QPointF(camera.x(), camera.y()));
     auto bottomRight = viewToWorldXf.map(QPointF(camera.x() + camera.width(), camera.y() + camera.height()));
@@ -147,7 +162,7 @@ std::tuple<bl::chunk_pos, bl::chunk_pos, QRect> MapWidget::getRenderRange(const 
     return {minChunk, maxChunk, camera};
 }
 
-void MapWidget::forEachChunkInCamera(const std::function<void(const region_pos &p)> &f) {
+void MapWidget::forEachChunkInCamera(const std::function<void(const region_pos& p)>& f) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
     for (int i = minChunk.x; i <= maxChunk.x; i += 1) {
         for (int j = minChunk.z; j <= maxChunk.z; j += 1) {
@@ -156,7 +171,7 @@ void MapWidget::forEachChunkInCamera(const std::function<void(const region_pos &
     }
 }
 
-void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos &p)> &f) {
+void MapWidget::foreachRegionInCamera(const std::function<void(const region_pos& p)>& f) {
     auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
     auto reginMin = constant::c2r(minChunk);
     auto regionMax = constant::c2r(maxChunk);
@@ -174,12 +189,12 @@ bl::block_pos MapWidget::getCursorBlockPos() {
 }
 // event
 
-void MapWidget::resizeEvent(QResizeEvent *event) {
+void MapWidget::resizeEvent(QResizeEvent* event) {
     this->camera_ = QRect(-10, -10, this->width() + 10, this->height() + 10);
     import_overlay_->resize(width(), height());
 }
 
-void MapWidget::paintEvent(QPaintEvent *event) {
+void MapWidget::paintEvent(QPaintEvent* event) {
     if (!level_loader_ || !level_loader_->isOpen()) return;
     auto [minChunk, maxChunk, renderRange] = getRenderRange(camera_);
     (void)renderRange;
@@ -204,7 +219,7 @@ void MapWidget::paintEvent(QPaintEvent *event) {
     p.end();
 }
 
-void MapWidget::mouseMoveEvent(QMouseEvent *event) {
+void MapWidget::mouseMoveEvent(QMouseEvent* event) {
     static QPointF lastMove;
     if (event->buttons() & Qt::LeftButton) {
         if (this->dragging_) {
@@ -237,7 +252,7 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event) {
     }
 }
 
-void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
+void MapWidget::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         if (import_overlay_->active() && !import_overlay_->placed()) {
             import_overlay_->handleLeftClick();
@@ -263,7 +278,7 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event) {
     }
 }
 
-void MapWidget::wheelEvent(QWheelEvent *event) {
+void MapWidget::wheelEvent(QWheelEvent* event) {
     int delta = event->angleDelta().y();
     if (delta == 0) {
         event->accept();
@@ -296,7 +311,7 @@ void MapWidget::gotoBlockPos(int x, int z) {
     this->update();
 }
 
-void MapWidget::keyPressEvent(QKeyEvent *event) {
+void MapWidget::keyPressEvent(QKeyEvent* event) {
     if (import_overlay_->handleKeyPress(event->key())) {
         update();
         event->accept();
@@ -317,7 +332,7 @@ void MapWidget::keyPressEvent(QKeyEvent *event) {
     }
 }
 
-void MapWidget::keyReleaseEvent(QKeyEvent *event) {
+void MapWidget::keyReleaseEvent(QKeyEvent* event) {
     switch (event->key()) {
         case Qt::Key_Up:
         case Qt::Key_Down:

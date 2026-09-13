@@ -1850,9 +1850,8 @@
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.info</source>
-        <translation>世界原点: (%1, %2, %3)
-区域尺寸: %4 x %5 x %6
-世界终点: (%7, %8, %9)</translation>
+        <translation>区域: (%1, %2, %3) ~ (%7, %8, %9)
+大小: %4 x %5 x %6</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>

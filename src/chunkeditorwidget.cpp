@@ -40,16 +40,16 @@ namespace {
     // data above this size is not parsed into the NBT editor
     constexpr size_t kOversizeBytes = 16u * 1024u * 1024u;  // 16 MB
 
-    QString actorLabel(bl::nbt::compound_tag *root) {
-        auto *id = root->get("identifier");
+    QString actorLabel(bl::nbt::compound_tag* root) {
+        auto* id = root->get("identifier");
         if (id && id->type() == bl::nbt::tag_type::String) {
-            return QString(dynamic_cast<bl::nbt::string_tag *>(id)->value.c_str()).replace("minecraft:", "");
+            return QString(dynamic_cast<bl::nbt::string_tag*>(id)->value.c_str()).replace("minecraft:", "");
         }
         return "unknown";
     }
 }  // namespace
 
-ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoader)
+ChunkEditorWidget::ChunkEditorWidget(QWidget* parent, AsyncLevelLoader* levelLoader)
     : QWidget(parent), ui(new Ui::ChunkEditorWidget), level_loader_(levelLoader) {
     ui->setupUi(this);
 
@@ -108,7 +108,7 @@ ChunkEditorWidget::ChunkEditorWidget(QWidget *parent, AsyncLevelLoader *levelLoa
     });
 
     // dirty indicator on tab names
-    auto setupDirtyTab = [this](NbtWidget *editor, QWidget *tab) {
+    auto setupDirtyTab = [this](NbtWidget* editor, QWidget* tab) {
         connect(editor, &NbtWidget::nbtModified, this, [this, editor, tab]() {
             int idx = ui->tabWidget->indexOf(tab);
             if (idx < 0) return;
@@ -153,7 +153,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     this->raw_chunk_ = std::move(raw);
     this->has_chunk_ = true;
     auto ptr = std::make_unique<bl::chunk>(this->raw_chunk_.pos());
-    auto *chunk = ptr.get();
+    auto* chunk = ptr.get();
     if (!chunk->load_from_raw_chunk(this->raw_chunk_, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others)) return;
 
     this->cv = chunk->get_version();
@@ -178,16 +178,16 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->block_entity_stack_->setCurrentIndex(1);
         } else {
             this->block_entity_stack_->setCurrentIndex(0);
-            std::vector<NBTListItem *> block_entity_items;
+            std::vector<NBTListItem*> block_entity_items;
             if (!raw.empty()) {
                 auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
-                for (auto *b : palettes) {
+                for (auto* b : palettes) {
                     auto id_tag = b->get("id");
                     QString name = "unknown";
                     if (id_tag && id_tag->type() == bl::nbt::tag_type::String) {
-                        name = dynamic_cast<bl::nbt::string_tag *>(id_tag)->value.c_str();
+                        name = dynamic_cast<bl::nbt::string_tag*>(id_tag)->value.c_str();
                     }
-                    auto *item = NBTListItem::from(b, name, QString::number(index));
+                    auto* item = NBTListItem::from(b, name, QString::number(index));
                     item->setIcon(QIcon(QPixmap::fromImage(*BlockActorNBTIcon(name.toLower().replace("minecraft:", "")))));
                     block_entity_items.push_back(item);
                     index++;
@@ -204,12 +204,12 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->pending_tick_stack_->setCurrentIndex(1);
         } else {
             this->pending_tick_stack_->setCurrentIndex(0);
-            std::vector<NBTListItem *> pt_items;
+            std::vector<NBTListItem*> pt_items;
             if (!raw.empty()) {
                 auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
                 index = 0;
-                for (auto *b : palettes) {
-                    auto *item = NBTListItem::from(b, QString::number(index), QString::number(index));
+                for (auto* b : palettes) {
+                    auto* item = NBTListItem::from(b, QString::number(index), QString::number(index));
                     pt_items.push_back(item);
                     index++;
                 }
@@ -221,18 +221,18 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     {
         LOG_F(INFO, "Load chunk actors data");
         size_t actorBytes = this->raw_chunk_.get_normal_key(bl::chunk_key::Entity).size();
-        for (auto &[uid, data] : this->raw_chunk_.get_entities()) actorBytes += data.size();
+        for (auto& [uid, data] : this->raw_chunk_.get_entities()) actorBytes += data.size();
         if (actorBytes > kOversizeBytes) {
             this->actor_stack_->setCurrentIndex(1);
         } else {
             this->actor_stack_->setCurrentIndex(0);
-            std::vector<NBTListItem *> actor_items;
-            auto addActorRaw = [&actor_items, &index](const std::string &raw) {
+            std::vector<NBTListItem*> actor_items;
+            auto addActorRaw = [&actor_items, &index](const std::string& raw) {
                 if (raw.empty()) return;
                 auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
-                for (auto *b : palettes) {
+                for (auto* b : palettes) {
                     auto id = actorLabel(b);
-                    auto *item = NBTListItem::from(b, id, QString::number(index));
+                    auto* item = NBTListItem::from(b, id, QString::number(index));
                     item->setIcon(QIcon(QPixmap::fromImage(*EntityNBTIcon(id))));
                     actor_items.push_back(item);
                     index++;
@@ -240,14 +240,14 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             };
             index = 0;
             addActorRaw(this->raw_chunk_.get_normal_key(bl::chunk_key::Entity));
-            for (auto &[uid, data] : this->raw_chunk_.get_entities()) addActorRaw(data);
+            for (auto& [uid, data] : this->raw_chunk_.get_entities()) addActorRaw(data);
             this->actor_editor_->loadNewData(actor_items);
         }
     }
 
     // stats
     {
-        auto shortHash = [](const std::string &data) {
+        auto shortHash = [](const std::string& data) {
             auto hash =
                 QCryptographicHash::hash(QByteArray::fromRawData(data.data(), static_cast<int>(data.size())), QCryptographicHash::Sha256);
             return QString(hash.toHex().left(8));
@@ -256,23 +256,23 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         // one table row per data key: name / size / hash + an export button
         ui->stats_table->setRowCount(0);
         stats_export_rows_.clear();
-        auto addStatRow = [&](const QString &name, const std::string &data) {
+        auto addStatRow = [&](const QString& name, const std::string& data) {
             int row = ui->stats_table->rowCount();
             ui->stats_table->insertRow(row);
             stats_export_rows_.emplace_back(name, data);
-            auto *nameItem = new QTableWidgetItem(name);
+            auto* nameItem = new QTableWidgetItem(name);
             nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
             ui->stats_table->setItem(row, 0, nameItem);
             ui->stats_table->setItem(row, 1, new QTableWidgetItem(QString::number(static_cast<qlonglong>(data.size()))));
-            auto *hashItem = new QTableWidgetItem(shortHash(data));
+            auto* hashItem = new QTableWidgetItem(shortHash(data));
             hashItem->setFlags(hashItem->flags() & ~Qt::ItemIsEditable);
             ui->stats_table->setItem(row, 2, hashItem);
             // action column: open in a read-only hex viewer / export raw bytes
-            auto *actions = new QWidget(ui->stats_table);
-            auto *actionsLayout = new QHBoxLayout(actions);
+            auto* actions = new QWidget(ui->stats_table);
+            auto* actionsLayout = new QHBoxLayout(actions);
             actionsLayout->setContentsMargins(2, 0, 2, 0);
             actionsLayout->setSpacing(2);
-            auto *viewBtn = new QPushButton(tr("chunkEditor.stats.view"), actions);
+            auto* viewBtn = new QPushButton(tr("chunkEditor.stats.view"), actions);
             viewBtn->setCursor(Qt::PointingHandCursor);
             connect(viewBtn, &QPushButton::clicked, this, [this, name, data] {
                 HexViewerDialog dialog(this);
@@ -281,24 +281,24 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
                 dialog.setReadOnly(true);
                 dialog.exec();
             });
-            auto *exportBtn = new QPushButton(tr("chunkEditor.stats.export"), actions);
+            auto* exportBtn = new QPushButton(tr("chunkEditor.stats.export"), actions);
             exportBtn->setCursor(Qt::PointingHandCursor);
             connect(exportBtn, &QPushButton::clicked, this, [this, row] { this->exportStatRow(row); });
             actionsLayout->addWidget(viewBtn);
             actionsLayout->addWidget(exportBtn);
             ui->stats_table->setCellWidget(row, 3, actions);
         };
-        for (auto &[kt, data] : this->raw_chunk_.get_normal_data()) {
+        for (auto& [kt, data] : this->raw_chunk_.get_normal_data()) {
             addStatRow(bl::chunk_key::chunk_key_to_str(kt).c_str(), data);
         }
-        for (auto &[y, data] : this->raw_chunk_.get_sub_chunks()) {
+        for (auto& [y, data] : this->raw_chunk_.get_sub_chunks()) {
             if (data.empty()) continue;
             addStatRow(QString("SubChunk[%1 ~ %2]").arg(y * 16).arg((y + 1) * 16 - 1), data);
         }
         if (!this->raw_chunk_.get_actor_digest().empty()) {
             addStatRow("ActorDigest", this->raw_chunk_.get_actor_digest());
         }
-        for (auto &[key, data] : this->raw_chunk_.get_entities()) {
+        for (auto& [key, data] : this->raw_chunk_.get_entities()) {
             if (key.size() != 8) {
                 LOG_F(WARNING, "Entity uid size is %zu, expected 8, skipping", key.size());
                 continue;
@@ -320,17 +320,17 @@ bool ChunkEditorWidget::saveChunk() {
     auto be = this->block_entity_editor_->getCurrentPaletteRaw();
     raw_chunk_.set_normal(bl::chunk_key::BlockEntity, be);
     auto actors_palette = this->actor_editor_->getPaletteCopy();
-    std::vector<bl::actor *> actors;
-    for (const auto &nbt : actors_palette) {
-        auto *actor = new bl::actor();
+    std::vector<bl::actor*> actors;
+    for (const auto& nbt : actors_palette) {
+        auto* actor = new bl::actor();
         if (actor->load_from_nbt(nbt)) {
             actors.push_back(actor);
         }
     }
-    raw_chunk_.set_entities(actors);
+    raw_chunk_.set_entities(actors, raw_chunk_.version());
     raw_chunk_.set_normal(bl::chunk_key::HardCodedSpawnAreas, this->hsa_editor_->serialize());
     const bool saved = this->level_loader_->putRawChunk(this->raw_chunk_);
-    for (auto *actor : actors) delete actor;
+    for (auto* actor : actors) delete actor;
     if (!saved) return false;
     // GUI-thread single-chunk edit: drop the cached region tile so the map
     // re-renders this chunk on its next paint.
@@ -354,14 +354,14 @@ void ChunkEditorWidget::on_close_btn_clicked() {
     hide();
 }
 
-void ChunkEditorWidget::hideEvent(QHideEvent *event) {
+void ChunkEditorWidget::hideEvent(QHideEvent* event) {
     emit editorClosed();
     QWidget::hideEvent(event);
 }
 
 void ChunkEditorWidget::refreshBasicData() {
     LOG_F(INFO, "Refresh basic data");
-    auto [miny, maxy] = this->cp_.get_y_range(this->cv);
+    auto [miny, maxy] = this->raw_chunk_.get_y_range();
 
     auto label =
         QString("%1, %2 / [%3 ~ %4]").arg(QString::number(cp_.x), QString::number(cp_.z), QString::number(miny), QString::number(maxy));
@@ -376,7 +376,7 @@ void ChunkEditorWidget::on_terrain_level_slider_valueChanged(int value) {
     this->chunk_section_->update();
 }
 
-void ChunkEditorWidget::mousePressEvent(QMouseEvent *event) {}
+void ChunkEditorWidget::mousePressEvent(QMouseEvent* event) {}
 
 void ChunkEditorWidget::clearData() {
     this->actor_editor_->clearData();
@@ -463,14 +463,14 @@ void ChunkEditorWidget::on_save_btn_clicked() {
     saveChunk();
 }
 
-QWidget *ChunkEditorWidget::makeOversizePlaceholder(const QString &msg, const std::function<void()> &onDelete) {
-    auto *w = new QWidget(this);
-    auto *layout = new QVBoxLayout(w);
+QWidget* ChunkEditorWidget::makeOversizePlaceholder(const QString& msg, const std::function<void()>& onDelete) {
+    auto* w = new QWidget(this);
+    auto* layout = new QVBoxLayout(w);
     layout->setContentsMargins(12, 12, 12, 12);
-    auto *label = new QLabel(msg);
+    auto* label = new QLabel(msg);
     label->setWordWrap(true);
     label->setAlignment(Qt::AlignCenter);
-    auto *delBtn = new QPushButton(tr("chunkEditor.tooLarge.delete"), w);
+    auto* delBtn = new QPushButton(tr("chunkEditor.tooLarge.delete"), w);
     connect(delBtn, &QPushButton::clicked, w, [onDelete]() { onDelete(); });
     layout->addStretch();
     layout->addWidget(label);
@@ -479,7 +479,7 @@ QWidget *ChunkEditorWidget::makeOversizePlaceholder(const QString &msg, const st
     return w;
 }
 
-void ChunkEditorWidget::setTabDirtyText(QWidget *tab) {
+void ChunkEditorWidget::setTabDirtyText(QWidget* tab) {
     int idx = ui->tabWidget->indexOf(tab);
     if (idx < 0) return;
     auto text = ui->tabWidget->tabText(idx);
@@ -517,7 +517,7 @@ void ChunkEditorWidget::deleteActorData() {
 
 void ChunkEditorWidget::exportStatRow(int row) {
     if (row < 0 || row >= static_cast<int>(this->stats_export_rows_.size())) return;
-    auto &[name, data] = this->stats_export_rows_[row];
+    auto& [name, data] = this->stats_export_rows_[row];
     auto fileName = QFileDialog::getSaveFileName(this, tr("chunkEditor.stats.exportTitle"), name);
     if (fileName.isEmpty()) return;
 

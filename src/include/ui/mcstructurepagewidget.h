@@ -6,8 +6,8 @@
 #include <QWidget>
 #include <memory>
 
+#include "mcstructure.h"
 #include "nbtwidget.h"
-#include "palette.h"
 #include "tabpagewidget.h"
 #include "voxelwidget.h"
 

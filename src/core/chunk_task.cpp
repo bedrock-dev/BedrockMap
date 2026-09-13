@@ -22,7 +22,7 @@ void RegionTimer::push(int64_t value) {
 
 ChunkRegion::~ChunkRegion() = default;
 
-int ChunkRegion::internBlockName(const std::string &name) {
+int ChunkRegion::internBlockName(const std::string& name) {
     const int gid = bl::block_name_to_runtime_id(name);
     if (gid >= 0) return gid;
     // unknown / mod block: keep the full name (with namespace) in the region-local table
@@ -46,8 +46,8 @@ std::string ChunkRegion::blockName(int id) const {
 void LoadRegionTask::run() {
     auto begin = std::chrono::steady_clock::now();
 
-    auto *region = new ChunkRegion();
-    bl::chunk *chunks_[constant::RW * constant::RW]{nullptr};
+    auto* region = new ChunkRegion();
+    bl::chunk* chunks_[constant::RW * constant::RW]{nullptr};
     // read chunk data
     for (int i = 0; i < constant::RW; i++) {
         for (int j = 0; j < constant::RW; j++) {
@@ -60,7 +60,7 @@ void LoadRegionTask::run() {
 
     auto load_end = std::chrono::steady_clock::now();
 
-    for (auto &chunk : chunks_) {
+    for (auto& chunk : chunks_) {
         if (chunk && chunk->loaded()) {
             region->valid = true;
             break;
@@ -73,7 +73,7 @@ void LoadRegionTask::run() {
     if (region->valid) {
         for (int rw = 0; rw < constant::RW; rw++) {
             for (int rh = 0; rh < constant::RW; rh++) {
-                auto *chunk = chunks_[rw * constant::RW + rh];
+                auto* chunk = chunks_[rw * constant::RW + rh];
                 region->chunk_bit_map_.set(rw * constant::RW + rh, chunk != nullptr);
             }
         }
@@ -82,11 +82,10 @@ void LoadRegionTask::run() {
         // so renderStyle2's cross-region shadow pass hits the cache.
         for (int i = 0; i < constant::RW; i++) {
             for (int j = 0; j < constant::RW; j++) {
-                auto *chunk = chunks_[i * constant::RW + j];
+                auto* chunk = chunks_[i * constant::RW + j];
                 if (!chunk || !chunk->loaded()) continue;
                 bl::chunk_pos cp(this->pos_.x + i, this->pos_.z + j, this->pos_.dim);
-                auto version = chunk->get_version();
-                int miny = std::get<0>(cp.get_y_range(version));
+                int miny = chunk->get_y_range().first;
                 std::array<int16_t, 256> hm;
                 for (int x = 0; x < 16; x++) {
                     for (int z = 0; z < 16; z++) {
@@ -108,12 +107,12 @@ void LoadRegionTask::run() {
         // draw blocks
         for (int rw = 0; rw < constant::RW; rw++) {
             for (int rh = 0; rh < constant::RW; rh++) {
-                auto *chunk = chunks_[rw * constant::RW + rh];
+                auto* chunk = chunks_[rw * constant::RW + rh];
                 if (!chunk) continue;
                 chunk_count++;
                 MapTile::bakeChunkTerrain(chunk, this->filter_, rw, rh, region);
                 MapTile::bakeChunkActors(chunk, this->filter_, region);
-                auto &hss = chunk->HSAs();
+                auto& hss = chunk->HSAs();
                 region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
             }
         }
@@ -136,7 +135,7 @@ void LoadRegionTask::run() {
         render_time /= chunk_count;
     }
     emit finish(this->pos_.x, this->pos_.z, this->pos_.dim, region, load_time, render_time, chunks_);
-    for (auto *chunk : chunks_) delete chunk;
+    for (auto* chunk : chunks_) delete chunk;
 }
 
 int64_t RegionTimer::mean() const {

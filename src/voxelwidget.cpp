@@ -806,8 +806,8 @@ float VoxelWidget::maxZoomScale() const {
     return std::clamp(cameraDistance * 0.9f / radius, 0.1f, kMaxScaleLevel);
 }
 
-bool VoxelWidget::hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz,
-                                      const bl::block_box& bounds, MeshOcclusionMode mode) const {
+bool VoxelWidget::hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
+                                      MeshOcclusionMode mode) const {
     const auto& current = grid[layer][x][z];
 
     int ny = layer + dy;  // y-offset
@@ -970,11 +970,11 @@ void VoxelWidget::buildPreviewVertices() {
     if (preview_data_.empty() || preview_data_[0].empty() || preview_data_[0][0].empty()) return;
 
     // Transparent blocks go into the opaque list: the ghost is blended as a whole.
-    const bl::block_box bounds = bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(preview_data_[0].size()),
-                                                                  static_cast<int>(preview_data_.size()),
-                                                                  static_cast<int>(preview_data_[0][0].size()));
-    appendVisibleVoxelMesh(preview_data_, bounds, preview_vertices_, preview_indices_, nullptr, nullptr,
-                           MeshOcclusionMode::RenderView, kPreviewAlphaScale);
+    const bl::block_box bounds =
+        bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(preview_data_[0].size()), static_cast<int>(preview_data_.size()),
+                                         static_cast<int>(preview_data_[0][0].size()));
+    appendVisibleVoxelMesh(preview_data_, bounds, preview_vertices_, preview_indices_, nullptr, nullptr, MeshOcclusionMode::RenderView,
+                           kPreviewAlphaScale);
 }
 
 // helper
@@ -992,7 +992,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     for (const auto& chunk_row : chunks) {
         for (const auto& ch : chunk_row) {
             if (!ch) continue;
-            auto [chunk_min_y, chunk_max_y] = ch->get_pos().get_y_range(ch->get_version());
+            auto [chunk_min_y, chunk_max_y] = ch->get_y_range();
             world_min_y = std::min(world_min_y, chunk_min_y);
             world_max_y = std::max(world_max_y, chunk_max_y);
         }
@@ -1026,7 +1026,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
             auto* ch = row[zIdx];
             if (!ch) continue;
 
-            auto [chunk_min_y, chunk_max_y] = ch->get_pos().get_y_range(ch->get_version());
+            auto [chunk_min_y, chunk_max_y] = ch->get_y_range();
 
             // Precompute the base offset of global indices.
             const int base_global_x = xIdx * CW;

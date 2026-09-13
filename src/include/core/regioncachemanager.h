@@ -21,18 +21,20 @@ class RegionCacheManager {
 
     // Region/image caches are UI-thread owned. Only the height-map cache is
     // shared with worker threads and is protected by height_map_mutex_.
-    ChunkRegion *findRegion(const region_pos &pos, bool &empty);
-    ChunkRegion *peekRegion(const region_pos &pos, bool &empty);
-    void insertRegion(const region_pos &pos, ChunkRegion *region);
-    void insertEmpty(const region_pos &pos);
-    void removeRegion(const region_pos &pos);
+    ChunkRegion* findRegion(const region_pos& pos, bool& empty);
+    ChunkRegion* peekRegion(const region_pos& pos, bool& empty);
+    void insertRegion(const region_pos& pos, ChunkRegion* region);
+    void insertEmpty(const region_pos& pos);
+    void removeRegion(const region_pos& pos);
 
     void clear();
 
-    QImage slimeChunkImage(const region_pos &pos);
+    QImage slimeChunkImage(const region_pos& pos);
 
-    std::optional<std::array<int16_t, 256>> heightMap(const bl::chunk_pos &pos);
-    void putHeightMap(const bl::chunk_pos &pos, const std::array<int16_t, 256> &heightMap);
+    std::optional<std::array<int16_t, 256>> heightMap(const bl::chunk_pos& pos);
+    void putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& heightMap);
+    /// Drop the cached heights of an edited chunk; thread-safe like the other two.
+    void removeHeightMap(const bl::chunk_pos& pos);
 
     std::vector<QString> debugInfo() const;
 
@@ -40,7 +42,7 @@ class RegionCacheManager {
     void assertOwnerThread() const;
 
     template <typename T>
-    QCache<region_pos, T> *ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>> &caches, int dim, int maxCost);
+    QCache<region_pos, T>* ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>>& caches, int dim, int maxCost);
 
     std::unordered_map<int, std::unique_ptr<QCache<region_pos, ChunkRegion>>> region_cache_;
     std::unordered_map<int, std::unique_ptr<QCache<region_pos, char>>> invalid_cache_;
@@ -48,16 +50,16 @@ class RegionCacheManager {
 
     std::unique_ptr<QCache<bl::chunk_pos, std::array<int16_t, 256>>> height_map_cache_;
     mutable QMutex height_map_mutex_;
-    QThread *owner_thread_{nullptr};
+    QThread* owner_thread_{nullptr};
 };
 
 template <typename T>
-QCache<region_pos, T> *RegionCacheManager::ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>> &caches, int dim,
+QCache<region_pos, T>* RegionCacheManager::ensureDimCache(std::unordered_map<int, std::unique_ptr<QCache<region_pos, T>>>& caches, int dim,
                                                           int maxCost) {
     auto it = caches.find(dim);
     if (it != caches.end()) return it->second.get();
     auto cache = std::make_unique<QCache<region_pos, T>>(maxCost);
-    auto *result = cache.get();
+    auto* result = cache.get();
     caches.emplace(dim, std::move(cache));
     return result;
 }

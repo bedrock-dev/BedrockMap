@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "color.h"
-#include "palette.h"
+#include "mcstructure.h"
 #include "voxelwidget.h"
 
 namespace {
@@ -86,12 +86,12 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     auto* panelScroll = new QScrollArea(splitter);
     panelScroll->setWidgetResizable(true);
     panelScroll->setWidget(panel);
-    panelScroll->setMinimumWidth(260);
+    panelScroll->setMinimumWidth(360);
     splitter->addWidget(panelScroll);
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);
     splitter->setChildrenCollapsible(false);
-    splitter->setSizes({900, 300});
+    splitter->setSizes({840, 400});
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -306,8 +306,8 @@ QWidget* VoxelPreviewWidget::buildGlbPanel() {
 }
 
 void VoxelPreviewWidget::chooseImportFile() {
-    const QString filePath = QFileDialog::getOpenFileName(this, tr("voxelPreviewWidget.importMcstructure"), QString(),
-                                                          tr("MCStructure files (*.mcstructure)"));
+    const QString filePath =
+        QFileDialog::getOpenFileName(this, tr("voxelPreviewWidget.importMcstructure"), QString(), tr("MCStructure files (*.mcstructure)"));
     if (filePath.isEmpty()) return;
 
     QFile file(filePath);
@@ -508,6 +508,15 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
     bar_->setValue(0);
     bar_->setMaximum((maxPos.x - minPos.x + 1) * (maxPos.z - minPos.z + 1) * 2);
 
+    // A fresh load replaces the model, so any staged import and the placement box
+    // that was locked to the old model are dropped first.
+    endImportMode();
+
+    loaded_loader_ = &loader;
+    loaded_min_chunk_ = minPos;
+    loaded_max_chunk_ = maxPos;
+    has_chunk_source_ = true;
+
     voxelWidget_->updateVoxelData({});
     chunk_task_.start([this, minPos, maxPos, &loader](GuiTaskRunner* task) {
         std::vector<std::vector<bl::chunk*>> chunks;
@@ -535,6 +544,11 @@ bool VoxelPreviewWidget::loadChunksAsync(const bl::chunk_pos& minPos, const bl::
     return true;
 }
 
+bool VoxelPreviewWidget::reloadChunks() {
+    if (!has_chunk_source_ || !loaded_loader_) return false;
+    return loadChunksAsync(loaded_min_chunk_, loaded_max_chunk_, *loaded_loader_);
+}
+
 void VoxelPreviewWidget::setVoxelData(VoxelGrid&& data, const bl::block_pos& origin) {
     bar_->hide();
     voxel_origin_ = origin;
@@ -551,6 +565,8 @@ void VoxelPreviewWidget::loadMcstructureAsync(std::shared_ptr<const bl::mcstruct
         LOG_F(WARNING, "Current mcstructure render task is not finished");
         return;
     }
+    has_chunk_source_ = false;
+    loaded_loader_ = nullptr;
     bar_->show();
     bar_->setRange(0, 0);
     mcstructure_task_.start([this, structure](GuiTaskRunner*) {

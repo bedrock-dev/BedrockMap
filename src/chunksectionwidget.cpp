@@ -11,7 +11,7 @@
 #include "loguru/loguru.hpp"
 
 namespace {
-    std::string getDisplayedPalette(const std::string &value) {
+    std::string getDisplayedPalette(const std::string& value) {
         std::string res;
         for (auto c : value) {
             if (c != '\n' && c != ' ' && c != '\r') {
@@ -26,9 +26,9 @@ namespace {
     }
 }  // namespace
 
-ChunkSectionWidget::ChunkSectionWidget(QWidget *parent) : QWidget(parent) {}
+ChunkSectionWidget::ChunkSectionWidget(QWidget* parent) : QWidget(parent) {}
 
-void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
+void ChunkSectionWidget::paintEvent(QPaintEvent* event) {
     QPainter p(this);
 
     const int bw = this->get_block_pix();
@@ -40,9 +40,9 @@ void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             QRect rect(x_start + i * bw, j * bw + z_start, bw, bw);
-            const auto &data = this->get_layer_data(this->y_level_)[i][j];
+            const auto& data = this->get_layer_data(this->y_level_)[i][j];
             if (this->layer_ >= static_cast<int>(data.layers.size())) continue;
-            const auto &layer = data.layers[this->layer_];
+            const auto& layer = data.layers[this->layer_];
             if (layer.block_name == "minecraft:air") continue;
             auto c = layer.block_color;
             p.fillRect(rect, QBrush(QColor(c.r, c.g, c.b)));
@@ -64,7 +64,7 @@ void ChunkSectionWidget::paintEvent(QPaintEvent *event) {
     }
 }
 
-void ChunkSectionWidget::resizeEvent(QResizeEvent *event) { this->update(); }
+void ChunkSectionWidget::resizeEvent(QResizeEvent* event) { this->update(); }
 
 int ChunkSectionWidget::get_block_pix() {
     const int W = this->width();
@@ -73,22 +73,22 @@ int ChunkSectionWidget::get_block_pix() {
     return edge >> 4;
 }
 
-void ChunkSectionWidget::load_data(bl::chunk *ch) {
+void ChunkSectionWidget::load_data(bl::chunk* ch) {
     LOG_F(INFO, "Chunk Section load data begin");
     if (!ch) {
         LOG_F(WARNING, "Invalid Chunk");
         return;
     }
-    auto [miny_y, max_y] = ch->get_pos().get_y_range(ch->get_version());
+    auto [miny_y, max_y] = ch->get_y_range();
     for (int y = miny_y; y <= max_y; y++) {
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
-                auto &data = this->get_layer_data(y)[x][z];
+                auto& data = this->get_layer_data(y)[x][z];
                 data.layers.clear();
                 data.biome = ch->get_biome(x, y, z);
                 // collect every block layer (0..n); stop when the layer index runs out
                 for (int layer = 0;; layer++) {
-                    auto *raw = ch->get_block_raw(x, y, z, layer);
+                    auto* raw = ch->get_block_raw(x, y, z, layer);
                     if (!raw) break;
                     auto info = ch->get_block_with_color(x, y, z, layer);
                     TerrainLayerData layer_data;
@@ -103,13 +103,13 @@ void ChunkSectionWidget::load_data(bl::chunk *ch) {
     LOG_F(INFO, "Chunk Section load data finished");
 }
 
-void ChunkSectionWidget::mouseReleaseEvent(QMouseEvent *event) {
+void ChunkSectionWidget::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::RightButton) {
         this->showContextMenu(this->mapFromGlobal(QCursor::pos()));
     }
 }
 
-void ChunkSectionWidget::showContextMenu(const QPoint &p) {
+void ChunkSectionWidget::showContextMenu(const QPoint& p) {
     const int bw = this->get_block_pix();
     const int cw = bw << 4;
     int x_start = (this->width() - cw) >> 1;
@@ -122,7 +122,7 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
     QMenu contextMenu(this);
     auto rx = (p.x() - x_start) / bw;
     auto rz = ((p.y() - z_start) / bw) % 17;
-    auto &data = this->get_layer_data(this->y_level_)[rx][rz];
+    auto& data = this->get_layer_data(this->y_level_)[rx][rz];
     auto posString = QString("%1,%2,%3").arg(QString::number(rx), QString::number(this->y_level_), QString::number(rz));
     auto biomeString = QString("%1 (%2)").arg(data.biome).arg(bl::get_biome_name(data.biome).c_str());
 
@@ -136,7 +136,7 @@ void ChunkSectionWidget::showContextMenu(const QPoint &p) {
                                this);
     QAction biomeAction(tr("chunkSectionWidget.tooltip.biome") + biomeString, this);
 
-    auto *cb = QApplication::clipboard();
+    auto* cb = QApplication::clipboard();
 
     connect(&posAction, &QAction::triggered, this, [cb, &posString] { cb->setText(posString); });
     connect(&blockNameAction, &QAction::triggered, this, [cb, &blockNameString] { cb->setText(blockNameString); });

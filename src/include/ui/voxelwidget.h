@@ -167,8 +167,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
                                   float alphaScale = 1.0f) const;
     void appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_box& bounds, std::vector<float>& vertices,
                                 std::vector<GLuint>& indices, std::vector<float>* transparentVertices = nullptr,
-                                std::vector<GLuint>* transparentIndices = nullptr,
-                                MeshOcclusionMode mode = MeshOcclusionMode::RenderView, float alphaScale = 1.0f) const;
+                                std::vector<GLuint>* transparentIndices = nullptr, MeshOcclusionMode mode = MeshOcclusionMode::RenderView,
+                                float alphaScale = 1.0f) const;
     void buildVoxelVertices();
     void buildPreviewVertices();
     // OpenGL obj (opaque, transparent)
@@ -197,7 +197,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     VoxelGrid preview_data_;                 // structure being placed, empty when not previewing
     std::vector<float> preview_vertices_;    // 10 floats per vertex: pos3 + normal3 + rgba4
     std::vector<GLuint> preview_indices_;
-    QVector3D preview_offset_;               // placement offset in voxel units
+    QVector3D preview_offset_;  // placement offset in voxel units
     GLsizei selection_fill_vertex_count_{0};
     GLsizei selection_line_vertex_count_{0};
     int start_layer_ = 0;
@@ -223,8 +223,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     QMatrix4x4 m_view;
     QMatrix4x4 m_model;
     QMatrix4x4 m_preview_model;  // m_model with the placement offset applied
-    bool ortho_mode_{false};    // false = perspective, true = orthographic
-    bool axes_visible_{false};  // coordinate axes overlay (A key)
+    bool ortho_mode_{false};     // false = perspective, true = orthographic
+    bool axes_visible_{false};   // coordinate axes overlay (A key)
     bool rotation_locked_{false};
     QToolButton* shortcut_help_button_{nullptr};
     QWidget* shortcut_help_popup_{nullptr};
@@ -265,6 +265,9 @@ class VoxelPreviewWidget : public QWidget {
 
     bool loadChunksAsync(const bl::chunk_pos& min, const bl::chunk_pos& max, AsyncLevelLoader& loader);
     void loadMcstructureAsync(std::shared_ptr<const bl::mcstructure> structure);
+    /// Re-reads the chunk range the preview was loaded from, picking up level edits.
+    /// Returns false when the preview is not backed by chunks.
+    bool reloadChunks();
     [[nodiscard]] bl::block_pos voxelOrigin() const { return voxel_origin_; }
     /// Import placement mode: the selection is locked to the size of the model to
     /// be imported and can only be moved. Export controls stay disabled until the
@@ -273,7 +276,7 @@ class VoxelPreviewWidget : public QWidget {
 
    signals:
     void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
-    /// World-space placement of the imported model. The actual write is not implemented yet.
+    /// World-space placement of the imported model: minimum corner inclusive, maximum exclusive.
     void importConfirmed(VoxelSelection placement, std::shared_ptr<const bl::mcstructure> structure);
 
    private:
@@ -314,6 +317,11 @@ class VoxelPreviewWidget : public QWidget {
     std::shared_ptr<const bl::mcstructure> import_structure_;
     bool import_mode_{false};
     bool syncing_selection_fields_{false};  // true while the panel writes into the spin boxes
+    // chunk source kept so the preview can be reloaded after an edit
+    AsyncLevelLoader* loaded_loader_{nullptr};
+    bl::chunk_pos loaded_min_chunk_;
+    bl::chunk_pos loaded_max_chunk_;
+    bool has_chunk_source_{false};
     // data
     bl::block_pos voxel_origin_;
     GuiTaskRunner chunk_task_;

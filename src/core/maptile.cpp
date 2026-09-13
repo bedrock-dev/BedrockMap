@@ -12,7 +12,7 @@
 #include "color.h"  // bl::blend_color_with_biome, bl::get_biome_color
 #include "config.h"
 #include "data_3d.h"
-#include "sub_chunk.h"  // bl::block_info
+#include "sub_chunk.h"  // bl::block_appearance
 
 // ---- helpers ----
 
@@ -32,12 +32,12 @@ namespace {
         return {-1, -1};
     }
 
-    void applyWaterOverlay(ChunkRegion *region, int IMG_WIDTH, int scale = 1) {
-        auto &tp = region->tips_info_;
+    void applyWaterOverlay(ChunkRegion* region, int IMG_WIDTH, int scale = 1) {
+        auto& tp = region->tips_info_;
         const int res = IMG_WIDTH * scale;
         for (int bi = 0; bi < IMG_WIDTH; bi++) {
             for (int bj = 0; bj < IMG_WIDTH; bj++) {
-                auto &info = tp[bi][bj];
+                auto& info = tp[bi][bj];
                 if (info.water_surface_color == 0) continue;
                 float water_depth = static_cast<float>(info.height - info.solid_height);
                 float water_opacity = std::min(0.15f * water_depth, 0.85f);
@@ -48,7 +48,7 @@ namespace {
                 int x0 = bi * scale, x1 = x0 + scale;
                 int y0 = bj * scale, y1 = y0 + scale;
                 for (int hj = y0; hj < y1; hj++) {
-                    auto *line = reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(hj));
+                    auto* line = reinterpret_cast<QRgb*>(region->terrain_bake_image_.scanLine(hj));
                     for (int hi = x0; hi < x1; hi++) {
                         QRgb px = line[hi];
                         line[hi] = qRgba(static_cast<uint8_t>((1 - water_opacity) * qRed(px) + water_opacity * wr),
@@ -63,11 +63,11 @@ namespace {
 
 // ---- public ----
 
-QImage MapTile::createQuadChessTile(int width, const QRgb &c1, const QRgb &c2, int scale) {
+QImage MapTile::createQuadChessTile(int width, const QRgb& c1, const QRgb& c2, int scale) {
     int scaledWidth = width * scale;
     QImage image(scaledWidth, scaledWidth, QImage::Format_RGB32);
     for (int y = 0; y < scaledWidth; ++y) {
-        QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(y));
+        QRgb* line = reinterpret_cast<QRgb*>(image.scanLine(y));
         int gridY = (y / scale) % width;
         int yParity = gridY & 1;
         for (int x = 0; x < scaledWidth; ++x) {
@@ -79,14 +79,14 @@ QImage MapTile::createQuadChessTile(int width, const QRgb &c1, const QRgb &c2, i
     return image;
 }
 
-QImage &MapTile::UNLOADED_REGION_TILE() {
+QImage& MapTile::UNLOADED_REGION_TILE() {
     static auto c1 = QColor(128, 128, 128).rgb();
     static auto c2 = QColor(148, 148, 148).rgb();
     static QImage img = createQuadChessTile(2, c1, c2, constant::RW << 3);
     return img;
 }
 
-QImage &MapTile::NULL_REGION_TILE() {
+QImage& MapTile::NULL_REGION_TILE() {
     static auto c1 = QColor(20, 20, 20).rgb();
     static auto c2 = QColor(40, 40, 40).rgb();
 
@@ -94,28 +94,28 @@ QImage &MapTile::NULL_REGION_TILE() {
     return img;
 }
 
-QImage &MapTile::COORDS_LOADING_TILE() {
+QImage& MapTile::COORDS_LOADING_TILE() {
     static const auto color1 = QColor(128, 128, 128).rgb();
     static const auto color2 = QColor(148, 148, 148).rgb();
     static QImage image = createQuadChessTile(2, color1, color2, constant::COORDS_REGION_SIZE / 2);
     return image;
 }
 
-QImage &MapTile::COORDS_EMPTY_TILE() {
+QImage& MapTile::COORDS_EMPTY_TILE() {
     static const auto color1 = QColor(20, 20, 20).rgb();
     static const auto color2 = QColor(40, 40, 40).rgb();
     static QImage image = createQuadChessTile(2, color1, color2, constant::COORDS_REGION_SIZE / 2);
     return image;
 }
 
-QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW> &chunk_bit_map, bool fill) {
+QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW>& chunk_bit_map, bool fill) {
     static auto color = QColor(setting::current().VOID_MAP_COLOR).rgb();
     auto img = NULL_REGION_TILE().copy();
     if (fill) {
         int gridSize = img.width() / constant::RW;
 
         for (int y = 0; y < img.height(); ++y) {
-            QRgb *line = (QRgb *)img.scanLine(y);
+            QRgb* line = (QRgb*)img.scanLine(y);
             int gridY = y / gridSize;
             for (int x = 0; x < img.width(); ++x) {
                 int gridX = x / gridSize;
@@ -128,7 +128,7 @@ QImage MapTile::CREATE_REGION_TILE(const std::bitset<constant::RW * constant::RW
     return img;
 }
 
-void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapFilter &filter, int rw, int rh, int chx, int chz, int y,
+void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapFilter& filter, int rw, int rh, int chx, int chz, int y,
                                   int y_solid) {
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
@@ -136,30 +136,30 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
-    bl::block_info solid_info = info;
+    bl::block_appearance solid_info = info;
     int16_t solid_h = static_cast<int16_t>(y);
     if (y_solid >= 0 && y_solid < y) {
         solid_info = ch->get_block_with_color(chx, y_solid, chz);
         solid_h = static_cast<int16_t>(y_solid);
     }
 
-    bl::block_info render_info = info;
+    bl::block_appearance render_info = info;
     if (setting::current().TRANSPARENT_WATER && info.name == "minecraft:water" && y_solid >= 0 && y_solid < y) {
-        auto &tips = region->tips_info_[X][Z];
+        auto& tips = region->tips_info_[X][Z];
         tips.water_surface_color = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
         render_info = solid_info;
     }
 
-    reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(Z))[X] =
+    reinterpret_cast<QRgb*>(region->terrain_bake_image_.scanLine(Z))[X] =
         qRgba(render_info.color.r, render_info.color.g, render_info.color.b, render_info.color.a);
 
     if ((filter.biomes_list_.count(biome) == 0) == filter.biome_black_mode_) {
         auto biome_color = bl::get_biome_color(biome);
-        reinterpret_cast<QRgb *>(region->biome_bake_image_.scanLine(Z))[X] =
+        reinterpret_cast<QRgb*>(region->biome_bake_image_.scanLine(Z))[X] =
             qRgba(biome_color.r, biome_color.g, biome_color.b, biome_color.a);
     }
 
-    auto &tips = region->tips_info_[X][Z];
+    auto& tips = region->tips_info_[X][Z];
     tips.block_id = region->internBlockName(render_info.name);
     tips.solid_block_id = region->internBlockName(solid_info.name);
     // get_top_biome is robust when the exact surface layer stores none
@@ -168,16 +168,16 @@ void MapTile::renderTerrainColumn(ChunkRegion *region, bl::chunk *ch, const MapF
     tips.solid_height = solid_h;
 }
 
-void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, int rh, ChunkRegion *region) {
+void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, int rh, ChunkRegion* region) {
     if (!ch || !region) return;
-    auto [miny, maxy] = ch->get_pos().get_y_range(ch->get_version());
+    auto [miny, maxy] = ch->get_y_range();
 
     // enable layer
     if (filter.enable_layer_) {
         if (filter.layer > maxy || filter.layer < miny) return;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                const auto &b = ch->get_block_name(i, filter.layer, j);
+                const auto& b = ch->get_block_name(i, filter.layer, j);
                 if ((filter.blocks_list_.count(b) == 0) == filter.block_black_mode_) {
                     renderTerrainColumn(region, ch, filter, rw, rh, i, j, filter.layer, -1);
                 }
@@ -211,7 +211,7 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
             bool found = false;
             int found_y = miny - 1, solid_y = miny - 1;
             while (y >= miny) {
-                const auto &b = ch->get_block_name(i, y, j);
+                const auto& b = ch->get_block_name(i, y, j);
                 if (!found && (filter.blocks_list_.count(b) == 0) == filter.block_black_mode_) {
                     found = true;
                     found_y = y;
@@ -235,18 +235,18 @@ void MapTile::bakeChunkTerrain(bl::chunk *ch, const MapFilter &filter, int rw, i
     }
 }
 
-void MapTile::bakeChunkActors(bl::chunk *ch, const MapFilter &filter, ChunkRegion *region) {
+void MapTile::bakeChunkActors(bl::chunk* ch, const MapFilter& filter, ChunkRegion* region) {
     if (!ch) return;
     auto entities = ch->entities();
     auto mode = setting::current().ACTOR_RENDER_STYLE;
-    for (auto &e : entities) {
+    for (auto& e : entities) {
         auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
         if ((filter.actors_list_.count(key.toStdString()) == 0) == filter.actor_black_mode_) {
             if (mode == 0) {
                 region->actors_[ActorImage(key)].push_back(e->pos());
             } else {
                 auto chunk_pos = ch->get_pos();
-                auto &ac = region->actors_counts_[chunk_pos][ActorImage(key)];
+                auto& ac = region->actors_counts_[chunk_pos][ActorImage(key)];
                 ac = {e->pos(), ac.count + 1};
             }
         }
@@ -257,14 +257,14 @@ void MapTile::bakeChunkActors(bl::chunk *ch, const MapFilter &filter, ChunkRegio
 //  render passes
 // =====================================================================
 
-void MapTile::renderStyle0(ChunkRegion *region, int IMG_WIDTH) { applyWaterOverlay(region, IMG_WIDTH); }
+void MapTile::renderStyle0(ChunkRegion* region, int IMG_WIDTH) { applyWaterOverlay(region, IMG_WIDTH); }
 
-void MapTile::renderStyle1(ChunkRegion *region, int IMG_WIDTH) {
+void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
     applyWaterOverlay(region, IMG_WIDTH);
 
     // Directional shadow based on top block height — water blocks are skipped
     // (their colour comes from the sea floor, not the water surface).
-    auto &tp = region->tips_info_;
+    auto& tp = region->tips_info_;
     auto [sx, sy] = sunVector();
     const int kLevel = setting::current().SHADOW_LEVEL;
 
@@ -278,7 +278,7 @@ void MapTile::renderStyle1(ChunkRegion *region, int IMG_WIDTH) {
             int n2 = (j + sy >= 0 && j + sy < IMG_WIDTH) ? tp[i][j + sy].height : cur;
             int sum = (n1 == -128 ? cur : n1) + (n2 == -128 ? cur : n2);
 
-            auto *line = reinterpret_cast<QRgb *>(region->terrain_bake_image_.scanLine(j));
+            auto* line = reinterpret_cast<QRgb*>(region->terrain_bake_image_.scanLine(j));
             QRgb px = line[i];
             int r = qRed(px), g = qGreen(px), b = qBlue(px);
             if (cur * 2 > sum) {
@@ -290,14 +290,14 @@ void MapTile::renderStyle1(ChunkRegion *region, int IMG_WIDTH) {
     }
 }
 
-void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader *loader, const bl::chunk_pos &region_pos) {
+void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader* loader, const bl::chunk_pos& region_pos) {
     const int scale = std::clamp(setting::current().TILE_RENDER_SCALE, 1, 32);
     const int HR = IMG_WIDTH * scale;
 
     QImage hr_t = region->terrain_bake_image_.scaled(HR, HR, Qt::IgnoreAspectRatio, Qt::FastTransformation);
     if (hr_t.isNull()) return;
 
-    auto &tp = region->tips_info_;
+    auto& tp = region->tips_info_;
     const int edge_w = std::max(1, scale / 6);
     constexpr float kEdgeBright = 1.18f;
     constexpr float kEdgeDark = 0.76f;
@@ -306,7 +306,7 @@ void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader 
 
     for (int bi = 0; bi < IMG_WIDTH; bi++) {
         for (int bj = 0; bj < IMG_WIDTH; bj++) {
-            auto &info = tp[bi][bj];
+            auto& info = tp[bi][bj];
             float h = info.solid_height;
             if (info.height == -128) continue;
 
@@ -371,7 +371,7 @@ void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader 
                     factor = 1.0f + (factor - 1.0f) * water_fade;
                     factor = std::clamp(factor, 0.55f, 1.58f);
 
-                    auto *tline = reinterpret_cast<QRgb *>(hr_t.scanLine(hj));
+                    auto* tline = reinterpret_cast<QRgb*>(hr_t.scanLine(hj));
                     QRgb px_c = tline[hi];
                     tline[hi] = qRgb(qBound(0, qRound(qRed(px_c) * factor), 255), qBound(0, qRound(qGreen(px_c) * factor), 255),
                                      qBound(0, qRound(qBlue(px_c) * factor), 255));
@@ -471,7 +471,7 @@ void MapTile::renderStyle2(ChunkRegion *region, int IMG_WIDTH, AsyncLevelLoader 
                     float shadow = shadow_map[si * SM + sj];
                     if (shadow >= 1.0f) continue;
 
-                    auto *tline = reinterpret_cast<QRgb *>(hr_t.scanLine(hj));
+                    auto* tline = reinterpret_cast<QRgb*>(hr_t.scanLine(hj));
                     QRgb px = tline[hi];
                     tline[hi] = qRgb(qBound(0, qRound(qRed(px) * shadow), 255), qBound(0, qRound(qGreen(px) * shadow), 255),
                                      qBound(0, qRound(qBlue(px) * shadow), 255));

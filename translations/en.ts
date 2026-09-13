@@ -1850,9 +1850,8 @@
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.info</source>
-        <translation>World origin: (%1, %2, %3)
-Size: %4 x %5 x %6
-World end: (%7, %8, %9)</translation>
+        <translation>World: (%1, %2, %3) ~ (%7, %8, %9)
+Size: %4 x %5 x %6</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>

@@ -35,6 +35,7 @@
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
+#include "blockregionoperator.h"
 #include "chunkoperator.h"
 #include "gotopositiondialog.h"
 #include "loguru/loguru.hpp"
