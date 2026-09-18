@@ -18,21 +18,21 @@
 
 void initResources();
 
-QImage *ActorImage(const QString &key);
+QImage* ActorImage(const QString& key);
 
-QImage *OtherNBTIcon();
+QImage* OtherNBTIcon();
 
-QImage *PlayerNBTIcon();
+QImage* PlayerNBTIcon();
 
-QImage *TagIcon(bl::nbt::tag_type t);
+QImage* TagIcon(bl::nbt::tag_type t);
 
-QImage *VillageNBTIcon(bl::village_key::key_type t);
+QImage* VillageNBTIcon(bl::village_key::key_type t);
 
-QImage *BlockActorNBTIcon(const QString &key);
+QImage* BlockActorNBTIcon(const QString& key);
 
-QImage *EntityNBTIcon(const QString &key);
+QImage* EntityNBTIcon(const QString& key);
 
-QString ToolBarIcon(const QString &name);
+QString ToolBarIcon(const QString& name);
 
 struct IconManager {
     IconManager() = delete;
@@ -46,10 +46,10 @@ class TranslatorMgr {
 
     static void init();
 
-    static void setupTranslation(QApplication &a, const QString &langName);
+    static void setupTranslation(QApplication& a, const QString& langName);
 
    private:
-    static QMap<QString, std::shared_ptr<QTranslator>> &translations();
+    static QMap<QString, std::shared_ptr<QTranslator>>& translations();
 };
 
 #endif  // BEDROCKMAP_RESOURCEMANAGER_H

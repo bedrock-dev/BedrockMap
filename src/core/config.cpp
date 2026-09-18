@@ -28,7 +28,7 @@ namespace bl::config {
     void set_log_missing_block_color(bool);
 }  // namespace bl::config
 
-std::optional<AppVersion> AppVersion::parse(const QString &text) {
+std::optional<AppVersion> AppVersion::parse(const QString& text) {
     QString s = text.trimmed();
     if (s.startsWith('v') || s.startsWith('V')) s = s.mid(1);
 
@@ -61,7 +61,7 @@ QString AppVersion::toString() const {
     return s;
 }
 
-int AppVersion::compare(const AppVersion &other) const {
+int AppVersion::compare(const AppVersion& other) const {
     for (size_t i = 0; i < core.size(); ++i) {
         if (core[i] != other.core[i]) return core[i] < other.core[i] ? -1 : 1;
     }
@@ -93,7 +93,7 @@ const QString constant::TRANSLATION_FILES_PATH = R"(./translations)";
 
 const QString constant::MCBE_LEVEL_PATH = "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
 
-region_pos constant::c2r(const bl::chunk_pos &ch) {
+region_pos constant::c2r(const bl::chunk_pos& ch) {
     auto cx = ch.x < 0 ? ch.x - constant::RW + 1 : ch.x;
     auto cz = ch.z < 0 ? ch.z - constant::RW + 1 : ch.z;
     return region_pos{cx / constant::RW * constant::RW, cz / constant::RW * constant::RW, ch.dim};
@@ -104,15 +104,15 @@ QString constant::VERSION_STRING() {
 }
 
 namespace {
-    setting::Settings &mutableSettings() {
+    setting::Settings& mutableSettings() {
         static setting::Settings instance;
         return instance;
     }
 }  // namespace
 
-void setting::apply(const Settings &settings) { mutableSettings() = settings; }
+void setting::apply(const Settings& settings) { mutableSettings() = settings; }
 
-const setting::Settings &setting::current() { return mutableSettings(); }
+const setting::Settings& setting::current() { return mutableSettings(); }
 
 // Utility functions
 void constant::initColorTable() {
@@ -140,7 +140,7 @@ void setting::init() {
 void setting::load() {
     QSettings s(constant::CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
 
-    foreach (const auto &key, s.allKeys()) {
+    foreach (const auto& key, s.allKeys()) {
         LOG_F(INFO, "Config key: %s, value: %s", key.toStdString().c_str(), s.value(key).toString().toStdString().c_str());
     }
 
@@ -216,7 +216,7 @@ void setting::load() {
 
 void setting::save() { save(current()); }
 
-void setting::save(const Settings &values) {
+void setting::save(const Settings& values) {
     QSettings s(constant::CONFIG_FILE_PATH.c_str(), QSettings::IniFormat);
 
     s.beginGroup("Gui");

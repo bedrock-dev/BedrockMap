@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 
-RegionRenderScheduler::RegionRenderScheduler(AsyncLevelLoader *loader, QObject *parent)
+RegionRenderScheduler::RegionRenderScheduler(AsyncLevelLoader* loader, QObject* parent)
     : QObject(parent), loader_(loader), owner_thread_(QThread::currentThread()) {
     pool_.setMaxThreadCount(setting::current().THREAD_NUM);
 }
@@ -13,12 +13,12 @@ void RegionRenderScheduler::assertOwnerThread() const {
     Assert(QThread::currentThread() == owner_thread_, "RegionRenderScheduler", "scheduler state must be accessed from the owning thread");
 }
 
-bool RegionRenderScheduler::inViewport(const region_pos &pos) const {
+bool RegionRenderScheduler::inViewport(const region_pos& pos) const {
     return viewport_valid_ && pos.dim == viewport_min_.dim && pos.x >= viewport_min_.x && pos.x <= viewport_max_.x &&
            pos.z >= viewport_min_.z && pos.z <= viewport_max_.z;
 }
 
-void RegionRenderScheduler::setViewport(const region_pos &minRegion, const region_pos &maxRegion) {
+void RegionRenderScheduler::setViewport(const region_pos& minRegion, const region_pos& maxRegion) {
     assertOwnerThread();
     if (viewport_valid_ && viewport_min_ == minRegion && viewport_max_ == maxRegion) return;
     viewport_min_ = minRegion;
@@ -33,7 +33,7 @@ void RegionRenderScheduler::setViewport(const region_pos &minRegion, const regio
     dispatch();
 }
 
-void RegionRenderScheduler::request(const region_pos &pos, const MapFilter &filter) {
+void RegionRenderScheduler::request(const region_pos& pos, const MapFilter& filter) {
     assertOwnerThread();
     if (!accepting_.load(std::memory_order_acquire) || active_.count(pos) != 0) return;
     const auto version = ++next_version_;
@@ -43,12 +43,12 @@ void RegionRenderScheduler::request(const region_pos &pos, const MapFilter &filt
     dispatch();
 }
 
-bool RegionRenderScheduler::contains(const region_pos &pos) const {
+bool RegionRenderScheduler::contains(const region_pos& pos) const {
     assertOwnerThread();
     return active_.count(pos) != 0 || pending_.count(pos) != 0;
 }
 
-RegionRenderScheduler::QueueEntry RegionRenderScheduler::makeQueueEntry(const PendingTask &task) const {
+RegionRenderScheduler::QueueEntry RegionRenderScheduler::makeQueueEntry(const PendingTask& task) const {
     const auto centerX = static_cast<int64_t>(viewport_min_.x) + (static_cast<int64_t>(viewport_max_.x) - viewport_min_.x) / 2;
     const auto centerZ = static_cast<int64_t>(viewport_min_.z) + (static_cast<int64_t>(viewport_max_.z) - viewport_min_.z) / 2;
     const auto dx = static_cast<int64_t>(task.pos.x) - centerX;
@@ -80,7 +80,7 @@ void RegionRenderScheduler::discardPendingOutsideViewport() {
 
 void RegionRenderScheduler::rebuildQueue() {
     queue_ = {};
-    for (const auto &[pos, task] : pending_) {
+    for (const auto& [pos, task] : pending_) {
         (void)pos;
         queue_.push(makeQueueEntry(task));
     }
@@ -114,10 +114,10 @@ void RegionRenderScheduler::dispatch() {
         pending_.erase(pos);
         active_.insert(pos);
 
-        auto *task = new LoadRegionTask(loader_, pos, std::move(filter));
+        auto* task = new LoadRegionTask(loader_, pos, std::move(filter));
         connect(
             task, &LoadRegionTask::finish, this,
-            [this, pos](int, int, int, ChunkRegion *region, long long loadTime, long long renderTime, bl::chunk **) {
+            [this, pos](int, int, int, ChunkRegion* region, long long loadTime, long long renderTime, bl::chunk**) {
                 onTaskFinished(pos, region, loadTime, renderTime);
             },
             Qt::QueuedConnection);
@@ -125,7 +125,7 @@ void RegionRenderScheduler::dispatch() {
     }
 }
 
-void RegionRenderScheduler::onTaskFinished(const region_pos &pos, ChunkRegion *region, long long loadTime, long long renderTime) {
+void RegionRenderScheduler::onTaskFinished(const region_pos& pos, ChunkRegion* region, long long loadTime, long long renderTime) {
     assertOwnerThread();
     active_.erase(pos);
     if (!accepting_.load(std::memory_order_acquire)) {

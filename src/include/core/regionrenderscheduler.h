@@ -23,19 +23,19 @@ class RegionRenderScheduler : public QObject {
     Q_OBJECT
 
    public:
-    explicit RegionRenderScheduler(AsyncLevelLoader *loader, QObject *parent = nullptr);
+    explicit RegionRenderScheduler(AsyncLevelLoader* loader, QObject* parent = nullptr);
 
-    void setViewport(const region_pos &minRegion, const region_pos &maxRegion);
-    void request(const region_pos &pos, const MapFilter &filter);
+    void setViewport(const region_pos& minRegion, const region_pos& maxRegion);
+    void request(const region_pos& pos, const MapFilter& filter);
 
-    bool contains(const region_pos &pos) const;
+    bool contains(const region_pos& pos) const;
     void clear();
     void waitForDone();
     int pendingCount() const;
     int activeCount() const;
 
    signals:
-    void regionFinished(region_pos pos, ChunkRegion *region, long long loadTime, long long renderTime);
+    void regionFinished(region_pos pos, ChunkRegion* region, long long loadTime, long long renderTime);
 
    private:
     void assertOwnerThread() const;
@@ -54,23 +54,23 @@ class RegionRenderScheduler : public QObject {
     };
 
     struct QueueCompare {
-        bool operator()(const QueueEntry &lhs, const QueueEntry &rhs) const {
+        bool operator()(const QueueEntry& lhs, const QueueEntry& rhs) const {
             if (lhs.inViewport != rhs.inViewport) return !lhs.inViewport;
             if (lhs.distance != rhs.distance) return lhs.distance > rhs.distance;
             return lhs.version > rhs.version;
         }
     };
 
-    bool inViewport(const region_pos &pos) const;
-    QueueEntry makeQueueEntry(const PendingTask &task) const;
+    bool inViewport(const region_pos& pos) const;
+    QueueEntry makeQueueEntry(const PendingTask& task) const;
     void maybeRebuildQueue();
     void discardPendingOutsideViewport();
     void rebuildQueue();
     std::optional<PendingTask> takeBestPending();
     void dispatch();
-    void onTaskFinished(const region_pos &pos, ChunkRegion *region, long long loadTime, long long renderTime);
+    void onTaskFinished(const region_pos& pos, ChunkRegion* region, long long loadTime, long long renderTime);
 
-    AsyncLevelLoader *loader_;
+    AsyncLevelLoader* loader_;
     QThreadPool pool_;
     std::unordered_map<region_pos, PendingTask> pending_;
     std::priority_queue<QueueEntry, std::vector<QueueEntry>, QueueCompare> queue_;
@@ -80,7 +80,7 @@ class RegionRenderScheduler : public QObject {
     bool viewport_valid_{false};
     std::atomic_bool accepting_{true};
     std::uint64_t next_version_{0};
-    QThread *owner_thread_{nullptr};
+    QThread* owner_thread_{nullptr};
 };
 
 #endif  // BEDROCKMAP_REGIONRENDERSCHEDULER_H

@@ -18,15 +18,15 @@ class McstructurePageWidget : public TabPageWidget {
     Q_OBJECT
 
    public:
-    explicit McstructurePageWidget(QWidget *parent = nullptr);
+    explicit McstructurePageWidget(QWidget* parent = nullptr);
     ~McstructurePageWidget() override;
 
-    bool loadStructure(const QString &path);
+    bool loadStructure(const QString& path);
     [[nodiscard]] QString getStructureName() const { return structure_name_; }
 
    private:
     void setupUI();
-    void exportMcstructure(const VoxelSelection &selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
+    void exportMcstructure(const VoxelSelection& selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
 
     // data
     std::shared_ptr<bl::mcstructure> structure_;
@@ -34,10 +34,10 @@ class McstructurePageWidget : public TabPageWidget {
     QString structure_name_;
 
     // gui
-    NbtWidget *nbt_editor_{nullptr};
-    QWidget *structure_info_widget_{nullptr};
-    QLabel *structure_info_label_{nullptr};
-    VoxelPreviewWidget *voxel_preview_widget_{nullptr};
+    NbtWidget* nbt_editor_{nullptr};
+    QWidget* structure_info_widget_{nullptr};
+    QLabel* structure_info_label_{nullptr};
+    VoxelPreviewWidget* voxel_preview_widget_{nullptr};
 };
 
 #endif  // BEDROCKMAP_MCSTRUCTUREPAGEWIDGET_H

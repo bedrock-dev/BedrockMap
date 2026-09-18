@@ -15,7 +15,6 @@
 #include "nbt.h"
 #include "nbtwidget.h"
 
-
 namespace Ui {
     class MapItemEditor;
 }
@@ -24,22 +23,22 @@ namespace Ui {
 class ImageCropDialog : public QDialog {
     Q_OBJECT
    public:
-    explicit ImageCropDialog(const QImage &source, QWidget *parent = nullptr);
+    explicit ImageCropDialog(const QImage& source, QWidget* parent = nullptr);
 
     QImage croppedResult() const;
 
    protected:
-    void paintEvent(QPaintEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void wheelEvent(QWheelEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
    private:
     enum class HitZone { None, Interior, LeftEdge, RightEdge, TopEdge, BottomEdge, TopLeft, TopRight, BottomLeft, BottomRight };
 
-    HitZone hitTest(const QPointF &pos) const;
+    HitZone hitTest(const QPointF& pos) const;
     void fitCropToImage(bool initial = false);
     void clampCropRect();
 
@@ -49,7 +48,7 @@ class ImageCropDialog : public QDialog {
     QRectF crop_rect_;      // in display coordinates (0..display_image_.width())
     QPointF last_mouse_pos_;
     HitZone drag_zone_{HitZone::None};
-    QDialogButtonBox *button_box_;
+    QDialogButtonBox* button_box_;
     bool dragging_{false};
 
     static constexpr int MIN_CROP_SIZE = 10;
@@ -60,17 +59,17 @@ class MapItemEditor : public QWidget {
     Q_OBJECT
 
    public:
-    explicit MapItemEditor(QWidget *parent = nullptr);
+    explicit MapItemEditor(QWidget* parent = nullptr);
 
     ~MapItemEditor() override;
 
-    void load_map_data(const bl::general_kv_nbts &data);
+    void load_map_data(const bl::general_kv_nbts& data);
 
-    void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
 
     void clearData() { this->map_nbt_editor_->clearData(); }
 
-    NbtWidget *nbtEditor() { return this->map_nbt_editor_; }
+    NbtWidget* nbtEditor() { return this->map_nbt_editor_; }
 
    private slots:
 
@@ -79,8 +78,8 @@ class MapItemEditor : public QWidget {
     void on_change_map_btn_clicked();
 
    private:
-    NbtWidget *map_nbt_editor_{nullptr};
-    Ui::MapItemEditor *ui;
+    NbtWidget* map_nbt_editor_{nullptr};
+    Ui::MapItemEditor* ui;
     QImage img;
 };
 

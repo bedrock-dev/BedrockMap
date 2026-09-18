@@ -25,11 +25,11 @@ std::vector<bl::biome> BiomePickerDialog::allBiomes() {
     return result;
 }
 
-BiomePickerDialog::BiomePickerDialog(QWidget *parent) : QDialog(parent), ui(new Ui::BiomePickerDialog) {
+BiomePickerDialog::BiomePickerDialog(QWidget* parent) : QDialog(parent), ui(new Ui::BiomePickerDialog) {
     ui->setupUi(this);
     this->setWindowIcon(QIcon(ToolBarIcon("biome")));
 
-    auto setupTable = [](QTableWidget *t) {
+    auto setupTable = [](QTableWidget* t) {
         t->horizontalHeader()->setVisible(true);
         t->verticalHeader()->setVisible(false);
         t->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
@@ -53,11 +53,11 @@ BiomePickerDialog::BiomePickerDialog(QWidget *parent) : QDialog(parent), ui(new 
     populateTables();
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [this]() {
-        auto getSelected = [](QTableWidget *t) -> bl::biome {
+        auto getSelected = [](QTableWidget* t) -> bl::biome {
             auto sel = t->selectedItems();
             if (sel.isEmpty()) return bl::biome::none;
             int row = sel.first()->row();
-            auto *item = t->item(row, 2);
+            auto* item = t->item(row, 2);
             if (!item) return bl::biome::none;
             return static_cast<bl::biome>(item->text().toInt());
         };
@@ -75,25 +75,25 @@ void BiomePickerDialog::populateTables() {
     auto biomes = allBiomes();
     int mid = static_cast<int>((biomes.size() + 1) / 2);
 
-    auto fillTable = [](QTableWidget *t, const std::vector<bl::biome> &list, int start, int end) {
+    auto fillTable = [](QTableWidget* t, const std::vector<bl::biome>& list, int start, int end) {
         t->setRowCount(end - start);
         for (int i = start; i < end; i++) {
             int row = i - start;
             auto b = list[i];
 
             // Color swatch
-            auto *swatch = new QTableWidgetItem();
+            auto* swatch = new QTableWidgetItem();
             swatch->setBackground(QBrush(toQColor(bl::get_biome_color(b))));
             swatch->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 0, swatch);
 
             // Name
-            auto *name = new QTableWidgetItem(QString::fromStdString(bl::get_biome_name(b)));
+            auto* name = new QTableWidgetItem(QString::fromStdString(bl::get_biome_name(b)));
             name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 1, name);
 
             // ID
-            auto *idItem = new QTableWidgetItem(QString::number(static_cast<int>(b)));
+            auto* idItem = new QTableWidgetItem(QString::number(static_cast<int>(b)));
             idItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 2, idItem);
         }

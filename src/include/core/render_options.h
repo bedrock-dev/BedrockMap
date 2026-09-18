@@ -76,11 +76,11 @@ struct MapFilter {
 
     void print() {
         LOG_F(INFO, "BlockList (%d)", block_black_mode_);
-        for (const auto &block : blocks_list_) {
+        for (const auto& block : blocks_list_) {
             LOG_F(INFO, " - %s", block.c_str());
         }
         LOG_F(INFO, "ActorList (%d)", actor_black_mode_);
-        for (const auto &actor : actors_list_) {
+        for (const auto& actor : actors_list_) {
             LOG_F(INFO, " - %s", actor.c_str());
         }
     }

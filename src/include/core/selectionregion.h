@@ -18,10 +18,10 @@ class SelectionRegion {
     bool isEmpty() const { return region_.isEmpty(); }
     void clear() { region_ = QRegion(); }
 
-    const QRegion &region() const { return region_; }
+    const QRegion& region() const { return region_; }
 
     /// Apply a rectangle (in chunk coordinates) using the current mode.
-    void applyRect(const QRect &chunkRect) {
+    void applyRect(const QRect& chunkRect) {
         QRegion r(chunkRect);
         switch (mode_) {
             case Mode::Replace:
@@ -38,7 +38,7 @@ class SelectionRegion {
 
     int chunkCount() const {
         int count = 0;
-        for (const auto &r : region_) count += r.width() * r.height();
+        for (const auto& r : region_) count += r.width() * r.height();
         return count;
     }
 

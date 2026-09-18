@@ -26,15 +26,15 @@ class FloatingToolBar : public QFrame {
         QVector<ButtonConfig> buttons;
     };
 
-    explicit FloatingToolBar(QWidget *parent = nullptr);
+    explicit FloatingToolBar(QWidget* parent = nullptr);
 
     /// Add a group of buttons. Returns the group index.
-    int addGroup(const GroupConfig &group);
+    int addGroup(const GroupConfig& group);
     void addSeparator();
     void clear();
 
     int groupCount() const { return groups_.size(); }
-    QToolButton *buttonAt(int groupIndex, int buttonIndex) const;
+    QToolButton* buttonAt(int groupIndex, int buttonIndex) const;
 
     void setButtonChecked(int groupIndex, int buttonIndex, bool checked);
     bool isButtonChecked(int groupIndex, int buttonIndex) const;
@@ -55,9 +55,9 @@ class FloatingToolBar : public QFrame {
     void buttonToggled(int groupIndex, int buttonIndex, bool checked);
 
    protected:
-    void resizeEvent(QResizeEvent *event) override;
-    void showEvent(QShowEvent *event) override;
-    bool eventFilter(QObject *obj, QEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
    private:
     void setupStyleSheet();
@@ -71,9 +71,9 @@ class FloatingToolBar : public QFrame {
     };
 
     QVector<GroupInfo> groups_;
-    QVector<QToolButton *> buttons_;
-    QVector<QWidget *> separators_;
-    QBoxLayout *layout_;
+    QVector<QToolButton*> buttons_;
+    QVector<QWidget*> separators_;
+    QBoxLayout* layout_;
     Qt::Orientation orientation_{Qt::Vertical};
     Qt::Alignment anchor_{Qt::AlignLeft | Qt::AlignVCenter};
     int margin_{8};

@@ -11,7 +11,7 @@ class TabPageWidget : public QWidget {
     Q_OBJECT
 
    public:
-    explicit TabPageWidget(QWidget *parent = nullptr);
+    explicit TabPageWidget(QWidget* parent = nullptr);
     ~TabPageWidget() override;
 
     /// Whether the page holds unsaved in-memory changes.

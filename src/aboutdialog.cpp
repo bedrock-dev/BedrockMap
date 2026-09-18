@@ -11,7 +11,7 @@
 #include "updatechecker.h"
 #include "updatedialog.h"
 
-AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent), ui(new Ui::AboutDialog), updater_(new UpdateChecker(this)) {
+AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog), updater_(new UpdateChecker(this)) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
     setWindowTitle(tr("aboutDialog.title.about") + " - " + constant::SOFTWARE_NAME.c_str());
@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent), ui(new Ui::AboutDia
     ui->name_version_label->setText(text);
 
     // Hyperlinks — URLs stay in code, display text via tr() for i18n
-    auto link = [](const QString &url, const QString &text) { return QString("<a href=\"%1\">%2</a>").arg(url, text); };
+    auto link = [](const QString& url, const QString& text) { return QString("<a href=\"%1\">%2</a>").arg(url, text); };
 
     ui->developer_link->setText(QString(tr("aboutDialog.developer")).arg(link(QStringLiteral("https://github.com/hhhxiao"), "hhhxiao")));
     ui->contributor_intzot_link->setText(link(QStringLiteral("https://space.bilibili.com/382492603"), "INTZOT"));
@@ -57,7 +57,7 @@ void AboutDialog::onCheckForUpdates() {
     updater_->checkForUpdates();
 }
 
-void AboutDialog::onUpdateAvailable(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl) {
+void AboutDialog::onUpdateAvailable(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl) {
     restoreCheckLink();
     UpdateDialog dlg(newVersion, releaseNotes, htmlUrl, this);
     dlg.exec();
@@ -68,7 +68,7 @@ void AboutDialog::onUpToDate() {
     QMessageBox::information(this, tr("aboutDialog.checkUpdate"), tr("updateChecker.upToDate"));
 }
 
-void AboutDialog::onCheckFailed(const QString &message) {
+void AboutDialog::onCheckFailed(const QString& message) {
     restoreCheckLink();
     QMessageBox::warning(this, tr("aboutDialog.checkUpdate"), tr("updateChecker.checkFailed").arg(message));
 }

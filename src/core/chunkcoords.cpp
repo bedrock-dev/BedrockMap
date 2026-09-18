@@ -21,11 +21,11 @@ void CoordsRegion::generateImage() const {
     image_ = std::move(image);
 }
 
-bool ChunkCoordsIndex::load(leveldb::DB *db, const std::atomic_bool &stop) {
+bool ChunkCoordsIndex::load(leveldb::DB* db, const std::atomic_bool& stop) {
     if (!db) return false;
 
     clear();
-    auto *iterator = db->NewIterator(leveldb::ReadOptions());
+    auto* iterator = db->NewIterator(leveldb::ReadOptions());
     for (iterator->SeekToFirst(); iterator->Valid(); iterator->Next()) {
         if (stop.load(std::memory_order_acquire)) {
             delete iterator;
@@ -49,24 +49,24 @@ bool ChunkCoordsIndex::load(leveldb::DB *db, const std::atomic_bool &stop) {
     }
     if (stop.load(std::memory_order_acquire)) return false;
 
-    for (auto &[dim, regions] : regions_by_dimension_) {
+    for (auto& [dim, regions] : regions_by_dimension_) {
         (void)dim;
-        for (auto &region : regions) region.generateImage();
+        for (auto& region : regions) region.generateImage();
     }
-    for (const auto &[dim, count] : dimensionCounts()) {
+    for (const auto& [dim, count] : dimensionCounts()) {
         LOG_F(INFO, "Preloaded chunk coordinates: dimension %d, %zu chunks", dim, count);
     }
     beginInteractivePhase();
     return true;
 }
 
-bool ChunkCoordsIndex::remove(const bl::chunk_pos &pos) {
+bool ChunkCoordsIndex::remove(const bl::chunk_pos& pos) {
     auto lock = lockForInteractive();
     if (!lock.owns_lock()) return false;
     return removeUnlocked(pos);
 }
 
-bool ChunkCoordsIndex::removeUnlocked(const bl::chunk_pos &pos) {
+bool ChunkCoordsIndex::removeUnlocked(const bl::chunk_pos& pos) {
     if (!validDimension(pos.dim)) return false;
     const auto dim_it = regions_by_dimension_.find(pos.dim);
     if (dim_it == regions_by_dimension_.end()) return false;
@@ -84,7 +84,7 @@ bool ChunkCoordsIndex::removeUnlocked(const bl::chunk_pos &pos) {
     return true;
 }
 
-bool ChunkCoordsIndex::updateChunk(const bl::chunk_pos &pos, bool present) {
+bool ChunkCoordsIndex::updateChunk(const bl::chunk_pos& pos, bool present) {
     auto lock = lockForInteractive();
     if (!lock.owns_lock()) return false;
     const bool changed = present ? insertUnlocked(pos) : removeUnlocked(pos);
@@ -101,7 +101,7 @@ bool ChunkCoordsIndex::updateChunk(const bl::chunk_pos &pos, bool present) {
     return true;
 }
 
-void ChunkCoordsIndex::enqueueUpdate(const bl::chunk_pos &pos, bool present, std::function<void()> finished) {
+void ChunkCoordsIndex::enqueueUpdate(const bl::chunk_pos& pos, bool present, std::function<void()> finished) {
     update_pool_.start(QRunnable::create([this, pos, present, finished = std::move(finished)]() mutable {
         updateChunk(pos, present);
         if (finished) finished();
@@ -112,7 +112,7 @@ void ChunkCoordsIndex::rebuildBoundingBox(int32_t dim) {
     ChunkCoordsBoundingBox bounds;
     const auto dim_it = regions_by_dimension_.find(dim);
     if (dim_it != regions_by_dimension_.end()) {
-        for (const auto &region : dim_it->second) {
+        for (const auto& region : dim_it->second) {
             region.forEachPresentChunk([&bounds](int32_t x, int32_t z) { bounds.include(bl::chunk_pos{x, z, 0}); });
         }
     }

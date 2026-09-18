@@ -3,7 +3,7 @@
 #include "resourcemanager.h"
 #include "ui_renderfilterdialog.h"
 
-RenderFilterDialog::RenderFilterDialog(QWidget *parent) : QDialog(parent), ui(new Ui::RenderFilterDialog) {
+RenderFilterDialog::RenderFilterDialog(QWidget* parent) : QDialog(parent), ui(new Ui::RenderFilterDialog) {
     ui->setupUi(this);
     this->setWindowTitle(tr("renderFilterDialog.title.filter"));
     this->setWindowIcon(QIcon(ToolBarIcon("filter")));
@@ -22,15 +22,15 @@ void RenderFilterDialog::fillInUI() {
     ui->actor_black_box->setChecked(this->filter_.actor_black_mode_);
 
     QStringList actor_list;
-    for (const auto &actor : this->filter_.actors_list_) actor_list << actor.c_str();
+    for (const auto& actor : this->filter_.actors_list_) actor_list << actor.c_str();
     ui->actor_text_edit->setPlainText(actor_list.join(','));
 
     QStringList block_list;
-    for (const auto &block : this->filter_.blocks_list_) block_list << block.c_str();
+    for (const auto& block : this->filter_.blocks_list_) block_list << block.c_str();
     ui->block_text_edit->setPlainText(block_list.join(','));
 
     QStringList biome_list;
-    for (const auto &biome : this->filter_.biomes_list_) biome_list << QString::number(biome);
+    for (const auto& biome : this->filter_.biomes_list_) biome_list << QString::number(biome);
     ui->biome_text_edit->setPlainText(biome_list.join(','));
 }
 
@@ -49,21 +49,21 @@ void RenderFilterDialog::collectFilerData() {
     this->filter_.biomes_list_.clear();
     this->filter_.actors_list_.clear();
 
-    for (const auto &b : blocks) {
+    for (const auto& b : blocks) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.blocks_list_.insert(s.toStdString());
     }
-    for (const auto &b : biomes) {
+    for (const auto& b : biomes) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.biomes_list_.insert(s.toInt());
     }
-    for (const auto &b : actors) {
+    for (const auto& b : actors) {
         auto s = b.trimmed();
         if (!s.isEmpty()) this->filter_.actors_list_.insert(s.toStdString());
     }
 }
 
-void RenderFilterDialog::on_current_layer_lineedit_textEdited(const QString &arg1) {
+void RenderFilterDialog::on_current_layer_lineedit_textEdited(const QString& arg1) {
     ui->layer_slider->setValue(ui->current_layer_lineedit->text().toInt());
 }
 

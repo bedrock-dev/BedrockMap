@@ -13,11 +13,11 @@ class UpdateDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit UpdateDialog(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl, QWidget *parent = nullptr);
+    explicit UpdateDialog(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl, QWidget* parent = nullptr);
     ~UpdateDialog() override;
 
    private:
-    Ui::UpdateDialog *ui;
+    Ui::UpdateDialog* ui;
     QString html_url_;
 };
 #endif  // BEDROCKMAP_UPDATEDIALOG_H

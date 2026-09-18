@@ -4,7 +4,7 @@
 
 #include "ui_gotopositiondialog.h"
 
-GoToPositionDialog::GoToPositionDialog(QWidget *parent) : QDialog(parent), ui(new Ui::GoToPositionDialog) {
+GoToPositionDialog::GoToPositionDialog(QWidget* parent) : QDialog(parent), ui(new Ui::GoToPositionDialog) {
     ui->setupUi(this);
     setWindowTitle(tr("goToPositionDialog.title.goto"));
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);

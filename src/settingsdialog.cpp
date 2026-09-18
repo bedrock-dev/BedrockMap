@@ -10,7 +10,7 @@
 #include "loguru/loguru.hpp"
 #include "ui_settingsdialog.h"
 
-SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::SettingsDialog) {
+SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::SettingsDialog) {
     ui->setupUi(this);
     this->setWindowTitle(tr("settingsDialog.title"));
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -34,7 +34,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->renderStyleCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::updateShadowOptions);
     connect(ui->loadGlobalDataCheck, &QCheckBox::toggled, this, &SettingsDialog::updateGlobalDataOptions);
     connect(ui->fontFamilyCombo, &QFontComboBox::currentFontChanged, this,
-            [this](const QFont &font) { ui->fontSizeSpin->setValue(font.pointSize()); });
+            [this](const QFont& font) { ui->fontSizeSpin->setValue(font.pointSize()); });
 
     // Init interdependent state
     updateShadowOptions();
@@ -51,27 +51,27 @@ SettingsDialog::~SettingsDialog() { delete ui; }
 void SettingsDialog::setupCategories() {
     ui->categoryTree->clear();
 
-    auto *guiItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* guiItem = new QTreeWidgetItem(ui->categoryTree);
     guiItem->setText(0, tr("settingsDialog.category.gui"));
     guiItem->setData(0, Qt::UserRole, 0);
 
-    auto *mapItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* mapItem = new QTreeWidgetItem(ui->categoryTree);
     mapItem->setText(0, tr("settingsDialog.category.map"));
     mapItem->setData(0, Qt::UserRole, 1);
 
-    auto *cacheItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* cacheItem = new QTreeWidgetItem(ui->categoryTree);
     cacheItem->setText(0, tr("settingsDialog.category.cache"));
     cacheItem->setData(0, Qt::UserRole, 2);
 
-    auto *miscItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* miscItem = new QTreeWidgetItem(ui->categoryTree);
     miscItem->setText(0, tr("settingsDialog.category.misc"));
     miscItem->setData(0, Qt::UserRole, 3);
 
-    auto *extraItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* extraItem = new QTreeWidgetItem(ui->categoryTree);
     extraItem->setText(0, tr("settingsDialog.category.extra"));
     extraItem->setData(0, Qt::UserRole, 4);
 
-    auto *langItem = new QTreeWidgetItem(ui->categoryTree);
+    auto* langItem = new QTreeWidgetItem(ui->categoryTree);
     langItem->setText(0, tr("settingsDialog.category.lang"));
     langItem->setData(0, Qt::UserRole, 5);
 }
@@ -144,7 +144,7 @@ void SettingsDialog::loadSettings() {
     ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
 }
 
-void SettingsDialog::onCategoryChanged(QTreeWidgetItem *current, QTreeWidgetItem * /*previous*/) {
+void SettingsDialog::onCategoryChanged(QTreeWidgetItem* current, QTreeWidgetItem* /*previous*/) {
     if (!current) return;
     int page = current->data(0, Qt::UserRole).toInt();
     ui->settingsStack->setCurrentIndex(page);
@@ -158,7 +158,7 @@ void SettingsDialog::onActorBorderColorPick() { onPickColor(ui->actorBorderColor
 
 void SettingsDialog::onChunkEditorColorPick() { onPickColor(ui->chunkEditorColorEdit); }
 
-void SettingsDialog::onPickColor(QLineEdit *edit) {
+void SettingsDialog::onPickColor(QLineEdit* edit) {
     QColor current(edit->text());
     QColor chosen = QColorDialog::getColor(current, this, tr("settingsDialog.colorPicker.title"));
     if (chosen.isValid()) {

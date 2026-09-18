@@ -13,10 +13,9 @@
 #include "msg.h"
 #include "resourcemanager.h"
 
+ImportOverlay::ImportOverlay(QWidget* parent, AsyncLevelLoader* loader) : QObject(parent), parent_(parent), loader_(loader) {}
 
-ImportOverlay::ImportOverlay(QWidget *parent, AsyncLevelLoader *loader) : QObject(parent), parent_(parent), loader_(loader) {}
-
-void ImportOverlay::startImport(const QString &filePath, uint8_t dim, const bl::chunk_pos &initialCp) {
+void ImportOverlay::startImport(const QString& filePath, uint8_t dim, const bl::chunk_pos& initialCp) {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
         LOG_F(WARNING, "ImportOverlay: cannot open file %s", filePath.toStdString().c_str());
@@ -28,13 +27,13 @@ void ImportOverlay::startImport(const QString &filePath, uint8_t dim, const bl::
     startPaste(rawData, dim, initialCp);
 }
 
-bool ImportOverlay::startPaste(const QByteArray &data, uint8_t dim, const bl::chunk_pos &initialCp) {
+bool ImportOverlay::startPaste(const QByteArray& data, uint8_t dim, const bl::chunk_pos& initialCp) {
     preview_ = ExportedRegion::deserialize(data.constData(), data.size());
     if (preview_.isEmpty()) return false;
 
     dim_ = dim;
     if (!preview_.chunks().empty()) {
-        auto &first = preview_.chunks().front();
+        auto& first = preview_.chunks().front();
         offset_.x = initialCp.x - first.pos().x;
         offset_.z = initialCp.z - first.pos().z;
     } else {
@@ -74,10 +73,10 @@ bool ImportOverlay::startPaste(const QByteArray &data, uint8_t dim, const bl::ch
     return true;
 }
 
-void ImportOverlay::handleMouseMove(const bl::chunk_pos &mouseCp) {
+void ImportOverlay::handleMouseMove(const bl::chunk_pos& mouseCp) {
     if (!mode_ || placed_) return;
     if (preview_.isEmpty()) return;
-    auto &first = preview_.chunks().front();
+    auto& first = preview_.chunks().front();
     offset_.x = mouseCp.x - first.pos().x;
     offset_.z = mouseCp.z - first.pos().z;
 }
@@ -102,11 +101,11 @@ bool ImportOverlay::handleKeyPress(int key) {
     return true;
 }
 
-void ImportOverlay::draw(QPainter *p, qreal scaleLevel) {
+void ImportOverlay::draw(QPainter* p, qreal scaleLevel) {
     if (!mode_ || preview_.isEmpty()) return;
 
     QPainterPath path;
-    for (const auto &chunk : preview_.chunks()) {
+    for (const auto& chunk : preview_.chunks()) {
         auto cp = chunk.pos();
         path.addRect(QRectF(static_cast<qreal>(cp.x + offset_.x), static_cast<qreal>(cp.z + offset_.z), 1.0, 1.0));
     }
@@ -130,7 +129,7 @@ void ImportOverlay::confirm() {
         return;
     }
 
-    for (auto &chunk : preview_.chunks()) {
+    for (auto& chunk : preview_.chunks()) {
         auto cp = chunk.pos();
         cp.x += offset_.x;
         cp.z += offset_.z;
@@ -140,7 +139,7 @@ void ImportOverlay::confirm() {
         chunk.set_pos(cp, &loader_->level());
     }
 
-    if (auto *map = qobject_cast<MapWidget *>(parent_)) {
+    if (auto* map = qobject_cast<MapWidget*>(parent_)) {
         map->applyImportedRegionAsync(preview_);
     } else {
         ChunkOperator::importRegion(preview_, *loader_);

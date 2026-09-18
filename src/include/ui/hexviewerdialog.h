@@ -4,7 +4,6 @@
 #include <QByteArray>
 #include <QDialog>
 
-
 class QHexView;
 
 // Reusable hex viewer/editor dialog. Use setReadOnly() to switch between
@@ -13,15 +12,15 @@ class HexViewerDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit HexViewerDialog(QWidget *parent = nullptr);
+    explicit HexViewerDialog(QWidget* parent = nullptr);
 
-    void setData(const QByteArray &data);
+    void setData(const QByteArray& data);
     [[nodiscard]] QByteArray getData() const;
 
     void setReadOnly(bool readOnly);
 
    private:
-    QHexView *hex_view_{nullptr};
+    QHexView* hex_view_{nullptr};
 };
 
 #endif  // BEDROCKMAP_HEXVIEWERDIALOG_H

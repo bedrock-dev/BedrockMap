@@ -22,7 +22,7 @@
 #include "mainwindow.h"
 #include "resourcemanager.h"
 
-void setupLog(int argc, char *argv[]) {
+void setupLog(int argc, char* argv[]) {
     namespace fs = std::filesystem;
     if (!fs::exists("./logs")) fs::create_directory("./logs");
 
@@ -35,8 +35,8 @@ void setupLog(int argc, char *argv[]) {
     loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
 }
 
-void setupTheme(QApplication &a) {
-    auto *hints = a.styleHints();
+void setupTheme(QApplication& a) {
+    auto* hints = a.styleHints();
     if (setting::current().COLOR_THEME == "dark") {
         hints->setColorScheme(Qt::ColorScheme::Dark);
     } else if (setting::current().COLOR_THEME == "light") {
@@ -46,7 +46,7 @@ void setupTheme(QApplication &a) {
     }
 }
 
-void setupFont(QApplication &a) {
+void setupFont(QApplication& a) {
     auto id = QFontDatabase::addApplicationFont(":/res/fonts/JetBrainsMono-Regular.ttf");
     if (id == -1) {
         LOG_F(WARNING, "Can not load font");
@@ -70,7 +70,7 @@ QString resolveLanguage() {
     return s.LANGUAGE;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     setupLog(argc, argv);
     LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
     crashhandler::install();

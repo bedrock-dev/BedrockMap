@@ -140,7 +140,7 @@ void MapWidget::copySelectionToClipboard(int dim) {
     if (selection_.isEmpty()) return;
     ExportedRegion region;
     auto sel = selection_.region();
-    for (const auto &r : sel) {
+    for (const auto& r : sel) {
         for (int x = r.x(); x < r.x() + r.width(); x++) {
             for (int z = r.y(); z < r.y() + r.height(); z++) {
                 auto raw = level_loader_->getRawChunk(bl::chunk_pos(x, z, dim));
@@ -150,9 +150,9 @@ void MapWidget::copySelectionToClipboard(int dim) {
     }
     if (region.isEmpty()) return;
     auto data = region.serialize();
-    auto *md = new QMimeData();
+    auto* md = new QMimeData();
     md->setData("application/x-bedrockmap-region", QByteArray(data.data(), static_cast<int>(data.size())));
-    auto *clip = QApplication::clipboard();
+    auto* clip = QApplication::clipboard();
     clip->clear(QClipboard::Clipboard);
     clip->setMimeData(md, QClipboard::Clipboard);
     LOG_F(INFO, "MapWidget: copied %d chunks to clipboard", static_cast<int>(region.chunkCount()));
@@ -160,8 +160,8 @@ void MapWidget::copySelectionToClipboard(int dim) {
 
 void MapWidget::pasteFromClipboard(int dim) {
     if (modificationBlocked()) return;
-    auto *clip = QApplication::clipboard();
-    const auto *md = clip->mimeData();
+    auto* clip = QApplication::clipboard();
+    const auto* md = clip->mimeData();
     if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
         WARN(msg::PASTE_NO_DATA());
         return;
@@ -187,7 +187,7 @@ void MapWidget::exportSelectionToFile(int dim) {
     INFO(msg::EXPORT_COMPLETE());
 }
 
-void MapWidget::exportSelectionToMcstructure(int dim, bool compress, bool exportEntities, const std::optional<bl::block_box> &blockBounds,
+void MapWidget::exportSelectionToMcstructure(int dim, bool compress, bool exportEntities, const std::optional<bl::block_box>& blockBounds,
                                              int32_t version) {
     if (selection_.isEmpty() || !level_loader_) return;
 
@@ -218,19 +218,19 @@ void MapWidget::importFromFile(int dim) {
 void MapWidget::deleteSelection(int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
     const auto region = selection_.region();
-    startChunkTask([this, region, dim](GuiTaskRunner * /*task*/) { ChunkOperator::deleteRegion(region, *level_loader_, dim); });
+    startChunkTask([this, region, dim](GuiTaskRunner* /*task*/) { ChunkOperator::deleteRegion(region, *level_loader_, dim); });
 }
 
 void MapWidget::createVoidSelection(int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
     const auto region = selection_.region();
-    startChunkTask([this, region, dim](GuiTaskRunner * /*task*/) { ChunkOperator::createVoid(region, *level_loader_, dim); });
+    startChunkTask([this, region, dim](GuiTaskRunner* /*task*/) { ChunkOperator::createVoid(region, *level_loader_, dim); });
 }
 
 void MapWidget::setSelectionBiome(int biome, int dim) {
     if (selection_.isEmpty() || modificationBlocked()) return;
     const auto region = selection_.region();
-    startChunkTask([this, region, biome, dim](GuiTaskRunner * /*task*/) {
+    startChunkTask([this, region, biome, dim](GuiTaskRunner* /*task*/) {
         ChunkOperator::setRegionBiome(region, *level_loader_, static_cast<bl::biome>(biome), dim);
     });
 }
@@ -244,7 +244,7 @@ bool MapWidget::startChunkTask(GuiTaskRunner::Worker worker) {
 void MapWidget::applyImportedRegionAsync(ExportedRegion region) {
     if (!level_loader_ || chunk_edit_task_.isRunning() || region.isEmpty()) return;
     startChunkTask(
-        [this, region = std::move(region)](GuiTaskRunner * /*task*/) mutable { ChunkOperator::importRegion(region, *level_loader_); });
+        [this, region = std::move(region)](GuiTaskRunner* /*task*/) mutable { ChunkOperator::importRegion(region, *level_loader_); });
 }
 
 bool MapWidget::modificationBlocked() {
@@ -264,4 +264,4 @@ void MapWidget::show3DView(int dim) {
 void MapWidget::syncToolbars() { emit syncToolbarsRequested(); }
 
 // show right-click context menu
-void MapWidget::showContextMenu(const QPoint &p) { ContextMenuBuilder::show(this, this, mapToGlobal(p)); }
+void MapWidget::showContextMenu(const QPoint& p) { ContextMenuBuilder::show(this, this, mapToGlobal(p)); }

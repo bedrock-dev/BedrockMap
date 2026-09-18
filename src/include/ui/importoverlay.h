@@ -15,21 +15,21 @@ class ImportOverlay : public QObject {
     Q_OBJECT
 
    public:
-    ImportOverlay(QWidget *parent, AsyncLevelLoader *loader);
+    ImportOverlay(QWidget* parent, AsyncLevelLoader* loader);
 
     bool active() const { return mode_; }
     bool placed() const { return placed_; }
 
     /// Load a .bchks file and start interactive placement.
     /// The preview's first chunk is anchored at initialCp.
-    void startImport(const QString &filePath, uint8_t dim, const bl::chunk_pos &initialCp);
+    void startImport(const QString& filePath, uint8_t dim, const bl::chunk_pos& initialCp);
 
     /// Start interactive placement from raw serialized data (for clipboard paste).
     /// Returns false if deserialization fails.
-    bool startPaste(const QByteArray &data, uint8_t dim, const bl::chunk_pos &initialCp);
+    bool startPaste(const QByteArray& data, uint8_t dim, const bl::chunk_pos& initialCp);
 
     /// Follow mouse movement (called from mouseMoveEvent)
-    void handleMouseMove(const bl::chunk_pos &mouseCp);
+    void handleMouseMove(const bl::chunk_pos& mouseCp);
 
     /// Left-click: place the preview and show confirm bar
     void handleLeftClick();
@@ -41,7 +41,7 @@ class ImportOverlay : public QObject {
     bool handleKeyPress(int key);
 
     /// Draw the preview overlay
-    void draw(QPainter *p, qreal scaleLevel);
+    void draw(QPainter* p, qreal scaleLevel);
 
     /// Reposition confirm bar on parent resize
     void resize(int parentW, int parentH);
@@ -57,15 +57,15 @@ class ImportOverlay : public QObject {
    private:
     void cleanup();
 
-    QWidget *parent_;
-    AsyncLevelLoader *loader_;
+    QWidget* parent_;
+    AsyncLevelLoader* loader_;
 
     bool mode_{false};
     bool placed_{false};
     uint8_t dim_{0};
     ExportedRegion preview_;
     bl::chunk_pos offset_{0, 0, 0};
-    FloatingToolBar *confirm_bar_{nullptr};
+    FloatingToolBar* confirm_bar_{nullptr};
 };
 
 #endif  // BEDROCKMAP_IMPORTOVERLAY_H

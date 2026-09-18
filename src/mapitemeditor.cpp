@@ -13,12 +13,12 @@
 
 // ─── ImageCropDialog implementation ───────────────────────────────────────────
 
-ImageCropDialog::ImageCropDialog(const QImage &source, QWidget *parent) : QDialog(parent), source_image_(source) {
+ImageCropDialog::ImageCropDialog(const QImage& source, QWidget* parent) : QDialog(parent), source_image_(source) {
     setWindowTitle(tr("imageCropDialog.title.cropImage"));
     setMinimumSize(400, 350);
     resize(640, 560);
 
-    auto *layout = new QVBoxLayout(this);
+    auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     // central preview widget — we paint on the dialog itself
@@ -74,7 +74,7 @@ void ImageCropDialog::fitCropToImage(bool initial) {
     update();
 }
 
-void ImageCropDialog::paintEvent(QPaintEvent *) {
+void ImageCropDialog::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, false);
 
@@ -102,7 +102,7 @@ void ImageCropDialog::paintEvent(QPaintEvent *) {
     p.drawRect(r);
 }
 
-ImageCropDialog::HitZone ImageCropDialog::hitTest(const QPointF &pos) const {
+ImageCropDialog::HitZone ImageCropDialog::hitTest(const QPointF& pos) const {
     if (crop_rect_.isEmpty()) return HitZone::Interior;
     QRectF r = crop_rect_.translated(img_offset_);
     int m = HANDLE_MARGIN;
@@ -126,14 +126,14 @@ ImageCropDialog::HitZone ImageCropDialog::hitTest(const QPointF &pos) const {
     return HitZone::None;
 }
 
-void ImageCropDialog::mousePressEvent(QMouseEvent *event) {
+void ImageCropDialog::mousePressEvent(QMouseEvent* event) {
     if (event->button() != Qt::LeftButton) return;
     last_mouse_pos_ = event->position();
     drag_zone_ = hitTest(event->position());
     if (drag_zone_ != HitZone::None) dragging_ = true;
 }
 
-void ImageCropDialog::mouseMoveEvent(QMouseEvent *event) {
+void ImageCropDialog::mouseMoveEvent(QMouseEvent* event) {
     QPointF delta = event->position() - last_mouse_pos_;
     last_mouse_pos_ = event->position();
 
@@ -169,7 +169,7 @@ void ImageCropDialog::mouseMoveEvent(QMouseEvent *event) {
     auto clampX = [this](double val) { return std::clamp(val, 0.0, static_cast<double>(display_image_.width())); };
     auto clampY = [this](double val) { return std::clamp(val, 0.0, static_cast<double>(display_image_.height())); };
 
-    auto &r = crop_rect_;
+    auto& r = crop_rect_;
 
     switch (drag_zone_) {
         case HitZone::Interior:
@@ -218,13 +218,13 @@ void ImageCropDialog::mouseMoveEvent(QMouseEvent *event) {
     update();
 }
 
-void ImageCropDialog::mouseReleaseEvent(QMouseEvent *event) {
+void ImageCropDialog::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() != Qt::LeftButton) return;
     dragging_ = false;
     drag_zone_ = HitZone::None;
 }
 
-void ImageCropDialog::wheelEvent(QWheelEvent *event) {
+void ImageCropDialog::wheelEvent(QWheelEvent* event) {
     double scale = (event->angleDelta().y() > 0) ? 1.05 : 0.95;
     double cx = crop_rect_.center().x();
     double cy = crop_rect_.center().y();
@@ -236,7 +236,7 @@ void ImageCropDialog::wheelEvent(QWheelEvent *event) {
     update();
 }
 
-void ImageCropDialog::resizeEvent(QResizeEvent *) { fitCropToImage(false); }
+void ImageCropDialog::resizeEvent(QResizeEvent*) { fitCropToImage(false); }
 
 // Keep crop rect within display image bounds and enforce square + min size.
 // Call after display_image_ size changes (resize, fit) or after crop editing.
@@ -250,7 +250,7 @@ void ImageCropDialog::clampCropRect() {
     crop_rect_.moveTop(std::max(0.0, std::min(crop_rect_.top(), maxH - side)));
 }
 
-MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent), ui(new Ui::MapItemEditor) {
+MapItemEditor::MapItemEditor(QWidget* parent) : QWidget(parent), ui(new Ui::MapItemEditor) {
     ui->setupUi(this);
     this->setWindowTitle(tr("mapItemEditor.title.mapItemEditor"));
     this->map_nbt_editor_ = new NbtWidget(this);
@@ -260,9 +260,9 @@ MapItemEditor::MapItemEditor(QWidget *parent) : QWidget(parent), ui(new Ui::MapI
     ui->splitter->setStretchFactor(1, 1);
     this->img = QImage(128, 128, QImage::Format_RGBA8888);
     img.fill(QColor(0, 0, 0, 0));
-    this->map_nbt_editor_->setExtraLoadEvent([this](bl::nbt::compound_tag *root) {
+    this->map_nbt_editor_->setExtraLoadEvent([this](bl::nbt::compound_tag* root) {
         if (!root) return;
-        auto *color_tag = dynamic_cast<bl::nbt::byte_array_tag *>(root->get("colors"));
+        auto* color_tag = dynamic_cast<bl::nbt::byte_array_tag*>(root->get("colors"));
         if (!color_tag || color_tag->value.size() != 65536) return;
         this->img = QImage(128, 128, QImage::Format_RGBA8888);
         for (int y = 0; y < 128; y++) {
@@ -281,16 +281,16 @@ MapItemEditor::~MapItemEditor() {
     delete ui;
 }
 
-void MapItemEditor::load_map_data(const bl::general_kv_nbts &data) {
-    std::vector<NBTListItem *> items;
-    for (auto &kv : data.data()) {
-        auto *it = NBTListItem::from(dynamic_cast<bl::nbt::compound_tag *>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
+void MapItemEditor::load_map_data(const bl::general_kv_nbts& data) {
+    std::vector<NBTListItem*> items;
+    for (auto& kv : data.data()) {
+        auto* it = NBTListItem::from(dynamic_cast<bl::nbt::compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
         items.push_back(it);
     }
     this->map_nbt_editor_->loadNewData(items);
 }
 
-void MapItemEditor::paintEvent(QPaintEvent *event) {
+void MapItemEditor::paintEvent(QPaintEvent* event) {
     int w = ui->image_widget->width();
     int h = ui->image_widget->height();
     int MAP_WIDTH = std::min(w, h) - 20;
@@ -334,9 +334,9 @@ void MapItemEditor::on_change_map_btn_clicked() {
     if (cropped.isNull()) return;
     this->img = cropped;
 
-    auto *it = this->map_nbt_editor_->openedItem();
+    auto* it = this->map_nbt_editor_->openedItem();
     if (!it || !it->root_) return;
-    auto *color_tag = dynamic_cast<bl::nbt::byte_array_tag *>(it->root_->get("colors"));
+    auto* color_tag = dynamic_cast<bl::nbt::byte_array_tag*>(it->root_->get("colors"));
     if (!color_tag) {
         LOG_F(ERROR, "Can not find colors node, cancelled");
         return;

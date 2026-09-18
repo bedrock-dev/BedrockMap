@@ -15,8 +15,8 @@
 #include "mapwidget.h"
 #include "msg.h"
 
-void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globalPos) {
-    auto *cb = QApplication::clipboard();
+void ContextMenuBuilder::show(QWidget* parent, MapWidget* w, const QPoint& globalPos) {
+    auto* cb = QApplication::clipboard();
     QMenu menu(parent);
 
     auto localPos = w->mapFromGlobal(globalPos);
@@ -34,7 +34,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     if (insideSelection) {
         menu.addAction(QObject::tr("mapWidget.rightMenu.unselect"), [w] { w->clearSelection(); });
 
-        auto *selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
+        auto* selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"), [w, dim] { w->deleteSelection(dim); });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"), [w, dim] { w->createVoidSelection(dim); });
         selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w, dim] {
@@ -50,12 +50,12 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     }
 
     // Paste — always check clipboard, show only if data available
-    const auto *pasteMd = cb->mimeData();
+    const auto* pasteMd = cb->mimeData();
     if (pasteMd && pasteMd->hasFormat("application/x-bedrockmap-region") && !pasteMd->data("application/x-bedrockmap-region").isEmpty()) {
         menu.addAction(QObject::tr("mapWidget.rightMenu.paste"), [w, clickChunk, dim] {
             if (w->modificationBlocked()) return;
-            auto *clip = QApplication::clipboard();
-            const auto *md = clip->mimeData();
+            auto* clip = QApplication::clipboard();
+            const auto* md = clip->mimeData();
             if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
                 WARN(msg::PASTE_NO_DATA());
                 return;
@@ -84,7 +84,7 @@ void ContextMenuBuilder::show(QWidget *parent, MapWidget *w, const QPoint &globa
     menu.addSeparator();
 
     // === Group 3: Copy info ===
-    auto *copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
+    auto* copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
     auto blockName = w->level_loader_->getBlockName(cursorPos, w->option_.dim);
     copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBlockName") + QString(blockName.c_str()),
                         [cb, blockName] { cb->setText(QString::fromStdString(blockName)); });

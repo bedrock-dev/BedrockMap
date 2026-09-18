@@ -15,7 +15,7 @@
 
 namespace {
 
-    bool writeLevelDatAtomically(const std::string &fileName, const std::string &data) {
+    bool writeLevelDatAtomically(const std::string& fileName, const std::string& data) {
         namespace fs = std::filesystem;
         const fs::path target(fileName);
         fs::path temporary = target;
@@ -59,7 +59,7 @@ namespace {
 
 }  // namespace
 
-bl::chunk *ChunkStorage::getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy) {
+bl::chunk* ChunkStorage::getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (cache_.hasChunk(pos)) return cache_.getChunk(pos, policy);
@@ -67,7 +67,7 @@ bl::chunk *ChunkStorage::getChunk(const bl::chunk_pos &pos, bl::chunk_load_polic
     return level_.get_chunk(pos, policy);
 }
 
-std::optional<bl::raw_chunk> ChunkStorage::getRawChunk(const bl::chunk_pos &pos) {
+std::optional<bl::raw_chunk> ChunkStorage::getRawChunk(const bl::chunk_pos& pos) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (cache_.hasChunk(pos)) return cache_.getRawChunk(pos);
@@ -77,24 +77,24 @@ std::optional<bl::raw_chunk> ChunkStorage::getRawChunk(const bl::chunk_pos &pos)
     return std::nullopt;
 }
 
-void ChunkStorage::putMissing(const bl::chunk_pos &pos) {
+void ChunkStorage::putMissing(const bl::chunk_pos& pos) {
     std::lock_guard<std::mutex> lock(mutex_);
     cache_.putMissing(level_, pos);
 }
 
-void ChunkStorage::putRawChunk(const bl::raw_chunk &raw) {
+void ChunkStorage::putRawChunk(const bl::raw_chunk& raw) {
     std::lock_guard<std::mutex> lock(mutex_);
     cache_.putChunk(raw.pos(), raw);
 }
 
-bool ChunkStorage::commit(const std::unordered_map<std::string, std::string> &globalModifies, const bl::nbt::compound_tag *levelDat) {
+bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat) {
     std::lock_guard<std::mutex> lock(mutex_);
     last_commit_error_ = CommitError::None;
     if (cache_.empty() && globalModifies.empty() && !levelDat) return true;
 
     leveldb::WriteBatch batch;
     if (!cache_.empty()) cache_.commit(batch);
-    for (const auto &kv : globalModifies) {
+    for (const auto& kv : globalModifies) {
         if (kv.second.empty()) {
             batch.Delete(kv.first);
         } else {
@@ -107,7 +107,7 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string> &gl
     std::string levelDatRaw;
     std::unique_ptr<bl::nbt::compound_tag> levelDatCopy;
     if (levelDat) {
-        levelDatCopy.reset(dynamic_cast<bl::nbt::compound_tag *>(levelDat->copy()));
+        levelDatCopy.reset(dynamic_cast<bl::nbt::compound_tag*>(levelDat->copy()));
         if (!levelDatCopy) {
             last_commit_error_ = CommitError::LevelDatSerialization;
             LOG_F(ERROR, "Failed to copy level.dat NBT before commit");

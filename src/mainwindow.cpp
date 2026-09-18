@@ -41,7 +41,7 @@ namespace {
 
 }  // namespace
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     setAcceptDrops(true);
     qApp->installEventFilter(this);
 
@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // QOpenGLWidget child that is created before the window is shown, so the
     // main window is born as OpenGLSurface and later embedding a voxel view in
     // a tab does not trigger a window recreation.
-    auto *gl_warmup = new QOpenGLWidget(this);
+    auto* gl_warmup = new QOpenGLWidget(this);
     gl_warmup->hide();
 
     setGeometry(centerMainWindowGeometry(0.6));
@@ -76,14 +76,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() { qApp->removeEventFilter(this); }
 
-void MainWindow::onUpdateAvailable(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl) {
+void MainWindow::onUpdateAvailable(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl) {
     UpdateDialog dlg(newVersion, releaseNotes, htmlUrl, this);
     dlg.exec();
 }
 
 void MainWindow::setupUI() {
-    auto *cw = new QWidget(this);
-    auto *layout = new QVBoxLayout(cw);
+    auto* cw = new QWidget(this);
+    auto* layout = new QVBoxLayout(cw);
     layout->setContentsMargins(4, 4, 4, 4);
     layout->setSpacing(2);
     cw->setLayout(layout);
@@ -250,13 +250,13 @@ void MainWindow::setupMenuActions() {
     connect(action_open_file_, &QAction::triggered, this, &MainWindow::openFile);
 
     connect(action_new_nbt_, &QAction::triggered, this, [this]() { level_tab_widget_->openNewNbtFile(); });
-    connect(level_tab_widget_, &LevelTabWidget::dataFileSaved, this, [this](const QString &path) {
+    connect(level_tab_widget_, &LevelTabWidget::dataFileSaved, this, [this](const QString& path) {
         level_path_mgr_.addRecentPath(path);
         rebuildRecentMenu();
     });
     connect(action_save_, &QAction::triggered, this, [this]() {
         // Save the current tab (world page or data-file page such as .nbt).
-        auto *page = qobject_cast<TabPageWidget *>(level_tab_widget_->currentWidget());
+        auto* page = qobject_cast<TabPageWidget*>(level_tab_widget_->currentWidget());
         if (page && page->isDirty()) {
             page->commit();
         }
@@ -266,7 +266,7 @@ void MainWindow::setupMenuActions() {
 
     // Tools
     connect(action_goto_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->gotoPositionAction();
+        if (auto* w = getCurrentMapWidget()) w->gotoPositionAction();
     });
     connect(action_levelDB_, &QAction::triggered, this, [this]() { this->level_tab_widget_->openLevelDBDebugDialog(); });
     connect(action_settings_, &QAction::triggered, this, [this]() {
@@ -277,59 +277,59 @@ void MainWindow::setupMenuActions() {
     // Layers
     using Mr = RenderOption;
     connect(action_layers_grid_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::Grid);
             w->syncToolbars();
         }
     });
     connect(action_layers_coords_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::Coords);
             w->syncToolbars();
         }
     });
     connect(action_layers_overworld_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setDim(Mr::OverWorld);
             w->syncToolbars();
         }
     });
     connect(action_layers_nether_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setDim(Mr::Nether);
             w->syncToolbars();
         }
     });
     connect(action_layers_end_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setDim(Mr::TheEnd);
             w->syncToolbars();
         }
     });
     connect(action_layers_custom_dim_, &QAction::triggered, this, [this]() {
-        auto *w = getCurrentMapWidget();
+        auto* w = getCurrentMapWidget();
         if (!w) return;
-        auto *loader = w->getLevelLoader();
+        auto* loader = w->getLevelLoader();
         if (!loader) return;
-        const auto &dimTable = loader->level().custom_dimension_table();
+        const auto& dimTable = loader->level().custom_dimension_table();
         if (dimTable.empty()) {
             QMessageBox::information(this, tr("mainWindow.customDim"), tr("mainWindow.customDim.empty"));
             return;
         }
         QDialog dlg(this);
         dlg.setWindowTitle(tr("mainWindow.customDim"));
-        auto *layout = new QVBoxLayout(&dlg);
-        auto *list = new QListWidget(&dlg);
+        auto* layout = new QVBoxLayout(&dlg);
+        auto* list = new QListWidget(&dlg);
         list->setSelectionMode(QAbstractItemView::SingleSelection);
         std::vector<int> dimIds;
-        for (const auto &[name, id] : dimTable) {
+        for (const auto& [name, id] : dimTable) {
             list->addItem(QString("%1 (ID: %2)").arg(QString::fromStdString(name)).arg(id));
             dimIds.push_back(id);
         }
         list->setCurrentRow(0);
         layout->addWidget(list);
         layout->setContentsMargins({2, 2, 2, 2});
-        auto *btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+        auto* btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
         connect(btnBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
         connect(btnBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
         layout->addWidget(btnBox);
@@ -340,104 +340,104 @@ void MainWindow::setupMenuActions() {
         }
     });
     connect(action_layers_terrain_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setLayer(Mr::Terrain);
             w->syncToolbars();
         }
     });
     connect(action_layers_biome_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setLayer(Mr::Biome);
             w->syncToolbars();
         }
     });
     connect(action_layers_slime_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::SlimeChunk);
             w->syncToolbars();
         }
     });
     connect(action_layers_actors_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::Actors);
             w->syncToolbars();
         }
     });
     connect(action_layers_village_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::Village);
             w->syncToolbars();
         }
     });
     connect(action_layers_hsa_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleOther(Mr::HSA);
             w->syncToolbars();
         }
     });
     connect(action_transparent_void_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->toggleTransparentVoid();
             w->syncToolbars();
         }
     });
     connect(action_layers_filter_, &QAction::triggered, this, [this]() { level_tab_widget_->onMapOpenFilterDialog(); });
     connect(action_debug_, &QAction::triggered, this, [this]() {
-        auto *w = getCurrentMapWidget();
+        auto* w = getCurrentMapWidget();
         if (!w) return;
         w->setDrawDebug(!w->isDebugEnabled());
         w->syncToolbars();
     });
     connect(action_coords_minimap_, &QAction::triggered, this, [this]() {
-        auto *w = getCurrentMapWidget();
+        auto* w = getCurrentMapWidget();
         if (!w) return;
         w->toggleCoordsMiniMap();
     });
 
     // Selection
     connect(action_sel_replace_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setSelectionMode(SelectionController::Mode::Replace);
             w->syncToolbars();
         }
     });
     connect(action_sel_add_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setSelectionMode(SelectionController::Mode::Add);
             w->syncToolbars();
         }
     });
     connect(action_sel_subtract_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) {
+        if (auto* w = getCurrentMapWidget()) {
             w->setSelectionMode(SelectionController::Mode::Subtract);
             w->syncToolbars();
         }
     });
     connect(action_sel_clear_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->clearSelection();
+        if (auto* w = getCurrentMapWidget()) w->clearSelection();
     });
 
     // Chunk
     connect(action_ch_copy_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->copySelectionToClipboard(w->renderOption().dim);
+        if (auto* w = getCurrentMapWidget()) w->copySelectionToClipboard(w->renderOption().dim);
     });
     connect(action_ch_paste_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->pasteFromClipboard(w->renderOption().dim);
+        if (auto* w = getCurrentMapWidget()) w->pasteFromClipboard(w->renderOption().dim);
     });
     connect(action_ch_export_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->exportSelectionToFile(w->renderOption().dim);
+        if (auto* w = getCurrentMapWidget()) w->exportSelectionToFile(w->renderOption().dim);
     });
     connect(action_ch_import_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->importFromFile(w->renderOption().dim);
+        if (auto* w = getCurrentMapWidget()) w->importFromFile(w->renderOption().dim);
     });
     connect(action_ch_delete_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->deleteSelection(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto* w = getCurrentMapWidget()) w->deleteSelection(static_cast<uint8_t>(w->renderOption().dim));
     });
     connect(action_ch_void_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->createVoidSelection(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto* w = getCurrentMapWidget()) w->createVoidSelection(static_cast<uint8_t>(w->renderOption().dim));
     });
     connect(action_ch_biome_, &QAction::triggered, this, [this]() {
-        auto *w = getCurrentMapWidget();
+        auto* w = getCurrentMapWidget();
         if (!w || w->selection().isEmpty()) return;
         BiomePickerDialog dlg(w);
         if (dlg.exec() == QDialog::Accepted) {
@@ -445,19 +445,17 @@ void MainWindow::setupMenuActions() {
         }
     });
     connect(action_ch_screenshot_, &QAction::triggered, this, [this]() {
-        if (auto *w = getCurrentMapWidget()) w->saveSelectionImage();
+        if (auto* w = getCurrentMapWidget()) w->saveSelectionImage();
     });
     connect(action_ch_3d_, &QAction::triggered, this, [this]() {
-        auto *w = getCurrentMapWidget();
+        auto* w = getCurrentMapWidget();
         if (!w) return;
         w->show3DView(static_cast<uint8_t>(w->renderOption().dim));
     });
 
     // Help
-    connect(action_help_, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl("https://bedrock-dev.github.io/bm/")); });
-    connect(action_join_qq_group_, &QAction::triggered, this,
-            []() { QDesktopServices::openUrl(QUrl("https://qm.qq.com/q/3KJZZCkDbW")); });
+    connect(action_help_, &QAction::triggered, this, []() { QDesktopServices::openUrl(QUrl("https://bedrock-dev.github.io/bm/")); });
+    connect(action_join_qq_group_, &QAction::triggered, this, []() { QDesktopServices::openUrl(QUrl("https://qm.qq.com/q/3KJZZCkDbW")); });
     connect(action_feedback_, &QAction::triggered, this,
             []() { QDesktopServices::openUrl(QUrl("https://github.com/bedrock-dev/BedrockMap/issues")); });
     connect(action_about_, &QAction::triggered, this, [&]() { about_dialog_->exec(); });
@@ -465,10 +463,10 @@ void MainWindow::setupMenuActions() {
 
 void MainWindow::setupWelcomeTabActions() {
     LOG_F(INFO, "MainWindow::setupWelcomeTabActions start");
-    auto *wt = level_tab_widget_->welcomeTab();
+    auto* wt = level_tab_widget_->welcomeTab();
 
     // clicking any world item (recent / release / preview) opens the level
-    connect(wt, &WorldListTab::openLevelRequested, this, [this](const QString &path) {
+    connect(wt, &WorldListTab::openLevelRequested, this, [this](const QString& path) {
         LOG_F(INFO, "WorldListTab openLevelRequested path=%s", path.toStdString().c_str());
         if (openDataFile(path)) {
             level_path_mgr_.addRecentPath(path);
@@ -494,11 +492,11 @@ void MainWindow::rebuildRecentMenu() {
     recent_menu_->clear();
     auto paths = level_path_mgr_.recentPaths();
     if (paths.isEmpty()) {
-        auto *a = recent_menu_->addAction(tr("mainWindow.menu.emptyRecent"));
+        auto* a = recent_menu_->addAction(tr("mainWindow.menu.emptyRecent"));
         a->setEnabled(false);
     } else {
-        for (const auto &path : paths) {
-            auto *a = recent_menu_->addAction(path);
+        for (const auto& path : paths) {
+            auto* a = recent_menu_->addAction(path);
             connect(a, &QAction::triggered, this, [this, path]() {
                 if (openDataFile(path)) {
                     level_path_mgr_.addRecentPath(path);
@@ -515,7 +513,7 @@ void MainWindow::rebuildRecentMenu() {
     }
 }
 
-void MainWindow::openLevel(const QString &startPath) {
+void MainWindow::openLevel(const QString& startPath) {
     auto path = startPath;
     if (path.isEmpty()) path = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)[0] + constant::MCBE_LEVEL_PATH;
     QString root = QFileDialog::getExistingDirectory(this, "", path, QFileDialog::ShowDirsOnly);
@@ -534,7 +532,7 @@ void MainWindow::openFile() {
     }
 }
 
-bool MainWindow::openDataFile(const QString &path) {
+bool MainWindow::openDataFile(const QString& path) {
     if (path.endsWith(".mcstructure", Qt::CaseInsensitive)) {
         return level_tab_widget_->openMcstructure(path);
     }
@@ -544,7 +542,7 @@ bool MainWindow::openDataFile(const QString &path) {
     return false;
 }
 
-bool MainWindow::canOpenDroppedPath(const QString &path) const {
+bool MainWindow::canOpenDroppedPath(const QString& path) const {
     const QFileInfo info(path);
     if (!info.exists()) return false;
     if (info.isDir()) return true;
@@ -553,7 +551,7 @@ bool MainWindow::canOpenDroppedPath(const QString &path) const {
            path.endsWith(QStringLiteral(".nbt"), Qt::CaseInsensitive) || path.endsWith(QStringLiteral(".nbts"), Qt::CaseInsensitive);
 }
 
-void MainWindow::openDroppedPath(const QString &path) {
+void MainWindow::openDroppedPath(const QString& path) {
     const QFileInfo info(path);
     if (info.isDir()) {
         level_tab_widget_->openNewLevel(path);
@@ -568,11 +566,11 @@ void MainWindow::openDroppedPath(const QString &path) {
     }
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
     if (!handleDragEnter(event)) event->ignore();
 }
 
-void MainWindow::dragMoveEvent(QDragMoveEvent *event) {
+void MainWindow::dragMoveEvent(QDragMoveEvent* event) {
     if (hasOpenableDrop(event->mimeData())) {
         event->acceptProposedAction();
     } else {
@@ -580,51 +578,51 @@ void MainWindow::dragMoveEvent(QDragMoveEvent *event) {
     }
 }
 
-void MainWindow::dropEvent(QDropEvent *event) {
+void MainWindow::dropEvent(QDropEvent* event) {
     if (!handleDrop(event)) event->ignore();
 }
 
-bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
-    auto *widget = qobject_cast<QWidget *>(watched);
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+    auto* widget = qobject_cast<QWidget*>(watched);
     if (!widget || (widget != this && !isAncestorOf(widget))) return QMainWindow::eventFilter(watched, event);
 
     if (event->type() == QEvent::DragEnter) {
-        auto *dragEvent = static_cast<QDragEnterEvent *>(event);
+        auto* dragEvent = static_cast<QDragEnterEvent*>(event);
         if (handleDragEnter(dragEvent)) return true;
     } else if (event->type() == QEvent::DragMove) {
-        auto *dragEvent = static_cast<QDragMoveEvent *>(event);
+        auto* dragEvent = static_cast<QDragMoveEvent*>(event);
         if (hasOpenableDrop(dragEvent->mimeData())) {
             dragEvent->acceptProposedAction();
             return true;
         }
     } else if (event->type() == QEvent::Drop) {
-        auto *dropEvent = static_cast<QDropEvent *>(event);
+        auto* dropEvent = static_cast<QDropEvent*>(event);
         if (handleDrop(dropEvent)) return true;
     }
     return QMainWindow::eventFilter(watched, event);
 }
 
-bool MainWindow::hasOpenableDrop(const QMimeData *mimeData) const {
+bool MainWindow::hasOpenableDrop(const QMimeData* mimeData) const {
     if (!mimeData || !mimeData->hasUrls()) return false;
-    for (const auto &url : mimeData->urls()) {
+    for (const auto& url : mimeData->urls()) {
         if (url.isLocalFile() && canOpenDroppedPath(url.toLocalFile())) return true;
     }
     return false;
 }
 
-bool MainWindow::handleDragEnter(QDragEnterEvent *event) {
+bool MainWindow::handleDragEnter(QDragEnterEvent* event) {
     if (!hasOpenableDrop(event->mimeData())) return false;
     event->acceptProposedAction();
     return true;
 }
 
-bool MainWindow::handleDrop(QDropEvent *event) {
+bool MainWindow::handleDrop(QDropEvent* event) {
     if (!event->mimeData()->hasUrls()) {
         return false;
     }
 
     bool openedAny = false;
-    for (const auto &url : event->mimeData()->urls()) {
+    for (const auto& url : event->mimeData()->urls()) {
         if (!url.isLocalFile()) continue;
         const auto path = url.toLocalFile();
         if (!canOpenDroppedPath(path)) continue;
@@ -642,7 +640,7 @@ bool MainWindow::handleDrop(QDropEvent *event) {
 
 void MainWindow::close_and_exit() { this->close(); }
 
-void MainWindow::closeEvent(QCloseEvent *event) {
+void MainWindow::closeEvent(QCloseEvent* event) {
     if (!level_tab_widget_->confirmCloseAllLevels()) {
         event->ignore();
         return;
@@ -652,8 +650,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 QString MainWindow::getStaticTitle() { return constant::VERSION_STRING(); }
 
-MapWidget *MainWindow::getCurrentMapWidget() {
-    auto *page = level_tab_widget_->currentLevelPage();
+MapWidget* MainWindow::getCurrentMapWidget() {
+    auto* page = level_tab_widget_->currentLevelPage();
     if (!page) return nullptr;
     return page->getMapWidget();
 }

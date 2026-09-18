@@ -11,7 +11,7 @@
 #include "msg.h"
 #include "ui_newlevelform.h"
 
-NewLevelForm::NewLevelForm(QWidget *parent) : QDialog(parent), ui(new Ui::NewLevelForm) {
+NewLevelForm::NewLevelForm(QWidget* parent) : QDialog(parent), ui(new Ui::NewLevelForm) {
     ui->setupUi(this);
 
     // version input validation: 1.x.y or 1.x.y.z, each segment not starting with 0
@@ -49,7 +49,7 @@ NewLevelForm::NewLevelForm(QWidget *parent) : QDialog(parent), ui(new Ui::NewLev
         int row = ui->block_table->rowCount();
         ui->block_table->insertRow(row);
         ui->block_table->setItem(row, 0, new QTableWidgetItem());
-        auto *countItem = new QTableWidgetItem();
+        auto* countItem = new QTableWidgetItem();
         countItem->setData(Qt::DisplayRole, 1);
         ui->block_table->setItem(row, 1, countItem);
     });
@@ -57,7 +57,7 @@ NewLevelForm::NewLevelForm(QWidget *parent) : QDialog(parent), ui(new Ui::NewLev
     // block name changed → update row color
     auto updateBlockRowColor = [this](int row) {
         return;
-        auto *item = ui->block_table->item(row, 0);
+        auto* item = ui->block_table->item(row, 0);
         if (!item || item->text().trimmed().isEmpty()) return;
         auto name = item->text().trimmed().toStdString();
         if (name.find(':') == std::string::npos) {
@@ -78,8 +78,8 @@ NewLevelForm::NewLevelForm(QWidget *parent) : QDialog(parent), ui(new Ui::NewLev
     connect(ui->del_btn, &QPushButton::clicked, this, [this]() {
         auto rows = ui->block_table->selectionModel()->selectedRows();
         // remove from bottom to keep indices valid
-        std::sort(rows.begin(), rows.end(), [](const QModelIndex &a, const QModelIndex &b) { return a.row() > b.row(); });
-        for (const auto &idx : rows) {
+        std::sort(rows.begin(), rows.end(), [](const QModelIndex& a, const QModelIndex& b) { return a.row() > b.row(); });
+        for (const auto& idx : rows) {
             ui->block_table->removeRow(idx.row());
         }
     });
@@ -121,8 +121,8 @@ NewLevelParams NewLevelForm::params() const {
 
     QStringList parts;
     for (int i = 0; i < ui->block_table->rowCount(); i++) {
-        auto *nameItem = ui->block_table->item(i, 0);
-        auto *countItem = ui->block_table->item(i, 1);
+        auto* nameItem = ui->block_table->item(i, 0);
+        auto* countItem = ui->block_table->item(i, 1);
         if (nameItem && !nameItem->text().isEmpty()) {
             int count = countItem ? countItem->data(Qt::DisplayRole).toInt() : 1;
             p.flatBlocks.append(qMakePair(nameItem->text().trimmed(), count));

@@ -25,9 +25,9 @@ class LevelStatusBar : public QWidget {
     Q_OBJECT
 
    public:
-    LevelStatusBar(QWidget *parent);
+    LevelStatusBar(QWidget* parent);
 
-    void setStatus(const QString &status) { status_msg_->setText(status); }
+    void setStatus(const QString& status) { status_msg_->setText(status); }
     void setCoordsLoading(bool loading) {
         coords_loading_->setVisible(loading);
         if (loading) coords_loading_->setText("Loading global coordinates...");
@@ -39,18 +39,18 @@ class LevelStatusBar : public QWidget {
     void onPosChanged(int x, int z, int dim);
 
    private:
-    QLabel *pos_;
-    QLabel *status_msg_;
-    QLabel *coords_loading_;
-    QLabel *sel_info_;
-    QLabel *modify_info_;
+    QLabel* pos_;
+    QLabel* status_msg_;
+    QLabel* coords_loading_;
+    QLabel* sel_info_;
+    QLabel* modify_info_;
 };
 class LevelTabWidget;
 class LevelPageWidget : public TabPageWidget {
     Q_OBJECT
 
    public:
-    LevelPageWidget(LevelTabWidget *parent, int id);
+    LevelPageWidget(LevelTabWidget* parent, int id);
 
     ~LevelPageWidget() override;
 
@@ -62,17 +62,17 @@ class LevelPageWidget : public TabPageWidget {
 
     // getter
     inline int getTabId() const { return this->tab_id_; }
-    inline MapWidget *getMapWidget() { return this->mapWidget_; }
-    AsyncLevelLoader *levelLoader() { return this->level_loader_.get(); }
-    const QMap<QString, VillageDrawInfo> &getVillages() const { return this->villages_; }
+    inline MapWidget* getMapWidget() { return this->mapWidget_; }
+    AsyncLevelLoader* levelLoader() { return this->level_loader_.get(); }
+    const QMap<QString, VillageDrawInfo>& getVillages() const { return this->villages_; }
     bool isDirty() const override;
 
     QString getLevelName();
-    bool loadLevel(const QString &path);
+    bool loadLevel(const QString& path);
     void closeLevel();
     void toggleGlobalDataWidget();
     void openFilterDialog();
-    void showChunkEditor(const bl::chunk_pos &pos);
+    void showChunkEditor(const bl::chunk_pos& pos);
     void syncToolbars();
 
     void setToolBarsVisible(bool visible) {
@@ -88,17 +88,17 @@ class LevelPageWidget : public TabPageWidget {
 
    private:
     // data
-    void collectVillagesGuiData(const bl::village_data::village_table_type &vs);
-    void fillGlobalData(GlobalNBTLoadResult &result);
+    void collectVillagesGuiData(const bl::village_data::village_table_type& vs);
+    void fillGlobalData(GlobalNBTLoadResult& result);
 
     // gui
-    void setLevelStatusBar(const QString &status) { status_bar_->setStatus(status); }
+    void setLevelStatusBar(const QString& status) { status_bar_->setStatus(status); }
 
    private slots:
     void onLoadGlobalDataFinished();
-    void onLoadGlobalDataFailed(const QString &error);
+    void onLoadGlobalDataFailed(const QString& error);
     void onCommitFinished();
-    void onCommitFailed(const QString &error);
+    void onCommitFailed(const QString& error);
 
    private:
     // data source
@@ -114,26 +114,26 @@ class LevelPageWidget : public TabPageWidget {
     QMap<QString, VillageDrawInfo> villages_;
 
     // GUI
-    LevelTabWidget *parent_;
+    LevelTabWidget* parent_;
     // map view
-    MapWidget *mapWidget_;
-    QSplitter *mainSplitter_;
-    QSplitter *vertSplitter_;
-    FloatingToolBar *toolbar_{nullptr};
-    FloatingToolBar *selection_toolbar_{nullptr};
-    QTabWidget *nbtTabWidget_;
-    ChunkEditorWidget *chunkWidget_{nullptr};
+    MapWidget* mapWidget_;
+    QSplitter* mainSplitter_;
+    QSplitter* vertSplitter_;
+    FloatingToolBar* toolbar_{nullptr};
+    FloatingToolBar* selection_toolbar_{nullptr};
+    QTabWidget* nbtTabWidget_;
+    ChunkEditorWidget* chunkWidget_{nullptr};
     // nbt editor tabs
-    NbtWidget *level_dat_editor_;
-    NbtWidget *player_editor_;
-    NbtWidget *village_editor_;
-    NbtWidget *other_nbt_editor_;
-    MapItemEditor *map_item_editor_;
+    NbtWidget* level_dat_editor_;
+    NbtWidget* player_editor_;
+    NbtWidget* village_editor_;
+    NbtWidget* other_nbt_editor_;
+    MapItemEditor* map_item_editor_;
     // status bar
-    LevelStatusBar *status_bar_;
+    LevelStatusBar* status_bar_;
     // id in tabwidget
     // filter dialog
-    RenderFilterDialog *render_filter_dialog_{nullptr};
+    RenderFilterDialog* render_filter_dialog_{nullptr};
     // toolbar group indices
     int tb_view_grp_{-1};
     int tb_dim_grp_{-1};

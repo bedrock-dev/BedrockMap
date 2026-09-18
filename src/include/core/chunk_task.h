@@ -17,7 +17,7 @@ class AsyncLevelLoader;
 
 namespace bl {
 
-    inline uint qHash(const bl::chunk_pos &key, uint seed) {
+    inline uint qHash(const bl::chunk_pos& key, uint seed) {
         uint hash = 3241;
         hash = 3457689L * hash + key.x;
         hash = 8734625L * hash + key.z;
@@ -50,14 +50,14 @@ struct ChunkRegion {
     QImage terrain_bake_image_;
     QImage biome_bake_image_;
     bool valid{false};
-    std::unordered_map<QImage *, std::vector<bl::vec3>> actors_;             // for render mode 0
-    std::map<bl::chunk_pos, std::map<QImage *, ActorCount>> actors_counts_;  // for render mode 1
+    std::unordered_map<QImage*, std::vector<bl::vec3>> actors_;             // for render mode 0
+    std::map<bl::chunk_pos, std::map<QImage*, ActorCount>> actors_counts_;  // for render mode 1
     std::vector<bl::hardcoded_spawn_area> HSAs_;
 
     // Resolve a block name to an id. Known blocks get a global id >= 0 (from the bedrock-level
     // table, stored without "minecraft:"); unknown/mod blocks get a negative local id backed by
     // local_block_names_ which keeps the full name (with namespace) for later display.
-    int internBlockName(const std::string &name);
+    int internBlockName(const std::string& name);
     // Reverse of internBlockName; returns the full display name ("minecraft:" + name or the
     // original mod name), empty string if the id is invalid.
     std::string blockName(int id) const;
@@ -78,7 +78,7 @@ struct RegionTimer {
 template <typename T>
 class TaskBuffer {
    public:
-    bool contains(const T &t) {
+    bool contains(const T& t) {
         bool exist{false};
         {
             std::lock_guard<std::mutex> lk(this->mu_);
@@ -101,12 +101,12 @@ class TaskBuffer {
         this->buffer_.clear();
     }
 
-    void add(const T &t) {
+    void add(const T& t) {
         std::lock_guard<std::mutex> kl(this->mu_);
         this->buffer_.insert(t);
     }
 
-    void remove(const T &t) {
+    void remove(const T& t) {
         std::lock_guard<std::mutex> kl(this->mu_);
         this->buffer_.erase(t);
     }
@@ -119,17 +119,17 @@ class LoadRegionTask : public QObject, public QRunnable {
     Q_OBJECT
 
    public:
-    LoadRegionTask(AsyncLevelLoader *loader, const bl::chunk_pos &pos, MapFilter filter)
+    LoadRegionTask(AsyncLevelLoader* loader, const bl::chunk_pos& pos, MapFilter filter)
         : QRunnable(), loader_(loader), pos_(pos), filter_(std::move(filter)) {}
     void run() override;
 
    public:
    signals:
 
-    void finish(int x, int z, int dim, ChunkRegion *region, long long load_time, long long render_time, bl::chunk **chunks);
+    void finish(int x, int z, int dim, ChunkRegion* region, long long load_time, long long render_time, bl::chunk** chunks);
 
    private:
-    AsyncLevelLoader *loader_;
+    AsyncLevelLoader* loader_;
     region_pos pos_;
     MapFilter filter_;
 };

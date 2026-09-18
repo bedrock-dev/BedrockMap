@@ -20,7 +20,7 @@ namespace {
     template <typename T>
     using nl = std::numeric_limits<T>;
     using namespace bl::nbt;
-    bool parseIntegerValue(tag_type type, const QString &str, std::vector<int64_t> &values) {
+    bool parseIntegerValue(tag_type type, const QString& str, std::vector<int64_t>& values) {
         static std::unordered_map<tag_type, std::pair<int64_t, int64_t>> range_map{
             {Byte, {nl<int8_t>::min(), nl<int8_t>::max()}},       {ByteArray, {nl<int8_t>::min(), nl<int8_t>::max()}},
             {Short, {nl<int16_t>::min(), nl<int16_t>::max()}},    {Int, {nl<int32_t>::min(), nl<int32_t>::max()}},
@@ -33,13 +33,13 @@ namespace {
             strs << str;
         }
 
-        for (auto &nStr : strs) {
+        for (auto& nStr : strs) {
             bool ok;
             auto value = nStr.toLongLong(&ok);
             if (!ok) return false;
             auto it = range_map.find(type);
             if (it == range_map.end()) return false;
-            if (auto &[fst, snd] = it->second; value < fst || value > snd) return false;
+            if (auto& [fst, snd] = it->second; value < fst || value > snd) return false;
             values.push_back(value);
         }
 
@@ -49,7 +49,7 @@ namespace {
 }  // namespace
 
 using namespace bl::nbt;
-NBTModifyDialog::NBTModifyDialog(QWidget *parent) : QDialog(parent), ui(new Ui::NBTModifyDialog) {
+NBTModifyDialog::NBTModifyDialog(QWidget* parent) : QDialog(parent), ui(new Ui::NBTModifyDialog) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
     for (auto i = static_cast<int>(tag_type::Byte); i <= static_cast<int>(tag_type::LongArray); i++) {
@@ -74,7 +74,7 @@ void NBTModifyDialog::updateValueState() const {
     ui->value_lineedit->setReadOnly(type == Compound || type == List);
 }
 
-bool NBTModifyDialog::setCreateMode(abstract_tag *tag) {
+bool NBTModifyDialog::setCreateMode(abstract_tag* tag) {
     resetUI();
     setWindowTitle(tr("nbtEditor.dialogTitle.create"));
     if (!tag) return false;
@@ -82,7 +82,7 @@ bool NBTModifyDialog::setCreateMode(abstract_tag *tag) {
     ui->name_lineedit->clear();
     ui->value_lineedit->clear();
     if (const auto type = tag->type(); type == List) {
-        const auto *list = dynamic_cast<list_tag *>(tag);
+        const auto* list = dynamic_cast<list_tag*>(tag);
         if (!list) return false;
         if (!list->value.empty()) {
             const auto child_type = list->value[0]->type();
@@ -98,7 +98,7 @@ bool NBTModifyDialog::setCreateMode(abstract_tag *tag) {
     return true;
 }
 
-bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) {
+bool NBTModifyDialog::setModifyMode(const abstract_tag* tag) {
     resetUI();
     setWindowTitle(tr("nbtEditor.dialogTitle.modify"));
     if (!tag) return false;
@@ -112,7 +112,7 @@ bool NBTModifyDialog::setModifyMode(const abstract_tag *tag) {
     return true;
 }
 
-bool NBTModifyDialog::eventFilter(QObject *watched, QEvent *event) {
+bool NBTModifyDialog::eventFilter(QObject* watched, QEvent* event) {
     if (watched == ui->type_combobox && lock_type_combobox_) {
         if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick || event->type() == QEvent::Wheel ||
             event->type() == QEvent::KeyPress) {
@@ -122,7 +122,7 @@ bool NBTModifyDialog::eventFilter(QObject *watched, QEvent *event) {
     return QDialog::eventFilter(watched, event);
 }
 
-bl::nbt::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const {
+bl::nbt::abstract_tag* NBTModifyDialog::createTagWithCurrent(QString& err) const {
     const auto name = ui->name_lineedit->text().toStdString();
     const auto data = ui->type_combobox->currentData();
     if (!data.canConvert<int>()) {
@@ -147,22 +147,22 @@ bl::nbt::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const
         if (type == Int) return new int_tag(name, static_cast<int32_t>(values.front()));
         if (type == Long) return new long_tag(name, static_cast<int64_t>(values.front()));
         if (type == ByteArray) {
-            auto *tag = new byte_array_tag(name);
-            for (auto &value : values) {
+            auto* tag = new byte_array_tag(name);
+            for (auto& value : values) {
                 tag->value.push_back(static_cast<int8_t>(value));
             }
             return tag;
         }
         if (type == IntArray) {
-            auto *tag = new int_array_tag(name);
-            for (const auto &value : values) {
+            auto* tag = new int_array_tag(name);
+            for (const auto& value : values) {
                 tag->value.push_back(static_cast<int32_t>(value));
             }
             return tag;
         }
         if (type == LongArray) {
-            auto *tag = new long_array_tag(name);
-            for (const auto &value : values) {
+            auto* tag = new long_array_tag(name);
+            for (const auto& value : values) {
                 tag->value.push_back(static_cast<int64_t>(value));
             }
             return tag;
@@ -191,12 +191,12 @@ bl::nbt::abstract_tag *NBTModifyDialog::createTagWithCurrent(QString &err) const
     return nullptr;
 }
 
-bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err) const {
+bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag*& tag, QString& err) const {
     tag->set_key(ui->name_lineedit->text().toStdString());
     auto vs = ui->value_lineedit->text();
     const auto type = tag->type();
     if (type == Compound || type == List) return true;
-    if (type == String) dynamic_cast<string_tag *>(tag)->value = vs.toStdString();
+    if (type == String) dynamic_cast<string_tag*>(tag)->value = vs.toStdString();
     vs = vs.trimmed();
     if (vs.isEmpty()) {
         err = msg::TAG_VALUE_EMPTY();
@@ -209,28 +209,28 @@ bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err
             err = msg::TAG_VALUE_INVALID();
             return false;
         }
-        if (type == Byte) dynamic_cast<byte_tag *>(tag)->value = static_cast<int8_t>(values.front());
-        if (type == Short) dynamic_cast<short_tag *>(tag)->value = static_cast<int16_t>(values.front());
-        if (type == Int) dynamic_cast<int_tag *>(tag)->value = static_cast<int32_t>(values.front());
-        if (type == Long) dynamic_cast<long_tag *>(tag)->value = static_cast<int64_t>(values.front());
+        if (type == Byte) dynamic_cast<byte_tag*>(tag)->value = static_cast<int8_t>(values.front());
+        if (type == Short) dynamic_cast<short_tag*>(tag)->value = static_cast<int16_t>(values.front());
+        if (type == Int) dynamic_cast<int_tag*>(tag)->value = static_cast<int32_t>(values.front());
+        if (type == Long) dynamic_cast<long_tag*>(tag)->value = static_cast<int64_t>(values.front());
         if (type == ByteArray) {
-            auto *ba_tag = dynamic_cast<byte_array_tag *>(tag);
+            auto* ba_tag = dynamic_cast<byte_array_tag*>(tag);
             ba_tag->value.clear();
-            for (const auto &value : values) {
+            for (const auto& value : values) {
                 ba_tag->value.push_back(static_cast<int8_t>(value));
             }
         }
         if (type == IntArray) {
-            auto *ia_tag = dynamic_cast<int_array_tag *>(tag);
+            auto* ia_tag = dynamic_cast<int_array_tag*>(tag);
             ia_tag->value.clear();
-            for (const auto &value : values) {
+            for (const auto& value : values) {
                 ia_tag->value.push_back(static_cast<int32_t>(value));
             }
         }
         if (type == LongArray) {
-            auto *la_tag = dynamic_cast<long_array_tag *>(tag);
+            auto* la_tag = dynamic_cast<long_array_tag*>(tag);
             la_tag->value.clear();
-            for (const auto &value : values) {
+            for (const auto& value : values) {
                 la_tag->value.push_back(static_cast<int64_t>(value));
             }
         }
@@ -240,7 +240,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err
         bool ok;
         const auto v = vs.toFloat(&ok);
         if (ok) {
-            dynamic_cast<float_tag *>(tag)->value = v;
+            dynamic_cast<float_tag*>(tag)->value = v;
             return true;
         } else {
             err = msg::TAG_VALUE_INVALID();
@@ -251,7 +251,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err
         bool ok;
         const auto v = vs.toDouble(&ok);
         if (ok) {
-            dynamic_cast<double_tag *>(tag)->value = v;
+            dynamic_cast<double_tag*>(tag)->value = v;
             return true;
         } else {
             err = msg::TAG_VALUE_INVALID();
@@ -259,7 +259,7 @@ bool NBTModifyDialog::modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err
         }
     }
     if (type == String) {
-        dynamic_cast<string_tag *>(tag)->value = vs.toStdString();
+        dynamic_cast<string_tag*>(tag)->value = vs.toStdString();
         return true;
     }
     err = msg::TAG_UNKNOWN_TYPE();

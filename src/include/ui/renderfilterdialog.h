@@ -13,12 +13,12 @@ class RenderFilterDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit RenderFilterDialog(QWidget *parent = nullptr);
+    explicit RenderFilterDialog(QWidget* parent = nullptr);
 
    public:
     ~RenderFilterDialog() override;
 
-    void setFilter(const MapFilter &f) {
+    void setFilter(const MapFilter& f) {
         this->filter_ = f;
         fillInUI();
     }
@@ -31,12 +31,12 @@ class RenderFilterDialog : public QDialog {
 
    private slots:
 
-    void on_current_layer_lineedit_textEdited(const QString &arg1);
+    void on_current_layer_lineedit_textEdited(const QString& arg1);
 
     void on_layer_slider_valueChanged(int value);
 
    private:
-    Ui::RenderFilterDialog *ui;
+    Ui::RenderFilterDialog* ui;
     MapFilter filter_;
 };
 

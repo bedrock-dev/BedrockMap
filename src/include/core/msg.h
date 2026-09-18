@@ -11,9 +11,9 @@
 
 #include <QMessageBox>
 
-bool WARN(const QString &msg);
+bool WARN(const QString& msg);
 
-bool INFO(const QString &msg);
+bool INFO(const QString& msg);
 
 namespace msg {
 
@@ -29,11 +29,11 @@ namespace msg {
 
     // new level validation
     inline QString NEW_LEVEL_NAME_EMPTY() { return QObject::tr("msg.newLevelNameEmpty"); }
-    inline QString NEW_LEVEL_DIR_NOT_EXIST(const QString &path) { return QObject::tr("msg.newLevelDirNotExist") + path; }
-    inline QString NEW_LEVEL_PATH_NOT_DIR(const QString &path) { return QObject::tr("msg.newLevelPathNotDir") + path; }
-    inline QString NEW_LEVEL_DIR_NOT_EMPTY(const QString &path) { return QObject::tr("msg.newLevelDirNotEmpty") + path; }
-    inline QString NEW_LEVEL_NO_WRITE_PERM(const QString &path) { return QObject::tr("msg.newLevelNoWritePerm") + path; }
-    inline QString NEW_LEVEL_INVALID_VERSION(const QString &ver) { return QObject::tr("msg.newLevelInvalidVersion") + ver; }
+    inline QString NEW_LEVEL_DIR_NOT_EXIST(const QString& path) { return QObject::tr("msg.newLevelDirNotExist") + path; }
+    inline QString NEW_LEVEL_PATH_NOT_DIR(const QString& path) { return QObject::tr("msg.newLevelPathNotDir") + path; }
+    inline QString NEW_LEVEL_DIR_NOT_EMPTY(const QString& path) { return QObject::tr("msg.newLevelDirNotEmpty") + path; }
+    inline QString NEW_LEVEL_NO_WRITE_PERM(const QString& path) { return QObject::tr("msg.newLevelNoWritePerm") + path; }
+    inline QString NEW_LEVEL_INVALID_VERSION(const QString& ver) { return QObject::tr("msg.newLevelInvalidVersion") + ver; }
 
     // misc
     inline QString SET_SCALE_LEVEL() { return QObject::tr("msg.setScaleLevel"); }
@@ -57,9 +57,7 @@ namespace msg {
     inline QString NOTHING_TO_SAVE() { return QObject::tr("msg.nothingToSave"); }
     inline QString LEVEL_SAVED() { return QObject::tr("msg.levelSaved"); }
     inline QString READ_ONLY() { return QObject::tr("msg.readOnly"); }
-    inline QString EDITING_DISABLED_DURING_COORDS_LOADING() {
-        return QObject::tr("msg.editingDisabledDuringCoordsLoading");
-    }
+    inline QString EDITING_DISABLED_DURING_COORDS_LOADING() { return QObject::tr("msg.editingDisabledDuringCoordsLoading"); }
     inline QString IMPORT_FAILED() { return QObject::tr("msg.importFailed"); }
     inline QString INVALID_CHUNK_FORMAT() { return QObject::tr("msg.invalidChunkFormat"); }
     inline QString UNSAVED_CHANGES() { return QObject::tr("msg.unsavedChanges"); }
@@ -69,8 +67,8 @@ namespace msg {
     inline QString NO_CHUNK_FOUND() { return QObject::tr("msg.noChunkFound"); }
 
     // nbt editor
-    inline QString CREATE_NODE_FAILED(const QString &err) { return QObject::tr("msg.createNodeFailed") + err; }
-    inline QString MODIFY_NODE_FAILED(const QString &err) { return QObject::tr("msg.modifyNodeFailed") + err; }
+    inline QString CREATE_NODE_FAILED(const QString& err) { return QObject::tr("msg.createNodeFailed") + err; }
+    inline QString MODIFY_NODE_FAILED(const QString& err) { return QObject::tr("msg.modifyNodeFailed") + err; }
 
     // image
     inline QString IMAGE_ASPECT_MISMATCH() { return QObject::tr("msg.imageAspectMismatch"); }

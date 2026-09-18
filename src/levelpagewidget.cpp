@@ -30,7 +30,7 @@
 #include "utils.h"
 
 // status bar
-LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
+LevelStatusBar::LevelStatusBar(QWidget* parent) : QWidget(parent) {
     status_msg_ = new QLabel(this);
     coords_loading_ = new QLabel(this);
     coords_loading_->setStyleSheet("QLabel { color: #b8860b; }");
@@ -39,7 +39,7 @@ LevelStatusBar::LevelStatusBar(QWidget *parent) : QWidget(parent) {
     modify_info_ = new QLabel(this);
     pos_ = new QLabel(this);
     pos_->setMargin(0);
-    auto *layout = new QHBoxLayout(this);
+    auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 0, 10, 0);
     layout->addWidget(status_msg_);
     layout->addStretch();
@@ -70,7 +70,7 @@ void LevelStatusBar::setModifyInfo(int modified, int deleted) {
 }
 
 // level widget
-LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget(parent), parent_(parent), tab_id_(id), commit_task_(this) {
+LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget(parent), parent_(parent), tab_id_(id), commit_task_(this) {
     level_loader_ = std::make_unique<AsyncLevelLoader>();
 
     // gui
@@ -103,7 +103,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget *parent, int id) : TabPageWidget
     mainSplitter_->setStretchFactor(1, 0);
     mainSplitter_->setChildrenCollapsible(false);
 
-    auto *layout = new QVBoxLayout(this);
+    auto* layout = new QVBoxLayout(this);
     layout->addWidget(mainSplitter_);
     layout->addWidget(status_bar_);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -279,7 +279,7 @@ void LevelPageWidget::setupToolBar() {
 
     connect(toolbar_, &FloatingToolBar::buttonToggled, this,
             [this, viewGrp, dimGrp, layerGrp, overlayGrp, actionGrp](int g, int b, bool checked) {
-                auto *mw = mapWidget_;
+                auto* mw = mapWidget_;
                 if (!mw) return;
 
                 if (g == viewGrp) {
@@ -318,7 +318,7 @@ void LevelPageWidget::syncToolbars() {
     auto opt = mapWidget_->renderOption();
 
     // View group
-    if (auto *tb = toolbar_) {
+    if (auto* tb = toolbar_) {
         tb->blockSignals(true);
         tb->setButtonChecked(tb_view_grp_, 0, opt.getOther(Mr::Grid));
         tb->setButtonChecked(tb_view_grp_, 1, opt.getOther(Mr::Coords));
@@ -335,7 +335,7 @@ void LevelPageWidget::syncToolbars() {
     }
 
     // Selection toolbar
-    if (auto *stb = selection_toolbar_) {
+    if (auto* stb = selection_toolbar_) {
         stb->blockSignals(true);
         auto mode = mapWidget_->selection().mode();
         for (int i = 0; i < 3; ++i) stb->setButtonChecked(sel_grp_, i, static_cast<int>(mode) == i);
@@ -364,10 +364,10 @@ void LevelPageWidget::setupDataWidget() {
     nbtTabWidget_->addTab(map_item_editor_, "Map");
     nbtTabWidget_->setTabPosition(QTabWidget::West);
 
-    for (auto *editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
         connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
         connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
-            QWidget *realTab = editor;
+            QWidget* realTab = editor;
             if (editor == map_item_editor_->nbtEditor()) realTab = map_item_editor_;
             int idx = nbtTabWidget_->indexOf(realTab);
 
@@ -390,7 +390,7 @@ QString LevelPageWidget::getLevelName() {
 }
 
 bool LevelPageWidget::isDirty() const {
-    for (auto *editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
         if (editor && editor->dirty()) return true;
     }
     return level_loader_->isDirty();
@@ -398,7 +398,7 @@ bool LevelPageWidget::isDirty() const {
 
 void LevelPageWidget::refreshDirty() {
     auto dirty = isDirty();
-    auto *tw = qobject_cast<LevelTabWidget *>(parent_);
+    auto* tw = qobject_cast<LevelTabWidget*>(parent_);
     if (!tw) return;
     int i = tw->indexOf(this);
     if (i < 0) return;
@@ -422,15 +422,15 @@ bool LevelPageWidget::commit() {
             levelDat.reset(nbts[0]);
         } else {
             LOG_F(WARNING, "level.dat data is invalid, skip saving level.dat");
-            for (auto *nbt : nbts) delete nbt;
+            for (auto* nbt : nbts) delete nbt;
             return false;
         }
     }
 
     std::unordered_map<std::string, std::string> allModifies;
-    for (auto *editor : {player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
         if (editor) {
-            for (auto &kv : editor->getModifyCache()) {
+            for (auto& kv : editor->getModifyCache()) {
                 allModifies[kv.first] = kv.second;
             }
         }
@@ -439,7 +439,7 @@ bool LevelPageWidget::commit() {
     pending_level_dat_ = std::move(levelDat);
     pending_global_modifies_ = std::move(allModifies);
     const auto globalModifies = pending_global_modifies_;
-    commit_task_.start([this, globalModifies](GuiTaskRunner *task) {
+    commit_task_.start([this, globalModifies](GuiTaskRunner* task) {
         const bool success = level_loader_->commitEdits(globalModifies, pending_level_dat_.get());
         if (!success) task->fail(tr("Save failed"));
     });
@@ -459,7 +459,7 @@ void LevelPageWidget::onCommitFinished() {
     emit commitFinished(true);
 }
 
-void LevelPageWidget::onCommitFailed(const QString &error) {
+void LevelPageWidget::onCommitFailed(const QString& error) {
     PleaseWaitDialog::instance().hideBusy();
     pending_level_dat_.reset();
     pending_global_modifies_.clear();
@@ -468,7 +468,7 @@ void LevelPageWidget::onCommitFailed(const QString &error) {
     emit commitFinished(false);
 }
 
-bool LevelPageWidget::loadLevel(const QString &path) {
+bool LevelPageWidget::loadLevel(const QString& path) {
     level_loader_->setPreloadAllChunkCoords(setting::current().PRELOAD_ALL_CHUNK_COORDS);
     status_bar_->setCoordsLoading(setting::current().PRELOAD_ALL_CHUNK_COORDS);
     auto ret = level_loader_->open(path.toStdString());
@@ -478,17 +478,17 @@ bool LevelPageWidget::loadLevel(const QString &path) {
         return false;
     }
     if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
-    auto &dat = level_loader_->level().dat();
+    auto& dat = level_loader_->level().dat();
     LOG_F(INFO, "Open level %s with version %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str());
     Assert(dat.root() != nullptr, "The level.dat file is nullptr");
-    auto *ld = dat.root()->as<bl::nbt::compound_tag *>();
-    this->level_dat_editor_->loadNewData({NBTListItem::from(ld->copy()->as<bl::nbt::compound_tag *>(), "level.dat")});
+    auto* ld = dat.root()->as<bl::nbt::compound_tag*>();
+    this->level_dat_editor_->loadNewData({NBTListItem::from(ld->copy()->as<bl::nbt::compound_tag*>(), "level.dat")});
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
     if (!setting::current().LOAD_GLOBAL_DATA) return true;
-    global_data_task_.start([this](GuiTaskRunner *task) {
+    global_data_task_.start([this](GuiTaskRunner* task) {
         try {
             level_loader_->loadGlobalData(std::ref(this->global_data_), std::ref(stop_loading_global_data_));
-        } catch (std::exception &e) {
+        } catch (std::exception& e) {
             LOG_F(WARNING, "Can not fully load global data: %s", e.what());
         }
     });
@@ -509,7 +509,7 @@ void LevelPageWidget::toggleGlobalDataWidget() {
 }
 
 void LevelPageWidget::openFilterDialog() {
-    auto *loader = level_loader_.get();
+    auto* loader = level_loader_.get();
     if (!loader) return;
     if (!render_filter_dialog_) {
         render_filter_dialog_ = new RenderFilterDialog(this);
@@ -522,7 +522,7 @@ void LevelPageWidget::openFilterDialog() {
     }
 }
 
-void LevelPageWidget::showChunkEditor(const bl::chunk_pos &pos) {
+void LevelPageWidget::showChunkEditor(const bl::chunk_pos& pos) {
     auto opt = level_loader_->getRawChunk(pos);
     if (!opt) {
         WARN(msg::NO_CHUNK_FOUND());
@@ -550,16 +550,16 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos &pos) {
     chunkWidget_->show();
 }
 
-void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_table_type &vs) {
+void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_table_type& vs) {
     for (int i = 0; i < vs.size(); i++) {
-        auto &villsInDim = vs[i];
+        auto& villsInDim = vs[i];
         for (auto kv : villsInDim) {
-            auto *nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
+            auto* nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
             if (!nbt) continue;
-            auto x0 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("X0"));
-            auto z0 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("Z0"));
-            auto x1 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("X1"));
-            auto z1 = dynamic_cast<bl::nbt::int_tag *>(nbt->get("Z1"));
+            auto x0 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("X0"));
+            auto z0 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("Z0"));
+            auto x1 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("X1"));
+            auto z1 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("Z1"));
             if (!x0 || !z0 || !x1 || !z1) continue;
             auto pos0 = bl::block_pos(x0->value, 0, z0->value);
             auto pos1 = bl::block_pos(x1->value, 0, z1->value);
@@ -568,39 +568,39 @@ void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_tab
     }
 }
 
-void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult &res) {
+void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     LOG_F(INFO, "Filling player data (%zu)...", res.playerData.data().size());
-    auto &playerData = res.playerData.data();
-    std::vector<NBTListItem *> playerNBTList;
-    for (auto &kv : playerData) {
-        auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
+    auto& playerData = res.playerData.data();
+    std::vector<NBTListItem*> playerNBTList;
+    for (auto& kv : playerData) {
+        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
         item->setIcon(QIcon(QPixmap::fromImage(*PlayerNBTIcon())));
         playerNBTList.push_back(item);
     }
     this->player_editor_->loadNewData(playerNBTList);
 
     LOG_F(INFO, "Filling other data (%zu)...", res.otherData.data().size());
-    auto &otherData = res.otherData.data();
-    std::vector<NBTListItem *> otherNBTList;
-    for (auto &kv : otherData) {
-        auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
+    auto& otherData = res.otherData.data();
+    std::vector<NBTListItem*> otherNBTList;
+    for (auto& kv : otherData) {
+        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
         item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
         otherNBTList.push_back(item);
     }
     this->other_nbt_editor_->loadNewData(otherNBTList);
 
     LOG_F(INFO, "Filling village data (%zu)...", res.villageData.data().size());
-    auto &villData = res.villageData.data();
+    auto& villData = res.villageData.data();
     this->collectVillagesGuiData(villData);
     mapWidget_->setVillages(this->villages_);
-    std::vector<NBTListItem *> villNBTList;
-    for (const auto &dim : villData) {
-        for (const auto &kv : dim) {
+    std::vector<NBTListItem*> villNBTList;
+    for (const auto& dim : villData) {
+        for (const auto& kv : dim) {
             int index = 0;
-            for (auto &p : kv.second) {
+            for (auto& p : kv.second) {
                 if (p) {
                     auto key = kv.first + "_" + bl::village_key::village_key_type_to_str(static_cast<bl::village_key::key_type>(index));
-                    auto *item = NBTListItem::from(dynamic_cast<compound_tag *>(p->copy()), key.c_str(), ("VILLAGE_" + key).c_str());
+                    auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(p->copy()), key.c_str(), ("VILLAGE_" + key).c_str());
                     item->setIcon(QIcon(QPixmap::fromImage(*VillageNBTIcon(static_cast<bl::village_key::key_type>(index)))));
                     villNBTList.push_back(item);
                 }
@@ -619,7 +619,7 @@ void LevelPageWidget::onLoadGlobalDataFinished() {
     this->global_data_.clear();
 }
 
-void LevelPageWidget::onLoadGlobalDataFailed(const QString &error) {
+void LevelPageWidget::onLoadGlobalDataFailed(const QString& error) {
     LOG_F(WARNING, "Load global data failed: %s", error.toStdString().c_str());
     onLoadGlobalDataFinished();  // still fill whatever was loaded
 }

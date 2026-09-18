@@ -20,7 +20,7 @@ namespace {
     /// Versions with 4 segments (1.xx.x.xx) are truncated to 3 segments (1.xx.x),
     /// because all template files follow the 3-segment naming convention.
     /// Falls back to "res/level_dat/level.dat" when no version-specific file exists.
-    QString selectLevelDat(const QString &version) {
+    QString selectLevelDat(const QString& version) {
         auto parts = version.split('.');
         if (parts.size() == 4) {
             parts.removeLast();
@@ -35,7 +35,7 @@ namespace {
 
 }  // namespace
 
-bool NewLevelParams::check(QString &msg) const {
+bool NewLevelParams::check(QString& msg) const {
     // 1. level name non-empty
     if (levelName.trimmed().isEmpty()) {
         msg = ::msg::NEW_LEVEL_NAME_EMPTY();
@@ -77,7 +77,7 @@ bool NewLevelParams::check(QString &msg) const {
 
 QString NewLevelParams::toFlatJson() const {
     QJsonArray layers;
-    for (const auto &[name, count] : flatBlocks) {
+    for (const auto& [name, count] : flatBlocks) {
         QJsonObject layer;
         if (name.contains(QLatin1Char(':'))) {
             layer[QStringLiteral("block_name")] = name;
@@ -98,7 +98,7 @@ QString NewLevelParams::toFlatJson() const {
     return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
 
-bool LevelOperator::newLevel(const NewLevelParams &params) {
+bool LevelOperator::newLevel(const NewLevelParams& params) {
     QString err;
     if (!params.check(err)) {
         LOG_F(ERROR, "can not create level: %s", err.toStdString().c_str());
@@ -147,7 +147,7 @@ bool LevelOperator::newLevel(const NewLevelParams &params) {
 
     const auto dbPath = dir.absoluteFilePath(QStringLiteral("db")).toStdString();
 
-    leveldb::DB *db = nullptr;
+    leveldb::DB* db = nullptr;
     leveldb::Status status = leveldb::DB::Open(opts, dbPath, &db);
     if (!status.ok()) {
         LOG_F(ERROR, "LevelDB create failed: %s", status.ToString().c_str());
@@ -164,7 +164,7 @@ bool LevelOperator::newLevel(const NewLevelParams &params) {
 
     LOG_F(INFO, "flag json: %s", params.toFlatJson().toStdString().c_str());
 
-    auto *nbt = level.dat().root();
+    auto* nbt = level.dat().root();
     nbt->put(new bl::nbt::int_tag("GameType", params.gameMode));
     nbt->put(new bl::nbt::int_tag("Difficulty", params.difficulty));
     nbt->put(new bl::nbt::byte_tag("dodaylightcycle", params.dayNightCycle));

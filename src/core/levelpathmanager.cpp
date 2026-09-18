@@ -19,12 +19,12 @@ using json = nlohmann::json;
 
 namespace {
 
-    void scanWorldsInDir(const QString &worldsDir, bool modern, bool preview, std::vector<LevelPathInfo> &out) {
+    void scanWorldsInDir(const QString& worldsDir, bool modern, bool preview, std::vector<LevelPathInfo>& out) {
         QDir dir(worldsDir);
         LOG_F(INFO, "scanWorldsInDir: %s exists=%d", worldsDir.toStdString().c_str(), dir.exists());
         if (!dir.exists()) return;
         const auto entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-        for (const auto &sub : entries) {
+        for (const auto& sub : entries) {
             auto info = LevelPathManager::makeLevelInfo(sub.absoluteFilePath());
             info.modern = modern;
             info.preview = preview;
@@ -34,7 +34,7 @@ namespace {
 
 }  // namespace
 
-LevelPathInfo LevelPathManager::makeLevelInfo(const QString &dirPath) {
+LevelPathInfo LevelPathManager::makeLevelInfo(const QString& dirPath) {
     LevelPathInfo info;
     info.path = dirPath.toStdString();
 
@@ -94,7 +94,7 @@ LevelPathManager::LevelPathManager() {
 
 LevelPathManager::~LevelPathManager() { saveHistory(); }
 
-void LevelPathManager::addRecentPath(const QString &path) {
+void LevelPathManager::addRecentPath(const QString& path) {
     history_.removeAll(path);
     history_.prepend(path);
     while (history_.size() > MAX_HISTORY) {
@@ -106,8 +106,8 @@ QStringList LevelPathManager::recentPaths() const { return history_; }
 
 void LevelPathManager::saveHistory() {
     json root;
-    auto &arr = root["history"];
-    for (const auto &p : history_) {
+    auto& arr = root["history"];
+    for (const auto& p : history_) {
         arr.push_back(p.toStdString());
     }
 
@@ -126,11 +126,11 @@ void LevelPathManager::loadHistory() {
         json root;
         in >> root;
         if (root.contains("history") && root["history"].is_array()) {
-            for (const auto &item : root["history"]) {
+            for (const auto& item : root["history"]) {
                 history_.append(QString::fromStdString(item.get<std::string>()));
             }
         }
-    } catch (std::exception &e) {
+    } catch (std::exception& e) {
         LOG_F(WARNING, "LevelPathManager: failed to parse cache: %s", e.what());
         history_.clear();
     }
@@ -163,7 +163,7 @@ void LevelPathManager::initLeviPath() {
     if (!versionsDir.exists()) return;
 
     auto versions = versionsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    for (const auto &ver : versions) {
+    for (const auto& ver : versions) {
         scan_paths_.push_back({QDir(baseRoot).absoluteFilePath("versions/" + ver).toStdString(), ver.toStdString(), "Levi", true, false});
     }
 }
@@ -190,11 +190,11 @@ void LevelPathManager::scanModernPaths() {
         {QString::fromStdString(DIR_MINECRAFT_BEDROCK_PREVIEW), true},
     };
 
-    for (const auto &entry : scan_paths_) {
+    for (const auto& entry : scan_paths_) {
         if (!entry.modern) continue;
         QString basePath = QString::fromStdString(entry.path);
 
-        for (const auto &di : kDirs) {
+        for (const auto& di : kDirs) {
             QString gameDir = basePath + "/" + di.name;
             QDir dir(gameDir);
             if (!dir.exists()) {
@@ -210,7 +210,7 @@ void LevelPathManager::scanModernPaths() {
             }
 
             const auto userDirs = users.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-            for (const auto &user : userDirs) {
+            for (const auto& user : userDirs) {
                 QString worldsDir = QDir(user.absoluteFilePath()).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH));
                 QDir worlds(worldsDir);
                 if (!worlds.exists()) {
@@ -219,7 +219,7 @@ void LevelPathManager::scanModernPaths() {
                 }
 
                 const auto worldEntries = worlds.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-                for (const auto &world : worldEntries) {
+                for (const auto& world : worldEntries) {
                     auto info = makeLevelInfo(world.absoluteFilePath());
                     info.modern = true;
                     info.preview = di.preview;
@@ -232,11 +232,11 @@ void LevelPathManager::scanModernPaths() {
 
 void LevelPathManager::dumpPaths() {
     LOG_F(INFO, "=== Scan paths ===");
-    for (const auto &e : scan_paths_) {
+    for (const auto& e : scan_paths_) {
         LOG_F(INFO, "  [%s] tag=%s modern=%d version=%s", e.path.c_str(), e.tag.c_str(), e.modern, e.version.c_str());
     }
     LOG_F(INFO, "=== Discovered levels ===");
-    for (const auto &l : discovered_levels_) {
+    for (const auto& l : discovered_levels_) {
         LOG_F(INFO, "  [%s] valid=%d modern=%d preview=%d ver=%s name=%s", l.path.c_str(), l.isValid, l.modern, l.preview,
               l.version.c_str(), l.levelName.c_str());
     }

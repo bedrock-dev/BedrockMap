@@ -23,7 +23,7 @@ namespace {
     constexpr int BG_ALPHA = 255;
 }  // namespace
 
-FloatingToolBar::FloatingToolBar(QWidget *parent) : QFrame(parent) {
+FloatingToolBar::FloatingToolBar(QWidget* parent) : QFrame(parent) {
     setAttribute(Qt::WA_TranslucentBackground, false);
     setCursor(Qt::ArrowCursor);
     setProperty("vertical", true);
@@ -89,7 +89,7 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
     orientation_ = orientation;
 
     // Recreate layout
-    auto *oldLayout = layout_;
+    auto* oldLayout = layout_;
     if (orientation == Qt::Horizontal) {
         layout_ = new QHBoxLayout();
         layout_->setContentsMargins(0, 0, 0, 0);
@@ -102,7 +102,7 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
 
     // Move all existing widgets to new layout
     while (oldLayout->count() > 0) {
-        auto *item = oldLayout->takeAt(0);
+        auto* item = oldLayout->takeAt(0);
         if (item->widget()) {
             layout_->addWidget(item->widget());
         }
@@ -115,7 +115,7 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
     // Update separator styling
     setupStyleSheet();
     refreshButtonStyleProperties();
-    for (auto *sep : separators_) {
+    for (auto* sep : separators_) {
         if (orientation == Qt::Horizontal) {
             sep->setFixedHeight(BTN_SIZE);
             sep->setFixedWidth(SEPARATOR_HEIGHT);
@@ -140,13 +140,13 @@ void FloatingToolBar::setOrientation(Qt::Orientation orientation) {
     }
 }
 
-int FloatingToolBar::addGroup(const GroupConfig &group) {
+int FloatingToolBar::addGroup(const GroupConfig& group) {
     int groupIdx = groups_.size();
     int startIdx = buttons_.size();
 
     for (int i = 0; i < group.buttons.size(); i++) {
-        const auto &cfg = group.buttons[i];
-        auto *btn = new QToolButton(this);
+        const auto& cfg = group.buttons[i];
+        auto* btn = new QToolButton(this);
         btn->setIcon(QIcon(cfg.iconPath));
         btn->setIconSize(QSize(ICON_SIZE, ICON_SIZE));
         btn->setFixedSize(BTN_SIZE, BTN_SIZE);
@@ -168,13 +168,13 @@ int FloatingToolBar::addGroup(const GroupConfig &group) {
             // Exclusive: Qt's checkable auto-toggles before clicked() fires,
             // so we manually correct the state in the clicked handler.
             connect(btn, &QToolButton::clicked, this, [this, groupIdx, flatIdx, i]() {
-                auto *clickedBtn = buttons_[flatIdx];
+                auto* clickedBtn = buttons_[flatIdx];
                 if (!clickedBtn->isCheckable()) return;
 
                 // Uncheck all other buttons (Qt may have already toggled this one)
-                const auto &gi = groups_[groupIdx];
+                const auto& gi = groups_[groupIdx];
                 for (int j = 0; j < gi.buttonCount; j++) {
-                    auto *other = buttons_[gi.startIdx + j];
+                    auto* other = buttons_[gi.startIdx + j];
                     if (other != clickedBtn) {
                         other->setChecked(false);
                     }
@@ -209,7 +209,7 @@ void FloatingToolBar::refreshButtonStyleProperties() {
     // Dynamic QSS properties need a repolish after changing orientation or group membership.
     style()->unpolish(this);
     style()->polish(this);
-    for (auto *button : buttons_) {
+    for (auto* button : buttons_) {
         button->style()->unpolish(button);
         button->style()->polish(button);
         button->update();
@@ -217,7 +217,7 @@ void FloatingToolBar::refreshButtonStyleProperties() {
 }
 
 void FloatingToolBar::addSeparator() {
-    auto *sep = new QWidget(this);
+    auto* sep = new QWidget(this);
     if (orientation_ == Qt::Horizontal) {
         sep->setFixedHeight(BTN_SIZE);
         sep->setFixedWidth(SEPARATOR_HEIGHT);
@@ -244,11 +244,11 @@ void FloatingToolBar::addSeparator() {
 }
 
 void FloatingToolBar::clear() {
-    for (auto *btn : buttons_) {
+    for (auto* btn : buttons_) {
         layout_->removeWidget(btn);
         delete btn;
     }
-    for (auto *sep : separators_) {
+    for (auto* sep : separators_) {
         layout_->removeWidget(sep);
         delete sep;
     }
@@ -257,24 +257,24 @@ void FloatingToolBar::clear() {
     groups_.clear();
 }
 
-QToolButton *FloatingToolBar::buttonAt(int groupIndex, int buttonIndex) const {
+QToolButton* FloatingToolBar::buttonAt(int groupIndex, int buttonIndex) const {
     if (groupIndex < 0 || groupIndex >= groups_.size()) return nullptr;
-    const auto &g = groups_[groupIndex];
+    const auto& g = groups_[groupIndex];
     int idx = g.startIdx + buttonIndex;
     if (buttonIndex < 0 || buttonIndex >= g.buttonCount || idx >= buttons_.size()) return nullptr;
     return buttons_[idx];
 }
 
 void FloatingToolBar::setButtonChecked(int groupIndex, int buttonIndex, bool checked) {
-    auto *btn = buttonAt(groupIndex, buttonIndex);
+    auto* btn = buttonAt(groupIndex, buttonIndex);
     if (!btn) return;
 
-    auto &gi = groups_[groupIndex];
+    auto& gi = groups_[groupIndex];
 
     if (gi.mode == GroupConfig::Exclusive && checked) {
         // Uncheck others in group
         for (int j = 0; j < gi.buttonCount; j++) {
-            auto *other = buttons_[gi.startIdx + j];
+            auto* other = buttons_[gi.startIdx + j];
             if (other != btn) {
                 other->setChecked(false);
             }
@@ -284,7 +284,7 @@ void FloatingToolBar::setButtonChecked(int groupIndex, int buttonIndex, bool che
 }
 
 bool FloatingToolBar::isButtonChecked(int groupIndex, int buttonIndex) const {
-    auto *btn = buttonAt(groupIndex, buttonIndex);
+    auto* btn = buttonAt(groupIndex, buttonIndex);
     return btn && btn->isChecked();
 }
 
@@ -298,17 +298,17 @@ void FloatingToolBar::setAnchorMargins(int margin) {
     reposition();
 }
 
-void FloatingToolBar::resizeEvent(QResizeEvent *event) {
+void FloatingToolBar::resizeEvent(QResizeEvent* event) {
     QFrame::resizeEvent(event);
     reposition();
 }
 
-void FloatingToolBar::showEvent(QShowEvent *event) {
+void FloatingToolBar::showEvent(QShowEvent* event) {
     QFrame::showEvent(event);
     reposition();
 }
 
-bool FloatingToolBar::eventFilter(QObject *obj, QEvent *event) {
+bool FloatingToolBar::eventFilter(QObject* obj, QEvent* event) {
     if (obj == parent() && (event->type() == QEvent::Resize || event->type() == QEvent::Move)) {
         reposition();
     }
@@ -316,7 +316,7 @@ bool FloatingToolBar::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void FloatingToolBar::reposition() {
-    auto *p = parentWidget();
+    auto* p = parentWidget();
     if (!p) return;
 
     adjustSize();

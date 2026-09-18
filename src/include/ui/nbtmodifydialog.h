@@ -15,20 +15,20 @@ class NBTModifyDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit NBTModifyDialog(QWidget *parent = nullptr);
-    bl::nbt::abstract_tag *createTagWithCurrent(QString &err) const;
-    bool modifyCurrentTag(bl::nbt::abstract_tag *&tag, QString &err) const;
+    explicit NBTModifyDialog(QWidget* parent = nullptr);
+    bl::nbt::abstract_tag* createTagWithCurrent(QString& err) const;
+    bool modifyCurrentTag(bl::nbt::abstract_tag*& tag, QString& err) const;
     ~NBTModifyDialog();
-    bool setCreateMode(bl::nbt::abstract_tag *tag);
-    bool setModifyMode(const bl::nbt::abstract_tag *tag);
+    bool setCreateMode(bl::nbt::abstract_tag* tag);
+    bool setModifyMode(const bl::nbt::abstract_tag* tag);
 
    protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
    private:
     void resetUI() const;
     void updateValueState() const;
-    Ui::NBTModifyDialog *ui;
+    Ui::NBTModifyDialog* ui;
     mutable bool lock_type_combobox_{false};
 };
 

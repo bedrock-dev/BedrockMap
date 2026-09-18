@@ -14,13 +14,13 @@ class NewLevelForm : public QDialog {
     Q_OBJECT
 
    public:
-    explicit NewLevelForm(QWidget *parent = nullptr);
+    explicit NewLevelForm(QWidget* parent = nullptr);
     ~NewLevelForm();
 
     NewLevelParams params() const;
 
    private:
-    Ui::NewLevelForm *ui;
+    Ui::NewLevelForm* ui;
     bl::biome selectedBiome_ = bl::biome::plains;
 };
 

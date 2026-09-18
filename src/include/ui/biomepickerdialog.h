@@ -13,7 +13,7 @@ class BiomePickerDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit BiomePickerDialog(QWidget *parent = nullptr);
+    explicit BiomePickerDialog(QWidget* parent = nullptr);
     ~BiomePickerDialog();
 
     [[nodiscard]] bl::biome selectedBiome() const;
@@ -23,7 +23,7 @@ class BiomePickerDialog : public QDialog {
     void populateTables();
     static std::vector<bl::biome> allBiomes();
 
-    Ui::BiomePickerDialog *ui;
+    Ui::BiomePickerDialog* ui;
     bl::biome selected_{bl::biome::none};
 };
 

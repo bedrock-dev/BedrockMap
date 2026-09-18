@@ -46,17 +46,17 @@
 
 namespace {
 
-    QPointF blockPosToFloatChunkPos(const bl::block_pos &pos) {
+    QPointF blockPosToFloatChunkPos(const bl::block_pos& pos) {
         auto cp = pos.to_chunk_pos();
         auto offset = pos.in_chunk_offset();
         return QPointF{cp.x + offset.x / 16., cp.z + offset.z / 16.};
     }
 }  // namespace
-void MapWidget::drawImageInRegion(QPaintEvent *event, QPainter *p, const region_pos &pos, const QImage &image) const {
+void MapWidget::drawImageInRegion(QPaintEvent* event, QPainter* p, const region_pos& pos, const QImage& image) const {
     if (!image.isNull()) p->drawImage(QRectF(pos.x, pos.z, constant::RW, constant::RW), image, image.rect());
 }
 
-void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawGrid(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) return;
     auto pen = QPen(QColor(setting::current().GRID_LINE_COLOR), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setBrush(Qt::NoBrush);
@@ -65,7 +65,7 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     QVector<QRect> chunkRects, largeRects;
     auto cw = this->chunkWidthInPixel();
     const auto gw = constant::GRID_WIDTH;
-    forEachChunkInCamera([&chunkRects, &largeRects, cw, gw](const bl::chunk_pos &pos) {
+    forEachChunkInCamera([&chunkRects, &largeRects, cw, gw](const bl::chunk_pos& pos) {
         if (cw > 64) chunkRects.emplace_back(pos.x, pos.z, 1, 1);
         if (pos.x % constant::GRID_WIDTH == 0 && pos.z % constant::GRID_WIDTH == 0) {
             if (cw > 1.) {
@@ -84,7 +84,7 @@ void MapWidget::drawGrid(QPaintEvent *event, QPainter *painter) {
     painter->drawRects(largeRects);
 }
 
-void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
+void MapWidget::drawOpenedChunkHighlight(QPainter* p) {
     QColor color(setting::current().CHUNK_EDITOR_HIGHLIGHT_COLOR);
     QPen pen(color, setting::current().CHUNK_EDITOR_HIGHLIGHT_WIDTH);
     pen.setCosmetic(true);
@@ -93,14 +93,14 @@ void MapWidget::drawOpenedChunkHighlight(QPainter *p) {
     p->drawRect(QRectF(opened_chunk_pos_.x, opened_chunk_pos_.z, 1, 1));
 }
 
-void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawChunkPosText(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) return;
     QFontMetrics fm(CHUNK_TEXT_FONT);
     painter->setFont(CHUNK_TEXT_FONT);
     QPen pen(Qt::white);
     pen.setCosmetic(true);
     painter->setPen(pen);
-    this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos &ch) {
+    this->forEachChunkInCamera([event, this, painter, &fm, &pen](const bl::chunk_pos& ch) {
         if ((ch.x % constant::GRID_WIDTH == 0 && ch.z % constant::GRID_WIDTH == 0) || scaleLevel() >= 128) {
             auto text = QString("%1,%2").arg(QString::number(ch.x << 4), QString::number(ch.z << 4));
             auto p = chunkPosToViewPos(ch);
@@ -111,14 +111,14 @@ void MapWidget::drawChunkPosText(QPaintEvent *event, QPainter *painter) {
     });
 }
 
-void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawDebugWindow(QPaintEvent* event, QPainter* painter) {
     QFont font("JetBrains Mono", 8, 150);
     painter->setFont(font);
     QFontMetrics fm(font);
     auto dbgInfo = level_loader_->debugInfo();
     dbgInfo.push_back(QString("Memory usage: %1 MiB").arg(QString::number(processmonitor::memoryUsageMiB())));
     int maxWidth = 1;
-    for (auto &s : dbgInfo) maxWidth = std::max(maxWidth, fm.horizontalAdvance(s));
+    for (auto& s : dbgInfo) maxWidth = std::max(maxWidth, fm.horizontalAdvance(s));
     constexpr int kMargin = 8;
     constexpr int kShadowOffset = 1;
     const int bgW = maxWidth + kMargin * 2;
@@ -139,25 +139,25 @@ void MapWidget::drawDebugWindow(QPaintEvent *event, QPainter *painter) {
  * @param event
  * @param painter
  */
-void MapWidget::drawSlimeChunks(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawSlimeChunks(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) return;
     // slime chunks only exist in the overworld
     if (option_.dim != 0) return;
-    this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
+    this->foreachRegionInCamera([event, this, painter](const region_pos& rp) {
         auto top = level_loader_->bakedSlimeChunkImage(rp);
         this->drawImageInRegion(event, painter, rp, top);
     });
 }
 
-void MapWidget::drawBiome(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawBiome(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) return;
-    this->foreachRegionInCamera([event, this, painter](const region_pos &rp) {
+    this->foreachRegionInCamera([event, this, painter](const region_pos& rp) {
         auto top = level_loader_->bakedBiomeImage(rp);
         this->drawImageInRegion(event, painter, rp, top);
     });
 }
 
-void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawTerrain(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) {
         auto [minChunk, maxChunk, renderRange] = this->getRenderRange(this->camera_);
         (void)renderRange;
@@ -180,13 +180,13 @@ void MapWidget::drawTerrain(QPaintEvent *event, QPainter *painter) {
         this->drawCoordsBoundingBox(painter);
         return;
     }
-    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos &rp) {
+    this->foreachRegionInCamera([event, this, painter](const bl::chunk_pos& rp) {
         auto terrain = level_loader_->bakedTerrainImage(rp);
         this->drawImageInRegion(event, painter, rp, terrain);
     });
 }
 
-void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
+void MapWidget::drawCoordsBoundingBox(QPainter* painter) {
     if (!level_loader_->chunkCoordsReady()) return;
     const auto bounds = level_loader_->chunkCoordsBoundingBox(option_.dim);
     if (!bounds || !bounds->valid) return;
@@ -199,7 +199,7 @@ void MapWidget::drawCoordsBoundingBox(QPainter *painter) {
                              static_cast<qreal>(bounds->max_z - bounds->min_z + 1)));
 }
 
-void MapWidget::drawCoordsMiniMap(QPainter *painter) {
+void MapWidget::drawCoordsMiniMap(QPainter* painter) {
     if (!level_loader_ || !level_loader_->preloadAllChunkCoords() || !level_loader_->chunkCoordsReady()) return;
     if (!isCoordsMiniMapEnabled()) return;
 
@@ -238,7 +238,7 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     qreal maxX = minX;
     qreal minZ = viewCorners[0].y();
     qreal maxZ = minZ;
-    for (const auto &corner : viewCorners) {
+    for (const auto& corner : viewCorners) {
         minX = std::min(minX, corner.x());
         maxX = std::max(maxX, corner.x());
         minZ = std::min(minZ, corner.y());
@@ -254,13 +254,13 @@ void MapWidget::drawCoordsMiniMap(QPainter *painter) {
     painter->restore();
 }
 
-void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
+void MapWidget::drawVillages(QPaintEvent* event, QPainter* p) {
     if (villages_.isEmpty()) return;
     auto pen = QPen(QColor(0, 223, 162), 3);
     pen.setCosmetic(true);
     p->setPen(pen);
     p->setBrush(QBrush(QColor(0, 223, 162, 30)));
-    const auto &vs = villages_;
+    const auto& vs = villages_;
     auto [mi, ma, render] = this->getRenderRange(this->camera_);
     for (auto i = vs.cbegin(), end = vs.cend(); i != end; ++i) {
         if (this->option_.dim != i.value().dim) continue;
@@ -270,7 +270,7 @@ void MapWidget::drawVillages(QPaintEvent *event, QPainter *p) {
     }
 }
 
-void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawHSAs(QPaintEvent* event, QPainter* painter) {
     QColor colors[]{
         QColor(0, 0, 0, 0),         QColor(0, 223, 162, 255),  // 1:NetherFortress
         QColor(255, 0, 96, 255),                               // 2:SwampHut
@@ -279,9 +279,9 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
         QColor(0, 121, 255, 255),                              // 5:PillagerOutpost
         QColor(0, 0, 0, 0),
     };
-    this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos &rp) {
+    this->foreachRegionInCamera([event, this, painter, colors](const bl::chunk_pos& rp) {
         auto hss = level_loader_->getHSAs(rp);
-        for (auto &hsa : hss) {
+        for (auto& hsa : hss) {
             auto outlineColor = colors[static_cast<int>(hsa.type)];
             auto pen = QPen(outlineColor, 3);
             pen.setCosmetic(true);
@@ -297,19 +297,19 @@ void MapWidget::drawHSAs(QPaintEvent *event, QPainter *painter) {
     });
 }
 
-void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
+void MapWidget::drawActors(QPaintEvent* event, QPainter* painter) {
     if (coordsOverviewMode()) return;
     QPen pen(QColor(20, 20, 20));
     painter->setBrush(QBrush(QColor(255, 10, 10)));
-    this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos &ch) {
+    this->foreachRegionInCamera([event, this, painter, &pen](const bl::chunk_pos& ch) {
         if (setting::current().ACTOR_RENDER_STYLE == 0) {
             // draw all
             auto actors = level_loader_->getActorList(ch);
-            for (auto &kv : actors) {
+            for (auto& kv : actors) {
                 if (!kv.first) continue;
-                for (auto &actor : kv.second) {
+                for (auto& actor : kv.second) {
                     auto pos = this->blockPosToViewPos(bl::block_pos(actor.x, 0, actor.z));
-                    auto *img = kv.first;
+                    auto* img = kv.first;
                     auto w = img->width();
                     auto h = img->height();
                     painter->drawImage(QRectF(pos.x() - w / 2., pos.y() - h / 2., w, h), *img, img->rect());
@@ -317,10 +317,10 @@ void MapWidget::drawActors(QPaintEvent *event, QPainter *painter) {
             }
         } else {  // only draw the first
             auto actorCtrs = level_loader_->getActorCountList(ch);
-            for (auto &kv : actorCtrs) {
+            for (auto& kv : actorCtrs) {
                 auto chunk_pos = kv.first;
-                auto &inChunkActors = kv.second;
-                for (auto &iav : inChunkActors) {
+                auto& inChunkActors = kv.second;
+                for (auto& iav : inChunkActors) {
                     auto img = iav.first;
                     auto countInfo = iav.second;
                     auto count = countInfo.count;

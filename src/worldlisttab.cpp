@@ -44,7 +44,7 @@ namespace {
         return pm;
     }
 
-    QPixmap loadWorldThumbnail(const QString &dirPath) {
+    QPixmap loadWorldThumbnail(const QString& dirPath) {
         QString thumbPath = dirPath + "/world_icon.jpeg";
         if (QFileInfo::exists(thumbPath)) {
             QPixmap pm(thumbPath);
@@ -60,8 +60,8 @@ namespace {
 // ===========================================================================
 //  SectionHeader
 // ===========================================================================
-SectionHeader::SectionHeader(const QString &title, int count, QWidget *parent) : QWidget(parent) {
-    auto *layout = new QHBoxLayout(this);
+SectionHeader::SectionHeader(const QString& title, int count, QWidget* parent) : QWidget(parent) {
+    auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     title_label_ = new QLabel(title, this);
@@ -84,7 +84,7 @@ void SectionHeader::setCount(int count) { count_label_->setText(QString("(%1)").
 // ===========================================================================
 //  WorldListItem
 // ===========================================================================
-WorldListItem::WorldListItem(const LevelPathInfo &info, QWidget *parent) : QWidget(parent), info_(info) { setupUI(); }
+WorldListItem::WorldListItem(const LevelPathInfo& info, QWidget* parent) : QWidget(parent), info_(info) { setupUI(); }
 
 void WorldListItem::setupUI() {
     setFixedHeight(ITEM_HEIGHT);
@@ -92,7 +92,7 @@ void WorldListItem::setupUI() {
     setAttribute(Qt::WA_StyledBackground, true);
     setStyleSheet("WorldListItem { background-color: transparent; }");
 
-    auto *root = new QHBoxLayout(this);
+    auto* root = new QHBoxLayout(this);
     root->setContentsMargins(6, 3, 8, 3);
     root->setSpacing(8);
 
@@ -105,10 +105,10 @@ void WorldListItem::setupUI() {
     root->addWidget(thumb_label_);
 
     // --- middle: name + version / path ---
-    auto *middleLayout = new QVBoxLayout();
+    auto* middleLayout = new QVBoxLayout();
     middleLayout->setSpacing(1);
 
-    auto *nameRow = new QHBoxLayout();
+    auto* nameRow = new QHBoxLayout();
     nameRow->setSpacing(6);
 
     name_label_ = new QLabel(QString::fromStdString(info_.levelName), this);
@@ -133,7 +133,7 @@ void WorldListItem::setupUI() {
     root->addLayout(middleLayout, 1);  // stretch = 1
 
     // --- right: time + size ---
-    auto *rightLayout = new QVBoxLayout();
+    auto* rightLayout = new QVBoxLayout();
     rightLayout->setSpacing(1);
     rightLayout->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
@@ -150,7 +150,7 @@ void WorldListItem::setupUI() {
     setLayout(root);
 }
 
-void WorldListItem::setInfo(const LevelPathInfo &info) {
+void WorldListItem::setInfo(const LevelPathInfo& info) {
     info_ = info;
 
     // update thumbnail
@@ -170,16 +170,16 @@ QString WorldListItem::formatSize(int64_t bytes) const { return bytesToString(by
 
 QString WorldListItem::formatTime(int64_t timestamp) const { return timestampToString(timestamp); }
 
-void WorldListItem::mousePressEvent(QMouseEvent *event) {
+void WorldListItem::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         emit clicked(info_.path);
     }
     QWidget::mousePressEvent(event);
 }
 
-void WorldListItem::contextMenuEvent(QContextMenuEvent *event) {
+void WorldListItem::contextMenuEvent(QContextMenuEvent* event) {
     QMenu menu(this);
-    auto *action = menu.addAction(tr("msg.welcome.openFolder"));
+    auto* action = menu.addAction(tr("msg.welcome.openFolder"));
     connect(action, &QAction::triggered, this, [this]() {
         QString winPath = QString::fromStdString(info_.path);
         // Use explorer /select, to open the folder and highlight the world folder
@@ -188,13 +188,13 @@ void WorldListItem::contextMenuEvent(QContextMenuEvent *event) {
     menu.exec(event->globalPos());
 }
 
-void WorldListItem::enterEvent(QEnterEvent *event) {
+void WorldListItem::enterEvent(QEnterEvent* event) {
     QWidget::enterEvent(event);
     auto bg = qApp->palette().color(QPalette::Window);
     setStyleSheet(QString("WorldListItem { background-color: %1; }").arg(bg.darker(110).name()));
 }
 
-void WorldListItem::leaveEvent(QEvent *event) {
+void WorldListItem::leaveEvent(QEvent* event) {
     QWidget::leaveEvent(event);
     setStyleSheet("WorldListItem { background-color: transparent; }");
 }
@@ -202,10 +202,10 @@ void WorldListItem::leaveEvent(QEvent *event) {
 // ===========================================================================
 //  WorldListTab
 // ===========================================================================
-WorldListTab::WorldListTab(QWidget *parent) : QWidget(parent) { setupUI(); }
+WorldListTab::WorldListTab(QWidget* parent) : QWidget(parent) { setupUI(); }
 
 void WorldListTab::setupUI() {
-    auto *root = new QVBoxLayout(this);
+    auto* root = new QVBoxLayout(this);
     root->setAlignment(Qt::AlignTop);
     root->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
     root->setSpacing(SPACING);
@@ -222,13 +222,13 @@ void WorldListTab::setupUI() {
     setLayout(root);
 }
 
-QListWidget *WorldListTab::createSection(QVBoxLayout *parent, const QString &title, SectionHeader **outHeader) {
-    auto *header = new SectionHeader(title, 0, this);
+QListWidget* WorldListTab::createSection(QVBoxLayout* parent, const QString& title, SectionHeader** outHeader) {
+    auto* header = new SectionHeader(title, 0, this);
     if (outHeader) *outHeader = header;
     parent->addWidget(header);
     parent->addSpacing(4);
 
-    auto *listWidget = new QListWidget(this);
+    auto* listWidget = new QListWidget(this);
     listWidget->setSelectionMode(QAbstractItemView::NoSelection);
     listWidget->setFocusPolicy(Qt::NoFocus);
     listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -251,12 +251,12 @@ QListWidget *WorldListTab::createSection(QVBoxLayout *parent, const QString &tit
 // ---------------------------------------------------------------------------
 //  data setters
 // ---------------------------------------------------------------------------
-void WorldListTab::setRecentPaths(const QStringList &paths) {
+void WorldListTab::setRecentPaths(const QStringList& paths) {
     recent_paths_ = paths;
     rebuildRecentList();
 }
 
-void WorldListTab::setDiscoveredLevels(const std::vector<LevelPathInfo> &levels) {
+void WorldListTab::setDiscoveredLevels(const std::vector<LevelPathInfo>& levels) {
     discovered_levels_ = levels;
     rebuildScannedLists();
 }
@@ -289,17 +289,17 @@ void WorldListTab::rebuildRecentList() {
         placeholder.lastModified = 0;
         placeholder.sizeBytes = 0;
 
-        auto *item = new QListWidgetItem();
-        auto *w = new WorldListItem(placeholder, this);
+        auto* item = new QListWidgetItem();
+        auto* w = new WorldListItem(placeholder, this);
         item->setSizeHint(QSize(0, ITEM_HEIGHT));
         recent_list_->addItem(item);
         recent_list_->setItemWidget(item, w);
 
-        connect(w, &WorldListItem::clicked, this, [this](const std::string &p) { emit openLevelRequested(QString::fromStdString(p)); });
+        connect(w, &WorldListItem::clicked, this, [this](const std::string& p) { emit openLevelRequested(QString::fromStdString(p)); });
         ++validCount;
     }
     // rebuild the internal list to skip dead entries
-    recent_paths_.erase(std::remove_if(recent_paths_.begin(), recent_paths_.end(), [](const QString &p) { return !QDir(p).exists(); }),
+    recent_paths_.erase(std::remove_if(recent_paths_.begin(), recent_paths_.end(), [](const QString& p) { return !QDir(p).exists(); }),
                         recent_paths_.end());
 
     if (validCount == 0) {
@@ -319,17 +319,17 @@ void WorldListTab::loadNextRecentInfo() {
     auto watcher = new QFutureWatcher<LevelPathInfo>(this);
     connect(watcher, &QFutureWatcher<LevelPathInfo>::finished, this, [this, watcher, idx]() {
         LevelPathInfo info = watcher->result();
-        auto *item = recent_list_->item(idx);
+        auto* item = recent_list_->item(idx);
         if (!info.isValid) {
             // hide invalid entries
             if (item) {
-                auto *w = recent_list_->itemWidget(item);
+                auto* w = recent_list_->itemWidget(item);
                 recent_list_->removeItemWidget(item);
                 delete w;
                 delete item;
             }
         } else if (item) {
-            auto *w = qobject_cast<WorldListItem *>(recent_list_->itemWidget(item));
+            auto* w = qobject_cast<WorldListItem*>(recent_list_->itemWidget(item));
             if (w) w->setInfo(info);
         }
         watcher->deleteLater();
@@ -347,17 +347,17 @@ void WorldListTab::rebuildScannedLists() {
 
     int releaseCount = 0, previewCount = 0;
 
-    auto addLevel = [this](QListWidget *list, const LevelPathInfo &info) {
-        auto *item = new QListWidgetItem();
-        auto *w = new WorldListItem(info, this);
+    auto addLevel = [this](QListWidget* list, const LevelPathInfo& info) {
+        auto* item = new QListWidgetItem();
+        auto* w = new WorldListItem(info, this);
         item->setSizeHint(QSize(0, ITEM_HEIGHT));
         list->addItem(item);
         list->setItemWidget(item, w);
 
-        connect(w, &WorldListItem::clicked, this, [this](const std::string &p) { emit openLevelRequested(QString::fromStdString(p)); });
+        connect(w, &WorldListItem::clicked, this, [this](const std::string& p) { emit openLevelRequested(QString::fromStdString(p)); });
     };
 
-    for (const auto &level : discovered_levels_) {
+    for (const auto& level : discovered_levels_) {
         if (!level.isValid) continue;
         if (level.preview) {
             addLevel(preview_list_, level);
@@ -369,9 +369,9 @@ void WorldListTab::rebuildScannedLists() {
     }
 
     // empty placeholders
-    auto addEmpty = [this](QListWidget *list) {
-        auto *item = new QListWidgetItem();
-        auto *label = new QLabel(tr("msg.welcome.noRecent"), this);
+    auto addEmpty = [this](QListWidget* list) {
+        auto* item = new QListWidgetItem();
+        auto* label = new QLabel(tr("msg.welcome.noRecent"), this);
         label->setStyleSheet("color: gray; font-size: 12px; padding: 8px;");
         item->setSizeHint(label->sizeHint());
         list->addItem(item);
@@ -382,11 +382,11 @@ void WorldListTab::rebuildScannedLists() {
 
     // Update section header counts (order: Recent, Release, Preview)
     int headerIdx = 0;
-    auto *layout = qobject_cast<QVBoxLayout *>(this->layout());
+    auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
     if (layout) {
         for (int i = 0; i < layout->count(); ++i) {
-            auto *w = layout->itemAt(i)->widget();
-            auto *header = qobject_cast<SectionHeader *>(w);
+            auto* w = layout->itemAt(i)->widget();
+            auto* header = qobject_cast<SectionHeader*>(w);
             if (header) {
                 if (headerIdx == 0)
                     header->setCount(recent_list_->count());

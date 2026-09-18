@@ -40,16 +40,16 @@ class LevelPathManager {
     void dumpPaths();
 
     // recent history (was CacheManager)
-    void addRecentPath(const QString &path);
+    void addRecentPath(const QString& path);
     QStringList recentPaths() const;
     void saveHistory();
     void loadHistory();
 
     // scan results
-    const std::vector<LevelPathInfo> &discoveredLevels() const { return discovered_levels_; }
+    const std::vector<LevelPathInfo>& discoveredLevels() const { return discovered_levels_; }
 
     // build LevelPathInfo from a world directory path
-    static LevelPathInfo makeLevelInfo(const QString &dirPath);
+    static LevelPathInfo makeLevelInfo(const QString& dirPath);
 
     static const std::string GAMES_REL_PATH;
     static const std::string PACKAGE_UWP;

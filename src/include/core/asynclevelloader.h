@@ -60,19 +60,19 @@ class AsyncLevelLoader : public QObject {
 
     void clearAllCache();
 
-    bool open(const std::string &path);
+    bool open(const std::string& path);
 
     void close();
 
-    bl::bedrock_level &level() { return storage_.level(); }
+    bl::bedrock_level& level() { return storage_.level(); }
 
     inline bool isOpen() const { return this->loaded_; }
 
     inline bool isDirty() const { return storage_.isDirty(); }
 
-    void setFilter(const MapFilter &f) { this->map_filter_ = f; }
+    void setFilter(const MapFilter& f) { this->map_filter_ = f; }
 
-    const MapFilter &filter() const { return this->map_filter_; }
+    const MapFilter& filter() const { return this->map_filter_; }
 
     void setTransparentVoid(bool v) { transparent_void_.store(v); }
 
@@ -84,7 +84,7 @@ class AsyncLevelLoader : public QObject {
 
     bool preloadAllChunkCoords() const { return preload_all_chunk_coords_; }
 
-    void setRenderViewport(const region_pos &minRegion, const region_pos &maxRegion);
+    void setRenderViewport(const region_pos& minRegion, const region_pos& maxRegion);
 
     bool chunkCoordsReady() const { return chunk_coords_service_.ready(); }
 
@@ -92,69 +92,69 @@ class AsyncLevelLoader : public QObject {
         return loaded_.load(std::memory_order_acquire) && chunk_coords_service_.loading(preload_all_chunk_coords_);
     }
 
-    const ChunkCoordsIndex &chunkCoords() const { return chunk_coords_service_.index(); }
+    const ChunkCoordsIndex& chunkCoords() const { return chunk_coords_service_.index(); }
 
-    QImage chunkCoordsImage(const region_pos &rp) const;
+    QImage chunkCoordsImage(const region_pos& rp) const;
 
     std::optional<ChunkCoordsBoundingBox> chunkCoordsBoundingBox(int dim) const;
 
-    void loadGlobalData(GlobalNBTLoadResult &result, std::atomic_bool &stop);
+    void loadGlobalData(GlobalNBTLoadResult& result, std::atomic_bool& stop);
 
    public:
     /*region cache*/
-    QImage bakedBiomeImage(const region_pos &rp);
+    QImage bakedBiomeImage(const region_pos& rp);
 
-    QImage bakedTerrainImage(const region_pos &rp);
+    QImage bakedTerrainImage(const region_pos& rp);
 
-    QImage bakedSlimeChunkImage(const region_pos &rp);
+    QImage bakedSlimeChunkImage(const region_pos& rp);
 
-    BlockTipsInfo getBlockTips(const bl::block_pos &p, int dim);
+    BlockTipsInfo getBlockTips(const bl::block_pos& p, int dim);
 
-    std::string getBlockName(const bl::block_pos &p, int dim);
+    std::string getBlockName(const bl::block_pos& p, int dim);
 
-    std::unordered_map<QImage *, std::vector<bl::vec3>> getActorList(const region_pos &rp);
+    std::unordered_map<QImage*, std::vector<bl::vec3>> getActorList(const region_pos& rp);
 
-    std::map<bl::chunk_pos, std::map<QImage *, ChunkRegion::ActorCount>> getActorCountList(const region_pos &rp);
+    std::map<bl::chunk_pos, std::map<QImage*, ChunkRegion::ActorCount>> getActorCountList(const region_pos& rp);
 
-    std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos &rp);
+    std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos& rp);
 
     /// Height-map cache for shadow rendering.
     /// Returns world-space heights (-128 = void, others = raw + chunk's min_y).
     /// Thread-safe — safe to call from worker threads during renderStyle2.
-    std::optional<std::array<int16_t, 256>> getHeightMap(const bl::chunk_pos &pos);
+    std::optional<std::array<int16_t, 256>> getHeightMap(const bl::chunk_pos& pos);
 
     /// Preload a height map directly (avoids LevelDB read when data is already
     /// available from a loaded chunk). Thread-safe.
-    void putHeightMap(const bl::chunk_pos &pos, const std::array<int16_t, 256> &hm);
+    void putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& hm);
 
     /*Modify*/
     // return a chunk from cache or loader; caller owns the returned pointer and must delete it
-    bl::chunk *getChunk(const bl::chunk_pos &p, bl::chunk_load_policy policy = bl::chunk_load_policy::All);
+    bl::chunk* getChunk(const bl::chunk_pos& p, bl::chunk_load_policy policy = bl::chunk_load_policy::All);
 
     // return a raw chunk from cache or loader
-    std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &p);
+    std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos& p);
 
     // delete chunk
-    bool deleteChunk(const bl::chunk_pos &p);
+    bool deleteChunk(const bl::chunk_pos& p);
     // modify a chunk
-    bool putRawChunk(const bl::raw_chunk &raw);
+    bool putRawChunk(const bl::raw_chunk& raw);
 
-    bool createVoid(const bl::chunk_pos &p);
+    bool createVoid(const bl::chunk_pos& p);
 
-    bool setRawChunkBiome(const bl::chunk_pos &p, bl::biome biome);
+    bool setRawChunkBiome(const bl::chunk_pos& p, bl::biome biome);
 
     /// Drop cached region tiles covering the given edited chunks. Thread-safe:
     /// safe to call from the bulk-edit worker threads after the edits land.
-    void invalidateRegionTiles(const std::vector<bl::chunk_pos> &chunks);
+    void invalidateRegionTiles(const std::vector<bl::chunk_pos>& chunks);
 
     /// Convenience overload for a rectangular chunk selection.
-    void invalidateRegionTiles(const QRegion &chunkRegion, int dim);
+    void invalidateRegionTiles(const QRegion& chunkRegion, int dim);
 
-    void clearChunkCache(const bl::chunk_pos &p);
+    void clearChunkCache(const bl::chunk_pos& p);
 
     bool commit();
 
-    bool commitEdits(const std::unordered_map<std::string, std::string> &globalModifies, const bl::nbt::compound_tag *levelDat);
+    bool commitEdits(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat);
 
     ChunkStorage::CommitError lastCommitError() const { return edit_service_.lastCommitError(); }
 
@@ -165,10 +165,10 @@ class AsyncLevelLoader : public QObject {
    private:
     void closeImpl();
 
-    ChunkRegion *tryGetRegion(const region_pos &p, bool &empty);
+    ChunkRegion* tryGetRegion(const region_pos& p, bool& empty);
 
     // Look up an already-cached region without scheduling a load; empty=true for known-empty.
-    ChunkRegion *peekRegion(const region_pos &p, bool &empty);
+    ChunkRegion* peekRegion(const region_pos& p, bool& empty);
 
    private:
     std::atomic_bool loaded_{false};

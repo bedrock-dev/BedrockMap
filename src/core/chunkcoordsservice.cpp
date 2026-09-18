@@ -8,7 +8,7 @@ ChunkCoordsService::ChunkCoordsService() { preload_pool_.setMaxThreadCount(1); }
 
 ChunkCoordsService::~ChunkCoordsService() { close(); }
 
-void ChunkCoordsService::start(leveldb::DB *db, bool preloadAll, std::function<void()> ready) {
+void ChunkCoordsService::start(leveldb::DB* db, bool preloadAll, std::function<void()> ready) {
     close();
     stop_.store(false, std::memory_order_release);
     if (!preloadAll) {
@@ -32,7 +32,7 @@ void ChunkCoordsService::close() {
     index_.clear();
 }
 
-void ChunkCoordsService::enqueueUpdate(const bl::chunk_pos &pos, bool present) {
+void ChunkCoordsService::enqueueUpdate(const bl::chunk_pos& pos, bool present) {
     if (!ready()) return;
     index_.enqueueUpdate(pos, present, [this]() { emit coordsUpdated(); });
 }

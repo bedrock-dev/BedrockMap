@@ -12,8 +12,8 @@
 
 namespace {
 
-    void forEachChunkInRegion(const QRegion &chunkRegion, int dim, const std::function<void(const bl::chunk_pos &)> &fn) {
-        for (const auto &r : chunkRegion) {
+    void forEachChunkInRegion(const QRegion& chunkRegion, int dim, const std::function<void(const bl::chunk_pos&)>& fn) {
+        for (const auto& r : chunkRegion) {
             int x1 = r.x();
             int z1 = r.y();
             int x2 = r.x() + r.width() - 1;
@@ -28,10 +28,10 @@ namespace {
 
 }  // namespace
 
-void ChunkOperator::exportRegion(const QRegion &chunkRegion, const QString &filePath, AsyncLevelLoader &loader, int dim) {
+void ChunkOperator::exportRegion(const QRegion& chunkRegion, const QString& filePath, AsyncLevelLoader& loader, int dim) {
     ExportedRegion region;
-    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) {
-        auto *ref = loader.getChunk(cp);
+    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos& cp) {
+        auto* ref = loader.getChunk(cp);
         if (!ref) return;
         bl::raw_chunk raw(cp);
         if (!raw.read(loader.level())) return;
@@ -50,10 +50,10 @@ void ChunkOperator::exportRegion(const QRegion &chunkRegion, const QString &file
     LOG_F(INFO, "ChunkOperator: exported %d chunks to %s", static_cast<int>(region.chunkCount()), filePath.toStdString().c_str());
 }
 
-void ChunkOperator::importRegion(const ExportedRegion &region, AsyncLevelLoader &loader) {
+void ChunkOperator::importRegion(const ExportedRegion& region, AsyncLevelLoader& loader) {
     std::vector<bl::chunk_pos> edited;
     edited.reserve(region.chunks().size());
-    for (const auto &chunk : region.chunks()) {
+    for (const auto& chunk : region.chunks()) {
         loader.putRawChunk(chunk);
         edited.push_back(chunk.pos());
     }
@@ -61,18 +61,18 @@ void ChunkOperator::importRegion(const ExportedRegion &region, AsyncLevelLoader 
     LOG_F(INFO, "ChunkOperator: imported %d chunks", static_cast<int>(region.chunkCount()));
 }
 
-void ChunkOperator::deleteRegion(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim) {
-    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.deleteChunk(cp); });
+void ChunkOperator::deleteRegion(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim) {
+    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos& cp) { loader.deleteChunk(cp); });
     loader.invalidateRegionTiles(chunkRegion, dim);
 }
 
-void ChunkOperator::createVoid(const QRegion &chunkRegion, AsyncLevelLoader &loader, int dim) {
+void ChunkOperator::createVoid(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim) {
     LOG_F(INFO, "Create void!");
-    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.createVoid(cp); });
+    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos& cp) { loader.createVoid(cp); });
     loader.invalidateRegionTiles(chunkRegion, dim);
 }
 
-void ChunkOperator::setRegionBiome(const QRegion &chunkRegion, AsyncLevelLoader &loader, bl::biome biome, int dim) {
-    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos &cp) { loader.setRawChunkBiome(cp, biome); });
+void ChunkOperator::setRegionBiome(const QRegion& chunkRegion, AsyncLevelLoader& loader, bl::biome biome, int dim) {
+    forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos& cp) { loader.setRawChunkBiome(cp, biome); });
     loader.invalidateRegionTiles(chunkRegion, dim);
 }

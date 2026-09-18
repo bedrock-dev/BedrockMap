@@ -5,7 +5,7 @@
 
 std::pair<int, int> RawChunkCache::chunkCounts() const {
     int empty = 0, nonEmpty = 0;
-    for (const auto &kv : cache_) {
+    for (const auto& kv : cache_) {
         if (!kv.second.shouldDelete && !kv.second.chunk.get_sub_chunks().empty()) {
             nonEmpty++;
         } else {
@@ -15,27 +15,27 @@ std::pair<int, int> RawChunkCache::chunkCounts() const {
     return {empty, nonEmpty};
 }
 
-void RawChunkCache::putChunk(const bl::chunk_pos &pos, const bl::raw_chunk &chunk) { cache_.insert_or_assign(pos, CachedChunk{chunk}); }
+void RawChunkCache::putChunk(const bl::chunk_pos& pos, const bl::raw_chunk& chunk) { cache_.insert_or_assign(pos, CachedChunk{chunk}); }
 
-bl::chunk *RawChunkCache::getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy) const {
+bl::chunk* RawChunkCache::getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy) const {
     auto it = cache_.find(pos);
     // if a chunk are mark as deleted in cache, we think is does not exist
     if (it == cache_.end() || it->second.shouldDelete) return nullptr;
-    auto *c = new bl::chunk(pos);
+    auto* c = new bl::chunk(pos);
     c->load_from_raw_chunk(it->second.chunk, policy);
     return c;
 }
 
-std::optional<bl::raw_chunk> RawChunkCache::getRawChunk(const bl::chunk_pos &pos) const {
+std::optional<bl::raw_chunk> RawChunkCache::getRawChunk(const bl::chunk_pos& pos) const {
     auto it = cache_.find(pos);
     // if a chunk are mark as deleted in cache, we think is does not exist
     if (it == cache_.end() || it->second.shouldDelete) return std::nullopt;
     return it->second.chunk;
 }
 
-bool RawChunkCache::hasChunk(const bl::chunk_pos &pos) const { return cache_.find(pos) != cache_.end(); }
+bool RawChunkCache::hasChunk(const bl::chunk_pos& pos) const { return cache_.find(pos) != cache_.end(); }
 
-void RawChunkCache::putMissing(bl::bedrock_level &level, const bl::chunk_pos &pos) {
+void RawChunkCache::putMissing(bl::bedrock_level& level, const bl::chunk_pos& pos) {
     auto it = cache_.find(pos);
     if (it != cache_.end()) {
         it->second.shouldDelete = true;
@@ -46,9 +46,9 @@ void RawChunkCache::putMissing(bl::bedrock_level &level, const bl::chunk_pos &po
     }
 }
 
-void RawChunkCache::commit(leveldb::WriteBatch &batch) {
+void RawChunkCache::commit(leveldb::WriteBatch& batch) {
     LOG_F(INFO, "Cache size is %zu", cache_.size());
-    for (auto &[pos, entry] : cache_) {
+    for (auto& [pos, entry] : cache_) {
         entry.chunk.write(batch, entry.shouldDelete);
     }
 }

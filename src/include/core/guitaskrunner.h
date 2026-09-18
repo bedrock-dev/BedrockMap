@@ -14,14 +14,14 @@ class GuiTaskRunner : public QObject {
     Q_OBJECT
 
    public:
-    using Worker = std::function<void(GuiTaskRunner *)>;
+    using Worker = std::function<void(GuiTaskRunner*)>;
 
-    explicit GuiTaskRunner(QObject *parent = nullptr);
+    explicit GuiTaskRunner(QObject* parent = nullptr);
     ~GuiTaskRunner() override;
 
     bool start(Worker worker);
     void cancel();
-    void fail(const QString &error);
+    void fail(const QString& error);
     void waitForFinished();
     void reportProgress(int value);
 
@@ -31,9 +31,9 @@ class GuiTaskRunner : public QObject {
 
    signals:
     void started();
-    void progressChanged(int value, const QString &text);
+    void progressChanged(int value, const QString& text);
     void finished();
-    void failed(const QString &error);
+    void failed(const QString& error);
     void cancelled();
 
    private:

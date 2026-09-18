@@ -19,20 +19,20 @@ class RawChunkCache {
     bool empty() const { return cache_.empty(); }
     bool isDirty() const { return !cache_.empty(); }
 
-    void putChunk(const bl::chunk_pos &pos, const bl::raw_chunk &chunk);
+    void putChunk(const bl::chunk_pos& pos, const bl::raw_chunk& chunk);
 
-    bl::chunk *getChunk(const bl::chunk_pos &pos, bl::chunk_load_policy policy = bl::chunk_load_policy::All) const;
+    bl::chunk* getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy = bl::chunk_load_policy::All) const;
 
-    std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos &pos) const;
+    std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos& pos) const;
 
-    bool hasChunk(const bl::chunk_pos &pos) const;
+    bool hasChunk(const bl::chunk_pos& pos) const;
 
     // Put an explicit missing marker for the given position (cache key present with nullopt).
-    void putMissing(bl::bedrock_level &level, const bl::chunk_pos &pos);
+    void putMissing(bl::bedrock_level& level, const bl::chunk_pos& pos);
 
     // Write all cached raw_chunks into the batch. The cache is retained until
     // the database confirms the batch succeeded.
-    void commit(leveldb::WriteBatch &batch);
+    void commit(leveldb::WriteBatch& batch);
 
     void clear() { cache_.clear(); }
 

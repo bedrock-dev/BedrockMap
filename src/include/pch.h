@@ -28,7 +28,6 @@
 #include <QString>
 #include <QTimer>
 
-
 // Qt Widgets
 #include <QAction>
 #include <QApplication>
@@ -58,7 +57,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-
 // Qt Graphics
 #include <QBrush>
 #include <QColor>
@@ -75,13 +73,10 @@
 #include <QStyle>
 #include <QWheelEvent>
 
-
 // Qt OpenGL
 #include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 
-
 // Project core
 #include "config.h"
 #include "mapwidget.h"
-

@@ -47,19 +47,19 @@ namespace {
     // restrict coordinate cell editors to the "x,y,z" integer format
     class CoordEditDelegate : public QStyledItemDelegate {
        public:
-        explicit CoordEditDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+        explicit CoordEditDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
 
-        QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const override {
-            auto *editor = new QLineEdit(parent);
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem&, const QModelIndex&) const override {
+            auto* editor = new QLineEdit(parent);
             editor->setValidator(new QRegularExpressionValidator(QRegularExpression(R"(^-?\d+,-?\d+,-?\d+$)"), editor));
             return editor;
         }
     };
 }  // namespace
 
-HsaGridWidget::HsaGridWidget(QWidget *parent) : QWidget(parent) { setMinimumSize(320, 320); }
+HsaGridWidget::HsaGridWidget(QWidget* parent) : QWidget(parent) { setMinimumSize(320, 320); }
 
-void HsaGridWidget::setData(const std::vector<bl::hardcoded_spawn_area> &areas) {
+void HsaGridWidget::setData(const std::vector<bl::hardcoded_spawn_area>& areas) {
     this->areas_ = areas;
     this->update();
 }
@@ -75,7 +75,7 @@ void HsaGridWidget::setSelectedIndex(int idx) {
     this->update();
 }
 
-void HsaGridWidget::paintEvent(QPaintEvent *) {
+void HsaGridWidget::paintEvent(QPaintEvent*) {
     QPainter p(this);
     const auto w = width();
     const auto h = height();
@@ -89,7 +89,7 @@ void HsaGridWidget::paintEvent(QPaintEvent *) {
             const int wx = this->cx_ * 16 + i;
             const int wz = this->cz_ * 16 + j;
             QColor fill;
-            for (const auto &area : this->areas_) {
+            for (const auto& area : this->areas_) {
                 if (wx >= area.min_pos.x && wx <= area.max_pos.x && wz >= area.min_pos.z && wz <= area.max_pos.z) {
                     fill = hsaColor(area.type);
                 }
@@ -104,7 +104,7 @@ void HsaGridWidget::paintEvent(QPaintEvent *) {
         }
     }
     // thicker darker outline for each HSA region so covered areas stand out
-    for (const auto &area : this->areas_) {
+    for (const auto& area : this->areas_) {
         const double x0 = ox + (area.min_pos.x - this->cx_ * 16) * cell;
         const double z0 = oy + (area.min_pos.z - this->cz_ * 16) * cell;
         const double x1 = ox + (area.max_pos.x - this->cx_ * 16 + 1) * cell;
@@ -115,7 +115,7 @@ void HsaGridWidget::paintEvent(QPaintEvent *) {
     }
     // draw the selected highlight last so no other area covers it
     if (this->selected_ >= 0 && this->selected_ < static_cast<int>(this->areas_.size())) {
-        const auto &area = this->areas_[static_cast<size_t>(this->selected_)];
+        const auto& area = this->areas_[static_cast<size_t>(this->selected_)];
         const double x0 = ox + (area.min_pos.x - this->cx_ * 16) * cell;
         const double z0 = oy + (area.min_pos.z - this->cz_ * 16) * cell;
         const double x1 = ox + (area.max_pos.x - this->cx_ * 16 + 1) * cell;
@@ -127,8 +127,8 @@ void HsaGridWidget::paintEvent(QPaintEvent *) {
     p.drawRect(QRectF(ox, oy, cell * 16, cell * 16));
 }
 
-HsaEditorWidget::HsaEditorWidget(QWidget *parent) : QWidget(parent) {
-    auto *layout = new QVBoxLayout(this);
+HsaEditorWidget::HsaEditorWidget(QWidget* parent) : QWidget(parent) {
+    auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(2, 2, 2, 2);
     layout->setSpacing(2);
 
@@ -145,9 +145,9 @@ HsaEditorWidget::HsaEditorWidget(QWidget *parent) : QWidget(parent) {
     this->table_->setItemDelegate(new CoordEditDelegate(this));
     layout->addWidget(this->table_, 2);
 
-    auto *btnRow = new QHBoxLayout();
-    auto *addBtn = new QPushButton(tr("hsaEditor.add"), this);
-    auto *removeBtn = new QPushButton(tr("hsaEditor.remove"), this);
+    auto* btnRow = new QHBoxLayout();
+    auto* addBtn = new QPushButton(tr("hsaEditor.add"), this);
+    auto* removeBtn = new QPushButton(tr("hsaEditor.remove"), this);
     btnRow->addWidget(addBtn);
     btnRow->addWidget(removeBtn);
     btnRow->addStretch();
@@ -160,15 +160,15 @@ HsaEditorWidget::HsaEditorWidget(QWidget *parent) : QWidget(parent) {
             [this]() { this->grid_->setSelectedIndex(this->table_->currentRow()); });
 }
 
-void HsaEditorWidget::setChunk(const bl::chunk_pos &cp) {
+void HsaEditorWidget::setChunk(const bl::chunk_pos& cp) {
     this->cp_ = cp;
     this->grid_->setChunkOrigin(cp.x, cp.z);
 }
 
-void HsaEditorWidget::setData(const std::vector<bl::hardcoded_spawn_area> &areas) {
+void HsaEditorWidget::setData(const std::vector<bl::hardcoded_spawn_area>& areas) {
     this->filling_ = true;
     this->list_.clear();
-    for (const auto &a : areas) this->list_.add(a);
+    for (const auto& a : areas) this->list_.add(a);
     this->grid_->setData(areas);
     this->rebuildTable();
     this->filling_ = false;
@@ -195,17 +195,17 @@ void HsaEditorWidget::clearData() {
 void HsaEditorWidget::rebuildTable() {
     this->table_->clearContents();
     this->table_->setRowCount(static_cast<int>(this->list_.size()));
-    const auto &areas = this->list_.areas();
+    const auto& areas = this->list_.areas();
     for (int row = 0; row < static_cast<int>(areas.size()); row++) {
-        const auto &a = areas[static_cast<size_t>(row)];
-        auto *indexItem = new QTableWidgetItem(QString::number(row));
+        const auto& a = areas[static_cast<size_t>(row)];
+        auto* indexItem = new QTableWidgetItem(QString::number(row));
         indexItem->setFlags(indexItem->flags() & ~Qt::ItemIsEditable);
         this->table_->setItem(row, 0, indexItem);
-        auto *minItem = new QTableWidgetItem(QString("%1,%2,%3").arg(a.min_pos.x).arg(a.min_pos.y).arg(a.min_pos.z));
-        auto *maxItem = new QTableWidgetItem(QString("%1,%2,%3").arg(a.max_pos.x).arg(a.max_pos.y).arg(a.max_pos.z));
+        auto* minItem = new QTableWidgetItem(QString("%1,%2,%3").arg(a.min_pos.x).arg(a.min_pos.y).arg(a.min_pos.z));
+        auto* maxItem = new QTableWidgetItem(QString("%1,%2,%3").arg(a.max_pos.x).arg(a.max_pos.y).arg(a.max_pos.z));
         this->table_->setItem(row, 1, minItem);
         this->table_->setItem(row, 2, maxItem);
-        auto *typeCombo = new QComboBox();
+        auto* typeCombo = new QComboBox();
         typeCombo->addItem(hsaTypeName(bl::NetherFortress), static_cast<int>(bl::NetherFortress));
         typeCombo->addItem(hsaTypeName(bl::SwampHut), static_cast<int>(bl::SwampHut));
         typeCombo->addItem(hsaTypeName(bl::OceanMonument), static_cast<int>(bl::OceanMonument));
@@ -240,11 +240,11 @@ void HsaEditorWidget::on_remove_btn_clicked() {
 
 void HsaEditorWidget::on_table_cellChanged(int row, int column) {
     if (this->filling_ || (column != 1 && column != 2)) return;
-    auto *item = this->table_->item(row, column);
+    auto* item = this->table_->item(row, column);
     if (!item) return;
-    auto &areas = this->list_.areas();
+    auto& areas = this->list_.areas();
     if (row < 0 || row >= static_cast<int>(areas.size())) return;
-    auto &a = areas[static_cast<size_t>(row)];
+    auto& a = areas[static_cast<size_t>(row)];
 
     const auto parts = item->text().split(',');
     int vals[3];
@@ -264,7 +264,7 @@ void HsaEditorWidget::on_table_cellChanged(int row, int column) {
     }
     if (!ok) {
         // restore the previous valid value
-        const auto &saved = column == 1 ? a.min_pos : a.max_pos;
+        const auto& saved = column == 1 ? a.min_pos : a.max_pos;
         this->filling_ = true;
         item->setText(QString("%1,%2,%3").arg(saved.x).arg(saved.y).arg(saved.z));
         this->filling_ = false;
@@ -282,12 +282,12 @@ void HsaEditorWidget::on_table_cellChanged(int row, int column) {
 
 void HsaEditorWidget::on_type_changed(int index) {
     if (this->filling_) return;
-    auto *combo = qobject_cast<QComboBox *>(sender());
+    auto* combo = qobject_cast<QComboBox*>(sender());
     if (!combo) return;
     // find the row that owns this combo
     for (int row = 0; row < this->table_->rowCount(); row++) {
         if (this->table_->cellWidget(row, 3) == combo) {
-            auto &areas = this->list_.areas();
+            auto& areas = this->list_.areas();
             if (row >= 0 && row < static_cast<int>(areas.size())) {
                 areas[static_cast<size_t>(row)].type = static_cast<bl::HSAType>(combo->itemData(index).toInt());
                 this->grid_->setData(this->list_.areas());

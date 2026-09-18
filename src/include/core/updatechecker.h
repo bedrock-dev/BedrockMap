@@ -13,7 +13,7 @@ class UpdateChecker : public QObject {
     Q_OBJECT
 
    public:
-    explicit UpdateChecker(QObject *parent = nullptr);
+    explicit UpdateChecker(QObject* parent = nullptr);
 
     // Start an async check. Any in-flight request is cancelled first.
     void checkForUpdates();
@@ -21,12 +21,12 @@ class UpdateChecker : public QObject {
     [[nodiscard]] static QString apiUrl();
 
    signals:
-    void updateAvailable(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl);
+    void updateAvailable(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl);
     void upToDate();
-    void checkFailed(const QString &message);
+    void checkFailed(const QString& message);
 
    private:
-    void handleReply(QNetworkReply *reply);
+    void handleReply(QNetworkReply* reply);
 
     QNetworkAccessManager network_;
     QPointer<QNetworkReply> active_reply_;

@@ -13,10 +13,10 @@ class NbtFilePageWidget : public TabPageWidget {
     Q_OBJECT
 
    public:
-    explicit NbtFilePageWidget(QWidget *parent = nullptr);
+    explicit NbtFilePageWidget(QWidget* parent = nullptr);
     ~NbtFilePageWidget() override;
 
-    bool loadFile(const QString &path);
+    bool loadFile(const QString& path);
     /// Start an empty, unsaved document (no source file; dirty by default).
     void createNew();
     [[nodiscard]] QString getFileName() const { return file_name_; }
@@ -27,10 +27,10 @@ class NbtFilePageWidget : public TabPageWidget {
    signals:
     void dirtyChanged(bool dirty);
     /// Emitted after a successful save, with the path written to.
-    void saved(const QString &path);
+    void saved(const QString& path);
 
    private:
-    NbtWidget *nbt_editor_{nullptr};
+    NbtWidget* nbt_editor_{nullptr};
     QString file_name_;
     bool dirty_{false};
 };

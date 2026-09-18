@@ -10,7 +10,7 @@
 namespace {
     // Release notes are bilingual, separated by a "---" line: Chinese first,
     // then English. Show only the section matching the current UI language.
-    QString selectReleaseNotes(const QString &notes) {
+    QString selectReleaseNotes(const QString& notes) {
         const QStringList lines = notes.split('\n');
         int separator = -1;
         for (int i = 0; i < lines.size(); ++i) {
@@ -26,7 +26,7 @@ namespace {
     }
 }  // namespace
 
-UpdateDialog::UpdateDialog(const QString &newVersion, const QString &releaseNotes, const QString &htmlUrl, QWidget *parent)
+UpdateDialog::UpdateDialog(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl, QWidget* parent)
     : QDialog(parent), ui(new Ui::UpdateDialog), html_url_(htmlUrl) {
     ui->setupUi(this);
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);

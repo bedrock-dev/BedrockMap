@@ -15,7 +15,7 @@ class ContextMenuBuilder : public QWidget {
    public:
     ContextMenuBuilder() = delete;
     /// Build and exec the context menu at global position p.
-    static void show(QWidget *parent, MapWidget *mapWidget, const QPoint &p);
+    static void show(QWidget* parent, MapWidget* mapWidget, const QPoint& p);
 };
 
 #endif  // BEDROCKMAP_CONTEXTMENUBUILDER_H

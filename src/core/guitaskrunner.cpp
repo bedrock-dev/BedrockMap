@@ -2,7 +2,7 @@
 
 #include <QtConcurrent>
 
-GuiTaskRunner::GuiTaskRunner(QObject *parent) : QObject(parent) {}
+GuiTaskRunner::GuiTaskRunner(QObject* parent) : QObject(parent) {}
 
 GuiTaskRunner::~GuiTaskRunner() = default;
 
@@ -20,7 +20,7 @@ bool GuiTaskRunner::start(Worker worker) {
 
     // A fresh watcher per run avoids a queued finished() from a previous run
     // racing with a new start() on a reused watcher.
-    auto *watcher = new QFutureWatcher<void>(this);
+    auto* watcher = new QFutureWatcher<void>(this);
     connect(watcher, &QFutureWatcher<void>::finished, this, [this, watcher]() {
         watcher->deleteLater();
         onWorkerFinished();
@@ -47,7 +47,7 @@ void GuiTaskRunner::waitForFinished() {
 
 void GuiTaskRunner::reportProgress(int value) { emit progressChanged(value, QString()); }
 
-void GuiTaskRunner::fail(const QString &error) {
+void GuiTaskRunner::fail(const QString& error) {
     failed_.store(true);
     std::lock_guard<std::mutex> lk(text_mu_);
     error_ = error;

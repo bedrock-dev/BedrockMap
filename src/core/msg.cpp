@@ -8,22 +8,22 @@
 #include <QObject>
 #include <QString>
 
-bool WARN(const QString &msg) {
+bool WARN(const QString& msg) {
     QMessageBox::warning(nullptr, msg::WARNING_TITLE(), msg, QMessageBox::Yes, QMessageBox::Yes);
     return false;
 }
 
-bool INFO(const QString &msg) {
+bool INFO(const QString& msg) {
     QMessageBox::information(nullptr, msg::INFO_TITLE(), msg, QMessageBox::Yes, QMessageBox::Yes);
     return true;
 }
 
-bool CHECK_CONDITION(bool c, const QString &msg) {
+bool CHECK_CONDITION(bool c, const QString& msg) {
     if (!c) WARN(msg);
     return c;
 }
 
-void CHECK_RESULT(bool c, const QString &succ, const QString &fail) {
+void CHECK_RESULT(bool c, const QString& succ, const QString& fail) {
     if (c) {
         INFO(succ);
     } else {

@@ -21,19 +21,19 @@ class ChunkCoordsService : public QObject {
     ChunkCoordsService();
     ~ChunkCoordsService();
 
-    void start(leveldb::DB *db, bool preloadAll, std::function<void()> ready);
+    void start(leveldb::DB* db, bool preloadAll, std::function<void()> ready);
     void close();
 
     bool ready() const { return ready_.load(std::memory_order_acquire); }
     bool loading(bool preloadAll) const { return preloadAll && !ready(); }
 
-    void enqueueUpdate(const bl::chunk_pos &pos, bool present);
+    void enqueueUpdate(const bl::chunk_pos& pos, bool present);
 
     /// Wait until all interactive coordinate updates queued so far are applied.
     void waitForUpdates();
 
-    const ChunkCoordsIndex &index() const { return index_; }
-    QImage image(const region_pos &pos) const { return index_.image(pos); }
+    const ChunkCoordsIndex& index() const { return index_; }
+    QImage image(const region_pos& pos) const { return index_.image(pos); }
     std::optional<ChunkCoordsBoundingBox> boundingBox(int dim) const { return index_.boundingBox(dim); }
 
    signals:

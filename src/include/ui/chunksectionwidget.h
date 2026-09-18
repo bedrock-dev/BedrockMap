@@ -6,7 +6,6 @@
 
 #include "chunk.h"
 
-
 struct TerrainLayerData {
     std::string block_palette{};
     std::string block_name{};
@@ -21,11 +20,11 @@ struct TerrainData {
 class ChunkSectionWidget : public QWidget {
     Q_OBJECT
    public:
-    explicit ChunkSectionWidget(QWidget *parent = nullptr);
+    explicit ChunkSectionWidget(QWidget* parent = nullptr);
 
-    void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
 
-    void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
     inline void setYLevel(int y) {
         this->y_level_ = y;
@@ -37,18 +36,18 @@ class ChunkSectionWidget : public QWidget {
         this->update();
     }
 
-    void load_data(bl::chunk *ch);
+    void load_data(bl::chunk* ch);
 
     int get_block_pix();
 
-    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
-    void showContextMenu(const QPoint &p);
+    void showContextMenu(const QPoint& p);
 
     void setDrawGrid(bool draw_grid) { this->draw_grid_ = draw_grid; }
 
    private:
-    inline std::array<std::array<TerrainData, 16>, 16> &get_layer_data(int y) { return this->data_[y + 64]; }
+    inline std::array<std::array<TerrainData, 16>, 16>& get_layer_data(int y) { return this->data_[y + 64]; }
 
    signals:
    private:

@@ -20,9 +20,9 @@ typedef bl::chunk_pos region_pos;
 struct AppVersion {
     std::array<int, 3> core{};  // a.b.c
     int beta = -1;              // -1 = no beta suffix
-    [[nodiscard]] static std::optional<AppVersion> parse(const QString &text);
+    [[nodiscard]] static std::optional<AppVersion> parse(const QString& text);
     [[nodiscard]] QString toString() const;
-    [[nodiscard]] int compare(const AppVersion &other) const;
+    [[nodiscard]] int compare(const AppVersion& other) const;
 };
 
 // Compile-time constants (unchanging)
@@ -50,7 +50,7 @@ namespace constant {
 
     extern const QString MCBE_LEVEL_PATH;
 
-    region_pos c2r(const bl::chunk_pos &ch);
+    region_pos c2r(const bl::chunk_pos& ch);
     void initColorTable();
     QString VERSION_STRING();
 }  // namespace constant
@@ -109,10 +109,10 @@ namespace setting {
     void init();
     void load();
     void save();
-    void save(const Settings &settings);
+    void save(const Settings& settings);
 
-    [[nodiscard]] const Settings &current();
-    void apply(const Settings &settings);
+    [[nodiscard]] const Settings& current();
+    void apply(const Settings& settings);
 }  // namespace setting
 
 #endif  // BEDROCKMAP_CONFIG_H

@@ -34,7 +34,7 @@ struct ChunkCoordsBoundingBox {
     int32_t max_x{0};
     int32_t max_z{0};
 
-    void include(const bl::chunk_pos &pos) noexcept {
+    void include(const bl::chunk_pos& pos) noexcept {
         if (!valid) {
             min_x = max_x = pos.x;
             min_z = max_z = pos.z;
@@ -58,21 +58,21 @@ class CoordsRegion {
     CoordsRegion() = default;
     CoordsRegion(int32_t region_x, int32_t region_z) : region_x_(region_x), region_z_(region_z) {}
 
-    static CoordsRegion fromChunk(const bl::chunk_pos &pos) noexcept { return {floorDiv(pos.x) * SIZE, floorDiv(pos.z) * SIZE}; }
+    static CoordsRegion fromChunk(const bl::chunk_pos& pos) noexcept { return {floorDiv(pos.x) * SIZE, floorDiv(pos.z) * SIZE}; }
 
-    bool operator==(const CoordsRegion &other) const noexcept { return region_x_ == other.region_x_ && region_z_ == other.region_z_; }
+    bool operator==(const CoordsRegion& other) const noexcept { return region_x_ == other.region_x_ && region_z_ == other.region_z_; }
 
-    bool operator!=(const CoordsRegion &other) const noexcept { return !(*this == other); }
+    bool operator!=(const CoordsRegion& other) const noexcept { return !(*this == other); }
 
     struct Hash {
-        size_t operator()(const CoordsRegion &region) const noexcept {
+        size_t operator()(const CoordsRegion& region) const noexcept {
             const auto x = std::hash<int32_t>{}(region.region_x_);
             const auto z = std::hash<int32_t>{}(region.region_z_);
             return x ^ (z << 7);
         }
     };
 
-    bool insertChunk(const bl::chunk_pos &pos) const noexcept {
+    bool insertChunk(const bl::chunk_pos& pos) const noexcept {
         const auto region = fromChunk(pos);
         if (*this != region) return false;
         const auto bit = bitIndex(pos);
@@ -82,7 +82,7 @@ class CoordsRegion {
         return !wasPresent;
     }
 
-    bool removeChunk(const bl::chunk_pos &pos) const noexcept {
+    bool removeChunk(const bl::chunk_pos& pos) const noexcept {
         const auto region = fromChunk(pos);
         if (*this != region) return false;
         const auto bit = bitIndex(pos);
@@ -92,7 +92,7 @@ class CoordsRegion {
         return true;
     }
 
-    void forEachPresentChunk(const std::function<void(int32_t, int32_t)> &visitor) const {
+    void forEachPresentChunk(const std::function<void(int32_t, int32_t)>& visitor) const {
         for (int x = 0; x < SIZE; ++x) {
             for (int z = 0; z < SIZE; ++z) {
                 if (chunk_mask_.test(static_cast<std::size_t>(x * SIZE + z))) visitor(region_x_ + x, region_z_ + z);
@@ -100,7 +100,7 @@ class CoordsRegion {
         }
     }
 
-    bool containsChunk(const bl::chunk_pos &pos) const noexcept {
+    bool containsChunk(const bl::chunk_pos& pos) const noexcept {
         const auto region = fromChunk(pos);
         if (*this != region) return false;
         return chunk_mask_.test(bitIndex(pos));
@@ -125,7 +125,7 @@ class CoordsRegion {
         return value % SIZE < 0 ? quotient - 1 : quotient;
     }
 
-    static unsigned bitIndex(const bl::chunk_pos &pos) noexcept {
+    static unsigned bitIndex(const bl::chunk_pos& pos) noexcept {
         const auto region = fromChunk(pos);
         const auto local_x = pos.x - region.region_x_;
         const auto local_z = pos.z - region.region_z_;
@@ -153,44 +153,44 @@ class ChunkCoordsIndex {
 
     /// Scan all LevelDB keys, build the index, and generate region images.
     /// Returns false when the scan is cancelled or fails.
-    bool load(leveldb::DB *db, const std::atomic_bool &stop);
+    bool load(leveldb::DB* db, const std::atomic_bool& stop);
 
     // Switch from the background-build phase to the interactive update phase.
     void beginInteractivePhase() noexcept { interactive_.store(true, std::memory_order_release); }
 
-    bool insert(const bl::chunk_pos &pos) {
+    bool insert(const bl::chunk_pos& pos) {
         auto lock = lockForInteractive();
         return insertUnlocked(pos);
     }
 
    private:
-    bool insertUnlocked(const bl::chunk_pos &pos) {
+    bool insertUnlocked(const bl::chunk_pos& pos) {
         if (!validDimension(pos.dim)) return false;
-        auto &regions = regions_by_dimension_[pos.dim];
+        auto& regions = regions_by_dimension_[pos.dim];
         auto [it, inserted] = regions.emplace(CoordsRegion::fromChunk(pos));
         (void)inserted;
         bounds_by_dimension_[pos.dim].include(pos);
         return it->insertChunk(pos);
     }
 
-    bool removeUnlocked(const bl::chunk_pos &pos);
+    bool removeUnlocked(const bl::chunk_pos& pos);
 
    public:
     bool insert(int32_t x, int32_t z, int32_t dim) { return insert(bl::chunk_pos{x, z, dim}); }
 
-    bool remove(const bl::chunk_pos &pos);
+    bool remove(const bl::chunk_pos& pos);
 
-    bool updateChunk(const bl::chunk_pos &pos, bool present);
+    bool updateChunk(const bl::chunk_pos& pos, bool present);
 
-    void enqueueUpdate(const bl::chunk_pos &pos, bool present, std::function<void()> finished = {});
+    void enqueueUpdate(const bl::chunk_pos& pos, bool present, std::function<void()> finished = {});
 
-    bool contains(const bl::chunk_pos &pos) const {
+    bool contains(const bl::chunk_pos& pos) const {
         auto lock = lockForInteractive();
         return containsUnlocked(pos);
     }
 
    private:
-    bool containsUnlocked(const bl::chunk_pos &pos) const {
+    bool containsUnlocked(const bl::chunk_pos& pos) const {
         if (!validDimension(pos.dim)) return false;
         const auto dim_it = regions_by_dimension_.find(pos.dim);
         if (dim_it == regions_by_dimension_.end()) return false;
@@ -217,7 +217,7 @@ class ChunkCoordsIndex {
         return region_it == dim_it->second.end() ? QImage{} : region_it->image();
     }
 
-    QImage image(const bl::chunk_pos &region_pos) const { return image(region_pos.dim, region_pos.x, region_pos.z); }
+    QImage image(const bl::chunk_pos& region_pos) const { return image(region_pos.dim, region_pos.x, region_pos.z); }
 
     std::optional<ChunkCoordsBoundingBox> boundingBox(int32_t dim) const {
         auto lock = lockForInteractive();
@@ -227,9 +227,9 @@ class ChunkCoordsIndex {
 
     void generateImages() {
         auto lock = lockForInteractive();
-        for (auto &[dim, regions] : regions_by_dimension_) {
+        for (auto& [dim, regions] : regions_by_dimension_) {
             (void)dim;
-            for (auto &region : regions) region.generateImage();
+            for (auto& region : regions) region.generateImage();
         }
     }
 
@@ -238,7 +238,7 @@ class ChunkCoordsIndex {
         const auto dim_it = regions_by_dimension_.find(dim);
         if (dim_it == regions_by_dimension_.end()) return 0;
         std::size_t count = 0;
-        for (const auto &region : dim_it->second) count += region.chunkCount();
+        for (const auto& region : dim_it->second) count += region.chunkCount();
         return count;
     }
 
@@ -252,9 +252,9 @@ class ChunkCoordsIndex {
         auto lock = lockForInteractive();
         std::vector<std::pair<int32_t, std::size_t>> counts;
         counts.reserve(regions_by_dimension_.size());
-        for (const auto &[dim, regions] : regions_by_dimension_) {
+        for (const auto& [dim, regions] : regions_by_dimension_) {
             std::size_t count = 0;
-            for (const auto &region : regions) count += region.chunkCount();
+            for (const auto& region : regions) count += region.chunkCount();
             counts.emplace_back(dim, count);
         }
         std::sort(counts.begin(), counts.end());

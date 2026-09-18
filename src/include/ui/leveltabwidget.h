@@ -15,7 +15,7 @@
 
 class LevelDBDebugDialog : public QDialog {
    public:
-    LevelDBDebugDialog(QWidget *widget) : QDialog(widget) {
+    LevelDBDebugDialog(QWidget* widget) : QDialog(widget) {
         setWindowTitle("LevelDB Stats");
         setFont(QFont("Consolas"));
         label = new QLabel(this);
@@ -25,7 +25,7 @@ class LevelDBDebugDialog : public QDialog {
         this->setLayout(layout);
     }
 
-    void initData(leveldb::DB *db) {
+    void initData(leveldb::DB* db) {
         QStringList data;
         if (db) {
             data << QString("Last Sequence Number:     %1").arg(db->LastSequence());
@@ -50,32 +50,32 @@ class LevelDBDebugDialog : public QDialog {
     }
 
    private:
-    QLabel *label{nullptr};
-    QVBoxLayout *layout{nullptr};
+    QLabel* label{nullptr};
+    QVBoxLayout* layout{nullptr};
 };
 
 class LevelTabWidget : public QTabWidget {
     Q_OBJECT
    public:
-    LevelTabWidget(QWidget *parent);
+    LevelTabWidget(QWidget* parent);
 
-    void openNewLevel(const QString &path);
-    bool openMcstructure(const QString &path);
-    bool openNbtFile(const QString &path);
+    void openNewLevel(const QString& path);
+    bool openMcstructure(const QString& path);
+    bool openNbtFile(const QString& path);
     bool openNewNbtFile();
     void openLevelDBDebugDialog();
     bool confirmCloseAllLevels();
 
-    WorldListTab *welcomeTab() const { return welcome_tab_; }
+    WorldListTab* welcomeTab() const { return welcome_tab_; }
 
    public:
     void setEnableDebugWindow(bool enable);
-    LevelPageWidget *currentLevelPage();
+    LevelPageWidget* currentLevelPage();
 
    signals:
-    void currentLevelChanged(LevelPageWidget *levePage);
+    void currentLevelChanged(LevelPageWidget* levePage);
     /// A data-file tab (e.g. .nbt / .nbts) was saved to disk.
-    void dataFileSaved(const QString &path);
+    void dataFileSaved(const QString& path);
 
    public slots:
     void onMapDimensionChanged(int);
@@ -91,17 +91,17 @@ class LevelTabWidget : public QTabWidget {
     void onPageCommitFinished(bool success);
 
    private:
-    LevelDBDebugDialog *levedb_debug_widget_;
-    RenderFilterDialog *render_filter_dialog_;
-    WorldListTab *welcome_tab_;
-    QMap<int, LevelPageWidget *> level_pages_;
+    LevelDBDebugDialog* levedb_debug_widget_;
+    RenderFilterDialog* render_filter_dialog_;
+    WorldListTab* welcome_tab_;
+    QMap<int, LevelPageWidget*> level_pages_;
 
     int index = 0;
     // close level handler
     GuiTaskRunner close_level_task_;
-    LevelPageWidget *closing_page_{nullptr};
-    LevelPageWidget *pending_close_page_{nullptr};
+    LevelPageWidget* closing_page_{nullptr};
+    LevelPageWidget* pending_close_page_{nullptr};
 
-    void startCloseLevel(LevelPageWidget *page);
+    void startCloseLevel(LevelPageWidget* page);
 };
 #endif

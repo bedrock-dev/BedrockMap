@@ -24,21 +24,21 @@
 
 namespace {
 
-    NBTTreeItem *nbt2QTreeItem(bl::nbt::abstract_tag *t, int index, int &ma, bool hex_mode) {
+    NBTTreeItem* nbt2QTreeItem(bl::nbt::abstract_tag* t, int index, int& ma, bool hex_mode) {
         ma = std::max(ma, index);
         using namespace bl::nbt;
         if (!t) return nullptr;
-        auto *item = new NBTTreeItem();
+        auto* item = new NBTTreeItem();
         item->root_ = t;
         item->updateLabel(hex_mode);
         item->setIcon(0, QIcon(QPixmap::fromImage(*TagIcon(t->type()))));
         if (t->type() == bl::nbt::tag_type::Compound) {
-            const auto *ct = dynamic_cast<bl::nbt::compound_tag *>(t);
-            for (const auto &[fst, snd] : ct->value) {
+            const auto* ct = dynamic_cast<bl::nbt::compound_tag*>(t);
+            for (const auto& [fst, snd] : ct->value) {
                 item->addChild(nbt2QTreeItem(snd, index + 1, ma, hex_mode));
             }
         } else if (t->type() == bl::nbt::tag_type::List) {
-            auto *ct = dynamic_cast<bl::nbt::list_tag *>(t);
+            auto* ct = dynamic_cast<bl::nbt::list_tag*>(t);
             for (auto k : ct->value) {
                 item->addChild(nbt2QTreeItem(k, index + 1, ma, hex_mode));
             }
@@ -46,34 +46,34 @@ namespace {
         return item;
     }
 
-    NBTListItem *TN(QListWidgetItem *i) { return dynamic_cast<NBTListItem *>(i); }
+    NBTListItem* TN(QListWidgetItem* i) { return dynamic_cast<NBTListItem*>(i); }
 
 }  // namespace
 
-std::string NBTTreeItem::hexValueString(bl::nbt::abstract_tag *tag) {
+std::string NBTTreeItem::hexValueString(bl::nbt::abstract_tag* tag) {
     if (!tag) return {};
     using namespace bl::nbt;
     switch (tag->type()) {
         case Byte: {
-            auto v = static_cast<uint8_t>(dynamic_cast<byte_tag *>(tag)->value);
+            auto v = static_cast<uint8_t>(dynamic_cast<byte_tag*>(tag)->value);
             char buf[16];
             snprintf(buf, sizeof(buf), "0x%02X", v);
             return buf;
         }
         case Short: {
-            auto v = static_cast<uint16_t>(dynamic_cast<short_tag *>(tag)->value);
+            auto v = static_cast<uint16_t>(dynamic_cast<short_tag*>(tag)->value);
             char buf[16];
             snprintf(buf, sizeof(buf), "0x%04X", v);
             return buf;
         }
         case Int: {
-            auto v = static_cast<uint32_t>(dynamic_cast<int_tag *>(tag)->value);
+            auto v = static_cast<uint32_t>(dynamic_cast<int_tag*>(tag)->value);
             char buf[16];
             snprintf(buf, sizeof(buf), "0x%08X", v);
             return buf;
         }
         case Long: {
-            auto v = static_cast<uint64_t>(dynamic_cast<long_tag *>(tag)->value);
+            auto v = static_cast<uint64_t>(dynamic_cast<long_tag*>(tag)->value);
             char buf[32];
             snprintf(buf, sizeof(buf), "0x%016llX", v);
             return buf;
@@ -83,13 +83,13 @@ std::string NBTTreeItem::hexValueString(bl::nbt::abstract_tag *tag) {
     }
 }
 
-std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag *tag) {
+std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag* tag) {
     if (!tag) return {};
     using namespace bl::nbt;
     std::string res;
     switch (tag->type()) {
         case ByteArray: {
-            auto &vec = dynamic_cast<byte_array_tag *>(tag)->value;
+            auto& vec = dynamic_cast<byte_array_tag*>(tag)->value;
             if (vec.empty()) return "[]";
             char buf[16];
             for (size_t i = 0; i < std::min(vec.size(), size_t(16)); ++i) {
@@ -101,7 +101,7 @@ std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag *tag) {
             break;
         }
         case IntArray: {
-            auto &vec = dynamic_cast<int_array_tag *>(tag)->value;
+            auto& vec = dynamic_cast<int_array_tag*>(tag)->value;
             if (vec.empty()) return "[]";
             char buf[16];
             for (size_t i = 0; i < std::min(vec.size(), size_t(16)); ++i) {
@@ -113,7 +113,7 @@ std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag *tag) {
             break;
         }
         case LongArray: {
-            auto &vec = dynamic_cast<long_array_tag *>(tag)->value;
+            auto& vec = dynamic_cast<long_array_tag*>(tag)->value;
             if (vec.empty()) return "[]";
             char buf[32];
             for (size_t i = 0; i < std::min(vec.size(), size_t(16)); ++i) {
@@ -130,13 +130,13 @@ std::string NBTTreeItem::hexArrayString(bl::nbt::abstract_tag *tag) {
     return res;
 }
 
-bool NBTTreeItem::tryAddChild(bl::nbt::abstract_tag *tag, bool hex_mode) {
+bool NBTTreeItem::tryAddChild(bl::nbt::abstract_tag* tag, bool hex_mode) {
     if (!tag || !root_) return false;
     const auto type = root_->type();
     int max;
-    auto *item = nbt2QTreeItem(tag, 1, max, hex_mode);
+    auto* item = nbt2QTreeItem(tag, 1, max, hex_mode);
     if (type == tag_type::Compound) {
-        auto *cur = dynamic_cast<compound_tag *>(root_);
+        auto* cur = dynamic_cast<compound_tag*>(root_);
         if (cur->value.count(tag->key()) > 0) {
             delete item;
             return false;
@@ -144,7 +144,7 @@ bool NBTTreeItem::tryAddChild(bl::nbt::abstract_tag *tag, bool hex_mode) {
         cur->put(tag);
         this->addChild(item);
     } else if (type == tag_type::List) {
-        if (auto *cur = dynamic_cast<list_tag *>(root_); cur->push_back(tag)) {
+        if (auto* cur = dynamic_cast<list_tag*>(root_); cur->push_back(tag)) {
             this->addChild(item);
         } else {
             return false;
@@ -153,7 +153,7 @@ bool NBTTreeItem::tryAddChild(bl::nbt::abstract_tag *tag, bool hex_mode) {
     return true;
 }
 
-NbtWidget::NbtWidget(QWidget *parent) : QWidget(parent), ui(new Ui::NbtWidget) {
+NbtWidget::NbtWidget(QWidget* parent) : QWidget(parent), ui(new Ui::NbtWidget) {
     ui->setupUi(this);
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 2);
@@ -197,8 +197,8 @@ void NbtWidget::on_load_btn_clicked() {
     }
 
     size_t i = 0;
-    std::vector<NBTListItem *> items;
-    for (auto *nbt : palette) {
+    std::vector<NBTListItem*> items;
+    for (auto* nbt : palette) {
         items.push_back(NBTListItem::from(nbt, QString::number(i)));
         i++;
     }
@@ -208,7 +208,7 @@ void NbtWidget::on_load_btn_clicked() {
 }
 
 bool NbtWidget::openItem(int index) {
-    auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(index));
+    auto* item = dynamic_cast<NBTListItem*>(ui->list_widget->item(index));
     if (!item || !item->root_) return false;
     this->current_opened_ = item;
     LOG_F(INFO, "Open NBT item : [%s]", item->raw_key.toStdString().c_str());
@@ -217,19 +217,19 @@ bool NbtWidget::openItem(int index) {
     return true;
 }
 
-void NbtWidget::openNBTItem(bl::nbt::compound_tag *root) const {
+void NbtWidget::openNBTItem(bl::nbt::compound_tag* root) const {
     assert(root);
     this->extra_load_event_(root);
     ui->tree_widget->clear();
     int max_col = 0;
-    auto *top = nbt2QTreeItem(root, 1, max_col, hex_mode_);
+    auto* top = nbt2QTreeItem(root, 1, max_col, hex_mode_);
     ui->tree_widget->addTopLevelItem(top);
     // only expand the top level
     ui->tree_widget->expandItem(top);
 }
 
-void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem *item) {
-    auto *nbtItem = TN(item);
+void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem* item) {
+    auto* nbtItem = TN(item);
     if (!nbtItem) {
         INFO(msg::EMPTY_NBT_DATA());
         return;
@@ -253,7 +253,7 @@ void NbtWidget::applyToolbarVisibility() {
     ui->item_num_label->setVisible(list_visible_);
 }
 
-void NbtWidget::setFilePath(const QString &path) {
+void NbtWidget::setFilePath(const QString& path) {
     file_path_ = path;
     applyToolbarVisibility();
 }
@@ -304,7 +304,7 @@ void NbtWidget::on_save_to_file_btn_clicked() {
 
 void NbtWidget::tryModifyCurrentNode() {
     if (!modify_allowed_ || hex_mode_) return;
-    auto *current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+    auto* current = dynamic_cast<NBTTreeItem*>(ui->tree_widget->currentItem());
     if (!current || !current->root_) return;
     if (!modify_dialog_->setModifyMode(current->root_)) {
         WARN(msg::INIT_FAILED());
@@ -321,10 +321,10 @@ void NbtWidget::tryModifyCurrentNode() {
     }
 }
 
-void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int column) {
+void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem* item, int column) {
     if (hex_mode_) return;
     if (!modify_allowed_ || column < 0 || column > 1) return;
-    auto *nbtItem = dynamic_cast<NBTTreeItem *>(item);
+    auto* nbtItem = dynamic_cast<NBTTreeItem*>(item);
     if (!nbtItem || !nbtItem->root_) return;
 
     if (column == 0) {
@@ -342,42 +342,42 @@ void NbtWidget::on_tree_widget_itemDoubleClicked(QTreeWidgetItem *item, int colu
 }
 
 namespace {
-    bool parseAndSetTag(bl::nbt::abstract_tag *tag, const QString &text, QString &err) {
+    bool parseAndSetTag(bl::nbt::abstract_tag* tag, const QString& text, QString& err) {
         using namespace bl::nbt;
         bool ok = false;
         switch (tag->type()) {
             case Byte: {
                 auto v = static_cast<int8_t>(text.toInt(&ok));
-                if (ok) dynamic_cast<byte_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<byte_tag*>(tag)->value = v;
                 break;
             }
             case Short: {
                 auto v = static_cast<int16_t>(text.toInt(&ok));
-                if (ok) dynamic_cast<short_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<short_tag*>(tag)->value = v;
                 break;
             }
             case Int: {
                 auto v = text.toInt(&ok);
-                if (ok) dynamic_cast<int_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<int_tag*>(tag)->value = v;
                 break;
             }
             case Long: {
                 auto v = text.toLongLong(&ok);
-                if (ok) dynamic_cast<long_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<long_tag*>(tag)->value = v;
                 break;
             }
             case Float: {
                 auto v = text.toFloat(&ok);
-                if (ok) dynamic_cast<float_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<float_tag*>(tag)->value = v;
                 break;
             }
             case Double: {
                 auto v = text.toDouble(&ok);
-                if (ok) dynamic_cast<double_tag *>(tag)->value = v;
+                if (ok) dynamic_cast<double_tag*>(tag)->value = v;
                 break;
             }
             case String:
-                dynamic_cast<string_tag *>(tag)->value = text.toStdString();
+                dynamic_cast<string_tag*>(tag)->value = text.toStdString();
                 ok = true;
                 break;
             default:
@@ -392,10 +392,10 @@ namespace {
     }
 }  // namespace
 
-void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {
+void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem* item, int column) {
     if (editing_in_progress_) return;
     if (!modify_allowed_) return;
-    auto *nbtItem = dynamic_cast<NBTTreeItem *>(item);
+    auto* nbtItem = dynamic_cast<NBTTreeItem*>(item);
     if (!nbtItem || !nbtItem->root_) return;
     if (column == 0) {
         auto new_key = item->text(0).toStdString();
@@ -428,17 +428,17 @@ void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem *item, int column) {
     emit nbtModified();
 }
 
-void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
+void NbtWidget::prepareTreeWidgetMenu(const QPoint& pos) {
     if (!modify_allowed_) return;
-    auto *addAction = new QAction(tr("nbtEditor.rightMenu.new"), this);
-    auto *removeAction = new QAction(tr("nbtEditor.rightMenu.delete"), this);
-    auto *modifyAction = new QAction(tr("nbtEditor.rightMenu.modify"), this);
-    auto *clearAction = new QAction(tr("nbtEditor.rightMenu.clear"), this);
+    auto* addAction = new QAction(tr("nbtEditor.rightMenu.new"), this);
+    auto* removeAction = new QAction(tr("nbtEditor.rightMenu.delete"), this);
+    auto* modifyAction = new QAction(tr("nbtEditor.rightMenu.modify"), this);
+    auto* clearAction = new QAction(tr("nbtEditor.rightMenu.clear"), this);
 
     QMenu menu(this);
-    auto *current = ui->tree_widget->currentItem();
+    auto* current = ui->tree_widget->currentItem();
     if (!current) return;
-    auto *nbtItem = dynamic_cast<NBTTreeItem *>(current);
+    auto* nbtItem = dynamic_cast<NBTTreeItem*>(current);
     if (!nbtItem || !nbtItem->root_) {
         WARN(msg::PASTE_DATA_INVALID());
         return;
@@ -451,7 +451,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     if (attr.canClear) menu.addAction(clearAction);
 
     QObject::connect(addAction, &QAction::triggered, [this, pos](bool) {
-        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        auto current = dynamic_cast<NBTTreeItem*>(ui->tree_widget->currentItem());
         if (!current) return;
         if (!modify_dialog_->setCreateMode(current->root_)) {
             WARN(msg::INIT_FAILED());
@@ -459,7 +459,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
         }
         if (modify_dialog_->exec() == QDialog::Accepted) {
             QString err;
-            auto *tag = modify_dialog_->createTagWithCurrent(err);
+            auto* tag = modify_dialog_->createTagWithCurrent(err);
             if (!tag) {
                 WARN(msg::CREATE_NODE_FAILED(err));
             } else if (!current->tryAddChild(tag, hex_mode_)) {
@@ -474,22 +474,22 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     QObject::connect(modifyAction, &QAction::triggered, this, [this]() { tryModifyCurrentNode(); });
 
     QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
-        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
-        auto parent = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem()->parent());
+        auto current = dynamic_cast<NBTTreeItem*>(ui->tree_widget->currentItem());
+        auto parent = dynamic_cast<NBTTreeItem*>(ui->tree_widget->currentItem()->parent());
         if (!parent) {
             WARN(msg::CANNOT_DELETE_ROOT());
             return;
         }
         auto parentType = parent->root_->type();
         if (parentType == bl::nbt::Compound) {
-            auto *tag = dynamic_cast<bl::nbt::compound_tag *>(parent->root_);
+            auto* tag = dynamic_cast<bl::nbt::compound_tag*>(parent->root_);
             if (!tag) {
                 WARN(msg::NBT_DATA_CORRUPTED());
                 return;
             }
             tag->remove(current->root_->key());
         } else if (parentType == bl::nbt::List) {
-            auto *tag = dynamic_cast<bl::nbt::list_tag *>(parent->root_);
+            auto* tag = dynamic_cast<bl::nbt::list_tag*>(parent->root_);
             if (!tag) {
                 WARN(msg::NBT_DATA_CORRUPTED());
                 return;
@@ -504,17 +504,17 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     });
 
     QObject::connect(clearAction, &QAction::triggered, [this, pos](bool) {
-        auto current = dynamic_cast<NBTTreeItem *>(ui->tree_widget->currentItem());
+        auto current = dynamic_cast<NBTTreeItem*>(ui->tree_widget->currentItem());
         if (!current) return;
         if (current->root_->type() == bl::nbt::tag_type::Compound) {
-            auto *tag = dynamic_cast<bl::nbt::compound_tag *>(current->root_);
-            for (auto &[fst, snd] : tag->value) {
+            auto* tag = dynamic_cast<bl::nbt::compound_tag*>(current->root_);
+            for (auto& [fst, snd] : tag->value) {
                 delete snd;
             }
             tag->value.clear();
         } else if (current->root_->type() == bl::nbt::tag_type::List) {
-            auto *tag = dynamic_cast<bl::nbt::list_tag *>(current->root_);
-            for (const auto *child : tag->value) {
+            auto* tag = dynamic_cast<bl::nbt::list_tag*>(current->root_);
+            for (const auto* child : tag->value) {
                 delete child;
             }
             tag->value.clear();
@@ -527,13 +527,13 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint &pos) {
     menu.exec(ui->tree_widget->mapToGlobal(pos));
 }
 
-void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
+void NbtWidget::prepareListWidgetMenu(const QPoint& pos) {
     // single selection mode
     if (ui->list_widget->selectionMode() == QAbstractItemView::SingleSelection) {
-        auto *removeAction = new QAction(tr("nbtEditor.rightMenu.delete"), this);
-        auto *exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
-        auto *createAction = new QAction(tr("nbtEditor.rightMenu.new"), this);
-        auto *clearAction = new QAction(tr("nbtEditor.rightMenu.clear"), this);
+        auto* removeAction = new QAction(tr("nbtEditor.rightMenu.delete"), this);
+        auto* exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
+        auto* createAction = new QAction(tr("nbtEditor.rightMenu.new"), this);
+        auto* clearAction = new QAction(tr("nbtEditor.rightMenu.clear"), this);
         QMenu menu(this);
         menu.addAction(exportAction);
         if (modify_allowed_) {
@@ -543,9 +543,9 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         }
 
         QObject::connect(removeAction, &QAction::triggered, [this, pos](bool) {
-            auto *currnet = this->ui->list_widget->currentItem();
+            auto* currnet = this->ui->list_widget->currentItem();
             if (!currnet) return;
-            auto *nbtItem = dynamic_cast<NBTListItem *>(currnet);
+            auto* nbtItem = dynamic_cast<NBTListItem*>(currnet);
             if (nbtItem == this->current_opened_) ui->tree_widget->clear();
             putRemoveToCache(nbtItem->raw_key.toStdString());
             ui->list_widget->removeItemWidget(nbtItem);
@@ -556,7 +556,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         QObject::connect(createAction, &QAction::triggered, [this, pos](bool) {
             if (!this->modify_allowed_) return;
             // create a new NBT item and push back to the end
-            auto *nbtItem = NBTListItem::from(new bl::nbt::compound_tag("New"), QString::number(ui->list_widget->count()));
+            auto* nbtItem = NBTListItem::from(new bl::nbt::compound_tag("New"), QString::number(ui->list_widget->count()));
             ui->list_widget->addItem(nbtItem);
             putModifyToCache(nbtItem->raw_key.toStdString(), nbtItem->root_->to_raw());
             this->refreshLabel();
@@ -570,7 +570,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
             // clear all items in the list widget, and put them to the modify cache, free the memory
             auto row = ui->list_widget->count();
             for (int i = 0; i < row; ++i) {
-                if (const auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i))) {
+                if (const auto* item = dynamic_cast<NBTListItem*>(ui->list_widget->item(i))) {
                     putRemoveToCache(item->raw_key.toStdString());
                 } else {
                     LOG_F(ERROR, "当前NBT数据已损坏");
@@ -582,15 +582,15 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
         menu.exec(ui->list_widget->mapToGlobal(pos));
     } else {
         // multi-selection mode
-        auto *removeSelect = new QAction(tr("nbtEditor.rightMenu.deleteSelected"), this);
-        auto *unselectAll = new QAction(tr("nbtEditor.rightMenu.unselectAll"), this);
-        auto *exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
+        auto* removeSelect = new QAction(tr("nbtEditor.rightMenu.deleteSelected"), this);
+        auto* unselectAll = new QAction(tr("nbtEditor.rightMenu.unselectAll"), this);
+        auto* exportAction = new QAction(tr("nbtEditor.rightMenu.exportSelected"), this);
 
         QObject::connect(removeSelect, &QAction::triggered, [this, pos](bool) {
             if (!this->modify_allowed_) return;
             ui->list_widget->blockSignals(true);
-            for (auto &item : ui->list_widget->selectedItems()) {
-                auto *nbtItem = dynamic_cast<NBTListItem *>(item);
+            for (auto& item : ui->list_widget->selectedItems()) {
+                auto* nbtItem = dynamic_cast<NBTListItem*>(item);
                 // prevent crash
                 if (nbtItem == this->current_opened_) ui->tree_widget->clear();
                 putRemoveToCache(nbtItem->raw_key.toStdString());
@@ -617,10 +617,10 @@ void NbtWidget::prepareListWidgetMenu(const QPoint &pos) {
     }
 }
 
-void NbtWidget::loadNewData(const std::vector<NBTListItem *> &items) {
+void NbtWidget::loadNewData(const std::vector<NBTListItem*>& items) {
     ui->list_widget->setUpdatesEnabled(false);
     this->clearData();
-    for (auto *item : items) {
+    for (auto* item : items) {
         ui->list_widget->addItem(item);
     }
     ui->list_widget->setUpdatesEnabled(true);
@@ -660,12 +660,12 @@ void NbtWidget::saveNBTs(bool selectOnly) {
 std::string NbtWidget::collectRawNBT(bool selectOnly) const {
     std::string res;
     if (selectOnly) {
-        for (const auto &item : ui->list_widget->selectedItems()) {
-            if (!item->isHidden()) res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
+        for (const auto& item : ui->list_widget->selectedItems()) {
+            if (!item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->to_raw();
         }
     } else {
         for (int i = 0; i < ui->list_widget->count(); ++i) {
-            if (auto *item = ui->list_widget->item(i); !item->isHidden()) res += dynamic_cast<NBTListItem *>(item)->root_->to_raw();
+            if (auto* item = ui->list_widget->item(i); !item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->to_raw();
         }
     }
     return res;
@@ -674,31 +674,31 @@ std::string NbtWidget::collectRawNBT(bool selectOnly) const {
 std::string NbtWidget::getCurrentPaletteRaw() const {
     std::string res;
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        res += dynamic_cast<NBTListItem *>(ui->list_widget->item(i))->root_->to_raw();
+        res += dynamic_cast<NBTListItem*>(ui->list_widget->item(i))->root_->to_raw();
     }
     return res;
 }
 
-std::vector<compound_tag *> NbtWidget::getPaletteCopy() const {
-    std::vector<compound_tag *> res;
+std::vector<compound_tag*> NbtWidget::getPaletteCopy() const {
+    std::vector<compound_tag*> res;
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        res.push_back(dynamic_cast<compound_tag *>(dynamic_cast<NBTListItem *>(ui->list_widget->item(i))->root_->copy()));
+        res.push_back(dynamic_cast<compound_tag*>(dynamic_cast<NBTListItem*>(ui->list_widget->item(i))->root_->copy()));
     }
     return res;
 }
 
-void NbtWidget::foreachItem(const std::function<void(const std::string &, bl::nbt::compound_tag *)> &func) const {
+void NbtWidget::foreachItem(const std::function<void(const std::string&, bl::nbt::compound_tag*)>& func) const {
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        if (auto *item = dynamic_cast<NBTListItem *>(ui->list_widget->item(i))) {
+        if (auto* item = dynamic_cast<NBTListItem*>(ui->list_widget->item(i))) {
             func(item->getLabel().toStdString(), item->root_);
         }
     }
 }
 
-void NbtWidget::on_search_edit_textEdited(const QString &arg1) {
+void NbtWidget::on_search_edit_textEdited(const QString& arg1) {
     ui->list_widget->clearSelection();
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        auto *item = ui->list_widget->item(i);
+        auto* item = ui->list_widget->item(i);
         item->setHidden(!item->text().contains(arg1));
     }
     this->refreshLabel();
@@ -708,7 +708,7 @@ void NbtWidget::refreshLabel() const {
     int selected = 0;
     int notHidden = 0;
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        const auto *item = ui->list_widget->item(i);
+        const auto* item = ui->list_widget->item(i);
         if (!item) continue;
         if (!item->isHidden()) {
             notHidden++;
@@ -739,7 +739,7 @@ void NbtWidget::clearModifyCache() {
     emit nbtModified();
 }
 
-void NbtWidget::putModifyToCache(const std::string &key, const std::string &value) {
+void NbtWidget::putModifyToCache(const std::string& key, const std::string& value) {
     if (enable_modify_cache_) {
         this->modified_cache_[key] = value;
     };
@@ -754,7 +754,7 @@ void NbtWidget::putModifyToCache(const std::string &key, const std::string &valu
 
 void NbtWidget::on_print_cache_btn_clicked() {
     LOG_F(INFO, "Total %zu items in the modify cache:", this->modified_cache_.size());
-    for (auto &[fst, snd] : this->modified_cache_) {
+    for (auto& [fst, snd] : this->modified_cache_) {
         if (snd.empty()) {
             LOG_F(INFO, " - Delete key: %s", fst.c_str());
         } else {

@@ -11,7 +11,7 @@ class GoToPositionDialog : public QDialog {
     Q_OBJECT
 
    public:
-    explicit GoToPositionDialog(QWidget *parent = nullptr);
+    explicit GoToPositionDialog(QWidget* parent = nullptr);
     ~GoToPositionDialog();
 
     bool positionValid();
@@ -20,7 +20,7 @@ class GoToPositionDialog : public QDialog {
     int z();
 
    private:
-    Ui::GoToPositionDialog *ui;
+    Ui::GoToPositionDialog* ui;
 };
 
 #endif  // BEDROCKMAP_GOTOPOSITIONDIALOG_H

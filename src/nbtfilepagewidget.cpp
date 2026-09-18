@@ -6,8 +6,8 @@
 #include "loguru/loguru.hpp"
 #include "nbt.h"
 
-NbtFilePageWidget::NbtFilePageWidget(QWidget *parent) : TabPageWidget(parent) {
-    auto *root = new QVBoxLayout(this);
+NbtFilePageWidget::NbtFilePageWidget(QWidget* parent) : TabPageWidget(parent) {
+    auto* root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
     nbt_editor_ = new NbtWidget(this);
     nbt_editor_->setMode(NbtMode::File);
@@ -37,14 +37,14 @@ bool NbtFilePageWidget::commit() { return nbt_editor_->saveToFile(); }
 void NbtFilePageWidget::createNew() {
     file_name_ = "untitled";
     // start with one empty root tag so the editor is immediately usable
-    auto *root = new bl::nbt::compound_tag("root");
+    auto* root = new bl::nbt::compound_tag("root");
     nbt_editor_->loadNewData({NBTListItem::from(root, "0")});
     nbt_editor_->openItem(0);
     dirty_ = true;
     emit dirtyChanged(true);
 }
 
-bool NbtFilePageWidget::loadFile(const QString &path) {
+bool NbtFilePageWidget::loadFile(const QString& path) {
     auto data = bl::utils::read_file(path.toStdString());
     if (data.empty()) {
         LOG_F(WARNING, "Can not read NBT file: %s", path.toStdString().c_str());
@@ -57,7 +57,7 @@ bool NbtFilePageWidget::loadFile(const QString &path) {
         return false;
     }
 
-    std::vector<NBTListItem *> items;
+    std::vector<NBTListItem*> items;
     for (size_t i = 0; i < palette.size(); ++i) {
         items.push_back(NBTListItem::from(palette[i], QString::number(i)));
     }

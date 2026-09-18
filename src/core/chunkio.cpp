@@ -9,10 +9,10 @@ static constexpr int8_t VERSION = 1;
 
 bool ExportedRegion::isEmpty() const { return chunks_.empty(); }
 
-void ExportedRegion::addChunk(const bl::raw_chunk &chunk) { chunks_.push_back(chunk); }
+void ExportedRegion::addChunk(const bl::raw_chunk& chunk) { chunks_.push_back(chunk); }
 
-void ExportedRegion::removeChunk(const bl::chunk_pos &pos) {
-    chunks_.erase(std::remove_if(chunks_.begin(), chunks_.end(), [&pos](const bl::raw_chunk &c) { return c.pos() == pos; }), chunks_.end());
+void ExportedRegion::removeChunk(const bl::chunk_pos& pos) {
+    chunks_.erase(std::remove_if(chunks_.begin(), chunks_.end(), [&pos](const bl::raw_chunk& c) { return c.pos() == pos; }), chunks_.end());
 }
 
 void ExportedRegion::clear() { chunks_.clear(); }
@@ -21,13 +21,13 @@ std::vector<char> ExportedRegion::serialize() {
     // Compute total size
     size_t total = 6;  // magic(5) + version(1)
     total += 4;        // chunk count
-    for (auto &chunk : chunks_) {
+    for (auto& chunk : chunks_) {
         auto raw = chunk.to_raw();
         total += 4 + raw.size();  // size prefix + data
     }
 
     std::vector<char> buf(total);
-    char *p = buf.data();
+    char* p = buf.data();
 
     // magic + version
     std::memcpy(p, MAGIC, 5);
@@ -39,7 +39,7 @@ std::vector<char> ExportedRegion::serialize() {
     std::memcpy(p, &n, 4);
     p += 4;
 
-    for (auto &chunk : chunks_) {
+    for (auto& chunk : chunks_) {
         auto raw = chunk.to_raw();
         int32_t size = static_cast<int32_t>(raw.size());
         std::memcpy(p, &size, 4);
@@ -51,11 +51,11 @@ std::vector<char> ExportedRegion::serialize() {
     return buf;
 }
 
-ExportedRegion ExportedRegion::deserialize(const char *data, size_t size) {
+ExportedRegion ExportedRegion::deserialize(const char* data, size_t size) {
     ExportedRegion reg;
     if (!data || size < 10) return reg;
 
-    const char *p = data;
+    const char* p = data;
     if (std::memcmp(p, MAGIC, 5) != 0) return reg;
     p += 5;
     if (*p++ != VERSION) return reg;
@@ -88,6 +88,6 @@ ExportedRegion ExportedRegion::deserialize(const char *data, size_t size) {
     return reg;
 }
 
-std::vector<char> ExportedRegion::embedInPng(const QImage &image, const std::vector<char> &payload) { return {}; }
+std::vector<char> ExportedRegion::embedInPng(const QImage& image, const std::vector<char>& payload) { return {}; }
 
-std::vector<char> ExportedRegion::extractFromPng(const char *data, size_t size) { return {}; }
+std::vector<char> ExportedRegion::extractFromPng(const char* data, size_t size) { return {}; }

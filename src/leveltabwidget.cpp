@@ -15,7 +15,7 @@
 #include "nbtwidget.h"
 #include "pleasewaitdialog.h"
 
-LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
+LevelTabWidget::LevelTabWidget(QWidget* parent) : QTabWidget(parent) {
     setTabsClosable(true);
     this->welcome_tab_ = new WorldListTab(this);
     this->addTab(this->welcome_tab_, tr("levelTabWidget.title.welcome"));
@@ -28,7 +28,7 @@ LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
     connect(&this->close_level_task_, &GuiTaskRunner::started, this, []() { PleaseWaitDialog::instance().showBusy(); });
     connect(&this->close_level_task_, &GuiTaskRunner::finished, this, &LevelTabWidget::onCloseLevelFinished);
     connect(this, &QTabWidget::currentChanged, this, [&]() {
-        auto *page = qobject_cast<LevelPageWidget *>(currentWidget());
+        auto* page = qobject_cast<LevelPageWidget*>(currentWidget());
         emit currentLevelChanged(page);
     });
 
@@ -36,8 +36,8 @@ LevelTabWidget::LevelTabWidget(QWidget *parent) : QTabWidget(parent) {
     // (mainwindow will connect these after construction)
 }
 
-void LevelTabWidget::openNewLevel(const QString &path) {
-    auto *page = new LevelPageWidget(this, index++);
+void LevelTabWidget::openNewLevel(const QString& path) {
+    auto* page = new LevelPageWidget(this, index++);
     if (!page->loadLevel(path)) {
         WARN(msg::OPEN_LEVEL_FAILED());
         delete page;
@@ -49,8 +49,8 @@ void LevelTabWidget::openNewLevel(const QString &path) {
     emit currentLevelChanged(page);
 }
 
-bool LevelTabWidget::openMcstructure(const QString &path) {
-    auto *page = new McstructurePageWidget(this);
+bool LevelTabWidget::openMcstructure(const QString& path) {
+    auto* page = new McstructurePageWidget(this);
     if (!page->loadStructure(path)) {
         WARN(msg::OPEN_MCSTRUCTURE_FAILED());
         delete page;
@@ -61,9 +61,9 @@ bool LevelTabWidget::openMcstructure(const QString &path) {
     return true;
 }
 
-bool LevelTabWidget::openNbtFile(const QString &path) {
-    auto *page = new NbtFilePageWidget(this);
-    connect(page, &NbtFilePageWidget::saved, this, [this](const QString &savedPath) { emit dataFileSaved(savedPath); });
+bool LevelTabWidget::openNbtFile(const QString& path) {
+    auto* page = new NbtFilePageWidget(this);
+    connect(page, &NbtFilePageWidget::saved, this, [this](const QString& savedPath) { emit dataFileSaved(savedPath); });
     connect(page, &NbtFilePageWidget::dirtyChanged, this, [this, page](bool dirty) {
         int i = indexOf(page);
         if (i >= 0) {
@@ -81,8 +81,8 @@ bool LevelTabWidget::openNbtFile(const QString &path) {
 }
 
 bool LevelTabWidget::openNewNbtFile() {
-    auto *page = new NbtFilePageWidget(this);
-    connect(page, &NbtFilePageWidget::saved, this, [this](const QString &savedPath) { emit dataFileSaved(savedPath); });
+    auto* page = new NbtFilePageWidget(this);
+    connect(page, &NbtFilePageWidget::saved, this, [this](const QString& savedPath) { emit dataFileSaved(savedPath); });
     connect(page, &NbtFilePageWidget::dirtyChanged, this, [this, page](bool dirty) {
         int i = indexOf(page);
         if (i >= 0) {
@@ -96,7 +96,7 @@ bool LevelTabWidget::openNewNbtFile() {
 }
 
 void LevelTabWidget::openLevelDBDebugDialog() {
-    auto *page = currentLevelPage();
+    auto* page = currentLevelPage();
     if (!page) {
         WARN(msg::LEVEL_NOT_OPEN());
         return;
@@ -106,13 +106,13 @@ void LevelTabWidget::openLevelDBDebugDialog() {
 }
 
 void LevelTabWidget::setEnableDebugWindow(bool bo) {
-    for (const auto &kv : level_pages_) {
+    for (const auto& kv : level_pages_) {
         if (kv && kv->getMapWidget()) kv->getMapWidget()->setDrawDebug(bo);
     }
 }
 
 void LevelTabWidget::onTabClosed(int index) {
-    auto *tab = widget(index);
+    auto* tab = widget(index);
     if (!tab) return;
     if (tab == welcome_tab_) {
         removeTab(index);
@@ -120,7 +120,7 @@ void LevelTabWidget::onTabClosed(int index) {
     }
 
     // World pages keep their async close flow (progress dialog + background close).
-    if (auto *levelPage = qobject_cast<LevelPageWidget *>(tab)) {
+    if (auto* levelPage = qobject_cast<LevelPageWidget*>(tab)) {
         if (levelPage->isDirty()) {
             auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -137,7 +137,7 @@ void LevelTabWidget::onTabClosed(int index) {
     }
 
     // Generic data-file pages (NBT, mcstructure, future formats).
-    if (auto *page = qobject_cast<TabPageWidget *>(tab)) {
+    if (auto* page = qobject_cast<TabPageWidget*>(tab)) {
         if (page->isDirty()) {
             auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -150,21 +150,21 @@ void LevelTabWidget::onTabClosed(int index) {
     }
 }
 
-void LevelTabWidget::startCloseLevel(LevelPageWidget *page) {
+void LevelTabWidget::startCloseLevel(LevelPageWidget* page) {
     if (!page) return;
     closing_page_ = page;
-    close_level_task_.start([page](GuiTaskRunner *) { page->closeLevel(); });
+    close_level_task_.start([page](GuiTaskRunner*) { page->closeLevel(); });
 }
 
 void LevelTabWidget::onPageCommitFinished(bool success) {
-    auto *page = qobject_cast<LevelPageWidget *>(sender());
+    auto* page = qobject_cast<LevelPageWidget*>(sender());
     if (!page || page != pending_close_page_) return;
     pending_close_page_ = nullptr;
     if (success) startCloseLevel(page);
 }
 
 void LevelTabWidget::onCloseLevelFinished() {
-    auto *page = closing_page_;
+    auto* page = closing_page_;
     closing_page_ = nullptr;
     if (!page) {
         PleaseWaitDialog::instance().hideBusy();
@@ -172,8 +172,8 @@ void LevelTabWidget::onCloseLevelFinished() {
     }
     // The close worker has finished all LevelDB/task work. Clear the
     // UI-thread-owned caches before the page is scheduled for deletion.
-    if (auto *loader = page->levelLoader()) loader->clearAllCache();
-    if (auto *status = page->findChild<LevelStatusBar *>()) status->setCoordsLoading(false);
+    if (auto* loader = page->levelLoader()) loader->clearAllCache();
+    if (auto* status = page->findChild<LevelStatusBar*>()) status->setCoordsLoading(false);
     int idx = indexOf(page);
     if (idx >= 0) removeTab(idx);
     page->deleteLater();
@@ -184,7 +184,7 @@ void LevelTabWidget::closeCurrentLevel() { onTabClosed(currentIndex()); }
 
 bool LevelTabWidget::confirmCloseAllLevels() {
     for (int i = 0; i < count(); ++i) {
-        auto *page = qobject_cast<TabPageWidget *>(widget(i));
+        auto* page = qobject_cast<TabPageWidget*>(widget(i));
         if (!page || !page->isDirty()) continue;
         setCurrentIndex(i);
         auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
@@ -202,26 +202,26 @@ bool LevelTabWidget::confirmCloseAllLevels() {
 }
 
 void LevelTabWidget::onMapDimensionChanged(int dim) {
-    if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
+    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
         page->getMapWidget()->changeDimension(dim);
     }
 }
 
 void LevelTabWidget::onMapLayerChanged(int layer) {
-    if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
+    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
         page->getMapWidget()->changeLayer(static_cast<RenderOption::LayerType>(layer));
     }
 }
 
 void LevelTabWidget::onMapToggleOtherLayer(int other) {
-    if (auto *page = currentLevelPage(); page && page->getMapWidget()) {
+    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
         page->getMapWidget()->toggleOther(static_cast<RenderOption::OtherType>(other));
     }
 }
 
 void LevelTabWidget::onMapOpenFilterDialog() {
     if (!currentLevelPage()) return;
-    auto *loader = currentLevelPage()->levelLoader();
+    auto* loader = currentLevelPage()->levelLoader();
     if (!loader) return;
     render_filter_dialog_->setFilter(loader->filter());
     render_filter_dialog_->fillInUI();
@@ -233,13 +233,13 @@ void LevelTabWidget::onMapOpenFilterDialog() {
 }
 
 void LevelTabWidget::onMapToggleGlobalDataWidget() {
-    if (auto *page = currentLevelPage(); page != nullptr) {
+    if (auto* page = currentLevelPage(); page != nullptr) {
         page->toggleGlobalDataWidget();
     }
 }
 
-LevelPageWidget *LevelTabWidget::currentLevelPage() {
-    auto *tab = currentWidget();
+LevelPageWidget* LevelTabWidget::currentLevelPage() {
+    auto* tab = currentWidget();
     if (!tab) return nullptr;
-    return dynamic_cast<LevelPageWidget *>(tab);
+    return dynamic_cast<LevelPageWidget*>(tab);
 }

@@ -20,7 +20,7 @@ namespace crashhandler {
         // chain captured in the exception CONTEXT, symbolizing each PC with
         // libbacktrace (reads the DWARF straight out of the exe, no PDB needed).
         // libbacktrace state is created once at startup and only queried afterwards.
-        struct backtrace_state *g_state = nullptr;
+        struct backtrace_state* g_state = nullptr;
         bool g_installed = false;
 
         // The report is accumulated in memory and handed to loguru in one go:
@@ -30,7 +30,7 @@ namespace crashhandler {
             std::string text;
         };
 
-        void sink_printf(Sink *s, const char *fmt, ...) {
+        void sink_printf(Sink* s, const char* fmt, ...) {
             char buf[2048];
             va_list args;
             va_start(args, fmt);
@@ -39,13 +39,13 @@ namespace crashhandler {
             s->text += buf;
         }
 
-        void backtrace_error_cb(void *data, const char *msg, int errnum) {
-            auto *sink = static_cast<Sink *>(data);
+        void backtrace_error_cb(void* data, const char* msg, int errnum) {
+            auto* sink = static_cast<Sink*>(data);
             sink_printf(sink, "  [backtrace] %s (errno %d)\n", msg, errnum);
         }
 
-        int frame_cb(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
-            auto *sink = static_cast<Sink *>(data);
+        int frame_cb(void* data, uintptr_t pc, const char* filename, int lineno, const char* function) {
+            auto* sink = static_cast<Sink*>(data);
             if (function) {
                 sink_printf(sink, "  %s\n      at %s:%d (0x%llx)\n", function, filename ? filename : "?", lineno,
                             static_cast<unsigned long long>(pc));
@@ -57,7 +57,7 @@ namespace crashhandler {
             return 0;  // keep walking
         }
 
-        void symbol_pc(Sink *sink, uintptr_t pc) { backtrace_pcinfo(g_state, pc, frame_cb, backtrace_error_cb, sink); }
+        void symbol_pc(Sink* sink, uintptr_t pc) { backtrace_pcinfo(g_state, pc, frame_cb, backtrace_error_cb, sink); }
 
         // x64 unwinding uses the per-function .pdata/.xdata unwind info via
         // RtlLookupFunctionEntry/RtlVirtualUnwind (the same metadata the OS uses for
@@ -65,11 +65,11 @@ namespace crashhandler {
         // a plain base register for locals (push regs; lea rbp,[rsp+N]), so walking
         // [RBP] -> caller RBP reads garbage and stops after the first frame, while the
         // unwind codes in .pdata describe the real frame layout for every function.
-        void unwind_from_context(Sink *sink, PCONTEXT ctx, int skip_frames) {
+        void unwind_from_context(Sink* sink, PCONTEXT ctx, int skip_frames) {
             for (int frame = 0; frame < 64 && ctx->Rip != 0; ++frame) {
                 if (frame >= skip_frames) symbol_pc(sink, static_cast<uintptr_t>(ctx->Rip));
                 DWORD64 image_base = 0;
-                auto *entry = RtlLookupFunctionEntry(ctx->Rip, &image_base, nullptr);
+                auto* entry = RtlLookupFunctionEntry(ctx->Rip, &image_base, nullptr);
                 if (entry == nullptr) break;  // leaf frame, no unwind metadata
                 PVOID handler_data = nullptr;
                 DWORD64 establisher_frame = 0;
@@ -78,7 +78,7 @@ namespace crashhandler {
             }
         }
 
-        const char *exception_name(DWORD code) {
+        const char* exception_name(DWORD code) {
             switch (code) {
                 case EXCEPTION_ACCESS_VIOLATION:
                     return "ACCESS_VIOLATION";
@@ -99,16 +99,16 @@ namespace crashhandler {
             }
         }
 
-        LONG WINAPI exception_filter(EXCEPTION_POINTERS *ep) {
+        LONG WINAPI exception_filter(EXCEPTION_POINTERS* ep) {
             // Prefer the OS default handling so a debugger still breaks; this filter
             // only runs when nothing else handled the fault anyway.
             Sink sink;
             const auto code = ep->ExceptionRecord->ExceptionCode;
             sink_printf(&sink, "\n===== %s (0x%08lx) caught =====\n", exception_name(code), static_cast<unsigned long>(code));
 #if defined(_WIN64)
-            if (auto *access = ep->ExceptionRecord->ExceptionInformation;
+            if (auto* access = ep->ExceptionRecord->ExceptionInformation;
                 access && ep->ExceptionRecord->NumberParameters >= 2 && code == EXCEPTION_ACCESS_VIOLATION) {
-                const char *kind = access[0] == 0 ? "read" : (access[0] == 1 ? "write" : "exec");
+                const char* kind = access[0] == 0 ? "read" : (access[0] == 1 ? "write" : "exec");
                 sink_printf(&sink, "  %s of address 0x%llx\n", kind, static_cast<unsigned long long>(access[1]));
             }
             sink_printf(&sink, "Stack trace:\n");
@@ -178,8 +178,8 @@ namespace crashhandler {
         // transient lock or slow read can make symbolization fail.
         if (g_state) {
             backtrace_pcinfo(
-                g_state, reinterpret_cast<uintptr_t>(&install), [](void *, uintptr_t, const char *, int, const char *) { return 0; },
-                [](void *, const char *, int) {}, nullptr);
+                g_state, reinterpret_cast<uintptr_t>(&install), [](void*, uintptr_t, const char*, int, const char*) { return 0; },
+                [](void*, const char*, int) {}, nullptr);
         }
 
         // Catches hardware faults (access violation, divide by zero, ...).

@@ -4,7 +4,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-PleaseWaitDialog &PleaseWaitDialog::instance() {
+PleaseWaitDialog& PleaseWaitDialog::instance() {
     static PleaseWaitDialog dialog;
     return dialog;
 }
@@ -15,7 +15,7 @@ PleaseWaitDialog::PleaseWaitDialog() {
     setFixedSize(200, 80);
     label_ = new QLabel(text, this);
     label_->setAlignment(Qt::AlignCenter);
-    auto *layout = new QVBoxLayout(this);
+    auto* layout = new QVBoxLayout(this);
     layout->addWidget(label_);
     setLayout(layout);
     setModal(false);
