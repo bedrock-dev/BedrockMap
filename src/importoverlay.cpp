@@ -136,7 +136,7 @@ void ImportOverlay::confirm() {
         cp.dim = static_cast<int8_t>(dim_);
         // BUG here, the imported enitites will be mixed with original, so we disabled it now
         // chunk.clear_entities();
-        chunk.set_pos(cp, &loader_->level());
+        chunk.move_to(cp, &loader_->level());
     }
 
     if (auto* map = qobject_cast<MapWidget*>(parent_)) {

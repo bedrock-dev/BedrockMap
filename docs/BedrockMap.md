@@ -326,7 +326,7 @@ MainWindow
 | `block_entities_` | `std::vector<palette::compound_tag*>`   | 方块实体 NBT     |
 | `pending_ticks_`  | `std::vector<palette::compound_tag*>`   | 计划刻 NBT       |
 | `HSAs_`           | `std::vector<bl::hardcoded_spawn_area>` | 硬编码生成区域   |
-| `version`         | `ChunkVersion`                          | 区块版本         |
+| `chunk_format_`   | `LevelChunkFormat`                      | 区块存储格式     |
 
 主要方法：
 

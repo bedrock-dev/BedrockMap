@@ -22,6 +22,7 @@
 #include "chunkeditorwidget.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
+#include "magic-enum/magic_enum.hpp"
 #include "mapitemeditor.h"
 #include "mapwidget.h"
 #include "msg.h"
@@ -479,7 +480,9 @@ bool LevelPageWidget::loadLevel(const QString& path) {
     }
     if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     auto& dat = level_loader_->level().dat();
-    LOG_F(INFO, "Open level %s with version %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str());
+    const auto format = level_loader_->level().chunk_format();
+    LOG_F(INFO, "Open level %s with version %s, chunk format %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str(),
+          std::string(magic_enum::enum_name(format)).c_str());
     Assert(dat.root() != nullptr, "The level.dat file is nullptr");
     auto* ld = dat.root()->as<bl::nbt::compound_tag*>();
     this->level_dat_editor_->loadNewData({NBTListItem::from(ld->copy()->as<bl::nbt::compound_tag*>(), "level.dat")});

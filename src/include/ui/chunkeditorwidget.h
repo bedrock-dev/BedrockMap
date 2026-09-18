@@ -105,7 +105,6 @@ class ChunkEditorWidget : public QWidget {
     Ui::ChunkEditorWidget* ui;
     AsyncLevelLoader* level_loader_{nullptr};
     int y_level{0};
-    bl::ChunkVersion cv{bl::Old};
     bl::chunk_pos cp_;
     bl::raw_chunk raw_chunk_;
     bool has_chunk_{false};

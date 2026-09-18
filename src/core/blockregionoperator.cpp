@@ -253,8 +253,7 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
 
             if (!changed) continue;
 
-            target.to_raw_chunk(raw.value());
-            loader.putRawChunk(raw.value());
+            loader.putRawChunk(target.to_raw_chunk());
             edited.push_back(cp);
         }
     }

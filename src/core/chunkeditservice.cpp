@@ -62,7 +62,7 @@ bool ChunkEditService::setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biom
     if (!canEdit()) return false;
     auto raw = getRawChunk(pos);
     if (!raw.has_value()) return false;
-    raw->set_biome(biome);
+    if (!bl::set_raw_chunk_biome(raw.value(), biome)) return false;
     return putRawChunk(raw.value());
 }
 

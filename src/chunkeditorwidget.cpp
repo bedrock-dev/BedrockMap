@@ -156,7 +156,6 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     auto* chunk = ptr.get();
     if (!chunk->load_from_raw_chunk(this->raw_chunk_, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others)) return;
 
-    this->cv = chunk->get_version();
     this->cp_ = chunk->get_pos();
     this->refreshBasicData();
     this->hsa_editor_->setChunk(this->cp_);
@@ -327,7 +326,7 @@ bool ChunkEditorWidget::saveChunk() {
             actors.push_back(actor);
         }
     }
-    raw_chunk_.set_entities(actors, raw_chunk_.version());
+    raw_chunk_.set_entities(actors);
     raw_chunk_.set_normal(bl::chunk_key::HardCodedSpawnAreas, this->hsa_editor_->serialize());
     const bool saved = this->level_loader_->putRawChunk(this->raw_chunk_);
     for (auto* actor : actors) delete actor;
@@ -443,7 +442,7 @@ void ChunkEditorWidget::on_import_btn_clicked() {
     }
 
     auto chunk = region.chunks().front();
-    chunk.set_pos(this->raw_chunk_.pos(), &this->level_loader_->level());
+    chunk.move_to(this->raw_chunk_.pos(), &this->level_loader_->level());
     this->loadChunkData(std::move(chunk));
     setDirty(true);
 }
