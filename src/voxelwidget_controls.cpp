@@ -504,7 +504,7 @@ void VoxelWidget::wheelEvent(QWheelEvent* e) {
     if (delta > 0) {
         m_scale = std::min(m_scale + 0.1f, maxZoomScale());
     } else {
-        m_scale = std::max(m_scale - 0.1f, 0.1f);
+        m_scale = std::max(m_scale - 0.1f, kMinScaleLevel);
     }
     update();
 }

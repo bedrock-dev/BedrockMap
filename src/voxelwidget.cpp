@@ -23,6 +23,10 @@ namespace {
     // Axis colors, indexed 0 = X, 1 = Y, 2 = Z. The axes and the selection handles share them,
     // so a handle reads as "this one moves X" the same way the axis lines do.
     const QColor kAxisColors[3] = {QColor(255, 60, 60), QColor(60, 255, 60), QColor(60, 60, 255)};
+
+    // Corner ambient occlusion, indexed by how many of the three neighbours around a corner are
+    // filled (0 = most occluded). A face with no occlusion at all keeps its color unchanged.
+    constexpr float kAOBrightness[4] = {0.60f, 0.75f, 0.88f, 1.0f};
 }  // namespace
 
 // index template for each face (2 triangles, 6 indices)
@@ -31,8 +35,6 @@ const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
 constexpr float kViewHalfHeight = 20.710678f;
 // distance from the camera to the origin of the model space
 constexpr float kCameraDistance = 50.0f;
-// upper zoom bound, shared by the mouse wheel and the zoom clamp
-constexpr float kMaxScaleLevel = 10.0f;
 // opacity of the import placement ghost mesh
 constexpr float kPreviewAlphaScale = 0.55f;
 
@@ -695,6 +697,11 @@ QVector3D VoxelWidget::modelSize() const {
 }
 
 void VoxelWidget::updateModelMatrix() {
+    // The zoom bound depends on the rotation and the pan (see maxZoomScale), so a view change can
+    // leave the camera inside the model's shell. Clamping here -- rather than at each call site --
+    // covers every path that changes the view, since they all end up painting through this.
+    m_scale = std::clamp(m_scale, kMinScaleLevel, maxZoomScale());
+
     m_model.setToIdentity();
     // Pan is applied after the rotation, in the fixed view frame, so dragging
     // always moves the model along the screen axes regardless of its rotation.
@@ -749,9 +756,6 @@ void VoxelWidget::setUniforms() {
     gl_shader_->setUniformValue("model", m_model);
     gl_shader_->setUniformValue("view", m_view);
     gl_shader_->setUniformValue("projection", m_projection);
-    gl_shader_->setUniformValue("lightPos", m_lightPos);
-    gl_shader_->setUniformValue("lightColor", m_lightColor);
-    gl_shader_->setUniformValue("ambientLight", m_ambientLight);
 }
 
 void VoxelWidget::renderOpaqueObjects() {
@@ -808,19 +812,38 @@ void VoxelWidget::updateProjection() {
 // Faces shared by two solid voxels are dropped by the mesher, so the model is a
 // shell with no interior geometry. Zooming far enough moves the camera inside
 // that shell, where it shows nothing but the background (the model looks
-// see-through). Keep the camera outside the model's bounding sphere to prevent it.
+// see-through). The bound below is where the camera reaches the model's box,
+// which is what keeps that from happening.
 float VoxelWidget::maxZoomScale() const {
     if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return kMaxScaleLevel;
 
-    const float sx = static_cast<float>(voxel_data_[0].size()) * voxel_size_;
-    const float sy = static_cast<float>(voxel_data_.size()) * voxel_size_;
-    const float sz = static_cast<float>(voxel_data_[0][0].size()) * voxel_size_;
-    const float radius = 0.5f * std::sqrt(sx * sx + sy * sy + sz * sz);
-    if (radius <= 0.0f) return kMaxScaleLevel;
+    const float halfExtent[3] = {0.5f * static_cast<float>(voxel_data_[0].size()) * voxel_size_,
+                                 0.5f * static_cast<float>(voxel_data_.size()) * voxel_size_,
+                                 0.5f * static_cast<float>(voxel_data_[0][0].size()) * voxel_size_};
+    if (halfExtent[0] <= 0.0f || halfExtent[1] <= 0.0f || halfExtent[2] <= 0.0f) return kMaxScaleLevel;
 
-    // the model center sits at the pan offset, the camera on the +Z axis
-    const float cameraDistance = std::max(1.0f, (QVector3D(0.0f, 0.0f, kCameraDistance) - m_cameraTranslate).length());
-    return std::clamp(cameraDistance * 0.9f / radius, 0.1f, kMaxScaleLevel);
+    // Camera position relative to the model center. The center is the pan offset (the model is
+    // translated by it, not rotated), the camera sits on the +Z axis.
+    const QVector3D cameraToCenter = m_cameraTranslate - QVector3D(0.0f, 0.0f, kCameraDistance);
+    QMatrix4x4 rotation;
+    rotation.rotate(m_rotation);
+
+    // The camera is inside the box once it is within every one of its three slabs, so the bound is
+    // the *largest* of the three scales at which an axis gets crossed -- the last one to close.
+    // Measuring against the box instead of its bounding sphere is what loosens this: the sphere is
+    // sized by the diagonal, which is the worst case over all rotations rather than the one in
+    // front of the user, so a face-on view was being held back by the corner distance and could
+    // only zoom about half as far as it can now.
+    float bound = 0.0f;
+    for (int axis = 0; axis < 3; ++axis) {
+        // The model axis in world space, i.e. the matching column of the rotation matrix.
+        const QVector3D direction(rotation(0, axis), rotation(1, axis), rotation(2, axis));
+        const float distanceAlongAxis = std::abs(QVector3D::dotProduct(cameraToCenter, direction));
+        bound = std::max(bound, distanceAlongAxis / halfExtent[axis]);
+    }
+    // Stop just short of the surface: stopping exactly on it would put the camera in the geometry.
+    constexpr float kZoomMargin = 0.95f;
+    return std::clamp(bound * kZoomMargin, kMinScaleLevel, kMaxScaleLevel);
 }
 
 bool VoxelWidget::hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
@@ -883,9 +906,48 @@ std::optional<bl::block_box> VoxelWidget::currentExportBounds() const {
     return bounds;
 }
 
+std::array<float, 4> VoxelWidget::faceOcclusionFactors(const VoxelGrid& grid, const bl::block_box& bounds, int layer, int x, int z,
+                                                       const std::vector<float>& faceVertices, const QVector3D& normal,
+                                                       MeshOcclusionMode mode) const {
+    // The normal is one of the six axis directions, so the other two axes are the ones the corner
+    // offsets vary along: for the +Z face the template keeps z at 0.5 and moves x / y.
+    const int normalAxis = normal.x() != 0.0f ? 0 : (normal.y() != 0.0f ? 1 : 2);
+    const int tangentAxes[2] = {(normalAxis + 1) % 3, (normalAxis + 2) % 3};
+    const int step[3] = {static_cast<int>(normal.x()), static_cast<int>(normal.y()), static_cast<int>(normal.z())};
+    // hasNeighborInBounds takes its offset as (y, x, z).
+    const auto occludes = [&](const int offset[3]) {
+        return hasNeighborInBounds(grid, layer, x, z, offset[1], offset[0], offset[2], bounds, mode);
+    };
+
+    std::array<float, 4> result{};
+    for (int i = 0; i < 4; ++i) {
+        const float* corner = &faceVertices[i * 3];
+        // The template offsets are exactly +/-0.5, so the sign is all that is needed.
+        const int sign1 = corner[tangentAxes[0]] > 0.0f ? 1 : -1;
+        const int sign2 = corner[tangentAxes[1]] > 0.0f ? 1 : -1;
+
+        int side1[3] = {step[0], step[1], step[2]};
+        int side2[3] = {step[0], step[1], step[2]};
+        int diagonal[3] = {step[0], step[1], step[2]};
+        side1[tangentAxes[0]] += sign1;
+        side2[tangentAxes[1]] += sign2;
+        diagonal[tangentAxes[0]] += sign1;
+        diagonal[tangentAxes[1]] += sign2;
+
+        const bool first = occludes(side1);
+        const bool second = occludes(side2);
+        const bool cornered = occludes(diagonal);
+        // Two occluded sides seal the corner off no matter what the diagonal holds, which is why
+        // that case is pinned to the darkest level instead of counted like the others.
+        const int level = (first && second) ? 0 : 3 - (static_cast<int>(first) + static_cast<int>(second) + static_cast<int>(cornered));
+        result[i] = kAOBrightness[level];
+    }
+    return result;
+}
+
 void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                           const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices,
-                                           float alphaScale) const {
+                                           const QVector3D& normal, const std::array<float, 4>& occlusion, std::vector<float>& vertices,
+                                           std::vector<GLuint>& indices, float alphaScale) const {
     // block (x, layer, z) occupies [x, x+1] x [y, y+1] x [z, z+1], so the model
     // grid aligns with the world coordinate grid (min corner at 0,0,0)
     float worldX = x * voxel_size_ + 0.5f * voxel_size_;
@@ -908,16 +970,28 @@ void VoxelWidget::addFaceVerticesToBuffers(int layer, int x, int z, const Voxel&
         vertices.push_back(normal.y());
         vertices.push_back(normal.z());
 
-        // color
-        vertices.push_back(voxel.color.redF());
-        vertices.push_back(voxel.color.greenF());
-        vertices.push_back(voxel.color.blueF());
+        // color, darkened by this corner's ambient occlusion
+        vertices.push_back(voxel.color.redF() * occlusion[i]);
+        vertices.push_back(voxel.color.greenF() * occlusion[i]);
+        vertices.push_back(voxel.color.blueF() * occlusion[i]);
         vertices.push_back(voxel.color.alphaF() * alphaScale);
     }
 
-    // indices
-    for (GLuint idx : FACE_INDICES) {
-        indices.push_back(idx + vertexOffset);
+    // Split the quad along the diagonal that keeps the occlusion gradient smooth. The other
+    // diagonal makes the two triangles interpolate their corner colors along visibly different
+    // paths, which shows up as a bright seam running across the face.
+    const bool flipDiagonal = occlusion[0] + occlusion[2] > occlusion[1] + occlusion[3];
+    if (flipDiagonal) {
+        indices.push_back(0 + vertexOffset);
+        indices.push_back(1 + vertexOffset);
+        indices.push_back(3 + vertexOffset);
+        indices.push_back(1 + vertexOffset);
+        indices.push_back(2 + vertexOffset);
+        indices.push_back(3 + vertexOffset);
+    } else {
+        for (GLuint idx : FACE_INDICES) {
+            indices.push_back(idx + vertexOffset);
+        }
     }
 }
 
@@ -953,8 +1027,10 @@ void VoxelWidget::appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_
                     if (!hasNeighborInBounds(grid, layer, x, z, dLayer, dX, dZ, bounds, mode)) {
                         auto& targetVertices = (voxel.transparent && transparentVertices) ? *transparentVertices : vertices;
                         auto& targetIndices = (voxel.transparent && transparentIndices) ? *transparentIndices : indices;
-                        addFaceVerticesToBuffers(layer, x, z, voxel, m_faceTemplates[faceIdx], m_faceNormals[faceIdx], targetVertices,
-                                                 targetIndices, alphaScale);
+                        const auto occlusion =
+                            faceOcclusionFactors(grid, bounds, layer, x, z, m_faceTemplates[faceIdx], m_faceNormals[faceIdx], mode);
+                        addFaceVerticesToBuffers(layer, x, z, voxel, m_faceTemplates[faceIdx], m_faceNormals[faceIdx], occlusion,
+                                                 targetVertices, targetIndices, alphaScale);
                     }
                 }
             }

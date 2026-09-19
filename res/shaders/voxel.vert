@@ -9,13 +9,14 @@ uniform mat4 projection;
 
 out vec4 vColor;
 out vec3 vNormal;
-out vec3 vFragPos;
 
 void main()
 {
-    vFragPos = vec3(model * vec4(aPos, 1.0));
-    
-    vNormal = mat3(transpose(inverse(model))) * aNormal;
+    // The normal is passed through in model space on purpose: faceShade() in the fragment
+    // shader is a fixed per-direction brightness (the game's convention), so a face has to keep
+    // its shade no matter how the camera is turned. Rotating it here would make the shading
+    // follow the view instead.
+    vNormal = aNormal;
     vColor = aColor;
     gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

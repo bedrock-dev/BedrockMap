@@ -162,11 +162,16 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     // mesh building
     [[nodiscard]] bool hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dLayer, int dX, int dZ,
                                            const bl::block_box& bounds, MeshOcclusionMode mode = MeshOcclusionMode::RenderView) const;
+    /// Per-corner ambient occlusion of one face, in faceVertices order, as a brightness in
+    /// (0, 1]. Each corner looks at the three neighbours that touch it on the face's outer side.
+    [[nodiscard]] std::array<float, 4> faceOcclusionFactors(const VoxelGrid& grid, const bl::block_box& bounds, int layer, int x, int z,
+                                                            const std::vector<float>& faceVertices, const QVector3D& normal,
+                                                            MeshOcclusionMode mode) const;
     [[nodiscard]] std::optional<bl::block_box> fullVoxelBounds() const;
     [[nodiscard]] std::optional<bl::block_box> currentExportBounds() const;
     void addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                  const QVector3D& normal, std::vector<float>& vertices, std::vector<GLuint>& indices,
-                                  float alphaScale = 1.0f) const;
+                                  const QVector3D& normal, const std::array<float, 4>& occlusion, std::vector<float>& vertices,
+                                  std::vector<GLuint>& indices, float alphaScale = 1.0f) const;
     void appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_box& bounds, std::vector<float>& vertices,
                                 std::vector<GLuint>& indices, std::vector<float>* transparentVertices = nullptr,
                                 std::vector<GLuint>* transparentIndices = nullptr, MeshOcclusionMode mode = MeshOcclusionMode::RenderView,
@@ -214,6 +219,11 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     float fit_scale_ = 1.0f;  // zoom that frames a newly loaded model (the R key target)
     float voxel_size_ = 1.0f;
 
+    // Hard zoom bounds; maxZoomScale() narrows the upper one to whatever keeps the camera
+    // outside the model, so it is only ever reached by an empty model.
+    static constexpr float kMinScaleLevel = 0.1f;
+    static constexpr float kMaxScaleLevel = 10.0f;
+
     QVector3D m_cameraTranslate;   // camera pan offset (X/Y/Z axis)
     bool m_isPanDragging{false};   // whether panning drag is active
     QPoint m_panStartPos;          // mouse start position for pan
@@ -243,11 +253,6 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     QVector3D selection_drag_start_minimum_;
     QVector3D selection_drag_start_maximum_;
     std::array<QPointF, 3> selection_drag_screen_axes_{};  // screen-space step per world axis, for move mode
-
-    // shadering
-    QVector3D m_lightPos = QVector3D(8.0f, 384.0f, 8.0f);
-    QVector3D m_lightColor = QVector3D(1.0f, 1.0f, 1.0f);
-    QVector3D m_ambientLight = QVector3D(0.8f, 0.8f, 0.8f);
 
     // static data for mesh building
     static const std::vector<std::vector<float>> m_faceTemplates;
