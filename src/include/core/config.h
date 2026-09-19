@@ -85,6 +85,9 @@ namespace setting {
         int CHUNK_EDITOR_HIGHLIGHT_WIDTH{8};
         QString VOID_MAP_COLOR{"#dddddd"};
         bool TRANSPARENT_WATER{true};
+        // Multiplier on the biome tint colors (grass / leaves / water); see
+        // bl::config::set_color_brightness. Only read at startup, when the color tables load.
+        float TINT_BRIGHTNESS{1.2f};
 
         // Cache
         int THREAD_NUM{8};

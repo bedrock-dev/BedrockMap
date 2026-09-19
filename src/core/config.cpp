@@ -22,10 +22,11 @@
 #include "loguru/loguru.hpp"
 
 // bedrock-level's config.h is shadowed by the app config.h on the include path;
-// declare the two tunables used here (same pattern as chunkcoords.cpp).
+// declare the tunables used here (same pattern as chunkcoords.cpp).
 namespace bl::config {
     void set_log_mismatched_actor(bool);
     void set_log_missing_block_color(bool);
+    void set_color_brightness(float);
 }  // namespace bl::config
 
 std::optional<AppVersion> AppVersion::parse(const QString& text) {
@@ -116,6 +117,7 @@ const setting::Settings& setting::current() { return mutableSettings(); }
 
 // Utility functions
 void constant::initColorTable() {
+    bl::config::set_color_brightness(setting::current().TINT_BRIGHTNESS);
     if (!bl::init_biome_color_palette_from_file(constant::BIOME_FILE_PATH)) {
         LOG_F(WARNING, "Can not load biome color file in path: %s", BIOME_FILE_PATH.c_str());
     }
@@ -172,6 +174,7 @@ void setting::load() {
     loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH = s.value("chunk_editor_highlight_width", loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
     loaded.VOID_MAP_COLOR = s.value("void_color", loaded.VOID_MAP_COLOR).toString();
     loaded.TRANSPARENT_WATER = s.value("transparent_water", loaded.TRANSPARENT_WATER).toBool();
+    loaded.TINT_BRIGHTNESS = std::clamp(s.value("tint_brightness", loaded.TINT_BRIGHTNESS).toFloat(), 0.0f, 8.0f);
     s.endGroup();
 
     s.beginGroup("Cache");
@@ -244,6 +247,7 @@ void setting::save(const Settings& values) {
     s.setValue("chunk_editor_highlight_width", values.CHUNK_EDITOR_HIGHLIGHT_WIDTH);
     s.setValue("void_color", values.VOID_MAP_COLOR);
     s.setValue("transparent_water", values.TRANSPARENT_WATER);
+    s.setValue("tint_brightness", values.TINT_BRIGHTNESS);
     s.endGroup();
 
     s.beginGroup("Cache");
