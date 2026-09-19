@@ -75,8 +75,8 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     panelLayout->setContentsMargins(8, 8, 8, 8);
     panelLayout->setSpacing(8);
     panelLayout->addWidget(buildModelPanel());
-    panelLayout->addWidget(buildSelectionPanel());
     panelLayout->addWidget(buildViewPanel());
+    panelLayout->addWidget(buildSelectionPanel());
     panelLayout->addWidget(buildMcstructurePanel());
     panelLayout->addWidget(buildGlbPanel());
     panelLayout->addStretch();
@@ -154,17 +154,16 @@ QWidget* VoxelPreviewWidget::buildSelectionPanel() {
     layout->setContentsMargins(8, 6, 8, 6);
     layout->setHorizontalSpacing(6);
     layout->setVerticalSpacing(4);
+    // One row per axis, with the two ends of its range side by side.
     const QString axisLabels[3] = {QStringLiteral("X"), QStringLiteral("Y"), QStringLiteral("Z")};
+    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.min"), selection_group_), 0, 1);
+    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.max"), selection_group_), 0, 2);
     for (int axis = 0; axis < 3; ++axis) {
-        layout->addWidget(new QLabel(axisLabels[axis], selection_group_), 0, axis + 1);
-    }
-    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.min"), selection_group_), 1, 0);
-    layout->addWidget(new QLabel(tr("voxelPreviewWidget.selection.max"), selection_group_), 2, 0);
-    for (int axis = 0; axis < 3; ++axis) {
+        layout->addWidget(new QLabel(axisLabels[axis], selection_group_), axis + 1, 0);
         selection_min_boxes_[axis] = makeCoordinateBox(selection_group_);
         selection_max_boxes_[axis] = makeCoordinateBox(selection_group_);
-        layout->addWidget(selection_min_boxes_[axis], 1, axis + 1);
-        layout->addWidget(selection_max_boxes_[axis], 2, axis + 1);
+        layout->addWidget(selection_min_boxes_[axis], axis + 1, 1);
+        layout->addWidget(selection_max_boxes_[axis], axis + 1, 2);
         connect(selection_min_boxes_[axis], &QSpinBox::valueChanged, this, [this](int) { applySelectionFields(); });
         connect(selection_max_boxes_[axis], &QSpinBox::valueChanged, this, [this](int) { applySelectionFields(); });
     }
@@ -172,7 +171,7 @@ QWidget* VoxelPreviewWidget::buildSelectionPanel() {
     selection_move_box_ = new QCheckBox(tr("voxelPreviewWidget.selection.moveMode"), selection_group_);
     selection_move_box_->setToolTip(tr("voxelPreviewWidget.selection.moveMode.tooltip"));
     connect(selection_move_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setSelectionMoveMode(checked); });
-    layout->addWidget(selection_move_box_, 3, 0, 1, 4);
+    layout->addWidget(selection_move_box_, 4, 0, 1, 3);
 
     // A checkable group box disables its children while unchecked, which is
     // exactly the wanted behaviour for a disabled selection.
@@ -184,8 +183,8 @@ QWidget* VoxelPreviewWidget::buildSelectionPanel() {
 QWidget* VoxelPreviewWidget::buildViewPanel() {
     auto* group = new QGroupBox(tr("voxelPreviewWidget.viewGroup"), this);
     auto* layout = new QVBoxLayout(group);
-    layout->setContentsMargins(8, 6, 8, 6);
-    layout->setSpacing(4);
+    layout->setContentsMargins(8, 4, 8, 4);
+    layout->setSpacing(2);
 
     axes_box_ = new QCheckBox(tr("voxelPreviewWidget.view.axes"), group);
     ortho_box_ = new QCheckBox(tr("voxelPreviewWidget.view.ortho"), group);
@@ -199,7 +198,7 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
     connect(rotation_lock_box_, &QCheckBox::toggled, this, [this](bool checked) { voxelWidget_->setRotationLocked(checked); });
     auto* optionsRow = new QHBoxLayout();
     optionsRow->setContentsMargins(0, 0, 0, 0);
-    optionsRow->setSpacing(8);
+    optionsRow->setSpacing(6);
     optionsRow->addWidget(axes_box_);
     optionsRow->addWidget(ortho_box_);
     optionsRow->addWidget(rotation_lock_box_);
@@ -208,7 +207,7 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
 
     auto* rotateGrid = new QGridLayout();
     rotateGrid->setContentsMargins(0, 0, 0, 0);
-    rotateGrid->setSpacing(2);
+    rotateGrid->setSpacing(1);
     // Text arrows instead of QStyle standard icons: the standard pixmaps are
     // drawn in black and become invisible on a dark theme.
     const struct {
@@ -222,10 +221,11 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
         {1, 2, QStringLiteral("\u25B6"), tr("voxelPreviewWidget.view.rotateRight"), 90.0f, 0.0f},
         {2, 1, QStringLiteral("\u25BC"), tr("voxelPreviewWidget.view.rotateDown"), 0.0f, 90.0f},
     };
+    constexpr int kRotateButtonSize = 20;
     for (const auto& arrow : arrows) {
         auto* button = new QToolButton(group);
         button->setText(arrow.label);
-        button->setFixedSize(28, 28);
+        button->setFixedSize(kRotateButtonSize, kRotateButtonSize);
         button->setToolTip(arrow.tooltip);
         button->setFocusPolicy(Qt::NoFocus);
         const float yaw = arrow.yaw;
@@ -236,7 +236,7 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
 
     auto* faceFrontButton = new QToolButton(group);
     faceFrontButton->setText(QStringLiteral("\u2299"));
-    faceFrontButton->setFixedSize(28, 28);
+    faceFrontButton->setFixedSize(kRotateButtonSize, kRotateButtonSize);
     faceFrontButton->setToolTip(tr("voxelPreviewWidget.view.faceFront"));
     faceFrontButton->setFocusPolicy(Qt::NoFocus);
     connect(faceFrontButton, &QToolButton::clicked, this, [this]() { voxelWidget_->focusFrontFace(); });

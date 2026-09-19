@@ -1480,6 +1480,11 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.voxel</source>
+        <translation>3D View</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation>Cache</translation>
     </message>
@@ -1634,6 +1639,14 @@
     <message>
         <source>settingsDialog.map.chunkEditorWidth</source>
         <translation>Highlight Width</translation>
+    </message>
+    <message>
+        <source>settingsDialog.voxel.groupTitle</source>
+        <translation>3D View</translation>
+    </message>
+    <message>
+        <source>settingsDialog.voxel.selectionColor</source>
+        <translation>Selection Color</translation>
     </message>
     <message>
         <source>settingsDialog.cache.groupTitle</source>

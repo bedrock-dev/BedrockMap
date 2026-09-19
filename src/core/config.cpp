@@ -173,6 +173,7 @@ void setting::load() {
     loaded.CHUNK_EDITOR_HIGHLIGHT_COLOR = s.value("chunk_editor_highlight_color", loaded.CHUNK_EDITOR_HIGHLIGHT_COLOR).toString();
     loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH = s.value("chunk_editor_highlight_width", loaded.CHUNK_EDITOR_HIGHLIGHT_WIDTH).toInt();
     loaded.VOID_MAP_COLOR = s.value("void_color", loaded.VOID_MAP_COLOR).toString();
+    loaded.VOXEL_SELECTION_COLOR = s.value("voxel_selection_color", loaded.VOXEL_SELECTION_COLOR).toString();
     loaded.TRANSPARENT_WATER = s.value("transparent_water", loaded.TRANSPARENT_WATER).toBool();
     loaded.TINT_BRIGHTNESS = std::clamp(s.value("tint_brightness", loaded.TINT_BRIGHTNESS).toFloat(), 0.0f, 8.0f);
     s.endGroup();
@@ -246,6 +247,7 @@ void setting::save(const Settings& values) {
     s.setValue("chunk_editor_highlight_color", values.CHUNK_EDITOR_HIGHLIGHT_COLOR);
     s.setValue("chunk_editor_highlight_width", values.CHUNK_EDITOR_HIGHLIGHT_WIDTH);
     s.setValue("void_color", values.VOID_MAP_COLOR);
+    s.setValue("voxel_selection_color", values.VOXEL_SELECTION_COLOR);
     s.setValue("transparent_water", values.TRANSPARENT_WATER);
     s.setValue("tint_brightness", values.TINT_BRIGHTNESS);
     s.endGroup();

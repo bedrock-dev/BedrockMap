@@ -85,6 +85,11 @@ namespace setting {
         int CHUNK_EDITOR_HIGHLIGHT_WIDTH{8};
         QString VOID_MAP_COLOR{"#dddddd"};
         bool TRANSPARENT_WATER{true};
+        // Color of the 3D preview's selection box outline, as #AARRGGBB (or #RRGGBB for an
+        // opaque color). The fill is the same color darkened and keeps a fraction of the alpha.
+        // Named for the voxel widget so it is not mistaken for the 2D map's chunk selection.
+        // The drag handles are not affected: they follow their axis color instead.
+        QString VOXEL_SELECTION_COLOR{"#e641b9dc"};
         // Multiplier on the biome tint colors (grass / leaves / water); see
         // bl::config::set_color_brightness. Only read at startup, when the color tables load.
         float TINT_BRIGHTNESS{1.2f};

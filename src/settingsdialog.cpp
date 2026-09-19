@@ -26,6 +26,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->voidColorBtn, &QPushButton::clicked, this, &SettingsDialog::onVoidColorPick);
     connect(ui->actorBorderColorBtn, &QPushButton::clicked, this, &SettingsDialog::onActorBorderColorPick);
     connect(ui->chunkEditorColorBtn, &QPushButton::clicked, this, &SettingsDialog::onChunkEditorColorPick);
+    connect(ui->voxelSelectionColorBtn, &QPushButton::clicked, this, &SettingsDialog::onVoxelSelectionColorPick);
 
     // Connect buttons
     connect(ui->saveBtn, &QPushButton::clicked, this, &SettingsDialog::onSave);
@@ -59,21 +60,25 @@ void SettingsDialog::setupCategories() {
     mapItem->setText(0, tr("settingsDialog.category.map"));
     mapItem->setData(0, Qt::UserRole, 1);
 
+    auto* voxelItem = new QTreeWidgetItem(ui->categoryTree);
+    voxelItem->setText(0, tr("settingsDialog.category.voxel"));
+    voxelItem->setData(0, Qt::UserRole, 2);
+
     auto* cacheItem = new QTreeWidgetItem(ui->categoryTree);
     cacheItem->setText(0, tr("settingsDialog.category.cache"));
-    cacheItem->setData(0, Qt::UserRole, 2);
+    cacheItem->setData(0, Qt::UserRole, 3);
 
     auto* miscItem = new QTreeWidgetItem(ui->categoryTree);
     miscItem->setText(0, tr("settingsDialog.category.misc"));
-    miscItem->setData(0, Qt::UserRole, 3);
+    miscItem->setData(0, Qt::UserRole, 4);
 
     auto* extraItem = new QTreeWidgetItem(ui->categoryTree);
     extraItem->setText(0, tr("settingsDialog.category.extra"));
-    extraItem->setData(0, Qt::UserRole, 4);
+    extraItem->setData(0, Qt::UserRole, 5);
 
     auto* langItem = new QTreeWidgetItem(ui->categoryTree);
     langItem->setText(0, tr("settingsDialog.category.lang"));
-    langItem->setData(0, Qt::UserRole, 5);
+    langItem->setData(0, Qt::UserRole, 6);
 }
 
 void SettingsDialog::loadSettings() {
@@ -126,6 +131,7 @@ void SettingsDialog::loadSettings() {
     ui->actorBorderColorEdit->setText(setting::current().ACTOR_BORDER_COLOR);
     ui->chunkEditorColorEdit->setText(setting::current().CHUNK_EDITOR_HIGHLIGHT_COLOR);
     ui->chunkEditorWidthSpin->setValue(setting::current().CHUNK_EDITOR_HIGHLIGHT_WIDTH);
+    ui->voxelSelectionColorEdit->setText(setting::current().VOXEL_SELECTION_COLOR);
 
     // --- Cache ---
     ui->regionCacheSpin->setValue(setting::current().REGION_CACHE_SIZE);
@@ -158,11 +164,15 @@ void SettingsDialog::onActorBorderColorPick() { onPickColor(ui->actorBorderColor
 
 void SettingsDialog::onChunkEditorColorPick() { onPickColor(ui->chunkEditorColorEdit); }
 
-void SettingsDialog::onPickColor(QLineEdit* edit) {
+void SettingsDialog::onVoxelSelectionColorPick() { onPickColor(ui->voxelSelectionColorEdit, true); }
+
+void SettingsDialog::onPickColor(QLineEdit* edit, bool withAlpha) {
     QColor current(edit->text());
-    QColor chosen = QColorDialog::getColor(current, this, tr("settingsDialog.colorPicker.title"));
+    const auto options = withAlpha ? QColorDialog::ShowAlphaChannel : QColorDialog::ColorDialogOptions();
+    QColor chosen = QColorDialog::getColor(current, this, tr("settingsDialog.colorPicker.title"), options);
     if (chosen.isValid()) {
-        edit->setText(chosen.name());
+        // Colors that support alpha are stored as #AARRGGBB; the others keep the shorter form.
+        edit->setText(withAlpha ? chosen.name(QColor::HexArgb) : chosen.name());
     }
 }
 
@@ -226,6 +236,7 @@ void SettingsDialog::onSave() {
     values.ACTOR_BORDER_COLOR = ui->actorBorderColorEdit->text();
     values.CHUNK_EDITOR_HIGHLIGHT_COLOR = ui->chunkEditorColorEdit->text();
     values.CHUNK_EDITOR_HIGHLIGHT_WIDTH = ui->chunkEditorWidthSpin->value();
+    values.VOXEL_SELECTION_COLOR = ui->voxelSelectionColorEdit->text();
 
     values.REGION_CACHE_SIZE = ui->regionCacheSpin->value();
     values.EMPTY_REGION_CACHE_SIZE = ui->emptyCacheSpin->value();

@@ -664,7 +664,94 @@
         </layout>
        </widget>
 
-       <!-- ==================== Page 2: Cache ==================== -->
+       <!-- ==================== Page 2: 3D View ==================== -->
+       <widget class="QWidget" name="voxelPage">
+        <layout class="QVBoxLayout" name="verticalLayout_voxel">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="title_voxel">
+           <property name="text">
+            <string>settingsDialog.voxel.groupTitle</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_voxel">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_voxel_selection_color">
+             <property name="text">
+              <string>settingsDialog.voxel.selectionColor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_voxel_selection_color">
+             <item>
+              <widget class="QLineEdit" name="voxelSelectionColorEdit"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="voxelSelectionColorBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>32</width>
+                 <height>32</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_voxel">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSpacerItem::Policy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>2</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- ==================== Page 3: Cache ==================== -->
        <widget class="QWidget" name="cachePage">
         <layout class="QVBoxLayout" name="verticalLayout_cache">
          <property name="spacing">

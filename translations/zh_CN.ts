@@ -1480,6 +1480,11 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.voxel</source>
+        <translation>3D 视图设置</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation>缓存设置</translation>
     </message>
@@ -1634,6 +1639,14 @@
     <message>
         <source>settingsDialog.map.chunkEditorWidth</source>
         <translation>高亮边框宽度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.voxel.groupTitle</source>
+        <translation>3D 视图</translation>
+    </message>
+    <message>
+        <source>settingsDialog.voxel.selectionColor</source>
+        <translation>选框颜色</translation>
     </message>
     <message>
         <source>settingsDialog.cache.groupTitle</source>

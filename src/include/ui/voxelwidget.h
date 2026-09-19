@@ -146,6 +146,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     [[nodiscard]] SelectionHandle pickSelectionHandle(const QPointF& position) const;
     [[nodiscard]] QVector3D selectionHandlePosition(SelectionHandle handle) const;
     [[nodiscard]] QVector3D selectionHandleAxis(SelectionHandle handle) const;
+    /// Index of the axis the handle sits on: 0 = X, 1 = Y, 2 = Z.
+    [[nodiscard]] static int selectionHandleAxisIndex(SelectionHandle handle);
     [[nodiscard]] QPointF projectToWidget(const QVector3D& point, bool* visible = nullptr) const;
     void updateSelectionFromDrag(const QPointF& position);
     QVector3D localFaceClosestTo(const QVector3D& dir) const;

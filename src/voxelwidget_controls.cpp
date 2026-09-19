@@ -18,7 +18,7 @@
 namespace {
     // Keep panning consistent with the projection setup used by VoxelWidget.
     constexpr float kViewHalfHeight = 20.710678f;
-    constexpr float kSelectionHandleScreenSizePx = 12.0f;
+    constexpr float kSelectionHandleScreenSizePx = 8.0f;
     constexpr float kSelectionHandlePickRadius = kSelectionHandleScreenSizePx * 1.35f;
 }  // namespace
 
@@ -159,6 +159,23 @@ QVector3D VoxelWidget::selectionHandleAxis(SelectionHandle handle) const {
     return {};
 }
 
+int VoxelWidget::selectionHandleAxisIndex(SelectionHandle handle) {
+    switch (handle) {
+        case SelectionHandle::MinX:
+        case SelectionHandle::MaxX:
+            return 0;
+        case SelectionHandle::MinY:
+        case SelectionHandle::MaxY:
+            return 1;
+        case SelectionHandle::MinZ:
+        case SelectionHandle::MaxZ:
+            return 2;
+        case SelectionHandle::None:
+            return -1;  // no handle, no axis
+    }
+    return -1;
+}
+
 QPointF VoxelWidget::projectToWidget(const QVector3D& point, bool* visible) const {
     const QVector4D clip = m_projection * m_view * m_model * QVector4D(point, 1.0f);
     if (std::abs(clip.w()) < 1e-6f) {
@@ -202,21 +219,23 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
     const QPointF mouseDelta = position - selection_drag_start_;
 
     if (selection_move_mode_) {
-        // Move mode: keep the size, follow the cursor in the selected voxel grid.
+        // Move mode: keep the size, follow the cursor in the selected voxel grid. Only the axis
+        // of the grabbed handle moves, so a drag stays on the line the handle sits on and the
+        // other two axes are not nudged by the sideways part of the mouse motion.
         const float sizeX = static_cast<float>(voxel_data_[0].size());
         const float sizeY = static_cast<float>(voxel_data_.size());
         const float sizeZ = static_cast<float>(voxel_data_[0][0].size());
         const QVector3D span = selection_drag_start_maximum_ - selection_drag_start_minimum_;
 
+        const int axis = selectionHandleAxisIndex(active_selection_handle_);
+
         QVector3D offset;
-        for (int axis = 0; axis < 3; ++axis) {
-            const QPointF screenAxis = selection_drag_screen_axes_[axis];
-            const float axisLengthSquared = static_cast<float>(screenAxis.x() * screenAxis.x() + screenAxis.y() * screenAxis.y());
-            if (axisLengthSquared < 1e-6f) continue;  // axis points into the camera, it cannot be dragged
-            const float voxelDelta =
-                static_cast<float>((mouseDelta.x() * screenAxis.x() + mouseDelta.y() * screenAxis.y()) / axisLengthSquared);
-            offset[axis] = std::round(voxelDelta);
-        }
+        const QPointF screenAxis = selection_drag_screen_axes_[axis];
+        const float axisLengthSquared = static_cast<float>(screenAxis.x() * screenAxis.x() + screenAxis.y() * screenAxis.y());
+        if (axisLengthSquared < 1e-6f) return;  // axis points into the camera, it cannot be dragged
+        const float voxelDelta =
+            static_cast<float>((mouseDelta.x() * screenAxis.x() + mouseDelta.y() * screenAxis.y()) / axisLengthSquared);
+        offset[axis] = std::round(voxelDelta);
 
         QVector3D minimum = selection_drag_start_minimum_ + offset;
         // A locked selection is a fixed-size import placement box: it is free to

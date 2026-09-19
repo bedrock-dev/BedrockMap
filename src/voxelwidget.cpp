@@ -16,7 +16,14 @@
 #include <cstddef>
 #include <vector>
 
+#include "config.h"
 #include "loguru/loguru.hpp"
+
+namespace {
+    // Axis colors, indexed 0 = X, 1 = Y, 2 = Z. The axes and the selection handles share them,
+    // so a handle reads as "this one moves X" the same way the axis lines do.
+    const QColor kAxisColors[3] = {QColor(255, 60, 60), QColor(60, 255, 60), QColor(60, 60, 255)};
+}  // namespace
 
 // index template for each face (2 triangles, 6 indices)
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
@@ -493,9 +500,9 @@ void VoxelWidget::buildAxisVertices() {
     };
 
     const QVector3D origin(0.0f, 0.0f, 0.0f);
-    pushBox(origin, QVector3D(maxX, 0.0f, 0.0f), width, QColor(255, 60, 60));  // X: red
-    pushBox(origin, QVector3D(0.0f, maxY, 0.0f), width, QColor(60, 255, 60));  // Y: green
-    pushBox(origin, QVector3D(0.0f, 0.0f, maxZ), width, QColor(60, 60, 255));  // Z: blue
+    pushBox(origin, QVector3D(maxX, 0.0f, 0.0f), width, kAxisColors[0]);
+    pushBox(origin, QVector3D(0.0f, maxY, 0.0f), width, kAxisColors[1]);
+    pushBox(origin, QVector3D(0.0f, 0.0f, maxZ), width, kAxisColors[2]);
 }
 
 void VoxelWidget::resetSelectionToModelBounds() {
@@ -538,7 +545,14 @@ void VoxelWidget::buildSelectionVertices() {
         }
     }
 
-    const QColor fillColor(18, 105, 140, 82);
+    // The outline carries the configured selection color, alpha included, so the setting controls
+    // how see-through the box is. The fill is the same hue darkened and keeps a fraction of that
+    // alpha, so one setting drives both without the interior washing out the model behind it.
+    const QColor selectionColor(setting::current().VOXEL_SELECTION_COLOR);
+    const QColor outlineColor = selectionColor;
+    constexpr float kFillAlphaRatio = 0.36f;
+    QColor fillColor = selectionColor.darker(150);
+    fillColor.setAlpha(static_cast<int>(std::round(selectionColor.alpha() * kFillAlphaRatio)));
     const int faces[6][4] = {
         {0, 3, 2, 1}, {4, 5, 6, 7}, {0, 4, 7, 3}, {1, 2, 6, 5}, {3, 7, 6, 2}, {0, 1, 5, 4},
     };
@@ -548,7 +562,6 @@ void VoxelWidget::buildSelectionVertices() {
     }
     selection_fill_vertex_count_ = static_cast<GLsizei>(selection_vertices_.size() / 7);
 
-    const QColor outlineColor(65, 185, 220, 230);
     const int edges[12][2] = {
         {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
     };
@@ -563,7 +576,11 @@ void VoxelWidget::buildSelectionVertices() {
         SelectionHandle::MaxY, SelectionHandle::MinZ, SelectionHandle::MaxZ,
     };
     for (const SelectionHandle handle : handles) {
-        const QColor color = handle == active_selection_handle_ ? QColor(255, 245, 195, 250) : QColor(230, 170, 55, 235);
+        QColor color = kAxisColors[selectionHandleAxisIndex(handle)];
+        // The grabbed handle keeps its axis hue and only brightens, so the axis it moves stays
+        // readable while it is being dragged.
+        color = handle == active_selection_handle_ ? color.lighter(150) : color;
+        color.setAlpha(handle == active_selection_handle_ ? 250 : 235);
         const QVector3D handlePosition = selectionHandlePosition(handle);
         appendColoredBox(selection_vertices_, handlePosition, selectionHandleHalfSizeAt(handlePosition), color);
     }

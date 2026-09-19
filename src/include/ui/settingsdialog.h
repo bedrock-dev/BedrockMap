@@ -18,7 +18,7 @@ class SettingsDialog : public QDialog {
 
    private slots:
     void onCategoryChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
-    void onPickColor(QLineEdit* edit);
+    void onPickColor(QLineEdit* edit, bool withAlpha = false);
     void onSave();
 
     // Color picker helpers
@@ -26,6 +26,7 @@ class SettingsDialog : public QDialog {
     void onVoidColorPick();
     void onActorBorderColorPick();
     void onChunkEditorColorPick();
+    void onVoxelSelectionColorPick();
 
    private:
     void setupCategories();
