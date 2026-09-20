@@ -79,4 +79,5 @@
 
 // Project core
 #include "config.h"
-#include "mapwidget.h"
+#include "cpumapwidget.h"
+#include "maphost.h"

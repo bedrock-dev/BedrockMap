@@ -12,6 +12,7 @@
 #include "color.h"  // bl::blend_color_with_biome, bl::get_biome_color
 #include "config.h"
 #include "data_3d.h"
+#include "renderprofile.h"
 #include "sub_chunk.h"  // bl::block_appearance
 
 // ---- helpers ----
@@ -32,15 +33,15 @@ namespace {
         return {-1, -1};
     }
 
-    void applyWaterOverlay(ChunkRegion* region, int IMG_WIDTH, int scale = 1) {
+    void applyWaterOverlay(ChunkRegion* region, int IMG_WIDTH, int scale, QImage& target) {
         auto& tp = region->tips_info_;
         const int res = IMG_WIDTH * scale;
         for (int bi = 0; bi < IMG_WIDTH; bi++) {
             for (int bj = 0; bj < IMG_WIDTH; bj++) {
                 auto& info = tp[bi][bj];
                 if (info.water_surface_color == 0) continue;
-                float water_depth = static_cast<float>(info.height - info.solid_height);
-                float water_opacity = std::min(0.15f * water_depth, 0.85f);
+                const float water_depth = static_cast<float>(info.height - info.solid_height);
+                const float water_opacity = waterSurfaceOpacity(water_depth);
                 int wr = qRed(info.water_surface_color);
                 int wg = qGreen(info.water_surface_color);
                 int wb = qBlue(info.water_surface_color);
@@ -48,7 +49,7 @@ namespace {
                 int x0 = bi * scale, x1 = x0 + scale;
                 int y0 = bj * scale, y1 = y0 + scale;
                 for (int hj = y0; hj < y1; hj++) {
-                    auto* line = reinterpret_cast<QRgb*>(region->terrain_bake_image_.scanLine(hj));
+                    auto* line = reinterpret_cast<QRgb*>(target.scanLine(hj));
                     for (int hi = x0; hi < x1; hi++) {
                         QRgb px = line[hi];
                         line[hi] = qRgba(static_cast<uint8_t>((1 - water_opacity) * qRed(px) + water_opacity * wr),
@@ -150,7 +151,7 @@ void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapF
         render_info = solid_info;
     }
 
-    reinterpret_cast<QRgb*>(region->terrain_bake_image_.scanLine(Z))[X] =
+    reinterpret_cast<QRgb*>(region->flat_color_image_.scanLine(Z))[X] =
         qRgba(render_info.color.r, render_info.color.g, render_info.color.b, render_info.color.a);
 
     if ((filter.biomes_list_.count(biome) == 0) == filter.biome_black_mode_) {
@@ -170,6 +171,7 @@ void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapF
 
 void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, int rh, ChunkRegion* region) {
     if (!ch || !region) return;
+    ScopedPhase phase(RenderPhase::Terrain);
     auto [miny, maxy] = ch->get_y_range();
 
     // enable layer
@@ -257,10 +259,14 @@ void MapTile::bakeChunkActors(bl::chunk* ch, const MapFilter& filter, ChunkRegio
 //  render passes
 // =====================================================================
 
-void MapTile::renderStyle0(ChunkRegion* region, int IMG_WIDTH) { applyWaterOverlay(region, IMG_WIDTH); }
+void MapTile::renderStyle0(ChunkRegion* region, int IMG_WIDTH) {
+    region->terrain_bake_image_ = region->flat_color_image_.copy();
+    applyWaterOverlay(region, IMG_WIDTH, 1, region->terrain_bake_image_);
+}
 
 void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
-    applyWaterOverlay(region, IMG_WIDTH);
+    region->terrain_bake_image_ = region->flat_color_image_.copy();
+    applyWaterOverlay(region, IMG_WIDTH, 1, region->terrain_bake_image_);
 
     // Directional shadow based on top block height — water blocks are skipped
     // (their colour comes from the sea floor, not the water surface).
@@ -294,10 +300,11 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     const int scale = std::clamp(setting::current().TILE_RENDER_SCALE, 1, 32);
     const int HR = IMG_WIDTH * scale;
 
-    QImage hr_t = region->terrain_bake_image_.scaled(HR, HR, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    auto& tp = region->tips_info_;
+    const auto bevel_t0 = std::chrono::steady_clock::now();
+    QImage hr_t = region->flat_color_image_.scaled(HR, HR, Qt::IgnoreAspectRatio, Qt::FastTransformation);
     if (hr_t.isNull()) return;
 
-    auto& tp = region->tips_info_;
     const int edge_w = std::max(1, scale / 6);
     constexpr float kEdgeBright = 1.18f;
     constexpr float kEdgeDark = 0.76f;
@@ -379,6 +386,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
             }
         }
     }
+    RenderProfile::instance().add(RenderPhase::Bevel, microsSince(bevel_t0));
 
     // ---- cross-region shadow (unified Data3D height source via cache) ----
     auto [sx, sy] = sunVector();
@@ -395,6 +403,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     //    already applied in getHeightMap per the chunk's actual version).
     std::vector<int16_t> eh(EW * EW, -128);
     if (loader) {
+        ScopedPhase phase(RenderPhase::ShadowGather);
         int dim = region_pos.dim;
         int region_cx = region_pos.x;  // chunk units
         int region_cz = region_pos.z;
@@ -423,6 +432,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     std::vector<float> shadow_map(SM * SM, 1.0f);
     const float dz_per_step = 1.0f / shadow_scale;
 
+    const auto ray_t0 = std::chrono::steady_clock::now();
     for (int hi = 0; hi < SM; hi++) {
         for (int hj = 0; hj < SM; hj++) {
             int bi = hi / shadow_scale + BORDER;
@@ -453,8 +463,10 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
             }
         }
     }
+    RenderProfile::instance().add(RenderPhase::ShadowRay, microsSince(ray_t0));
 
     // 3. Per-HR-pixel shadow (direct lookup, no PCF)
+    const auto apply_t0 = std::chrono::steady_clock::now();
     for (int bi = 0; bi < IMG_WIDTH; bi++) {
         for (int bj = 0; bj < IMG_WIDTH; bj++) {
             if (tp[bi][bj].height == -128) continue;
@@ -481,5 +493,6 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     }
 
     region->terrain_bake_image_ = hr_t;
-    applyWaterOverlay(region, IMG_WIDTH, scale);
+    applyWaterOverlay(region, IMG_WIDTH, scale, region->terrain_bake_image_);
+    RenderProfile::instance().add(RenderPhase::ShadowApply, microsSince(apply_t0));
 }

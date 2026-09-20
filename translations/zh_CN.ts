@@ -263,6 +263,14 @@
     </message>
 </context>
 <context>
+    <name>GpuMapWidget</name>
+    <message>
+        <location filename="../src/gpumapwidget.cpp"/>
+        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
+        <translation>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</translation>
+    </message>
+</context>
+<context>
     <name>HsaEditorWidget</name>
     <message>
         <location filename="../src/hsaeditorwidget.cpp"/>
@@ -691,6 +699,36 @@
     </message>
 </context>
 <context>
+    <name>MapHost</name>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.fileDialog.save</source>
+        <translation>保存文件</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportMcstructure</source>
+        <translation>导出 mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation>MCStructure 文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportMcstructureFailed</source>
+        <translation>mcstructure 导出失败</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.editFailed</source>
+        <translation>编辑失败</translation>
+    </message>
+</context>
+<context>
     <name>MapItemEditor</name>
     <message>
         <source>mapItemEditor.title</source>
@@ -721,46 +759,16 @@
     </message>
 </context>
 <context>
-    <name>MapWidget</name>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.fileDialog.save</source>
-        <translation>保存文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportMcstructure</source>
-        <translation>导出 mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>MCStructure files (*.mcstructure)</source>
-        <translation>MCStructure 文件 (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportMcstructureFailed</source>
-        <translation>mcstructure 导出失败</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <source>mapWidget.editFailed</source>
-        <translation>编辑失败</translation>
-    </message>
-</context>
-<context>
     <name>McstructurePageWidget</name>
     <message>
         <location filename="../src/mcstructurepagewidget.cpp"/>
         <source>Export mcstructure</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/mcstructurepagewidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
-        <translation type="unfinished">MCStructure 文件 (*.mcstructure)</translation>
+        <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
 </context>
 <context>
@@ -1260,32 +1268,32 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.unselect</source>
+        <source>mapHost.rightMenu.unselect</source>
         <translation>取消选择</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.selectionOps</source>
+        <source>mapHost.rightMenu.selectionOps</source>
         <translation>选区操作</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.delete</source>
+        <source>mapHost.rightMenu.delete</source>
         <translation>删除选区</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.createVoid</source>
+        <source>mapHost.rightMenu.createVoid</source>
         <translation>创建虚空</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.export</source>
+        <source>mapHost.rightMenu.export</source>
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportRegion</source>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportRegion</source>
         <translation>导出选区</translation>
     </message>
     <message>
@@ -1295,12 +1303,12 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copy</source>
+        <source>mapHost.rightMenu.copy</source>
         <translation>复制选区</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.paste</source>
+        <source>mapHost.rightMenu.paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
@@ -1320,13 +1328,13 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.import</source>
+        <source>mapHost.rightMenu.import</source>
         <translation>导入</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.importRegion</source>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.importRegion</source>
         <translation>导入选区</translation>
     </message>
     <message>
@@ -1336,57 +1344,57 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.gotoPosition</source>
+        <source>mapHost.rightMenu.gotoPosition</source>
         <translation>前往坐标</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
+        <source>mapHost.rightMenu.saveSelectionScreenshot</source>
         <translation>选区截图</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.openchunkEditor</source>
+        <source>mapHost.rightMenu.openchunkEditor</source>
         <translation>在区块编辑器中打开</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyInfo</source>
+        <source>mapHost.rightMenu.copyInfo</source>
         <translation>复制信息</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.setBiome</source>
+        <source>mapHost.rightMenu.setBiome</source>
         <translation>设置选区群系</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyBlockName</source>
+        <source>mapHost.rightMenu.copyBlockName</source>
         <translation>方块名字: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyBiomeName</source>
+        <source>mapHost.rightMenu.copyBiomeName</source>
         <translation>群系名字: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyAltitude</source>
+        <source>mapHost.rightMenu.copyAltitude</source>
         <translation>高度信息: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyTPCommand</source>
+        <source>mapHost.rightMenu.copyTPCommand</source>
         <translation>TP命令: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.saveScreenshot</source>
+        <source>mapHost.rightMenu.saveScreenshot</source>
         <translation>截图</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.view3D</source>
+        <source>mapHost.rightMenu.view3D</source>
         <translation>3D视图</translation>
     </message>
     <message>
@@ -1471,27 +1479,27 @@
     <message>
         <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.gui</source>
-        <translation>界面设置</translation>
+        <translation type="unfinished">界面</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.map</source>
-        <translation>地图设置</translation>
+        <translation type="unfinished">地图</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.voxel</source>
-        <translation>3D 视图设置</translation>
+        <translation type="unfinished">3D 视图</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
-        <translation>缓存设置</translation>
+        <translation type="unfinished">缓存</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.misc</source>
-        <translation>杂项设置</translation>
+        <translation type="unfinished">杂项</translation>
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
@@ -1500,8 +1508,13 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.render</source>
+        <translation>渲染</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.lang</source>
-        <translation>语言设置</translation>
+        <translation type="unfinished">语言</translation>
     </message>
     <message>
         <source>settingsDialog.restartHint</source>
@@ -1543,38 +1556,6 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>字号</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderGroup</source>
-        <translation>渲染选项</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle</source>
-        <translation>渲染风格</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.noShadow</source>
-        <translation>无阴影</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.basicShadow</source>
-        <translation>基础阴影</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>伪SSAO+阴影贴图（更多性能开销）</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowScale</source>
-        <translation>方块分辨率</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowMapScale</source>
-        <translation>阴影贴图缩放</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowLevel</source>
-        <translation>阴影强度</translation>
     </message>
     <message>
         <source>settingsDialog.map.zoomGroup</source>
@@ -1693,36 +1674,28 @@
         <translation>预读取全局区块坐标</translation>
     </message>
     <message>
+        <source>settingsDialog.extra.gpuRender</source>
+        <translation>启用GPU渲染（实验性）</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.rendererGroup</source>
+        <translation>GPU渲染器</translation>
+    </message>
+    <message>
+        <source>settingsDialog.render.cpuGroup</source>
+        <translation>CPU渲染</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.aoStrength</source>
+        <translation>环境光遮蔽强度</translation>
+    </message>
+    <message>
         <source>settingsDialog.lang.groupTitle</source>
         <translation>语言</translation>
     </message>
     <message>
         <source>settingsDialog.lang.label</source>
         <translation>界面语言</translation>
-    </message>
-    <message>
-        <source>1x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>16x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>32x</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>...</source>
@@ -1747,6 +1720,74 @@
     <message>
         <source>default</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.shadowStrength</source>
+        <translation>阴影强度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.bevelStrength</source>
+        <translation>倒角强度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.saturation</source>
+        <translation>饱和度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.brightness</source>
+        <translation>亮度</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle</source>
+        <translation>渲染风格</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.noShadow</source>
+        <translation>无阴影</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.basicShadow</source>
+        <translation>基础阴影</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
+        <translation>伪SSAO+阴影贴图（更多性能开销）</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowScale</source>
+        <translation>阴影缩放</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <translation>16x</translation>
+    </message>
+    <message>
+        <source>32x</source>
+        <translation>32x</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowMapScale</source>
+        <translation>阴影贴图缩放</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowLevel</source>
+        <translation>阴影等级</translation>
     </message>
 </context>
 <context>

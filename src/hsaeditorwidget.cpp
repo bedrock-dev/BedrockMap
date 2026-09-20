@@ -13,7 +13,7 @@
 #include <QVBoxLayout>
 
 namespace {
-    // same color scheme as MapWidget::drawHSAs, indexed by HSAType
+    // same color scheme as CpuMapWidget::drawHSAs, indexed by HSAType
     QColor hsaColor(bl::HSAType t) {
         switch (t) {
             case bl::NetherFortress:

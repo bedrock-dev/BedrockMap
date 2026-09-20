@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QObject>
 #include <QRunnable>
+#include <algorithm>
 #include <bitset>
 #include <deque>
 #include <mutex>
@@ -38,6 +39,12 @@ struct BlockTipsInfo {
     uint32_t water_surface_color{0};  // QRgb packed, 0 = no water overlay
 };
 
+/// Water always contributes a visible surface tint, even over a one-block-deep
+/// shelf. It then grows rapidly with depth and leaves only a small view of the
+/// floor in deep water. Shared by CPU baking and GPU atlas uploads so their
+/// water colours stay identical.
+[[nodiscard]] inline float waterSurfaceOpacity(float depth) { return std::clamp(0.30f + 0.15f * std::max(depth, 0.0f), 0.0f, 0.92f); }
+
 struct ChunkRegion {
     ~ChunkRegion();
     struct ActorCount {
@@ -47,6 +54,11 @@ struct ChunkRegion {
 
     std::array<std::array<BlockTipsInfo, constant::RW << 4>, constant::RW << 4> tips_info_{};
     std::bitset<constant::RW * constant::RW> chunk_bit_map_;
+    // Per-block colours exactly as baked, before any style pass: 1 pixel per
+    // block, biome tint applied, water NOT blended. Style passes read this and
+    // write terrain_bake_image_, so the GPU path gets unmodified input no matter
+    // which MAP_RENDER_STYLE the CPU map is using.
+    QImage flat_color_image_;
     QImage terrain_bake_image_;
     QImage biome_bake_image_;
     bool valid{false};

@@ -8,6 +8,7 @@
 #include <QIcon>
 #include <QImage>
 #include <QLocale>
+#include <QStyleHints>
 #include <QSurfaceFormat>
 #include <QTextStream>
 #include <Qchar>
@@ -20,6 +21,7 @@
 #include "crashhandler.h"
 #include "loguru/loguru.hpp"
 #include "mainwindow.h"
+#include "renderbench.h"
 #include "resourcemanager.h"
 
 void setupLog(int argc, char* argv[]) {
@@ -97,6 +99,10 @@ int main(int argc, char* argv[]) {
     setupFont(a);
     TranslatorMgr::init();
     TranslatorMgr::setupTranslation(a, resolveLanguage());
+
+    // Headless profiling of the map bake/paint path (see src/core/renderbench.cpp).
+    if (auto request = renderbench::parseRequest(argc, argv)) return renderbench::run(*request);
+
     MainWindow w;
     w.setWindowTitle(constant::VERSION_STRING());
     w.show();

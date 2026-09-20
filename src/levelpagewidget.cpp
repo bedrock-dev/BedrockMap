@@ -20,11 +20,11 @@
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
+#include "cpumapwidget.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
 #include "magic-enum/magic_enum.hpp"
 #include "mapitemeditor.h"
-#include "mapwidget.h"
 #include "msg.h"
 #include "pleasewaitdialog.h"
 #include "resourcemanager.h"
@@ -75,8 +75,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     level_loader_ = std::make_unique<AsyncLevelLoader>();
 
     // gui
-    setupMapWidget();
-    setupSelectionToolBar();
+    setupMapPane();  // also builds the map chrome: toolbars for the active renderer
     setupDataWidget();
 
     // status bar
@@ -86,8 +85,15 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     connect(&commit_task_, &GuiTaskRunner::failed, this, &LevelPageWidget::onCommitFailed);
 
     // vertical splitter: map + nbt tabs
+    // Only the enabled renderer is added: the map pane is not a comparison view,
+    // so the active one gets the whole row.
+    auto* mapRow = new QSplitter(Qt::Horizontal, this);
+    mapRow->addWidget(activeMapPane());
+    mapRow->setStretchFactor(0, 1);
+    mapRow->setChildrenCollapsible(true);
+
     vertSplitter_ = new QSplitter(Qt::Vertical, this);
-    vertSplitter_->addWidget(mapWidget_);
+    vertSplitter_->addWidget(mapRow);
     vertSplitter_->addWidget(nbtTabWidget_);
     vertSplitter_->setStretchFactor(0, 1);
     vertSplitter_->setStretchFactor(1, 0);
@@ -113,15 +119,18 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     // global data load runs as a silent background task; the signals fill the editors
     connect(&this->global_data_task_, &GuiTaskRunner::finished, this, &LevelPageWidget::onLoadGlobalDataFinished);
     connect(&this->global_data_task_, &GuiTaskRunner::failed, this, &LevelPageWidget::onLoadGlobalDataFailed);
-    connect(this->mapWidget_, &MapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
-    connect(this->mapWidget_, &MapWidget::requestOpenChunkEditor, this, &LevelPageWidget::showChunkEditor);
-    connect(chunkWidget_, &ChunkEditorWidget::editorClosed, this, [this]() {
-        mapWidget_->unselectChunk();
-        mapWidget_->update();
-    });
+    // The status bar follows the cursor, which only the widget under the pointer
+    // knows; everything else is shared state and comes from the host.
+    if (cpu_pane_) connect(cpu_pane_, &CpuMapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
+    if (gpu_pane_) connect(gpu_pane_, &GpuMapWidget::mouseMove, this->status_bar_, &LevelStatusBar::onPosChanged);
+    connect(map_host_, &MapHost::requestOpenChunkEditor, this, &LevelPageWidget::showChunkEditor);
+    connect(map_host_, &MapHost::selectionChanged, this, &LevelPageWidget::refreshSelectionInfo);
+    connect(map_host_, &MapHost::toolbarsVisibleRequested, this, &LevelPageWidget::setToolBarsVisible);
+    connect(map_host_, &MapHost::syncToolbarsRequested, this, &LevelPageWidget::syncToolbars);
+    connect(chunkWidget_, &ChunkEditorWidget::editorClosed, this, [this]() { map_host_->unselectChunk(); });
     connect(chunkWidget_, &ChunkEditorWidget::locateChunk, this, [this](int x, int z, int dim) {
-        mapWidget_->setDim(dim);
-        mapWidget_->gotoBlockPos(x * 16 + 8, z * 16 + 8);
+        map_host_->setDim(dim);
+        map_host_->gotoBlockPos(x * 16 + 8, z * 16 + 8);
     });
     connect(level_loader_.get(), &AsyncLevelLoader::dirtyChanged, this, [this]() {
         auto [e, ne] = level_loader_->chunkModifyCounts();
@@ -131,13 +140,6 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     connect(level_loader_.get(), &AsyncLevelLoader::regionReady, this, [this]() {
         if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     });
-    connect(this->mapWidget_, &MapWidget::selectionChanged, this, [this]() {
-        auto count = mapWidget_->selection().chunkCount();
-        status_bar_->setSelectionInfo(static_cast<int>(count));
-    });
-    // MapWidget asks for page chrome (toolbars) around captures / view syncs.
-    connect(this->mapWidget_, &MapWidget::toolbarsVisibleRequested, this, &LevelPageWidget::setToolBarsVisible);
-    connect(this->mapWidget_, &MapWidget::syncToolbarsRequested, this, &LevelPageWidget::syncToolbars);
 }
 
 LevelPageWidget::~LevelPageWidget() {
@@ -147,19 +149,50 @@ LevelPageWidget::~LevelPageWidget() {
     this->level_loader_->close();
 }
 
-void LevelPageWidget::setupMapWidget() {
-    mapWidget_ = new MapWidget(this, level_loader_.get());
+void LevelPageWidget::setupMapPane() {
+    // The host owns the shared view, the overlays and the level editing actions.
+    // The renderers only draw and take input, so exactly one of them is needed:
+    // the other one is not a hidden fallback, it simply is not built.
+    map_host_ = new MapHost(this, level_loader_.get());
+    if (setting::current().GPU_RENDER_ENABLED) {
+        gpu_pane_ = new GpuMapWidget(this, level_loader_.get(), map_host_->mapView(), &map_host_->overlays(), map_host_->importOverlay(),
+                                     map_host_);
+    } else {
+        cpu_pane_ = new CpuMapWidget(this, level_loader_.get(), map_host_->mapView(), &map_host_->overlays(), map_host_->importOverlay(),
+                                     map_host_);
+    }
+    // The import confirm bar and its warnings belong to the pane on screen.
+    map_host_->setPaneWidget(activeMapPane());
     setupToolBar();
+    setupSelectionToolBar();
+}
+
+QWidget* LevelPageWidget::activeMapPane() const {
+    if (cpu_pane_) return static_cast<QWidget*>(cpu_pane_);
+    return static_cast<QWidget*>(gpu_pane_);
+}
+
+void LevelPageWidget::refreshSelectionInfo() {
+    if (!map_host_) return;
+    status_bar_->setSelectionInfo(static_cast<int>(map_host_->selection().chunkCount()));
+}
+
+void LevelPageWidget::applySelectionMode(SelectionController::Mode mode) {
+    // One mode for every renderer: it lives on the shared view.
+    if (map_host_) map_host_->mapView()->setSelectionMode(mode);
+    syncToolbars();
 }
 
 void LevelPageWidget::setupSelectionToolBar() {
     using SM = SelectionRegion::Mode;
     using GC = FloatingToolBar::GroupConfig;
 
-    selection_toolbar_ = new FloatingToolBar(mapWidget_);
-    selection_toolbar_->setOrientation(Qt::Horizontal);
-    selection_toolbar_->setAnchor(Qt::AlignHCenter | Qt::AlignTop);
-    selection_toolbar_->setAnchorMargins(6);
+    // The chrome belongs to the pane that is on screen, so it is parented to it.
+    auto* stb = new FloatingToolBar(activeMapPane());
+    selection_toolbar_ = stb;
+    stb->setOrientation(Qt::Horizontal);
+    stb->setAnchor(Qt::AlignHCenter | Qt::AlignTop);
+    stb->setAnchorMargins(6);
 
     GC selGroup;
     selGroup.mode = GC::Exclusive;
@@ -168,23 +201,23 @@ void LevelPageWidget::setupSelectionToolBar() {
         {ToolBarIcon("add_sel"), tr("levelPageWidget.toolBar.selection.add")},
         {ToolBarIcon("del_sel"), tr("levelPageWidget.toolBar.selection.subtract")},
     };
-    int selGrp = selection_toolbar_->addGroup(selGroup);
+    int selGrp = stb->addGroup(selGroup);
     sel_grp_ = selGrp;
 
-    selection_toolbar_->addSeparator();
+    stb->addSeparator();
 
     GC saveGroup;
     saveGroup.mode = GC::Toggle;
     saveGroup.buttons = {
         {ToolBarIcon("save"), tr("levelPageWidget.toolBar.selection.save"), false},
     };
-    int saveGrp = selection_toolbar_->addGroup(saveGroup);
+    int saveGrp = stb->addGroup(saveGroup);
 
-    connect(selection_toolbar_, &FloatingToolBar::buttonToggled, this, [this, selGrp, saveGrp](int g, int b, bool checked) {
+    connect(stb, &FloatingToolBar::buttonToggled, this, [this, selGrp, saveGrp](int g, int b, bool checked) {
         if (g == selGrp && checked) {
             auto mode = static_cast<SM>(b);
             LOG_F(INFO, "Selection mode: %d", static_cast<int>(mode));
-            mapWidget_->setSelectionMode(mode);
+            applySelectionMode(mode);
         } else if (g == saveGrp && checked) {
             LOG_F(INFO, "Save save");
             if (!isDirty()) {
@@ -203,13 +236,14 @@ void LevelPageWidget::setupSelectionToolBar() {
     });
 
     // default: Replace
-    selection_toolbar_->setButtonChecked(selGrp, 0, true);
-    mapWidget_->setSelectionMode(SM::Replace);
+    stb->setButtonChecked(selGrp, 0, true);
+    applySelectionMode(SM::Replace);
 }
 
 void LevelPageWidget::setupToolBar() {
-    toolbar_ = new FloatingToolBar(mapWidget_);
-    toolbar_->setAnchorMargins(6);
+    auto* tb = new FloatingToolBar(activeMapPane());
+    toolbar_ = tb;
+    tb->setAnchorMargins(6);
 
     using Mr = RenderOption;
     using GC = FloatingToolBar::GroupConfig;
@@ -221,10 +255,10 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("grid"), tr("levelPageWidget.toolBar.showGrid")},
         {ToolBarIcon("coord"), tr("levelPageWidget.toolBar.showCoord")},
     };
-    int viewGrp = toolbar_->addGroup(viewGroup);
+    int viewGrp = tb->addGroup(viewGroup);
     tb_view_grp_ = viewGrp;
 
-    toolbar_->addSeparator();
+    tb->addSeparator();
 
     // Dimension group (exclusive)
     GC dimGroup;
@@ -234,10 +268,10 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("nether"), tr("levelPageWidget.toolBar.nether")},
         {ToolBarIcon("theend"), tr("levelPageWidget.toolBar.theend")},
     };
-    int dimGrp = toolbar_->addGroup(dimGroup);
+    int dimGrp = tb->addGroup(dimGroup);
     tb_dim_grp_ = dimGrp;
 
-    toolbar_->addSeparator();
+    tb->addSeparator();
 
     // Layer group (exclusive) — order matches RenderOption::LayerType
     GC layerGroup;
@@ -248,10 +282,10 @@ void LevelPageWidget::setupToolBar() {
 
     };
     // default to terrain (index 1)
-    int layerGrp = toolbar_->addGroup(layerGroup);
+    int layerGrp = tb->addGroup(layerGroup);
     tb_layer_grp_ = layerGrp;
 
-    toolbar_->addSeparator();
+    tb->addSeparator();
 
     // Overlay group (toggle)
     GC overlayGroup;
@@ -262,10 +296,10 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("village"), tr("levelPageWidget.toolBar.villages")},
         {ToolBarIcon("hsa"), tr("levelPageWidget.toolBar.HSAs")},
     };
-    int overlayGrp = toolbar_->addGroup(overlayGroup);
+    int overlayGrp = tb->addGroup(overlayGroup);
     tb_overlay_grp_ = overlayGrp;
 
-    toolbar_->addSeparator();
+    tb->addSeparator();
 
     // Action group (non-checkable buttons)
     GC actionGroup;
@@ -274,29 +308,25 @@ void LevelPageWidget::setupToolBar() {
         {ToolBarIcon("filter"), tr("levelPageWidget.toolBar.filter"), false},
         {ToolBarIcon("global_nbt"), tr("levelPageWidget.toolBar.globalNbt"), false},
     };
-    int actionGrp = toolbar_->addGroup(actionGroup);
+    int actionGrp = tb->addGroup(actionGroup);
 
     // --- connect signals ---
 
-    connect(toolbar_, &FloatingToolBar::buttonToggled, this,
+    connect(tb, &FloatingToolBar::buttonToggled, this,
             [this, viewGrp, dimGrp, layerGrp, overlayGrp, actionGrp](int g, int b, bool checked) {
-                auto* mw = mapWidget_;
+                auto* mw = map_host_;
                 if (!mw) return;
 
                 if (g == viewGrp) {
                     auto type = static_cast<Mr::OtherType>(b + Mr::Grid);
                     mw->setOther(type, checked);
-                    mw->update();
                 } else if (g == dimGrp && checked) {
                     mw->setDim(b);
-                    mw->update();
                 } else if (g == layerGrp && checked) {
                     mw->setLayer(static_cast<Mr::LayerType>(b));
-                    mw->update();
                 } else if (g == overlayGrp) {
                     auto type = static_cast<Mr::OtherType>(b + Mr::SlimeChunk);
                     mw->setOther(type, checked);
-                    mw->update();
                 } else if (g == actionGrp && checked) {
                     if (b == 0) {
                         openFilterDialog();
@@ -307,19 +337,21 @@ void LevelPageWidget::setupToolBar() {
             });
 
     // default: grid on
-    toolbar_->setButtonChecked(viewGrp, 0, true);
+    tb->setButtonChecked(viewGrp, 0, true);
     // default terrain (index 0 = map/terrain, index 1 = biome)
-    toolbar_->setButtonChecked(layerGrp, 0, true);
+    tb->setButtonChecked(layerGrp, 0, true);
 }
 
 void LevelPageWidget::syncToolbars() {
-    if (!mapWidget_) return;
+    if (!map_host_) return;
 
     using Mr = RenderOption;
-    auto opt = mapWidget_->renderOption();
+    auto opt = map_host_->renderOption();
 
-    // View group
-    if (auto* tb = toolbar_) {
+    // The toolbar shows the shared state, so it is synced from the view rather
+    // than from whichever map last handled input.
+    if (toolbar_) {
+        auto* tb = toolbar_;
         tb->blockSignals(true);
         tb->setButtonChecked(tb_view_grp_, 0, opt.getOther(Mr::Grid));
         tb->setButtonChecked(tb_view_grp_, 1, opt.getOther(Mr::Coords));
@@ -335,10 +367,10 @@ void LevelPageWidget::syncToolbars() {
         tb->blockSignals(false);
     }
 
-    // Selection toolbar
-    if (auto* stb = selection_toolbar_) {
+    if (selection_toolbar_) {
+        auto* stb = selection_toolbar_;
+        const auto mode = map_host_->selection().mode();
         stb->blockSignals(true);
-        auto mode = mapWidget_->selection().mode();
         for (int i = 0; i < 3; ++i) stb->setButtonChecked(sel_grp_, i, static_cast<int>(mode) == i);
         stb->blockSignals(false);
     }
@@ -410,7 +442,7 @@ void LevelPageWidget::refreshDirty() {
 
 bool LevelPageWidget::commit() {
     LOG_F(INFO, "Commit modifications");
-    if (commit_task_.isRunning() || (mapWidget_ && mapWidget_->chunkEditRunning())) return false;
+    if (commit_task_.isRunning() || (map_host_ && map_host_->chunkEditRunning())) return false;
     if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
         QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
         return false;
@@ -501,7 +533,7 @@ bool LevelPageWidget::loadLevel(const QString& path) {
 void LevelPageWidget::closeLevel() {
     this->stop_loading_global_data_ = true;
     global_data_task_.waitForFinished();
-    if (mapWidget_) mapWidget_->waitForChunkEditTask();
+    if (map_host_) map_host_->waitForChunkEditTask();
     if (level_loader_->isOpen()) level_loader_->close();
 }
 
@@ -545,7 +577,7 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos& pos) {
     }
 
     chunkWidget_->loadChunkData(std::move(*opt));
-    mapWidget_->selectChunk(pos);
+    map_host_->selectChunk(pos);
     int totalW = mainSplitter_->width();
     int chunkW = totalW / 3;
     if (chunkW < 300) chunkW = 300;
@@ -595,7 +627,7 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     LOG_F(INFO, "Filling village data (%zu)...", res.villageData.data().size());
     auto& villData = res.villageData.data();
     this->collectVillagesGuiData(villData);
-    mapWidget_->setVillages(this->villages_);
+    map_host_->setVillages(this->villages_);
     std::vector<NBTListItem*> villNBTList;
     for (const auto& dim : villData) {
         for (const auto& kv : dim) {

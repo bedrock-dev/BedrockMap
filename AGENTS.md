@@ -118,8 +118,18 @@ high-performance, extensible Minecraft Bedrock Edition map GUI application.
   `bedrock_level`, `chunk`, `sub_chunk`, `palette`, `actor`, `player`,
   `scoreboard`, `level_dat`, `color`, `data_3d`. Linked as `libbedrock-level.a`.
 - **src/**: Qt GUI application — `MainWindow`, `LevelTabWidget`, `LevelPageWidget`,
-  `MapWidget`, `AsyncLevelLoader`, `NbtWidget`, `VoxelWidget`, dialogs.
+  `MapHost`, `CpuMapWidget`, `GpuMapWidget`, `AsyncLevelLoader`, `NbtWidget`,
+  `VoxelWidget`, dialogs.
   UI files (`.ui`) in src/, headers in `src/include/`.
+- **Map state**: `MapHost` (`src/maphost.cpp`, `src/include/ui/maphost.h`) owns
+  everything shared — `MapView` (transform, camera, dim, RenderOption, selection,
+  zoom limits), `MapOverlays`, `ImportOverlay`, and the level operations.
+  `CpuMapWidget` (QPainter) and `GpuMapWidget` (OpenGL) are _peer, interchangeable
+  renderers_ of one `MapHost`; each takes the same six ctor args and owns only its
+  own painting. `LevelPageWidget` builds exactly one of them, chosen by the
+  renderer setting. New map state or behaviour goes on `MapView`/`MapHost`, never
+  on one renderer. The context menu and the import overlay act on `MapHost`
+  directly.
 - **Build**: `.\scripts\build_run.ps1` (lupdate + cmake build + run),
   `.\scripts\build.ps1` (build only). Debug builds in `build/`,
   release in `build_rls/`.

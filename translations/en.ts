@@ -263,6 +263,14 @@
     </message>
 </context>
 <context>
+    <name>GpuMapWidget</name>
+    <message>
+        <location filename="../src/gpumapwidget.cpp"/>
+        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
+        <translation>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</translation>
+    </message>
+</context>
+<context>
     <name>HsaEditorWidget</name>
     <message>
         <location filename="../src/hsaeditorwidget.cpp"/>
@@ -404,7 +412,7 @@
         <location filename="../src/levelpagewidget.cpp"/>
         <location filename="../src/levelpagewidget.cpp"/>
         <source>Save failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Save failed</translation>
     </message>
 </context>
 <context>
@@ -691,6 +699,36 @@
     </message>
 </context>
 <context>
+    <name>MapHost</name>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.fileDialog.save</source>
+        <translation>Save File</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportMcstructure</source>
+        <translation>Export mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>MCStructure files (*.mcstructure)</source>
+        <translation>MCStructure files (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportMcstructureFailed</source>
+        <translation>Failed to export mcstructure</translation>
+    </message>
+    <message>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.editFailed</source>
+        <translation>Edit failed</translation>
+    </message>
+</context>
+<context>
     <name>MapItemEditor</name>
     <message>
         <source>mapItemEditor.title</source>
@@ -721,46 +759,16 @@
     </message>
 </context>
 <context>
-    <name>MapWidget</name>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.fileDialog.save</source>
-        <translation>Save File</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportMcstructure</source>
-        <translation>Export mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>MCStructure files (*.mcstructure)</source>
-        <translation>MCStructure files (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportMcstructureFailed</source>
-        <translation>Failed to export mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/mapwidget.cpp"/>
-        <source>mapWidget.editFailed</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>McstructurePageWidget</name>
     <message>
         <location filename="../src/mcstructurepagewidget.cpp"/>
         <source>Export mcstructure</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/mcstructurepagewidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
-        <translation type="unfinished">MCStructure files (*.mcstructure)</translation>
+        <translation>MCStructure files (*.mcstructure)</translation>
     </message>
 </context>
 <context>
@@ -1260,32 +1268,32 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.unselect</source>
+        <source>mapHost.rightMenu.unselect</source>
         <translation>UnSelect</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.selectionOps</source>
+        <source>mapHost.rightMenu.selectionOps</source>
         <translation>Selection Operations</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.delete</source>
+        <source>mapHost.rightMenu.delete</source>
         <translation>Delete Region</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.createVoid</source>
+        <source>mapHost.rightMenu.createVoid</source>
         <translation>Make Region Void</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.export</source>
+        <source>mapHost.rightMenu.export</source>
         <translation>Export Region</translation>
     </message>
     <message>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.exportRegion</source>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.exportRegion</source>
         <translation>Export Region</translation>
     </message>
     <message>
@@ -1295,12 +1303,12 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copy</source>
+        <source>mapHost.rightMenu.copy</source>
         <translation>Copy Region</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.paste</source>
+        <source>mapHost.rightMenu.paste</source>
         <translation>Paste</translation>
     </message>
     <message>
@@ -1320,13 +1328,13 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.import</source>
+        <source>mapHost.rightMenu.import</source>
         <translation>Import</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/mapwidget_actions.cpp"/>
-        <source>mapWidget.rightMenu.importRegion</source>
+        <location filename="../src/maphost.cpp"/>
+        <source>mapHost.rightMenu.importRegion</source>
         <translation>Import Region</translation>
     </message>
     <message>
@@ -1336,57 +1344,57 @@
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.gotoPosition</source>
+        <source>mapHost.rightMenu.gotoPosition</source>
         <translation>Go To Position</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.saveSelectionScreenshot</source>
+        <source>mapHost.rightMenu.saveSelectionScreenshot</source>
         <translation>Region Screenshot</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.openchunkEditor</source>
+        <source>mapHost.rightMenu.openchunkEditor</source>
         <translation>Open In Chunk Editor</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyInfo</source>
+        <source>mapHost.rightMenu.copyInfo</source>
         <translation>Copy Information</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.setBiome</source>
+        <source>mapHost.rightMenu.setBiome</source>
         <translation>Set Region Biome</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyBlockName</source>
+        <source>mapHost.rightMenu.copyBlockName</source>
         <translation>Block Name: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyBiomeName</source>
+        <source>mapHost.rightMenu.copyBiomeName</source>
         <translation>Biome Name: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyAltitude</source>
+        <source>mapHost.rightMenu.copyAltitude</source>
         <translation>Altitude: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.copyTPCommand</source>
+        <source>mapHost.rightMenu.copyTPCommand</source>
         <translation>TP Command: </translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.saveScreenshot</source>
+        <source>mapHost.rightMenu.saveScreenshot</source>
         <translation>ScreenShot</translation>
     </message>
     <message>
         <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapWidget.rightMenu.view3D</source>
+        <source>mapHost.rightMenu.view3D</source>
         <translation>3D View</translation>
     </message>
     <message>
@@ -1500,6 +1508,11 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
+        <source>settingsDialog.category.render</source>
+        <translation>Rendering</translation>
+    </message>
+    <message>
+        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.lang</source>
         <translation>Language</translation>
     </message>
@@ -1543,38 +1556,6 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>Font Size</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderGroup</source>
-        <translation>Rendering</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle</source>
-        <translation>Render Style</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.noShadow</source>
-        <translation>No Shadows</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.basicShadow</source>
-        <translation>Basic Shadows</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>Fake SSAO + Shadow Map (Higher resource overhead)</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowScale</source>
-        <translation>Block Tile Resolution</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowMapScale</source>
-        <translation>Shadow Map Scale</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowLevel</source>
-        <translation>Shadow Intensity</translation>
     </message>
     <message>
         <source>settingsDialog.map.zoomGroup</source>
@@ -1693,36 +1674,28 @@
         <translation>Preload Global Chunk Coordinates</translation>
     </message>
     <message>
+        <source>settingsDialog.extra.gpuRender</source>
+        <translation>Enable GPU rendering (experimental)</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.rendererGroup</source>
+        <translation>GPU Renderer</translation>
+    </message>
+    <message>
+        <source>settingsDialog.render.cpuGroup</source>
+        <translation>CPU Renderer</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.aoStrength</source>
+        <translation>Ambient Occlusion Strength</translation>
+    </message>
+    <message>
         <source>settingsDialog.lang.groupTitle</source>
         <translation>Language</translation>
     </message>
     <message>
         <source>settingsDialog.lang.label</source>
         <translation>Interface Language</translation>
-    </message>
-    <message>
-        <source>1x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>2x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>16x</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>32x</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>...</source>
@@ -1747,6 +1720,74 @@
     <message>
         <source>default</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.shadowStrength</source>
+        <translation>Shadow Strength</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.bevelStrength</source>
+        <translation>Bevel Strength</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.saturation</source>
+        <translation>Saturation</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gpu.brightness</source>
+        <translation>Brightness</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle</source>
+        <translation>Render Style</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.noShadow</source>
+        <translation>No Shadows</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.basicShadow</source>
+        <translation>Basic Shadows</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
+        <translation>Fake SSAO + Shadow Map (Higher Resource Overhead)</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowScale</source>
+        <translation>Shadow Scale</translation>
+    </message>
+    <message>
+        <source>1x</source>
+        <translation>1x</translation>
+    </message>
+    <message>
+        <source>2x</source>
+        <translation>2x</translation>
+    </message>
+    <message>
+        <source>4x</source>
+        <translation>4x</translation>
+    </message>
+    <message>
+        <source>8x</source>
+        <translation>8x</translation>
+    </message>
+    <message>
+        <source>16x</source>
+        <translation>16x</translation>
+    </message>
+    <message>
+        <source>32x</source>
+        <translation>32x</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowMapScale</source>
+        <translation>Shadow Map Scale</translation>
+    </message>
+    <message>
+        <source>settingsDialog.map.shadowLevel</source>
+        <translation>Shadow Level</translation>
     </message>
 </context>
 <context>

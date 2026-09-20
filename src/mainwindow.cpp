@@ -238,7 +238,7 @@ void MainWindow::setupMenuBar() {
 }
 
 void MainWindow::setupMenuActions() {
-    // File — insert recent menu between open and new
+    // File �?insert recent menu between open and new
     recent_menu_ = new QMenu(tr("mainWindow.menu.openRecent"), this);
     file_menu_->insertMenu(new_menu_->menuAction(), recent_menu_);
     rebuildRecentMenu();
@@ -266,7 +266,7 @@ void MainWindow::setupMenuActions() {
 
     // Tools
     connect(action_goto_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->gotoPositionAction();
+        if (auto* w = currentMapHost()) w->gotoPositionAction();
     });
     connect(action_levelDB_, &QAction::triggered, this, [this]() { this->level_tab_widget_->openLevelDBDebugDialog(); });
     connect(action_settings_, &QAction::triggered, this, [this]() {
@@ -277,39 +277,39 @@ void MainWindow::setupMenuActions() {
     // Layers
     using Mr = RenderOption;
     connect(action_layers_grid_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::Grid);
             w->syncToolbars();
         }
     });
     connect(action_layers_coords_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::Coords);
             w->syncToolbars();
         }
     });
     connect(action_layers_overworld_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setDim(Mr::OverWorld);
             w->syncToolbars();
         }
     });
     connect(action_layers_nether_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setDim(Mr::Nether);
             w->syncToolbars();
         }
     });
     connect(action_layers_end_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setDim(Mr::TheEnd);
             w->syncToolbars();
         }
     });
     connect(action_layers_custom_dim_, &QAction::triggered, this, [this]() {
-        auto* w = getCurrentMapWidget();
+        auto* w = currentMapHost();
         if (!w) return;
-        auto* loader = w->getLevelLoader();
+        auto* loader = w->levelLoader();
         if (!loader) return;
         const auto& dimTable = loader->level().custom_dimension_table();
         if (dimTable.empty()) {
@@ -340,115 +340,117 @@ void MainWindow::setupMenuActions() {
         }
     });
     connect(action_layers_terrain_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setLayer(Mr::Terrain);
             w->syncToolbars();
         }
     });
     connect(action_layers_biome_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setLayer(Mr::Biome);
             w->syncToolbars();
         }
     });
     connect(action_layers_slime_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::SlimeChunk);
             w->syncToolbars();
         }
     });
     connect(action_layers_actors_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::Actors);
             w->syncToolbars();
         }
     });
     connect(action_layers_village_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::Village);
             w->syncToolbars();
         }
     });
     connect(action_layers_hsa_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::HSA);
             w->syncToolbars();
         }
     });
     connect(action_transparent_void_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->toggleTransparentVoid();
             w->syncToolbars();
         }
     });
     connect(action_layers_filter_, &QAction::triggered, this, [this]() { level_tab_widget_->onMapOpenFilterDialog(); });
     connect(action_debug_, &QAction::triggered, this, [this]() {
-        auto* w = getCurrentMapWidget();
+        auto* w = currentMapHost();
         if (!w) return;
         w->setDrawDebug(!w->isDebugEnabled());
         w->syncToolbars();
     });
     connect(action_coords_minimap_, &QAction::triggered, this, [this]() {
-        auto* w = getCurrentMapWidget();
+        auto* w = currentMapHost();
         if (!w) return;
         w->toggleCoordsMiniMap();
     });
 
     // Selection
     connect(action_sel_replace_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setSelectionMode(SelectionController::Mode::Replace);
             w->syncToolbars();
         }
     });
     connect(action_sel_add_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setSelectionMode(SelectionController::Mode::Add);
             w->syncToolbars();
         }
     });
     connect(action_sel_subtract_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) {
+        if (auto* w = currentMapHost()) {
             w->setSelectionMode(SelectionController::Mode::Subtract);
             w->syncToolbars();
         }
     });
     connect(action_sel_clear_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->clearSelection();
+        if (auto* w = currentMapHost()) w->clearSelection();
     });
 
     // Chunk
     connect(action_ch_copy_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->copySelectionToClipboard(w->renderOption().dim);
+        if (auto* w = currentMapHost()) w->copySelectionToClipboard(w->renderOption().dim);
     });
     connect(action_ch_paste_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->pasteFromClipboard(w->renderOption().dim);
+        if (auto* w = currentMapHost()) w->pasteFromClipboard(w->renderOption().dim);
     });
     connect(action_ch_export_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->exportSelectionToFile(w->renderOption().dim);
+        if (auto* w = currentMapHost()) w->exportSelectionToFile(w->renderOption().dim);
     });
     connect(action_ch_import_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->importFromFile(w->renderOption().dim);
+        if (auto* w = currentMapHost()) w->importFromFile(w->renderOption().dim);
     });
     connect(action_ch_delete_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->deleteSelection(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto* w = currentMapHost()) w->deleteSelection(static_cast<uint8_t>(w->renderOption().dim));
     });
     connect(action_ch_void_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->createVoidSelection(static_cast<uint8_t>(w->renderOption().dim));
+        if (auto* w = currentMapHost()) w->createVoidSelection(static_cast<uint8_t>(w->renderOption().dim));
     });
     connect(action_ch_biome_, &QAction::triggered, this, [this]() {
-        auto* w = getCurrentMapWidget();
+        auto* w = currentMapHost();
         if (!w || w->selection().isEmpty()) return;
-        BiomePickerDialog dlg(w);
+        BiomePickerDialog dlg(w->paneWidget());
         if (dlg.exec() == QDialog::Accepted) {
             w->setSelectionBiome(dlg.selectedBiome(), static_cast<uint8_t>(w->renderOption().dim));
         }
     });
     connect(action_ch_screenshot_, &QAction::triggered, this, [this]() {
-        if (auto* w = getCurrentMapWidget()) w->saveSelectionImage();
+        // Captured from the pane on screen: whichever renderer the setting
+        // selected is the one holding the pixels.
+        if (auto* w = currentMapHost()) w->saveSelectionImage(w->paneWidget());
     });
     connect(action_ch_3d_, &QAction::triggered, this, [this]() {
-        auto* w = getCurrentMapWidget();
+        auto* w = currentMapHost();
         if (!w) return;
         w->show3DView(static_cast<uint8_t>(w->renderOption().dim));
     });
@@ -650,8 +652,8 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 QString MainWindow::getStaticTitle() { return constant::VERSION_STRING(); }
 
-MapWidget* MainWindow::getCurrentMapWidget() {
+MapHost* MainWindow::currentMapHost() {
     auto* page = level_tab_widget_->currentLevelPage();
     if (!page) return nullptr;
-    return page->getMapWidget();
+    return page->mapHost();
 }

@@ -293,6 +293,20 @@ std::vector<QString> AsyncLevelLoader::debugInfo() {
     return res;
 }
 
+AsyncLevelLoader::RegionState AsyncLevelLoader::regionState(const region_pos& rp, const ChunkRegion** region) {
+    if (region) *region = nullptr;
+    if (!this->loaded_) return RegionState::Unloaded;
+    bool null_region{false};
+    auto* cached = this->tryGetRegion(rp, null_region);
+    if (null_region) return RegionState::Empty;  // no chunk key under this region at all
+    // Cached but not drawable yet: still baking, so it is not known to be empty.
+    if (!cached || !cached->valid || cached->flat_color_image_.isNull()) return RegionState::Unloaded;
+    if (region) *region = cached;
+    return RegionState::Ready;
+}
+
+int AsyncLevelLoader::pendingRegionTasks() const { return region_scheduler_.pendingCount() + region_scheduler_.activeCount(); }
+
 QImage AsyncLevelLoader::bakedTerrainImage(const region_pos& rp) {
     if (!this->loaded_) return MapTile::UNLOADED_REGION_TILE();
     bool null_region{false};

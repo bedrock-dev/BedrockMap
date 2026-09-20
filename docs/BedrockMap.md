@@ -147,7 +147,9 @@ BedrockMap/
 │   ├── mainwindow.cpp/h       # 主窗口
 │   ├── leveltabwidget.cpp/h   # 多存档标签页管理
 │   ├── levelpagewidget.cpp/h  # 单存档页面
-│   ├── mapwidget.cpp/h        # 地图视图（核心渲染）
+│   ├── maphost.cpp/h          # 地图共享状态 + 编辑操作（非 widget）
+│   ├── cpumapwidget.cpp/h     # 地图渲染器：QPainter 后端
+│   ├── gpumapwidget.cpp/h     # 地图渲染器：OpenGL 后端
 │   ├── toolbar.cpp            # 工具栏（几乎未使用）
 │   ├── floatingtoolbar.cpp/h  # 浮动工具栏
 │   ├── selectionregion.h      # 选区管理
@@ -203,7 +205,8 @@ BedrockMap/
 ┌──────────────────────────────────────────────────────────┐
 │                     GUI 应用层 (src/)                      │
 │  MainWindow → LevelTabWidget → LevelPageWidget            │
-│     ├── MapWidget (2D 地图渲染 + 交互)                    │
+│     ├── MapHost (共享状态: MapView/MapOverlays/编辑操作)   │
+│     ├── CpuMapWidget 或 GpuMapWidget (二选一的渲染器)      │
 │     ├── FloatingToolBar (维度/图层/覆盖控制)              │
 │     ├── NbtWidget (NBT 编辑器)                            │
 │     ├── ChunkEditorWidget (区块编辑)                      │
@@ -245,13 +248,14 @@ MainWindow
        ├── [Welcome Tab]
        └── LevelPageWidget × N
             ├── AsyncLevelLoader ─── bl::bedrock_level ─── LevelDB
-            ├── MapWidget ─── SelectionRegion
-            │    ├── FloatingToolBar (维度/图层/覆盖)
-            │    ├── FloatingToolBar (选区模式)
-            │    ├── RenderFilterDialog
-            │    ├── GoToPositionDialog
-            │    ├── VoxelWidget (3D渲染)
-            │    └── ChunkEditorWidget
+            ├── MapHost (共享 MapView / MapOverlays / ImportOverlay / 编辑操作)
+            │    └── 选择 CpuMapWidget 或 GpuMapWidget 之一作为渲染器
+            │         ├── FloatingToolBar (维度/图层/覆盖)
+            │         ├── FloatingToolBar (选区模式)
+            │         ├── RenderFilterDialog
+            │         ├── GoToPositionDialog
+            │         ├── VoxelWidget (3D渲染)
+            │         └── ChunkEditorWidget
             │         ├── ChunkSectionWidget
             │         ├── NbtWidget (方块实体)
             │         ├── NbtWidget (实体)
@@ -269,7 +273,7 @@ MainWindow
 ### 4.3 多存档支持
 
 - `LevelTabWidget` 管理多个存档标签页，每个标签页包含独立的 `LevelPageWidget`
-- `LevelPageWidget` 拥有独立的 `AsyncLevelLoader`、`MapWidget` 和 NBT 编辑器
+- `LevelPageWidget` 拥有独立的 `AsyncLevelLoader`、`MapHost` 和一个地图渲染器（`CpuMapWidget` 或 `GpuMapWidget`，由设置决定）以及 NBT 编辑器
 - 每个存档的维度/图层/覆盖层状态相互独立
 
 ---
@@ -576,7 +580,7 @@ struct color {
 ```
 LevelPageWidget (QVBoxLayout)
 ├── QSplitter (Vertical)
-│   ├── MapWidget (包含浮动工具栏)
+│   ├── 活跃的地图渲染器：CpuMapWidget 或 GpuMapWidget (包含浮动工具栏)
 │   │   ├── FloatingToolBar (维度/图层/覆盖层) [左上角]
 │   │   └── FloatingToolBar (选区模式) [顶部居中]
 │   └── QTabWidget (NBT数据) [可折叠]
@@ -590,23 +594,50 @@ LevelPageWidget (QVBoxLayout)
 
 主要方法：
 
-| 方法                         | 说明                    |
-| ---------------------------- | ----------------------- |
-| `loadLevel(path)`            | 打开存档并加载全局数据  |
-| `closeLevel()`               | 关闭存档                |
-| `getMapWidget()`             | 获取地图视图            |
-| `levelLoader()`              | 获取异步加载器          |
-| `openFilterDialog()`         | 打开渲染过滤器对话框    |
-| `toggleGlobalDataWidget()`   | 切换 NBT 数据面板可见性 |
-| `collectVillagesGuiData(vs)` | 收集村庄数据用于渲染    |
+| 方法                         | 说明                       |
+| ---------------------------- | -------------------------- |
+| `loadLevel(path)`            | 打开存档并加载全局数据     |
+| `closeLevel()`               | 关闭存档                   |
+| `mapHost()`                  | 获取地图共享状态与编辑操作 |
+| `activeMapPane()`            | 获取屏幕上那个地图渲染器   |
+| `levelLoader()`              | 获取异步加载器             |
+| `openFilterDialog()`         | 打开渲染过滤器对话框       |
+| `toggleGlobalDataWidget()`   | 切换 NBT 数据面板可见性    |
+| `collectVillagesGuiData(vs)` | 收集村庄数据用于渲染       |
 
-#### 5.2.5 `MapWidget` — 地图视图
+#### 5.2.5 `CpuMapWidget` / `GpuMapWidget` — 地图渲染器
 
 ```
-路径: src/mapwidget.cpp / include/mapwidget.h
+路径: src/cpumapwidget.cpp / include/ui/cpumapwidget.h   （CPU 渲染器）
+      src/gpumapwidget.cpp / include/ui/gpumapwidget.h   （GPU 渲染器）
 ```
 
-继承自 `QWidget`，是项目中最复杂的组件，负责 2D 地图渲染和用户交互。
+两个渲染器**是同级、可互换的**：`CpuMapWidget` 用 `QPainter` 画烘焙好的区块贴图，`GpuMapWidget` 把同样的烘焙数据上传进一张图集然后用 GLSL 逐像素着色（斜面光照 / AO / 阴影）。
+
+它们都只负责自己那份绘制，通过构造函数接收同一组共享对象：
+
+```cpp
+(parent, AsyncLevelLoader*, MapView*, MapOverlays*, ImportOverlay*, MapHost*)
+```
+
+共享状态、编辑操作和 overlay 由 `MapHost` 持有（见 5.2.5.1），`LevelPageWidget` 只构造其中的**一个**渲染器，所以不存在“哪个 widget 定义相机”的歧义。
+
+> 为什么不用公共基类：`GpuMapWidget` 必须继承 `QOpenGLWidget`（它本身是 `QWidget`），
+> 再加一层 widget 基类就是菱形继承；而且继承会给每个对象一份状态副本，与“两个渲染器共享同一份视图”正好相反。
+
+上下文菜单、拖拽选区和缩放都由共享对象处理，两个渲染器的事件处理因此完全对称。
+
+**缩放级别：** 快捷键 `Ctrl+滚轮` 缩放，范围 `cfg::MINIMUM_SCALE_LEVEL` \~ `cfg::MAXIMUM_SCALE_LEVEL`
+
+**用户交互：** 由共享的 `MapInteraction` 实现，两个渲染器转发同一套事件：
+
+| 操作     | 功能                           |
+| -------- | ------------------------------ |
+| 鼠标拖动 | 平移地图                       |
+| 滚轮     | 缩放地图                       |
+| 中键拖动 | 创建选区                       |
+| 右键     | 上下文菜单（复制信息、跳转等） |
+| 双击区块 | 打开区块编辑器                 |
 
 **渲染选项 (RenderOption)：**
 
@@ -621,39 +652,28 @@ struct RenderOption {
 };
 ```
 
-**坐标变换：**
+**坐标变换**（都在共享的 `MapView` 上，两个渲染器读同一份）：
 
-| 方法                     | 说明                         |
-| ------------------------ | ---------------------------- |
-| `blockPosToViewPos(bp)`  | 方块坐标 → 视图坐标          |
-| `chunkPosToViewPos(cp)`  | 区块坐标 → 视图坐标          |
-| `viewPosToChunkPos(vp)`  | 视图坐标 → 区块坐标          |
-| `viewPosToBlockPos(vp)`  | 视图坐标 → 方块坐标          |
-| `chunkWidthInPixel()`    | 当前缩放级别下区块的像素宽度 |
-| `getCursorBlockPos()`    | 获取鼠标所在方块坐标         |
-| `doScale(center, scale)` | 缩放视图                     |
-| `doTranslate(delta)`     | 平移视图                     |
+| 方法                         | 说明                                     |
+| ---------------------------- | ---------------------------------------- |
+| `blockPosToViewPos(bp)`      | 方块坐标 → 视图坐标                      |
+| `chunkPosToViewPos(cp)`      | 区块坐标 → 视图坐标                      |
+| `viewPosToChunkPos(vp)`      | 视图坐标 → 区块坐标                      |
+| `viewPosToBlockPos(vp)`      | 视图坐标 → 方块坐标                      |
+| `scaleLevel()`               | 当前缩放级别下区块的像素宽度             |
+| `chunkPosAt(pos, viewport)`  | 用指定视口解析坐标（渲染器尺寸可能不同） |
+| `transformForViewport(size)` | 按指定视口大小重建变换                   |
 
-**渲染管线：**
+**CPU 渲染管线：**
 
-1. `paintEvent()` 入口
-2. 根据 `RenderOption.layer` 调用 `drawTerrain()` / `drawBiome()` / `drawHeight()`
+1. `paintEvent()` 入口，先 `view_->setViewportSize(size())` 与 `syncScaleLimits()`
+2. 根据 `RenderOption.layer` 调用 `drawTerrain()` / `drawBiome()`
 3. 调用 `foreachRegionInCamera()` 遍历可见区域
 4. 对每个区域从 `AsyncLevelLoader` 获取缓存的渲染图像
 5. 调用 `drawImageInRegion()` 绘制图像
-6. 绘制覆盖层：网格、坐标、史莱姆区块、实体、村庄、HSA、选区等
+6. 调用共享的 `MapOverlays` 绘制覆盖层：网格、坐标、史莱姆区块、实体、村庄、HSA、选区等
 
-**缩放级别：** 快捷键 `Ctrl+滚轮` 缩放，范围 `cfg::MINIMUM_SCALE_LEVEL` \~ `cfg::MAXIMUM_SCALE_LEVEL`
-
-**用户交互：**
-
-| 操作     | 功能                           |
-| -------- | ------------------------------ |
-| 鼠标拖动 | 平移地图                       |
-| 滚轮     | 缩放地图                       |
-| 中键拖动 | 创建选区                       |
-| 右键     | 上下文菜单（复制信息、跳转等） |
-| 双击区块 | 打开区块编辑器                 |
+`GpuMapWidget` 走同一条数据来源，但把每区块一个像素的颜色/高度上传进图集，由 `res/shaders/map2d.frag` 逐屏幕像素着色。
 
 **选区系统 (SelectionRegion)：**
 
@@ -663,7 +683,19 @@ struct RenderOption {
 | `Add`      | 追加到选区 |
 | `Subtract` | 从选区移除 |
 
-选区用于删除区块操作。通过浮动工具栏的按钮切换模式。
+选区用于删除区块操作。通过浮动工具栏的按钮切换模式。选区状态存在 `MapView` 上，改动统一经 `MapView::beginSelectionDrag()` / `finishSelectionDrag()` 等方法，因此所有渲染器都会同步重绘。
+
+#### 5.2.5.1 `MapHost` — 地图共享状态与编辑操作
+
+```
+路径: src/maphost.cpp / include/ui/maphost.h
+```
+
+不是 widget。地图的**共享状态**和**关卡编辑操作**都在这里，因此切换渲染器不会丢状态，两个渲染器也不可能对不上：
+
+- 共享对象：`MapView`（变换/相机/维度/RenderOption/选区/缩放上下限）、`MapOverlays`（全部覆盖层）、`ImportOverlay`（导入/粘贴的放置预览）
+- 编辑操作：右键菜单（`ContextMenuBuilder` 直接作用于 `MapHost`，没有中间接口）、截图、导出、删除/清空选区、3D 预览、区块编辑器入口都在这里，所以这些动作只有一份实现
+- 状态变更统一经过 `MapView`，由它发出 `viewChanged()`，**每个**渲染器都会重绘
 
 #### 5.2.6 `FloatingToolBar` — 浮动工具栏
 
@@ -671,7 +703,7 @@ struct RenderOption {
 路径: src/floatingtoolbar.cpp / include/floatingtoolbar.h
 ```
 
-自定义浮动工具栏组件，叠加在 `MapWidget` 之上。
+自定义浮动工具栏组件，叠加在 `CpuMapWidget` 之上。
 
 功能：
 
@@ -964,7 +996,7 @@ tryGetRegion(region_pos)
 
 | 功能             | 位置                  | 说明                                                       |
 | ---------------- | --------------------- | ---------------------------------------------------------- |
-| 删除区块         | MapWidget (批量)      | 选中区域后删除区块（使用 `AsyncLevelLoader::dropChunk()`） |
+| 删除区块         | MapHost (批量)        | 选中区域后删除区块（使用 `AsyncLevelLoader::dropChunk()`） |
 | 修改 level.dat   | NbtWidget (level.dat) | 修改后通过 `modifyLeveldat()` 保存                         |
 | 修改玩家 NBT     | NbtWidget (players)   | 通过 `modifyDBGlobal()` 保存                               |
 | 修改村庄 NBT     | NbtWidget (villages)  | 通过 `modifyDBGlobal()` 保存                               |
@@ -976,7 +1008,7 @@ tryGetRegion(region_pos)
 
 ### 8.2 待实现的编辑功能
 
-- **跨存档区块复制/粘贴/删除**：当前 `MapWidget::delete_chunks()` 仅标记为 TODO，选区已有完整框架，但复制粘贴功能未实现
+- **跨存档区块复制/粘贴/删除**：当前 `MapHost::delete_chunks()` 仅标记为 TODO，选区已有完整框架，但复制粘贴功能未实现
 - **方块编辑**：`write_mode_` 已定义但未接线到完整编辑流程
 - **撤销/重做**：无撤销栈或编辑历史记录
 - **NBT Key 修改**：当前不支持修改 NBT 键名

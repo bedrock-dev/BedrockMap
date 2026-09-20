@@ -7,16 +7,19 @@
 #include <qwidget.h>
 
 #include <QObject>
+#include <QSplitter>
 #include <QWidget>
 #include <atomic>
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
+#include "cpumapwidget.h"
 #include "floatingtoolbar.h"
+#include "gpumapwidget.h"
 #include "guitaskrunner.h"
+#include "maphost.h"
 #include "mapitemeditor.h"
-#include "mapwidget.h"
 #include "nbtwidget.h"
 #include "renderfilterdialog.h"
 #include "tabpagewidget.h"
@@ -55,14 +58,27 @@ class LevelPageWidget : public TabPageWidget {
     ~LevelPageWidget() override;
 
     // ui setup
-    void setupMapWidget();
+    void setupMapPane();
+    /// Both toolbars are built on the map pane. The state they show lives on the
+    /// shared view, so whichever renderer is enabled, the same set drives it.
     void setupToolBar();
     void setupSelectionToolBar();
     void setupDataWidget();
 
+    /// Selection mode is shared state, so it lives on the shared view rather
+    /// than on a toolbar.
+    void applySelectionMode(SelectionController::Mode mode);
+
     // getter
     inline int getTabId() const { return this->tab_id_; }
-    inline MapWidget* getMapWidget() { return this->mapWidget_; }
+    /// The shared map state and the level operations behind it. Not a widget:
+    /// the pane on screen is one of the renderers below.
+    [[nodiscard]] MapHost* mapHost() { return this->map_host_; }
+    /// The pane that is on screen: the GPU renderer when the setting asks for
+    /// it, the CPU one otherwise. Only the configured renderer is constructed,
+    /// so this is never a hidden widget.
+    [[nodiscard]] QWidget* activeMapPane() const;
+    [[nodiscard]] CpuMapWidget* cpuMapPane() const { return this->cpu_pane_; }
     AsyncLevelLoader* levelLoader() { return this->level_loader_.get(); }
     const QMap<QString, VillageDrawInfo>& getVillages() const { return this->villages_; }
     bool isDirty() const override;
@@ -78,6 +94,9 @@ class LevelPageWidget : public TabPageWidget {
     void setToolBarsVisible(bool visible) {
         if (toolbar_) toolbar_->setVisible(visible);
         if (selection_toolbar_) selection_toolbar_->setVisible(visible);
+        // The selection is part of the chrome: it must stay out of a screenshot,
+        // which is the only thing that hides the toolbars on the map.
+        if (map_host_) map_host_->mapView()->setSelectionVisible(visible);
     }
 
     void refreshDirty();
@@ -99,6 +118,9 @@ class LevelPageWidget : public TabPageWidget {
     void onLoadGlobalDataFailed(const QString& error);
     void onCommitFinished();
     void onCommitFailed(const QString& error);
+    /// Selection count in the status bar. Either renderer reports selection
+    /// changes, so the count comes from the shared selection, not from the sender.
+    void refreshSelectionInfo();
 
    private:
     // data source
@@ -115,10 +137,14 @@ class LevelPageWidget : public TabPageWidget {
 
     // GUI
     LevelTabWidget* parent_;
-    // map view
-    MapWidget* mapWidget_;
+    // map: one host for the shared state, one renderer for what is drawn
+    MapHost* map_host_{nullptr};
+    CpuMapWidget* cpu_pane_{nullptr};
+    GpuMapWidget* gpu_pane_{nullptr};
     QSplitter* mainSplitter_;
     QSplitter* vertSplitter_;
+    /// One set of toolbars for the map pane - the renderers are alternatives,
+    /// not a pair, and both read the state they show from the shared view.
     FloatingToolBar* toolbar_{nullptr};
     FloatingToolBar* selection_toolbar_{nullptr};
     QTabWidget* nbtTabWidget_;

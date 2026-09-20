@@ -104,6 +104,19 @@ class AsyncLevelLoader : public QObject {
     /*region cache*/
     QImage bakedBiomeImage(const region_pos& rp);
 
+    /// What a region currently has to draw. The GPU renderer needs to tell a
+    /// finished bake apart from a region that is known to hold no chunks at all
+    /// (which the map draws as a dark background) and from one whose bake has not
+    /// finished yet (light background). Requests an async bake when the region is
+    /// neither cached nor already running. GUI-thread only, like the other
+    /// cache accessors.
+    enum class RegionState { Unloaded, Empty, Ready };
+    RegionState regionState(const region_pos& rp, const ChunkRegion** region);
+
+    /// Region bakes queued or running, for diagnostics that need to wait until
+    /// the cache has caught up with the requested viewport.
+    [[nodiscard]] int pendingRegionTasks() const;
+
     QImage bakedTerrainImage(const region_pos& rp);
 
     QImage bakedSlimeChunkImage(const region_pos& rp);

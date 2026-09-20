@@ -50,7 +50,7 @@ struct RenderOption {
         if (type < 0 || type >= OtherType::OtherLen) return;
         others[type] = value;
     }
-    bool getOther(OtherType type) {
+    bool getOther(OtherType type) const {
         if (type < 0 || type >= OtherType::OtherLen) return false;
         return others[type];
     }

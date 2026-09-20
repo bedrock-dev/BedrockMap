@@ -40,7 +40,7 @@ Pop-Location
 # windeployqt may copy runtime DLLs from the Qt installation. Replace them
 # with the versions from the compiler used to build this project.
 $mingwBin = Split-Path (Get-Command gcc -ErrorAction Stop).Source -Parent
-foreach ($dll in @("libwinpthread-1.dll", "libstdc++-6.dll", "libgcc_s_seh-1.dll")) {
+foreach ($dll in @("libwinpthread-1.dll", "libstdc++-6.dll", "libgcc_s_seh-1.dll","libbacktrace-0.dll")) {
     $mingwDll = Join-Path $mingwBin $dll
     if (Test-Path $mingwDll) {
         Copy-Item -Path $mingwDll -Destination "$release_dir\$dll" -Force

@@ -61,7 +61,8 @@ class MainWindow : public QMainWindow {
 
    private:
     QString getStaticTitle();
-    MapWidget* getCurrentMapWidget();
+    /// The shared map state and level operations of the current tab.
+    MapHost* currentMapHost();
     bool openDataFile(const QString& path);
     bool canOpenDroppedPath(const QString& path) const;
     void openDroppedPath(const QString& path);

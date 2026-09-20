@@ -12,6 +12,7 @@
 #include "color.h"
 #include "config.h"
 #include "maptile.h"
+#include "renderprofile.h"
 
 void RegionTimer::push(int64_t value) {
     this->values.push_back(value);
@@ -45,16 +46,20 @@ std::string ChunkRegion::blockName(int id) const {
 
 void LoadRegionTask::run() {
     auto begin = std::chrono::steady_clock::now();
+    RenderProfile::instance().regions.fetch_add(1, std::memory_order_relaxed);
 
     auto* region = new ChunkRegion();
     bl::chunk* chunks_[constant::RW * constant::RW]{nullptr};
     // read chunk data
-    for (int i = 0; i < constant::RW; i++) {
-        for (int j = 0; j < constant::RW; j++) {
-            bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
-            // map tiles only need terrain/biomes/HSAs/actors, not block entities/pending ticks
-            chunks_[i * constant::RW + j] =
-                this->loader_->getChunk(p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);
+    {
+        ScopedPhase phase(RenderPhase::ChunkLoad);
+        for (int i = 0; i < constant::RW; i++) {
+            for (int j = 0; j < constant::RW; j++) {
+                bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
+                // map tiles only need terrain/biomes/HSAs/actors, not block entities/pending ticks
+                chunks_[i * constant::RW + j] = this->loader_->getChunk(
+                    p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);
+            }
         }
     }
 
@@ -80,28 +85,32 @@ void LoadRegionTask::run() {
 
         // Preload height maps into cache from already-loaded chunk data,
         // so renderStyle2's cross-region shadow pass hits the cache.
-        for (int i = 0; i < constant::RW; i++) {
-            for (int j = 0; j < constant::RW; j++) {
-                auto* chunk = chunks_[i * constant::RW + j];
-                if (!chunk || !chunk->loaded()) continue;
-                bl::chunk_pos cp(this->pos_.x + i, this->pos_.z + j, this->pos_.dim);
-                int miny = chunk->get_y_range().first;
-                std::array<int16_t, 256> hm;
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        int h = chunk->get_height(x, z);
-                        // chunk::get_height = raw + miny.  Void raw == -128,
-                        // world-space void = -128 + miny (e.g. -192 for New Overworld).
-                        // Preserve -128 sentinel so the cache format is consistent.
-                        hm[x + z * 16] = (h <= -128 + miny) ? static_cast<int16_t>(-128) : static_cast<int16_t>(h);
+        {
+            ScopedPhase phase(RenderPhase::HeightMap);
+            for (int i = 0; i < constant::RW; i++) {
+                for (int j = 0; j < constant::RW; j++) {
+                    auto* chunk = chunks_[i * constant::RW + j];
+                    if (!chunk || !chunk->loaded()) continue;
+                    bl::chunk_pos cp(this->pos_.x + i, this->pos_.z + j, this->pos_.dim);
+                    int miny = chunk->get_y_range().first;
+                    std::array<int16_t, 256> hm;
+                    for (int x = 0; x < 16; x++) {
+                        for (int z = 0; z < 16; z++) {
+                            int h = chunk->get_height(x, z);
+                            // chunk::get_height = raw + miny.  Void raw == -128,
+                            // world-space void = -128 + miny (e.g. -192 for New Overworld).
+                            // Preserve -128 sentinel so the cache format is consistent.
+                            hm[x + z * 16] = (h <= -128 + miny) ? static_cast<int16_t>(-128) : static_cast<int16_t>(h);
+                        }
                     }
+                    this->loader_->putHeightMap(cp, hm);
                 }
-                this->loader_->putHeightMap(cp, hm);
             }
         }
 
         // init bg
         auto img = MapTile::CREATE_REGION_TILE(region->chunk_bit_map_, !this->loader_->transparentVoid());
+        region->flat_color_image_ = img;
         region->terrain_bake_image_ = img;
         region->biome_bake_image_ = img;
         // draw blocks
@@ -111,7 +120,10 @@ void LoadRegionTask::run() {
                 if (!chunk) continue;
                 chunk_count++;
                 MapTile::bakeChunkTerrain(chunk, this->filter_, rw, rh, region);
-                MapTile::bakeChunkActors(chunk, this->filter_, region);
+                {
+                    ScopedPhase phase(RenderPhase::Actors);
+                    MapTile::bakeChunkActors(chunk, this->filter_, region);
+                }
                 auto& hss = chunk->HSAs();
                 region->HSAs_.insert(region->HSAs_.end(), hss.begin(), hss.end());
             }

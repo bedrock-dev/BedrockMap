@@ -2,20 +2,33 @@
 #define BEDROCKMAP_IMPORTOVERLAY_H
 
 #include <QObject>
+#include <QPointer>
 #include <QWidget>
 
 #include "bedrock_key.h"
 #include "chunkio.h"
 
-class QPainter;
 class AsyncLevelLoader;
 class FloatingToolBar;
+class MapHost;
+class QPainter;
 
+/// Interactive placement of an imported/pasted region: a ghost preview that
+/// follows the cursor, a click to pin it down, then confirm or cancel.
+///
+/// It owns no widget. The state and the drawing live here, and whichever
+/// renderer is on screen draws it and forwards its input, so the two renderers
+/// share one placement - the same way they share the overlay layers. Its chrome
+/// belongs to the pane the host points at, which is the renderer on screen.
 class ImportOverlay : public QObject {
     Q_OBJECT
 
    public:
-    ImportOverlay(QWidget* parent, AsyncLevelLoader* loader);
+    ImportOverlay(AsyncLevelLoader* loader, MapHost* host);
+
+    /// The widget the confirm bar and the warning dialogs belong to: the pane
+    /// on screen.
+    [[nodiscard]] QWidget* paneWidget() const;
 
     bool active() const { return mode_; }
     bool placed() const { return placed_; }
@@ -57,15 +70,16 @@ class ImportOverlay : public QObject {
    private:
     void cleanup();
 
-    QWidget* parent_;
     AsyncLevelLoader* loader_;
+    MapHost* host_;
 
     bool mode_{false};
     bool placed_{false};
     uint8_t dim_{0};
     ExportedRegion preview_;
     bl::chunk_pos offset_{0, 0, 0};
-    FloatingToolBar* confirm_bar_{nullptr};
+    /// Owned by the pane, which may be destroyed before this overlay is.
+    QPointer<FloatingToolBar> confirm_bar_;
 };
 
 #endif  // BEDROCKMAP_IMPORTOVERLAY_H

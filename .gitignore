@@ -89,3 +89,4 @@ cache
 .vscode
 maps
 config.ini
+.github/agents/*

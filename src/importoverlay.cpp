@@ -9,11 +9,13 @@
 #include "chunkoperator.h"
 #include "floatingtoolbar.h"
 #include "loguru/loguru.hpp"
-#include "mapwidget.h"
+#include "maphost.h"
 #include "msg.h"
 #include "resourcemanager.h"
 
-ImportOverlay::ImportOverlay(QWidget* parent, AsyncLevelLoader* loader) : QObject(parent), parent_(parent), loader_(loader) {}
+ImportOverlay::ImportOverlay(AsyncLevelLoader* loader, MapHost* host) : loader_(loader), host_(host) {}
+
+QWidget* ImportOverlay::paneWidget() const { return host_ ? host_->paneWidget() : nullptr; }
 
 void ImportOverlay::startImport(const QString& filePath, uint8_t dim, const bl::chunk_pos& initialCp) {
     QFile file(filePath);
@@ -48,7 +50,7 @@ bool ImportOverlay::startPaste(const QByteArray& data, uint8_t dim, const bl::ch
     if (!confirm_bar_) {
         using GC = FloatingToolBar::GroupConfig;
 
-        confirm_bar_ = new FloatingToolBar(parent_);
+        confirm_bar_ = new FloatingToolBar(paneWidget());
         confirm_bar_->setOrientation(Qt::Horizontal);
         confirm_bar_->setAnchor(Qt::AlignHCenter | Qt::AlignBottom);
         confirm_bar_->setAnchorMargins(8);
@@ -125,7 +127,7 @@ void ImportOverlay::resize(int, int) {
 void ImportOverlay::confirm() {
     if (preview_.isEmpty()) return;
     if (loader_ && loader_->chunkCoordsLoading()) {
-        QMessageBox::warning(parent_, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
+        QMessageBox::warning(paneWidget(), msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
         return;
     }
 
@@ -139,9 +141,11 @@ void ImportOverlay::confirm() {
         chunk.move_to(cp, &loader_->level());
     }
 
-    if (auto* map = qobject_cast<MapWidget*>(parent_)) {
-        map->applyImportedRegionAsync(preview_);
-    } else {
+    // The host owns the level write. Without one (an overlay used outside a map
+    // page) the write happens inline, on the calling thread.
+    if (host_) {
+        host_->applyImportedRegion(std::move(preview_));
+    } else if (loader_) {
         ChunkOperator::importRegion(preview_, *loader_);
     }
 

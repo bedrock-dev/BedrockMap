@@ -3,121 +3,132 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QFileDialog>
-#include <QMessageBox>
+#include <QMenu>
 #include <QMimeData>
 
 #include "biomepickerdialog.h"
-#include "chunkio.h"
-#include "chunkoperator.h"
 #include "color.h"
-#include "importoverlay.h"
-#include "loguru/loguru.hpp"
-#include "mapwidget.h"
+#include "maphost.h"
+#include "mapview.h"
 #include "msg.h"
 
-void ContextMenuBuilder::show(QWidget* parent, MapWidget* w, const QPoint& globalPos) {
-    auto* cb = QApplication::clipboard();
-    QMenu menu(parent);
+namespace {
+    constexpr const char* kRegionMimeType = "application/x-bedrockmap-region";
+}
 
-    auto localPos = w->mapFromGlobal(globalPos);
-    auto clickChunk = w->viewPosToChunkPos(localPos);
-    auto cursorPos = w->getCursorBlockPos();
-    auto blockInfo = w->level_loader_->getBlockTips(cursorPos, w->option_.dim);
-    bool insideSelection = w->selection_.contains(QPoint(clickChunk.x, clickChunk.z));
-    int dim = w->option_.dim;
+void ContextMenuBuilder::show(MapHost* host, const MapMenuRequest& request) {
+    if (!host) return;
+    QMenu menu(mapPane(host, request));
+    build(menu, host, request);
+    if (!menu.isEmpty()) menu.exec(request.global_pos);
+}
 
-    // === Group 1: Goto ===
-    menu.addAction(QObject::tr("mapWidget.rightMenu.gotoPosition"), [w] { w->gotoPositionAction(); });
+QWidget* ContextMenuBuilder::mapPane(MapHost* host, const MapMenuRequest& request) {
+    if (request.source) return request.source;
+    return host ? host->paneWidget() : nullptr;
+}
+
+void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest& request) {
+    if (!host) return;
+    auto* view = host->mapView();
+    auto* loader = host->levelLoader();
+    if (!view || !loader) return;
+
+    // Dialogs and captures belong to the pane the menu was opened on.
+    QWidget* parent = mapPane(host, request);
+    auto* clipboard = QApplication::clipboard();
+    const int dim = request.dim;
+
+    // Membership is tested in chunk coordinates, so an irregular selection
+    // answers correctly.
+    const QRegion& selection = view->selection().region();
+    const bool inside_selection = !selection.isEmpty() && selection.contains(QPoint(request.chunk.x, request.chunk.z));
+
+    menu.addAction(QObject::tr("mapHost.rightMenu.gotoPosition"), [host] { host->gotoPositionAction(); });
     menu.addSeparator();
 
-    // === Group 2: Selection operations ===
-    if (insideSelection) {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.unselect"), [w] { w->clearSelection(); });
+    if (inside_selection) {
+        menu.addAction(QObject::tr("mapHost.rightMenu.unselect"), [host] { host->clearSelection(); });
 
-        auto* selMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.selectionOps"));
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.delete"), [w, dim] { w->deleteSelection(dim); });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.createVoid"), [w, dim] { w->createVoidSelection(dim); });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.setBiome"), [w, dim] {
-            if (w->modificationBlocked()) return;
-            BiomePickerDialog dlg(w);
-            if (dlg.exec() == QDialog::Accepted) {
-                w->setSelectionBiome(dlg.selectedBiome(), dim);
-            }
+        auto* sel_menu = menu.addMenu(QObject::tr("mapHost.rightMenu.selectionOps"));
+        sel_menu->addAction(QObject::tr("mapHost.rightMenu.delete"), [host, dim] { host->deleteSelection(dim); });
+        sel_menu->addAction(QObject::tr("mapHost.rightMenu.createVoid"), [host, dim] { host->createVoidSelection(dim); });
+        sel_menu->addAction(QObject::tr("mapHost.rightMenu.setBiome"), [host, dim] {
+            if (host->modificationBlocked()) return;
+            BiomePickerDialog dialog(host->paneWidget());
+            if (dialog.exec() == QDialog::Accepted) host->setSelectionBiome(dialog.selectedBiome(), dim);
         });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.copy"), [w, dim] { w->copySelectionToClipboard(dim); });
-        selMenu->addAction(QObject::tr("mapWidget.rightMenu.export"), [w, dim] { w->exportSelectionToFile(dim); });
+        sel_menu->addAction(QObject::tr("mapHost.rightMenu.copy"), [host, dim] { host->copySelectionToClipboard(dim); });
+        sel_menu->addAction(QObject::tr("mapHost.rightMenu.export"), [host, dim] { host->exportSelectionToFile(dim); });
         menu.addSeparator();
     }
 
-    // Paste — always check clipboard, show only if data available
-    const auto* pasteMd = cb->mimeData();
-    if (pasteMd && pasteMd->hasFormat("application/x-bedrockmap-region") && !pasteMd->data("application/x-bedrockmap-region").isEmpty()) {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.paste"), [w, clickChunk, dim] {
-            if (w->modificationBlocked()) return;
-            auto* clip = QApplication::clipboard();
-            const auto* md = clip->mimeData();
-            if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
+    // Paste is offered whenever the clipboard actually holds a region.
+    const QMimeData* paste_data = clipboard->mimeData();
+    if (paste_data && paste_data->hasFormat(kRegionMimeType) && !paste_data->data(kRegionMimeType).isEmpty()) {
+        menu.addAction(QObject::tr("mapHost.rightMenu.paste"), [host, chunk = request.chunk, dim] {
+            if (host->modificationBlocked()) return;
+            const QMimeData* data = QApplication::clipboard()->mimeData();
+            if (!data || !data->hasFormat(kRegionMimeType)) {
                 WARN(msg::PASTE_NO_DATA());
                 return;
             }
-            QByteArray rawData = md->data("application/x-bedrockmap-region");
-            if (rawData.isEmpty()) {
+            const QByteArray raw = data->data(kRegionMimeType);
+            if (raw.isEmpty()) {
                 INFO(msg::PASTE_DATA_EMPTY());
                 return;
             }
-            if (!w->import_overlay_->startPaste(rawData, dim, clickChunk)) {
-                INFO(msg::PASTE_DATA_INVALID());
-                return;
-            }
-            w->update();
+            if (!host->beginPaste(raw, dim, chunk)) INFO(msg::PASTE_DATA_INVALID());
         });
     }
 
-    // Import
-    menu.addAction(QObject::tr("mapWidget.rightMenu.import"), [w, clickChunk, dim] {
-        if (w->modificationBlocked()) return;
-        auto fp = QFileDialog::getOpenFileName(nullptr, QObject::tr("mapWidget.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
-        if (fp.isEmpty()) return;
-        w->import_overlay_->startImport(fp, dim, clickChunk);
-        w->update();
+    menu.addAction(QObject::tr("mapHost.rightMenu.import"), [host, chunk = request.chunk, dim] {
+        if (host->modificationBlocked()) return;
+        const QString path =
+            QFileDialog::getOpenFileName(host->paneWidget(), QObject::tr("mapHost.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
+        if (path.isEmpty()) return;
+        host->beginImport(path, dim, chunk);
     });
     menu.addSeparator();
 
-    // === Group 3: Copy info ===
-    auto* copyMenu = menu.addMenu(QObject::tr("mapWidget.rightMenu.copyInfo"));
-    auto blockName = w->level_loader_->getBlockName(cursorPos, w->option_.dim);
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBlockName") + QString(blockName.c_str()),
-                        [cb, blockName] { cb->setText(QString::fromStdString(blockName)); });
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyBiomeName") + QString(bl::get_biome_name(blockInfo.biome).c_str()),
-                        [cb, &blockInfo] { cb->setText(bl::get_biome_name(blockInfo.biome).c_str()); });
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyAltitude") + QString::number(blockInfo.height),
-                        [cb, &blockInfo] { cb->setText(QString::number(blockInfo.height)); });
-    auto tpCmd = QString("tp @s %1 ~ %2").arg(QString::number(cursorPos.x), QString::number(cursorPos.z));
-    copyMenu->addAction(QObject::tr("mapWidget.rightMenu.copyTPCommand") + tpCmd, [cb, tpCmd] { cb->setText(tpCmd); });
+    auto* copy_menu = menu.addMenu(QObject::tr("mapHost.rightMenu.copyInfo"));
+    const std::string block_name = loader->getBlockName(request.block, dim);
+    const auto info = loader->getBlockTips(request.block, dim);
+    const auto to_clipboard = [clipboard](const QString& text) { clipboard->setText(text); };
+
+    const QString block_name_text = QString::fromStdString(block_name);
+    copy_menu->addAction(QObject::tr("mapHost.rightMenu.copyBlockName") + block_name_text,
+                         [to_clipboard, block_name_text] { to_clipboard(block_name_text); });
+    const QString biome_name = QString::fromStdString(bl::get_biome_name(info.biome));
+    copy_menu->addAction(QObject::tr("mapHost.rightMenu.copyBiomeName") + biome_name,
+                         [to_clipboard, biome_name] { to_clipboard(biome_name); });
+    const QString altitude = QString::number(info.height);
+    copy_menu->addAction(QObject::tr("mapHost.rightMenu.copyAltitude") + altitude, [to_clipboard, altitude] { to_clipboard(altitude); });
+    const QString tp_command = QString("tp @s %1 ~ %2").arg(QString::number(request.block.x), QString::number(request.block.z));
+    copy_menu->addAction(QObject::tr("mapHost.rightMenu.copyTPCommand") + tp_command,
+                         [to_clipboard, tp_command] { to_clipboard(tp_command); });
     menu.addSeparator();
 
-    // === Group 4: Screenshot ===
-    if (insideSelection) {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.saveSelectionScreenshot"), [w] { w->saveSelectionImage(); });
+    // The screenshot comes from whichever map was clicked, so that map is what
+    // ends up in the file.
+    if (inside_selection) {
+        menu.addAction(QObject::tr("mapHost.rightMenu.saveSelectionScreenshot"), [host, parent] { host->saveSelectionImage(parent); });
     } else {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.saveScreenshot"), [w] { w->saveFullscreenImage(); });
+        menu.addAction(QObject::tr("mapHost.rightMenu.saveScreenshot"), [host, parent] { host->saveFullscreenImage(parent); });
     }
     menu.addSeparator();
 
-    // === Group 5: 3D ===
-    if (insideSelection && w->selection_.rectCount() == 1) {
-        menu.addAction(QObject::tr("mapWidget.rightMenu.view3D"), [w] {
-            auto rect = w->selection_.region().boundingRect();
-            bl::chunk_pos minPos(rect.x(), rect.y(), w->option_.dim);
-            bl::chunk_pos maxPos(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1, w->option_.dim);
-            w->voxel_preview_window_->loadChunksAsync(minPos, maxPos, *w->level_loader_);
+    if (inside_selection && view->selection().rectCount() == 1) {
+        menu.addAction(QObject::tr("mapHost.rightMenu.view3D"), [host, view, dim] {
+            const QRect rect = view->selection().region().boundingRect();
+            host->showVoxelPreview(bl::chunk_pos(rect.x(), rect.y(), dim),
+                                   bl::chunk_pos(rect.x() + rect.width() - 1, rect.y() + rect.height() - 1, dim));
         });
     }
 
-    menu.addAction(QObject::tr("mapWidget.rightMenu.openchunkEditor"), [w, &cursorPos] {
-        auto cp = cursorPos.to_chunk_pos();
-        cp.dim = w->renderOption().dim;
-        emit w->requestOpenChunkEditor(cp);
+    menu.addAction(QObject::tr("mapHost.rightMenu.openchunkEditor"), [host, chunk = request.chunk, dim] {
+        bl::chunk_pos pos = chunk;
+        pos.dim = dim;
+        host->showChunkEditor(pos);
     });
-    menu.exec(globalPos);
 }

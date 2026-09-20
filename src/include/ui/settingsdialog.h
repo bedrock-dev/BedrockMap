@@ -28,6 +28,21 @@ class SettingsDialog : public QDialog {
     void onChunkEditorColorPick();
     void onVoxelSelectionColorPick();
 
+    /// Set the shadow strength on both of its controls.
+    void setGpuShadowStrength(double value);
+
+    /// Set the AO strength on both of its controls.
+    void setGpuAoStrength(double value);
+
+    /// Set the bevel strength on both of its controls.
+    void setGpuBevelStrength(double value);
+
+    /// Set the saturation on both of its controls.
+    void setGpuSaturation(double value);
+
+    /// Set the brightness on both of its controls.
+    void setGpuBrightness(double value);
+
    private:
     void setupCategories();
     void loadSettings();

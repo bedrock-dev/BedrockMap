@@ -2,6 +2,7 @@
 
 #include <QColorDialog>
 #include <QSettings>
+#include <QSignalBlocker>
 #include <QStringList>
 #include <QTreeWidgetItem>
 #include <cmath>
@@ -36,6 +37,18 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->loadGlobalDataCheck, &QCheckBox::toggled, this, &SettingsDialog::updateGlobalDataOptions);
     connect(ui->fontFamilyCombo, &QFontComboBox::currentFontChanged, this,
             [this](const QFont& font) { ui->fontSizeSpin->setValue(font.pointSize()); });
+
+    // Both controls edit the same value, so each follows the other.
+    connect(ui->gpuShadowSlider, &QSlider::valueChanged, this, [this](int value) { setGpuShadowStrength(value / 100.0); });
+    connect(ui->gpuShadowSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuShadowStrength);
+    connect(ui->gpuAoSlider, &QSlider::valueChanged, this, [this](int value) { setGpuAoStrength(value / 100.0); });
+    connect(ui->gpuAoSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuAoStrength);
+    connect(ui->gpuBevelSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBevelStrength(value / 100.0); });
+    connect(ui->gpuBevelSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuBevelStrength);
+    connect(ui->gpuSaturationSlider, &QSlider::valueChanged, this, [this](int value) { setGpuSaturation(value / 100.0); });
+    connect(ui->gpuSaturationSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuSaturation);
+    connect(ui->gpuBrightnessSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBrightness(value / 100.0); });
+    connect(ui->gpuBrightnessSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuBrightness);
 
     // Init interdependent state
     updateShadowOptions();
@@ -75,10 +88,13 @@ void SettingsDialog::setupCategories() {
     auto* extraItem = new QTreeWidgetItem(ui->categoryTree);
     extraItem->setText(0, tr("settingsDialog.category.extra"));
     extraItem->setData(0, Qt::UserRole, 5);
+    auto* renderItem = new QTreeWidgetItem(ui->categoryTree);
+    renderItem->setText(0, tr("settingsDialog.category.render"));
+    renderItem->setData(0, Qt::UserRole, 6);
 
     auto* langItem = new QTreeWidgetItem(ui->categoryTree);
     langItem->setText(0, tr("settingsDialog.category.lang"));
-    langItem->setData(0, Qt::UserRole, 6);
+    langItem->setData(0, Qt::UserRole, 7);
 }
 
 void SettingsDialog::loadSettings() {
@@ -97,30 +113,8 @@ void SettingsDialog::loadSettings() {
                                                                 : ui->fontFamilyCombo->currentFont().pointSize());
 
     // --- Map ---
-    ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::current().MAP_RENDER_STYLE, 0, 2));
-    {
-        const int scaleVals[] = {1, 2, 4, 8, 16, 32};
-        int idx = 0;
-        for (int i = 0; i < 6; i++) {
-            if (scaleVals[i] == setting::current().TILE_RENDER_SCALE) {
-                idx = i;
-                break;
-            }
-        }
-        ui->shadowScaleCombo->setCurrentIndex(idx);
-    }
-    {
-        const int mapScaleVals[] = {1, 2, 4, 8};
-        int idx = 0;
-        for (int i = 0; i < 4; i++) {
-            if (mapScaleVals[i] == setting::current().SHADOW_MAP_SCALE) {
-                idx = i;
-                break;
-            }
-        }
-        ui->shadowMapScaleCombo->setCurrentIndex(idx);
-    }
-    ui->shadowLevelSpin->setValue(setting::current().SHADOW_LEVEL);
+    // Rendering controls live on the Rendering page; map keeps only camera,
+    // overlay, and appearance settings.
     ui->minScaleSpin->setValue(setting::current().MINIMUM_SCALE_LEVEL);
     ui->maxScaleSpin->setValue(setting::current().MAXIMUM_SCALE_LEVEL);
     ui->zoomSpeedEdit->setText(QString::number(setting::current().ZOOM_SPEED, 'f', 1));
@@ -146,6 +140,38 @@ void SettingsDialog::loadSettings() {
     // --- Extra features ---
     ui->preloadCoordsCheck->setChecked(setting::current().PRELOAD_ALL_CHUNK_COORDS);
 
+    // --- Rendering ---
+    ui->gpuRenderCheck->setChecked(setting::current().GPU_RENDER_ENABLED);
+    ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::current().MAP_RENDER_STYLE, 0, 2));
+    {
+        const int scaleVals[] = {1, 2, 4, 8, 16, 32};
+        int idx = 0;
+        for (int i = 0; i < 6; i++) {
+            if (scaleVals[i] == setting::current().TILE_RENDER_SCALE) {
+                idx = i;
+                break;
+            }
+        }
+        ui->shadowScaleCombo->setCurrentIndex(idx);
+    }
+    {
+        const int mapScaleVals[] = {1, 2, 4, 8};
+        int idx = 0;
+        for (int i = 0; i < 4; i++) {
+            if (mapScaleVals[i] == setting::current().SHADOW_MAP_SCALE) {
+                idx = i;
+                break;
+            }
+        }
+        ui->shadowMapScaleCombo->setCurrentIndex(idx);
+    }
+    ui->shadowLevelSpin->setValue(setting::current().SHADOW_LEVEL);
+    setGpuShadowStrength(setting::current().GPU_SHADOW_STRENGTH);
+    setGpuAoStrength(setting::current().GPU_AO_STRENGTH);
+    setGpuBevelStrength(setting::current().GPU_BEVEL_STRENGTH);
+    setGpuSaturation(setting::current().GPU_SATURATION);
+    setGpuBrightness(setting::current().GPU_BRIGHTNESS);
+
     // --- Lang ---
     ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
 }
@@ -154,6 +180,45 @@ void SettingsDialog::onCategoryChanged(QTreeWidgetItem* current, QTreeWidgetItem
     if (!current) return;
     int page = current->data(0, Qt::UserRole).toInt();
     ui->settingsStack->setCurrentIndex(page);
+}
+
+void SettingsDialog::setGpuShadowStrength(double value) {
+    const QSignalBlocker block_slider(ui->gpuShadowSlider);
+    const QSignalBlocker block_spin(ui->gpuShadowSpin);
+    ui->gpuShadowSpin->setValue(value);
+    ui->gpuShadowSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuAoStrength(double value) {
+    // The slider is the coarse control (percentage) and the spin box the exact
+    // one; setting both from one value keeps them from disagreeing.
+    const QSignalBlocker block_slider(ui->gpuAoSlider);
+    const QSignalBlocker block_spin(ui->gpuAoSpin);
+    ui->gpuAoSpin->setValue(value);
+    ui->gpuAoSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuBevelStrength(double value) {
+    const QSignalBlocker block_slider(ui->gpuBevelSlider);
+    const QSignalBlocker block_spin(ui->gpuBevelSpin);
+    ui->gpuBevelSpin->setValue(value);
+    ui->gpuBevelSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuSaturation(double value) {
+    // The slider spans 0..200% so that boosting is on the same control as cutting.
+    const QSignalBlocker block_slider(ui->gpuSaturationSlider);
+    const QSignalBlocker block_spin(ui->gpuSaturationSpin);
+    ui->gpuSaturationSpin->setValue(value);
+    ui->gpuSaturationSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuBrightness(double value) {
+    // 1.0 is neutral; the control spans 0..200% to allow both dimming and lifting.
+    const QSignalBlocker block_slider(ui->gpuBrightnessSlider);
+    const QSignalBlocker block_spin(ui->gpuBrightnessSpin);
+    ui->gpuBrightnessSpin->setValue(value);
+    ui->gpuBrightnessSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
 }
 
 void SettingsDialog::onGridColorPick() { onPickColor(ui->gridColorEdit); }
@@ -247,6 +312,12 @@ void SettingsDialog::onSave() {
     values.ICON_THEME = ui->iconThemeCombo->currentText();
 
     values.PRELOAD_ALL_CHUNK_COORDS = ui->preloadCoordsCheck->isChecked();
+    values.GPU_RENDER_ENABLED = ui->gpuRenderCheck->isChecked();
+    values.GPU_AO_STRENGTH = static_cast<float>(ui->gpuAoSpin->value());
+    values.GPU_BEVEL_STRENGTH = static_cast<float>(ui->gpuBevelSpin->value());
+    values.GPU_SATURATION = static_cast<float>(ui->gpuSaturationSpin->value());
+    values.GPU_BRIGHTNESS = static_cast<float>(ui->gpuBrightnessSpin->value());
+    values.GPU_SHADOW_STRENGTH = static_cast<float>(ui->gpuShadowSpin->value());
 
     values.LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
 

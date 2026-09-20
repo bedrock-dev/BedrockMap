@@ -8,8 +8,8 @@
 #include <qwidget.h>
 
 #include "asynclevelloader.h"
+#include "cpumapwidget.h"
 #include "levelpagewidget.h"
-#include "mapwidget.h"
 #include "msg.h"
 #include "nbtfilepagewidget.h"
 #include "nbtwidget.h"
@@ -107,7 +107,7 @@ void LevelTabWidget::openLevelDBDebugDialog() {
 
 void LevelTabWidget::setEnableDebugWindow(bool bo) {
     for (const auto& kv : level_pages_) {
-        if (kv && kv->getMapWidget()) kv->getMapWidget()->setDrawDebug(bo);
+        if (kv && kv->mapHost()) kv->mapHost()->setDrawDebug(bo);
     }
 }
 
@@ -202,20 +202,20 @@ bool LevelTabWidget::confirmCloseAllLevels() {
 }
 
 void LevelTabWidget::onMapDimensionChanged(int dim) {
-    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->changeDimension(dim);
+    if (auto* page = currentLevelPage(); page && page->mapHost()) {
+        page->mapHost()->setDim(dim);
     }
 }
 
 void LevelTabWidget::onMapLayerChanged(int layer) {
-    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->changeLayer(static_cast<RenderOption::LayerType>(layer));
+    if (auto* page = currentLevelPage(); page && page->mapHost()) {
+        page->mapHost()->setLayer(static_cast<RenderOption::LayerType>(layer));
     }
 }
 
 void LevelTabWidget::onMapToggleOtherLayer(int other) {
-    if (auto* page = currentLevelPage(); page && page->getMapWidget()) {
-        page->getMapWidget()->toggleOther(static_cast<RenderOption::OtherType>(other));
+    if (auto* page = currentLevelPage(); page && page->mapHost()) {
+        page->mapHost()->toggleOther(static_cast<RenderOption::OtherType>(other));
     }
 }
 

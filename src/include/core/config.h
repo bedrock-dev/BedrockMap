@@ -66,12 +66,34 @@ namespace setting {
         QString FONT_FAMILY;
         int FONT_SIZE{-1};
 
-        // Map
+        // Rendering
         int MAP_RENDER_STYLE{1};
+        // Draw the map with the GPU renderer instead of the CPU one. Only one of
+        // the two renderers is active, and they are equivalent in behaviour.
+        bool GPU_RENDER_ENABLED{false};
+        // Strength of the GPU renderer's ambient occlusion in concave corners.
+        // Its only consumer is the shader, which is why it is a GPU setting
+        // rather than a map one: the CPU styles bake AO into the tiles instead.
+        float GPU_AO_STRENGTH{0.22f};
+        // Depth of the GPU renderer's bevel: 0 removes the bevel entirely, 1 is the
+        // full bevel and the default. Shader-only, like the ambient occlusion.
+        float GPU_BEVEL_STRENGTH{1.0f};
+        // Saturation of the GPU renderer's output: 0 is greyscale, 1 leaves the
+        // stored colours alone, above 1 boosts them.
+        float GPU_SATURATION{1.0f};
+        // Brightness multiplier for the GPU renderer: 1 leaves the shaded image
+        // unchanged, 0 is black, and values above 1 lift it.
+        float GPU_BRIGHTNESS{1.0f};
+        // How much of the GPU renderer's terrain shadow is applied. 0 removes it and
+        // 1 is the full shadow. It scales the shadow the ray march produces, so it
+        // composes with SHADOW_LEVEL rather than replacing it.
+        float GPU_SHADOW_STRENGTH{1.0f};
         int TILE_RENDER_SCALE{4};
         int SHADOW_PCF_RADIUS{0};
         int SHADOW_MAP_SCALE{2};
         int SHADOW_LEVEL{128};
+
+        // Map
         int MINIMUM_SCALE_LEVEL{4};
         int MAXIMUM_SCALE_LEVEL{1024};
         int COORDS_MINIMAP_WIDTH{100};

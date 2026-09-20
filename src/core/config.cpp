@@ -156,16 +156,11 @@ void setting::load() {
     s.endGroup();
 
     s.beginGroup("Map");
-    loaded.SHADOW_LEVEL = s.value("terrian_shadow_level", loaded.SHADOW_LEVEL).toInt();
     loaded.MINIMUM_SCALE_LEVEL = s.value("min_scale_level", loaded.MINIMUM_SCALE_LEVEL).toInt();
     loaded.MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", loaded.MAXIMUM_SCALE_LEVEL).toInt();
     loaded.COORDS_MINIMAP_WIDTH = std::clamp(s.value("coords_minimap_width", loaded.COORDS_MINIMAP_WIDTH).toInt(), 64, 1024);
     loaded.COORDS_MINIMAP_HEIGHT = std::clamp(s.value("coords_minimap_height", loaded.COORDS_MINIMAP_HEIGHT).toInt(), 64, 1024);
     loaded.ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", loaded.ZOOM_SPEED).toDouble()));
-    loaded.MAP_RENDER_STYLE = s.value("render_style", loaded.MAP_RENDER_STYLE).toInt();
-    loaded.TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", loaded.TILE_RENDER_SCALE).toInt(), 1, 16);
-    loaded.SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", loaded.SHADOW_PCF_RADIUS).toInt(), 0, 8);
-    loaded.SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", loaded.SHADOW_MAP_SCALE).toInt(), 1, 8);
     loaded.GRID_LINE_COLOR = s.value("grid_line_color", loaded.GRID_LINE_COLOR).toString();
     loaded.ACTOR_RENDER_STYLE = s.value("actor_render_style", loaded.ACTOR_RENDER_STYLE).toInt();
     loaded.ACTOR_BORDER_WIDTH = s.value("actor_border_width", loaded.ACTOR_BORDER_WIDTH).toInt();
@@ -176,6 +171,20 @@ void setting::load() {
     loaded.VOXEL_SELECTION_COLOR = s.value("voxel_selection_color", loaded.VOXEL_SELECTION_COLOR).toString();
     loaded.TRANSPARENT_WATER = s.value("transparent_water", loaded.TRANSPARENT_WATER).toBool();
     loaded.TINT_BRIGHTNESS = std::clamp(s.value("tint_brightness", loaded.TINT_BRIGHTNESS).toFloat(), 0.0f, 8.0f);
+    s.endGroup();
+
+    s.beginGroup("Rendering");
+    loaded.MAP_RENDER_STYLE = s.value("render_style", loaded.MAP_RENDER_STYLE).toInt();
+    loaded.GPU_RENDER_ENABLED = s.value("gpu_render_enabled", loaded.GPU_RENDER_ENABLED).toBool();
+    loaded.GPU_AO_STRENGTH = std::clamp(s.value("gpu_ao_strength", loaded.GPU_AO_STRENGTH).toFloat(), 0.0f, 1.0f);
+    loaded.GPU_BEVEL_STRENGTH = std::clamp(s.value("gpu_bevel_strength", loaded.GPU_BEVEL_STRENGTH).toFloat(), 0.0f, 1.0f);
+    loaded.GPU_SATURATION = std::clamp(s.value("gpu_saturation", loaded.GPU_SATURATION).toFloat(), 0.0f, 2.0f);
+    loaded.GPU_BRIGHTNESS = std::clamp(s.value("gpu_brightness", loaded.GPU_BRIGHTNESS).toFloat(), 0.0f, 2.0f);
+    loaded.GPU_SHADOW_STRENGTH = std::clamp(s.value("gpu_shadow_strength", loaded.GPU_SHADOW_STRENGTH).toFloat(), 0.0f, 1.0f);
+    loaded.TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", loaded.TILE_RENDER_SCALE).toInt(), 1, 16);
+    loaded.SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", loaded.SHADOW_PCF_RADIUS).toInt(), 0, 8);
+    loaded.SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", loaded.SHADOW_MAP_SCALE).toInt(), 1, 8);
+    loaded.SHADOW_LEVEL = s.value("terrian_shadow_level", loaded.SHADOW_LEVEL).toInt();
     s.endGroup();
 
     s.beginGroup("Cache");
@@ -229,12 +238,28 @@ void setting::save(const Settings& values) {
     s.setValue("font_size", values.FONT_SIZE);
     s.endGroup();
 
-    s.beginGroup("Map");
+    s.beginGroup("Rendering");
     s.setValue("render_style", values.MAP_RENDER_STYLE);
+    s.setValue("gpu_render_enabled", values.GPU_RENDER_ENABLED);
+    s.setValue("gpu_ao_strength", values.GPU_AO_STRENGTH);
+    s.setValue("gpu_bevel_strength", values.GPU_BEVEL_STRENGTH);
+    s.setValue("gpu_saturation", values.GPU_SATURATION);
+    s.setValue("gpu_brightness", values.GPU_BRIGHTNESS);
+    s.setValue("gpu_shadow_strength", values.GPU_SHADOW_STRENGTH);
     s.setValue("tile_render_scale", values.TILE_RENDER_SCALE);
     s.setValue("shadow_pcf_radius", values.SHADOW_PCF_RADIUS);
     s.setValue("shadow_map_scale", values.SHADOW_MAP_SCALE);
     s.setValue("terrian_shadow_level", values.SHADOW_LEVEL);
+    s.endGroup();
+
+    s.beginGroup("Map");
+    // Rendering settings now have their own group. Remove the old entries so
+    // saving from an existing installation produces the new layout cleanly.
+    for (const auto& key : {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_saturation",
+                            "gpu_brightness", "gpu_shadow_strength", "tile_render_scale", "shadow_pcf_radius", "shadow_map_scale",
+                            "terrian_shadow_level"}) {
+        s.remove(key);
+    }
     s.setValue("min_scale_level", values.MINIMUM_SCALE_LEVEL);
     s.setValue("max_scale_level", values.MAXIMUM_SCALE_LEVEL);
     s.setValue("coords_minimap_width", values.COORDS_MINIMAP_WIDTH);
