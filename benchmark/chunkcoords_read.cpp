@@ -117,9 +117,10 @@ namespace benchmark {
         std::printf("\n== chunkcoords read ==\n");
         std::printf("world: %s\n", options.world_path.c_str());
         std::printf("runs: %d warmup, %d measured\n", options.timer.warmup_runs, options.timer.measured_runs);
-        std::printf("keys: %llu total, %llu chunk-format, %llu marker, %llu unique chunks, %llu regions\n",
-                    static_cast<unsigned long long>(load_stats.scanned_keys), static_cast<unsigned long long>(load_stats.chunk_keys),
-                    static_cast<unsigned long long>(load_stats.marker_keys), static_cast<unsigned long long>(load_stats.unique_chunks),
+        std::printf("keys: %llu visited (%llu run-skips), %llu chunk-format, %llu marker, %llu unique chunks, %llu regions\n",
+                    static_cast<unsigned long long>(load_stats.scanned_keys), static_cast<unsigned long long>(load_stats.run_skips),
+                    static_cast<unsigned long long>(load_stats.chunk_keys), static_cast<unsigned long long>(load_stats.marker_keys),
+                    static_cast<unsigned long long>(load_stats.unique_chunks),
                     static_cast<unsigned long long>(load_stats.generated_regions));
         std::printf("\n%-16s min %9s  median %9s  mean %9s  max %9s\n", "phase", "ms", "ms", "ms", "ms");
         std::printf("%-16s min %9.2f  median %9.2f  mean %9.2f  max %9.2f ms\n", index_timing.label.c_str(), index_timing.minimum_ms,

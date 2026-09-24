@@ -49,7 +49,9 @@ struct ChunkCoordsBoundingBox {
 /// Counters and phase timings from one ChunkCoordsIndex::load(). The benchmark
 /// reads them to attribute the scan's cost; the map renderer ignores them.
 struct ChunkCoordsLoadStats {
-    /// Keys the iterator visited.
+    /// Keys the iterator actually visited. A run that was skipped wholesale is not
+    /// counted, so this is below the database's key count whenever run_skips is
+    /// non-zero.
     std::uint64_t scanned_keys{0};
     /// Visited keys that classified as a chunk key, whatever their type.
     std::uint64_t chunk_keys{0};
@@ -60,6 +62,8 @@ struct ChunkCoordsLoadStats {
     std::uint64_t unique_chunks{0};
     /// Region tiles whose image the scan built.
     std::uint64_t generated_regions{0};
+    /// Seeks that stepped over a run of keys no chunk key could start with.
+    std::uint64_t run_skips{0};
     double scan_ms{0.0};
     double image_generation_ms{0.0};
     double finish_scan_ms{0.0};
