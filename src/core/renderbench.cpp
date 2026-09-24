@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 
@@ -1317,6 +1318,12 @@ namespace renderbench {
             const auto elapsed_ms = [](const auto& start) {
                 return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
             };
+            // The production scan classifies the iterator's key bytes in place, and runs
+            // with these read options. Every pass below does both, so the rows attribute
+            // its cost rather than measuring a differently configured traversal; the
+            // variant table further down isolates the options on their own.
+            const auto key_view = [](const leveldb::Slice& slice) { return std::string_view(slice.data(), slice.size()); };
+            const auto scan_options = loader.level().bulk_read_options();
 
             // --- what the key space holds ---
             std::int64_t total_keys = 0;
@@ -1327,9 +1334,9 @@ namespace renderbench {
             std::int64_t long_keys = 0;
             std::unordered_set<std::int64_t> columns;
             {
-                auto* it = db->NewIterator(leveldb::ReadOptions());
+                auto* it = db->NewIterator(scan_options);
                 for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                    const std::string key = it->key().ToString();
+                    const auto key = key_view(it->key());
                     ++total_keys;
                     if (key.size() <= 16) {
                         ++short_keys;
@@ -1362,7 +1369,7 @@ namespace renderbench {
 
             // --- how the time splits, same iteration each time ---
             const auto iterate = [&](const auto& body) {
-                auto* it = db->NewIterator(leveldb::ReadOptions());
+                auto* it = db->NewIterator(scan_options);
                 for (it->SeekToFirst(); it->Valid(); it->Next()) body(it->key());
                 delete it;
             };
@@ -1378,14 +1385,14 @@ namespace renderbench {
 
             start = now();
             iterate([&](const leveldb::Slice& key) {
-                const auto ck = bl::chunk_key::parse(key.ToString());
+                const auto ck = bl::chunk_key::parse(key_view(key));
                 sink += ck.valid() ? 1 : 0;
             });
             const double parse_ms = elapsed_ms(start);
 
             ChunkCoordsIndex index;
             start = now();
-            const bool loaded = index.load(db, no_stop);
+            const bool loaded = index.load(loader.level(), no_stop);
             const double load_ms = elapsed_ms(start);
 
             // load() generates the region images inline, so re-running it measures
@@ -1396,8 +1403,8 @@ namespace renderbench {
 
             std::printf("%13s %10s\n", "pass", "ms");
             std::printf("%13s %10.1f  (LevelDB stepping only)\n", "step", step_ms);
-            std::printf("%13s %10.1f  (+ key.ToString())\n", "materialise", string_ms);
-            std::printf("%13s %10.1f  (+ chunk_key::parse, i.e. a count-only pre-pass)\n", "parse", parse_ms);
+            std::printf("%13s %10.1f  (+ key.ToString(), the copy the scan no longer makes)\n", "materialise", string_ms);
+            std::printf("%13s %10.1f  (+ chunk_key::parse on the key view, i.e. a count-only pre-pass)\n", "parse", parse_ms);
             std::printf("%13s %10.1f  (the real load: scan + index + images)\n", "load", load_ms);
             std::printf("%13s %10.1f  (region images alone)\n", "images", images_ms);
             std::printf("renderbench: coords - load is %.1fx the bare stepping, image generation is %.0f%% of it%s\n",
@@ -1413,7 +1420,7 @@ namespace renderbench {
             // Next() steps it replaces, so both are timed visiting the same keys:
             // Seek(k + '\0') lands on the key after k, i.e. one seek per key.
             {
-                auto* seek_it = db->NewIterator(leveldb::ReadOptions());
+                auto* seek_it = db->NewIterator(scan_options);
                 std::int64_t visited = 0;
                 std::string next_target;
                 const auto seek_start = now();
@@ -1488,10 +1495,10 @@ namespace renderbench {
                 bool fill_cache;
             };
             const Variant variants[] = {
-                {"default (what the scan uses)", false, true},
+                {"default", false, true},
                 {"+ decompress allocator", true, true},
                 {"+ fill_cache=false", false, false},
-                {"+ both", true, false},
+                {"+ both (what the scan uses)", true, false},
             };
             std::printf("%30s %10s %10s\n", "read options", "ms", "MB/s");
             for (const auto& variant : variants) {
@@ -1506,7 +1513,7 @@ namespace renderbench {
                 std::int64_t hits = 0;
                 const auto variant_start = now();
                 for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                    const auto ck = bl::chunk_key::parse(it->key().ToString());
+                    const auto ck = bl::chunk_key::parse(key_view(it->key()));
                     hits += ck.valid() ? 1 : 0;
                 }
                 const double variant_ms = elapsed_ms(variant_start);

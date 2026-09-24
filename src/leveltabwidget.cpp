@@ -173,7 +173,6 @@ void LevelTabWidget::onCloseLevelFinished() {
     // The close worker has finished all LevelDB/task work. Clear the
     // UI-thread-owned caches before the page is scheduled for deletion.
     if (auto* loader = page->levelLoader()) loader->clearAllCache();
-    if (auto* status = page->findChild<LevelStatusBar*>()) status->setCoordsLoading(false);
     int idx = indexOf(page);
     if (idx >= 0) removeTab(idx);
     page->deleteLater();

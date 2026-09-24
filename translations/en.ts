@@ -94,6 +94,19 @@
     </message>
 </context>
 <context>
+    <name>ChunkCoordsProgressWidget</name>
+    <message>
+        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <source>chunkCoordsProgress.scanning</source>
+        <translation>Scanning chunk coordinates...</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <source>chunkCoordsProgress.stats</source>
+        <translation>Scanned %1 database keys, found %2 chunks</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
@@ -1093,16 +1106,6 @@
         <location filename="../src/include/core/msg.h"/>
         <source>msg.levelSaved</source>
         <translation>Level Saved</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.readOnly</source>
-        <translation>Read-only</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.editingDisabledDuringCoordsLoading</source>
-        <translation>Editing is disabled while global coordinates are loading.</translation>
     </message>
     <message>
         <location filename="../src/include/core/msg.h"/>

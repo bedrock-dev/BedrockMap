@@ -52,6 +52,10 @@ set(QHEXVIEW_ENABLE_DIALOGS ON CACHE BOOL "" FORCE)
 set(QHEXVIEW_USE_QT5 OFF CACHE BOOL "" FORCE)
 add_subdirectory(${PROJECT_SOURCE_DIR}/third/QHexView third/QHexView)
 
+# Benchmarks are independent console programs.  They are EXCLUDE_FROM_ALL, so
+# ordinary application builds do not spend time compiling profiling tools.
+add_subdirectory(${PROJECT_SOURCE_DIR}/benchmark)
+
 set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS

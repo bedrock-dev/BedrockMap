@@ -310,10 +310,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
 
 bool ChunkEditorWidget::saveChunk() {
     if (!dirty_) return true;
-    if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
-        QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
-        return false;
-    }
+    if (!level_loader_) return false;
     auto pt = this->pending_tick_editor_->getCurrentPaletteRaw();
     raw_chunk_.set_normal(bl::chunk_key::PendingTicks, pt);
     auto be = this->block_entity_editor_->getCurrentPaletteRaw();

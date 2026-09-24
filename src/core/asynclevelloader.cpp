@@ -25,7 +25,10 @@
 
 AsyncLevelLoader::AsyncLevelLoader()
     : region_scheduler_(this), edit_service_(storage_, cache_manager_, chunk_coords_service_, loaded_, preload_all_chunk_coords_) {
-    connect(&chunk_coords_service_, &ChunkCoordsService::coordsUpdated, this, &AsyncLevelLoader::requestRefresh, Qt::DirectConnection);
+    connect(&chunk_coords_service_, &ChunkCoordsService::preloadProgress, this, &AsyncLevelLoader::chunkCoordsPreloadProgress,
+            Qt::QueuedConnection);
+    connect(&chunk_coords_service_, &ChunkCoordsService::preloadFinished, this, &AsyncLevelLoader::chunkCoordsPreloadFinished,
+            Qt::QueuedConnection);
     connect(
         &region_scheduler_, &RegionRenderScheduler::regionFinished, this,
         [this](region_pos pos, ChunkRegion* region, long long loadTime, long long renderTime) {
@@ -64,7 +67,9 @@ bool AsyncLevelLoader::open(const std::string& path) {
     if (this->loaded_) {
         if (this->preload_all_chunk_coords_) {
             LOG_F(INFO, "Start loading all chunk cooords");
-            chunk_coords_service_.start(storage_.level().db(), true, [this]() { requestRefresh(); });
+            chunk_coords_service_.start(storage_.level(), true, [this]() {
+                QMetaObject::invokeMethod(this, [this]() { requestRefresh(); }, Qt::QueuedConnection);
+            });
         }
     }
     return this->loaded_;
@@ -136,16 +141,13 @@ void AsyncLevelLoader::requestRefresh() {
 }
 
 void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos>& chunks) {
-    // Coordinate index writes are queued independently; drain them so the
-    // refresh that follows sees a consistent chunk presence snapshot.
-    chunk_coords_service_.waitForUpdates();
-
     // Collapse the edited chunks onto the 8x8-chunk region tiles covering them.
     std::set<bl::chunk_pos> regions;
     for (const auto& c : chunks) regions.insert(constant::c2r(c));
     if (regions.empty()) return;
 
-    // Region cache is GUI-thread owned.
+    // Region cache is GUI-thread owned. The coordinate index already reflects
+    // these chunks: the edit applied it synchronously on its own thread.
     const auto drop = [this, regions, chunks]() {
         for (const auto& r : regions) cache_manager_.removeRegion(r);
         // Edited terrain changes the surface heights the shadow pass reads.
@@ -306,6 +308,18 @@ AsyncLevelLoader::RegionState AsyncLevelLoader::regionState(const region_pos& rp
 }
 
 int AsyncLevelLoader::pendingRegionTasks() const { return region_scheduler_.pendingCount() + region_scheduler_.activeCount(); }
+
+bool AsyncLevelLoader::isChunkAbsent(const bl::chunk_pos& pos) const {
+    // Only a completed scan ever sets ready_, so it covers the whole database and
+    // is what puts the index into the lock-protected phase that worker threads
+    // may read. Without it there is no index to trust.
+    if (!chunk_coords_service_.ready()) return false;
+    // An uncommitted edit is held in the storage cache and reaches the index
+    // asynchronously, so during that window the index would call a chunk we are
+    // still holding absent.
+    if (storage_.hasPendingEdit(pos)) return false;
+    return !chunk_coords_service_.index().contains(pos);
+}
 
 QImage AsyncLevelLoader::bakedTerrainImage(const region_pos& rp) {
     if (!this->loaded_) return MapTile::UNLOADED_REGION_TILE();

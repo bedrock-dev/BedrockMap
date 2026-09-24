@@ -1,24 +1,26 @@
 #include "chunkcoordsservice.h"
 
-#include <leveldb/db.h>
-
 #include <QRunnable>
 
 ChunkCoordsService::ChunkCoordsService() { preload_pool_.setMaxThreadCount(1); }
 
 ChunkCoordsService::~ChunkCoordsService() { close(); }
 
-void ChunkCoordsService::start(leveldb::DB* db, bool preloadAll, std::function<void()> ready) {
+void ChunkCoordsService::start(bl::bedrock_level& level, bool preloadAll, std::function<void()> ready) {
     close();
     stop_.store(false, std::memory_order_release);
     if (!preloadAll) {
-        index_.beginInteractivePhase();
+        index_.finishScan();
         return;
     }
 
-    preload_pool_.start(QRunnable::create([this, db, ready = std::move(ready)]() mutable {
-        if (index_.load(db, stop_) && !stop_.load(std::memory_order_acquire)) {
+    preload_pool_.start(QRunnable::create([this, level_ptr = &level, ready = std::move(ready)]() mutable {
+        const auto progress = [this](std::uint64_t scannedKeys, std::uint64_t chunks) {
+            emit preloadProgress(static_cast<qulonglong>(scannedKeys), static_cast<qulonglong>(chunks));
+        };
+        if (index_.load(*level_ptr, stop_, progress) && !stop_.load(std::memory_order_acquire)) {
             ready_.store(true, std::memory_order_release);
+            emit preloadFinished();
             if (ready) ready();
         }
     }));
@@ -32,9 +34,4 @@ void ChunkCoordsService::close() {
     index_.clear();
 }
 
-void ChunkCoordsService::enqueueUpdate(const bl::chunk_pos& pos, bool present) {
-    if (!ready()) return;
-    index_.enqueueUpdate(pos, present, [this]() { emit coordsUpdated(); });
-}
-
-void ChunkCoordsService::waitForUpdates() { index_.waitForTasks(); }
+void ChunkCoordsService::update(const bl::chunk_pos& pos, bool present) { index_.updateChunk(pos, present); }

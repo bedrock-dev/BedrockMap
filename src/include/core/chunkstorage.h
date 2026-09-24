@@ -42,13 +42,20 @@ class ChunkStorage {
     void putMissing(const bl::chunk_pos& pos);
     void putRawChunk(const bl::raw_chunk& raw);
 
+    /// True when the chunk has an uncommitted edit held in memory (a replacement
+    /// or a delete marker) rather than in LevelDB.
+    bool hasPendingEdit(const bl::chunk_pos& pos) const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return cache_.hasChunk(pos);
+    }
+
     // Commit chunk and global database edits as one LevelDB batch, then persist
     // an optional level.dat snapshot. LevelDB and level.dat are separate
     // stores, so a level.dat write failure is reported and dirty state remains.
     bool commit(const std::unordered_map<std::string, std::string>& globalModifies = {}, const bl::nbt::compound_tag* levelDat = nullptr);
 
    private:
-    bl::bedrock_level level_{};
+    bl::bedrock_level level_{true};
     RawChunkCache cache_;
     mutable std::mutex mutex_;
     CommitError last_commit_error_{CommitError::None};

@@ -3,8 +3,6 @@
 
 #include <qimage.h>
 #include <qmutex.h>
-#include <qrunnable.h>
-#include <qthreadpool.h>
 
 #include <algorithm>
 #include <atomic>
@@ -22,8 +20,8 @@
 #include "bedrock_key.h"
 #include "config.h"
 
-namespace leveldb {
-    class DB;
+namespace bl {
+    class bedrock_level;
 }
 
 /// Bounding box of all indexed chunks in one dimension, inclusive on both axes.
@@ -46,6 +44,26 @@ struct ChunkCoordsBoundingBox {
         max_x = std::max(max_x, pos.x);
         max_z = std::max(max_z, pos.z);
     }
+};
+
+/// Counters and phase timings from one ChunkCoordsIndex::load(). The benchmark
+/// reads them to attribute the scan's cost; the map renderer ignores them.
+struct ChunkCoordsLoadStats {
+    /// Keys the iterator visited.
+    std::uint64_t scanned_keys{0};
+    /// Visited keys that classified as a chunk key, whatever their type.
+    std::uint64_t chunk_keys{0};
+    /// The existence markers among those that passed the emptiness rule, i.e.
+    /// the keys that could contribute a chunk: unique_chunks <= marker_keys.
+    std::uint64_t marker_keys{0};
+    /// Chunks the index did not already hold.
+    std::uint64_t unique_chunks{0};
+    /// Region tiles whose image the scan built.
+    std::uint64_t generated_regions{0};
+    double scan_ms{0.0};
+    double image_generation_ms{0.0};
+    double finish_scan_ms{0.0};
+    double total_ms{0.0};
 };
 
 /// A compact configurable chunk grid. The region coordinates are chunk-space
@@ -78,7 +96,7 @@ class CoordsRegion {
         const auto bit = bitIndex(pos);
         const bool wasPresent = chunk_mask_.test(bit);
         chunk_mask_.set(bit);
-        image_ = QImage();
+        image_dirty_ = true;
         return !wasPresent;
     }
 
@@ -88,7 +106,7 @@ class CoordsRegion {
         const auto bit = bitIndex(pos);
         if (!chunk_mask_.test(bit)) return false;
         chunk_mask_.reset(bit);
-        image_ = QImage();
+        image_dirty_ = true;
         return true;
     }
 
@@ -117,7 +135,12 @@ class CoordsRegion {
 
     // Return an implicit-shared snapshot so callers never retain a pointer into
     // the mutable index.
-    QImage image() const { return image_; }
+    QImage image() const {
+        // An edit only sets a bit, so the (128x128) image is rebuilt when
+        // something actually draws this region, not once per edited chunk.
+        if (image_dirty_) generateImage();
+        return image_;
+    }
 
    private:
     static int32_t floorDiv(int32_t value) noexcept {
@@ -136,27 +159,35 @@ class CoordsRegion {
     int32_t region_z_{0};
     mutable std::bitset<CHUNK_COUNT> chunk_mask_;
     mutable QImage image_;
+    mutable bool image_dirty_{true};
 };
 
 /// Stores existing chunk coordinates grouped by dimension and compact region.
+/// The index is a view of the archive: every chunk write goes through
+/// updateChunk() on the writing thread, so it never lags behind the edits.
 class ChunkCoordsIndex {
    public:
     static constexpr int32_t MIN_DIMENSION = -1024;
     static constexpr int32_t MAX_DIMENSION = 1024;
     using RegionSet = std::unordered_set<CoordsRegion, CoordsRegion::Hash>;
 
-    ChunkCoordsIndex() { update_pool_.setMaxThreadCount(1); }
-
-    ~ChunkCoordsIndex() { update_pool_.waitForDone(); }
-
     static bool validDimension(int32_t dim) noexcept { return dim >= MIN_DIMENSION && dim <= MAX_DIMENSION; }
 
-    /// Scan all LevelDB keys, build the index, and generate region images.
-    /// Returns false when the scan is cancelled or fails.
-    bool load(leveldb::DB* db, const std::atomic_bool& stop);
+    using ProgressCallback = std::function<void(std::uint64_t scannedKeys, std::uint64_t chunks)>;
 
-    // Switch from the background-build phase to the interactive update phase.
-    void beginInteractivePhase() noexcept { interactive_.store(true, std::memory_order_release); }
+    /// Scan all LevelDB keys, build the index, and generate region images.
+    /// Returns false when the scan is cancelled or fails. Progress is reported
+    /// periodically from the scanning worker and is therefore only advisory.
+    /// Chunk writes made while this runs are held and replayed at the end, so the
+    /// index is correct for a level that is edited during its initial scan too.
+    /// `stats` receives the counters and phase timings; it is optional.
+    bool load(bl::bedrock_level& level, const std::atomic_bool& stop, ProgressCallback progress = {},
+              ChunkCoordsLoadStats* stats = nullptr);
+
+    /// Leave the scan phase: replay the writes that arrived during it and let
+    /// later ones apply directly. Both parts run in one critical section, so no
+    /// write can slip between the replay and the switch.
+    void finishScan();
 
     bool insert(const bl::chunk_pos& pos) {
         auto lock = lockForInteractive();
@@ -180,9 +211,9 @@ class ChunkCoordsIndex {
 
     bool remove(const bl::chunk_pos& pos);
 
-    bool updateChunk(const bl::chunk_pos& pos, bool present);
-
-    void enqueueUpdate(const bl::chunk_pos& pos, bool present, std::function<void()> finished = {});
+    /// Mirror one chunk write into the index, called on the editing thread so a
+    /// caller that has performed an edit sees it reflected here immediately.
+    void updateChunk(const bl::chunk_pos& pos, bool present);
 
     bool contains(const bl::chunk_pos& pos) const {
         auto lock = lockForInteractive();
@@ -221,6 +252,9 @@ class ChunkCoordsIndex {
 
     std::optional<ChunkCoordsBoundingBox> boundingBox(int32_t dim) const {
         auto lock = lockForInteractive();
+        // A removal can shrink the box, which cannot be derived incrementally, so
+        // the recompute is deferred to the first read instead of every edit.
+        if (bounds_dirty_.erase(dim) > 0) rebuildBoundingBox(dim);
         const auto it = bounds_by_dimension_.find(dim);
         return it == bounds_by_dimension_.end() ? std::nullopt : std::optional<ChunkCoordsBoundingBox>(it->second);
     }
@@ -268,12 +302,11 @@ class ChunkCoordsIndex {
 
     void clear() noexcept {
         interactive_.store(false, std::memory_order_release);
-        update_pool_.waitForDone();
         regions_by_dimension_.clear();
         bounds_by_dimension_.clear();
+        bounds_dirty_.clear();
+        queued_writes_.clear();
     }
-
-    void waitForTasks() noexcept { update_pool_.waitForDone(); }
 
    private:
     std::unique_lock<QMutex> lockForInteractive() const {
@@ -282,13 +315,17 @@ class ChunkCoordsIndex {
         return lock;
     }
 
-    void rebuildBoundingBox(int32_t dim);
+    void rebuildBoundingBox(int32_t dim) const;
 
     std::unordered_map<int32_t, RegionSet> regions_by_dimension_;
-    std::unordered_map<int32_t, ChunkCoordsBoundingBox> bounds_by_dimension_;
+    mutable std::unordered_map<int32_t, ChunkCoordsBoundingBox> bounds_by_dimension_;
+    mutable std::unordered_set<int32_t> bounds_dirty_;
+    /// Writes that arrived while the scan was rebuilding the index; the scan
+    /// cannot contain them and would overwrite them, so they are replayed at the
+    /// end instead of being applied immediately.
+    std::vector<std::pair<bl::chunk_pos, bool>> queued_writes_;
     mutable QMutex mutex_;
     std::atomic_bool interactive_{false};
-    QThreadPool update_pool_;
 };
 
 #endif  // BEDROCKMAP_CHUNKCOORDS_H

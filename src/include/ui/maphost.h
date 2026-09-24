@@ -104,7 +104,6 @@ class MapHost : public QObject {
     void createVoidSelection(int dim);
     void setSelectionBiome(int biome, int dim);
     void applyImportedRegion(ExportedRegion region);
-    bool modificationBlocked();
 
     void saveSelectionImage(QWidget* source);
     void saveFullscreenImage(QWidget* source);
@@ -133,7 +132,6 @@ class MapHost : public QObject {
 
    private:
     bool startChunkTask(GuiTaskRunner::Worker worker);
-
     AsyncLevelLoader* level_loader_{nullptr};
     QWidget* pane_{nullptr};
 

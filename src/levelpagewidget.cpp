@@ -33,9 +33,6 @@
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget* parent) : QWidget(parent) {
     status_msg_ = new QLabel(this);
-    coords_loading_ = new QLabel(this);
-    coords_loading_->setStyleSheet("QLabel { color: #b8860b; }");
-    coords_loading_->hide();
     sel_info_ = new QLabel(this);
     modify_info_ = new QLabel(this);
     pos_ = new QLabel(this);
@@ -44,7 +41,6 @@ LevelStatusBar::LevelStatusBar(QWidget* parent) : QWidget(parent) {
     layout->setContentsMargins(10, 0, 10, 0);
     layout->addWidget(status_msg_);
     layout->addStretch();
-    layout->addWidget(coords_loading_);
     layout->addWidget(sel_info_);
     layout->addWidget(modify_info_);
     layout->addWidget(pos_);
@@ -88,7 +84,13 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     // Only the enabled renderer is added: the map pane is not a comparison view,
     // so the active one gets the whole row.
     auto* mapRow = new QSplitter(Qt::Horizontal, this);
-    mapRow->addWidget(activeMapPane());
+    map_row_ = mapRow;
+    if (setting::current().PRELOAD_ALL_CHUNK_COORDS) {
+        coords_progress_ = new ChunkCoordsProgressWidget(this);
+        mapRow->addWidget(coords_progress_);
+    } else {
+        mapRow->addWidget(activeMapPane());
+    }
     mapRow->setStretchFactor(0, 1);
     mapRow->setChildrenCollapsible(true);
 
@@ -137,9 +139,11 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
         status_bar_->setModifyInfo(ne, e);
         refreshDirty();
     });
-    connect(level_loader_.get(), &AsyncLevelLoader::regionReady, this, [this]() {
-        if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
-    });
+    if (coords_progress_) {
+        connect(level_loader_.get(), &AsyncLevelLoader::chunkCoordsPreloadProgress, coords_progress_,
+                &ChunkCoordsProgressWidget::setProgress);
+        connect(level_loader_.get(), &AsyncLevelLoader::chunkCoordsPreloadFinished, this, &LevelPageWidget::onChunkCoordsPreloadFinished);
+    }
 }
 
 LevelPageWidget::~LevelPageWidget() {
@@ -443,10 +447,6 @@ void LevelPageWidget::refreshDirty() {
 bool LevelPageWidget::commit() {
     LOG_F(INFO, "Commit modifications");
     if (commit_task_.isRunning() || (map_host_ && map_host_->chunkEditRunning())) return false;
-    if (!level_loader_ || level_loader_->chunkCoordsLoading()) {
-        QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
-        return false;
-    }
 
     std::unique_ptr<bl::nbt::compound_tag> levelDat;
     if (this->level_dat_editor_->dirty()) {
@@ -503,14 +503,11 @@ void LevelPageWidget::onCommitFailed(const QString& error) {
 
 bool LevelPageWidget::loadLevel(const QString& path) {
     level_loader_->setPreloadAllChunkCoords(setting::current().PRELOAD_ALL_CHUNK_COORDS);
-    status_bar_->setCoordsLoading(setting::current().PRELOAD_ALL_CHUNK_COORDS);
     auto ret = level_loader_->open(path.toStdString());
     if (!ret) {
-        status_bar_->setCoordsLoading(false);
         LOG_F(WARNING, "Can not open level: %s", path.toStdString().c_str());
         return false;
     }
-    if (level_loader_->chunkCoordsReady()) status_bar_->setCoordsLoading(false);
     auto& dat = level_loader_->level().dat();
     const auto format = level_loader_->level().chunk_format();
     LOG_F(INFO, "Open level %s with version %s, chunk format %s", dat.level_name().c_str(), dat.min_compat_version().to_string().c_str(),
@@ -528,6 +525,16 @@ bool LevelPageWidget::loadLevel(const QString& path) {
         }
     });
     return true;
+}
+
+void LevelPageWidget::onChunkCoordsPreloadFinished() {
+    if (!coords_progress_ || !map_row_ || map_row_->indexOf(coords_progress_) < 0) return;
+
+    map_row_->replaceWidget(0, activeMapPane());
+    coords_progress_->hide();
+    activeMapPane()->show();
+    map_host_->setPaneWidget(activeMapPane());
+    syncToolbars();
 }
 
 void LevelPageWidget::closeLevel() {
@@ -566,10 +573,6 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos& pos) {
 
     // if the chunk editor has unsaved changes, prompt the user
     if (chunkWidget_->isVisible() && chunkWidget_->isDirty()) {
-        if (level_loader_->chunkCoordsLoading()) {
-            QMessageBox::warning(this, msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
-            return;
-        }
         auto btn = QMessageBox::question(this, msg::UNSAVED_CHANGES(), msg::UNSAVED_CHANGES_PROMPT(),
                                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (btn == QMessageBox::Cancel) return;

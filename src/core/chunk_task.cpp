@@ -56,6 +56,9 @@ void LoadRegionTask::run() {
         for (int i = 0; i < constant::RW; i++) {
             for (int j = 0; j < constant::RW; j++) {
                 bl::chunk_pos p{this->pos_.x + i, this->pos_.z + j, this->pos_.dim};
+                // The coordinate index already knows which chunks exist, so the
+                // ones it rules out cost no LevelDB lookups at all.
+                if (this->loader_->isChunkAbsent(p)) continue;
                 // map tiles only need terrain/biomes/HSAs/actors, not block entities/pending ticks
                 chunks_[i * constant::RW + j] = this->loader_->getChunk(
                     p, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Actor | bl::chunk_load_policy::Others);

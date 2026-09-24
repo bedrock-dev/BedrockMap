@@ -12,8 +12,11 @@ ChunkEditService::ChunkEditService(ChunkStorage& storage, RegionCacheManager& ca
       preload_all_chunk_coords_(preloadAllChunkCoords) {}
 
 void ChunkEditService::markChanged(const bl::chunk_pos& pos, bool present) {
-    if (!preload_all_chunk_coords_ || !coords_service_.ready()) return;
-    coords_service_.enqueueUpdate(pos, present);
+    // The index is a view of the archive: it is updated here, on the editing
+    // thread, so a caller that returns from an edit has both the storage cache
+    // and the coordinate index in agreement.
+    if (!preload_all_chunk_coords_) return;
+    coords_service_.update(pos, present);
 }
 
 bl::chunk* ChunkEditService::getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy) {
@@ -28,9 +31,7 @@ std::optional<bl::raw_chunk> ChunkEditService::getRawChunk(const bl::chunk_pos& 
 
 void ChunkEditService::clearChunkCache(const bl::chunk_pos& pos) { cache_manager_.removeRegion(constant::c2r(pos)); }
 
-bool ChunkEditService::canEdit() const {
-    return loaded_.load(std::memory_order_acquire) && !coords_service_.loading(preload_all_chunk_coords_);
-}
+bool ChunkEditService::canEdit() const { return loaded_.load(std::memory_order_acquire); }
 
 bool ChunkEditService::deleteChunk(const bl::chunk_pos& pos) {
     if (!canEdit()) return false;
@@ -68,12 +69,12 @@ bool ChunkEditService::setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biom
 
 bool ChunkEditService::commit() {
     LOG_F(INFO, "Commit chunks change");
-    if (!loaded_.load(std::memory_order_acquire) || coords_service_.loading(preload_all_chunk_coords_)) return true;
+    if (!loaded_.load(std::memory_order_acquire)) return true;
     return storage_.commit();
 }
 
 bool ChunkEditService::commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
                                    const bl::nbt::compound_tag* levelDat) {
-    if (!loaded_.load(std::memory_order_acquire) || coords_service_.loading(preload_all_chunk_coords_)) return false;
+    if (!loaded_.load(std::memory_order_acquire)) return false;
     return storage_.commit(globalModifies, levelDat);
 }

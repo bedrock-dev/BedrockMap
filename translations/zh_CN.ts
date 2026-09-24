@@ -94,6 +94,19 @@
     </message>
 </context>
 <context>
+    <name>ChunkCoordsProgressWidget</name>
+    <message>
+        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <source>chunkCoordsProgress.scanning</source>
+        <translation>正在扫描区块坐标...</translation>
+    </message>
+    <message>
+        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <source>chunkCoordsProgress.stats</source>
+        <translation>已扫描 %1 个数据库键，发现 %2 个区块</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorWidget</name>
     <message>
         <source>(-1,-1)</source>
@@ -1093,16 +1106,6 @@
         <location filename="../src/include/core/msg.h"/>
         <source>msg.levelSaved</source>
         <translation>存档已保存</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.readOnly</source>
-        <translation>只读</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.editingDisabledDuringCoordsLoading</source>
-        <translation>全局坐标加载期间禁止修改。</translation>
     </message>
     <message>
         <location filename="../src/include/core/msg.h"/>

@@ -30,9 +30,9 @@ MapHost::MapHost(QWidget* page, AsyncLevelLoader* loader)
     // trigger redraw when an async region finishes loading, replacing the old 100ms timer polling
     if (level_loader_) {
         connect(level_loader_, &AsyncLevelLoader::regionReady, this, [this] {
-            // Bulk edit tasks invalidate many regions and update the chunk
-            // coordinate index one item at a time. Defer map repainting until
-            // the batch completes to avoid a full redraw for every chunk.
+            // A bulk edit invalidates many region tiles at once. Defer map
+            // repainting until the batch completes to avoid a full redraw for
+            // every region that comes back.
             if (chunk_edit_task_.isRunning()) return;
             view_.notifyChanged();
         });
@@ -70,7 +70,7 @@ MapHost::MapHost(QWidget* page, AsyncLevelLoader* loader)
             });
     connect(voxel_preview_window_, &VoxelPreviewWidget::importConfirmed, this,
             [this](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
-                if (!imported || modificationBlocked()) return;
+                if (!imported) return;
                 const bl::block_pos origin{static_cast<int>(std::floor(placement.minimum.x())),
                                            static_cast<int>(std::floor(placement.minimum.y())),
                                            static_cast<int>(std::floor(placement.minimum.z()))};
@@ -194,7 +194,6 @@ void MapHost::copySelectionToClipboard(int dim) {
 }
 
 void MapHost::pasteFromClipboard(int dim) {
-    if (modificationBlocked()) return;
     auto* clip = QApplication::clipboard();
     const auto* md = clip->mimeData();
     if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
@@ -242,7 +241,6 @@ void MapHost::exportSelectionToMcstructure(int dim, bool compress, bool exportEn
 }
 
 void MapHost::importFromFile(int dim) {
-    if (modificationBlocked()) return;
     auto fp = QFileDialog::getOpenFileName(paneWidget(), QObject::tr("mapHost.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
     if (fp.isEmpty()) return;
     bl::chunk_pos anchor(0, 0, dim);
@@ -251,19 +249,19 @@ void MapHost::importFromFile(int dim) {
 }
 
 void MapHost::deleteSelection(int dim) {
-    if (view_.selection().isEmpty() || modificationBlocked()) return;
+    if (view_.selection().isEmpty()) return;
     const auto region = view_.selection().region();
     startChunkTask([this, region, dim](GuiTaskRunner* /*task*/) { ChunkOperator::deleteRegion(region, *level_loader_, dim); });
 }
 
 void MapHost::createVoidSelection(int dim) {
-    if (view_.selection().isEmpty() || modificationBlocked()) return;
+    if (view_.selection().isEmpty()) return;
     const auto region = view_.selection().region();
     startChunkTask([this, region, dim](GuiTaskRunner* /*task*/) { ChunkOperator::createVoid(region, *level_loader_, dim); });
 }
 
 void MapHost::setSelectionBiome(int biome, int dim) {
-    if (view_.selection().isEmpty() || modificationBlocked()) return;
+    if (view_.selection().isEmpty()) return;
     const auto region = view_.selection().region();
     startChunkTask([this, region, biome, dim](GuiTaskRunner* /*task*/) {
         ChunkOperator::setRegionBiome(region, *level_loader_, static_cast<bl::biome>(biome), dim);
@@ -280,12 +278,6 @@ void MapHost::applyImportedRegion(ExportedRegion region) {
     if (!level_loader_ || chunk_edit_task_.isRunning() || region.isEmpty()) return;
     startChunkTask(
         [this, region = std::move(region)](GuiTaskRunner* /*task*/) mutable { ChunkOperator::importRegion(region, *level_loader_); });
-}
-
-bool MapHost::modificationBlocked() {
-    if (!level_loader_ || !level_loader_->chunkCoordsLoading()) return false;
-    QMessageBox::warning(paneWidget(), msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
-    return true;
 }
 
 void MapHost::saveSelectionImage(QWidget* source) {

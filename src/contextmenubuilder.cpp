@@ -54,7 +54,6 @@ void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest&
         sel_menu->addAction(QObject::tr("mapHost.rightMenu.delete"), [host, dim] { host->deleteSelection(dim); });
         sel_menu->addAction(QObject::tr("mapHost.rightMenu.createVoid"), [host, dim] { host->createVoidSelection(dim); });
         sel_menu->addAction(QObject::tr("mapHost.rightMenu.setBiome"), [host, dim] {
-            if (host->modificationBlocked()) return;
             BiomePickerDialog dialog(host->paneWidget());
             if (dialog.exec() == QDialog::Accepted) host->setSelectionBiome(dialog.selectedBiome(), dim);
         });
@@ -67,7 +66,6 @@ void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest&
     const QMimeData* paste_data = clipboard->mimeData();
     if (paste_data && paste_data->hasFormat(kRegionMimeType) && !paste_data->data(kRegionMimeType).isEmpty()) {
         menu.addAction(QObject::tr("mapHost.rightMenu.paste"), [host, chunk = request.chunk, dim] {
-            if (host->modificationBlocked()) return;
             const QMimeData* data = QApplication::clipboard()->mimeData();
             if (!data || !data->hasFormat(kRegionMimeType)) {
                 WARN(msg::PASTE_NO_DATA());
@@ -83,7 +81,6 @@ void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest&
     }
 
     menu.addAction(QObject::tr("mapHost.rightMenu.import"), [host, chunk = request.chunk, dim] {
-        if (host->modificationBlocked()) return;
         const QString path =
             QFileDialog::getOpenFileName(host->paneWidget(), QObject::tr("mapHost.rightMenu.importRegion"), {}, msg::BCHKS_FILES());
         if (path.isEmpty()) return;

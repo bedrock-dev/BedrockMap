@@ -1,7 +1,6 @@
 #include "importoverlay.h"
 
 #include <QFile>
-#include <QMessageBox>
 #include <QPainter>
 #include <QPainterPath>
 
@@ -10,7 +9,6 @@
 #include "floatingtoolbar.h"
 #include "loguru/loguru.hpp"
 #include "maphost.h"
-#include "msg.h"
 #include "resourcemanager.h"
 
 ImportOverlay::ImportOverlay(AsyncLevelLoader* loader, MapHost* host) : loader_(loader), host_(host) {}
@@ -126,10 +124,6 @@ void ImportOverlay::resize(int, int) {
 
 void ImportOverlay::confirm() {
     if (preview_.isEmpty()) return;
-    if (loader_ && loader_->chunkCoordsLoading()) {
-        QMessageBox::warning(paneWidget(), msg::READ_ONLY(), msg::EDITING_DISABLED_DURING_COORDS_LOADING());
-        return;
-    }
 
     for (auto& chunk : preview_.chunks()) {
         auto cp = chunk.pos();

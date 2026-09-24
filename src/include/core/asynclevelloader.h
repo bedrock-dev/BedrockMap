@@ -49,6 +49,11 @@ class AsyncLevelLoader : public QObject {
     /// Map content changed (a region tile finished, chunk coordinates were
     /// updated, or a preload completed) — listeners should refresh the view.
     void regionReady();
+    /// Initial coordinate scan progress, forwarded from ChunkCoordsService.
+    void chunkCoordsPreloadProgress(qulonglong scannedKeys, qulonglong chunks);
+    /// The initial coordinate scan completed; the map can replace its progress
+    /// widget and enter the interactive update phase.
+    void chunkCoordsPreloadFinished();
 
    public:
     // AsyncLevelLoader and its region scheduler/cache are UI-thread owned.
@@ -88,10 +93,6 @@ class AsyncLevelLoader : public QObject {
 
     bool chunkCoordsReady() const { return chunk_coords_service_.ready(); }
 
-    bool chunkCoordsLoading() const {
-        return loaded_.load(std::memory_order_acquire) && chunk_coords_service_.loading(preload_all_chunk_coords_);
-    }
-
     const ChunkCoordsIndex& chunkCoords() const { return chunk_coords_service_.index(); }
 
     QImage chunkCoordsImage(const region_pos& rp) const;
@@ -116,6 +117,13 @@ class AsyncLevelLoader : public QObject {
     /// Region bakes queued or running, for diagnostics that need to wait until
     /// the cache has caught up with the requested viewport.
     [[nodiscard]] int pendingRegionTasks() const;
+
+    /// True only when the chunk provably holds no data and a region bake may skip
+    /// it: the global coordinate index has finished scanning the database and
+    /// reports it absent, and no uncommitted edit is waiting for the index to
+    /// catch up. False is always safe, so a caller may ignore this.
+    /// Thread-safe, unlike the cache accessors above.
+    [[nodiscard]] bool isChunkAbsent(const bl::chunk_pos& pos) const;
 
     QImage bakedTerrainImage(const region_pos& rp);
 

@@ -13,6 +13,7 @@
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
+#include "chunkcoordsprogresswidget.h"
 #include "chunkeditorwidget.h"
 #include "cpumapwidget.h"
 #include "floatingtoolbar.h"
@@ -31,10 +32,6 @@ class LevelStatusBar : public QWidget {
     LevelStatusBar(QWidget* parent);
 
     void setStatus(const QString& status) { status_msg_->setText(status); }
-    void setCoordsLoading(bool loading) {
-        coords_loading_->setVisible(loading);
-        if (loading) coords_loading_->setText("Loading global coordinates...");
-    }
     void setSelectionInfo(int count);
     void setModifyInfo(int modified, int deleted);
 
@@ -44,7 +41,6 @@ class LevelStatusBar : public QWidget {
    private:
     QLabel* pos_;
     QLabel* status_msg_;
-    QLabel* coords_loading_;
     QLabel* sel_info_;
     QLabel* modify_info_;
 };
@@ -116,6 +112,7 @@ class LevelPageWidget : public TabPageWidget {
    private slots:
     void onLoadGlobalDataFinished();
     void onLoadGlobalDataFailed(const QString& error);
+    void onChunkCoordsPreloadFinished();
     void onCommitFinished();
     void onCommitFailed(const QString& error);
     /// Selection count in the status bar. Either renderer reports selection
@@ -143,6 +140,8 @@ class LevelPageWidget : public TabPageWidget {
     GpuMapWidget* gpu_pane_{nullptr};
     QSplitter* mainSplitter_;
     QSplitter* vertSplitter_;
+    QSplitter* map_row_{nullptr};
+    ChunkCoordsProgressWidget* coords_progress_{nullptr};
     /// One set of toolbars for the map pane - the renderers are alternatives,
     /// not a pair, and both read the state they show from the shared view.
     FloatingToolBar* toolbar_{nullptr};

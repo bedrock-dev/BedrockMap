@@ -255,9 +255,9 @@ void setting::save(const Settings& values) {
     s.beginGroup("Map");
     // Rendering settings now have their own group. Remove the old entries so
     // saving from an existing installation produces the new layout cleanly.
-    for (const auto& key : {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_saturation",
-                            "gpu_brightness", "gpu_shadow_strength", "tile_render_scale", "shadow_pcf_radius", "shadow_map_scale",
-                            "terrian_shadow_level"}) {
+    for (const auto& key :
+         {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_saturation", "gpu_brightness",
+          "gpu_shadow_strength", "tile_render_scale", "shadow_pcf_radius", "shadow_map_scale", "terrian_shadow_level"}) {
         s.remove(key);
     }
     s.setValue("min_scale_level", values.MINIMUM_SCALE_LEVEL);
