@@ -51,6 +51,16 @@ ChunkRegion* AsyncLevelLoader::tryGetRegion(const region_pos& p, bool& empty) {
     auto* region = cache_manager_.findRegion(p, empty);
     if (empty) return nullptr;
     if (region) return region;
+    // A cache miss reaches the index before the scheduler: a bake is pointless when
+    // the archive holds no chunk in this tile at all. This also covers a bake that is
+    // still in flight, and it cannot disagree with it -- the index and the bake decide
+    // existence by the same rule (marker key present and non-empty), so a completion
+    // arriving later can only conclude the same thing.
+    if (isRegionAbsent(p)) {
+        cache_manager_.insertEmpty(p);
+        empty = true;
+        return nullptr;
+    }
     if (region_scheduler_.contains(p)) return nullptr;
     region_scheduler_.request(p, map_filter_);
     return nullptr;
@@ -319,6 +329,15 @@ bool AsyncLevelLoader::isChunkAbsent(const bl::chunk_pos& pos) const {
     // still holding absent.
     if (storage_.hasPendingEdit(pos)) return false;
     return !chunk_coords_service_.index().contains(pos);
+}
+
+bool AsyncLevelLoader::isRegionAbsent(const region_pos& p) const {
+    if (!chunk_coords_service_.ready()) return false;
+    // Unlike a single chunk this needs no pending-edit guard: a memoized empty tile
+    // is dropped by the same call every edit path makes afterwards
+    // (invalidateRegionTiles / clearChunkCache), so a region that gains a chunk is
+    // re-examined before it is drawn again.
+    return !chunk_coords_service_.index().containsAnyChunk(p.x, p.z, p.dim, constant::RW);
 }
 
 QImage AsyncLevelLoader::bakedTerrainImage(const region_pos& rp) {

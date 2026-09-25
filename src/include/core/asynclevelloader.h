@@ -188,6 +188,11 @@ class AsyncLevelLoader : public QObject {
 
     ChunkRegion* tryGetRegion(const region_pos& p, bool& empty);
 
+    /// True when the coordinate index holds no chunk at all in the 8x8-chunk render
+    /// region, so it cannot bake to anything but an empty tile. Same preconditions
+    /// as isChunkAbsent(), without its pending-edit guard: see the definition.
+    [[nodiscard]] bool isRegionAbsent(const region_pos& p) const;
+
     // Look up an already-cached region without scheduling a load; empty=true for known-empty.
     ChunkRegion* peekRegion(const region_pos& p, bool& empty);
 

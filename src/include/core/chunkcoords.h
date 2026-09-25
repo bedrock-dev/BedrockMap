@@ -128,6 +128,20 @@ class CoordsRegion {
         return chunk_mask_.test(bitIndex(pos));
     }
 
+    /// True when any chunk of the size x size window at `min` is set. Pure bit
+    /// tests, so the caller must have established that the window lies inside this
+    /// region; ChunkCoordsIndex::containsAnyChunk does that.
+    [[nodiscard]] bool containsAnyChunk(const bl::chunk_pos& min, int32_t size) const noexcept {
+        const int32_t x0 = min.x - region_x_;
+        const int32_t z0 = min.z - region_z_;
+        for (int32_t dx = 0; dx < size; ++dx) {
+            for (int32_t dz = 0; dz < size; ++dz) {
+                if (chunk_mask_.test(static_cast<std::size_t>((x0 + dx) * SIZE + z0 + dz))) return true;
+            }
+        }
+        return false;
+    }
+
     int32_t x() const noexcept { return region_x_; }
     int32_t z() const noexcept { return region_z_; }
 
@@ -242,6 +256,11 @@ class ChunkCoordsIndex {
         const auto dim_it = regions_by_dimension_.find(dim);
         return dim_it != regions_by_dimension_.end() && dim_it->second.find(CoordsRegion(region_x, region_z)) != dim_it->second.end();
     }
+
+    /// True when any chunk of the size x size window at (x, z) is indexed. A caller
+    /// that draws one such window at a time can answer "nothing here" without
+    /// touching LevelDB, and the answer is exact for a finished scan.
+    [[nodiscard]] bool containsAnyChunk(int32_t x, int32_t z, int32_t dim, int32_t size) const;
 
     QImage image(int32_t dim, int32_t region_x, int32_t region_z) const {
         auto lock = lockForInteractive();

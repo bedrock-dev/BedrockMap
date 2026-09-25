@@ -229,6 +229,31 @@ void ChunkCoordsIndex::finishScan() {
     interactive_.store(true, std::memory_order_release);
 }
 
+bool ChunkCoordsIndex::containsAnyChunk(int32_t x, int32_t z, int32_t dim, int32_t size) const {
+    auto lock = lockForInteractive();
+    if (!validDimension(dim) || size <= 0) return false;
+    const auto dim_it = regions_by_dimension_.find(dim);
+    if (dim_it == regions_by_dimension_.end()) return false;
+
+    // A render window is smaller than a region and aligned to it, so it stays
+    // inside one and the whole answer costs one lookup plus the bits. A window that
+    // straddles (only possible for a caller that is not region-aligned) falls back
+    // to per-chunk lookups rather than answering for the wrong region.
+    const bl::chunk_pos min{x, z, dim};
+    const auto region = CoordsRegion::fromChunk(min);
+    const auto region_it = dim_it->second.find(region);
+    if (region_it == dim_it->second.end()) return false;
+    if (CoordsRegion::fromChunk(bl::chunk_pos{x + size - 1, z + size - 1, dim}) == region) {
+        return region_it->containsAnyChunk(min, size);
+    }
+    for (int32_t dx = 0; dx < size; ++dx) {
+        for (int32_t dz = 0; dz < size; ++dz) {
+            if (containsUnlocked(bl::chunk_pos{x + dx, z + dz, dim})) return true;
+        }
+    }
+    return false;
+}
+
 void ChunkCoordsIndex::rebuildBoundingBox(int32_t dim) const {
     ChunkCoordsBoundingBox bounds;
     const auto dim_it = regions_by_dimension_.find(dim);
