@@ -1,14 +1,18 @@
-import os
+import argparse
+from concurrent.futures import ThreadPoolExecutor
 from os import path
-import sys
+from typing import Dict, Iterable, List, Optional, Tuple
+
 import json5
-from collections import defaultdict
-from typing import Dict, List, Optional,Any
-from PIL import Image
 import numpy as np
+from PIL import Image
 
 
-Generates = {
+# Colors reused from another entry, keyed by the block that is dumped from textures.
+# A list value names blocks that get an identical top-level entry: "grass" -> "grass_block".
+# A dict value adds tags inside this block's own entry, each taking the color of an existing
+# tag of the same block: "red_flower": {"poppy": "flower_rose"}.
+BLOCK_COLOR_REUSE = {
  "grass":["grass_block"],
  "stone_slab":["stone_block_slab"],
  "stone_slab2":["stone_block_slab2"],
@@ -20,26 +24,38 @@ Generates = {
  "double_stone_slab4":["double_stone_block_slab4"],
  "seaLantern":["sea_lantern"],
  "tripWire":["trip_wire"],
- "concretePowder":["concrete_powder"]
-};
+ "concretePowder":["concrete_powder"],
+ "redstone_block":["redstone_wire"],
+ "red_flower":{"poppy":"flower_rose"}
+}
+
+# Textures that must not be dumped, keyed by block name.
+# A set value lists texture tags (the last path segment) to skip for that block;
+# None skips the block entirely.
+BLOCK_COLOR_BLACKLIST = {
+ "pink_petals":{"pink_petals_stem"},
+ "wildflowers":{"wildflowers_stem"},
+ "red_mushroom_block":{"mushroom_block_inside", "mushroom_block_skin_stem"},
+ "cherry_leaves":{"cherry_leaves_opaque"},
+ "redstone_wire":None
+}
 
 def save_to_json(data, file_path):
     with open(file_path, 'w', encoding='utf-8') as f:
         json5.dump(data, f, indent=2, ensure_ascii=False,  quote_keys=True,
                trailing_commas=False)
 
-#read blocks.json
-def get_blcok_texture(json_file):
+def get_block_texture(json_file):
+    """Map each block name to its ordered texture references from blocks.json."""
     texture_map = {}
     with open(json_file, 'r', encoding='utf-8') as f:
         data = json5.load(f)
 
     for block, info in data.items():
-        if isinstance(info, dict):
-            textures = info.get('textures', {})
-        else:
+        if not isinstance(info, dict):
             texture_map[block] = []
             continue
+        textures = info.get('textures', {})
         if "light_block" in block:
             textures = info.get('carried_textures')
 
@@ -120,30 +136,28 @@ def map_block_textures(block_mapping: Dict[str, List[str]],
 
 def get_average_color_weighted(image_path: str) -> Optional[List[int]]:
     try:
-        if not os.path.exists(image_path):
+        if not path.exists(image_path):
             return None
-        
+
         with Image.open(image_path) as img:
             if img.mode != 'RGBA':
                 img = img.convert('RGBA')
-            
+
             img_array = np.array(img)
-            
+
             r = img_array[:, :, 0]
             g = img_array[:, :, 1]
             b = img_array[:, :, 2]
             a = img_array[:, :, 3]
-            
+
             non_transparent_mask = a > 0
-            
+
             if np.any(non_transparent_mask):
                 r_non = r[non_transparent_mask]
                 g_non = g[non_transparent_mask]
                 b_non = b[non_transparent_mask]
-                a_non = a[non_transparent_mask]
-                
-                weights = a_non / 255.0
-                
+                weights = a[non_transparent_mask] / 255.0
+
                 total_weight = np.sum(weights)
                 if total_weight > 0:
                     avg_r = np.sum(r_non * weights) / total_weight
@@ -153,7 +167,7 @@ def get_average_color_weighted(image_path: str) -> Optional[List[int]]:
                     avg_r = avg_g = avg_b = 0
             else:
                 avg_r = avg_g = avg_b = 0
-            avg_a = np.mean(a).astype(int)          
+            avg_a = np.mean(a).astype(int)
             return [
                 int(np.clip(avg_r, 0, 255)),
                 int(np.clip(avg_g, 0, 255)),
@@ -161,74 +175,89 @@ def get_average_color_weighted(image_path: str) -> Optional[List[int]]:
                 int(avg_a)
             ]
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {image_path}: {e}")
         return None
 
 
+def load_texture_color(file_path: str) -> Optional[List[int]]:
+    """Average color of a texture file, falling back from .png to .tga."""
+    return (get_average_color_weighted(file_path + ".png")
+            or get_average_color_weighted(file_path + ".tga"))
 
-def block_tag_filter(name: str):
-    return name.split('/')[-1];
+
+def collect_texture_colors(root: str, texture_paths: Iterable[str]) -> Dict[str, List[int]]:
+    """Decode all unique textures concurrently; PIL/numpy release the GIL."""
+    def load(texture_path: str) -> Tuple[str, Optional[List[int]]]:
+        # terrain_texture.json paths are pack-relative, not cwd-relative.
+        return texture_path, load_texture_color(path.join(root, texture_path))
+
+    with ThreadPoolExecutor() as pool:
+        return {tex: color for tex, color in pool.map(load, texture_paths) if color}
 
 
-def export_block_colors(texture_mapping: Dict[str, List[str]], output_file: str) -> None:
+def block_tag_filter(name: str) -> str:
+    return name.split('/')[-1]
+
+
+def format_color(color: List[int]) -> str:
+    """#rrggbbaa, the form the C++ color table reader expects."""
+    return "#{:02x}{:02x}{:02x}{:02x}".format(*color)
+
+
+def export_block_colors(texture_mapping: Dict[str, List[str]], output_file: str, root: str) -> None:
+    # Unique keys, keeping first-seen order so the output stays reproducible.
+    unique_textures = dict.fromkeys(
+        item for items in texture_mapping.values() for item in items if isinstance(item, str)
+    )
+    color_cache = collect_texture_colors(root, unique_textures)
+
     result = {}
-    color_cache = {}
-
-    unique_textures = set()
     for block_name, items in texture_mapping.items():
-        for path in items:
-            unique_textures.add(path)
-    
-    # 计算颜色
-    for texture_path in unique_textures:
-        avg_color = get_average_color_weighted(texture_path + ".png")
-        if avg_color is None:
-            print("try load tga file " + texture_path + ".tga")
-            avg_color = get_average_color_weighted(texture_path + ".tga")
-        if avg_color:
-            color_cache[texture_path] = avg_color
-        
-
-    # 构建结果
-    for block_name, items in texture_mapping.items():
+        blacklisted = BLOCK_COLOR_BLACKLIST.get(block_name, ())
+        if blacklisted is None:
+            continue  # the whole block is blacklisted
         block_dict = {}
         seen = set()
         for item in items:
-            if isinstance(item, str):
-                if item not in seen and item in color_cache:
-                    seen.add(item)
-                    block_dict[block_tag_filter(item)] = color_cache[item]
-        if len(block_dict.items()) == 0:
+            if isinstance(item, str) and item not in seen and item in color_cache:
+                seen.add(item)
+                tag = block_tag_filter(item)
+                if tag in blacklisted:
+                    continue
+                block_dict[tag] = format_color(color_cache[item])
+
+        reuse = BLOCK_COLOR_REUSE.get(block_name)
+        if isinstance(reuse, dict):
+            for alias, source in reuse.items():
+                if source in block_dict:
+                    block_dict[alias] = block_dict[source]
+            reuse = ()  # tag aliases only, no extra block entries
+        if not block_dict:
             continue
-        result["minecraft:"+block_name] = block_dict
+        result["minecraft:" + block_name] = block_dict
 
-        #generate some unexpected
-        if block_name in Generates:
-            print("Generate texture for "+ block_name)
-            for gene in Generates[block_name]:
-                print(" - " + gene)
-                result["minecraft:" + gene] = block_dict
-
-
+        # Blocks that reuse another block's textures.
+        for generated in reuse or ():
+            print("Generate texture for " + block_name + " -> " + generated)
+            result["minecraft:" + generated] = block_dict
 
     save_to_json(result, output_file)
 
-if __name__ == "__main__":
-    length = len(sys.argv)
-    if length != 3:
-        print("Use python dumper <texture_root_path> <block_color_output_path>")
-        exit(0)
-    root = sys.argv[1]
-    output = sys.argv[2]
 
-    block_to_texture = {}
-    texture_to_path = {}
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Dump average block colors from a resource pack.")
+    parser.add_argument("texture_root_path", help="resource pack root (contains blocks.json)")
+    parser.add_argument("block_color_output_path", help="output json file")
+    args = parser.parse_args()
 
-    BLOCKS_JSON = path.join(root,"blocks.json");
-    TEXTURE_JSON = path.join(root,"textures", "terrain_texture.json");
-    block_texture = get_blcok_texture(BLOCKS_JSON)
-    texture_terrain =  get_texture_terrain(TEXTURE_JSON)
+    root = args.texture_root_path
+    block_texture = get_block_texture(path.join(root, "blocks.json"))
+    texture_terrain = get_texture_terrain(path.join(root, "textures", "terrain_texture.json"))
     mapping = map_block_textures(block_texture, texture_terrain)
 
-    export_block_colors(mapping,output);
+    export_block_colors(mapping, args.block_color_output_path, root)
+
+
+if __name__ == "__main__":
+    main()
 

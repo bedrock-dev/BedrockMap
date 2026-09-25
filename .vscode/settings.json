@@ -15,6 +15,10 @@
     "files.associations": {
         "translations/*.ts": "xml"
     },
+    // The scripts/ helpers run on the globally installed interpreter; a venv that
+    // used to live in this folder is gone, and the Python extension kept pointing
+    // new terminals at it.
+    "python.terminal.activateEnvironment": false,
     "chat.tools.terminal.autoApprove": {
         "/^Push-Location \\.\\\\bedrock-level; cmake --build \\.\\\\build --target palette_test 2>&1 \\| Select-Object -Last 5; \\.\\\\build\\\\palette_test\\.exe 2>&1; Pop-Location$/": {
             "approve": true,
