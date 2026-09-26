@@ -54,7 +54,7 @@ vec2 atlasUV(vec2 block) { return fract((floor(block / uBlocksPerTexel) + 0.5) /
 
 vec4 colorAt(vec2 block) { return texture(uColor, atlasUV(block)); }
 
-// (solid surface, top surface); solid == VOID_HEIGHT for a block-less column
+// (solid surface, top surface); solid == VOID_HEIGHT for a block-less column.
 vec2 heightAt(vec2 block) { return texture(uHeight, atlasUV(block)).rg; }
 
 // Height of a column as an occluder. A column with no blocks occludes nothing, so it
@@ -250,7 +250,11 @@ void main() {
     // --- shadow ---
     // The strength scales the occlusion rather than the colour, so 0 leaves the
     // shaded colour exactly as the other terms produced it.
-    float occlusion = shadowOcclusion(world, top) * uShadowStrength;
+    // A zero strength is an exact visual no-op.  Avoid the ray march entirely
+    // in that case; otherwise the setting removes the shadow from the output
+    // while still paying for every height lookup.
+    float occlusion = 0.0;
+    if (uShadowStrength > 0.0 && uShadowReach > 0.0) occlusion = shadowOcclusion(world, top) * uShadowStrength;
     factor *= mix(1.0, uShadowDarkness, clamp(occlusion, 0.0, 1.0));
 
     // --- saturation ---

@@ -4,6 +4,7 @@
 #include <qimage.h>
 #include <qrgb.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 
@@ -18,7 +19,7 @@
 // ---- helpers ----
 
 namespace {
-    // 45° sun direction → (dx, dy) where each component is -1, 0, or +1
+    // 45掳 sun direction 鈫?(dx, dy) where each component is -1, 0, or +1
     std::pair<int, int> sunVector() {
         switch (constant::SUN_DIRECTION) {
             case constant::SunDir::NW:
@@ -205,7 +206,7 @@ void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, i
     }
 
     // block filter
-    // Slow path: custom filter — scan down from the height map
+    // Slow path: custom filter 鈥?scan down from the height map
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             int y = ch->get_height(i, j);
@@ -268,7 +269,7 @@ void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
     region->terrain_bake_image_ = region->flat_color_image_.copy();
     applyWaterOverlay(region, IMG_WIDTH, 1, region->terrain_bake_image_);
 
-    // Directional shadow based on top block height — water blocks are skipped
+    // Directional shadow based on top block height 鈥?water blocks are skipped
     // (their colour comes from the sea floor, not the water surface).
     auto& tp = region->tips_info_;
     auto [sx, sy] = sunVector();
@@ -317,11 +318,11 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
             float h = info.solid_height;
             if (info.height == -128) continue;
 
-            // Underwater bevel fades with depth: deeper → closer to 1.0 (no bevel)
+            // Underwater bevel fades with depth: deeper 鈫?closer to 1.0 (no bevel)
             float water_fade = 1.0f;
             if (info.water_surface_color != 0) {
                 float wd = static_cast<float>(info.height - info.solid_height);
-                water_fade = std::max(0.0f, 1.0f - wd / 5.0f);  // fully gone at depth ≥ 5
+                water_fade = std::max(0.0f, 1.0f - wd / 5.0f);  // fully gone at depth 鈮?5
             }
 
             float hl = (bi > 0) ? tp[bi - 1][bj].solid_height : h;
@@ -397,7 +398,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     const int BORDER = NH * 16;             // border blocks per side
     const int EW = IMG_WIDTH + BORDER * 2;  // expanded width in blocks
 
-    // 1. Build expanded height array — all entries from Data3D height_map via
+    // 1. Build expanded height array 鈥?all entries from Data3D height_map via
     //    the cache, ensuring a single consistent height source across the
     //    centre region and its sunward border. Heights are world-space (min_y
     //    already applied in getHeightMap per the chunk's actual version).

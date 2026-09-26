@@ -14,6 +14,7 @@
 #include <QTimer>
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "asynclevelloader.h"
 #include "config.h"
@@ -133,6 +134,7 @@ void GpuMapWidget::setCaptureView(const QPointF& center_block, double px_per_blo
 }
 
 QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_block, double px_per_block) {
+    const QSize previous_size = this->size();
     resize(size);
     // A capture is a scoped override, not a mode: leaving capture_view_ set would
     // keep the widget on the synthetic view (and without overlays) for every
@@ -153,6 +155,10 @@ QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_b
     capture_view_ = was_capturing;
     capture_center_block_ = previous_center;
     capture_px_per_block_ = previous_px;
+    // Capturing is a temporary offscreen operation.  Keep the live widget's
+    // layout geometry unchanged for callers that capture an already-visible
+    // map pane.
+    if (this->size() != previous_size) resize(previous_size);
     return image;
 }
 
@@ -315,21 +321,12 @@ void GpuMapWidget::initializeGL() {
           slotsPerSide() * slotsPerSide());
 }
 void GpuMapWidget::initAtlasTextures() {
-    // Startup only: the texture contents are undefined until this runs, and the
-    // per-slot fill is only affordable when there is nothing else to do.
+    // Nothing to write. Every texel the shader can sample belongs to a slot that
+    // collectVisibleRegions() has just queued, and paintGL() drains that queue
+    // before it draws (see the invariant there), so the undefined contents
+    // glTexImage2D leaves behind are never read. Filling the atlas here would cost
+    // 4 B + 8 B per texel, i.e. ~200 MB of uploads at 4096.
     buildBlankTiles();
-    const int side = slotsPerSide();
-    const int texels = kRegionBlocks / blocks_per_texel_;
-    for (int slot = 0; slot < side * side; ++slot) {
-        const int slot_x = (slot % side) * texels;
-        const int slot_z = (slot / side) * texels;
-
-        glBindTexture(GL_TEXTURE_2D, color_texture_);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, slot_x, slot_z, texels, texels, GL_RGBA, GL_UNSIGNED_BYTE, blank_light_.data());
-        height_buffer_.assign(static_cast<size_t>(texels) * texels * 2, kVoidHeight);
-        glBindTexture(GL_TEXTURE_2D, height_texture_);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, slot_x, slot_z, texels, texels, GL_RG, GL_FLOAT, height_buffer_.data());
-    }
     slots_.clear();
 }
 
@@ -337,11 +334,13 @@ void GpuMapWidget::invalidateAtlas() {
     // The blank tiles are sized in texels for the current resolution, so they
     // have to be rebuilt before anything is uploaded at the new one.
     buildBlankTiles();
-    // Bookkeeping only - deliberately no texture writes. The old contents stay
-    // in place, but every slot is unassigned and all visible slots are uploaded
-    // before the next draw, so stale pixels cannot survive a resolution change.
+    // Bookkeeping only - deliberately no texture writes. The old contents stay in
+    // place, but every slot is unassigned and all visible slots are re-uploaded
+    // before the next draw (see paintGL), so stale pixels cannot survive a
+    // resolution or layer change.
     slots_.clear();
     uploads_.clear();
+    upload_index_.clear();
 }
 
 int GpuMapWidget::residentRegionCount() const {
@@ -354,15 +353,21 @@ int GpuMapWidget::residentRegionCount() const {
 }
 
 void GpuMapWidget::queueUpload(UploadRequest request) {
-    for (auto& queued : uploads_) {
-        if (queued.slot == request.slot) {
-            // A pan/zoom can change the region mapped to a recycled slot while
-            // the old request is waiting. Keep only the newest request.
-            queued = request;
-            return;
-        }
+    // A pan/zoom can change the region mapped to a recycled slot while the old
+    // request is waiting. Keep only the newest request, in place, so the queue
+    // keeps the order the regions were discovered in.
+    const auto existing = upload_index_.find(request.slot);
+    if (existing != upload_index_.end()) {
+        uploads_[existing->second] = request;
+        return;
     }
+    upload_index_.emplace(request.slot, uploads_.size());
     uploads_.push_back(request);
+}
+
+void GpuMapWidget::reindexUploads() {
+    upload_index_.clear();
+    for (size_t i = 0; i < uploads_.size(); ++i) upload_index_[uploads_[i].slot] = i;
 }
 
 void GpuMapWidget::buildBlankTiles() {
@@ -386,81 +391,66 @@ void GpuMapWidget::buildBlankTiles() {
     fill(blank_light_, 128, 148);  // region not baked yet
 }
 
-void GpuMapWidget::uploadRegion(const UploadRequest& request) {
+bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
     // RegionCacheManager owns the pointed-to object and may evict it between
     // frames. Re-resolve immediately before dereferencing it so delayed work
     // never reads a dangling or superseded ChunkRegion.
     const ChunkRegion* data = nullptr;
     const auto state = level_loader_->regionState(request.region, &data);
-    // Each atlas texel covers blocks_per_texel_ x blocks_per_texel_ blocks; at
-    // 1 it is the raw bake, above that the tile is reduced so a wider view still
-    // fits in one atlas.
+    // Each atlas texel covers blocks_per_texel_ x blocks_per_texel_ blocks, so
+    // above 1 the tile is the bake sampled every blocks_per_texel_ texels - the
+    // same stride reduction QImage::scaled(..., Qt::FastTransformation) performs,
+    // which is what the CPU renderer draws its tiles with. That costs n*n reads
+    // (a copy at 1), independent of how coarse the level is, so the work scales
+    // with the tile and not with the number of blocks behind it.
     const int bp = blocks_per_texel_;
     const int n = kRegionBlocks / bp;
+    const size_t texels = static_cast<size_t>(n) * n;
+    const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
 
-    if (state != AsyncLevelLoader::RegionState::Ready || !data) {
-        color_buffer_ = (state == AsyncLevelLoader::RegionState::Empty) ? blank_dark_ : blank_light_;
-        height_buffer_.assign(static_cast<size_t>(n) * n * 2, kVoidHeight);
-        // The upload below reads n*n texels from the front of the buffer, so a
-        // tile built for a different resolution would be a garbled sub-rectangle
-        // of the right pattern rather than a smaller checkerboard.
-        Assert(color_buffer_.size() == static_cast<size_t>(n) * n * 4, "GpuMapWidget",
-               "blank tile size does not match the atlas resolution (buildBlankTiles must run on every "
-               "blocks_per_texel_ change)");
-    } else {
-        // Biome colours are baked by the loader just like the CPU map's biome
-        // layer. They are already final display colours, so do not tint or mix
-        // water into them again in this renderer.
-        const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
+    color_buffer_.resize(texels * 4);
+    height_buffer_.resize(texels * 2);
+    bool terrain = false;
+
+    if (state == AsyncLevelLoader::RegionState::Ready && data) {
+        terrain = true;
+        const bool blend_water = setting::current().TRANSPARENT_WATER;
         const QImage& source = biome_layer ? data->biome_bake_image_ : data->flat_color_image_;
         const auto& tips = data->tips_info_;
-        color_buffer_.resize(static_cast<size_t>(n) * n * 4);
-        height_buffer_.resize(static_cast<size_t>(n) * n * 2);
         for (int tz = 0; tz < n; ++tz) {
+            const int bz = tz * bp;
+            const auto* line = reinterpret_cast<const QRgb*>(source.constScanLine(bz));
             for (int tx = 0; tx < n; ++tx) {
-                // Representative column of this texel: the tallest one, so a
-                // structure is not hidden behind the flat ground next to it.
-                int best_block_x = tx * bp;
-                int best_block_z = tz * bp;
-                int best_top = INT_MIN;
-                for (int bz = 0; bz < bp; ++bz) {
-                    for (int bx = 0; bx < bp; ++bx) {
-                        const auto& candidate = tips[tx * bp + bx][tz * bp + bz];
-                        if (candidate.height > best_top) {
-                            best_top = candidate.height;
-                            best_block_x = tx * bp + bx;
-                            best_block_z = tz * bp + bz;
-                        }
-                    }
-                }
-                const auto& info = tips[best_block_x][best_block_z];
-                const QRgb pixel = reinterpret_cast<const QRgb*>(source.constScanLine(best_block_z))[best_block_x];
-                int r = qRed(pixel);
-                int g = qGreen(pixel);
-                int b = qBlue(pixel);
-                const bool water = !biome_layer && info.water_surface_color != 0;
-                if (water) {
-                    // Same depth curve applyWaterOverlay() uses, but into the
-                    // upload buffer so the shared region image stays untouched.
-                    const float depth = static_cast<float>(info.height - info.solid_height);
-                    const float opacity = waterSurfaceOpacity(depth);
-                    r = static_cast<int>((1.0f - opacity) * r + opacity * qRed(info.water_surface_color));
-                    g = static_cast<int>((1.0f - opacity) * g + opacity * qGreen(info.water_surface_color));
-                    b = static_cast<int>((1.0f - opacity) * b + opacity * qBlue(info.water_surface_color));
-                }
+                const int bx = tx * bp;
+                const auto& info = tips[bx][bz];
+                // The biome bake is a categorical display colour, so it is used
+                // as-is; the terrain colour gets the water surface blended in at
+                // the same depth curve the CPU styles use.
+                const QRgb pixel = (biome_layer || !blend_water) ? line[bx] : mapDisplayColor(info, line[bx], true);
                 const size_t color_index = (static_cast<size_t>(tz) * n + tx) * 4;
-                color_buffer_[color_index + 0] = static_cast<unsigned char>(std::clamp(r, 0, 255));
-                color_buffer_[color_index + 1] = static_cast<unsigned char>(std::clamp(g, 0, 255));
-                color_buffer_[color_index + 2] = static_cast<unsigned char>(std::clamp(b, 0, 255));
-                color_buffer_[color_index + 3] = water ? 255 : 0;
+                color_buffer_[color_index + 0] = static_cast<unsigned char>(qRed(pixel));
+                color_buffer_[color_index + 1] = static_cast<unsigned char>(qGreen(pixel));
+                color_buffer_[color_index + 2] = static_cast<unsigned char>(qBlue(pixel));
+                // Alpha is the shader's "this column is under water" flag, not
+                // opacity: it fades the bevel and AO out over water.
+                color_buffer_[color_index + 3] = (!biome_layer && info.water_surface_color != 0) ? 255 : 0;
 
                 // Heights keep their world values, so the shader's ray stays in
-                // blocks; reducing the tile only coarsens the detail.
+                // blocks; only the sentinel moves to the shader's own void height.
                 const size_t height_index = (static_cast<size_t>(tz) * n + tx) * 2;
                 height_buffer_[height_index + 0] = info.solid_height <= -128 ? kVoidHeight : static_cast<float>(info.solid_height);
                 height_buffer_[height_index + 1] = info.height <= -128 ? kVoidHeight : static_cast<float>(info.height);
             }
         }
+    } else {
+        color_buffer_ = (state == AsyncLevelLoader::RegionState::Empty) ? blank_dark_ : blank_light_;
+        height_buffer_.assign(texels * 2, kVoidHeight);
+        // The upload below reads n*n texels from the front of the buffer, so a
+        // tile built for a different resolution would be a garbled sub-rectangle
+        // of the right pattern rather than a smaller checkerboard.
+        Assert(color_buffer_.size() == texels * 4, "GpuMapWidget",
+               "blank tile size does not match the atlas resolution (buildBlankTiles must run on every "
+               "blocks_per_texel_ change)");
     }
 
     const int side = slotsPerSide();
@@ -473,6 +463,7 @@ void GpuMapWidget::uploadRegion(const UploadRequest& request) {
 
     slots_[request.slot] = SlotState{request.region, state, data, blocks_per_texel_, true};
     ++total_uploads_;
+    return terrain;
 }
 
 void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& world_origin) {
@@ -509,6 +500,7 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
                                              request.region.z > rz1 * constant::RW;
                                   }),
                    uploads_.end());
+    reindexUploads();
     // Same as the CPU map: without this the scheduler has no viewport, so it
     // cannot prioritise - or prune to - what is on screen.
     level_loader_->setRenderViewport({rx0 * constant::RW, rz0 * constant::RW, dim}, {rx1 * constant::RW, rz1 * constant::RW, dim});
@@ -542,8 +534,10 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
 int GpuMapWidget::shadowReachBlocks() const {
     // The shader marches in half-texel steps within a 256-iteration bound, so it
     // covers this many blocks at every resolution the atlas uses.
-    return shadow_enabled_ ? shadow_steps_ : 0;
+    return shadow_enabled_ && shadow_strength_ > 0.0f ? shadow_steps_ : 0;
 }
+
+bool GpuMapWidget::overviewMode() const { return !capture_view_ && overlays_ && overlays_->coordsOverviewMode(); }
 
 // Slots along one atlas edge at a given resolution: the atlas is a fixed number
 // of texels and a region covers kRegionBlocks blocks, so the slot count grows
@@ -608,11 +602,49 @@ void GpuMapWidget::paintGL() {
     glClearColor(0.08f, 0.08f, 0.09f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // A far-out view spans thousands of region tiles, so the atlas walk, the
+    // bakes it asks for and the uploads all grow with the view instead of with
+    // the world - which is what makes zooming out hitch. Those zooms draw the
+    // coordinate overview instead, at the same threshold the CPU renderer uses.
+    const bool overview = overviewMode();
+    if (overview) {
+        // No region work in this mode; without this the stats strip would keep
+        // reporting the last terrain frame's counters.
+        visible_regions_ = 0;
+        uploaded_last_frame_ = 0;
+    }
+
     bool ready = level_loader_ && level_loader_->isOpen() && shader_ && shader_->isLinked() && color_texture_ != 0;
     double px_per_block = 0.0;
     QPointF world_origin;
 
-    if (ready) {
+    // Per-stage frame cost, so a hitch can be attributed to one of them instead
+    // of guessed at (see drawStats).
+    QElapsedTimer stage_timer;
+    stage_timer.start();
+    const auto stage_ms = [&stage_timer](double& out) {
+        out = stage_timer.nsecsElapsed() / 1.0e6;
+        stage_timer.restart();
+    };
+    collect_ms_ = 0.0;
+    upload_ms_ = 0.0;
+    blank_upload_ms_ = 0.0;
+    ready_upload_ms_ = 0.0;
+    shade_ms_ = 0.0;
+
+    // Same place and scale as every other renderer on this view. Also what the
+    // stats strip reports, so it is resolved even while the overview is drawn.
+    double map_px_per_block = capture_px_per_block_;
+    QPointF world_center = capture_center_block_;
+    if (!capture_view_ && view_) {
+        map_px_per_block = view_->scaleLevel() / 16.0;
+        const QSize viewport = view_->viewportSize();
+        const QPointF center = view_->worldToView().inverted().map(QPointF(viewport.width() / 2.0, viewport.height() / 2.0));
+        world_center = center * 16.0;  // chunk units -> blocks
+    }
+    px_per_block = std::max(0.01, map_px_per_block);
+
+    if (ready && !overview) {
         const int dim = view_ ? view_->dim() : 0;
         if (dim != atlas_dim_) {
             blocks_per_texel_ = 1;
@@ -629,17 +661,6 @@ void GpuMapWidget::paintGL() {
             atlas_biome_layer_ = biome_layer;
             invalidateAtlas();
         }
-
-        // Same place and scale as every other renderer on this view.
-        double map_px_per_block = capture_px_per_block_;
-        QPointF world_center = capture_center_block_;
-        if (!capture_view_ && view_) {
-            map_px_per_block = view_->scaleLevel() / 16.0;
-            const QSize viewport = view_->viewportSize();
-            const QPointF center = view_->worldToView().inverted().map(QPointF(viewport.width() / 2.0, viewport.height() / 2.0));
-            world_center = center * 16.0;  // chunk units -> blocks
-        }
-        px_per_block = std::max(0.01, map_px_per_block);
 
         // Widening the view past one texel per block reduces the atlas
         // resolution instead of refusing to zoom out, which is what keeps this
@@ -658,19 +679,30 @@ void GpuMapWidget::paintGL() {
         world_origin = QPointF(world_center.x() - half_w, world_center.y() + half_h);
 
         collectVisibleRegions(px_per_block, world_origin);
+        stage_ms(collect_ms_);
 
         // Every queued request describes a visible slot whose previous contents
-        // belong to another region (or another LOD). Upload all of them before
-        // drawing; throttling background tiles would display stale terrain.
+        // belong to another region, another layer or another LOD, so all of them
+        // are written before the draw below. That is what makes the frame
+        // self-consistent: the atlas holds exactly the visible slots' current
+        // content when the shader samples it, so nothing has to be tracked
+        // per-slot to keep a stale tile off the screen.
         uploaded_last_frame_ = 0;
+        blank_upload_ms_ = 0.0;
+        ready_upload_ms_ = 0.0;
         for (auto it = uploads_.begin(); it != uploads_.end();) {
-            uploadRegion(*it);
+            QElapsedTimer slot_timer;
+            slot_timer.start();
+            const bool terrain = uploadRegion(*it);
+            (terrain ? ready_upload_ms_ : blank_upload_ms_) += slot_timer.nsecsElapsed() / 1.0e6;
             ++uploaded_last_frame_;
             it = uploads_.erase(it);
         }
+        upload_index_.clear();
+        stage_ms(upload_ms_);
     }
 
-    if (ready) {
+    if (ready && !overview) {
         int sx = -1;
         int sy = -1;
         sunStep(sx, sy);
@@ -708,6 +740,9 @@ void GpuMapWidget::paintGL() {
         glBindTexture(GL_TEXTURE_2D, color_texture_);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, height_texture_);
+        // Leave the default unit active for whatever binds textures next (the
+        // chrome is QPainter work on top of this pass).
+        glActiveTexture(GL_TEXTURE0);
 
         glBindVertexArray(vao_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -717,6 +752,7 @@ void GpuMapWidget::paintGL() {
         if (gpu_timing_) glFinish();
         shader_->release();
     }
+    stage_ms(shade_ms_);
 
     painter.endNativePainting();
 
@@ -732,6 +768,9 @@ void GpuMapWidget::paintGL() {
 
         painter.setTransform(world_to_view);
         const RenderOption& options = view_->options();
+        // Base layer when the terrain pass is skipped: the same chunk presence
+        // overview the CPU renderer draws at these zooms.
+        if (overview) overlays_->drawCoordsOverview(&painter);
         if (options.getOther(RenderOption::HSA)) overlays_->drawHSAs(&painter);
         if (options.getOther(RenderOption::Village)) overlays_->drawVillages(&painter);
         if (options.getOther(RenderOption::SlimeChunk)) overlays_->drawSlimeChunks(&painter);
@@ -748,23 +787,30 @@ void GpuMapWidget::paintGL() {
     }
 
     last_frame_ms_ = frame_timer.nsecsElapsed() / 1.0e6;
+    stage_ms(overlay_ms_);
     drawStats(painter, last_frame_ms_, px_per_block);
     painter.end();
 
-    // Draining the upload queue over several frames keeps a newly revealed area
-    // from stalling a single frame.
+    // The queue may still hold the rest of a rebuild: schedule the follow-up
+    // frame that writes it, which is what spreads a resolution change out.
     if (ready && !uploads_.empty()) update();
 }
 
 void GpuMapWidget::drawStats(QPainter& painter, double frame_ms, double px_per_block) {
     if (width() < 160 || height() < 60) return;
-    const QString stats = tr("GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6")
-                              .arg(QString::number(frame_ms, 'f', 1), QString::number(px_per_block, 'f', 2))
-                              .arg(blocks_per_texel_)
-                              .arg(visible_regions_)
-                              .arg(uploaded_last_frame_)
-                              .arg(QString::number(static_cast<double>(ao_strength_), 'f', 2));
+    const QString stats =
+        tr("GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  pending %6  ao %7")
+            .arg(QString::number(frame_ms, 'f', 1), QString::number(px_per_block, 'f', 2))
+            .arg(blocks_per_texel_)
+            .arg(visible_regions_)
+            .arg(uploaded_last_frame_)
+            .arg(static_cast<int>(uploads_.size()))
+            .arg(QString::number(static_cast<double>(ao_strength_), 'f', 2)) +
+        tr("  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6")
+            .arg(QString::number(collect_ms_, 'f', 1), QString::number(upload_ms_, 'f', 1), QString::number(blank_upload_ms_, 'f', 1),
+                 QString::number(ready_upload_ms_, 'f', 1), QString::number(shade_ms_, 'f', 1), QString::number(overlay_ms_, 'f', 1));
     painter.setPen(QColor(235, 235, 235));
-    painter.fillRect(QRect(0, 0, width(), kStatsBarHeight), QColor(22, 22, 22, 170));
-    painter.drawText(QRect(4, 0, width() - 8, kStatsBarHeight), Qt::AlignVCenter | Qt::AlignLeft, stats);
+    const int bar_top = height() - kStatsBarHeight;
+    painter.fillRect(QRect(0, bar_top, width(), kStatsBarHeight), QColor(22, 22, 22, 170));
+    painter.drawText(QRect(4, bar_top, width() - 8, kStatsBarHeight), Qt::AlignVCenter | Qt::AlignLeft, stats);
 }

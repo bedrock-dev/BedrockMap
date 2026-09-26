@@ -13,6 +13,7 @@
 
 #include "asynclevelloader.h"
 #include "config.h"
+#include "maptile.h"
 #include "mapview.h"
 #include "processmonitor.h"
 #include "utils.h"
@@ -76,6 +77,44 @@ void MapOverlays::foreachRegionInCamera(const std::function<void(const bl::chunk
             f({i, j, min_chunk.dim});
         }
     }
+}
+
+void MapOverlays::drawCoordsOverview(QPainter* painter) const {
+    if (!painter || !level_loader_ || !view_) return;
+    const auto [min_chunk, max_chunk, rect] = view_->renderRange();
+    (void)rect;
+    constexpr int kTile = constant::COORDS_REGION_SIZE;
+    const auto tile_floor = [](int value) { return (value / kTile - (value % kTile < 0 ? 1 : 0)) * kTile; };
+    const auto tile_ceil = [](int value) { return (value / kTile + (value % kTile < 0 ? 0 : 1)) * kTile; };
+    const int view_x0 = tile_floor(min_chunk.x);
+    const int view_z0 = tile_floor(min_chunk.z);
+    const int view_x1 = tile_ceil(max_chunk.x);
+    const int view_z1 = tile_ceil(max_chunk.z);
+
+    const auto bounds = level_loader_->chunkCoordsBoundingBox(view_->dim());
+    if (!bounds || !bounds->valid) {
+        // The index is still being scanned, so the whole view is the same
+        // "loading" tile: fill it in one call instead of a blit per tile, which
+        // on a far-out view would be tens of thousands of them.
+        painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), QBrush(MapTile::COORDS_LOADING_TILE()));
+        return;
+    }
+
+    // Tiles outside the archive's bounding box hold no chunks: lay their colour
+    // down once and blit only the tiles the world covers, so a far-out view costs
+    // what the world costs instead of what the (much larger) view span costs.
+    painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), MapTile::COORDS_EMPTY_TILE().pixelColor(0, 0));
+    const int x0 = std::max(view_x0, tile_floor(bounds->min_x));
+    const int z0 = std::max(view_z0, tile_floor(bounds->min_z));
+    const int x1 = std::min(view_x1, tile_ceil(bounds->max_x + 1));
+    const int z1 = std::min(view_z1, tile_ceil(bounds->max_z + 1));
+    for (int x = x0; x < x1; x += kTile) {
+        for (int z = z0; z < z1; z += kTile) {
+            const QImage image = level_loader_->chunkCoordsImage(bl::chunk_pos{x, z, min_chunk.dim});
+            if (!image.isNull()) painter->drawImage(QRectF(x, z, kTile, kTile), image, image.rect());
+        }
+    }
+    drawCoordsBoundingBox(painter);
 }
 
 void MapOverlays::drawCoordsBoundingBox(QPainter* painter) const {
@@ -246,14 +285,16 @@ void MapOverlays::drawCoordsMiniMap(QPainter* painter) const {
     // The configured dimensions limit the side lengths; the aspect ratio follows
     // the world's bounding box rather than a fixed panel ratio.
     const qreal maxWidth = static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_WIDTH, size.width()));
-    const qreal maxHeight = static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_HEIGHT, size.height()));
+    const qreal maxHeight =
+        static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_HEIGHT, std::max(0, size.height() - screen_inset_)));
     if (maxWidth <= 0.0 || maxHeight <= 0.0) return;
 
     const qreal scale = std::min(maxWidth / boundsWidth, maxHeight / boundsHeight);
     if (scale <= 0.0) return;
 
     const QSizeF mapSize(boundsWidth * scale, boundsHeight * scale);
-    const QPointF mapTopLeft(static_cast<qreal>(size.width()) - mapSize.width(), static_cast<qreal>(size.height()) - mapSize.height());
+    const QPointF mapTopLeft(static_cast<qreal>(size.width()) - mapSize.width(),
+                             static_cast<qreal>(size.height() - screen_inset_) - mapSize.height());
     const QRectF globalRect(mapTopLeft, mapSize);
 
     painter->save();
@@ -301,9 +342,9 @@ void MapOverlays::drawDebugWindow(QPainter* painter) const {
     const int bg_h = fm.height() * static_cast<int>(info.size()) + kMargin * 2;
     const QSize size = targetSize(painter);
     const int base_x = size.width() - bg_w;
-    painter->fillRect(QRectF(base_x, screen_inset_, bg_w, bg_h), QBrush(QColor(22, 22, 22, 160)));
+    painter->fillRect(QRectF(base_x, 0, bg_w, bg_h), QBrush(QColor(22, 22, 22, 160)));
     for (int i = 0; i < static_cast<int>(info.size()); ++i) {
-        const QPoint pos(base_x + kMargin, screen_inset_ + kMargin + (i + 1) * fm.height());
+        const QPoint pos(base_x + kMargin, kMargin + (i + 1) * fm.height());
         painter->setPen(QPen(QColor(0, 0, 0)));
         painter->drawText(pos + QPoint(kShadowOffset, kShadowOffset), info[i]);
         painter->setPen(QPen(QColor(255, 255, 255)));

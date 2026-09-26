@@ -81,27 +81,11 @@ void CpuMapWidget::drawBiome(QPainter* painter) {
 
 void CpuMapWidget::drawTerrain(QPainter* painter) {
     // Zoomed out far enough, the block-accurate layers are replaced by the chunk
-    // coordinate overview.
+    // coordinate overview. Shared with the GPU renderer, which switches over at
+    // the same zoom for the same reason: a far-out view spans so many region
+    // tiles that baking them is what makes the frame rate collapse.
     if (coordsOverviewMode()) {
-        auto [min_chunk, max_chunk, render_range] = view_->renderRange();
-        (void)render_range;
-        const auto alignToCoordsRegion = [](int value) {
-            constexpr int size = constant::COORDS_REGION_SIZE;
-            const int quotient = value / size;
-            return (value % size < 0 ? quotient - 1 : quotient) * size;
-        };
-        const int min_x = alignToCoordsRegion(min_chunk.x);
-        const int min_z = alignToCoordsRegion(min_chunk.z);
-        const int max_x = alignToCoordsRegion(max_chunk.x);
-        const int max_z = alignToCoordsRegion(max_chunk.z);
-        for (int x = min_x; x <= max_x; x += constant::COORDS_REGION_SIZE) {
-            for (int z = min_z; z <= max_z; z += constant::COORDS_REGION_SIZE) {
-                const bl::chunk_pos rp{x, z, min_chunk.dim};
-                auto image = loader_->chunkCoordsImage(rp);
-                painter->drawImage(QRectF(x, z, constant::COORDS_REGION_SIZE, constant::COORDS_REGION_SIZE), image, image.rect());
-            }
-        }
-        overlays_->drawCoordsBoundingBox(painter);
+        overlays_->drawCoordsOverview(painter);
         return;
     }
     foreachRegionInCamera([this, painter](const bl::chunk_pos& rp) {

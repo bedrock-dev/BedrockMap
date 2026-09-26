@@ -279,8 +279,13 @@
     <name>GpuMapWidget</name>
     <message>
         <location filename="../src/gpumapwidget.cpp"/>
-        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
-        <translation>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</translation>
+        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  pending %6  ao %7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/gpumapwidget.cpp"/>
+        <source>  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

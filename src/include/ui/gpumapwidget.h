@@ -46,9 +46,26 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
    public:
     /// Texture edge of one atlas page, in texels.
-    static constexpr int kAtlasTexels = 2048;
+    ///
+    /// The resolution is what decides how sharp the map can ever be, because
+    /// `blocksPerTexelFor()` picks the coarsest power of two that still covers the
+    /// view: the visible span is never more than `kAtlasTexels * bp` blocks, so a
+    /// texel covers
+    ///
+    ///     bp * px_per_block = (span / kAtlasTexels) screen pixels,
+    ///
+    /// i.e. between `viewport / kAtlasTexels` and twice that, independent of the
+    /// zoom level. At 2048 that is 0.94..1.9 for a 1920-wide pane, so texels are
+    /// *magnified* near every band boundary - and magnification is what makes any
+    /// reduction look wrong on screen (point sampling shows blocks, averaging shows
+    /// blur). With 4096 the range is 0.47..0.94, i.e. only ever minification.
+    /// Cost is linear in the area: colour 4 B + height 4 B + state 1 B per texel,
+    /// so 4096^2 is about 144 MB against 36 MB at 2048.
+    static constexpr int kAtlasTexels = 4096;
     /// Side of one region tile in world blocks (8x8 chunks).
     static constexpr int kRegionBlocks = constant::RW * 16;
+
+    static_assert(kAtlasTexels % kRegionBlocks == 0, "the atlas must hold a whole number of region tiles");
 
     GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* view, MapOverlays* overlays, ImportOverlay* import, MapHost* host);
 
@@ -206,7 +223,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         bl::chunk_pos region{};
         AsyncLevelLoader::RegionState state{AsyncLevelLoader::RegionState::Unloaded};
         const void* source{nullptr};
-        int bp{0};  // atlas resolution the slot's content was uploaded at
+        int bp{0};  // atlas resolution (slot grid) the content was uploaded on
         bool assigned{false};
     };
 
@@ -219,11 +236,25 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// calculation and the region collection.
     [[nodiscard]] int shadowReachBlocks() const;
 
+    /// True when the view is zoomed out far enough that the terrain layers are
+    /// replaced by the coordinate overview. The same policy the CPU renderer
+    /// uses (MapOverlays::coordsOverviewMode), and never during a capture.
+    [[nodiscard]] bool overviewMode() const;
+
     [[nodiscard]] int slotsPerSide() const { return kAtlasTexels / (kRegionBlocks / blocks_per_texel_); }
 
     void queueUpload(UploadRequest request);
 
-    void uploadRegion(const UploadRequest& request);
+    /// Rebuild the slot -> queue index after the queue was pruned.
+    void reindexUploads();
+
+    /// Write one region's tile into the atlas and record it as resident. A tile
+    /// narrower than the slot (a coarser pyramid level, or a background tile) is
+    /// written into the slot's top-left corner; the shader magnifies it until the
+    /// target level replaces it. Returns whether it held terrain - the background
+    /// tiles are the bulk of the uploads at coarse LODs, so the two are timed
+    /// apart (see drawStats).
+    [[nodiscard]] bool uploadRegion(const UploadRequest& request);
 
     /// Build the two chessboard tiles the CPU map shows where there is no
     /// terrain: dark for "no chunks here", light for "not loaded yet".
@@ -255,7 +286,11 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     // Only visible slots are resident. A dense side*side table becomes enormous
     // at coarse LODs, while the renderer only touches the current viewport.
     std::unordered_map<int, SlotState> slots_;
+    /// Pending atlas writes, in the order they were discovered, and a slot ->
+    /// index map so queueUpload() does not have to scan the queue (a resolution
+    /// change queues thousands of them in one frame).
     std::deque<UploadRequest> uploads_;
+    std::unordered_map<int, size_t> upload_index_;
     std::vector<unsigned char> color_buffer_;
     std::vector<float> height_buffer_;
     /// Prebuilt background tiles, uploaded as-is when a slot has no terrain.
@@ -289,6 +324,16 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // stats for the overlay
     double last_frame_ms_{0};
+    // Where the last frame's time went: the visible-region walk (which also books
+    // the bakes), the atlas uploads (split into background tiles and terrain
+    // tiles), the shader pass, and the overlay painters. A hitch shows up as one
+    // of these spiking.
+    double collect_ms_{0};
+    double upload_ms_{0};
+    double blank_upload_ms_{0};
+    double ready_upload_ms_{0};
+    double shade_ms_{0};
+    double overlay_ms_{0};
     bool gpu_timing_{false};
     int uploaded_last_frame_{0};
     int total_uploads_{0};

@@ -94,7 +94,18 @@ namespace setting {
         int SHADOW_LEVEL{128};
 
         // Map
-        int MINIMUM_SCALE_LEVEL{4};
+        // The coarsest scale terrain is still drawn at, in pixels per chunk: below
+        // it the view switches to the chunk coordinate overview (and, when the
+        // coordinate index is off, it is simply the zoom floor).
+        //
+        // What bounds it is the region cache (see below), not memory in general: an
+        // 8x8-chunk region only costs its ~710 KiB when it holds chunks, so the entry
+        // count has to cover the *populated* regions in view. The other cost scales
+        // with the raw visible count, because collectVisibleRegions() asks the loader
+        // about every visible region each frame: about 8k regions at scale 2 on a
+        // 1920-wide pane (~1.6 ms/frame) and 33k at scale 1 (~6.5 ms, four times that
+        // on a 2560-wide pane).
+        int MINIMUM_SCALE_LEVEL{2};
         int MAXIMUM_SCALE_LEVEL{1024};
         int COORDS_MINIMAP_WIDTH{100};
         int COORDS_MINIMAP_HEIGHT{100};
@@ -118,8 +129,19 @@ namespace setting {
 
         // Cache
         int THREAD_NUM{8};
-        int REGION_CACHE_SIZE{4096};
-        int EMPTY_REGION_CACHE_SIZE{16384};
+        // Entries, not bytes: one entry per *baked* 8x8-chunk region, each about
+        // 710 KiB (256 KiB tips_info_ + 3 x 64 KiB images + 256 KiB LOD pyramid).
+        // A region that holds no chunks never gets a ChunkRegion at all - it takes a
+        // single byte over in the empty cache - so this only has to cover the world's
+        // populated regions that are on screen at once. Populated to the brim that is
+        // 16k x 710 KiB = ~11 GiB, so raise it to fit the worlds you open rather than
+        // to the maximum.
+        int REGION_CACHE_SIZE{16384};
+        // Empty-region markers, one byte each plus the cache's own node. A wide view
+        // spans tens of thousands of regions and most of them are empty, so if this
+        // is below that count the markers are evicted and re-derived from the chunk
+        // index every frame.
+        int EMPTY_REGION_CACHE_SIZE{65536};
         int HEIGHT_MAP_CACHE_SIZE{500000};
 
         // Misc

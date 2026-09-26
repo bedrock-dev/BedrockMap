@@ -65,9 +65,9 @@ class MapOverlays {
     void setCoordsMiniMap(bool enable) { coords_minimap_ = enable; }
     [[nodiscard]] bool coordsMiniMap() const { return coords_minimap_; }
 
-    /// Space at the top of the widget that screen-space overlays must stay out
+    /// Space at the bottom of the widget that screen-space overlays must stay out
     /// of. The GPU renderer draws its own stats bar there.
-    void setScreenInset(int top) { screen_inset_ = std::max(0, top); }
+    void setScreenInset(int bottom) { screen_inset_ = std::max(0, bottom); }
     [[nodiscard]] int screenInset() const { return screen_inset_; }
 
     // --- iteration ---
@@ -80,6 +80,11 @@ class MapOverlays {
 
     // --- world-space layers ---
     // The painter must already carry the chunk->pixel transform.
+
+    /// The zoomed-out base layer: the archive's chunk presence map, one tile per
+    /// COORDS_REGION_SIZE chunks, clipped to the world. Both renderers draw this
+    /// instead of the terrain layers while coordsOverviewMode() holds.
+    void drawCoordsOverview(QPainter* painter) const;
 
     void drawCoordsBoundingBox(QPainter* painter) const;
     void drawHSAs(QPainter* painter) const;

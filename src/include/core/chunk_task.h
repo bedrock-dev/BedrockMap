@@ -45,6 +45,17 @@ struct BlockTipsInfo {
 /// water colours stay identical.
 [[nodiscard]] inline float waterSurfaceOpacity(float depth) { return std::clamp(0.30f + 0.15f * std::max(depth, 0.0f), 0.0f, 0.92f); }
 
+/// Display colour of one column for the GPU renderer: the baked flat colour with
+/// the water surface blended in over it, at the same depth curve the CPU styles
+/// use. `blend_water` is TRANSPARENT_WATER.
+[[nodiscard]] inline QRgb mapDisplayColor(const BlockTipsInfo& info, QRgb flat, bool blend_water) {
+    if (!blend_water || info.water_surface_color == 0) return flat;
+    const float opacity = waterSurfaceOpacity(static_cast<float>(info.height - info.solid_height));
+    const auto mix = [opacity](int base, int surface) { return static_cast<int>((1.0f - opacity) * base + opacity * surface); };
+    return qRgba(mix(qRed(flat), qRed(info.water_surface_color)), mix(qGreen(flat), qGreen(info.water_surface_color)),
+                 mix(qBlue(flat), qBlue(info.water_surface_color)), 255);
+}
+
 struct ChunkRegion {
     ~ChunkRegion();
     struct ActorCount {
