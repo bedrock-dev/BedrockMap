@@ -279,7 +279,7 @@
     <name>GpuMapWidget</name>
     <message>
         <location filename="../src/gpumapwidget.cpp"/>
-        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  pending %6  ao %7</source>
+        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1576,10 +1576,6 @@
     <message>
         <source>settingsDialog.map.maxScale</source>
         <translation>最大缩放等级</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.zoomSpeed</source>
-        <translation>缩放速度</translation>
     </message>
     <message>
         <source>settingsDialog.map.appearanceGroup</source>

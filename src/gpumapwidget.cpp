@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "asynclevelloader.h"
+#include "color.h"
 #include "config.h"
 #include "contextmenubuilder.h"
 #include "loguru/loguru.hpp"
@@ -119,8 +120,8 @@ GpuMapWidget::~GpuMapWidget() {
     if (!context() || !context()->isValid()) return;
     makeCurrent();
     if (vao_ != 0) glDeleteVertexArrays(1, &vao_);
-    GLuint textures[] = {color_texture_, height_texture_};
-    if (color_texture_ != 0 || height_texture_ != 0) glDeleteTextures(2, textures);
+    GLuint textures[] = {color_texture_, height_texture_, material_texture_, biome_palette_texture_};
+    glDeleteTextures(4, textures);
     doneCurrent();
     delete shader_;
     shader_ = nullptr;
@@ -149,7 +150,7 @@ QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_b
     QImage image;
     for (int frame = 0; frame < 128; ++frame) {
         image = grabFramebuffer();
-        if (uploads_.empty()) break;
+        if (uploads_.empty() && !visible_region_data_pending_) break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, 1);
     }
     capture_view_ = was_capturing;
@@ -316,6 +317,18 @@ void GpuMapWidget::initializeGL() {
     // supported Bedrock dimensions. This halves height-atlas bandwidth/memory.
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, kAtlasTexels, kAtlasTexels, 0, GL_RG, GL_FLOAT, nullptr);
 
+    glGenTextures(1, &material_texture_);
+    glBindTexture(GL_TEXTURE_2D, material_texture_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, kAtlasTexels, kAtlasTexels, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
+
+    const auto water_base = bl::get_block_color("minecraft:water");
+    water_base_color_ = {water_base.r / 255.0f, water_base.g / 255.0f, water_base.b / 255.0f};
+    initBiomePaletteTexture();
+
     initAtlasTextures();
     LOG_F(INFO, "GpuMapWidget: atlas %dx%d texels, %d region slots at 1 texel/block", kAtlasTexels, kAtlasTexels,
           slotsPerSide() * slotsPerSide());
@@ -325,19 +338,38 @@ void GpuMapWidget::initAtlasTextures() {
     // collectVisibleRegions() has just queued, and paintGL() drains that queue
     // before it draws (see the invariant there), so the undefined contents
     // glTexImage2D leaves behind are never read. Filling the atlas here would cost
-    // 4 B + 8 B per texel, i.e. ~200 MB of uploads at 4096.
+    // 4 B + 4 B + 2 B per texel, i.e. ~160 MB of uploads at 4096.
     buildBlankTiles();
     slots_.clear();
+}
+
+void GpuMapWidget::initBiomePaletteTexture() {
+    std::vector<unsigned char> palette(256u * 3u * 3u, 255u);
+    const bl::biome_tint_kind kinds[] = {bl::biome_tint_kind::water, bl::biome_tint_kind::leaves, bl::biome_tint_kind::grass};
+    for (int row = 0; row < 3; ++row) {
+        for (int id = 0; id < 256; ++id) {
+            const auto c = bl::get_biome_tint_color(static_cast<bl::biome>(id), kinds[row]);
+            const size_t offset = (static_cast<size_t>(row) * 256u + static_cast<size_t>(id)) * 3u;
+            palette[offset + 0] = c.r;
+            palette[offset + 1] = c.g;
+            palette[offset + 2] = c.b;
+        }
+    }
+    glGenTextures(1, &biome_palette_texture_);
+    glBindTexture(GL_TEXTURE_2D, biome_palette_texture_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 256, 3, 0, GL_RGB, GL_UNSIGNED_BYTE, palette.data());
 }
 
 void GpuMapWidget::invalidateAtlas() {
     // The blank tiles are sized in texels for the current resolution, so they
     // have to be rebuilt before anything is uploaded at the new one.
     buildBlankTiles();
-    // Bookkeeping only - deliberately no texture writes. The old contents stay in
-    // place, but every slot is unassigned and all visible slots are re-uploaded
-    // before the next draw (see paintGL), so stale pixels cannot survive a
-    // resolution or layer change.
+    // Old atlas contents stay allocated, but every visible slot is rebuilt
+    // before the shader pass in the same paint.
     slots_.clear();
     uploads_.clear();
     upload_index_.clear();
@@ -410,6 +442,7 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
 
     color_buffer_.resize(texels * 4);
     height_buffer_.resize(texels * 2);
+    material_buffer_.assign(texels * 2, 0);
     bool terrain = false;
 
     if (state == AsyncLevelLoader::RegionState::Ready && data) {
@@ -423,17 +456,47 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
             for (int tx = 0; tx < n; ++tx) {
                 const int bx = tx * bp;
                 const auto& info = tips[bx][bz];
-                // The biome bake is a categorical display colour, so it is used
-                // as-is; the terrain colour gets the water surface blended in at
-                // the same depth curve the CPU styles use.
-                const QRgb pixel = (biome_layer || !blend_water) ? line[bx] : mapDisplayColor(info, line[bx], true);
+                // Biome mode remains a pre-baked categorical visualisation. In
+                // terrain mode, however, the raw palette colour is uploaded and
+                // its biome tint is reconstructed in the fragment shader.
+                const QRgb pixel = biome_layer ? line[bx] : (info.gpu_base_color != 0 ? info.gpu_base_color : line[bx]);
                 const size_t color_index = (static_cast<size_t>(tz) * n + tx) * 4;
                 color_buffer_[color_index + 0] = static_cast<unsigned char>(qRed(pixel));
                 color_buffer_[color_index + 1] = static_cast<unsigned char>(qGreen(pixel));
                 color_buffer_[color_index + 2] = static_cast<unsigned char>(qBlue(pixel));
                 // Alpha is the shader's "this column is under water" flag, not
                 // opacity: it fades the bevel and AO out over water.
-                color_buffer_[color_index + 3] = (!biome_layer && info.water_surface_color != 0) ? 255 : 0;
+                color_buffer_[color_index + 3] = (!biome_layer && blend_water && info.gpu_water_overlay) ? 255 : 0;
+
+                if (!biome_layer) {
+                    constexpr unsigned char kWaterTint = 1u << 0;
+                    constexpr unsigned char kGrassTint = 1u << 1;
+                    constexpr unsigned char kLeavesTint = 1u << 2;
+                    constexpr unsigned char kWaterOverlay = 1u << 3;
+                    constexpr unsigned char kTerrainSample = 1u << 4;
+                    unsigned char flags = 0;
+                    // A ready atlas slot can still contain a region background
+                    // where no chunk exists. Keep its zero biome ID out of the
+                    // shader's interpolation neighbourhood.
+                    if (info.height > -128) flags |= kTerrainSample;
+                    switch (static_cast<bl::biome_tint_kind>(info.gpu_tint_kind)) {
+                        case bl::biome_tint_kind::water:
+                            flags |= kWaterTint;
+                            break;
+                        case bl::biome_tint_kind::grass:
+                            flags |= kGrassTint;
+                            break;
+                        case bl::biome_tint_kind::leaves:
+                            flags |= kLeavesTint;
+                            break;
+                        default:
+                            break;
+                    }
+                    if (blend_water && info.gpu_water_overlay) flags |= kWaterOverlay;
+                    const size_t material_index = (static_cast<size_t>(tz) * n + tx) * 2;
+                    material_buffer_[material_index + 0] = static_cast<unsigned char>(info.biome);
+                    material_buffer_[material_index + 1] = flags;
+                }
 
                 // Heights keep their world values, so the shader's ray stays in
                 // blocks; only the sentinel moves to the shader's own void height.
@@ -460,6 +523,8 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, slot_x, slot_z, n, n, GL_RGBA, GL_UNSIGNED_BYTE, color_buffer_.data());
     glBindTexture(GL_TEXTURE_2D, height_texture_);
     glTexSubImage2D(GL_TEXTURE_2D, 0, slot_x, slot_z, n, n, GL_RG, GL_FLOAT, height_buffer_.data());
+    glBindTexture(GL_TEXTURE_2D, material_texture_);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, slot_x, slot_z, n, n, GL_RG, GL_UNSIGNED_BYTE, material_buffer_.data());
 
     slots_[request.slot] = SlotState{request.region, state, data, blocks_per_texel_, true};
     ++total_uploads_;
@@ -474,7 +539,9 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
     // Bevel and AO sample one neighbouring atlas texel even with shadows off.
     // Keep that neighbourhood resident too; otherwise a recycled slot can leak
     // stale terrain into the viewport edge.
-    const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(blocks_per_texel_);
+    // Biome tint reads a 16-block world-space interpolation cell in addition to
+    // the height neighbours used by the terrain shading.
+    const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(std::max(blocks_per_texel_, 16));
     const double margin = std::max<double>(shadowReachBlocks(), shading_margin);
 
     const double min_x = world_origin.x() - margin;
@@ -488,6 +555,7 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
     const int rz1 = floorDiv(static_cast<int>(std::floor(max_z)), kRegionBlocks);
 
     visible_regions_ = 0;
+    visible_region_data_pending_ = false;
     const int dim = view_ ? view_->dim() : 0;
     const int side = slotsPerSide();
     // Discard uploads made irrelevant by a pan/zoom before spending any GPU
@@ -517,15 +585,18 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
             const int slot = floorMod(rz, side) * side + floorMod(rx, side);
             const ChunkRegion* data = nullptr;
             const auto now = level_loader_->regionState(region, &data);
+            if (now == AsyncLevelLoader::RegionState::Unloaded) visible_region_data_pending_ = true;
             const auto state_it = slots_.find(slot);
             const SlotState* state = state_it == slots_.end() ? nullptr : &state_it->second;
             // A slot showing a different region, content uploaded at a different
             // atlas resolution, or an older state for this one has to be
             // re-uploaded - including when a bake finishes and replaces the
             // background, and when an edit re-bakes the region (new object).
-            const bool up_to_date = state && state->assigned && state->bp == blocks_per_texel_ && state->region == region &&
-                                    state->state == now && (now != AsyncLevelLoader::RegionState::Ready || state->source == data);
+            const bool matches_request = state && state->bp == blocks_per_texel_ && state->region == region && state->state == now &&
+                                         (now != AsyncLevelLoader::RegionState::Ready || state->source == data);
+            const bool up_to_date = matches_request && state->assigned;
             if (up_to_date) continue;
+
             queueUpload({region, slot});
         }
     }
@@ -612,6 +683,7 @@ void GpuMapWidget::paintGL() {
         // reporting the last terrain frame's counters.
         visible_regions_ = 0;
         uploaded_last_frame_ = 0;
+        visible_region_data_pending_ = false;
     }
 
     bool ready = level_loader_ && level_loader_->isOpen() && shader_ && shader_->isLinked() && color_texture_ != 0;
@@ -698,7 +770,7 @@ void GpuMapWidget::paintGL() {
             ++uploaded_last_frame_;
             it = uploads_.erase(it);
         }
-        upload_index_.clear();
+        reindexUploads();
         stage_ms(upload_ms_);
     }
 
@@ -713,6 +785,8 @@ void GpuMapWidget::paintGL() {
         shader_->bind();
         shader_->setUniformValue("uColor", 0);
         shader_->setUniformValue("uHeight", 1);
+        shader_->setUniformValue("uMaterial", 2);
+        shader_->setUniformValue("uBiomePalette", 3);
         shader_->setUniformValue("uViewOrigin", static_cast<float>(world_origin.x()), static_cast<float>(world_origin.y()));
         shader_->setUniformValue("uPxPerBlock", static_cast<float>(device_px_per_block));
         shader_->setUniformValue("uAtlasTexels", static_cast<float>(kAtlasTexels));
@@ -722,7 +796,6 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uShadowStrength", shadow_strength_);
         shader_->setUniformValue("uShadowReach", static_cast<float>(shadowReachBlocks()));
         shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(std::max(0.25, 1.0 / texel_px), 0.25, 0.5)));
-        shader_->setUniformValue("uPenumbra", penumbra_);
         shader_->setUniformValue("uAoStrength", ao_strength_);
         shader_->setUniformValue("uAoDirections", ao_directions_);
         shader_->setUniformValue("uAoSteps", ao_steps_);
@@ -735,11 +808,16 @@ void GpuMapWidget::paintGL() {
         // height-driven bevel, AO, shadows, and water treatment must not alter it.
         const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
         shader_->setUniformValue("uFlatShading", (flat_shading_ || biome_layer) ? 1.0f : 0.0f);
+        shader_->setUniformValue("uWaterBaseColor", water_base_color_[0], water_base_color_[1], water_base_color_[2]);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, color_texture_);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, height_texture_);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, material_texture_);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, biome_palette_texture_);
         // Leave the default unit active for whatever binds textures next (the
         // chrome is QPainter work on top of this pass).
         glActiveTexture(GL_TEXTURE0);
@@ -751,6 +829,7 @@ void GpuMapWidget::paintGL() {
         // covers the CPU side of the frame.
         if (gpu_timing_) glFinish();
         shader_->release();
+
     }
     stage_ms(shade_ms_);
 
@@ -791,20 +870,16 @@ void GpuMapWidget::paintGL() {
     drawStats(painter, last_frame_ms_, px_per_block);
     painter.end();
 
-    // The queue may still hold the rest of a rebuild: schedule the follow-up
-    // frame that writes it, which is what spreads a resolution change out.
-    if (ready && !uploads_.empty()) update();
 }
 
 void GpuMapWidget::drawStats(QPainter& painter, double frame_ms, double px_per_block) {
     if (width() < 160 || height() < 60) return;
     const QString stats =
-        tr("GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  pending %6  ao %7")
+        tr("GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6")
             .arg(QString::number(frame_ms, 'f', 1), QString::number(px_per_block, 'f', 2))
             .arg(blocks_per_texel_)
             .arg(visible_regions_)
             .arg(uploaded_last_frame_)
-            .arg(static_cast<int>(uploads_.size()))
             .arg(QString::number(static_cast<double>(ao_strength_), 'f', 2)) +
         tr("  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6")
             .arg(QString::number(collect_ms_, 'f', 1), QString::number(upload_ms_, 'f', 1), QString::number(blank_upload_ms_, 'f', 1),

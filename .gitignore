@@ -90,3 +90,4 @@ cache
 maps
 config.ini
 .github/agents/*
+docs/*

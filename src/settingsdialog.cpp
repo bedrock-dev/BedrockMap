@@ -117,7 +117,6 @@ void SettingsDialog::loadSettings() {
     // overlay, and appearance settings.
     ui->minScaleSpin->setValue(setting::current().MINIMUM_SCALE_LEVEL);
     ui->maxScaleSpin->setValue(setting::current().MAXIMUM_SCALE_LEVEL);
-    ui->zoomSpeedEdit->setText(QString::number(setting::current().ZOOM_SPEED, 'f', 1));
     ui->gridColorEdit->setText(setting::current().GRID_LINE_COLOR);
     ui->voidColorEdit->setText(setting::current().VOID_MAP_COLOR);
     ui->actorStyleCombo->setCurrentIndex(std::clamp(setting::current().ACTOR_RENDER_STYLE, 0, 1));
@@ -289,11 +288,6 @@ void SettingsDialog::onSave() {
     values.SHADOW_LEVEL = ui->shadowLevelSpin->value();
     values.MINIMUM_SCALE_LEVEL = ui->minScaleSpin->value();
     values.MAXIMUM_SCALE_LEVEL = ui->maxScaleSpin->value();
-    {
-        bool ok = false;
-        float val = ui->zoomSpeedEdit->text().toFloat(&ok);
-        values.ZOOM_SPEED = ok ? std::clamp(val, 0.1f, 5.0f) : 1.2f;
-    }
     values.GRID_LINE_COLOR = ui->gridColorEdit->text();
     values.VOID_MAP_COLOR = ui->voidColorEdit->text();
     values.ACTOR_RENDER_STYLE = ui->actorStyleCombo->currentIndex();

@@ -46,6 +46,32 @@ void MapView::zoomBy(qreal factor, const QPointF& anchorViewPos) {
     setScale(scale() * factor, anchorViewPos);
 }
 
+void MapView::zoomToAdjacentLevel(int direction, const QPointF& anchorViewPos) {
+    if (direction == 0) return;
+
+    const qreal current = scale();
+    if (!std::isfinite(current) || current <= 0.0) return;
+
+    const qreal octave = std::exp2(std::floor(std::log2(current)));
+    constexpr qreal kEpsilon = 1.0e-6;
+    qreal target = current;
+
+    if (direction > 0) {
+        const qreal step = octave / kZoomSubdivisionsPerOctave;
+        target = (std::floor(current / step + kEpsilon) + 1.0) * step;
+    } else if (std::abs(current - octave) <= octave * kEpsilon) {
+        // At an exact power of two, the preceding level belongs to the octave
+        // below (e.g. 2 -> 1.75 rather than 1.5).
+        const qreal previous_octave = octave * 0.5;
+        target = previous_octave * (1.0 + static_cast<qreal>(kZoomSubdivisionsPerOctave - 1) / kZoomSubdivisionsPerOctave);
+    } else {
+        const qreal step = octave / kZoomSubdivisionsPerOctave;
+        target = (std::ceil(current / step - kEpsilon) - 1.0) * step;
+    }
+
+    setScale(target, anchorViewPos);
+}
+
 void MapView::translate(const QPointF& delta) {
     world_to_view_.translate(delta.x(), delta.y());
     emit viewChanged();

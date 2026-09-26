@@ -2,10 +2,10 @@
 
 // Per-pixel shading for the 2D map. The whole world is a pair of textures with
 // one texel per block:
-//   uColor  : rgb = final block colour (biome tint + water already blended),
-//             a   = 255 when the column has a water surface, 0 otherwise
+//   uColor  : rgb = raw block palette colour, a = 255 with a water overlay
 //   uHeight : r   = solid surface Y (bevel comparison),
 //             g   = top surface Y (shadow occluder)
+//   uMaterial: r = categorical biome id, g = water/grass/leaves/overlay/terrain bits
 // Both are stored in one world-aligned atlas, so a neighbour lookup anywhere -
 // including across region borders - is a plain texture fetch. Bevel and shadow
 // are evaluated per screen pixel, which is why neither the tile resolution nor
@@ -13,6 +13,8 @@
 
 uniform sampler2D uColor;
 uniform sampler2D uHeight;
+uniform sampler2D uMaterial;
+uniform sampler2D uBiomePalette;
 
 uniform vec2 uViewOrigin;      // world (x, z) at gl_FragCoord (0, 0), i.e. the bottom-left pixel
 uniform float uPxPerBlock;     // device pixels per block
@@ -23,7 +25,6 @@ uniform float uShadowDarkness; // colour multiplier where the shadow is fully da
 uniform float uShadowStrength; // how much of that darkening the shadow applies
 uniform float uShadowReach;    // ray march length, in blocks
 uniform float uEdgeWidth;      // bevel width, as a fraction of one texel
-uniform float uPenumbra;       // penumbra slope: 0 = hard shadow, larger = softer
 uniform float uAoStrength;     // ambient occlusion depth; 0 disables it
 uniform int uAoDirections;     // azimuths marched for the ambient occlusion
 uniform int uAoSteps;          // samples taken along each azimuth
@@ -33,6 +34,7 @@ uniform float uBevelStrength;  // bevel depth; 0 removes it, 1 is the full bevel
 uniform float uSaturation;     // 0 = greyscale, 1 = the colours as stored, 2 = boosted
 uniform float uBrightness;     // 1 = neutral, 0 = black, 2 = twice as bright
 uniform float uFlatShading;    // 1 = output the raw colour, for A/B comparison
+uniform vec3 uWaterBaseColor;  // unblended minecraft:water palette colour
 
 out vec4 fragColor;
 
@@ -47,12 +49,50 @@ const int MAX_SHADOW_STEPS = 256;
 // is used, so the cost is adjustable without recompiling.
 const int MAX_AO_DIRECTIONS = 16;
 const int MAX_AO_STEPS = 32;
+// This compensation affects only biome-tinted materials. Global brightness
+// would also wash out sand, snow and other already-bright blocks.
+const float BIOME_TINT_BRIGHTNESS = 1.30;
+// Biome tint is deliberately filtered over world blocks rather than framebuffer
+// pixels. At full atlas resolution it makes each transition sixteen blocks wide;
+// a coarse atlas cannot resolve a footprint smaller than one of its texels.
+const float BIOME_BLEND_BLOCKS = 16.0;
 
 // One atlas texel covers uBlocksPerTexel blocks, so sampling snaps to the texel
 // grid. At 1 that grid is the block grid itself.
 vec2 atlasUV(vec2 block) { return fract((floor(block / uBlocksPerTexel) + 0.5) / uAtlasTexels); }
 
 vec4 colorAt(vec2 block) { return texture(uColor, atlasUV(block)); }
+vec2 materialAt(vec2 block) { return texture(uMaterial, atlasUV(block)).rg; }
+
+int materialFlags(vec2 material) { return int(floor(material.g * 255.0 + 0.5)); }
+
+const int TERRAIN_SAMPLE = 16;
+
+bool hasBiomeSample(vec2 block) { return (materialFlags(materialAt(block)) & TERRAIN_SAMPLE) != 0; }
+
+vec3 paletteTint(float biome_id, int row) {
+    int id = clamp(int(floor(biome_id * 255.0 + 0.5)), 0, 255);
+    vec3 tint = texelFetch(uBiomePalette, ivec2(id, row), 0).rgb;
+    return clamp(tint * BIOME_TINT_BRIGHTNESS, 0.0, 1.0);
+}
+
+// Biomes are categorical IDs: interpolate their resolved RGB tint colours, not
+// the IDs themselves. Neighbours without terrain use the shaded texel's biome.
+vec3 interpolatedBiomeTint(vec2 world, int row, float fallback_biome) {
+    float span = max(BIOME_BLEND_BLOCKS, uBlocksPerTexel);
+    vec2 cell = floor(world / span) * span;
+    vec2 local = (world - cell) / span;
+    vec2 east = cell + vec2(span, 0.0);
+    vec2 south = cell + vec2(0.0, span);
+    vec2 south_east = cell + vec2(span);
+    float b00 = hasBiomeSample(cell) ? materialAt(cell).r : fallback_biome;
+    float b10 = hasBiomeSample(east) ? materialAt(east).r : fallback_biome;
+    float b01 = hasBiomeSample(south) ? materialAt(south).r : fallback_biome;
+    float b11 = hasBiomeSample(south_east) ? materialAt(south_east).r : fallback_biome;
+    vec3 north = mix(paletteTint(b00, row), paletteTint(b10, row), local.x);
+    vec3 south_tint = mix(paletteTint(b01, row), paletteTint(b11, row), local.x);
+    return mix(north, south_tint, local.y);
+}
 
 // (solid surface, top surface); solid == VOID_HEIGHT for a block-less column.
 vec2 heightAt(vec2 block) { return texture(uHeight, atlasUV(block)).rg; }
@@ -130,8 +170,8 @@ float lightCornerContinuity(float tx, float ty, float cur, float left, float up,
 // step's ends). Here the occlusion is a function of the terrain around the pixel and
 // the sample distances are a continuous function of the pixel position, so two blocks
 // at the same height genuinely see the same thing and there is nothing left to trade.
-float ambientOcclusion(vec2 world, float solid) {
-    if (uAoStrength <= 0.0) return 1.0;
+float ambientOcclusion(vec2 world, float solid, float strength) {
+    if (strength <= 0.0) return 1.0;
 
     float sum = 0.0;
     const float tau = 6.28318530718;
@@ -163,46 +203,60 @@ float ambientOcclusion(vec2 world, float solid) {
     }
 
     float occlusion = sum / float(max(uAoDirections, 1));
-    return 1.0 - uAoStrength * clamp(occlusion, 0.0, 1.0);
+    return 1.0 - strength * clamp(occlusion, 0.0, 1.0);
 }
 
-// Marches towards the sun and accumulates the strongest partial occlusion. A
-// column counts as an occluder only in proportion to how far its height rises
-// above the ray, which is the same relation the game's soft shadow has: an
-// occluder barely above the line darkens weakly and the penumbra widens with
-// distance, so shadow edges stay soft without jittering the ray.
-//
-// The ray starts at the pixel rather than at its block's centre, and steps by half
-// a texel. Both matter: with a block-anchored ray every pixel of a block sampled the
-// same points, so the occlusion was one value per block and the shadow's outline was
-// quantised to the block grid. Anchored at the pixel, how much of the occluder stands
-// above the ray changes continuously as the pixel moves, so the shadow's edge is a
-// line at sub-block accuracy and the half-texel step keeps the near end of it from
-// shifting a whole texel at a time.
+// At coarse atlas resolutions, a texel is only a representative column of a
+// whole bp x bp area.  Treating that column as exact terrain turns ordinary
+// sampling variation into noisy outlines and AO speckles, so high-frequency
+// detail shading deliberately fades out as the atlas gets coarser.
+float bevelLodFade() {
+    if (uBlocksPerTexel >= 8.0) return 0.0;
+    if (uBlocksPerTexel >= 4.0) return 0.20;
+    if (uBlocksPerTexel >= 2.0) return 0.55;
+    return 1.0;
+}
+
+float aoLodFade() {
+    if (uBlocksPerTexel >= 4.0) return 0.0;
+    if (uBlocksPerTexel >= 2.0) return 0.25;
+    return 1.0;
+}
+
+// A texel that is only a pixel or two wide cannot carry a stable edge ramp:
+// bevel and AO then alternate between neighbouring columns and read as dirt.
+// Fade those high-frequency terms by their *screen* footprint as well as by
+// atlas resolution. The colour/height sample itself is intentionally unchanged.
+float screenDetailFade(float low, float high) {
+    return smoothstep(low, high, uPxPerBlock * uBlocksPerTexel);
+}
+
+// A deterministic binary DDA ray through height texels.  The former per-screen-
+// pixel march rounded every sample independently with floor(), so adjacent pixels
+// could visit different cells half way down a ray.  That produced split, grey
+// shadow branches behind one obstacle.  Starting on the current height texel and
+// advancing exactly one height texel per iteration gives the whole texel one stable
+// path and a deliberately hard edge.
 float shadowOcclusion(vec2 world, float topY) {
-    float occlusion = 0.0;
-    float step = max(0.5 * uBlocksPerTexel, 0.0625);
-    float rayHeight = topY + 1.0;
-    vec2 p = world;
+    vec2 texel = floor(world / uBlocksPerTexel);
     for (int i = 1; i <= MAX_SHADOW_STEPS; i++) {
-        float travelled = float(i) * step;
+        float travelled = float(i) * uBlocksPerTexel;
         if (travelled > uShadowReach) break;
-        p += uSunStep * step;
-        float occluder = heightAt(floor(p)).g;
-        if (occluder <= VOID_HEIGHT) break;
-        float rise = occluder - (rayHeight + travelled);
-        if (rise > 0.0) {
-            occlusion = max(occlusion, clamp(rise / (uPenumbra * travelled + 1.0), 0.0, 1.0));
-            if (occlusion >= 0.999) break;
-        }
+        vec2 sampleCell = (texel + uSunStep * float(i)) * uBlocksPerTexel;
+        float occluder = heightAt(sampleCell).g;
+        // A genuine empty column is transparent to directional light; a later
+        // hill can still shadow across it.
+        if (occluder <= VOID_HEIGHT) continue;
+        if (occluder > topY + travelled) return 1.0;
     }
-    return occlusion;
+    return 0.0;
 }
 
 void main() {
     // gl_FragCoord.y counts up from the bottom of the widget, while world z grows
     // downwards on screen, so the two run in opposite directions.
     vec2 world = vec2(uViewOrigin.x + gl_FragCoord.x / uPxPerBlock, uViewOrigin.y - gl_FragCoord.y / uPxPerBlock);
+
     // The texel this pixel belongs to, and where inside it the pixel sits.
     vec2 texel = floor(world / uBlocksPerTexel);
     vec2 cell = texel * uBlocksPerTexel;
@@ -221,24 +275,48 @@ void main() {
         return;
     }
 
+    vec2 material = materialAt(cell);
+    const int WATER_TINT = 1;
+    const int GRASS_TINT = 2;
+    const int LEAVES_TINT = 4;
+    const int WATER_OVERLAY = 8;
+    int flags = materialFlags(material);
+    vec3 surface_rgb = surface.rgb;
+    // Do the four-neighbour palette lookup only for material that needs it.
+    // The palette texture is normalized RGB, so this is the same multiply the
+    // CPU's blend_color_with_biome() applies to an unblended block palette entry.
+    if ((flags & (WATER_TINT | GRASS_TINT | LEAVES_TINT | WATER_OVERLAY)) != 0) {
+        if ((flags & WATER_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 0, material.r);
+        if ((flags & LEAVES_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 1, material.r);
+        if ((flags & GRASS_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 2, material.r);
+        if ((flags & WATER_OVERLAY) != 0) {
+            vec3 water = uWaterBaseColor * interpolatedBiomeTint(world, 0, material.r);
+            float opacity = clamp(0.30 + 0.15 * max(top - solid, 0.0), 0.0, 0.92);
+            surface_rgb = mix(surface_rgb, water, opacity);
+        }
+    }
+
+    float factor = 1.0;
+
     // --- bevel from the two neighbours towards the light, continuous in screen
     // space ---
-    float w = uEdgeWidth;
-    float tLeft = clamp(1.0 - local.x / w, 0.0, 1.0);
-    float tTop = clamp(1.0 - local.y / w, 0.0, 1.0);
+    float bevel_fade = bevelLodFade() * screenDetailFade(0.75, 2.5) * uBevelStrength;
+    if (bevel_fade > 0.0) {
+        float w = uEdgeWidth;
+        float tLeft = clamp(1.0 - local.x / w, 0.0, 1.0);
+        float tTop = clamp(1.0 - local.y / w, 0.0, 1.0);
 
-    float left = heightAt(cell + vec2(-uBlocksPerTexel, 0.0)).r;
-    float up = heightAt(cell + vec2(0.0, -uBlocksPerTexel)).r;
-    float up_left = heightAt(cell + vec2(-uBlocksPerTexel, -uBlocksPerTexel)).r;
+        float left = heightAt(cell + vec2(-uBlocksPerTexel, 0.0)).r;
+        float up = heightAt(cell + vec2(0.0, -uBlocksPerTexel)).r;
+        float up_left = heightAt(cell + vec2(-uBlocksPerTexel, -uBlocksPerTexel)).r;
 
-    float bevel = bevelFactor(tLeft, solid, left) * bevelFactor(tTop, solid, up);
-    bevel = clamp(bevel, 0.55, 1.58) * lightCornerContinuity(tLeft, tTop, solid, left, up, up_left);
-    // Scaling the bevel's distance from 1 rather than the factor itself keeps 0 an
-    // exact switch: the shading is then just the flat colour.
-    float factor = 1.0 + (bevel - 1.0) * uBevelStrength;
+        float bevel = bevelFactor(tLeft, solid, left) * bevelFactor(tTop, solid, up);
+        bevel = clamp(bevel, 0.55, 1.58) * lightCornerContinuity(tLeft, tTop, solid, left, up, up_left);
+        factor = 1.0 + (bevel - 1.0) * bevel_fade;
+    }
 
     // --- ambient occlusion (outside the bevel clamp: it is its own shading term) ---
-    factor *= ambientOcclusion(world, solid);
+    factor *= ambientOcclusion(world, solid, uAoStrength * aoLodFade() * screenDetailFade(1.0, 3.0));
 
     // Bevels and occlusion fade out under water the same way the CPU styles do:
     // the sea floor is what is being shaded, and a depth of five blocks hides it.
@@ -254,15 +332,25 @@ void main() {
     // in that case; otherwise the setting removes the shadow from the output
     // while still paying for every height lookup.
     float occlusion = 0.0;
-    if (uShadowStrength > 0.0 && uShadowReach > 0.0) occlusion = shadowOcclusion(world, top) * uShadowStrength;
+    // Water is rendered from the sea floor and must not become a second
+    // shadow-casting surface; this matches the CPU bake's water rule.
+    if (surface.a <= 0.5 && uShadowStrength > 0.0 && uShadowReach > 0.0)
+        occlusion = shadowOcclusion(world, top) * uShadowStrength;
     factor *= mix(1.0, uShadowDarkness, clamp(occlusion, 0.0, 1.0));
 
-    // --- saturation ---
-    // Applied after the shading so the greys it mixes towards are the shaded ones.
-    vec3 rgb = clamp(surface.rgb * factor * uBrightness, 0.0, 1.0);
+    // --- base exposure and saturation ---
+    // Both are applied before terrain shading. This keeps bevel/AO/shadow as
+    // pure lighting terms even when exposure or saturation pushes a highlight
+    // to the displayable range.
+    // Lift the base colour before terrain shading. Clamping only after the
+    // bevel would turn a bright snow block into 1.0 before its dark side could
+    // be represented, erasing the edge contrast. The pre-shading clamp keeps
+    // highlights bounded while leaving the bevel/AO/shadow factor room to darken.
+    vec3 rgb = clamp(surface_rgb * uBrightness, 0.0, 1.0);
     if (uSaturation != 1.0) {
         float luma = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
         rgb = clamp(mix(vec3(luma), rgb, uSaturation), 0.0, 1.0);
     }
+    rgb = clamp(rgb * factor, 0.0, 1.0);
     fragColor = vec4(rgb, 1.0);
 }

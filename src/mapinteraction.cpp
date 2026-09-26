@@ -124,9 +124,7 @@ bool MapInteraction::wheel(QWheelEvent* event) {
         event->accept();
         return true;
     }
-    constexpr qreal kStep = 1.1;
-    const qreal factor = (delta > 0) ? kStep : 1.0 / kStep;
-    view_->zoomBy(factor, event->position());
+    view_->zoomToAdjacentLevel(delta > 0 ? 1 : -1, event->position());
     event->accept();
     return true;
 }

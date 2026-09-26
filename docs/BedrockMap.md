@@ -614,6 +614,8 @@ LevelPageWidget (QVBoxLayout)
 
 两个渲染器**是同级、可互换的**：`CpuMapWidget` 用 `QPainter` 画烘焙好的区块贴图，`GpuMapWidget` 把同样的烘焙数据上传进一张图集然后用 GLSL 逐像素着色（斜面光照 / AO / 阴影）。
 
+> GPU 渲染器的完整流程（每帧顺序、图集与槽位、分辨率选择、瓦片降采样与上传、着色、概览模式、诊断与 bench）见 [`docs/gpuMapRenderer.md`](gpuMapRenderer.md)。
+
 它们都只负责自己那份绘制，通过构造函数接收同一组共享对象：
 
 ```cpp
@@ -866,12 +868,12 @@ struct MapFilter {
 | `GRID_WIDTH`           | 1        | 网格宽度（单位：区块） |
 | `SHADOW_LEVEL`         | 150      | 阴影强度 (0-255)       |
 | `ZOOM_SPEED`           | 1.2      | 缩放速度               |
-| `MINIMUM_SCALE_LEVEL`  | 4        | 最小缩放级别           |
+| `MINIMUM_SCALE_LEVEL`  | 2        | 最小缩放级别           |
 | `MAXIMUM_SCALE_LEVEL`  | 1024     | 最大缩放级别           |
 | `MAP_RENDER_STYLE`     | 1        | 渲染风格               |
 | `TRANSPARENT_WATER`    | true     | 透明水渲染             |
 | `THREAD_NUM`           | 8        | 线程数                 |
-| `REGION_CACHE_SIZE`    | 4096     | 区域缓存容量           |
+| `REGION_CACHE_SIZE`    | 16384    | 区域缓存容量（条目数） |
 | `OPEN_NBT_EDITOR_ONLY` | false    | 仅 NBT 编辑器模式      |
 | `LANGUAGE`             | zh_CN    | 语言                   |
 | `LOAD_GLOBAL_DATA`     | true     | 加载全局数据           |
@@ -1029,29 +1031,29 @@ tryGetRegion(region_pos)
 
 ### 配置项
 
-| 章节      | 键                           | 默认值    | 说明                  |
-| --------- | ---------------------------- | --------- | --------------------- |
-| `[Gui]`   | `theme`                      | `light`   | 应用主题              |
-|           | `font_family`                | 空        | 自定义字体            |
-|           | `font_size`                  | `-1`      | 字体大小              |
-|           | `nbt_editor_mode`            | `false`   | 纯 NBT 编辑器模式启动 |
-| `[Map]`   | `render_style`               | `1`       | 渲染风格（0/1/2）     |
-|           | `terrian_shadow_level`       | `150`     | 地形阴影强度          |
-|           | `min_scale_level`            | `4`       | 最小缩放级别          |
-|           | `max_scale_level`            | `1024`    | 最大缩放级别          |
-|           | `zoom_speed`                 | `1.2`     | 缩放速度              |
-|           | `grid_line_color`            | `#bbbbbb` | 网格线颜色            |
-|           | `actor_render_style`         | `0`       | 实体渲染风格          |
-|           | `actor_border_width`         | `2`       | 实体边界宽度          |
-|           | `actor_border_color`         | `#000000` | 实体边界颜色          |
-|           | `void_color`                 | `#dddddd` | 空白区域颜色          |
-|           | `transparent_water`          | `true`    | 透明水渲染            |
-| `[Cache]` | `region_cache_size`          | `4096`    | 区域渲染缓存容量      |
-|           | `empty_cache_size`           | `16384`   | 空区域缓存容量        |
-|           | `max_thread_num`             | `8`       | 最大线程数            |
-| `[Misc]`  | `load_global_data`           | `true`    | 加载全局数据          |
-|           | `max_global_data_load_count` | `4096`    | 全局数据最大加载数量  |
-| `[Lang]`  | `lang`                       | `zh_CN`   | 语言设置              |
+| 章节      | 键                           | 默认值    | 说明                                   |
+| --------- | ---------------------------- | --------- | -------------------------------------- |
+| `[Gui]`   | `theme`                      | `light`   | 应用主题                               |
+|           | `font_family`                | 空        | 自定义字体                             |
+|           | `font_size`                  | `-1`      | 字体大小                               |
+|           | `nbt_editor_mode`            | `false`   | 纯 NBT 编辑器模式启动                  |
+| `[Map]`   | `render_style`               | `1`       | 渲染风格（0/1/2）                      |
+|           | `terrian_shadow_level`       | `150`     | 地形阴影强度                           |
+|           | `min_scale_level`            | `2`       | 最小缩放级别（低于它改用区块坐标总览） |
+|           | `max_scale_level`            | `1024`    | 最大缩放级别                           |
+|           | `zoom_speed`                 | `1.2`     | 缩放速度                               |
+|           | `grid_line_color`            | `#bbbbbb` | 网格线颜色                             |
+|           | `actor_render_style`         | `0`       | 实体渲染风格                           |
+|           | `actor_border_width`         | `2`       | 实体边界宽度                           |
+|           | `actor_border_color`         | `#000000` | 实体边界颜色                           |
+|           | `void_color`                 | `#dddddd` | 空白区域颜色                           |
+|           | `transparent_water`          | `true`    | 透明水渲染                             |
+| `[Cache]` | `region_cache_size`          | `16384`   | 区域渲染缓存容量                       |
+|           | `empty_cache_size`           | `65536`   | 空区域缓存容量                         |
+|           | `max_thread_num`             | `8`       | 最大线程数                             |
+| `[Misc]`  | `load_global_data`           | `true`    | 加载全局数据                           |
+|           | `max_global_data_load_count` | `4096`    | 全局数据最大加载数量                   |
+| `[Lang]`  | `lang`                       | `zh_CN`   | 语言设置                               |
 
 ---
 

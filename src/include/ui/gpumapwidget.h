@@ -59,9 +59,9 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// *magnified* near every band boundary - and magnification is what makes any
     /// reduction look wrong on screen (point sampling shows blocks, averaging shows
     /// blur). With 4096 the range is 0.47..0.94, i.e. only ever minification.
-    /// Cost is linear in the area: colour 4 B + height 4 B + state 1 B per texel,
-    /// so 4096^2 is about 144 MB against 36 MB at 2048.
-    static constexpr int kAtlasTexels = 4096;
+    /// Cost is linear in the area: colour 4 B + height 4 B + material 2 B + state
+    /// 1 B per texel, so 4096^2 is about 176 MB against 44 MB at 2048.
+    static constexpr int kAtlasTexels = 8192;
     /// Side of one region tile in world blocks (8x8 chunks).
     static constexpr int kRegionBlocks = constant::RW * 16;
 
@@ -101,7 +101,8 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     [[nodiscard]] int shadowSteps() const { return shadow_steps_; }
 
-    /// 0 = hard shadow edge, larger = wider penumbra.
+    /// Retained for source compatibility. GPU map shadows are intentionally
+    /// binary and do not use a penumbra.
     void setPenumbra(float penumbra);
 
     [[nodiscard]] float penumbra() const { return penumbra_; }
@@ -209,8 +210,10 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void syncSlots();
     /// Fill the atlas textures for the first time (startup).
     void initAtlasTextures();
-    /// Mark every slot stale after a resolution or dimension change. No texture
-    /// writes: the visible slots are refilled in the frame that follows.
+    /// Upload the compact 256-entry water/leaves/grass tint palette.
+    void initBiomePaletteTexture();
+    /// Mark every slot stale after a resolution or dimension change.  Validity is
+    /// cleared immediately; visible slots are refilled over later frames.
     void invalidateAtlas();
     /// Height of the stats strip drawn along the top. The shared overlays are
     /// told to keep clear of it.
@@ -248,12 +251,10 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Rebuild the slot -> queue index after the queue was pruned.
     void reindexUploads();
 
-    /// Write one region's tile into the atlas and record it as resident. A tile
-    /// narrower than the slot (a coarser pyramid level, or a background tile) is
-    /// written into the slot's top-left corner; the shader magnifies it until the
-    /// target level replaces it. Returns whether it held terrain - the background
-    /// tiles are the bulk of the uploads at coarse LODs, so the two are timed
-    /// apart (see drawStats).
+    /// Write one complete region tile into the atlas and record it as resident.
+    /// The slot becomes visible only after its colour and height uploads finish.
+    /// Returns whether it held terrain so diagnostics can time background uploads
+    /// separately.
     [[nodiscard]] bool uploadRegion(const UploadRequest& request);
 
     /// Build the two chessboard tiles the CPU map shows where there is no
@@ -277,6 +278,11 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     GLuint vao_{0};
     GLuint color_texture_{0};
     GLuint height_texture_{0};
+    /// R = biome id, G = material flags (water, grass, leaves, water overlay, terrain sample).
+    GLuint material_texture_{0};
+    /// Three rows of RGB tint colours indexed by the biome id.
+    GLuint biome_palette_texture_{0};
+    std::array<float, 3> water_base_color_{0.64f, 0.64f, 0.64f};
 
     int atlas_dim_{-1};        // dimension the atlas currently holds, -1 = nothing
     int blocks_per_texel_{1};  // atlas resolution, see blocksPerTexelFor()
@@ -293,13 +299,15 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     std::unordered_map<int, size_t> upload_index_;
     std::vector<unsigned char> color_buffer_;
     std::vector<float> height_buffer_;
+    std::vector<unsigned char> material_buffer_;
     /// Prebuilt background tiles, uploaded as-is when a slot has no terrain.
     std::vector<unsigned char> blank_dark_;
     std::vector<unsigned char> blank_light_;
 
     bool shadow_enabled_{true};
     int shadow_steps_{48};
-    float penumbra_{0.18f};
+    // Compatibility setting; hard shadows intentionally ignore this value.
+    float penumbra_{0.0f};
     float ao_strength_{0.10f};
     int ao_directions_{16};
     int ao_steps_{16};
@@ -338,6 +346,9 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     int uploaded_last_frame_{0};
     int total_uploads_{0};
     int visible_regions_{0};
+    /// True when collectVisibleRegions() found a region whose bake has not
+    /// completed; offscreen capture waits for those bakes before returning.
+    bool visible_region_data_pending_{false};
 };
 
 #endif  // BEDROCKMAP_GPUMAPWIDGET_H

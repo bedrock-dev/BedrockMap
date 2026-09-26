@@ -61,6 +61,11 @@ class MapView : public QObject {
     /// Multiply the current scale by a factor about a point in view coordinates.
     void zoomBy(qreal factor, const QPointF& anchorViewPos);
 
+    /// Move to the adjacent discrete zoom level.  Each power-of-two interval is
+    /// divided into equal linear steps, which keeps atlas-resolution transitions
+    /// predictable instead of accumulating multiplicative wheel factors.
+    void zoomToAdjacentLevel(int direction, const QPointF& anchorViewPos);
+
     void translate(const QPointF& delta);
 
     void setMinScale(qreal scale) { min_scale_ = scale; }
@@ -164,6 +169,8 @@ class MapView : public QObject {
     void selectionChanged();
 
    private:
+    static constexpr int kZoomSubdivisionsPerOctave = 4;
+
     QTransform world_to_view_;
     QRect camera_;
     RenderOption options_;

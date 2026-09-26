@@ -26,7 +26,6 @@
 namespace bl::config {
     void set_log_mismatched_actor(bool);
     void set_log_missing_block_color(bool);
-    void set_color_brightness(float);
 }  // namespace bl::config
 
 std::optional<AppVersion> AppVersion::parse(const QString& text) {
@@ -117,7 +116,6 @@ const setting::Settings& setting::current() { return mutableSettings(); }
 
 // Utility functions
 void constant::initColorTable() {
-    bl::config::set_color_brightness(setting::current().TINT_BRIGHTNESS);
     if (!bl::init_biome_color_palette_from_file(constant::BIOME_FILE_PATH)) {
         LOG_F(WARNING, "Can not load biome color file in path: %s", BIOME_FILE_PATH.c_str());
     }
@@ -160,7 +158,6 @@ void setting::load() {
     loaded.MAXIMUM_SCALE_LEVEL = s.value("max_scale_level", loaded.MAXIMUM_SCALE_LEVEL).toInt();
     loaded.COORDS_MINIMAP_WIDTH = std::clamp(s.value("coords_minimap_width", loaded.COORDS_MINIMAP_WIDTH).toInt(), 64, 1024);
     loaded.COORDS_MINIMAP_HEIGHT = std::clamp(s.value("coords_minimap_height", loaded.COORDS_MINIMAP_HEIGHT).toInt(), 64, 1024);
-    loaded.ZOOM_SPEED = std::max(0.1f, static_cast<float>(s.value("zoom_speed", loaded.ZOOM_SPEED).toDouble()));
     loaded.GRID_LINE_COLOR = s.value("grid_line_color", loaded.GRID_LINE_COLOR).toString();
     loaded.ACTOR_RENDER_STYLE = s.value("actor_render_style", loaded.ACTOR_RENDER_STYLE).toInt();
     loaded.ACTOR_BORDER_WIDTH = s.value("actor_border_width", loaded.ACTOR_BORDER_WIDTH).toInt();
@@ -170,7 +167,6 @@ void setting::load() {
     loaded.VOID_MAP_COLOR = s.value("void_color", loaded.VOID_MAP_COLOR).toString();
     loaded.VOXEL_SELECTION_COLOR = s.value("voxel_selection_color", loaded.VOXEL_SELECTION_COLOR).toString();
     loaded.TRANSPARENT_WATER = s.value("transparent_water", loaded.TRANSPARENT_WATER).toBool();
-    loaded.TINT_BRIGHTNESS = std::clamp(s.value("tint_brightness", loaded.TINT_BRIGHTNESS).toFloat(), 0.0f, 8.0f);
     s.endGroup();
 
     s.beginGroup("Rendering");
@@ -241,6 +237,9 @@ void setting::save(const Settings& values) {
     s.beginGroup("Rendering");
     s.setValue("render_style", values.MAP_RENDER_STYLE);
     s.setValue("gpu_render_enabled", values.GPU_RENDER_ENABLED);
+    // The renderer now uploads all visible atlas tiles in one paint. Drop the
+    // obsolete staged-upload preference when an existing configuration is saved.
+    s.remove("gpu_staged_uploads");
     s.setValue("gpu_ao_strength", values.GPU_AO_STRENGTH);
     s.setValue("gpu_bevel_strength", values.GPU_BEVEL_STRENGTH);
     s.setValue("gpu_saturation", values.GPU_SATURATION);
@@ -264,7 +263,7 @@ void setting::save(const Settings& values) {
     s.setValue("max_scale_level", values.MAXIMUM_SCALE_LEVEL);
     s.setValue("coords_minimap_width", values.COORDS_MINIMAP_WIDTH);
     s.setValue("coords_minimap_height", values.COORDS_MINIMAP_HEIGHT);
-    s.setValue("zoom_speed", values.ZOOM_SPEED);
+    s.remove("zoom_speed");
     s.setValue("grid_line_color", values.GRID_LINE_COLOR);
     s.setValue("actor_render_style", values.ACTOR_RENDER_STYLE);
     s.setValue("actor_border_width", values.ACTOR_BORDER_WIDTH);
@@ -274,7 +273,7 @@ void setting::save(const Settings& values) {
     s.setValue("void_color", values.VOID_MAP_COLOR);
     s.setValue("voxel_selection_color", values.VOXEL_SELECTION_COLOR);
     s.setValue("transparent_water", values.TRANSPARENT_WATER);
-    s.setValue("tint_brightness", values.TINT_BRIGHTNESS);
+    s.remove("tint_brightness");
     s.endGroup();
 
     s.beginGroup("Cache");

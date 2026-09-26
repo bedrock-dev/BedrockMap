@@ -19,7 +19,7 @@
 // ---- helpers ----
 
 namespace {
-    // 45掳 sun direction 鈫?(dx, dy) where each component is -1, 0, or +1
+    // 45-degree sun direction to (dx, dy), with each component -1, 0, or +1.
     std::pair<int, int> sunVector() {
         switch (constant::SUN_DIRECTION) {
             case constant::SunDir::NW:
@@ -134,7 +134,8 @@ void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapF
                                   int y_solid) {
     const int X = (rw << 4) + chx;
     const int Z = (rh << 4) + chz;
-    auto info = ch->get_block_with_color(chx, y, chz);
+    const auto raw_info = ch->get_block_with_color(chx, y, chz);
+    auto info = raw_info;
     auto biome = ch->get_biome(chx, y, chz);
     info.color = bl::blend_color_with_biome(info.name, info.color, biome);
 
@@ -146,7 +147,9 @@ void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapF
     }
 
     bl::block_appearance render_info = info;
-    if (setting::current().TRANSPARENT_WATER && info.name == "minecraft:water" && y_solid >= 0 && y_solid < y) {
+    const bool transparent_water_overlay =
+        setting::current().TRANSPARENT_WATER && info.name == "minecraft:water" && y_solid >= 0 && y_solid < y;
+    if (transparent_water_overlay) {
         auto& tips = region->tips_info_[X][Z];
         tips.water_surface_color = qRgba(info.color.r, info.color.g, info.color.b, info.color.a);
         render_info = solid_info;
@@ -162,12 +165,19 @@ void MapTile::renderTerrainColumn(ChunkRegion* region, bl::chunk* ch, const MapF
     }
 
     auto& tips = region->tips_info_[X][Z];
+    if (!transparent_water_overlay) tips.water_surface_color = 0;
     tips.block_id = region->internBlockName(render_info.name);
     tips.solid_block_id = region->internBlockName(solid_info.name);
     // get_top_biome is robust when the exact surface layer stores none
     tips.biome = ch->get_top_biome(chx, chz);
     tips.height = static_cast<int16_t>(y);
     tips.solid_height = solid_h;
+    // Preserve the exact palette entry (including block-state variants) for the
+    // GPU. CPU tiles above intentionally keep their already-biome-blended colour.
+    const auto& gpu_base = transparent_water_overlay ? solid_info : raw_info;
+    tips.gpu_base_color = qRgba(gpu_base.color.r, gpu_base.color.g, gpu_base.color.b, gpu_base.color.a);
+    tips.gpu_tint_kind = static_cast<uint8_t>(bl::block_biome_tint_kind(gpu_base.name));
+    tips.gpu_water_overlay = transparent_water_overlay;
 }
 
 void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, int rh, ChunkRegion* region) {
@@ -196,7 +206,7 @@ void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, i
         // Fast path: get_height() O(1) + get_top_y() scans only from surface
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                auto height = ch->get_height(i, j);
+                auto height = 319;
                 auto [top_y, solid_y] = ch->get_top_y(i, j, height);
                 if (top_y < miny) continue;
                 renderTerrainColumn(region, ch, filter, rw, rh, i, j, top_y, solid_y);
@@ -206,7 +216,7 @@ void MapTile::bakeChunkTerrain(bl::chunk* ch, const MapFilter& filter, int rw, i
     }
 
     // block filter
-    // Slow path: custom filter 鈥?scan down from the height map
+    // Slow path: custom filter; scan down from the height map.
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             int y = ch->get_height(i, j);
@@ -269,7 +279,7 @@ void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
     region->terrain_bake_image_ = region->flat_color_image_.copy();
     applyWaterOverlay(region, IMG_WIDTH, 1, region->terrain_bake_image_);
 
-    // Directional shadow based on top block height 鈥?water blocks are skipped
+    // Directional shadow based on top block height; water blocks are skipped.
     // (their colour comes from the sea floor, not the water surface).
     auto& tp = region->tips_info_;
     auto [sx, sy] = sunVector();
@@ -318,11 +328,11 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
             float h = info.solid_height;
             if (info.height == -128) continue;
 
-            // Underwater bevel fades with depth: deeper 鈫?closer to 1.0 (no bevel)
+            // Underwater bevel fades with depth: deeper means closer to 1.0 (no bevel).
             float water_fade = 1.0f;
             if (info.water_surface_color != 0) {
                 float wd = static_cast<float>(info.height - info.solid_height);
-                water_fade = std::max(0.0f, 1.0f - wd / 5.0f);  // fully gone at depth 鈮?5
+                water_fade = std::max(0.0f, 1.0f - wd / 5.0f);  // fully gone at depth >= 5
             }
 
             float hl = (bi > 0) ? tp[bi - 1][bj].solid_height : h;
@@ -398,7 +408,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     const int BORDER = NH * 16;             // border blocks per side
     const int EW = IMG_WIDTH + BORDER * 2;  // expanded width in blocks
 
-    // 1. Build expanded height array 鈥?all entries from Data3D height_map via
+    // 1. Build expanded height array; all entries come from Data3D height_map via
     //    the cache, ensuring a single consistent height source across the
     //    centre region and its sunward border. Heights are world-space (min_y
     //    already applied in getHeightMap per the chunk's actual version).

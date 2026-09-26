@@ -109,7 +109,6 @@ namespace setting {
         int MAXIMUM_SCALE_LEVEL{1024};
         int COORDS_MINIMAP_WIDTH{100};
         int COORDS_MINIMAP_HEIGHT{100};
-        float ZOOM_SPEED{1.2f};
         QString GRID_LINE_COLOR{"#bbbbbb"};
         int ACTOR_RENDER_STYLE{0};
         int ACTOR_BORDER_WIDTH{2};
@@ -123,9 +122,6 @@ namespace setting {
         // Named for the voxel widget so it is not mistaken for the 2D map's chunk selection.
         // The drag handles are not affected: they follow their axis color instead.
         QString VOXEL_SELECTION_COLOR{"#e641b9dc"};
-        // Multiplier on the biome tint colors (grass / leaves / water); see
-        // bl::config::set_color_brightness. Only read at startup, when the color tables load.
-        float TINT_BRIGHTNESS{1.2f};
 
         // Cache
         int THREAD_NUM{8};

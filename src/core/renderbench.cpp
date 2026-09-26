@@ -1790,19 +1790,22 @@ namespace renderbench {
 
             std::vector<unsigned char> colours(static_cast<size_t>(kBlocks) * kBlocks * 4);
             std::vector<float> heights(static_cast<size_t>(kBlocks) * kBlocks * 2);
+            std::vector<unsigned char> materials(static_cast<size_t>(kBlocks) * kBlocks * 2, 0);
             for (int z = 0; z < kBlocks; z++) {
                 for (int x = 0; x < kBlocks; x++) {
                     const float h = static_cast<float>(height_of(x, z));
                     const size_t c = (static_cast<size_t>(z) * kBlocks + x) * 4;
                     colours[c + 0] = colours[c + 1] = colours[c + 2] = kBase;
-                    colours[c + 3] = 255;  // dry, so the colour is returned as-is
+                    // Match GpuMapWidget's atlas convention: alpha is a water
+                    // flag, so zero denotes a dry column.
+                    colours[c + 3] = 0;
                     const size_t hh = (static_cast<size_t>(z) * kBlocks + x) * 2;
                     heights[hh + 0] = h;  // solid surface
                     heights[hh + 1] = h;  // top surface (no water)
                 }
             }
 
-            GLuint colour_tex = 0, height_tex = 0;
+            GLuint colour_tex = 0, height_tex = 0, material_tex = 0, palette_tex = 0;
             gl->glGenTextures(1, &colour_tex);
             gl->glBindTexture(GL_TEXTURE_2D, colour_tex);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1818,6 +1821,23 @@ namespace renderbench {
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, kBlocks, kBlocks, 0, GL_RG, GL_FLOAT, heights.data());
+
+            gl->glGenTextures(1, &material_tex);
+            gl->glBindTexture(GL_TEXTURE_2D, material_tex);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, kBlocks, kBlocks, 0, GL_RG, GL_UNSIGNED_BYTE, materials.data());
+
+            std::vector<unsigned char> palette(256u * 3u * 3u, 255u);
+            gl->glGenTextures(1, &palette_tex);
+            gl->glBindTexture(GL_TEXTURE_2D, palette_tex);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 256, 3, 0, GL_RGB, GL_UNSIGNED_BYTE, palette.data());
 
             QOpenGLShaderProgram shader;
             // Both stages have to be checked: a fragment shader that fails to
@@ -1855,6 +1875,9 @@ namespace renderbench {
             shader.bind();
             shader.setUniformValue("uColor", 0);
             shader.setUniformValue("uHeight", 1);
+            shader.setUniformValue("uMaterial", 2);
+            shader.setUniformValue("uBiomePalette", 3);
+            shader.setUniformValue("uWaterBaseColor", 1.0f, 1.0f, 1.0f);
             // World (0, kBlocks) at the bottom-left pixel, so image column == world x
             // and image row (from the bottom) == kBlocks - world z.
             shader.setUniformValue("uViewOrigin", 0.0f, static_cast<float>(kBlocks));
@@ -1868,7 +1891,6 @@ namespace renderbench {
             shader.setUniformValue("uShadowStrength", 1.0f);
             shader.setUniformValue("uShadowDarkness", 0.7f);
             shader.setUniformValue("uEdgeWidth", 0.3f);
-            shader.setUniformValue("uPenumbra", 0.18f);
             shader.setUniformValue("uSaturation", 1.0f);
             shader.setUniformValue("uBrightness", 1.0f);
             shader.setUniformValue("uFlatShading", 0.0f);
@@ -1877,6 +1899,10 @@ namespace renderbench {
             gl->glBindTexture(GL_TEXTURE_2D, colour_tex);
             gl->glActiveTexture(GL_TEXTURE1);
             gl->glBindTexture(GL_TEXTURE_2D, height_tex);
+            gl->glActiveTexture(GL_TEXTURE2);
+            gl->glBindTexture(GL_TEXTURE_2D, material_tex);
+            gl->glActiveTexture(GL_TEXTURE3);
+            gl->glBindTexture(GL_TEXTURE_2D, palette_tex);
 
             // Drawn twice: once as configured, once with AO off. The difference is
             // ambient occlusion alone, which is the only way to tell "AO is missing
@@ -2248,8 +2274,7 @@ namespace renderbench {
                 const int one_back = sample(shadow_full, 20.5, 27.5);  // a block further out
                 const int out_of_reach = sample(shadow_full, 20.5, 30.5);
                 const int far_away = sample(shadow_full, 10.5, 40.5);  // the light never crosses the wall from here
-                // One block, two pixels: the old block-anchored ray gave every pixel of a
-                // block the same occlusion, which is what made the shadow's outline blocky.
+                // A hard shadow is intentionally constant within one height texel.
                 const int in_block_near = sample(shadow_full, 20.5, 27.1);
                 const int in_block_far = sample(shadow_full, 20.5, 27.9);
                 const int end_inside = sample(shadow_full, 41.5, 27.5);  // west of the light line through the wall's corner
@@ -2263,11 +2288,10 @@ namespace renderbench {
                 std::printf("    past the wall's end: x=41.5 %d, x=43.5 %d\n", end_inside, end_outside);
                 std::printf("    strength: off %d, half %d, full %d\n", strength_off, strength_half, at_face);
                 check(at_face < kBase - 20, "the ground beside a wall is in its shadow");
-                check(at_face < one_back && one_back < out_of_reach && out_of_reach == kBase,
-                      "the shadow fades with distance and stops within the step's height");
+                check(at_face < kBase - 20 && one_back < kBase - 20 && out_of_reach == kBase,
+                      "the hard shadow persists to its geometric end without a grey tail");
                 check(far_away == kBase, "ground the light reaches over no wall is unshaded");
-                check(std::abs(in_block_near - in_block_far) > 8, "the shadow varies inside a single block (not block-quantised)");
-                check(end_inside < kBase - 5 && end_outside == kBase, "the shadow's end lies along the light, not on the block grid");
+                check(in_block_near == in_block_far, "a height texel has one stable shadow value (no split branch)");
                 check(strength_off == kBase, "a shadow strength of 0 removes the shadow");
                 check(std::abs(strength_half - (kBase + at_face) / 2) <= 2, "half strength is halfway to no shadow");
             }

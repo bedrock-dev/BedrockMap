@@ -37,6 +37,11 @@ struct BlockTipsInfo {
     int16_t solid_block_id{-1};
 
     uint32_t water_surface_color{0};  // QRgb packed, 0 = no water overlay
+    // GPU terrain keeps this unblended base colour and applies the biome palette
+    // after sampling.  tint kind uses bl::biome_tint_kind's underlying values.
+    uint32_t gpu_base_color{0};
+    uint8_t gpu_tint_kind{0};
+    bool gpu_water_overlay{false};
 };
 
 /// Water always contributes a visible surface tint, even over a one-block-deep
