@@ -1,43 +1,41 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from os import path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import json5
 import numpy as np
 from PIL import Image
 
 
-# Colors reused from another entry, keyed by the block that is dumped from textures.
-# A list value names blocks that get an identical top-level entry: "grass" -> "grass_block".
-# A dict value adds tags inside this block's own entry, each taking the color of an existing
-# tag of the same block: "red_flower": {"poppy": "flower_rose"}.
-BLOCK_COLOR_REUSE = {
- "grass":["grass_block"],
- "stone_slab":["stone_block_slab"],
- "stone_slab2":["stone_block_slab2"],
- "stone_slab3":["stone_block_slab3"],
- "stone_slab4":["stone_block_slab4"],
- "double_stone_slab":["double_stone_block_slab"],
- "double_stone_slab2":["double_stone_block_slab2"],
- "double_stone_slab3":["double_stone_block_slab3"],
- "double_stone_slab4":["double_stone_block_slab4"],
- "seaLantern":["sea_lantern"],
- "tripWire":["trip_wire"],
- "concretePowder":["concrete_powder"],
- "redstone_block":["redstone_wire"],
- "red_flower":{"poppy":"flower_rose"}
-}
+# Color rules are evaluated strictly from top to bottom. The key is a source
+# entry and a list value contains entries to generate from it. A None value
+# deletes the key itself. A name is a whole block entry, while "block.tag"
+# addresses one color inside that block. For example,
+# "red_flower.flower_rose": ["red_flower.poppy"] creates the poppy tag from
+# the already dumped flower_rose tag.
+BLOCK_COLOR_RULES = {
+ "pink_petals.pink_petals_stem": None,
+ "wildflowers.wildflowers_stem": None,
+ "red_mushroom_block.mushroom_block_inside": None,
+ "red_mushroom_block.mushroom_block_skin_stem": None,
+ "cherry_leaves.cherry_leaves_opaque": None,
+ "redstone_wire": None,
 
-# Textures that must not be dumped, keyed by block name.
-# A set value lists texture tags (the last path segment) to skip for that block;
-# None skips the block entirely.
-BLOCK_COLOR_BLACKLIST = {
- "pink_petals":{"pink_petals_stem"},
- "wildflowers":{"wildflowers_stem"},
- "red_mushroom_block":{"mushroom_block_inside", "mushroom_block_skin_stem"},
- "cherry_leaves":{"cherry_leaves_opaque"},
- "redstone_wire":None
+ "grass": ["grass_block"],
+ "stone_slab": ["stone_block_slab"],
+ "stone_slab2": ["stone_block_slab2"],
+ "stone_slab3": ["stone_block_slab3"],
+ "stone_slab4": ["stone_block_slab4"],
+ "double_stone_slab": ["double_stone_block_slab"],
+ "double_stone_slab2": ["double_stone_block_slab2"],
+ "double_stone_slab3": ["double_stone_block_slab3"],
+ "double_stone_slab4": ["double_stone_block_slab4"],
+ "seaLantern": ["sea_lantern"],
+ "tripWire": ["trip_wire"],
+ "concretePowder": ["concrete_powder"],
+ "redstone_block": ["redstone_wire"],
+ "red_flower.flower_rose": ["red_flower.poppy", "poppy"],
 }
 
 def save_to_json(data, file_path):
@@ -204,6 +202,102 @@ def format_color(color: List[int]) -> str:
     return "#{:02x}{:02x}{:02x}{:02x}".format(*color)
 
 
+def split_color_entry(reference: str) -> Tuple[str, Optional[str]]:
+    """Split a BLOCK_COLOR_REUSE reference into its block and optional tag."""
+    block, separator, tag = reference.partition('.')
+    return block, tag if separator else None
+
+
+def color_entry_key(block: str) -> str:
+    return block if block.startswith("minecraft:") else "minecraft:" + block
+
+
+ReuseValue = Union[Dict[str, str], str]
+
+
+def resolve_reuse_source(result: Dict[str, Dict[str, str]], source: str) -> Optional[ReuseValue]:
+    """Resolve a source reference against colors already dumped."""
+    source_block, source_tag = split_color_entry(source)
+    source_entry = result.get(color_entry_key(source_block))
+    if not source_entry:
+        return None
+
+    if source_tag is not None:
+        color = source_entry.get(source_tag)
+        return color
+
+    return dict(source_entry)
+
+
+def delete_color_entry(result: Dict[str, Dict[str, str]], reference: str) -> None:
+    """Delete a whole block or one tagged color from the result."""
+    block, tag = split_color_entry(reference)
+    key = color_entry_key(block)
+    if tag is None:
+        result.pop(key, None)
+        return
+
+    entry = result.get(key)
+    if entry is None:
+        return
+    entry.pop(tag, None)
+    if not entry:
+        result.pop(key, None)
+
+
+def apply_color_rules(result: Dict[str, Dict[str, str]]) -> None:
+    """Apply reuse and deletion rules in their strict declaration order.
+
+    A whole-block source can generate either whole blocks or tagged entries. If
+    a tagged target has the same tag in the source, that color is used; a
+    single-tag source is also unambiguous. A tagged source can generate a
+    tagged target directly, or a one-tag whole-block target carrying that tag.
+    """
+    for source, targets in BLOCK_COLOR_RULES.items():
+        if targets is None:
+            delete_color_entry(result, source)
+            continue
+        if not isinstance(targets, list) or not all(isinstance(target, str) for target in targets):
+            print(f"Warning: invalid color rule for '{source}'")
+            continue
+
+        _, source_tag = split_color_entry(source)
+        source_value = resolve_reuse_source(result, source)
+        if source_value is None:
+            print(f"Warning: no reusable color entry found for '{source}'")
+            continue
+
+        for target in targets:
+            target_block, target_tag = split_color_entry(target)
+            target_key = color_entry_key(target_block)
+
+            if target_tag is None:
+                if source_tag is None:
+                    if not isinstance(source_value, dict):
+                        continue
+                    result[target_key] = dict(source_value)
+                else:
+                    if not isinstance(source_value, str):
+                        continue
+                    result[target_key] = {source_tag: source_value}
+                continue
+
+            if source_tag is not None:
+                if not isinstance(source_value, str):
+                    continue
+                color = source_value
+            else:
+                if not isinstance(source_value, dict):
+                    continue
+                color = source_value.get(target_tag)
+                if color is None and len(source_value) == 1:
+                    color = next(iter(source_value.values()))
+                if color is None:
+                    print(f"Warning: source '{source}' has no color for target '{target}'")
+                    continue
+            result.setdefault(target_key, {})[target_tag] = color
+
+
 def export_block_colors(texture_mapping: Dict[str, List[str]], output_file: str, root: str) -> None:
     # Unique keys, keeping first-seen order so the output stays reproducible.
     unique_textures = dict.fromkeys(
@@ -213,33 +307,19 @@ def export_block_colors(texture_mapping: Dict[str, List[str]], output_file: str,
 
     result = {}
     for block_name, items in texture_mapping.items():
-        blacklisted = BLOCK_COLOR_BLACKLIST.get(block_name, ())
-        if blacklisted is None:
-            continue  # the whole block is blacklisted
         block_dict = {}
         seen = set()
         for item in items:
             if isinstance(item, str) and item not in seen and item in color_cache:
                 seen.add(item)
                 tag = block_tag_filter(item)
-                if tag in blacklisted:
-                    continue
                 block_dict[tag] = format_color(color_cache[item])
 
-        reuse = BLOCK_COLOR_REUSE.get(block_name)
-        if isinstance(reuse, dict):
-            for alias, source in reuse.items():
-                if source in block_dict:
-                    block_dict[alias] = block_dict[source]
-            reuse = ()  # tag aliases only, no extra block entries
         if not block_dict:
             continue
         result["minecraft:" + block_name] = block_dict
 
-        # Blocks that reuse another block's textures.
-        for generated in reuse or ():
-            print("Generate texture for " + block_name + " -> " + generated)
-            result["minecraft:" + generated] = block_dict
+    apply_color_rules(result)
 
     save_to_json(result, output_file)
 
