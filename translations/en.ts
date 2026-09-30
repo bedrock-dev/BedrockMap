@@ -1734,6 +1734,10 @@
         <translation>Bevel Strength</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.bevelWidth</source>
+        <translation>Bevel Width</translation>
+    </message>
+    <message>
         <source>settingsDialog.gpu.saturation</source>
         <translation>Saturation</translation>
     </message>

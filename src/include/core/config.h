@@ -78,6 +78,9 @@ namespace setting {
         // Depth of the GPU renderer's bevel: 0 removes the bevel entirely, 1 is the
         // full bevel and the default. Shader-only, like the ambient occlusion.
         float GPU_BEVEL_STRENGTH{1.0f};
+        // Width multiplier for the GPU renderer's bevel. 1 preserves the automatic
+        // screen-space width; values below/above it make the bevel narrower/wider.
+        float GPU_BEVEL_WIDTH{1.0f};
         // Saturation of the GPU renderer's output: 0 is greyscale, 1 leaves the
         // stored colours alone, above 1 boosts them.
         float GPU_SATURATION{1.0f};

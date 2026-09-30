@@ -1066,14 +1066,16 @@ namespace renderbench {
                 auto* ao_slider = dialog.findChild<QSlider*>("gpuAoSlider");
                 auto* bevel_spin = dialog.findChild<QDoubleSpinBox*>("gpuBevelSpin");
                 auto* bevel_slider = dialog.findChild<QSlider*>("gpuBevelSlider");
+                auto* bevel_width_spin = dialog.findChild<QDoubleSpinBox*>("gpuBevelWidthSpin");
+                auto* bevel_width_slider = dialog.findChild<QSlider*>("gpuBevelWidthSlider");
                 auto* sat_spin = dialog.findChild<QDoubleSpinBox*>("gpuSaturationSpin");
                 auto* sat_slider = dialog.findChild<QSlider*>("gpuSaturationSlider");
                 auto* brightness_spin = dialog.findChild<QDoubleSpinBox*>("gpuBrightnessSpin");
                 auto* brightness_slider = dialog.findChild<QSlider*>("gpuBrightnessSlider");
                 auto* shadow_spin = dialog.findChild<QDoubleSpinBox*>("gpuShadowSpin");
                 auto* shadow_slider = dialog.findChild<QSlider*>("gpuShadowSlider");
-                bool ao_ok = ao_spin && ao_slider && bevel_spin && bevel_slider && sat_spin && sat_slider && brightness_spin &&
-                             brightness_slider && shadow_spin && shadow_slider;
+                bool ao_ok = ao_spin && ao_slider && bevel_spin && bevel_slider && bevel_width_spin && bevel_width_slider && sat_spin &&
+                             sat_slider && brightness_spin && brightness_slider && shadow_spin && shadow_slider;
                 if (ao_ok) {
                     ao_slider->setValue(60);
                     ao_ok = std::abs(ao_spin->value() - 0.6) < 1e-6;
@@ -1081,6 +1083,8 @@ namespace renderbench {
                     ao_ok = ao_ok && ao_slider->value() == 35;
                     bevel_slider->setValue(25);
                     ao_ok = ao_ok && std::abs(bevel_spin->value() - 0.25) < 1e-6;
+                    bevel_width_slider->setValue(150);
+                    ao_ok = ao_ok && std::abs(bevel_width_spin->value() - 1.5) < 1e-6;
                     sat_slider->setValue(150);
                     ao_ok = ao_ok && std::abs(sat_spin->value() - 1.5) < 1e-6;
                     brightness_slider->setValue(125);
@@ -1105,20 +1109,23 @@ namespace renderbench {
                     gpu_check->setChecked(true);
                     if (ao_spin) ao_spin->setValue(0.5);
                     if (bevel_spin) bevel_spin->setValue(0.3);
+                    if (bevel_width_spin) bevel_width_spin->setValue(1.25);
                     if (sat_spin) sat_spin->setValue(1.2);
                     if (brightness_spin) brightness_spin->setValue(1.1);
                     if (shadow_spin) shadow_spin->setValue(0.8);
                     QMetaObject::invokeMethod(&dialog, "onSave");
                     saved_ok = setting::current().GPU_RENDER_ENABLED && std::abs(setting::current().GPU_AO_STRENGTH - 0.5f) < 1e-6 &&
                                std::abs(setting::current().GPU_BEVEL_STRENGTH - 0.3f) < 1e-6 &&
+                               std::abs(setting::current().GPU_BEVEL_WIDTH - 1.25f) < 1e-6 &&
                                std::abs(setting::current().GPU_SATURATION - 1.2f) < 1e-6 &&
                                std::abs(setting::current().GPU_BRIGHTNESS - 1.1f) < 1e-6 &&
                                std::abs(setting::current().GPU_SHADOW_STRENGTH - 0.8f) < 1e-6;
                     std::printf(
-                        "renderbench: widget smoke - saving the GPU page writes the settings: %s (enabled=%d ao=%.2f bevel=%.2f "
+                        "renderbench: widget smoke - saving the GPU page writes the settings: %s (enabled=%d ao=%.2f bevel=%.2f width=%.2f "
                         "saturation=%.2f brightness=%.2f shadow=%.2f)\n",
                         saved_ok ? "yes" : "NO", setting::current().GPU_RENDER_ENABLED ? 1 : 0,
                         static_cast<double>(setting::current().GPU_AO_STRENGTH), static_cast<double>(setting::current().GPU_BEVEL_STRENGTH),
+                        static_cast<double>(setting::current().GPU_BEVEL_WIDTH),
                         static_cast<double>(setting::current().GPU_SATURATION), static_cast<double>(setting::current().GPU_BRIGHTNESS),
                         static_cast<double>(setting::current().GPU_SHADOW_STRENGTH));
                     setting::apply(saved);
@@ -1136,6 +1143,7 @@ namespace renderbench {
                 auto probe_settings = probe_saved;
                 probe_settings.GPU_AO_STRENGTH = 0.7f;
                 probe_settings.GPU_BEVEL_STRENGTH = 0.4f;
+                probe_settings.GPU_BEVEL_WIDTH = 1.5f;
                 probe_settings.GPU_SATURATION = 1.4f;
                 probe_settings.GPU_BRIGHTNESS = 1.1f;
                 probe_settings.GPU_SHADOW_STRENGTH = 0.6f;
@@ -1144,12 +1152,14 @@ namespace renderbench {
                     MapView probe_view;
                     GpuMapWidget probe(nullptr, nullptr, &probe_view, nullptr, nullptr, nullptr);
                     const bool wired = std::abs(probe.aoStrength() - 0.7f) < 1e-6 && std::abs(probe.bevelStrength() - 0.4f) < 1e-6 &&
+                                       std::abs(probe.bevelWidth() - 1.5f) < 1e-6 &&
                                        std::abs(probe.saturation() - 1.4f) < 1e-6 && std::abs(probe.brightness() - 1.1f) < 1e-6 &&
                                        std::abs(probe.shadowStrength() - 0.6f) < 1e-6;
                     std::printf(
-                        "renderbench: widget smoke - the renderer starts from the configured shading (ao=%.2f bevel=%.2f "
+                        "renderbench: widget smoke - the renderer starts from the configured shading (ao=%.2f bevel=%.2f width=%.2f "
                         "saturation=%.2f brightness=%.2f shadow=%.2f): %s\n",
                         static_cast<double>(probe.aoStrength()), static_cast<double>(probe.bevelStrength()),
+                        static_cast<double>(probe.bevelWidth()),
                         static_cast<double>(probe.saturation()), static_cast<double>(probe.brightness()),
                         static_cast<double>(probe.shadowStrength()), wired ? "yes" : "NO");
                     if (!wired) ++failures;
@@ -2041,7 +2051,7 @@ namespace renderbench {
             check(edge[1] > edge[0] + 5 && edge[3] > edge[0] + 5, "a raised area's west edge is lit");
             check(edge[2] == edge[0] && edge[4] == edge[0], "the lit band does not reach the east side of the block");
             check(outer[1] > outer[0] + 5, "a raised area's north-west corner is lit");
-            check(outer[1] > edge[1], "two lit edges at a corner are brighter than one");
+            check(std::abs(outer[1] - edge[1]) <= 2, "two lit edges at a corner do not stack");
             check(east_edge[0] == kBase && east_edge[2] == kBase && east_edge[4] == kBase,
                   "a raised area's own east edge is not lit (only its far side)");
             check(outside_east[1] < outside_east[0] - 5 && outside_east[3] < outside_east[0] - 5,
@@ -2075,9 +2085,10 @@ namespace renderbench {
                   "the corner patch stops at the corner (no line on ground with no step)");
             check(sample(no_ao, kPit1 - in, kPit1 - in) <= sample(no_ao, kPit1 - in, kPit0 + 0.5) + 8,
                   "the lit bands meet at a pit's inside corner too");
-            check(pit_nw[1] < pit_nw[0] - 20, "a pit is shaded at its north-west inside corner");
-            check(pit_nw[1] < pit_nw[2] && pit_nw[1] < pit_nw[3], "that corner is the darkest part of the pit edge");
-            check(pit_nw[4] > pit_nw[1] + 20 && pit_nw[4] >= pit_nw[0], "the pit's shading fades towards its south-east side");
+            check(pit_nw[1] < pit_nw[0] - 10, "a pit is shaded at its north-west inside corner");
+            check(std::abs(pit_nw[1] - pit_nw[2]) <= 2 && std::abs(pit_nw[1] - pit_nw[3]) <= 2,
+                  "two dark edges at a corner do not stack");
+            check(pit_nw[4] > pit_nw[1] + 10 && pit_nw[4] >= pit_nw[0], "the pit's shading fades towards its south-east side");
             check(pit_se[1] >= pit_se[0] - 5 && pit_se[4] >= pit_se[0] - 5, "a pit's south-east inside gets no bevel shading");
 
             // The bevel strength scales how far the shading moves away from the flat

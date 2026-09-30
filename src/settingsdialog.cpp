@@ -45,6 +45,8 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->gpuAoSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuAoStrength);
     connect(ui->gpuBevelSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBevelStrength(value / 100.0); });
     connect(ui->gpuBevelSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuBevelStrength);
+    connect(ui->gpuBevelWidthSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBevelWidth(value / 100.0); });
+    connect(ui->gpuBevelWidthSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuBevelWidth);
     connect(ui->gpuSaturationSlider, &QSlider::valueChanged, this, [this](int value) { setGpuSaturation(value / 100.0); });
     connect(ui->gpuSaturationSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuSaturation);
     connect(ui->gpuBrightnessSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBrightness(value / 100.0); });
@@ -168,6 +170,7 @@ void SettingsDialog::loadSettings() {
     setGpuShadowStrength(setting::current().GPU_SHADOW_STRENGTH);
     setGpuAoStrength(setting::current().GPU_AO_STRENGTH);
     setGpuBevelStrength(setting::current().GPU_BEVEL_STRENGTH);
+    setGpuBevelWidth(setting::current().GPU_BEVEL_WIDTH);
     setGpuSaturation(setting::current().GPU_SATURATION);
     setGpuBrightness(setting::current().GPU_BRIGHTNESS);
 
@@ -202,6 +205,13 @@ void SettingsDialog::setGpuBevelStrength(double value) {
     const QSignalBlocker block_spin(ui->gpuBevelSpin);
     ui->gpuBevelSpin->setValue(value);
     ui->gpuBevelSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuBevelWidth(double value) {
+    const QSignalBlocker block_slider(ui->gpuBevelWidthSlider);
+    const QSignalBlocker block_spin(ui->gpuBevelWidthSpin);
+    ui->gpuBevelWidthSpin->setValue(value);
+    ui->gpuBevelWidthSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
 }
 
 void SettingsDialog::setGpuSaturation(double value) {
@@ -309,6 +319,7 @@ void SettingsDialog::onSave() {
     values.GPU_RENDER_ENABLED = ui->gpuRenderCheck->isChecked();
     values.GPU_AO_STRENGTH = static_cast<float>(ui->gpuAoSpin->value());
     values.GPU_BEVEL_STRENGTH = static_cast<float>(ui->gpuBevelSpin->value());
+    values.GPU_BEVEL_WIDTH = static_cast<float>(ui->gpuBevelWidthSpin->value());
     values.GPU_SATURATION = static_cast<float>(ui->gpuSaturationSpin->value());
     values.GPU_BRIGHTNESS = static_cast<float>(ui->gpuBrightnessSpin->value());
     values.GPU_SHADOW_STRENGTH = static_cast<float>(ui->gpuShadowSpin->value());

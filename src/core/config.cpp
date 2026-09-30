@@ -174,6 +174,7 @@ void setting::load() {
     loaded.GPU_RENDER_ENABLED = s.value("gpu_render_enabled", loaded.GPU_RENDER_ENABLED).toBool();
     loaded.GPU_AO_STRENGTH = std::clamp(s.value("gpu_ao_strength", loaded.GPU_AO_STRENGTH).toFloat(), 0.0f, 1.0f);
     loaded.GPU_BEVEL_STRENGTH = std::clamp(s.value("gpu_bevel_strength", loaded.GPU_BEVEL_STRENGTH).toFloat(), 0.0f, 1.0f);
+    loaded.GPU_BEVEL_WIDTH = std::clamp(s.value("gpu_bevel_width", loaded.GPU_BEVEL_WIDTH).toFloat(), 0.25f, 2.0f);
     loaded.GPU_SATURATION = std::clamp(s.value("gpu_saturation", loaded.GPU_SATURATION).toFloat(), 0.0f, 2.0f);
     loaded.GPU_BRIGHTNESS = std::clamp(s.value("gpu_brightness", loaded.GPU_BRIGHTNESS).toFloat(), 0.0f, 2.0f);
     loaded.GPU_SHADOW_STRENGTH = std::clamp(s.value("gpu_shadow_strength", loaded.GPU_SHADOW_STRENGTH).toFloat(), 0.0f, 1.0f);
@@ -242,6 +243,7 @@ void setting::save(const Settings& values) {
     s.remove("gpu_staged_uploads");
     s.setValue("gpu_ao_strength", values.GPU_AO_STRENGTH);
     s.setValue("gpu_bevel_strength", values.GPU_BEVEL_STRENGTH);
+    s.setValue("gpu_bevel_width", values.GPU_BEVEL_WIDTH);
     s.setValue("gpu_saturation", values.GPU_SATURATION);
     s.setValue("gpu_brightness", values.GPU_BRIGHTNESS);
     s.setValue("gpu_shadow_strength", values.GPU_SHADOW_STRENGTH);
@@ -255,7 +257,7 @@ void setting::save(const Settings& values) {
     // Rendering settings now have their own group. Remove the old entries so
     // saving from an existing installation produces the new layout cleanly.
     for (const auto& key :
-         {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_saturation", "gpu_brightness",
+         {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_bevel_width", "gpu_saturation", "gpu_brightness",
           "gpu_shadow_strength", "tile_render_scale", "shadow_pcf_radius", "shadow_map_scale", "terrian_shadow_level"}) {
         s.remove(key);
     }

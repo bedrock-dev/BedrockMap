@@ -1734,6 +1734,10 @@
         <translation>倒角强度</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.bevelWidth</source>
+        <translation>倒角宽度</translation>
+    </message>
+    <message>
         <source>settingsDialog.gpu.saturation</source>
         <translation>饱和度</translation>
     </message>

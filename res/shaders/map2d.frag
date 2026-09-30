@@ -124,6 +124,13 @@ float bevelFactor(float t, float cur, float lightSide) {
     return 1.0;
 }
 
+// At a corner two bevel ramps can cover the same pixel. Keep the strongest
+// single edge contribution instead of multiplying both ramps, otherwise a
+// corner becomes brighter/darker than either of its adjoining edges.
+float dominantBevel(float a, float b) {
+    return abs(a - 1.0) >= abs(b - 1.0) ? a : b;
+}
+
 // Continuation of the bevel across the light-side corner.
 //
 // The bevel only looks west and north, so where the only height difference is the
@@ -303,14 +310,16 @@ void main() {
     float bevel_fade = bevelLodFade() * screenDetailFade(0.75, 2.5) * uBevelStrength;
     if (bevel_fade > 0.0) {
         float w = uEdgeWidth;
-        float tLeft = clamp(1.0 - local.x / w, 0.0, 1.0);
-        float tTop = clamp(1.0 - local.y / w, 0.0, 1.0);
+        // Smooth the ramp at both ends: the bevel blends naturally into the
+        // surface rather than changing slope abruptly at its inner boundary.
+        float tLeft = smoothstep(0.0, 1.0, clamp(1.0 - local.x / w, 0.0, 1.0));
+        float tTop = smoothstep(0.0, 1.0, clamp(1.0 - local.y / w, 0.0, 1.0));
 
         float left = heightAt(cell + vec2(-uBlocksPerTexel, 0.0)).r;
         float up = heightAt(cell + vec2(0.0, -uBlocksPerTexel)).r;
         float up_left = heightAt(cell + vec2(-uBlocksPerTexel, -uBlocksPerTexel)).r;
 
-        float bevel = bevelFactor(tLeft, solid, left) * bevelFactor(tTop, solid, up);
+        float bevel = dominantBevel(bevelFactor(tLeft, solid, left), bevelFactor(tTop, solid, up));
         bevel = clamp(bevel, 0.55, 1.58) * lightCornerContinuity(tLeft, tTop, solid, left, up, up_left);
         factor = 1.0 + (bevel - 1.0) * bevel_fade;
     }

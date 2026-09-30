@@ -1071,16 +1071,59 @@
                </property>
               </widget>
              </item>
-            </layout>
+           </layout>
            </item>
            <item row="3" column="0">
+            <widget class="QLabel" name="label_gpu_bevel_width">
+             <property name="text">
+              <string>settingsDialog.gpu.bevelWidth</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_gpu_bevel_width">
+             <item>
+              <widget class="QSlider" name="gpuBevelWidthSlider">
+               <property name="minimum">
+                <number>25</number>
+               </property>
+               <property name="maximum">
+                <number>200</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="gpuBevelWidthSpin">
+               <property name="decimals">
+                <number>2</number>
+               </property>
+               <property name="minimum">
+                <double>0.250000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>2.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.050000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0">
             <widget class="QLabel" name="label_gpu_saturation">
              <property name="text">
               <string>settingsDialog.gpu.saturation</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
+           <item row="4" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_gpu_saturation">
              <item>
               <widget class="QSlider" name="gpuSaturationSlider">
@@ -1113,14 +1156,14 @@
              </item>
             </layout>
            </item>
-           <item row="4" column="0">
+           <item row="5" column="0">
             <widget class="QLabel" name="label_gpu_brightness">
              <property name="text">
               <string>settingsDialog.gpu.brightness</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
+           <item row="5" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_gpu_brightness">
              <item>
               <widget class="QSlider" name="gpuBrightnessSlider">

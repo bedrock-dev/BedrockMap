@@ -37,6 +37,9 @@ class SettingsDialog : public QDialog {
     /// Set the bevel strength on both of its controls.
     void setGpuBevelStrength(double value);
 
+    /// Set the bevel width multiplier on both of its controls.
+    void setGpuBevelWidth(double value);
+
     /// Set the saturation on both of its controls.
     void setGpuSaturation(double value);
 

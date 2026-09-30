@@ -84,6 +84,7 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
     // the benchmarks, which need a fixed value regardless of the user's config.
     ao_strength_ = std::clamp(setting::current().GPU_AO_STRENGTH, 0.0f, 1.0f);
     bevel_strength_ = std::clamp(setting::current().GPU_BEVEL_STRENGTH, 0.0f, 1.0f);
+    bevel_width_ = std::clamp(setting::current().GPU_BEVEL_WIDTH, 0.25f, 2.0f);
     saturation_ = std::clamp(setting::current().GPU_SATURATION, 0.0f, 2.0f);
     brightness_ = std::clamp(setting::current().GPU_BRIGHTNESS, 0.0f, 2.0f);
     shadow_strength_ = std::clamp(setting::current().GPU_SHADOW_STRENGTH, 0.0f, 1.0f);
@@ -256,6 +257,11 @@ void GpuMapWidget::setAoStrength(float strength) {
 
 void GpuMapWidget::setBevelStrength(float strength) {
     bevel_strength_ = std::clamp(strength, 0.0f, 1.0f);
+    update();
+}
+
+void GpuMapWidget::setBevelWidth(float width) {
+    bevel_width_ = std::clamp(width, 0.25f, 2.0f);
     update();
 }
 
@@ -795,7 +801,8 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uShadowDarkness", 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f);
         shader_->setUniformValue("uShadowStrength", shadow_strength_);
         shader_->setUniformValue("uShadowReach", static_cast<float>(shadowReachBlocks()));
-        shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(std::max(0.25, 1.0 / texel_px), 0.25, 0.5)));
+        const double base_edge_width = std::clamp(std::max(0.25, 1.0 / texel_px), 0.25, 0.5);
+        shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(base_edge_width * bevel_width_, 0.0625, 0.75)));
         shader_->setUniformValue("uAoStrength", ao_strength_);
         shader_->setUniformValue("uAoDirections", ao_directions_);
         shader_->setUniformValue("uAoSteps", ao_steps_);

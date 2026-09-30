@@ -128,6 +128,11 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     [[nodiscard]] float bevelStrength() const { return bevel_strength_; }
 
+    /// Width multiplier of the screen-space bevel. 1 preserves the automatic width.
+    void setBevelWidth(float width);
+
+    [[nodiscard]] float bevelWidth() const { return bevel_width_; }
+
     /// Saturation of the rendered image: 0 greyscale, 1 as stored, up to 2 boosted.
     void setSaturation(float saturation);
 
@@ -316,6 +321,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     static constexpr float ao_step0_{0.5f};
     static constexpr float ao_radius_{16.0f};
     float bevel_strength_{1.0f};
+    float bevel_width_{1.0f};
     float saturation_{1.0f};
     float brightness_{1.0f};
     float shadow_strength_{1.0f};
