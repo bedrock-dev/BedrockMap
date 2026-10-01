@@ -17,7 +17,7 @@
 #include "bedrock_key.h"
 #include "chunk.h"
 #include "chunk_task.h"
-#include "chunkio.h"
+#include "chunkregion.h"
 #include "config.h"
 #include "data_3d.h"
 #include "loguru/loguru.hpp"

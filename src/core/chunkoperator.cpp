@@ -7,7 +7,7 @@
 #include <functional>
 
 #include "asynclevelloader.h"
-#include "chunkio.h"
+#include "chunkregion.h"
 #include "loguru/loguru.hpp"
 
 namespace {

@@ -1,5 +1,5 @@
-#ifndef BEDROCKMAP_CHUNKIO_H
-#define BEDROCKMAP_CHUNKIO_H
+#ifndef BEDROCKMAP_CHUNKREGION_H
+#define BEDROCKMAP_CHUNKREGION_H
 
 #include <QString>
 #include <string>
@@ -50,4 +50,4 @@ class ExportedRegion {
     int32_t version_{0};
 };
 
-#endif  // BEDROCKMAP_CHUNKIO_H
+#endif  // BEDROCKMAP_CHUNKREGION_H

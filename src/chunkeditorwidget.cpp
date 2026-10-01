@@ -24,7 +24,7 @@
 #include "actor.h"
 #include "bedrock_key.h"
 #include "chunk.h"
-#include "chunkio.h"
+#include "chunkregion.h"
 #include "chunksectionwidget.h"
 #include "hexviewerdialog.h"
 #include "hsaeditorwidget.h"

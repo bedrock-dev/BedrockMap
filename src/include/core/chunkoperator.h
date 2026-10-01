@@ -7,7 +7,7 @@
 #include <QString>
 
 #include "bedrock_key.h"
-#include "chunkio.h"
+#include "chunkregion.h"
 
 class AsyncLevelLoader;
 

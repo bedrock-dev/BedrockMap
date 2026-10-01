@@ -33,7 +33,7 @@
 #include "bedrock_key.h"
 #include "chunk_task.h"
 #include "chunkcoords.h"
-#include "chunkio.h"
+#include "chunkregion.h"
 #include "config.h"
 #include "contextmenubuilder.h"
 #include "cpumapwidget.h"
