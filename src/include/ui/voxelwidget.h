@@ -221,8 +221,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
     // Hard zoom bounds; maxZoomScale() narrows the upper one to whatever keeps the camera
     // outside the model, so it is only ever reached by an empty model.
-    static constexpr float kMinScaleLevel = 0.1f;
-    static constexpr float kMaxScaleLevel = 10.0f;
+    static constexpr float MIN_SCALE_LEVEL = 0.1f;
+    static constexpr float MAX_SCALE_LEVEL = 10.0f;
 
     QVector3D m_cameraTranslate;   // camera pan offset (X/Y/Z axis)
     bool m_isPanDragging{false};   // whether panning drag is active

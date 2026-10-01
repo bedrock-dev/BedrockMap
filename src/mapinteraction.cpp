@@ -8,7 +8,7 @@
 
 namespace {
     // Arrow-key pan speed, per 16 ms tick, in view pixels.
-    constexpr qreal kPanSpeed = 20.0 / 60.0;
+    constexpr qreal PAN_SPEED = 20.0 / 60.0;
 }  // namespace
 
 MapInteraction::MapInteraction(MapView* view, QObject* parent) : QObject(parent), view_(view) {
@@ -41,10 +41,10 @@ void MapInteraction::onPanTick() {
     // Dragging the view by a positive delta moves the world the same way, so the
     // arrow keys are inverted relative to the direction the map travels.
     QPointF delta;
-    if (pressed_keys_.contains(Qt::Key_Left)) delta += QPointF(kPanSpeed, 0);
-    if (pressed_keys_.contains(Qt::Key_Right)) delta += QPointF(-kPanSpeed, 0);
-    if (pressed_keys_.contains(Qt::Key_Up)) delta += QPointF(0, kPanSpeed);
-    if (pressed_keys_.contains(Qt::Key_Down)) delta += QPointF(0, -kPanSpeed);
+    if (pressed_keys_.contains(Qt::Key_Left)) delta += QPointF(PAN_SPEED, 0);
+    if (pressed_keys_.contains(Qt::Key_Right)) delta += QPointF(-PAN_SPEED, 0);
+    if (pressed_keys_.contains(Qt::Key_Up)) delta += QPointF(0, PAN_SPEED);
+    if (pressed_keys_.contains(Qt::Key_Down)) delta += QPointF(0, -PAN_SPEED);
     if (delta.isNull()) return;
     view_->translate(delta);
 }

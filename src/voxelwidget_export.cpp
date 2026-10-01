@@ -28,10 +28,10 @@ namespace {
         return offset;
     }
 
-    constexpr int kArrayBuffer = 34962;
-    constexpr int kElementArrayBuffer = 34963;
-    constexpr int kFloatComponent = 5126;
-    constexpr int kUnsignedIntComponent = 5125;
+    constexpr int ARRAY_BUFFER = 34962;
+    constexpr int ELEMENT_ARRAY_BUFFER = 34963;
+    constexpr int FLOAT_COMPONENT = 5126;
+    constexpr int UNSIGNED_INT_COMPONENT = 5125;
 
     nlohmann::json appendMeshPrimitive(const std::vector<float>& vertices, const std::vector<GLuint>& indices, int materialIndex,
                                        QByteArray& binaryChunk, nlohmann::json& bufferViews, nlohmann::json& accessors) {
@@ -95,32 +95,32 @@ namespace {
         bufferViews.push_back({{"buffer", 0},
                                {"byteOffset", static_cast<int>(positionOffset)},
                                {"byteLength", positionData.size()},
-                               {"target", kArrayBuffer}});
+                               {"target", ARRAY_BUFFER}});
         bufferViews.push_back(
-            {{"buffer", 0}, {"byteOffset", static_cast<int>(normalOffset)}, {"byteLength", normalData.size()}, {"target", kArrayBuffer}});
+            {{"buffer", 0}, {"byteOffset", static_cast<int>(normalOffset)}, {"byteLength", normalData.size()}, {"target", ARRAY_BUFFER}});
         bufferViews.push_back(
-            {{"buffer", 0}, {"byteOffset", static_cast<int>(colorOffset)}, {"byteLength", colorData.size()}, {"target", kArrayBuffer}});
+            {{"buffer", 0}, {"byteOffset", static_cast<int>(colorOffset)}, {"byteLength", colorData.size()}, {"target", ARRAY_BUFFER}});
         bufferViews.push_back({{"buffer", 0},
                                {"byteOffset", static_cast<int>(indexOffset)},
                                {"byteLength", indexData.size()},
-                               {"target", kElementArrayBuffer}});
+                               {"target", ELEMENT_ARRAY_BUFFER}});
 
         accessors.push_back({{"bufferView", bufferViewBase + 0},
-                             {"componentType", kFloatComponent},
+                             {"componentType", FLOAT_COMPONENT},
                              {"count", static_cast<int>(vertexCount)},
                              {"type", "VEC3"},
                              {"min", {minimum.x(), minimum.y(), minimum.z()}},
                              {"max", {maximum.x(), maximum.y(), maximum.z()}}});
         accessors.push_back({{"bufferView", bufferViewBase + 1},
-                             {"componentType", kFloatComponent},
+                             {"componentType", FLOAT_COMPONENT},
                              {"count", static_cast<int>(vertexCount)},
                              {"type", "VEC3"}});
         accessors.push_back({{"bufferView", bufferViewBase + 2},
-                             {"componentType", kFloatComponent},
+                             {"componentType", FLOAT_COMPONENT},
                              {"count", static_cast<int>(vertexCount)},
                              {"type", "VEC4"}});
         accessors.push_back({{"bufferView", bufferViewBase + 3},
-                             {"componentType", kUnsignedIntComponent},
+                             {"componentType", UNSIGNED_INT_COMPONENT},
                              {"count", static_cast<int>(indices.size())},
                              {"type", "SCALAR"}});
 
@@ -195,21 +195,21 @@ bool VoxelWidget::exportGlb(const QString& filePath, QString* errorMessage) cons
     QByteArray jsonChunk(jsonText.data(), static_cast<qsizetype>(jsonText.size()));
     padToFourBytes(jsonChunk, ' ');
 
-    constexpr std::uint32_t kGlbMagic = 0x46546C67;
-    constexpr std::uint32_t kGlbVersion = 2;
-    constexpr std::uint32_t kJsonChunkType = 0x4E4F534A;
-    constexpr std::uint32_t kBinaryChunkType = 0x004E4942;
+    constexpr std::uint32_t GLB_MAGIC = 0x46546C67;
+    constexpr std::uint32_t GLB_VERSION = 2;
+    constexpr std::uint32_t JSON_CHUNK_TYPE = 0x4E4F534A;
+    constexpr std::uint32_t BINARY_CHUNK_TYPE = 0x004E4942;
 
     QByteArray glb;
     const std::uint32_t totalLength = static_cast<std::uint32_t>(12 + 8 + jsonChunk.size() + 8 + binaryChunk.size());
-    appendRawValue(glb, kGlbMagic);
-    appendRawValue(glb, kGlbVersion);
+    appendRawValue(glb, GLB_MAGIC);
+    appendRawValue(glb, GLB_VERSION);
     appendRawValue(glb, totalLength);
     appendRawValue(glb, static_cast<std::uint32_t>(jsonChunk.size()));
-    appendRawValue(glb, kJsonChunkType);
+    appendRawValue(glb, JSON_CHUNK_TYPE);
     glb.append(jsonChunk);
     appendRawValue(glb, static_cast<std::uint32_t>(binaryChunk.size()));
-    appendRawValue(glb, kBinaryChunkType);
+    appendRawValue(glb, BINARY_CHUNK_TYPE);
     glb.append(binaryChunk);
 
     QSaveFile file(filePath);

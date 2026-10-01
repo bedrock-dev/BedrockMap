@@ -16,7 +16,7 @@
 #include "loguru/loguru.hpp"
 
 namespace {
-    constexpr qsizetype kNbtTreeDisplayLimit = 4 * 1024 * 1024;
+    constexpr qsizetype NBT_TREE_DISPLAY_LIMIT = 4 * 1024 * 1024;
 
     bl::block_box fullBounds(const bl::mcstructure& structure) {
         return bl::block_box::from_min_and_size({0, 0, 0}, structure.size_x(), structure.size_y(), structure.size_z());
@@ -210,7 +210,7 @@ bool McstructurePageWidget::loadStructure(const QString& path) {
                                        .arg(static_cast<qulonglong>(structure_->block_entities().size()))
                                        .arg(static_cast<qulonglong>(structure_->entities().size())));
 
-    const bool showNbtTree = original_raw_.size() <= kNbtTreeDisplayLimit;
+    const bool showNbtTree = original_raw_.size() <= NBT_TREE_DISPLAY_LIMIT;
     nbt_editor_->setVisible(showNbtTree);
     if (showNbtTree) {
         // Small files can be expanded in the regular NBT tree without blocking the UI.

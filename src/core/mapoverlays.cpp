@@ -81,9 +81,9 @@ void MapOverlays::drawCoordsOverview(QPainter* painter) const {
     if (!painter || !level_loader_ || !view_) return;
     const auto [min_chunk, max_chunk, rect] = view_->renderRange();
     (void)rect;
-    constexpr int kTile = constant::COORDS_REGION_SIZE;
-    const auto tile_floor = [](int value) { return (value / kTile - (value % kTile < 0 ? 1 : 0)) * kTile; };
-    const auto tile_ceil = [](int value) { return (value / kTile + (value % kTile < 0 ? 0 : 1)) * kTile; };
+    constexpr int TILE = constant::COORDS_REGION_SIZE;
+    const auto tile_floor = [](int value) { return (value / TILE - (value % TILE < 0 ? 1 : 0)) * TILE; };
+    const auto tile_ceil = [](int value) { return (value / TILE + (value % TILE < 0 ? 0 : 1)) * TILE; };
     const int view_x0 = tile_floor(min_chunk.x);
     const int view_z0 = tile_floor(min_chunk.z);
     const int view_x1 = tile_ceil(max_chunk.x);
@@ -102,10 +102,10 @@ void MapOverlays::drawCoordsOverview(QPainter* painter) const {
     const int z0 = std::max(view_z0, tile_floor(bounds->min_z));
     const int x1 = std::min(view_x1, tile_ceil(bounds->max_x + 1));
     const int z1 = std::min(view_z1, tile_ceil(bounds->max_z + 1));
-    for (int x = x0; x < x1; x += kTile) {
-        for (int z = z0; z < z1; z += kTile) {
+    for (int x = x0; x < x1; x += TILE) {
+        for (int z = z0; z < z1; z += TILE) {
             const QImage image = level_loader_->chunkCoordsImage(bl::chunk_pos{x, z, min_chunk.dim});
-            if (!image.isNull()) painter->drawImage(QRectF(x, z, kTile, kTile), image, image.rect());
+            if (!image.isNull()) painter->drawImage(QRectF(x, z, TILE, TILE), image, image.rect());
         }
     }
     drawCoordsBoundingBox(painter);
@@ -329,17 +329,17 @@ void MapOverlays::drawDebugWindow(QPainter* painter) const {
     info.push_back(QString("Memory usage: %1 MiB").arg(QString::number(processmonitor::memoryUsageMiB())));
     int max_width = 1;
     for (const auto& line : info) max_width = std::max(max_width, fm.horizontalAdvance(line));
-    constexpr int kMargin = 8;
-    constexpr int kShadowOffset = 1;
-    const int bg_w = max_width + kMargin * 2;
-    const int bg_h = fm.height() * static_cast<int>(info.size()) + kMargin * 2;
+    constexpr int MARGIN = 8;
+    constexpr int SHADOW_OFFSET = 1;
+    const int bg_w = max_width + MARGIN * 2;
+    const int bg_h = fm.height() * static_cast<int>(info.size()) + MARGIN * 2;
     const QSize size = targetSize(painter);
     const int base_x = size.width() - bg_w;
     painter->fillRect(QRectF(base_x, 0, bg_w, bg_h), QBrush(QColor(22, 22, 22, 160)));
     for (int i = 0; i < static_cast<int>(info.size()); ++i) {
-        const QPoint pos(base_x + kMargin, kMargin + (i + 1) * fm.height());
+        const QPoint pos(base_x + MARGIN, MARGIN + (i + 1) * fm.height());
         painter->setPen(QPen(QColor(0, 0, 0)));
-        painter->drawText(pos + QPoint(kShadowOffset, kShadowOffset), info[i]);
+        painter->drawText(pos + QPoint(SHADOW_OFFSET, SHADOW_OFFSET), info[i]);
         painter->setPen(QPen(QColor(255, 255, 255)));
         painter->drawText(pos, info[i]);
     }

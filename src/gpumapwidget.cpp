@@ -25,11 +25,11 @@
 
 namespace {
 
-    constexpr double kIsoHeightReference = 80.0;
-    constexpr double kIsoRayTop = 384.0;
-    constexpr double kIsoRayBottom = -128.0;
-    constexpr double kInvSqrt2 = 0.7071067811865476;
-    constexpr double kSqrtThreeHalves = 1.224744871391589;
+    constexpr double ISO_HEIGHT_REFERENCE = 80.0;
+    constexpr double ISO_RAY_TOP = 384.0;
+    constexpr double ISO_RAY_BOTTOM = -128.0;
+    constexpr double INV_SQRT2 = 0.7071067811865476;
+    constexpr double SQRT_THREE_HALVES = 1.224744871391589;
 
     /// Floor division, so region indices stay correct west/north of the origin.
     int floorDiv(int value, int divisor) {
@@ -83,14 +83,14 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
     setFocusPolicy(Qt::StrongFocus);  // so the map can be panned/zoomed from this widget too
     // Keep cursor and import overlays responsive without a drag.
     setMouseTracking(true);
-    orthographic_view_ = setting::current().GPU_ORTHOGRAPHIC_VIEW;
+    gpu_options_.orthographic_view = setting::current().GPU_ORTHOGRAPHIC_VIEW;
     // Initialize shader tunables from the runtime settings.
-    ao_strength_ = std::clamp(setting::current().GPU_AO_STRENGTH, 0.0f, 1.0f);
-    bevel_strength_ = std::clamp(setting::current().GPU_BEVEL_STRENGTH, 0.0f, 1.0f);
-    bevel_width_ = std::clamp(setting::current().GPU_BEVEL_WIDTH, 0.25f, 2.0f);
-    saturation_ = std::clamp(setting::current().GPU_SATURATION, 0.0f, 2.0f);
-    brightness_ = std::clamp(setting::current().GPU_BRIGHTNESS, 0.0f, 2.0f);
-    shadow_strength_ = std::clamp(setting::current().GPU_SHADOW_STRENGTH, 0.0f, 1.0f);
+    gpu_options_.ao_strength = std::clamp(setting::current().GPU_AO_STRENGTH, 0.0f, 1.0f);
+    gpu_options_.bevel_strength = std::clamp(setting::current().GPU_BEVEL_STRENGTH, 0.0f, 1.0f);
+    gpu_options_.bevel_width = std::clamp(setting::current().GPU_BEVEL_WIDTH, 0.25f, 2.0f);
+    gpu_options_.saturation = std::clamp(setting::current().GPU_SATURATION, 0.0f, 2.0f);
+    gpu_options_.brightness = std::clamp(setting::current().GPU_BRIGHTNESS, 0.0f, 2.0f);
+    gpu_options_.shadow_strength = std::clamp(setting::current().GPU_SHADOW_STRENGTH, 0.0f, 1.0f);
     uploads_.clear();
     syncSlots();
 
@@ -156,7 +156,7 @@ QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_b
 }
 
 void GpuMapWidget::mousePressEvent(QMouseEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         if (event->button() == Qt::LeftButton) {
             orthographic_drag_pos_ = event->position();
             orthographic_dragging_ = true;
@@ -168,7 +168,7 @@ void GpuMapWidget::mousePressEvent(QMouseEvent* event) {
 }
 
 void GpuMapWidget::mouseMoveEvent(QMouseEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         if (orthographic_dragging_ && (event->buttons() & Qt::LeftButton) && view_) {
             const QPointF delta = event->position() - orthographic_drag_pos_;
             orthographic_drag_pos_ = event->position();
@@ -176,7 +176,7 @@ void GpuMapWidget::mouseMoveEvent(QMouseEvent* event) {
             if (scale > 0.0) {
                 // Map screen-space drag axes back to world x/z.
                 view_->translate(
-                    QPointF(kInvSqrt2 * delta.x() + kSqrtThreeHalves * delta.y(), -kInvSqrt2 * delta.x() + kSqrtThreeHalves * delta.y()) /
+                    QPointF(INV_SQRT2 * delta.x() + SQRT_THREE_HALVES * delta.y(), -INV_SQRT2 * delta.x() + SQRT_THREE_HALVES * delta.y()) /
                     scale);
             }
         }
@@ -193,7 +193,7 @@ void GpuMapWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void GpuMapWidget::mouseReleaseEvent(QMouseEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         if (event->button() == Qt::LeftButton) orthographic_dragging_ = false;
         event->accept();
         return;
@@ -223,7 +223,7 @@ void GpuMapWidget::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void GpuMapWidget::wheelEvent(QWheelEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         if (view_ && event->angleDelta().y() != 0)
             view_->zoomToAdjacentLevel(event->angleDelta().y() > 0 ? 1 : -1, QPointF(width() / 2.0, height() / 2.0));
         event->accept();
@@ -233,7 +233,7 @@ void GpuMapWidget::wheelEvent(QWheelEvent* event) {
 }
 
 void GpuMapWidget::keyPressEvent(QKeyEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         QOpenGLWidget::keyPressEvent(event);
         return;
     }
@@ -247,7 +247,7 @@ void GpuMapWidget::keyPressEvent(QKeyEvent* event) {
 }
 
 void GpuMapWidget::keyReleaseEvent(QKeyEvent* event) {
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         QOpenGLWidget::keyReleaseEvent(event);
         return;
     }
@@ -261,60 +261,17 @@ void GpuMapWidget::focusOutEvent(QFocusEvent* event) {
     QOpenGLWidget::focusOutEvent(event);
 }
 
-void GpuMapWidget::setShadowEnabled(bool enabled) {
-    shadow_enabled_ = enabled;
-    update();
-}
-
-void GpuMapWidget::setShadowSteps(int steps) {
-    shadow_steps_ = std::clamp(steps, 1, 128);
-    update();
-}
-
-void GpuMapWidget::setPenumbra(float penumbra) {
-    penumbra_ = std::clamp(penumbra, 0.0f, 2.0f);
-    update();
-}
-
-void GpuMapWidget::setShadowStrength(float strength) {
-    shadow_strength_ = std::clamp(strength, 0.0f, 1.0f);
-    update();
-}
-
-void GpuMapWidget::setAoStrength(float strength) {
-    ao_strength_ = std::clamp(strength, 0.0f, 1.0f);
-    update();
-}
-
-void GpuMapWidget::setBevelStrength(float strength) {
-    bevel_strength_ = std::clamp(strength, 0.0f, 1.0f);
-    update();
-}
-
-void GpuMapWidget::setBevelWidth(float width) {
-    bevel_width_ = std::clamp(width, 0.25f, 2.0f);
-    update();
-}
-
-void GpuMapWidget::setSaturation(float saturation) {
-    saturation_ = std::clamp(saturation, 0.0f, 2.0f);
-    update();
-}
-
-void GpuMapWidget::setBrightness(float brightness) {
-    brightness_ = std::clamp(brightness, 0.0f, 2.0f);
-    update();
-}
-
-void GpuMapWidget::setAoMarch(int directions, int steps) {
-    // The shader's loops are bounded by MAX_AO_DIRECTIONS / MAX_AO_STEPS.
-    ao_directions_ = std::clamp(directions, 1, 16);
-    ao_steps_ = std::clamp(steps, 1, 32);
-    update();
-}
-
-void GpuMapWidget::setFlatShading(bool flat) {
-    flat_shading_ = flat;
+void GpuMapWidget::setGpuOptions(const GpuRenderOptions& options) {
+    gpu_options_ = options;
+    gpu_options_.shadow_steps = std::clamp(gpu_options_.shadow_steps, 1, 128);
+    gpu_options_.ao_strength = std::clamp(gpu_options_.ao_strength, 0.0f, 1.0f);
+    gpu_options_.ao_directions = std::clamp(gpu_options_.ao_directions, 1, 16);
+    gpu_options_.ao_steps = std::clamp(gpu_options_.ao_steps, 1, 32);
+    gpu_options_.bevel_strength = std::clamp(gpu_options_.bevel_strength, 0.0f, 1.0f);
+    gpu_options_.bevel_width = std::clamp(gpu_options_.bevel_width, 0.25f, 2.0f);
+    gpu_options_.saturation = std::clamp(gpu_options_.saturation, 0.0f, 2.0f);
+    gpu_options_.brightness = std::clamp(gpu_options_.brightness, 0.0f, 2.0f);
+    gpu_options_.shadow_strength = std::clamp(gpu_options_.shadow_strength, 0.0f, 1.0f);
     update();
 }
 
@@ -328,7 +285,7 @@ void GpuMapWidget::initializeGL() {
     shader_ = new QOpenGLShaderProgram(this);
     shader_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/shaders/map2d.vert");
     shader_->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                     orthographic_view_ ? ":/res/shaders/map_orthographic.frag" : ":/res/shaders/map2d.frag");
+                                     gpu_options_.orthographic_view ? ":/res/shaders/map_orthographic.frag" : ":/res/shaders/map2d.frag");
     if (!shader_->link()) {
         LOG_F(ERROR, "Can not link map2d shader: %s", shader_->log().toStdString().c_str());
         return;
@@ -343,7 +300,7 @@ void GpuMapWidget::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, kAtlasTexels, kAtlasTexels, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ATLAS_TEXELS, ATLAS_TEXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     glGenTextures(1, &height_texture_);
     glBindTexture(GL_TEXTURE_2D, height_texture_);
@@ -353,7 +310,7 @@ void GpuMapWidget::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // World heights are integral and fit exactly in half precision for all
     // supported Bedrock dimensions. This halves height-atlas bandwidth/memory.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, kAtlasTexels, kAtlasTexels, 0, GL_RG, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, ATLAS_TEXELS, ATLAS_TEXELS, 0, GL_RG, GL_FLOAT, nullptr);
 
     glGenTextures(1, &material_texture_);
     glBindTexture(GL_TEXTURE_2D, material_texture_);
@@ -361,20 +318,20 @@ void GpuMapWidget::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, kAtlasTexels, kAtlasTexels, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, ATLAS_TEXELS, ATLAS_TEXELS, 0, GL_RG, GL_UNSIGNED_BYTE, nullptr);
 
     const auto water_base = bl::get_block_color("minecraft:water");
-    water_base_color_ = {water_base.r / 255.0f, water_base.g / 255.0f, water_base.b / 255.0f};
+    gpu_options_.water_base_color = {water_base.r / 255.0f, water_base.g / 255.0f, water_base.b / 255.0f};
     const QColor configured_grass_color(setting::current().GPU_GRASS_HEIGHT_COLOR);
     const QColor grass_color = configured_grass_color.isValid() ? configured_grass_color : QColor(Qt::red);
-    grass_height_color_ = {grass_color.redF(), grass_color.greenF(), grass_color.blueF()};
-    grass_height_enabled_ = setting::current().GPU_GRASS_HEIGHT_ENABLED;
-    grass_height_base_ = setting::current().GPU_GRASS_HEIGHT_BASE;
-    grass_height_range_ = std::max(1.0f, setting::current().GPU_GRASS_HEIGHT_RANGE);
+    gpu_options_.grass_height_color = {grass_color.redF(), grass_color.greenF(), grass_color.blueF()};
+    gpu_options_.grass_height_enabled = setting::current().GPU_GRASS_HEIGHT_ENABLED;
+    gpu_options_.grass_height_base = setting::current().GPU_GRASS_HEIGHT_BASE;
+    gpu_options_.grass_height_range = std::max(1.0f, setting::current().GPU_GRASS_HEIGHT_RANGE);
     initBiomePaletteTexture();
 
     initAtlasTextures();
-    LOG_F(INFO, "GpuMapWidget: atlas %dx%d texels, %d region slots at 1 texel/block", kAtlasTexels, kAtlasTexels,
+    LOG_F(INFO, "GpuMapWidget: atlas %dx%d texels, %d region slots at 1 texel/block", ATLAS_TEXELS, ATLAS_TEXELS,
           slotsPerSide() * slotsPerSide());
 }
 void GpuMapWidget::initAtlasTextures() {
@@ -444,7 +401,7 @@ void GpuMapWidget::reindexUploads() {
 
 void GpuMapWidget::buildBlankTiles() {
     // Match the CPU renderer's 64-block checkerboard across 128-block regions.
-    const int texels = kRegionBlocks / blocks_per_texel_;
+    const int texels = REGION_BLOCKS / blocks_per_texel_;
     const int cell = std::max(1, 64 / blocks_per_texel_);
     const auto fill = [texels, cell](std::vector<unsigned char>& out, int shade_even, int shade_odd) {
         out.resize(static_cast<size_t>(texels) * texels * 4);
@@ -467,7 +424,7 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
     const auto state = level_loader_->regionState(request.region, &data);
     // Sample each bake at blocks_per_texel_ spacing, matching the CPU renderer.
     const int bp = blocks_per_texel_;
-    const int n = kRegionBlocks / bp;
+    const int n = REGION_BLOCKS / bp;
     const size_t texels = static_cast<size_t>(n) * n;
     const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
 
@@ -500,30 +457,30 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
                 color_buffer_[color_index + 3] = (!biome_layer && blend_water && info.gpu_water_overlay) ? 255 : 0;
 
                 if (!biome_layer) {
-                    constexpr unsigned char kWaterTint = 1u << 0;
-                    constexpr unsigned char kGrassTint = 1u << 1;
-                    constexpr unsigned char kLeavesTint = 1u << 2;
-                    constexpr unsigned char kWaterOverlay = 1u << 3;
-                    constexpr unsigned char kTerrainSample = 1u << 4;
+                    constexpr unsigned char WATER_TINT = 1u << 0;
+                    constexpr unsigned char GRASS_TINT = 1u << 1;
+                    constexpr unsigned char LEAVES_TINT = 1u << 2;
+                    constexpr unsigned char WATER_OVERLAY = 1u << 3;
+                    constexpr unsigned char TERRAIN_SAMPLE = 1u << 4;
                     unsigned char flags = 0;
                     // A ready atlas slot can still contain a region background
                     // where no chunk exists. Keep its zero biome ID out of the
                     // shader's interpolation neighbourhood.
-                    if (info.height > -128) flags |= kTerrainSample;
+                    if (info.height > -128) flags |= TERRAIN_SAMPLE;
                     switch (static_cast<bl::biome_tint_kind>(info.gpu_tint_kind)) {
                         case bl::biome_tint_kind::water:
-                            flags |= kWaterTint;
+                            flags |= WATER_TINT;
                             break;
                         case bl::biome_tint_kind::grass:
-                            flags |= kGrassTint;
+                            flags |= GRASS_TINT;
                             break;
                         case bl::biome_tint_kind::leaves:
-                            flags |= kLeavesTint;
+                            flags |= LEAVES_TINT;
                             break;
                         default:
                             break;
                     }
-                    if (blend_water && info.gpu_water_overlay) flags |= kWaterOverlay;
+                    if (blend_water && info.gpu_water_overlay) flags |= WATER_OVERLAY;
                     const size_t material_index = (static_cast<size_t>(tz) * n + tx) * 2;
                     material_buffer_[material_index + 0] = static_cast<unsigned char>(info.biome);
                     material_buffer_[material_index + 1] = flags;
@@ -532,13 +489,13 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
                 // Heights keep their world values, so the shader's ray stays in
                 // blocks; only the sentinel moves to the shader's own void height.
                 const size_t height_index = (static_cast<size_t>(tz) * n + tx) * 2;
-                height_buffer_[height_index + 0] = info.solid_height <= -128 ? kVoidHeight : static_cast<float>(info.solid_height);
-                height_buffer_[height_index + 1] = info.height <= -128 ? kVoidHeight : static_cast<float>(info.height);
+                height_buffer_[height_index + 0] = info.solid_height <= -128 ? VOID_HEIGHT : static_cast<float>(info.solid_height);
+                height_buffer_[height_index + 1] = info.height <= -128 ? VOID_HEIGHT : static_cast<float>(info.height);
             }
         }
     } else {
         color_buffer_ = (state == AsyncLevelLoader::RegionState::Empty) ? blank_dark_ : blank_light_;
-        height_buffer_.assign(texels * 2, kVoidHeight);
+        height_buffer_.assign(texels * 2, VOID_HEIGHT);
         // The upload below reads n*n texels from the front of the buffer, so a
         // tile built for a different resolution would be a garbled sub-rectangle
         // of the right pattern rather than a smaller checkerboard.
@@ -566,14 +523,14 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
     const double world_width = width() / px_per_block;
     const double world_height = height() / px_per_block;
     // Keep shadow, bevel, AO, and biome samples resident around the viewport.
-    const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(std::max(blocks_per_texel_, 16));
+    const double shading_margin = gpu_options_.flat_shading ? 0.0 : static_cast<double>(std::max(blocks_per_texel_, 16));
     const double margin = std::max<double>(shadowReachBlocks(), shading_margin);
 
     double min_x = world_origin.x() - margin;
     double max_x = world_origin.x() + world_width + margin;
     double min_z = world_origin.y() - world_height - margin;
     double max_z = world_origin.y() + margin;
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         const QPointF center = capture_view_ ? capture_center_block_
                                              : (view_ ? view_->worldToView().inverted().map(QPointF(view_->viewportSize().width() / 2.0,
                                                                                                     view_->viewportSize().height() / 2.0)) *
@@ -581,21 +538,21 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
                                                       : QPointF());
         const double half_u = width() / 2.0 / px_per_block;
         const double half_v = height() / 2.0 / px_per_block;
-        const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
+        const double max_dy = std::max(std::abs(ISO_RAY_BOTTOM - ISO_HEIGHT_REFERENCE), std::abs(ISO_RAY_TOP - ISO_HEIGHT_REFERENCE));
         // A pixel's world offset picks up half its screen x through the horizontal
         // axis and half its screen y through the vertical one, and the march adds
         // the whole ray depth on top.
-        const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+        const double half_axis = INV_SQRT2 * half_u + SQRT_THREE_HALVES * half_v + max_dy;
         min_x = center.x() - half_axis - margin;
         max_x = center.x() + half_axis + margin;
         min_z = center.y() - half_axis - margin;
         max_z = center.y() + half_axis + margin;
     }
 
-    const int rx0 = floorDiv(static_cast<int>(std::floor(min_x)), kRegionBlocks);
-    const int rx1 = floorDiv(static_cast<int>(std::floor(max_x)), kRegionBlocks);
-    const int rz0 = floorDiv(static_cast<int>(std::floor(min_z)), kRegionBlocks);
-    const int rz1 = floorDiv(static_cast<int>(std::floor(max_z)), kRegionBlocks);
+    const int rx0 = floorDiv(static_cast<int>(std::floor(min_x)), REGION_BLOCKS);
+    const int rx1 = floorDiv(static_cast<int>(std::floor(max_x)), REGION_BLOCKS);
+    const int rz0 = floorDiv(static_cast<int>(std::floor(min_z)), REGION_BLOCKS);
+    const int rz1 = floorDiv(static_cast<int>(std::floor(max_z)), REGION_BLOCKS);
 
     visible_regions_ = 0;
     visible_region_data_pending_ = false;
@@ -640,17 +597,17 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
 int GpuMapWidget::shadowReachBlocks() const {
     // The shader marches in half-texel steps within a 256-iteration bound, so it
     // covers this many blocks at every resolution the atlas uses.
-    return shadow_enabled_ && shadow_strength_ > 0.0f ? shadow_steps_ : 0;
+    return gpu_options_.shadow_enabled && gpu_options_.shadow_strength > 0.0f ? gpu_options_.shadow_steps : 0;
 }
 
 bool GpuMapWidget::overviewMode() const { return !capture_view_ && overlays_ && overlays_->coordsOverviewMode(); }
 
 // Slots along one atlas edge at a given resolution: the atlas is a fixed number
-// of texels and a region covers kRegionBlocks blocks, so the slot count grows
+// of texels and a region covers REGION_BLOCKS blocks, so the slot count grows
 // with blocks-per-texel.
 static int slotsPerSideFor(int blocks_per_texel) {
-    const int texels_per_region = GpuMapWidget::kRegionBlocks / std::max(1, blocks_per_texel);
-    return GpuMapWidget::kAtlasTexels / std::max(1, texels_per_region);
+    const int texels_per_region = GpuMapWidget::REGION_BLOCKS / std::max(1, blocks_per_texel);
+    return GpuMapWidget::ATLAS_TEXELS / std::max(1, texels_per_region);
 }
 
 int GpuMapWidget::regionsSpannedBy(const QSize& viewport, double px_per_block) const {
@@ -658,30 +615,30 @@ int GpuMapWidget::regionsSpannedBy(const QSize& viewport, double px_per_block) c
     // that floor()-ing the two edge regions can add. Deriving the requirement
     // from the region count (rather than from a block-span proxy) is what keeps
     // this exactly consistent with the range collectVisibleRegions() walks.
-    const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(blocks_per_texel_);
+    const double shading_margin = gpu_options_.flat_shading ? 0.0 : static_cast<double>(blocks_per_texel_);
     const double reach = std::max<double>(shadowReachBlocks(), shading_margin);
     double span = std::max(viewport.width() / px_per_block, viewport.height() / px_per_block) + 2.0 * reach;
-    if (orthographic_view_) {
+    if (gpu_options_.orthographic_view) {
         // The fixed camera projects a vertical ray depth into both horizontal
         // world axes. Size the atlas for that projected footprint, not just the
         // screen rectangle used by the top-down renderer.
         const double half_u = viewport.width() / 2.0 / px_per_block;
         const double half_v = viewport.height() / 2.0 / px_per_block;
-        const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
-        const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+        const double max_dy = std::max(std::abs(ISO_RAY_BOTTOM - ISO_HEIGHT_REFERENCE), std::abs(ISO_RAY_TOP - ISO_HEIGHT_REFERENCE));
+        const double half_axis = INV_SQRT2 * half_u + SQRT_THREE_HALVES * half_v + max_dy;
         span = 2.0 * half_axis + 2.0 * reach;
     }
-    return static_cast<int>(std::ceil(span / kRegionBlocks)) + 1;
+    return static_cast<int>(std::ceil(span / REGION_BLOCKS)) + 1;
 }
 
 int GpuMapWidget::blocksPerTexelFor(const QSize& viewport, double px_per_block) const {
     // 128 blocks per texel is the coarsest possible level: a region tile would
     // otherwise be smaller than one texel.
-    constexpr int kMaxBlocksPerTexel = kRegionBlocks;
+    constexpr int MAX_BLOCKS_PER_TEXEL = REGION_BLOCKS;
     const int needed_slots = regionsSpannedBy(viewport, px_per_block);
 
     int minimal = 1;
-    while (minimal < kMaxBlocksPerTexel && slotsPerSideFor(minimal) < needed_slots) minimal *= 2;
+    while (minimal < MAX_BLOCKS_PER_TEXEL && slotsPerSideFor(minimal) < needed_slots) minimal *= 2;
 
     if (blocks_per_texel_ < minimal) return minimal;
 
@@ -689,9 +646,9 @@ int GpuMapWidget::blocksPerTexelFor(const QSize& viewport, double px_per_block) 
     // spare. Without the margin, scrolling in and out across a band boundary
     // rebuilds on every wheel step; the floor above is what keeps this from
     // overshooting into a level that no longer covers the view.
-    constexpr double kShrinkMargin = 1.4;
+    constexpr double SHRINK_MARGIN = 1.4;
     const int finer = blocks_per_texel_ / 2;
-    if (finer >= minimal && static_cast<double>(slotsPerSideFor(finer)) >= needed_slots * kShrinkMargin) return finer;
+    if (finer >= minimal && static_cast<double>(slotsPerSideFor(finer)) >= needed_slots * SHRINK_MARGIN) return finer;
     return blocks_per_texel_;
 }
 
@@ -718,7 +675,7 @@ void GpuMapWidget::paintGL() {
     // bakes it asks for and the uploads all grow with the view instead of with
     // the world - which is what makes zooming out hitch. Those zooms draw the
     // coordinate overview instead, at the same threshold the CPU renderer uses.
-    const bool overview = !orthographic_view_ && overviewMode();
+    const bool overview = !gpu_options_.orthographic_view && overviewMode();
     if (overview) {
         // No region work in this mode; without this the stats strip would keep
         // reporting the last terrain frame's counters.
@@ -739,11 +696,7 @@ void GpuMapWidget::paintGL() {
         out = stage_timer.nsecsElapsed() / 1.0e6;
         stage_timer.restart();
     };
-    collect_ms_ = 0.0;
-    upload_ms_ = 0.0;
-    blank_upload_ms_ = 0.0;
-    ready_upload_ms_ = 0.0;
-    shade_ms_ = 0.0;
+    gpu_timings_ = {};
 
     // Same place and scale as every other renderer on this view. Also what the
     // stats strip reports, so it is resolved even while the overview is drawn.
@@ -783,14 +736,14 @@ void GpuMapWidget::paintGL() {
             invalidateAtlas();
         }
 
-        if (orthographic_view_) {
+        if (gpu_options_.orthographic_view) {
             // The isometric shader can see the full ray depth for every pixel.
             // Convert that projected footprint into a conservative axis-aligned
             // atlas range so every sampled column is resident.
             const double half_u = width() / 2.0 / px_per_block;
             const double half_v = height() / 2.0 / px_per_block;
-            const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
-            const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+            const double max_dy = std::max(std::abs(ISO_RAY_BOTTOM - ISO_HEIGHT_REFERENCE), std::abs(ISO_RAY_TOP - ISO_HEIGHT_REFERENCE));
+            const double half_axis = INV_SQRT2 * half_u + SQRT_THREE_HALVES * half_v + max_dy;
             world_origin = QPointF(world_center.x() - half_axis, world_center.y() + half_axis);
         } else {
             const double half_w = width() / 2.0 / px_per_block;
@@ -801,22 +754,20 @@ void GpuMapWidget::paintGL() {
         }
 
         collectVisibleRegions(px_per_block, world_origin);
-        stage_ms(collect_ms_);
+        stage_ms(gpu_timings_.collect_ms);
 
         // Upload queued slots before drawing so the atlas has no stale visible tiles.
         uploaded_last_frame_ = 0;
-        blank_upload_ms_ = 0.0;
-        ready_upload_ms_ = 0.0;
         for (auto it = uploads_.begin(); it != uploads_.end();) {
             QElapsedTimer slot_timer;
             slot_timer.start();
             const bool terrain = uploadRegion(*it);
-            (terrain ? ready_upload_ms_ : blank_upload_ms_) += slot_timer.nsecsElapsed() / 1.0e6;
+            (terrain ? gpu_timings_.ready_upload_ms : gpu_timings_.blank_upload_ms) += slot_timer.nsecsElapsed() / 1.0e6;
             ++uploaded_last_frame_;
             it = uploads_.erase(it);
         }
         reindexUploads();
-        stage_ms(upload_ms_);
+        stage_ms(gpu_timings_.upload_ms);
     }
 
     if (ready && !overview) {
@@ -834,37 +785,39 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uBiomePalette", 3);
         shader_->setUniformValue("uViewOrigin", static_cast<float>(world_origin.x()), static_cast<float>(world_origin.y()));
         shader_->setUniformValue("uPxPerBlock", static_cast<float>(device_px_per_block));
-        shader_->setUniformValue("uAtlasTexels", static_cast<float>(kAtlasTexels));
+        shader_->setUniformValue("uAtlasTexels", static_cast<float>(ATLAS_TEXELS));
         shader_->setUniformValue("uBlocksPerTexel", static_cast<float>(blocks_per_texel_));
         shader_->setUniformValue("uSunStep", static_cast<float>(sx), static_cast<float>(sy));
         shader_->setUniformValue("uShadowDarkness", 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f);
-        shader_->setUniformValue("uShadowStrength", shadow_strength_);
+        shader_->setUniformValue("uShadowStrength", gpu_options_.shadow_strength);
         shader_->setUniformValue("uShadowReach", static_cast<float>(shadowReachBlocks()));
         const double base_edge_width = std::clamp(std::max(0.25, 1.0 / texel_px), 0.25, 0.5);
-        shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(base_edge_width * bevel_width_, 0.0625, 0.75)));
-        shader_->setUniformValue("uAoStrength", ao_strength_);
-        shader_->setUniformValue("uAoDirections", ao_directions_);
-        shader_->setUniformValue("uAoSteps", ao_steps_);
-        shader_->setUniformValue("uAoStep0", ao_step0_);
-        shader_->setUniformValue("uAoRadius", ao_radius_);
-        shader_->setUniformValue("uBevelStrength", bevel_strength_);
-        shader_->setUniformValue("uSaturation", saturation_);
-        shader_->setUniformValue("uBrightness", brightness_);
-        shader_->setUniformValue("uGrassHeightEnabled", grass_height_enabled_ ? 1.0f : 0.0f);
-        shader_->setUniformValue("uGrassHeightBase", grass_height_base_);
-        shader_->setUniformValue("uGrassHeightRange", grass_height_range_);
-        shader_->setUniformValue("uGrassHeightColor", grass_height_color_[0], grass_height_color_[1], grass_height_color_[2]);
+        shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(base_edge_width * gpu_options_.bevel_width, 0.0625, 0.75)));
+        shader_->setUniformValue("uAoStrength", gpu_options_.ao_strength);
+        shader_->setUniformValue("uAoDirections", gpu_options_.ao_directions);
+        shader_->setUniformValue("uAoSteps", gpu_options_.ao_steps);
+        shader_->setUniformValue("uAoStep0", gpu_options_.ao_step0);
+        shader_->setUniformValue("uAoRadius", gpu_options_.ao_radius);
+        shader_->setUniformValue("uBevelStrength", gpu_options_.bevel_strength);
+        shader_->setUniformValue("uSaturation", gpu_options_.saturation);
+        shader_->setUniformValue("uBrightness", gpu_options_.brightness);
+        shader_->setUniformValue("uGrassHeightEnabled", gpu_options_.grass_height_enabled ? 1.0f : 0.0f);
+        shader_->setUniformValue("uGrassHeightBase", gpu_options_.grass_height_base);
+        shader_->setUniformValue("uGrassHeightRange", gpu_options_.grass_height_range);
+        shader_->setUniformValue("uGrassHeightColor", gpu_options_.grass_height_color[0], gpu_options_.grass_height_color[1],
+                                 gpu_options_.grass_height_color[2]);
         // Biome bake is a categorical visualisation, not terrain material:
         // height-driven bevel, AO, shadows, and water treatment must not alter it.
         const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
-        shader_->setUniformValue("uFlatShading", (flat_shading_ || biome_layer) ? 1.0f : 0.0f);
-        shader_->setUniformValue("uWaterBaseColor", water_base_color_[0], water_base_color_[1], water_base_color_[2]);
-        if (orthographic_view_) {
+        shader_->setUniformValue("uFlatShading", (gpu_options_.flat_shading || biome_layer) ? 1.0f : 0.0f);
+        shader_->setUniformValue("uWaterBaseColor", gpu_options_.water_base_color[0], gpu_options_.water_base_color[1],
+                                 gpu_options_.water_base_color[2]);
+        if (gpu_options_.orthographic_view) {
             shader_->setUniformValue("uIsoCenter", static_cast<float>(world_center.x()), static_cast<float>(world_center.y()));
-            shader_->setUniformValue("uIsoReferenceHeight", static_cast<float>(kIsoHeightReference));
+            shader_->setUniformValue("uIsoReferenceHeight", static_cast<float>(ISO_HEIGHT_REFERENCE));
             shader_->setUniformValue("uIsoViewport", static_cast<float>(width() * dpr), static_cast<float>(height() * dpr));
-            shader_->setUniformValue("uIsoRayTop", static_cast<float>(kIsoRayTop));
-            shader_->setUniformValue("uIsoRayBottom", static_cast<float>(kIsoRayBottom));
+            shader_->setUniformValue("uIsoRayTop", static_cast<float>(ISO_RAY_TOP));
+            shader_->setUniformValue("uIsoRayBottom", static_cast<float>(ISO_RAY_BOTTOM));
         }
 
         glActiveTexture(GL_TEXTURE0);
@@ -883,16 +836,16 @@ void GpuMapWidget::paintGL() {
         if (gpu_timing_) glFinish();
         shader_->release();
     }
-    stage_ms(shade_ms_);
+    stage_ms(gpu_timings_.shade_ms);
 
     painter.endNativePainting();
 
     // --- overlays ---
     // Draw shared overlays in this widget's viewport transform.
-    if (overlays_ && view_ && !capture_view_ && !orthographic_view_) {
+    if (overlays_ && view_ && !capture_view_ && !gpu_options_.orthographic_view) {
         const QTransform world_to_view = view_->transformForViewport(size());
         overlays_->setTransform(world_to_view);
-        overlays_->setScreenInset(kStatsBarHeight);
+        overlays_->setScreenInset(STATS_BAR_HEIGHT);
 
         painter.setTransform(world_to_view);
         const RenderOption& options = view_->options();
@@ -912,9 +865,9 @@ void GpuMapWidget::paintGL() {
         overlays_->drawDebugWindow(&painter);
     }
 
-    last_frame_ms_ = frame_timer.nsecsElapsed() / 1.0e6;
-    stage_ms(overlay_ms_);
-    if (!orthographic_view_) drawStats(painter, last_frame_ms_, px_per_block);
+    gpu_timings_.last_frame_ms = frame_timer.nsecsElapsed() / 1.0e6;
+    stage_ms(gpu_timings_.overlay_ms);
+    if (!gpu_options_.orthographic_view) drawStats(painter, gpu_timings_.last_frame_ms, px_per_block);
     painter.end();
 }
 
@@ -926,12 +879,13 @@ void GpuMapWidget::drawStats(QPainter& painter, double frame_ms, double px_per_b
             .arg(blocks_per_texel_)
             .arg(visible_regions_)
             .arg(uploaded_last_frame_)
-            .arg(QString::number(static_cast<double>(ao_strength_), 'f', 2)) +
+            .arg(QString::number(static_cast<double>(gpu_options_.ao_strength), 'f', 2)) +
         tr("  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6")
-            .arg(QString::number(collect_ms_, 'f', 1), QString::number(upload_ms_, 'f', 1), QString::number(blank_upload_ms_, 'f', 1),
-                 QString::number(ready_upload_ms_, 'f', 1), QString::number(shade_ms_, 'f', 1), QString::number(overlay_ms_, 'f', 1));
+            .arg(QString::number(gpu_timings_.collect_ms, 'f', 1), QString::number(gpu_timings_.upload_ms, 'f', 1),
+                 QString::number(gpu_timings_.blank_upload_ms, 'f', 1), QString::number(gpu_timings_.ready_upload_ms, 'f', 1),
+                 QString::number(gpu_timings_.shade_ms, 'f', 1), QString::number(gpu_timings_.overlay_ms, 'f', 1));
     painter.setPen(QColor(235, 235, 235));
-    const int bar_top = height() - kStatsBarHeight;
-    painter.fillRect(QRect(0, bar_top, width(), kStatsBarHeight), QColor(22, 22, 22, 170));
-    painter.drawText(QRect(4, bar_top, width() - 8, kStatsBarHeight), Qt::AlignVCenter | Qt::AlignLeft, stats);
+    const int bar_top = height() - STATS_BAR_HEIGHT;
+    painter.fillRect(QRect(0, bar_top, width(), STATS_BAR_HEIGHT), QColor(22, 22, 22, 170));
+    painter.drawText(QRect(4, bar_top, width() - 8, STATS_BAR_HEIGHT), Qt::AlignVCenter | Qt::AlignLeft, stats);
 }

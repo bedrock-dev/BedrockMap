@@ -21,7 +21,7 @@ class MapView : public QObject {
     Q_OBJECT
 
    public:
-    static constexpr qreal kDefaultScale = 64.0;  // pixels per chunk
+    static constexpr qreal DEFAULT_SCALE = 64.0;  // pixels per chunk
 
     explicit MapView(QObject* parent = nullptr);
 
@@ -146,7 +146,7 @@ class MapView : public QObject {
     void selectionChanged();
 
    private:
-    static constexpr int kZoomSubdivisionsPerOctave = 4;
+    static constexpr int ZOOM_SUBDIVISIONS_PER_OCTAVE = 4;
 
     QTransform world_to_view_;
     QRect camera_;

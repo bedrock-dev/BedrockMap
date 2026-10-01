@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-MapView::MapView(QObject* parent) : QObject(parent) { world_to_view_.scale(kDefaultScale, kDefaultScale); }
+MapView::MapView(QObject* parent) : QObject(parent) { world_to_view_.scale(DEFAULT_SCALE, DEFAULT_SCALE); }
 
 void MapView::applyConfiguredZoomLimits(bool chunk_index_available) {
     setMinScale(chunk_index_available ? static_cast<qreal>(constant::MINIMUM_ZOOM_SCALE)
@@ -16,16 +16,16 @@ void MapView::applyConfiguredZoomLimits(bool chunk_index_available) {
 void MapView::setViewportSize(const QSize& size) {
     // The margin keeps a ring of terrain around the viewport so panning reveals
     // already-rendered pixels instead of a gap.
-    constexpr int kMargin = 10;
-    const QRect camera(-kMargin, -kMargin, size.width() + kMargin, size.height() + kMargin);
+    constexpr int MARGIN = 10;
+    const QRect camera(-MARGIN, -MARGIN, size.width() + MARGIN, size.height() + MARGIN);
     if (camera == camera_) return;  // idempotent: callers may re-assert the size
     camera_ = camera;
     emit viewChanged();
 }
 
 QSize MapView::viewportSize() const {
-    constexpr int kMargin = 10;
-    return QSize(std::max(0, camera_.width() - kMargin), std::max(0, camera_.height() - kMargin));
+    constexpr int MARGIN = 10;
+    return QSize(std::max(0, camera_.width() - MARGIN), std::max(0, camera_.height() - MARGIN));
 }
 
 void MapView::setScale(qreal scale, const QPointF& anchorViewPos) {
@@ -53,20 +53,20 @@ void MapView::zoomToAdjacentLevel(int direction, const QPointF& anchorViewPos) {
     if (!std::isfinite(current) || current <= 0.0) return;
 
     const qreal octave = std::exp2(std::floor(std::log2(current)));
-    constexpr qreal kEpsilon = 1.0e-6;
+    constexpr qreal EPSILON = 1.0e-6;
     qreal target = current;
 
     if (direction > 0) {
-        const qreal step = octave / kZoomSubdivisionsPerOctave;
-        target = (std::floor(current / step + kEpsilon) + 1.0) * step;
-    } else if (std::abs(current - octave) <= octave * kEpsilon) {
+        const qreal step = octave / ZOOM_SUBDIVISIONS_PER_OCTAVE;
+        target = (std::floor(current / step + EPSILON) + 1.0) * step;
+    } else if (std::abs(current - octave) <= octave * EPSILON) {
         // At an exact power of two, the preceding level belongs to the octave
         // below (e.g. 2 -> 1.75 rather than 1.5).
         const qreal previous_octave = octave * 0.5;
-        target = previous_octave * (1.0 + static_cast<qreal>(kZoomSubdivisionsPerOctave - 1) / kZoomSubdivisionsPerOctave);
+        target = previous_octave * (1.0 + static_cast<qreal>(ZOOM_SUBDIVISIONS_PER_OCTAVE - 1) / ZOOM_SUBDIVISIONS_PER_OCTAVE);
     } else {
-        const qreal step = octave / kZoomSubdivisionsPerOctave;
-        target = (std::ceil(current / step - kEpsilon) - 1.0) * step;
+        const qreal step = octave / ZOOM_SUBDIVISIONS_PER_OCTAVE;
+        target = (std::ceil(current / step - EPSILON) - 1.0) * step;
     }
 
     setScale(target, anchorViewPos);

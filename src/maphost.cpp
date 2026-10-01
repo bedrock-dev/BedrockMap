@@ -91,7 +91,7 @@ MapHost::MapHost(QWidget* page, AsyncLevelLoader* loader)
     }
 
     // The shared view starts zoomed in enough to see individual chunks.
-    view_.setScale(MapView::kDefaultScale, QPointF());
+    view_.setScale(MapView::DEFAULT_SCALE, QPointF());
 
     // import overlay
     import_overlay_ = std::make_unique<ImportOverlay>(loader, this);

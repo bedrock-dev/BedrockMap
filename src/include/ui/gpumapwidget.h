@@ -27,17 +27,52 @@ class AsyncLevelLoader;
 class MapHost;
 class MapView;
 
+struct GpuRenderOptions {
+    std::array<float, 3> water_base_color{0.64f, 0.64f, 0.64f};
+    std::array<float, 3> grass_height_color{1.0f, 0.0f, 0.0f};
+    bool grass_height_enabled{false};
+    float grass_height_base{64.0f};
+    float grass_height_range{128.0f};
+
+    bool shadow_enabled{true};
+    int shadow_steps{48};
+    float shadow_strength{1.0f};
+
+    float ao_strength{0.10f};
+    int ao_directions{16};
+    int ao_steps{16};
+    float ao_step0{0.5f};
+    float ao_radius{16.0f};
+
+    float bevel_strength{1.0f};
+    float bevel_width{1.0f};
+    float saturation{1.0f};
+    float brightness{1.0f};
+    bool flat_shading{false};
+    bool orthographic_view{true};
+};
+
+struct GpuRenderTimings {
+    double last_frame_ms{0};
+    double collect_ms{0};
+    double upload_ms{0};
+    double blank_upload_ms{0};
+    double ready_upload_ms{0};
+    double shade_ms{0};
+    double overlay_ms{0};
+};
+
 /// GPU renderer for the 2D map, sharing state and region bakes with the CPU renderer.
 class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     Q_OBJECT
 
    public:
     /// Texture edge of one atlas page, in texels.
-    static constexpr int kAtlasTexels = 8192;
+    static constexpr int ATLAS_TEXELS = 8192;
     /// Side of one region tile in world blocks (8x8 chunks).
-    static constexpr int kRegionBlocks = constant::RW * 16;
+    static constexpr int REGION_BLOCKS = constant::RW * 16;
 
-    static_assert(kAtlasTexels % kRegionBlocks == 0, "the atlas must hold a whole number of region tiles");
+    static_assert(ATLAS_TEXELS % REGION_BLOCKS == 0, "the atlas must hold a whole number of region tiles");
 
     GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* view, MapOverlays* overlays, ImportOverlay* import, MapHost* host);
 
@@ -57,61 +92,8 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Render offscreen until visible atlas uploads have drained.
     QImage captureOffscreen(const QSize& size, const QPointF& center_block, double px_per_block);
 
-    void setShadowEnabled(bool enabled);
-
-    [[nodiscard]] bool shadowEnabled() const { return shadow_enabled_; }
-
-    /// Ray-march length in blocks.
-    void setShadowSteps(int steps);
-
-    [[nodiscard]] int shadowSteps() const { return shadow_steps_; }
-
-    /// Retained for source compatibility; GPU shadows are binary.
-    void setPenumbra(float penumbra);
-
-    [[nodiscard]] float penumbra() const { return penumbra_; }
-
-    /// Shadow darkness multiplier in the range 0..1.
-    void setShadowStrength(float strength);
-
-    [[nodiscard]] float shadowStrength() const { return shadow_strength_; }
-
-    /// Ambient occlusion strength; zero disables it.
-    void setAoStrength(float strength);
-
-    [[nodiscard]] float aoStrength() const { return ao_strength_; }
-
-    /// Bevel strength; zero removes the bevel.
-    void setBevelStrength(float strength);
-
-    [[nodiscard]] float bevelStrength() const { return bevel_strength_; }
-
-    /// Width multiplier of the screen-space bevel. 1 preserves the automatic width.
-    void setBevelWidth(float width);
-
-    [[nodiscard]] float bevelWidth() const { return bevel_width_; }
-
-    /// Saturation of the rendered image: 0 greyscale, 1 as stored, up to 2 boosted.
-    void setSaturation(float saturation);
-
-    [[nodiscard]] float saturation() const { return saturation_; }
-
-    /// Brightness multiplier of the rendered image: 1 is neutral, 0 is black,
-    /// and values above 1 lift the shaded colours.
-    void setBrightness(float brightness);
-
-    [[nodiscard]] float brightness() const { return brightness_; }
-
-    /// Configure AO directions and samples per direction.
-    void setAoMarch(int directions, int steps);
-
-    [[nodiscard]] int aoDirections() const { return ao_directions_; }
-    [[nodiscard]] int aoSteps() const { return ao_steps_; }
-
-    /// Upload resident bakes without shader shading when `flat` is true.
-    void setFlatShading(bool flat);
-
-    [[nodiscard]] bool flatShading() const { return flat_shading_; }
+    void setGpuOptions(const GpuRenderOptions& options);
+    [[nodiscard]] const GpuRenderOptions& gpuOptions() const { return gpu_options_; }
 
     [[nodiscard]] QSize sizeHint() const override { return {640, 480}; }
 
@@ -136,7 +118,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Time spent in paintGL. GL normally submits asynchronously, so this covers
     /// only the CPU side unless GPU timing is enabled, in which case it waits for
     /// the frame with glFinish() and includes the GPU.
-    [[nodiscard]] double lastFrameMs() const { return last_frame_ms_; }
+    [[nodiscard]] double lastFrameMs() const { return gpu_timings_.last_frame_ms; }
     [[nodiscard]] bool gpuTimingEnabled() const { return gpu_timing_; }
     void setGpuTimingEnabled(bool enabled) { gpu_timing_ = enabled; }
 
@@ -171,10 +153,10 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void invalidateAtlas();
     /// Height of the stats strip drawn along the top. The shared overlays are
     /// told to keep clear of it.
-    static constexpr int kStatsBarHeight = 20;
+    static constexpr int STATS_BAR_HEIGHT = 20;
 
     /// Height written for a column with no blocks (matches map2d.frag).
-    static constexpr float kVoidHeight = -1000.0f;
+    static constexpr float VOID_HEIGHT = -1000.0f;
 
     struct SlotState {
         bl::chunk_pos region{};
@@ -195,7 +177,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Whether the coordinate overview replaces terrain at this zoom.
     [[nodiscard]] bool overviewMode() const;
 
-    [[nodiscard]] int slotsPerSide() const { return kAtlasTexels / (kRegionBlocks / blocks_per_texel_); }
+    [[nodiscard]] int slotsPerSide() const { return ATLAS_TEXELS / (REGION_BLOCKS / blocks_per_texel_); }
 
     void queueUpload(UploadRequest request);
 
@@ -227,12 +209,6 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     GLuint material_texture_{0};
     /// Three rows of RGB tint colours indexed by the biome id.
     GLuint biome_palette_texture_{0};
-    std::array<float, 3> water_base_color_{0.64f, 0.64f, 0.64f};
-    std::array<float, 3> grass_height_color_{1.0f, 0.0f, 0.0f};
-    bool grass_height_enabled_{false};
-    float grass_height_base_{64.0f};
-    float grass_height_range_{128.0f};
-
     int atlas_dim_{-1};        // dimension the atlas currently holds, -1 = nothing
     int blocks_per_texel_{1};  // atlas resolution, see blocksPerTexelFor()
     // Atlas contents depend on the selected base layer.
@@ -249,24 +225,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     std::vector<unsigned char> blank_dark_;
     std::vector<unsigned char> blank_light_;
 
-    bool shadow_enabled_{true};
-    int shadow_steps_{48};
-    // Compatibility setting; hard shadows intentionally ignore this value.
-    float penumbra_{0.0f};
-    float ao_strength_{0.10f};
-    int ao_directions_{16};
-    int ao_steps_{16};
-    // The march spans this radius in blocks; the near field is sampled finely and the
-    // reach is bounded, so nothing beyond it can darken a pixel.
-    static constexpr float ao_step0_{0.5f};
-    static constexpr float ao_radius_{16.0f};
-    float bevel_strength_{1.0f};
-    float bevel_width_{1.0f};
-    float saturation_{1.0f};
-    float brightness_{1.0f};
-    float shadow_strength_{1.0f};
-    bool flat_shading_{false};
-    bool orthographic_view_{true};
+    GpuRenderOptions gpu_options_;
 
     bool capture_view_{false};
     QPointF capture_center_block_{0.0, 0.0};
@@ -278,15 +237,7 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Refreshes debug counters on a still view.
     QTimer* debug_refresh_timer_{nullptr};
 
-    // stats for the overlay
-    double last_frame_ms_{0};
-    // Per-stage frame timings.
-    double collect_ms_{0};
-    double upload_ms_{0};
-    double blank_upload_ms_{0};
-    double ready_upload_ms_{0};
-    double shade_ms_{0};
-    double overlay_ms_{0};
+    GpuRenderTimings gpu_timings_;
     bool gpu_timing_{false};
     int uploaded_last_frame_{0};
     int total_uploads_{0};

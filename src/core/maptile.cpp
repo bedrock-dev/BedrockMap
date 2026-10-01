@@ -265,7 +265,7 @@ void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
     // Water uses the sea-floor colour and does not receive terrain shadows.
     auto& tp = region->tips_info_;
     auto [sx, sy] = sunVector();
-    const int kLevel = setting::current().SHADOW_LEVEL;
+    const int LEVEL = setting::current().SHADOW_LEVEL;
 
     for (int i = 0; i < IMG_WIDTH; i++) {
         for (int j = 0; j < IMG_WIDTH; j++) {
@@ -281,9 +281,9 @@ void MapTile::renderStyle1(ChunkRegion* region, int IMG_WIDTH) {
             QRgb px = line[i];
             int r = qRed(px), g = qGreen(px), b = qBlue(px);
             if (cur * 2 > sum) {
-                line[i] = qRgb(std::min(255, r * kLevel / 100), std::min(255, g * kLevel / 100), std::min(255, b * kLevel / 100));
+                line[i] = qRgb(std::min(255, r * LEVEL / 100), std::min(255, g * LEVEL / 100), std::min(255, b * LEVEL / 100));
             } else if (cur * 2 < sum) {
-                line[i] = qRgb(r * 100 / kLevel, g * 100 / kLevel, b * 100 / kLevel);
+                line[i] = qRgb(r * 100 / LEVEL, g * 100 / LEVEL, b * 100 / LEVEL);
             }
         }
     }
@@ -299,9 +299,9 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
     if (hr_t.isNull()) return;
 
     const int edge_w = std::max(1, scale / 6);
-    constexpr float kEdgeBright = 1.18f;
-    constexpr float kEdgeDark = 0.76f;
-    constexpr float kCornerBoost = 0.40f;
+    constexpr float EDGE_BRIGHT = 1.18f;
+    constexpr float EDGE_DARK = 0.76f;
+    constexpr float CORNER_BOOST = 0.40f;
     const float rcp_ew = 1.0f / edge_w;
 
     for (int bi = 0; bi < IMG_WIDTH; bi++) {
@@ -342,9 +342,9 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
                     auto apply_edge = [&](float t, float cur, float neigh) {
                         if (t <= 0.0f) return;
                         if (cur > neigh)
-                            factor *= 1.0f + (kEdgeBright - 1.0f) * t;
+                            factor *= 1.0f + (EDGE_BRIGHT - 1.0f) * t;
                         else if (cur < neigh)
-                            factor *= 1.0f + (kEdgeDark - 1.0f) * t;
+                            factor *= 1.0f + (EDGE_DARK - 1.0f) * t;
                     };
                     apply_edge(tx_l, h, hl);
                     apply_edge(tx_r, h, hr_);
@@ -354,9 +354,9 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
                     auto apply_corner = [&](float tc, float n1, float n2) {
                         if (tc <= 0.0f) return;
                         if (h > n1 && h > n2)
-                            factor *= 1.0f + (kEdgeBright - 1.0f) * tc * kCornerBoost;
+                            factor *= 1.0f + (EDGE_BRIGHT - 1.0f) * tc * CORNER_BOOST;
                         else if (h < n1 && h < n2)
-                            factor *= 1.0f + (kEdgeDark - 1.0f) * tc * kCornerBoost;
+                            factor *= 1.0f + (EDGE_DARK - 1.0f) * tc * CORNER_BOOST;
                     };
                     float c_tl = std::min(tx_l, ty_t);
                     float c_tr = std::min(tx_r, ty_t);
@@ -383,7 +383,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
 
     // ---- cross-region shadow (unified Data3D height source via cache) ----
     auto [sx, sy] = sunVector();
-    const float kShadowDarkness = 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f;
+    const float SHADOW_DARKNESS = 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f;
     const int shadow_scale = setting::current().SHADOW_MAP_SCALE;
     const int SM = IMG_WIDTH * shadow_scale;
     constexpr int NH = 4;                   // neighbour chunks per side
@@ -447,7 +447,7 @@ void MapTile::renderStyle2(ChunkRegion* region, int IMG_WIDTH, AsyncLevelLoader*
                 auto nh = eh[sbi * EW + sbj];
                 if (nh == -128) break;
                 if (nh > h + s * dz_per_step + 0.1f) {
-                    shadow_map[hi * SM + hj] = kShadowDarkness;
+                    shadow_map[hi * SM + hj] = SHADOW_DARKNESS;
                     break;
                 }
             }

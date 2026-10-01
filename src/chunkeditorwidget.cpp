@@ -38,7 +38,7 @@
 
 namespace {
     // data above this size is not parsed into the NBT editor
-    constexpr size_t kOversizeBytes = 16u * 1024u * 1024u;  // 16 MB
+    constexpr size_t OVERSIZE_BYTES = 16u * 1024u * 1024u;  // 16 MB
 
     QString actorLabel(bl::nbt::compound_tag* root) {
         auto* id = root->get("identifier");
@@ -173,7 +173,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     {
         LOG_F(INFO, "Load chunk block entity data");
         auto raw = this->raw_chunk_.get_normal_key(bl::chunk_key::BlockEntity);
-        if (raw.size() > kOversizeBytes) {
+        if (raw.size() > OVERSIZE_BYTES) {
             this->block_entity_stack_->setCurrentIndex(1);
         } else {
             this->block_entity_stack_->setCurrentIndex(0);
@@ -199,7 +199,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     {
         LOG_F(INFO, "Load Chunk pending tick data");
         auto raw = this->raw_chunk_.get_normal_key(bl::chunk_key::PendingTicks);
-        if (raw.size() > kOversizeBytes) {
+        if (raw.size() > OVERSIZE_BYTES) {
             this->pending_tick_stack_->setCurrentIndex(1);
         } else {
             this->pending_tick_stack_->setCurrentIndex(0);
@@ -221,7 +221,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         LOG_F(INFO, "Load chunk actors data");
         size_t actorBytes = this->raw_chunk_.get_normal_key(bl::chunk_key::Entity).size();
         for (auto& [uid, data] : this->raw_chunk_.get_entities()) actorBytes += data.size();
-        if (actorBytes > kOversizeBytes) {
+        if (actorBytes > OVERSIZE_BYTES) {
             this->actor_stack_->setCurrentIndex(1);
         } else {
             this->actor_stack_->setCurrentIndex(0);

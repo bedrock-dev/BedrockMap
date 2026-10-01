@@ -56,9 +56,9 @@ RegionRenderScheduler::QueueEntry RegionRenderScheduler::makeQueueEntry(const Pe
 
 void RegionRenderScheduler::maybeRebuildQueue() {
     // Compact stale heap entries so bookkeeping stays proportional to live work.
-    constexpr std::size_t kQueueSlack = 64;
+    constexpr std::size_t QUEUE_SLACK = 64;
     const auto pendingSize = pending_.size();
-    const auto rebuildLimit = pendingSize * 2 + kQueueSlack;
+    const auto rebuildLimit = pendingSize * 2 + QUEUE_SLACK;
     if (queue_.size() > rebuildLimit) rebuildQueue();
 }
 

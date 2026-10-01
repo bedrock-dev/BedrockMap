@@ -62,6 +62,17 @@ namespace renderbench {
             PhaseArray phases{};
         };
 
+        void configureGpu(GpuMapWidget& gpu, const Request& request) {
+            auto options = gpu.gpuOptions();
+            options.shadow_steps = request.shadow_steps;
+            options.shadow_enabled = !request.no_shadow;
+            options.flat_shading = request.flat_shading;
+            options.ao_strength = request.ao_strength;
+            options.ao_directions = request.ao_directions;
+            options.ao_steps = request.ao_steps;
+            gpu.setGpuOptions(options);
+        }
+
         PhaseArray snapshot() {
             PhaseArray out{};
             for (size_t i = 0; i < out.size(); i++) out[i] = RenderProfile::instance().get(static_cast<RenderPhase>(i));
@@ -111,9 +122,9 @@ namespace renderbench {
                 int dx, dz;
             };
             std::vector<Candidate> offsets;
-            constexpr int kRadius = 32;  // regions
-            for (int dx = -kRadius; dx <= kRadius; dx++) {
-                for (int dz = -kRadius; dz <= kRadius; dz++) offsets.push_back({dx, dz});
+            constexpr int RADIUS = 32;  // regions
+            for (int dx = -RADIUS; dx <= RADIUS; dx++) {
+                for (int dz = -RADIUS; dz <= RADIUS; dz++) offsets.push_back({dx, dz});
             }
             std::sort(offsets.begin(), offsets.end(),
                       [](const Candidate& a, const Candidate& b) { return a.dx * a.dx + a.dz * a.dz < b.dx * b.dx + b.dz * b.dz; });
@@ -236,30 +247,30 @@ namespace renderbench {
         /// `region_block` locates the region inside the capture.
         void checkOrientation(const QImage& gpu_frame, const QImage& cpu_tile, const QPointF& centre_block, double px_per_block,
                               const QPointF& region_block) {
-            constexpr int kCells = 8;
-            constexpr double kLogicalW = 1024.0;
-            constexpr double kLogicalH = 640.0;
-            const double dpr = gpu_frame.width() / kLogicalW;
-            const double world_left = centre_block.x() - kLogicalW / px_per_block / 2.0;
-            const double world_top = centre_block.y() - kLogicalH / px_per_block / 2.0;
+            constexpr int CELLS = 8;
+            constexpr double LOGICAL_W = 1024.0;
+            constexpr double LOGICAL_H = 640.0;
+            const double dpr = gpu_frame.width() / LOGICAL_W;
+            const double world_left = centre_block.x() - LOGICAL_W / px_per_block / 2.0;
+            const double world_top = centre_block.y() - LOGICAL_H / px_per_block / 2.0;
             const int x0 = static_cast<int>(std::lround((region_block.x() - world_left) * dpr));
             const int y0 = static_cast<int>(std::lround((region_block.y() - world_top) * dpr));
             const int side = static_cast<int>(std::lround(128 * dpr));
-            constexpr int kStatsOverlayPx = 40;  // the stats bar covers the top of the widget
-            if (x0 < 0 || y0 < kStatsOverlayPx || x0 + side > gpu_frame.width() || y0 + side > gpu_frame.height()) {
+            constexpr int STATS_OVERLAY_PX = 40;  // the stats bar covers the top of the widget
+            if (x0 < 0 || y0 < STATS_OVERLAY_PX || x0 + side > gpu_frame.width() || y0 + side > gpu_frame.height()) {
                 std::printf("renderbench: orientation check skipped (region overlaps the widget edge or stats bar)\n");
                 return;
             }
 
-            const auto grid = [kCells](const QImage& image) {
+            const auto grid = [CELLS](const QImage& image) {
                 std::vector<std::vector<double>> rows;
-                for (int cy = 0; cy < kCells; cy++) {
+                for (int cy = 0; cy < CELLS; cy++) {
                     std::vector<double> row;
-                    for (int cx = 0; cx < kCells; cx++) {
-                        const int px0 = cx * image.width() / kCells;
-                        const int py0 = cy * image.height() / kCells;
-                        const int px1 = std::max(px0 + 1, (cx + 1) * image.width() / kCells);
-                        const int py1 = std::max(py0 + 1, (cy + 1) * image.height() / kCells);
+                    for (int cx = 0; cx < CELLS; cx++) {
+                        const int px0 = cx * image.width() / CELLS;
+                        const int py0 = cy * image.height() / CELLS;
+                        const int px1 = std::max(px0 + 1, (cx + 1) * image.width() / CELLS);
+                        const int py1 = std::max(py0 + 1, (cy + 1) * image.height() / CELLS);
                         double sum = 0;
                         int n = 0;
                         for (int y = py0; y < py1; y++) {
@@ -305,9 +316,9 @@ namespace renderbench {
             style2.MAP_RENDER_STYLE = 2;
             setting::apply(style2);
 
-            constexpr int kRepeats = 3;
+            constexpr int REPEATS = 3;
             RenderProfile::instance().reset();
-            for (int i = 0; i < kRepeats; i++) {
+            for (int i = 0; i < REPEATS; i++) {
                 for (const auto& sample : regions) loader.invalidateRegionTiles({sample.pos});
                 for (const auto& sample : regions) {
                     auto baked = bakeRegion(loader, sample.pos, filter);
@@ -330,7 +341,7 @@ namespace renderbench {
             const QPointF centre_block(centre_region.x * 16.0 + 64.0, centre_region.z * 16.0 + 64.0);
             const QSize size(1920, 1080);
             const double per_region_cpu = measureCpuStyleCostMs(loader, regions, filter);
-            constexpr int kWarmFrames = 20;
+            constexpr int WARM_FRAMES = 20;
 
             std::printf("\n== gpu frame timing - %dx%d widget ==\n", size.width(), size.height());
             std::printf("%11s %9s %12s %12s %14s %14s\n", "px/block", "regions", "cold ms", "warm ms", "cpu shade ms/reg", "cpu ms/screen");
@@ -338,11 +349,7 @@ namespace renderbench {
             for (double px_per_block : {0.5, 1.0, 2.0, 4.0, 8.0, 16.0}) {
                 MapView capture_view;
                 GpuMapWidget gpu(nullptr, &loader, &capture_view, nullptr, nullptr, nullptr);
-                gpu.setShadowSteps(request.shadow_steps);
-                gpu.setShadowEnabled(!request.no_shadow);
-                gpu.setFlatShading(request.flat_shading);
-                gpu.setAoStrength(request.ao_strength);
-                gpu.setAoMarch(request.ao_directions, request.ao_steps);
+                configureGpu(gpu, request);
                 gpu.setGpuTimingEnabled(true);
 
                 // Cold: every frame until the visible area is fully baked and
@@ -360,11 +367,11 @@ namespace renderbench {
 
                 // Warm: nothing to upload, so this is pure per-frame shading.
                 double warm_total = 0;
-                for (int i = 0; i < kWarmFrames; i++) {
+                for (int i = 0; i < WARM_FRAMES; i++) {
                     image = gpu.captureOffscreen(size, centre_block, px_per_block);
                     warm_total += gpu.lastFrameMs();
                 }
-                const double warm_ms = warm_total / kWarmFrames;
+                const double warm_ms = warm_total / WARM_FRAMES;
 
                 std::printf("%11.2f %9d %12.1f %12.3f %14.1f %14.1f\n", px_per_block, visible, cold_ms, warm_ms, per_region_cpu,
                             per_region_cpu * visible);
@@ -384,8 +391,10 @@ namespace renderbench {
             GpuMapWidget gpu(nullptr, &loader, &ray_view, nullptr, nullptr, nullptr);
             gpu.setGpuTimingEnabled(true);
             for (int steps : {0, 8, 16, 32, 48, 64, 96, 128}) {
-                gpu.setShadowEnabled(steps > 0);
-                gpu.setShadowSteps(std::max(1, steps));
+                auto options = gpu.gpuOptions();
+                options.shadow_enabled = steps > 0;
+                options.shadow_steps = std::max(1, steps);
+                gpu.setGpuOptions(options);
                 QImage image;
                 for (int i = 0; i < 600; i++) {
                     image = gpu.captureOffscreen(size, centre_block, 4.0);
@@ -393,11 +402,11 @@ namespace renderbench {
                     if (i > 0 && loader.pendingRegionTasks() == 0 && gpu.pendingUploadCount() == 0) break;
                 }
                 double total = 0;
-                for (int i = 0; i < kWarmFrames; i++) {
+                for (int i = 0; i < WARM_FRAMES; i++) {
                     image = gpu.captureOffscreen(size, centre_block, 4.0);
                     total += gpu.lastFrameMs();
                 }
-                std::printf("%12d %14.3f\n", steps, total / kWarmFrames);
+                std::printf("%12d %14.3f\n", steps, total / WARM_FRAMES);
             }
             std::printf(
                 "(the CPU equivalent of this knob is SHADOW_MAP_SCALE, which costs about shadow_scale^3:\n"
@@ -411,10 +420,10 @@ namespace renderbench {
             const auto& centre_region = regions.front().pos;
             const QPointF centre_block(centre_region.x * 16.0 + 64.0, centre_region.z * 16.0 + 64.0);
             const QSize size(1920, 1080);
-            constexpr double kPxPerBlock = 4.0;
-            constexpr int kScreenRegions = 15;  // ~1920x1080 at 4 px/block, in 8x8-chunk regions
+            constexpr double PX_PER_BLOCK = 4.0;
+            constexpr int SCREEN_REGIONS = 15;  // ~1920x1080 at 4 px/block, in 8x8-chunk regions
 
-            std::printf("\n== fresh screen, 1920x1080 at 4 px/block (%d regions) ==\n", kScreenRegions);
+            std::printf("\n== fresh screen, 1920x1080 at 4 px/block (%d regions) ==\n", SCREEN_REGIONS);
 
             auto saved = setting::current();
             const auto measure_cpu = [&](int style, int shadow_scale, const char* label) {
@@ -426,7 +435,7 @@ namespace renderbench {
                 const auto start = std::chrono::steady_clock::now();
                 int baked = 0;
                 for (const auto& sample : regions) {
-                    if (baked >= kScreenRegions) break;
+                    if (baked >= SCREEN_REGIONS) break;
                     loader.invalidateRegionTiles({sample.pos});
                     auto result = bakeRegion(loader, sample.pos, filter);
                     delete result.region;
@@ -444,15 +453,14 @@ namespace renderbench {
             // GPU: the same regions, but only the shared bake plus the upload.
             MapView screen_view;
             GpuMapWidget gpu(nullptr, &loader, &screen_view, nullptr, nullptr, nullptr);
-            gpu.setShadowSteps(request.shadow_steps);
-            gpu.setShadowEnabled(!request.no_shadow);
+            configureGpu(gpu, request);
             gpu.setGpuTimingEnabled(true);
             for (const auto& sample : regions) loader.invalidateRegionTiles({sample.pos});
             const auto gpu_start = std::chrono::steady_clock::now();
             double gpu_paint_total = 0;
             QImage image;
             for (int i = 0; i < 600; i++) {
-                image = gpu.captureOffscreen(size, centre_block, kPxPerBlock);
+                image = gpu.captureOffscreen(size, centre_block, PX_PER_BLOCK);
                 gpu_paint_total += gpu.lastFrameMs();
                 QCoreApplication::processEvents();
                 if (i > 0 && loader.pendingRegionTasks() == 0 && gpu.pendingUploadCount() == 0) break;
@@ -471,14 +479,14 @@ namespace renderbench {
 
         /// Find a terrain pixel so high-zoom captures avoid empty holes.
         QPointF terrainCentreBlock(const std::vector<BakedRegion>& regions) {
-            constexpr int kHalf = (constant::RW << 4) / 2;
+            constexpr int HALF = (constant::RW << 4) / 2;
             for (const auto& sample : regions) {
                 if (!sample.region) continue;
                 const auto& tips = sample.region->tips_info_;
                 // Search outwards from the middle so a crop stays inside the region.
-                for (int radius = 0; radius < kHalf; radius += 4) {
-                    for (int x = std::max(0, kHalf - radius); x <= std::min(2 * kHalf - 1, kHalf + radius); x += 4) {
-                        for (int z = std::max(0, kHalf - radius); z <= std::min(2 * kHalf - 1, kHalf + radius); z += 4) {
+                for (int radius = 0; radius < HALF; radius += 4) {
+                    for (int x = std::max(0, HALF - radius); x <= std::min(2 * HALF - 1, HALF + radius); x += 4) {
+                        for (int z = std::max(0, HALF - radius); z <= std::min(2 * HALF - 1, HALF + radius); z += 4) {
                             if (tips[x][z].height > -128) return QPointF(sample.pos.x * 16.0 + x, sample.pos.z * 16.0 + z);
                         }
                     }
@@ -506,11 +514,7 @@ namespace renderbench {
             for (double px_per_block : {16.0, 8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125}) {
                 MapView capture_view;
                 GpuMapWidget gpu(nullptr, &loader, &capture_view, nullptr, nullptr, nullptr);
-                gpu.setShadowSteps(request.shadow_steps);
-                gpu.setShadowEnabled(!request.no_shadow);
-                gpu.setFlatShading(request.flat_shading);
-                gpu.setAoStrength(request.ao_strength);
-                gpu.setAoMarch(request.ao_directions, request.ao_steps);
+                configureGpu(gpu, request);
                 const QSize size(1024, 640);
                 QImage image;
                 int frames = 0;
@@ -553,9 +557,11 @@ namespace renderbench {
             gpu.resize(800, 600);
             gpu.setGpuTimingEnabled(true);
             // Keep smoke-test shading independent of config.ini.
-            gpu.setBevelStrength(1.0f);
-            gpu.setSaturation(1.0f);
-            gpu.setBrightness(1.0f);
+            auto options = gpu.gpuOptions();
+            options.bevel_strength = 1.0f;
+            options.saturation = 1.0f;
+            options.brightness = 1.0f;
+            gpu.setGpuOptions(options);
 
             for (int i = 0; i < 300; i++) {
                 QCoreApplication::processEvents();
@@ -660,9 +666,12 @@ namespace renderbench {
                 return result;
             };
             const Chroma colour_stats = measure_chroma(gpu_frame);
-            gpu.setSaturation(0.0f);
+            options = gpu.gpuOptions();
+            options.saturation = 0.0f;
+            gpu.setGpuOptions(options);
             const Chroma grey_stats = measure_chroma(gpu.captureOffscreen(QSize(800, 600), QPointF(64, 64), 4.0));
-            gpu.setSaturation(1.0f);
+            options.saturation = 1.0f;
+            gpu.setGpuOptions(options);
             const bool saturation_ok = colour_stats.max_chroma > 4.0 && grey_stats.max_chroma <= 1.0 &&
                                        std::abs(grey_stats.mean_luma - colour_stats.mean_luma) <= 2.0;
             std::printf("renderbench: widget smoke - saturation 1: chroma %.0f, luma %.1f; saturation 0: chroma %.0f, luma %.1f: %s\n",
@@ -928,10 +937,10 @@ namespace renderbench {
                 // The stats strip along the top prints the frame time, which differs
                 // between any two captures; it is not part of the ghost.
                 const auto differing_pixels = [](const QImage& a, const QImage& b) {
-                    constexpr int kSkipTop = 24;
+                    constexpr int SKIP_TOP = 24;
                     if (a.size() != b.size() || a.isNull()) return -1;
                     int diff = 0;
-                    for (int y = kSkipTop; y < a.height(); y += 2) {
+                    for (int y = SKIP_TOP; y < a.height(); y += 2) {
                         for (int x = 0; x < a.width(); x += 2) {
                             if (a.pixel(x, y) != b.pixel(x, y)) ++diff;
                         }
@@ -966,12 +975,12 @@ namespace renderbench {
 
                 // Well above the frame-to-frame jitter (measured ~135 pixels from
                 // bakes landing between the two grabs, i.e. off-threshold noise).
-                constexpr int kMinGhostPixels = 1000;
-                import_ok = import_ok && bar_ok && cancelled && ghost_pixels > kMinGhostPixels;
+                constexpr int MIN_GHOST_PIXELS = 1000;
+                import_ok = import_ok && bar_ok && cancelled && ghost_pixels > MIN_GHOST_PIXELS;
                 std::printf(
                     "renderbench: widget smoke - ghost drawn by the GPU pane: %s (%d pixels; confirm bar on the pane: %s; Esc "
                     "cancels: %s)\n",
-                    ghost_pixels > kMinGhostPixels ? "yes" : "NO", ghost_pixels, bar_ok ? "yes" : "NO", cancelled ? "yes" : "NO");
+                    ghost_pixels > MIN_GHOST_PIXELS ? "yes" : "NO", ghost_pixels, bar_ok ? "yes" : "NO", cancelled ? "yes" : "NO");
                 if (!import_ok) ++failures;
             }
 
@@ -1094,15 +1103,16 @@ namespace renderbench {
                 {
                     MapView probe_view;
                     GpuMapWidget probe(nullptr, nullptr, &probe_view, nullptr, nullptr, nullptr);
-                    const bool wired = std::abs(probe.aoStrength() - 0.7f) < 1e-6 && std::abs(probe.bevelStrength() - 0.4f) < 1e-6 &&
-                                       std::abs(probe.bevelWidth() - 1.5f) < 1e-6 && std::abs(probe.saturation() - 1.4f) < 1e-6 &&
-                                       std::abs(probe.brightness() - 1.1f) < 1e-6 && std::abs(probe.shadowStrength() - 0.6f) < 1e-6;
+                    const auto& options = probe.gpuOptions();
+                    const bool wired = std::abs(options.ao_strength - 0.7f) < 1e-6 && std::abs(options.bevel_strength - 0.4f) < 1e-6 &&
+                                       std::abs(options.bevel_width - 1.5f) < 1e-6 && std::abs(options.saturation - 1.4f) < 1e-6 &&
+                                       std::abs(options.brightness - 1.1f) < 1e-6 && std::abs(options.shadow_strength - 0.6f) < 1e-6;
                     std::printf(
                         "renderbench: widget smoke - the renderer starts from the configured shading (ao=%.2f bevel=%.2f width=%.2f "
                         "saturation=%.2f brightness=%.2f shadow=%.2f): %s\n",
-                        static_cast<double>(probe.aoStrength()), static_cast<double>(probe.bevelStrength()),
-                        static_cast<double>(probe.bevelWidth()), static_cast<double>(probe.saturation()),
-                        static_cast<double>(probe.brightness()), static_cast<double>(probe.shadowStrength()), wired ? "yes" : "NO");
+                        static_cast<double>(options.ao_strength), static_cast<double>(options.bevel_strength),
+                        static_cast<double>(options.bevel_width), static_cast<double>(options.saturation),
+                        static_cast<double>(options.brightness), static_cast<double>(options.shadow_strength), wired ? "yes" : "NO");
                     if (!wired) ++failures;
                 }
                 setting::apply(probe_saved);
@@ -1153,15 +1163,15 @@ namespace renderbench {
             for (int i = 0; i < 200; i++) pump();
 
             std::printf("\n== zoom sweep - %dx%d, background %% per frame after each zoom step ==\n", size.width(), size.height());
-            constexpr int kFrames = 12;
+            constexpr int FRAMES = 12;
             std::printf("%11s %6s %7s", "scale", "texel", "frame:");
-            for (int i = 0; i < kFrames; i++) std::printf("%6d", i);
+            for (int i = 0; i < FRAMES; i++) std::printf("%6d", i);
             std::printf("\n");
 
             for (double scale : {256.0, 64.0, 32.0, 24.0, 16.0, 12.0, 9.0, 8.0, 6.0, 4.0}) {
                 view.setScale(scale, QPointF(size.width() / 2.0, size.height() / 2.0));
                 std::printf("%11.2f %6d %7s", scale, gpu.blocksPerTexel(), "");
-                for (int i = 0; i < kFrames; i++) {
+                for (int i = 0; i < FRAMES; i++) {
                     const QImage frame = gpu.grabFramebuffer();
                     std::printf("%6.0f", unloadedFraction(frame) * 100.0);
                     QCoreApplication::processEvents();
@@ -1194,7 +1204,9 @@ namespace renderbench {
             GpuMapWidget gpu(nullptr, &loader, &view, nullptr, nullptr, nullptr);
             gpu.resize(viewport);
             view.setViewportSize(viewport);
-            gpu.setShadowSteps(shadow_steps);
+            auto options = gpu.gpuOptions();
+            options.shadow_steps = shadow_steps;
+            gpu.setGpuOptions(options);
 
             std::printf("\n== atlas coverage - %dx%d, shadow steps %d ==\n", viewport.width(), viewport.height(), shadow_steps);
             std::printf("%11s %12s %8s %10s %10s %s\n", "scale", "px/block", "texel", "regions", "slots", "ok");
@@ -1207,7 +1219,7 @@ namespace renderbench {
                 const double px_per_block = scale / 16.0;
                 const int level = gpu.blocksPerTexelFor(viewport, px_per_block);
                 // "slots" is a macro in this toolchain, hence slot_count.
-                const int slot_count = GpuMapWidget::kAtlasTexels / (GpuMapWidget::kRegionBlocks / level);
+                const int slot_count = GpuMapWidget::ATLAS_TEXELS / (GpuMapWidget::REGION_BLOCKS / level);
                 const int region_count = gpu.regionsSpannedBy(viewport, px_per_block);
                 const bool ok = slot_count >= region_count;
                 if (!ok) ++failures;
@@ -1533,19 +1545,19 @@ namespace renderbench {
         int runAoCheck(const Request& request, AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions) {
             const QPointF centre_block = terrainCentreBlock(regions);
             const QSize size(1024, 640);
-            constexpr double kPxPerBlock = 16.0;  // blocks are big enough to see the gradient
+            constexpr double PX_PER_BLOCK = 16.0;  // blocks are big enough to see the gradient
 
             const auto render = [&](float ao, bool flat_shading = false) {
                 MapView capture_view;
                 GpuMapWidget gpu(nullptr, &loader, &capture_view, nullptr, nullptr, nullptr);
-                gpu.setShadowSteps(request.shadow_steps);
-                gpu.setShadowEnabled(!request.no_shadow);
-                gpu.setAoStrength(ao);
-                gpu.setAoMarch(request.ao_directions, request.ao_steps);
-                gpu.setFlatShading(flat_shading);
+                configureGpu(gpu, request);
+                auto options = gpu.gpuOptions();
+                options.ao_strength = ao;
+                options.flat_shading = flat_shading;
+                gpu.setGpuOptions(options);
                 QImage image;
                 for (int i = 0; i < 600; i++) {
-                    image = gpu.captureOffscreen(size, centre_block, kPxPerBlock);
+                    image = gpu.captureOffscreen(size, centre_block, PX_PER_BLOCK);
                     QCoreApplication::processEvents();
                     if (i > 0 && loader.pendingRegionTasks() == 0 && gpu.pendingUploadCount() == 0) break;
                 }
@@ -1609,7 +1621,7 @@ namespace renderbench {
                 return m;
             };
 
-            std::printf("\n== ambient occlusion strength sweep at %g px/block ==\n", kPxPerBlock);
+            std::printf("\n== ambient occlusion strength sweep at %g px/block ==\n", PX_PER_BLOCK);
             std::printf("%10s %12s %12s %12s %12s %12s\n", "strength", "affected %", "median", "deepest", "mean/255", "brightened");
 
             std::vector<float> strengths;
@@ -1652,11 +1664,11 @@ namespace renderbench {
 
         /// Check map2d shading against a manufactured height field.
         int runShadeProbe(const QString& shot_prefix, float ao_strength, int ao_directions, int ao_steps, bool quality_sweep) {
-            constexpr int kBlocks = 64;
-            constexpr int kPixPerBlock = 12;
-            constexpr int kPlateau0 = 8, kPlateau1 = 56;  // plateau extent
-            constexpr int kPit0 = 30, kPit1 = 34;         // pit carved out of it
-            constexpr unsigned char kBase = 200;          // flat colour, so shading is the only signal
+            constexpr int BLOCKS = 64;
+            constexpr int PIX_PER_BLOCK = 12;
+            constexpr int PLATEAU0 = 8, PLATEAU1 = 56;  // plateau extent
+            constexpr int PIT0 = 30, PIT1 = 34;         // pit carved out of it
+            constexpr unsigned char BASE = 200;          // flat colour, so shading is the only signal
 
             QOpenGLContext context;
             QSurfaceFormat format;
@@ -1683,23 +1695,23 @@ namespace renderbench {
             auto* gl = &core;
 
             const auto height_of = [&](int x, int z) {
-                if (x < kPlateau0 || x >= kPlateau1 || z < kPlateau0 || z >= kPlateau1) return 0;
-                if (x >= kPit0 && x < kPit1 && z >= kPit0 && z < kPit1) return 0;
+                if (x < PLATEAU0 || x >= PLATEAU1 || z < PLATEAU0 || z >= PLATEAU1) return 0;
+                if (x >= PIT0 && x < PIT1 && z >= PIT0 && z < PIT1) return 0;
                 return 1;
             };
 
-            std::vector<unsigned char> colours(static_cast<size_t>(kBlocks) * kBlocks * 4);
-            std::vector<float> heights(static_cast<size_t>(kBlocks) * kBlocks * 2);
-            std::vector<unsigned char> materials(static_cast<size_t>(kBlocks) * kBlocks * 2, 0);
-            for (int z = 0; z < kBlocks; z++) {
-                for (int x = 0; x < kBlocks; x++) {
+            std::vector<unsigned char> colours(static_cast<size_t>(BLOCKS) * BLOCKS * 4);
+            std::vector<float> heights(static_cast<size_t>(BLOCKS) * BLOCKS * 2);
+            std::vector<unsigned char> materials(static_cast<size_t>(BLOCKS) * BLOCKS * 2, 0);
+            for (int z = 0; z < BLOCKS; z++) {
+                for (int x = 0; x < BLOCKS; x++) {
                     const float h = static_cast<float>(height_of(x, z));
-                    const size_t c = (static_cast<size_t>(z) * kBlocks + x) * 4;
-                    colours[c + 0] = colours[c + 1] = colours[c + 2] = kBase;
+                    const size_t c = (static_cast<size_t>(z) * BLOCKS + x) * 4;
+                    colours[c + 0] = colours[c + 1] = colours[c + 2] = BASE;
                     // Match GpuMapWidget's atlas convention: alpha is a water
                     // flag, so zero denotes a dry column.
                     colours[c + 3] = 0;
-                    const size_t hh = (static_cast<size_t>(z) * kBlocks + x) * 2;
+                    const size_t hh = (static_cast<size_t>(z) * BLOCKS + x) * 2;
                     heights[hh + 0] = h;  // solid surface
                     heights[hh + 1] = h;  // top surface (no water)
                 }
@@ -1712,7 +1724,7 @@ namespace renderbench {
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, kBlocks, kBlocks, 0, GL_RGBA, GL_UNSIGNED_BYTE, colours.data());
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, BLOCKS, BLOCKS, 0, GL_RGBA, GL_UNSIGNED_BYTE, colours.data());
 
             gl->glGenTextures(1, &height_tex);
             gl->glBindTexture(GL_TEXTURE_2D, height_tex);
@@ -1720,7 +1732,7 @@ namespace renderbench {
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, kBlocks, kBlocks, 0, GL_RG, GL_FLOAT, heights.data());
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, BLOCKS, BLOCKS, 0, GL_RG, GL_FLOAT, heights.data());
 
             gl->glGenTextures(1, &material_tex);
             gl->glBindTexture(GL_TEXTURE_2D, material_tex);
@@ -1728,7 +1740,7 @@ namespace renderbench {
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, kBlocks, kBlocks, 0, GL_RG, GL_UNSIGNED_BYTE, materials.data());
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RG8, BLOCKS, BLOCKS, 0, GL_RG, GL_UNSIGNED_BYTE, materials.data());
 
             std::vector<unsigned char> palette(256u * 3u * 3u, 255u);
             gl->glGenTextures(1, &palette_tex);
@@ -1755,7 +1767,7 @@ namespace renderbench {
                 return 7;
             }
 
-            const int side = kBlocks * kPixPerBlock;
+            const int side = BLOCKS * PIX_PER_BLOCK;
             QOpenGLFramebufferObject fbo(side, side, QOpenGLFramebufferObject::NoAttachment);
             if (!fbo.bind()) {
                 std::printf("renderbench: shade probe could not bind an FBO\n");
@@ -1778,11 +1790,11 @@ namespace renderbench {
             shader.setUniformValue("uMaterial", 2);
             shader.setUniformValue("uBiomePalette", 3);
             shader.setUniformValue("uWaterBaseColor", 1.0f, 1.0f, 1.0f);
-            // World (0, kBlocks) at the bottom-left pixel, so image column == world x
-            // and image row (from the bottom) == kBlocks - world z.
-            shader.setUniformValue("uViewOrigin", 0.0f, static_cast<float>(kBlocks));
-            shader.setUniformValue("uPxPerBlock", static_cast<float>(kPixPerBlock));
-            shader.setUniformValue("uAtlasTexels", static_cast<float>(kBlocks));
+            // World (0, BLOCKS) at the bottom-left pixel, so image column == world x
+            // and image row (from the bottom) == BLOCKS - world z.
+            shader.setUniformValue("uViewOrigin", 0.0f, static_cast<float>(BLOCKS));
+            shader.setUniformValue("uPxPerBlock", static_cast<float>(PIX_PER_BLOCK));
+            shader.setUniformValue("uAtlasTexels", static_cast<float>(BLOCKS));
             shader.setUniformValue("uBlocksPerTexel", 1.0f);
             shader.setUniformValue("uSunStep", -1.0f, -1.0f);
             // The terrain-only frames draw with no ray march, so the darkness only has
@@ -1836,8 +1848,8 @@ namespace renderbench {
             // world z = uViewOrigin.y at the bottom, so the smallest z is at the
             // top. Sampling a world position therefore means row = z * px_per_block.
             const auto sample = [&](const QImage& image, double world_x, double world_z) {
-                const int px = static_cast<int>(std::lround(world_x * kPixPerBlock - 0.5));
-                const int py = static_cast<int>(std::lround(world_z * kPixPerBlock - 0.5));
+                const int px = static_cast<int>(std::lround(world_x * PIX_PER_BLOCK - 0.5));
+                const int py = static_cast<int>(std::lround(world_z * PIX_PER_BLOCK - 0.5));
                 return static_cast<int>(qRed(image.pixel(std::clamp(px, 0, side - 1), std::clamp(py, 0, side - 1))));
             };
             // Bevel checks read the AO-off frame and AO checks the difference
@@ -1850,7 +1862,7 @@ namespace renderbench {
             const auto block_profile = [&](int bx, int bz, const char* label) {
                 // Corners and centre of the block, offset inwards so the sample is
                 // inside the corner patch rather than exactly on its tip.
-                const double inset = 1.5 / kPixPerBlock;
+                const double inset = 1.5 / PIX_PER_BLOCK;
                 std::printf("  %-16s block(%2d,%2d): centre %3d  nw %3d  ne %3d  sw %3d  se %3d\n", label, bx, bz,
                             bevel_at(bx + 0.5, bz + 0.5), bevel_at(bx + inset, bz + inset), bevel_at(bx + 1 - inset, bz + inset),
                             bevel_at(bx + inset, bz + 1 - inset), bevel_at(bx + 1 - inset, bz + 1 - inset));
@@ -1880,18 +1892,18 @@ namespace renderbench {
                 const int limit = horizontal ? frame.width() : frame.height();
                 const int lines = horizontal ? frame.height() : frame.width();
                 for (int line = 0; line < lines; line++) {
-                    const int bz = static_cast<int>(std::floor((line + 0.5) / kPixPerBlock));
+                    const int bz = static_cast<int>(std::floor((line + 0.5) / PIX_PER_BLOCK));
                     for (int i = 1; i < limit; i++) {
                         const QRgb a = horizontal ? frame.pixel(i - 1, line) : frame.pixel(line, i - 1);
                         const QRgb b = horizontal ? frame.pixel(i, line) : frame.pixel(line, i);
                         const int jump = std::abs(static_cast<int>(qRed(a)) - static_cast<int>(qRed(b)));
-                        if (i % kPixPerBlock != 0) {
+                        if (i % PIX_PER_BLOCK != 0) {
                             result.interior_max = std::max(result.interior_max, static_cast<double>(jump));
                             interior.push_back(jump);
                             continue;
                         }
-                        const int near = i / kPixPerBlock - 1;  // block index before the boundary
-                        const int far = i / kPixPerBlock;       // block index after it
+                        const int near = i / PIX_PER_BLOCK - 1;  // block index before the boundary
+                        const int far = i / PIX_PER_BLOCK;       // block index after it
                         const bool level =
                             horizontal ? (height_of(near, bz) == height_of(far, bz)) : (height_of(bz, near) == height_of(bz, far));
                         if (!level) {
@@ -1914,19 +1926,19 @@ namespace renderbench {
                 return result;
             };
 
-            std::printf("\n== shade probe - %d blocks, %d px/block, colour %d, shadow disabled ==\n", kBlocks, kPixPerBlock, kBase);
+            std::printf("\n== shade probe - %d blocks, %d px/block, colour %d, shadow disabled ==\n", BLOCKS, PIX_PER_BLOCK, BASE);
             const auto flat = block_profile(20, 20, "flat interior");
-            const auto edge = block_profile(kPlateau0, 20, "raised, west edge");
-            const auto outer = block_profile(kPlateau0, kPlateau0, "raised, NW corner");
-            const auto east_edge = block_profile(kPlateau1 - 1, 20, "raised, east edge");
-            const auto outside_east = block_profile(kPlateau1, 20, "ground east of it");
-            const auto outside_south = block_profile(20, kPlateau1, "ground south of it");
-            const auto pit_nw = block_profile(kPit0, kPit0, "pit floor, NW corner");
-            const auto pit_se = block_profile(kPit1 - 1, kPit1 - 1, "pit floor, SE corner");
+            const auto edge = block_profile(PLATEAU0, 20, "raised, west edge");
+            const auto outer = block_profile(PLATEAU0, PLATEAU0, "raised, NW corner");
+            const auto east_edge = block_profile(PLATEAU1 - 1, 20, "raised, east edge");
+            const auto outside_east = block_profile(PLATEAU1, 20, "ground east of it");
+            const auto outside_south = block_profile(20, PLATEAU1, "ground south of it");
+            const auto pit_nw = block_profile(PIT0, PIT0, "pit floor, NW corner");
+            const auto pit_se = block_profile(PIT1 - 1, PIT1 - 1, "pit floor, SE corner");
             // The raised plane's concave corner: with the light-side comparison it
             // is plain interior, so this is the regression guard against the corner
             // patch that used to be applied here.
-            const auto concave = block_profile(kPit0 - 1, kPit0 - 1, "raised concave corner");
+            const auto concave = block_profile(PIT0 - 1, PIT0 - 1, "raised concave corner");
 
             int failures = 0;
             const auto check = [&](bool ok, const char* what) {
@@ -1937,12 +1949,12 @@ namespace renderbench {
             // top-left of the map, so a west or north step lands on this block's
             // nw/sw or nw/ne samples respectively.
             std::printf("\n");
-            check(flat[0] == kBase, "flat interior is unmodified");
+            check(flat[0] == BASE, "flat interior is unmodified");
             check(edge[1] > edge[0] + 5 && edge[3] > edge[0] + 5, "a raised area's west edge is lit");
             check(edge[2] == edge[0] && edge[4] == edge[0], "the lit band does not reach the east side of the block");
             check(outer[1] > outer[0] + 5, "a raised area's north-west corner is lit");
             check(std::abs(outer[1] - edge[1]) <= 2, "two lit edges at a corner do not stack");
-            check(east_edge[0] == kBase && east_edge[2] == kBase && east_edge[4] == kBase,
+            check(east_edge[0] == BASE && east_edge[2] == BASE && east_edge[4] == BASE,
                   "a raised area's own east edge is not lit (only its far side)");
             check(outside_east[1] < outside_east[0] - 5 && outside_east[3] < outside_east[0] - 5,
                   "the ground east of a raised area is shaded (shadow outside it)");
@@ -1954,7 +1966,7 @@ namespace renderbench {
                   "that shadow is on the west side of the ground block only");
             check(outside_south[1] < outside_south[0] - 5 && outside_south[2] < outside_south[0] - 5,
                   "the ground south of a raised area is shaded (shadow outside it)");
-            check(concave[0] == kBase && concave[1] == kBase && concave[2] == kBase && concave[3] == kBase && concave[4] == kBase,
+            check(concave[0] == BASE && concave[1] == BASE && concave[2] == BASE && concave[3] == BASE && concave[4] == BASE,
                   "a raised area's concave corner is plain (no dangling patch)");
             // Where two bands meet at a corner, the block between them is diagonal
             // to the wall and so gets neither band. The continuation patch has to
@@ -1962,18 +1974,18 @@ namespace renderbench {
             // neighbouring block it must match that block's band, and away from the
             // corner it must be gone, or the line runs on over ground with no step.
             // Measured on the AO-off frame, so this is the bevel and nothing else.
-            const double in = 1.5 / kPixPerBlock;                                         // clear of the corner tip
-            const double tip = 0.4 / kPixPerBlock;                                        // just inside the corner
-            const int bevel_band = sample(no_ao, kPlateau1 + in, kPlateau1 - 0.5);        // the band along the wall
-            const int bevel_tip = sample(no_ao, kPlateau1 + tip, kPlateau1 + tip);        // the corner itself
-            const int bevel_far_west = sample(no_ao, kPlateau1 + tip, kPlateau1 + 0.95);  // same edge, far end
-            const int bevel_far_north = sample(no_ao, kPlateau1 + 0.95, kPlateau1 + tip);
+            const double in = 1.5 / PIX_PER_BLOCK;                                         // clear of the corner tip
+            const double tip = 0.4 / PIX_PER_BLOCK;                                        // just inside the corner
+            const int bevel_band = sample(no_ao, PLATEAU1 + in, PLATEAU1 - 0.5);        // the band along the wall
+            const int bevel_tip = sample(no_ao, PLATEAU1 + tip, PLATEAU1 + tip);        // the corner itself
+            const int bevel_far_west = sample(no_ao, PLATEAU1 + tip, PLATEAU1 + 0.95);  // same edge, far end
+            const int bevel_far_north = sample(no_ao, PLATEAU1 + 0.95, PLATEAU1 + tip);
             std::printf("  corner patch: band %d, corner tip %d, same edge far end %d / %d\n", bevel_band, bevel_tip, bevel_far_west,
                         bevel_far_north);
             check(bevel_tip <= bevel_band + 8, "the shadow bands meet at the corner (no hole)");
-            check(bevel_far_west == kBase && bevel_far_north == kBase,
+            check(bevel_far_west == BASE && bevel_far_north == BASE,
                   "the corner patch stops at the corner (no line on ground with no step)");
-            check(sample(no_ao, kPit1 - in, kPit1 - in) <= sample(no_ao, kPit1 - in, kPit0 + 0.5) + 8,
+            check(sample(no_ao, PIT1 - in, PIT1 - in) <= sample(no_ao, PIT1 - in, PIT0 + 0.5) + 8,
                   "the lit bands meet at a pit's inside corner too");
             check(pit_nw[1] < pit_nw[0] - 10, "a pit is shaded at its north-west inside corner");
             check(std::abs(pit_nw[1] - pit_nw[2]) <= 2 && std::abs(pit_nw[1] - pit_nw[3]) <= 2, "two dark edges at a corner do not stack");
@@ -1986,11 +1998,11 @@ namespace renderbench {
             // would make the slider's ends and middle disagree with their labels.
             const QImage bevel_off = draw(0.0f, ao_directions, ao_steps, 0.0f);
             const QImage bevel_half = draw(0.0f, ao_directions, ao_steps, 0.5f);
-            const int full_band = bevel_at(kPlateau1 + in, kPlateau1 - 0.5);
-            const int off_band = sample(bevel_off, kPlateau1 + in, kPlateau1 - 0.5);
-            const int half_band = sample(bevel_half, kPlateau1 + in, kPlateau1 - 0.5);
-            std::printf("  bevel strength: off %d, half %d, full %d (flat colour is %d)\n", off_band, half_band, full_band, kBase);
-            check(off_band == kBase, "a bevel strength of 0 leaves the flat colour (the switch)");
+            const int full_band = bevel_at(PLATEAU1 + in, PLATEAU1 - 0.5);
+            const int off_band = sample(bevel_off, PLATEAU1 + in, PLATEAU1 - 0.5);
+            const int half_band = sample(bevel_half, PLATEAU1 + in, PLATEAU1 - 0.5);
+            std::printf("  bevel strength: off %d, half %d, full %d (flat colour is %d)\n", off_band, half_band, full_band, BASE);
+            check(off_band == BASE, "a bevel strength of 0 leaves the flat colour (the switch)");
             check(std::abs(half_band - (off_band + full_band) / 2) <= 1, "half strength is halfway between off and full");
 
             // Ambient occlusion, sampled on its own (with AO and without, the
@@ -2003,27 +2015,27 @@ namespace renderbench {
                 return f;
             };
             std::printf("  occlusion (fraction of the sky hidden by the terrain):\n");
-            const double e = 1.5 / kPixPerBlock;  // inside the corner, off its tip
+            const double e = 1.5 / PIX_PER_BLOCK;  // inside the corner, off its tip
             // The pit is a closed ring, so all four of its inside corners have walls
             // on two sides and directly across the diagonal.
-            const double o_pit_nw = occl("pit inside corner (NW)", kPit0 + e, kPit0 + e);
-            const double o_pit_ne = occl("pit inside corner (NE)", kPit1 - e, kPit0 + e);
-            const double o_pit_sw = occl("pit inside corner (SW)", kPit0 + e, kPit1 - e);
-            const double o_pit_se = occl("pit inside corner (SE)", kPit1 - e, kPit1 - e);
-            const double o_pit_wall = occl("pit floor beside its west wall, mid-block", kPit0 + e, 32.5);
+            const double o_pit_nw = occl("pit inside corner (NW)", PIT0 + e, PIT0 + e);
+            const double o_pit_ne = occl("pit inside corner (NE)", PIT1 - e, PIT0 + e);
+            const double o_pit_sw = occl("pit inside corner (SW)", PIT0 + e, PIT1 - e);
+            const double o_pit_se = occl("pit inside corner (SE)", PIT1 - e, PIT1 - e);
+            const double o_pit_wall = occl("pit floor beside its west wall, mid-block", PIT0 + e, 32.5);
             const double o_pit_centre = occl("pit floor centre, far from any wall", 32.5, 32.5);
             // The raised plane's own concave corner: everything around it is at the
             // same height or lower, so nothing hides sky from it.
-            const double o_raised_concave = occl("raised plane, concave corner (step drops away)", kPit0 - e, kPit0 - e);
+            const double o_raised_concave = occl("raised plane, concave corner (step drops away)", PIT0 - e, PIT0 - e);
             // Ground outside the raised plane: one wall along each side, and at the
             // corner only the diagonal, which still hides sky.
-            const double o_ground_corner = occl("ground diagonal to the plane's corner", kPlateau1 + e, kPlateau1 + e);
-            const double o_ground_side = occl("ground beside the plane, against its wall", kPlateau1 + e, 20.5);
+            const double o_ground_corner = occl("ground diagonal to the plane's corner", PLATEAU1 + e, PLATEAU1 + e);
+            const double o_ground_side = occl("ground beside the plane, against its wall", PLATEAU1 + e, 20.5);
             const double o_flat = occl("flat plane interior (no wall anywhere)", 20.5, 20.5);
             // The diagonal occluder must not spread along the block's edges: sampled a
             // whole 0.9 of a block from that corner, where only the diagonal is raised.
-            const double o_corner_far_west = occl("ground corner block, west edge away from the corner", kPlateau1 + e, kPlateau1 + 0.9);
-            const double o_corner_far_north = occl("ground corner block, north edge away from the corner", kPlateau1 + 0.9, kPlateau1 + e);
+            const double o_corner_far_west = occl("ground corner block, west edge away from the corner", PLATEAU1 + e, PLATEAU1 + 0.9);
+            const double o_corner_far_north = occl("ground corner block, north edge away from the corner", PLATEAU1 + 0.9, PLATEAU1 + e);
 
             const double o_corner_min = std::min(std::min(o_pit_nw, o_pit_ne), std::min(o_pit_sw, o_pit_se));
             // With AO off every one of these is 0 by definition, so they only say
@@ -2050,8 +2062,8 @@ namespace renderbench {
                 // only on the terrain around the pixel, so this should be sampling noise.
                 double worst_pair = 0;
                 QPointF worst_at;
-                for (int bz = 0; bz < kBlocks; ++bz) {
-                    for (int bx = 1; bx < kBlocks; ++bx) {
+                for (int bz = 0; bz < BLOCKS; ++bz) {
+                    for (int bx = 1; bx < BLOCKS; ++bx) {
                         if (height_of(bx - 1, bz) != height_of(bx, bz)) continue;
                         const double mid = bz + 0.5;
                         const double jump = std::abs(ao_at(bx - 0.05, mid) - ao_at(bx + 0.05, mid)) / (255.0 * ao_strength);
@@ -2061,8 +2073,8 @@ namespace renderbench {
                         }
                     }
                 }
-                for (int bx = 0; bx < kBlocks; ++bx) {
-                    for (int bz = 1; bz < kBlocks; ++bz) {
+                for (int bx = 0; bx < BLOCKS; ++bx) {
+                    for (int bz = 1; bz < BLOCKS; ++bz) {
                         if (height_of(bx, bz - 1) != height_of(bx, bz)) continue;
                         const double mid = bx + 0.5;
                         const double jump = std::abs(ao_at(mid, bz - 0.05) - ao_at(mid, bz + 0.05)) / (255.0 * ao_strength);
@@ -2080,15 +2092,15 @@ namespace renderbench {
             // The lit band is the bevel itself, so it is measured against the same
             // band elsewhere: it has to be a clean ramp with nothing added at a
             // block boundary, or a straight wall shows a scalloped edge.
-            const double inset = 1.0 / kPixPerBlock;
-            const int band_mid = bevel_at(kPlateau0 + inset, 20.5);
-            const int band_end = bevel_at(kPlateau0 + inset, 20 + 1 - inset);
+            const double inset = 1.0 / PIX_PER_BLOCK;
+            const int band_mid = bevel_at(PLATEAU0 + inset, 20.5);
+            const int band_end = bevel_at(PLATEAU0 + inset, 20 + 1 - inset);
             std::printf("  lit band: mid-block %d, near block corner %d\n", band_mid, band_end);
-            check(band_mid > kBase + 5, "the west band is bright");
+            check(band_mid > BASE + 5, "the west band is bright");
             check(std::abs(band_mid - band_end) <= 2, "the band is uniform along the wall");
             // Scalloping guard: a straight edge must not get a bright dot every block.
-            const int e1 = bevel_at(kPlateau0 + 1.5 / kPixPerBlock, 20.5);
-            const int e2 = bevel_at(kPlateau0 + 1.5 / kPixPerBlock, 21.5);
+            const int e1 = bevel_at(PLATEAU0 + 1.5 / PIX_PER_BLOCK, 20.5);
+            const int e2 = bevel_at(PLATEAU0 + 1.5 / PIX_PER_BLOCK, 21.5);
             check(std::abs(e1 - e2) <= 2, "straight edge brightness does not vary block to block");
 
             const auto h_cont = continuity(true);
@@ -2114,15 +2126,15 @@ namespace renderbench {
             if (quality_sweep) {
                 const auto equal_height_jump = [&](const QImage& img) {
                     int worst = 0;
-                    for (int bz = 0; bz < kBlocks; ++bz) {
-                        for (int bx = 1; bx < kBlocks; ++bx) {
+                    for (int bz = 0; bz < BLOCKS; ++bz) {
+                        for (int bx = 1; bx < BLOCKS; ++bx) {
                             if (height_of(bx - 1, bz) != height_of(bx, bz)) continue;
                             const int jump = std::abs(sample(img, bx - 0.05, bz + 0.5) - sample(img, bx + 0.05, bz + 0.5));
                             worst = std::max(worst, jump);
                         }
                     }
-                    for (int bx = 0; bx < kBlocks; ++bx) {
-                        for (int bz = 1; bz < kBlocks; ++bz) {
+                    for (int bx = 0; bx < BLOCKS; ++bx) {
+                        for (int bz = 1; bz < BLOCKS; ++bz) {
                             if (height_of(bx, bz - 1) != height_of(bx, bz)) continue;
                             const int jump = std::abs(sample(img, bx + 0.5, bz - 0.05) - sample(img, bx + 0.5, bz + 0.05));
                             worst = std::max(worst, jump);
@@ -2136,8 +2148,8 @@ namespace renderbench {
                     const QImage on = draw(ao_strength, dirs, steps);
                     const QImage off = draw(0.0f, dirs, steps);
                     const auto ao_of = [&](double x, double z) { return sample(off, x, z) - sample(on, x, z); };
-                    std::printf("    %6d %6d %10d %10d %10d %18d\n", dirs, steps, dirs * steps, ao_of(kPit0 + 0.05, 32.5),
-                                ao_of(kPit0 + 0.05, kPit0 + 0.05), equal_height_jump(on));
+                    std::printf("    %6d %6d %10d %10d %10d %18d\n", dirs, steps, dirs * steps, ao_of(PIT0 + 0.05, 32.5),
+                                ao_of(PIT0 + 0.05, PIT0 + 0.05), equal_height_jump(on));
                 }
                 std::printf(
                     "    (wall = the pit floor beside its wall; corner = the pit's inside corner, which must\n"
@@ -2150,21 +2162,21 @@ namespace renderbench {
             // texture is re-uploaded for it, after every frame above has been captured, so
             // no earlier check sees this terrain.
             {
-                constexpr float kWallTop = 4.0f;
-                constexpr int kWallX0 = 6, kWallX1 = 41;   // the wall's extent in x
-                constexpr int kWallZ0 = 24, kWallZ1 = 26;  // ...and in z, its southern face at z=26
-                std::vector<float> wall_heights(static_cast<size_t>(kBlocks) * kBlocks * 2, 0.0f);
-                for (int z = 0; z < kBlocks; ++z) {
-                    for (int x = 0; x < kBlocks; ++x) {
-                        const bool wall = x >= kWallX0 && x < kWallX1 && z >= kWallZ0 && z < kWallZ1;
-                        const size_t hh = (static_cast<size_t>(z) * kBlocks + x) * 2;
-                        wall_heights[hh + 0] = wall ? kWallTop : 0.0f;
-                        wall_heights[hh + 1] = wall ? kWallTop : 0.0f;
+                constexpr float WALL_TOP = 4.0f;
+                constexpr int WALL_X0 = 6, WALL_X1 = 41;   // the wall's extent in x
+                constexpr int WALL_Z0 = 24, WALL_Z1 = 26;  // ...and in z, its southern face at z=26
+                std::vector<float> wall_heights(static_cast<size_t>(BLOCKS) * BLOCKS * 2, 0.0f);
+                for (int z = 0; z < BLOCKS; ++z) {
+                    for (int x = 0; x < BLOCKS; ++x) {
+                        const bool wall = x >= WALL_X0 && x < WALL_X1 && z >= WALL_Z0 && z < WALL_Z1;
+                        const size_t hh = (static_cast<size_t>(z) * BLOCKS + x) * 2;
+                        wall_heights[hh + 0] = wall ? WALL_TOP : 0.0f;
+                        wall_heights[hh + 1] = wall ? WALL_TOP : 0.0f;
                     }
                 }
                 gl->glActiveTexture(GL_TEXTURE1);
                 gl->glBindTexture(GL_TEXTURE_2D, height_tex);
-                gl->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kBlocks, kBlocks, GL_RG, GL_FLOAT, wall_heights.data());
+                gl->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, BLOCKS, BLOCKS, GL_RG, GL_FLOAT, wall_heights.data());
 
                 const QImage shadow_full = draw(0.0f, ao_directions, ao_steps, 1.0f, 24.0f);
                 const QImage shadow_half = draw(0.0f, ao_directions, ao_steps, 1.0f, 24.0f, 0.5f);
@@ -2187,13 +2199,13 @@ namespace renderbench {
                 std::printf("    inside one block at z=27: z=27.1 %d, z=27.9 %d\n", in_block_near, in_block_far);
                 std::printf("    past the wall's end: x=41.5 %d, x=43.5 %d\n", end_inside, end_outside);
                 std::printf("    strength: off %d, half %d, full %d\n", strength_off, strength_half, at_face);
-                check(at_face < kBase - 20, "the ground beside a wall is in its shadow");
-                check(at_face < kBase - 20 && one_back < kBase - 20 && out_of_reach == kBase,
+                check(at_face < BASE - 20, "the ground beside a wall is in its shadow");
+                check(at_face < BASE - 20 && one_back < BASE - 20 && out_of_reach == BASE,
                       "the hard shadow persists to its geometric end without a grey tail");
-                check(far_away == kBase, "ground the light reaches over no wall is unshaded");
+                check(far_away == BASE, "ground the light reaches over no wall is unshaded");
                 check(in_block_near == in_block_far, "a height texel has one stable shadow value (no split branch)");
-                check(strength_off == kBase, "a shadow strength of 0 removes the shadow");
-                check(std::abs(strength_half - (kBase + at_face) / 2) <= 2, "half strength is halfway to no shadow");
+                check(strength_off == BASE, "a shadow strength of 0 removes the shadow");
+                check(std::abs(strength_half - (BASE + at_face) / 2) <= 2, "half strength is halfway to no shadow");
             }
 
             std::printf("  %s (%d failures)\n", failures == 0 ? "PASS" : "FAIL", failures);

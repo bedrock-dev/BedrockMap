@@ -25,7 +25,7 @@ namespace {
     }
 
     /// Bound used to distinguish coordinate prefixes from other LevelDB keys.
-    constexpr std::int32_t kMaxChunkCoordinate = 1 << 24;
+    constexpr std::int32_t MAX_CHUNK_COORDINATE = 1 << 24;
 
     /// Return the smallest key that sorts after every key with this prefix.
     [[nodiscard]] std::string prefixSuccessor(std::string_view prefix) {
@@ -41,7 +41,7 @@ namespace {
         if (key.size() < 4) return {};
         std::int32_t x = 0;
         std::memcpy(&x, key.data(), sizeof(x));
-        if (x <= kMaxChunkCoordinate && x >= -kMaxChunkCoordinate) return {};
+        if (x <= MAX_CHUNK_COORDINATE && x >= -MAX_CHUNK_COORDINATE) return {};
         return prefixSuccessor(key.substr(0, 4));
     }
 }  // namespace

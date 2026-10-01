@@ -185,7 +185,7 @@ void LevelPathManager::scanModernPaths() {
         QString name;
         bool preview;
     };
-    static const DirInfo kDirs[] = {
+    static const DirInfo DIRS[] = {
         {QString::fromStdString(DIR_MINECRAFT_BEDROCK), false},
         {QString::fromStdString(DIR_MINECRAFT_BEDROCK_PREVIEW), true},
     };
@@ -194,7 +194,7 @@ void LevelPathManager::scanModernPaths() {
         if (!entry.modern) continue;
         QString basePath = QString::fromStdString(entry.path);
 
-        for (const auto& di : kDirs) {
+        for (const auto& di : DIRS) {
             QString gameDir = basePath + "/" + di.name;
             QDir dir(gameDir);
             if (!dir.exists()) {

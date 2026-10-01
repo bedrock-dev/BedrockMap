@@ -17,9 +17,9 @@
 
 namespace {
     // Keep panning consistent with the projection setup used by VoxelWidget.
-    constexpr float kViewHalfHeight = 20.710678f;
-    constexpr float kSelectionHandleScreenSizePx = 8.0f;
-    constexpr float kSelectionHandlePickRadius = kSelectionHandleScreenSizePx * 1.35f;
+    constexpr float VIEW_HALF_HEIGHT = 20.710678f;
+    constexpr float SELECTION_HANDLE_SCREEN_SIZE_PX = 8.0f;
+    constexpr float SELECTION_HANDLE_PICK_RADIUS = SELECTION_HANDLE_SCREEN_SIZE_PX * 1.35f;
 }  // namespace
 
 void VoxelWidget::setupShortcutHelpButton() {
@@ -139,7 +139,7 @@ float VoxelWidget::selectionHandleHalfSizeAt(const QVector3D& point) const {
     if (pixelsPerWorld <= 1e-3f) {
         return 0.20f * voxel_size_;
     }
-    return (kSelectionHandleScreenSizePx * 0.5f) / pixelsPerWorld;
+    return (SELECTION_HANDLE_SCREEN_SIZE_PX * 0.5f) / pixelsPerWorld;
 }
 
 QVector3D VoxelWidget::selectionHandleAxis(SelectionHandle handle) const {
@@ -198,7 +198,7 @@ VoxelWidget::SelectionHandle VoxelWidget::pickSelectionHandle(const QPointF& pos
         SelectionHandle::MaxY, SelectionHandle::MinZ, SelectionHandle::MaxZ,
     };
     SelectionHandle bestHandle = SelectionHandle::None;
-    float bestDistanceSquared = kSelectionHandlePickRadius * kSelectionHandlePickRadius;
+    float bestDistanceSquared = SELECTION_HANDLE_PICK_RADIUS * SELECTION_HANDLE_PICK_RADIUS;
     for (const SelectionHandle handle : handles) {
         bool visible = false;
         const QPointF projected = projectToWidget(selectionHandlePosition(handle), &visible);
@@ -483,7 +483,7 @@ void VoxelWidget::mouseMoveEvent(QMouseEvent* e) {
 
         // 1:1 world-space drag: the model follows the cursor exactly,
         // independent of the current zoom level.
-        const float worldPerPixel = (2.0f * kViewHalfHeight) / std::max(1, height());
+        const float worldPerPixel = (2.0f * VIEW_HALF_HEIGHT) / std::max(1, height());
         const float sensitivity = worldPerPixel * m_panSensitivity;
 
         if (!m_isShiftPressed) {
@@ -504,7 +504,7 @@ void VoxelWidget::wheelEvent(QWheelEvent* e) {
     if (delta > 0) {
         m_scale = std::min(m_scale + 0.1f, maxZoomScale());
     } else {
-        m_scale = std::max(m_scale - 0.1f, kMinScaleLevel);
+        m_scale = std::max(m_scale - 0.1f, MIN_SCALE_LEVEL);
     }
     update();
 }

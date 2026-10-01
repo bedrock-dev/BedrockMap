@@ -22,21 +22,21 @@
 namespace {
     // Axis colors, indexed 0 = X, 1 = Y, 2 = Z. The axes and the selection handles share them,
     // so a handle reads as "this one moves X" the same way the axis lines do.
-    const QColor kAxisColors[3] = {QColor(255, 60, 60), QColor(60, 255, 60), QColor(60, 60, 255)};
+    const QColor AXIS_COLORS[3] = {QColor(255, 60, 60), QColor(60, 255, 60), QColor(60, 60, 255)};
 
     // Corner ambient occlusion, indexed by how many of the three neighbours around a corner are
     // filled (0 = most occluded). A face with no occlusion at all keeps its color unchanged.
-    constexpr float kAOBrightness[4] = {0.60f, 0.75f, 0.88f, 1.0f};
+    constexpr float AO_BRIGHTNESS[4] = {0.60f, 0.75f, 0.88f, 1.0f};
 }  // namespace
 
 // index template for each face (2 triangles, 6 indices)
 const std::vector<GLuint> FACE_INDICES = {0, 1, 2, 0, 2, 3};
 // half height of the visible view at z=0: tan(fov/2) * camera distance (50)
-constexpr float kViewHalfHeight = 20.710678f;
+constexpr float VIEW_HALF_HEIGHT = 20.710678f;
 // distance from the camera to the origin of the model space
-constexpr float kCameraDistance = 50.0f;
+constexpr float CAMERA_DISTANCE = 50.0f;
 // opacity of the import placement ghost mesh
-constexpr float kPreviewAlphaScale = 0.55f;
+constexpr float PREVIEW_ALPHA_SCALE = 0.55f;
 
 void appendColoredVertex(std::vector<float>& vertices, const QVector3D& position, const QColor& color) {
     vertices.push_back(position.x());
@@ -502,9 +502,9 @@ void VoxelWidget::buildAxisVertices() {
     };
 
     const QVector3D origin(0.0f, 0.0f, 0.0f);
-    pushBox(origin, QVector3D(maxX, 0.0f, 0.0f), width, kAxisColors[0]);
-    pushBox(origin, QVector3D(0.0f, maxY, 0.0f), width, kAxisColors[1]);
-    pushBox(origin, QVector3D(0.0f, 0.0f, maxZ), width, kAxisColors[2]);
+    pushBox(origin, QVector3D(maxX, 0.0f, 0.0f), width, AXIS_COLORS[0]);
+    pushBox(origin, QVector3D(0.0f, maxY, 0.0f), width, AXIS_COLORS[1]);
+    pushBox(origin, QVector3D(0.0f, 0.0f, maxZ), width, AXIS_COLORS[2]);
 }
 
 void VoxelWidget::resetSelectionToModelBounds() {
@@ -552,9 +552,9 @@ void VoxelWidget::buildSelectionVertices() {
     // alpha, so one setting drives both without the interior washing out the model behind it.
     const QColor selectionColor(setting::current().VOXEL_SELECTION_COLOR);
     const QColor outlineColor = selectionColor;
-    constexpr float kFillAlphaRatio = 0.36f;
+    constexpr float FILL_ALPHA_RATIO = 0.36f;
     QColor fillColor = selectionColor.darker(150);
-    fillColor.setAlpha(static_cast<int>(std::round(selectionColor.alpha() * kFillAlphaRatio)));
+    fillColor.setAlpha(static_cast<int>(std::round(selectionColor.alpha() * FILL_ALPHA_RATIO)));
     const int faces[6][4] = {
         {0, 3, 2, 1}, {4, 5, 6, 7}, {0, 4, 7, 3}, {1, 2, 6, 5}, {3, 7, 6, 2}, {0, 1, 5, 4},
     };
@@ -578,7 +578,7 @@ void VoxelWidget::buildSelectionVertices() {
         SelectionHandle::MaxY, SelectionHandle::MinZ, SelectionHandle::MaxZ,
     };
     for (const SelectionHandle handle : handles) {
-        QColor color = kAxisColors[selectionHandleAxisIndex(handle)];
+        QColor color = AXIS_COLORS[selectionHandleAxisIndex(handle)];
         // The grabbed handle keeps its axis hue and only brightens, so the axis it moves stays
         // readable while it is being dragged.
         color = handle == active_selection_handle_ ? color.lighter(150) : color;
@@ -700,7 +700,7 @@ void VoxelWidget::updateModelMatrix() {
     // The zoom bound depends on the rotation and the pan (see maxZoomScale), so a view change can
     // leave the camera inside the model's shell. Clamping here -- rather than at each call site --
     // covers every path that changes the view, since they all end up painting through this.
-    m_scale = std::clamp(m_scale, kMinScaleLevel, maxZoomScale());
+    m_scale = std::clamp(m_scale, MIN_SCALE_LEVEL, maxZoomScale());
 
     m_model.setToIdentity();
     // Pan is applied after the rotation, in the fixed view frame, so dragging
@@ -795,8 +795,8 @@ void VoxelWidget::updateProjection() {
     if (ortho_mode_) {
         // same view size as the perspective mode, so toggling O never changes
         // the apparent model size (zoom is handled by m_scale in both modes)
-        const float halfW = kViewHalfHeight * aspect;
-        m_projection.ortho(-halfW, halfW, -kViewHalfHeight, kViewHalfHeight, 0.1f, 1000.0f);
+        const float halfW = VIEW_HALF_HEIGHT * aspect;
+        m_projection.ortho(-halfW, halfW, -VIEW_HALF_HEIGHT, VIEW_HALF_HEIGHT, 0.1f, 1000.0f);
     } else {
         // perspective projection
         m_projection.perspective(45.0f, aspect, 0.1f, 1000.0f);
@@ -804,7 +804,7 @@ void VoxelWidget::updateProjection() {
 
     // view matrix (camera position)
     m_view.setToIdentity();
-    m_view.lookAt(QVector3D(0.0f, 0.0f, kCameraDistance),  // camera position
+    m_view.lookAt(QVector3D(0.0f, 0.0f, CAMERA_DISTANCE),  // camera position
                   QVector3D(0.0f, 0.0f, 0.0f),             // look target
                   QVector3D(0.0f, 1.0f, 0.0f));            // up direction
 }
@@ -815,16 +815,16 @@ void VoxelWidget::updateProjection() {
 // see-through). The bound below is where the camera reaches the model's box,
 // which is what keeps that from happening.
 float VoxelWidget::maxZoomScale() const {
-    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return kMaxScaleLevel;
+    if (voxel_data_.empty() || voxel_data_[0].empty() || voxel_data_[0][0].empty()) return MAX_SCALE_LEVEL;
 
     const float halfExtent[3] = {0.5f * static_cast<float>(voxel_data_[0].size()) * voxel_size_,
                                  0.5f * static_cast<float>(voxel_data_.size()) * voxel_size_,
                                  0.5f * static_cast<float>(voxel_data_[0][0].size()) * voxel_size_};
-    if (halfExtent[0] <= 0.0f || halfExtent[1] <= 0.0f || halfExtent[2] <= 0.0f) return kMaxScaleLevel;
+    if (halfExtent[0] <= 0.0f || halfExtent[1] <= 0.0f || halfExtent[2] <= 0.0f) return MAX_SCALE_LEVEL;
 
     // Camera position relative to the model center. The center is the pan offset (the model is
     // translated by it, not rotated), the camera sits on the +Z axis.
-    const QVector3D cameraToCenter = m_cameraTranslate - QVector3D(0.0f, 0.0f, kCameraDistance);
+    const QVector3D cameraToCenter = m_cameraTranslate - QVector3D(0.0f, 0.0f, CAMERA_DISTANCE);
     QMatrix4x4 rotation;
     rotation.rotate(m_rotation);
 
@@ -842,8 +842,8 @@ float VoxelWidget::maxZoomScale() const {
         bound = std::max(bound, distanceAlongAxis / halfExtent[axis]);
     }
     // Stop just short of the surface: stopping exactly on it would put the camera in the geometry.
-    constexpr float kZoomMargin = 0.95f;
-    return std::clamp(bound * kZoomMargin, kMinScaleLevel, kMaxScaleLevel);
+    constexpr float ZOOM_MARGIN = 0.95f;
+    return std::clamp(bound * ZOOM_MARGIN, MIN_SCALE_LEVEL, MAX_SCALE_LEVEL);
 }
 
 bool VoxelWidget::hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
@@ -940,7 +940,7 @@ std::array<float, 4> VoxelWidget::faceOcclusionFactors(const VoxelGrid& grid, co
         // Two occluded sides seal the corner off no matter what the diagonal holds, which is why
         // that case is pinned to the darkest level instead of counted like the others.
         const int level = (first && second) ? 0 : 3 - (static_cast<int>(first) + static_cast<int>(second) + static_cast<int>(cornered));
-        result[i] = kAOBrightness[level];
+        result[i] = AO_BRIGHTNESS[level];
     }
     return result;
 }
@@ -1067,7 +1067,7 @@ void VoxelWidget::buildPreviewVertices() {
         bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(preview_data_[0].size()), static_cast<int>(preview_data_.size()),
                                          static_cast<int>(preview_data_[0][0].size()));
     appendVisibleVoxelMesh(preview_data_, bounds, preview_vertices_, preview_indices_, nullptr, nullptr, MeshOcclusionMode::RenderView,
-                           kPreviewAlphaScale);
+                           PREVIEW_ALPHA_SCALE);
 }
 
 // helper

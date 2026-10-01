@@ -221,11 +221,11 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
         {1, 2, QStringLiteral("\u25B6"), tr("voxelPreviewWidget.view.rotateRight"), 90.0f, 0.0f},
         {2, 1, QStringLiteral("\u25BC"), tr("voxelPreviewWidget.view.rotateDown"), 0.0f, 90.0f},
     };
-    constexpr int kRotateButtonSize = 20;
+    constexpr int ROTATE_BUTTON_SIZE = 20;
     for (const auto& arrow : arrows) {
         auto* button = new QToolButton(group);
         button->setText(arrow.label);
-        button->setFixedSize(kRotateButtonSize, kRotateButtonSize);
+        button->setFixedSize(ROTATE_BUTTON_SIZE, ROTATE_BUTTON_SIZE);
         button->setToolTip(arrow.tooltip);
         button->setFocusPolicy(Qt::NoFocus);
         const float yaw = arrow.yaw;
@@ -236,7 +236,7 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
 
     auto* faceFrontButton = new QToolButton(group);
     faceFrontButton->setText(QStringLiteral("\u2299"));
-    faceFrontButton->setFixedSize(kRotateButtonSize, kRotateButtonSize);
+    faceFrontButton->setFixedSize(ROTATE_BUTTON_SIZE, ROTATE_BUTTON_SIZE);
     faceFrontButton->setToolTip(tr("voxelPreviewWidget.view.faceFront"));
     faceFrontButton->setFocusPolicy(Qt::NoFocus);
     connect(faceFrontButton, &QToolButton::clicked, this, [this]() { voxelWidget_->focusFrontFace(); });
