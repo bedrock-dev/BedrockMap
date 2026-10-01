@@ -25,6 +25,12 @@
 
 namespace {
 
+    constexpr double kIsoHeightReference = 80.0;
+    constexpr double kIsoRayTop = 384.0;
+    constexpr double kIsoRayBottom = -128.0;
+    constexpr double kInvSqrt2 = 0.7071067811865476;
+    constexpr double kSqrtThreeHalves = 1.224744871391589;
+
     /// Floor division, so region indices stay correct west/north of the origin.
     int floorDiv(int value, int divisor) {
         const int quotient = value / divisor;
@@ -72,16 +78,13 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
     format.setStencilBufferSize(0);
     format.setSamples(0);  // the map is already axis aligned; MSAA buys nothing here
     setFormat(format);
-    // Every frame redraws the whole viewport, so Qt's "keep what is already in
-    // the FBO, repaint only the exposed region" path would only cost a blit and
-    // leave stale pixels in the parts it skips.
+    // Redraw the complete viewport every frame.
     setUpdateBehavior(QOpenGLWidget::NoPartialUpdate);
     setFocusPolicy(Qt::StrongFocus);  // so the map can be panned/zoomed from this widget too
-    // Without this the cursor readout and the import ghost would only follow a
-    // drag: the CPU map enables it in its ctor too.
+    // Keep cursor and import overlays responsive without a drag.
     setMouseTracking(true);
-    // Shader tunables come from the settings; setAoStrength() overrides them for
-    // the benchmarks, which need a fixed value regardless of the user's config.
+    orthographic_view_ = setting::current().GPU_ORTHOGRAPHIC_VIEW;
+    // Initialize shader tunables from the runtime settings.
     ao_strength_ = std::clamp(setting::current().GPU_AO_STRENGTH, 0.0f, 1.0f);
     bevel_strength_ = std::clamp(setting::current().GPU_BEVEL_STRENGTH, 0.0f, 1.0f);
     bevel_width_ = std::clamp(setting::current().GPU_BEVEL_WIDTH, 0.25f, 2.0f);
@@ -97,17 +100,11 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
         });
     }
     if (view_) {
-        // No polling: the shared view tells us when anything about it changes.
         connect(view_, &MapView::viewChanged, this, qOverload<>(&QWidget::update));
     }
-    // Input is handled here as well as on the CPU renderer; because the view is
-    // shared, either widget can drive both.
     interaction_ = new MapInteraction(view_, this);
-    // The status bar is driven from whichever renderer is on screen.
     connect(interaction_, &MapInteraction::cursorBlockChanged, this, &GpuMapWidget::mouseMove);
 
-    // The debug window reports memory and per-frame counters, so it has to be
-    // redrawn on a still view as well.
     debug_refresh_timer_ = new QTimer(this);
     connect(debug_refresh_timer_, &QTimer::timeout, this, [this] {
         if (overlays_ && overlays_->drawDebug()) update();
@@ -138,16 +135,12 @@ void GpuMapWidget::setCaptureView(const QPointF& center_block, double px_per_blo
 QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_block, double px_per_block) {
     const QSize previous_size = this->size();
     resize(size);
-    // A capture is a scoped override, not a mode: leaving capture_view_ set would
-    // keep the widget on the synthetic view (and without overlays) for every
-    // later frame, which is not what a caller asking for one frame expects.
+    // Capture temporarily overrides the live view.
     const bool was_capturing = capture_view_;
     const QPointF previous_center = capture_center_block_;
     const double previous_px = capture_px_per_block_;
     setCaptureView(center_block, px_per_block);
-    // Keep painting until the currently visible upload queue is drained. Region
-    // bakes can finish through queued Qt signals, so give those events a small
-    // chance to run between frames while keeping a hard bound for callers.
+    // Drain visible uploads while allowing queued region completions to run.
     QImage image;
     for (int frame = 0; frame < 128; ++frame) {
         image = grabFramebuffer();
@@ -157,20 +150,40 @@ QImage GpuMapWidget::captureOffscreen(const QSize& size, const QPointF& center_b
     capture_view_ = was_capturing;
     capture_center_block_ = previous_center;
     capture_px_per_block_ = previous_px;
-    // Capturing is a temporary offscreen operation.  Keep the live widget's
-    // layout geometry unchanged for callers that capture an already-visible
-    // map pane.
+    // Restore the live widget geometry after the offscreen capture.
     if (this->size() != previous_size) resize(previous_size);
     return image;
 }
 
 void GpuMapWidget::mousePressEvent(QMouseEvent* event) {
+    if (orthographic_view_) {
+        if (event->button() == Qt::LeftButton) {
+            orthographic_drag_pos_ = event->position();
+            orthographic_dragging_ = true;
+            event->accept();
+        }
+        return;
+    }
     if (interaction_) interaction_->mousePress(event);
 }
 
 void GpuMapWidget::mouseMoveEvent(QMouseEvent* event) {
-    // The import overlay owns the pointer while it is placing a structure, and
-    // it resolves the cursor with this widget's own transform.
+    if (orthographic_view_) {
+        if (orthographic_dragging_ && (event->buttons() & Qt::LeftButton) && view_) {
+            const QPointF delta = event->position() - orthographic_drag_pos_;
+            orthographic_drag_pos_ = event->position();
+            const double scale = std::abs(view_->scale());
+            if (scale > 0.0) {
+                // Map screen-space drag axes back to world x/z.
+                view_->translate(
+                    QPointF(kInvSqrt2 * delta.x() + kSqrtThreeHalves * delta.y(), -kInvSqrt2 * delta.x() + kSqrtThreeHalves * delta.y()) /
+                    scale);
+            }
+        }
+        event->accept();
+        return;
+    }
+    // Let the import overlay resolve the cursor while placing a structure.
     if (import_ && import_->active() && view_ && !(event->buttons() & Qt::LeftButton)) {
         import_->handleMouseMove(view_->chunkPosAt(event->position(), size()));
         update();
@@ -180,6 +193,11 @@ void GpuMapWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void GpuMapWidget::mouseReleaseEvent(QMouseEvent* event) {
+    if (orthographic_view_) {
+        if (event->button() == Qt::LeftButton) orthographic_dragging_ = false;
+        event->accept();
+        return;
+    }
     if (import_ && import_->active()) {
         if (event->button() == Qt::LeftButton && !import_->placed()) {
             import_->handleLeftClick();
@@ -191,9 +209,7 @@ void GpuMapWidget::mouseReleaseEvent(QMouseEvent* event) {
             return;
         }
     }
-    // Right-click opens the same menu the CPU map shows. The two maps have
-    // different pixel sizes, so the click is resolved with this widget's own
-    // transform before being handed to the shared menu.
+    // Resolve the click with this widget's transform before opening the shared menu.
     if (event->button() == Qt::RightButton && host_ && view_ && !capture_view_) {
         const QPointF pos = event->position();
         const QPoint global_pos = mapToGlobal(pos.toPoint());
@@ -207,10 +223,20 @@ void GpuMapWidget::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void GpuMapWidget::wheelEvent(QWheelEvent* event) {
+    if (orthographic_view_) {
+        if (view_ && event->angleDelta().y() != 0)
+            view_->zoomToAdjacentLevel(event->angleDelta().y() > 0 ? 1 : -1, QPointF(width() / 2.0, height() / 2.0));
+        event->accept();
+        return;
+    }
     if (interaction_) interaction_->wheel(event);
 }
 
 void GpuMapWidget::keyPressEvent(QKeyEvent* event) {
+    if (orthographic_view_) {
+        QOpenGLWidget::keyPressEvent(event);
+        return;
+    }
     if (import_ && import_->handleKeyPress(event->key())) {
         update();
         event->accept();
@@ -221,11 +247,16 @@ void GpuMapWidget::keyPressEvent(QKeyEvent* event) {
 }
 
 void GpuMapWidget::keyReleaseEvent(QKeyEvent* event) {
+    if (orthographic_view_) {
+        QOpenGLWidget::keyReleaseEvent(event);
+        return;
+    }
     if (interaction_ && interaction_->keyRelease(event)) return;
     QOpenGLWidget::keyReleaseEvent(event);
 }
 
 void GpuMapWidget::focusOutEvent(QFocusEvent* event) {
+    orthographic_dragging_ = false;
     if (interaction_) interaction_->reset();  // a pan key held while losing focus never gets its release
     QOpenGLWidget::focusOutEvent(event);
 }
@@ -296,7 +327,8 @@ void GpuMapWidget::initializeGL() {
 
     shader_ = new QOpenGLShaderProgram(this);
     shader_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/res/shaders/map2d.vert");
-    shader_->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/res/shaders/map2d.frag");
+    shader_->addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                     orthographic_view_ ? ":/res/shaders/map_orthographic.frag" : ":/res/shaders/map2d.frag");
     if (!shader_->link()) {
         LOG_F(ERROR, "Can not link map2d shader: %s", shader_->log().toStdString().c_str());
         return;
@@ -377,11 +409,7 @@ void GpuMapWidget::initBiomePaletteTexture() {
 }
 
 void GpuMapWidget::invalidateAtlas() {
-    // The blank tiles are sized in texels for the current resolution, so they
-    // have to be rebuilt before anything is uploaded at the new one.
     buildBlankTiles();
-    // Old atlas contents stay allocated, but every visible slot is rebuilt
-    // before the shader pass in the same paint.
     slots_.clear();
     uploads_.clear();
     upload_index_.clear();
@@ -415,9 +443,7 @@ void GpuMapWidget::reindexUploads() {
 }
 
 void GpuMapWidget::buildBlankTiles() {
-    // Same 2x2 chessboard the CPU map uses for regions without terrain
-    // (MapTile::NULL_REGION_TILE / UNLOADED_REGION_TILE). The cell is 64 blocks
-    // and a region is 128, so the pattern lines up across region borders.
+    // Match the CPU renderer's 64-block checkerboard across 128-block regions.
     const int texels = kRegionBlocks / blocks_per_texel_;
     const int cell = std::max(1, 64 / blocks_per_texel_);
     const auto fill = [texels, cell](std::vector<unsigned char>& out, int shade_even, int shade_odd) {
@@ -436,17 +462,10 @@ void GpuMapWidget::buildBlankTiles() {
 }
 
 bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
-    // RegionCacheManager owns the pointed-to object and may evict it between
-    // frames. Re-resolve immediately before dereferencing it so delayed work
-    // never reads a dangling or superseded ChunkRegion.
+    // Re-resolve the cache entry before dereferencing it; entries may be evicted.
     const ChunkRegion* data = nullptr;
     const auto state = level_loader_->regionState(request.region, &data);
-    // Each atlas texel covers blocks_per_texel_ x blocks_per_texel_ blocks, so
-    // above 1 the tile is the bake sampled every blocks_per_texel_ texels - the
-    // same stride reduction QImage::scaled(..., Qt::FastTransformation) performs,
-    // which is what the CPU renderer draws its tiles with. That costs n*n reads
-    // (a copy at 1), independent of how coarse the level is, so the work scales
-    // with the tile and not with the number of blocks behind it.
+    // Sample each bake at blocks_per_texel_ spacing, matching the CPU renderer.
     const int bp = blocks_per_texel_;
     const int n = kRegionBlocks / bp;
     const size_t texels = static_cast<size_t>(n) * n;
@@ -546,20 +565,32 @@ bool GpuMapWidget::uploadRegion(const UploadRequest& request) {
 void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& world_origin) {
     const double world_width = width() / px_per_block;
     const double world_height = height() / px_per_block;
-    // The ray has to read occluders outside the viewport, so keep a margin
-    // resident: it is what keeps shadows correct right up to the screen edge.
-    // Bevel and AO sample one neighbouring atlas texel even with shadows off.
-    // Keep that neighbourhood resident too; otherwise a recycled slot can leak
-    // stale terrain into the viewport edge.
-    // Biome tint reads a 16-block world-space interpolation cell in addition to
-    // the height neighbours used by the terrain shading.
+    // Keep shadow, bevel, AO, and biome samples resident around the viewport.
     const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(std::max(blocks_per_texel_, 16));
     const double margin = std::max<double>(shadowReachBlocks(), shading_margin);
 
-    const double min_x = world_origin.x() - margin;
-    const double max_x = world_origin.x() + world_width + margin;
-    const double min_z = world_origin.y() - world_height - margin;
-    const double max_z = world_origin.y() + margin;
+    double min_x = world_origin.x() - margin;
+    double max_x = world_origin.x() + world_width + margin;
+    double min_z = world_origin.y() - world_height - margin;
+    double max_z = world_origin.y() + margin;
+    if (orthographic_view_) {
+        const QPointF center = capture_view_ ? capture_center_block_
+                                             : (view_ ? view_->worldToView().inverted().map(QPointF(view_->viewportSize().width() / 2.0,
+                                                                                                    view_->viewportSize().height() / 2.0)) *
+                                                            16.0
+                                                      : QPointF());
+        const double half_u = width() / 2.0 / px_per_block;
+        const double half_v = height() / 2.0 / px_per_block;
+        const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
+        // A pixel's world offset picks up half its screen x through the horizontal
+        // axis and half its screen y through the vertical one, and the march adds
+        // the whole ray depth on top.
+        const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+        min_x = center.x() - half_axis - margin;
+        max_x = center.x() + half_axis + margin;
+        min_z = center.y() - half_axis - margin;
+        max_z = center.y() + half_axis + margin;
+    }
 
     const int rx0 = floorDiv(static_cast<int>(std::floor(min_x)), kRegionBlocks);
     const int rx1 = floorDiv(static_cast<int>(std::floor(max_x)), kRegionBlocks);
@@ -570,9 +601,7 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
     visible_region_data_pending_ = false;
     const int dim = view_ ? view_->dim() : 0;
     const int side = slotsPerSide();
-    // Discard uploads made irrelevant by a pan/zoom before spending any GPU
-    // bandwidth on them. Without this, rapid movement can accumulate a queue
-    // of off-screen regions and stall the next frame.
+    // Discard uploads made irrelevant by a pan or zoom.
     uploads_.erase(std::remove_if(uploads_.begin(), uploads_.end(),
                                   [&](const UploadRequest& request) {
                                       return request.region.dim != dim || request.region.x < rx0 * constant::RW ||
@@ -581,13 +610,7 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
                                   }),
                    uploads_.end());
     reindexUploads();
-    // Same as the CPU map: without this the scheduler has no viewport, so it
-    // cannot prioritise - or prune to - what is on screen.
     level_loader_->setRenderViewport({rx0 * constant::RW, rz0 * constant::RW, dim}, {rx1 * constant::RW, rz1 * constant::RW, dim});
-    // The slot mapping is modulo the atlas, so it only works while the requested
-    // range fits in it. That holds by construction now (see blocksPerTexelFor);
-    // this assertion is here to make a regression loud rather than silent, since
-    // the symptom is otherwise just flickering edges.
     Assert(rx1 - rx0 < side && rz1 - rz0 < side, "GpuMapWidget",
            "visible region range exceeds the atlas; blocksPerTexelFor returned a level that does not fit");
     for (int rz = rz0; rz <= rz1; ++rz) {
@@ -637,7 +660,17 @@ int GpuMapWidget::regionsSpannedBy(const QSize& viewport, double px_per_block) c
     // this exactly consistent with the range collectVisibleRegions() walks.
     const double shading_margin = flat_shading_ ? 0.0 : static_cast<double>(blocks_per_texel_);
     const double reach = std::max<double>(shadowReachBlocks(), shading_margin);
-    const double span = std::max(viewport.width() / px_per_block, viewport.height() / px_per_block) + 2.0 * reach;
+    double span = std::max(viewport.width() / px_per_block, viewport.height() / px_per_block) + 2.0 * reach;
+    if (orthographic_view_) {
+        // The fixed camera projects a vertical ray depth into both horizontal
+        // world axes. Size the atlas for that projected footprint, not just the
+        // screen rectangle used by the top-down renderer.
+        const double half_u = viewport.width() / 2.0 / px_per_block;
+        const double half_v = viewport.height() / 2.0 / px_per_block;
+        const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
+        const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+        span = 2.0 * half_axis + 2.0 * reach;
+    }
     return static_cast<int>(std::ceil(span / kRegionBlocks)) + 1;
 }
 
@@ -669,10 +702,6 @@ void GpuMapWidget::paintGL() {
     frame_timer.start();
 
     if (!capture_view_ && view_) {
-        // Re-asserted here as well as on resize, because a widget painted before
-        // it was ever shown has no resize event yet - the CPU renderer does the
-        // same, and with one renderer per view there is no ambiguity about which
-        // size the camera belongs to.
         view_->setViewportSize(size());
         // The zoom floor depends on whether the chunk coordinate index is loaded,
         // which only the loader knows.
@@ -689,7 +718,7 @@ void GpuMapWidget::paintGL() {
     // bakes it asks for and the uploads all grow with the view instead of with
     // the world - which is what makes zooming out hitch. Those zooms draw the
     // coordinate overview instead, at the same threshold the CPU renderer uses.
-    const bool overview = overviewMode();
+    const bool overview = !orthographic_view_ && overviewMode();
     if (overview) {
         // No region work in this mode; without this the stats strip would keep
         // reporting the last terrain frame's counters.
@@ -746,9 +775,7 @@ void GpuMapWidget::paintGL() {
             invalidateAtlas();
         }
 
-        // Widening the view past one texel per block reduces the atlas
-        // resolution instead of refusing to zoom out, which is what keeps this
-        // renderer usable across the whole zoom range.
+        // Reduce atlas resolution as the view widens instead of refusing to zoom out.
         const int wanted_bp = blocksPerTexelFor(px_per_block);
         if (wanted_bp != blocks_per_texel_) {
             blocks_per_texel_ = wanted_bp;
@@ -756,21 +783,27 @@ void GpuMapWidget::paintGL() {
             invalidateAtlas();
         }
 
-        const double half_w = width() / 2.0 / px_per_block;
-        const double half_h = height() / 2.0 / px_per_block;
-        // gl_FragCoord (0,0) is the bottom-left of the widget, and world z grows
-        // downwards on screen, so the bottom edge carries the larger z.
-        world_origin = QPointF(world_center.x() - half_w, world_center.y() + half_h);
+        if (orthographic_view_) {
+            // The isometric shader can see the full ray depth for every pixel.
+            // Convert that projected footprint into a conservative axis-aligned
+            // atlas range so every sampled column is resident.
+            const double half_u = width() / 2.0 / px_per_block;
+            const double half_v = height() / 2.0 / px_per_block;
+            const double max_dy = std::max(std::abs(kIsoRayBottom - kIsoHeightReference), std::abs(kIsoRayTop - kIsoHeightReference));
+            const double half_axis = kInvSqrt2 * half_u + kSqrtThreeHalves * half_v + max_dy;
+            world_origin = QPointF(world_center.x() - half_axis, world_center.y() + half_axis);
+        } else {
+            const double half_w = width() / 2.0 / px_per_block;
+            const double half_h = height() / 2.0 / px_per_block;
+            // gl_FragCoord (0,0) is the bottom-left of the widget, and world z grows
+            // downwards on screen, so the bottom edge carries the larger z.
+            world_origin = QPointF(world_center.x() - half_w, world_center.y() + half_h);
+        }
 
         collectVisibleRegions(px_per_block, world_origin);
         stage_ms(collect_ms_);
 
-        // Every queued request describes a visible slot whose previous contents
-        // belong to another region, another layer or another LOD, so all of them
-        // are written before the draw below. That is what makes the frame
-        // self-consistent: the atlas holds exactly the visible slots' current
-        // content when the shader samples it, so nothing has to be tracked
-        // per-slot to keep a stale tile off the screen.
+        // Upload queued slots before drawing so the atlas has no stale visible tiles.
         uploaded_last_frame_ = 0;
         blank_upload_ms_ = 0.0;
         ready_upload_ms_ = 0.0;
@@ -826,6 +859,13 @@ void GpuMapWidget::paintGL() {
         const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;
         shader_->setUniformValue("uFlatShading", (flat_shading_ || biome_layer) ? 1.0f : 0.0f);
         shader_->setUniformValue("uWaterBaseColor", water_base_color_[0], water_base_color_[1], water_base_color_[2]);
+        if (orthographic_view_) {
+            shader_->setUniformValue("uIsoCenter", static_cast<float>(world_center.x()), static_cast<float>(world_center.y()));
+            shader_->setUniformValue("uIsoReferenceHeight", static_cast<float>(kIsoHeightReference));
+            shader_->setUniformValue("uIsoViewport", static_cast<float>(width() * dpr), static_cast<float>(height() * dpr));
+            shader_->setUniformValue("uIsoRayTop", static_cast<float>(kIsoRayTop));
+            shader_->setUniformValue("uIsoRayBottom", static_cast<float>(kIsoRayBottom));
+        }
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, color_texture_);
@@ -835,37 +875,27 @@ void GpuMapWidget::paintGL() {
         glBindTexture(GL_TEXTURE_2D, material_texture_);
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, biome_palette_texture_);
-        // Leave the default unit active for whatever binds textures next (the
-        // chrome is QPainter work on top of this pass).
         glActiveTexture(GL_TEXTURE0);
 
         glBindVertexArray(vao_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
-        // Command submission is asynchronous, so without this the timing only
-        // covers the CPU side of the frame.
         if (gpu_timing_) glFinish();
         shader_->release();
-
     }
     stage_ms(shade_ms_);
 
     painter.endNativePainting();
 
     // --- overlays ---
-    // The same MapOverlays the CPU map uses, so the two renderers cannot drift
-    // apart. They are QPainter work on top of the GL pass, which is why they need
-    // the widget's own transform rather than the view's: this widget may be a
-    // different size from the one the view was sized for.
-    if (overlays_ && view_ && !capture_view_) {
+    // Draw shared overlays in this widget's viewport transform.
+    if (overlays_ && view_ && !capture_view_ && !orthographic_view_) {
         const QTransform world_to_view = view_->transformForViewport(size());
         overlays_->setTransform(world_to_view);
         overlays_->setScreenInset(kStatsBarHeight);
 
         painter.setTransform(world_to_view);
         const RenderOption& options = view_->options();
-        // Base layer when the terrain pass is skipped: the same chunk presence
-        // overview the CPU renderer draws at these zooms.
         if (overview) overlays_->drawCoordsOverview(&painter);
         if (options.getOther(RenderOption::HSA)) overlays_->drawHSAs(&painter);
         if (options.getOther(RenderOption::Village)) overlays_->drawVillages(&painter);
@@ -884,9 +914,8 @@ void GpuMapWidget::paintGL() {
 
     last_frame_ms_ = frame_timer.nsecsElapsed() / 1.0e6;
     stage_ms(overlay_ms_);
-    drawStats(painter, last_frame_ms_, px_per_block);
+    if (!orthographic_view_) drawStats(painter, last_frame_ms_, px_per_block);
     painter.end();
-
 }
 
 void GpuMapWidget::drawStats(QPainter& painter, double frame_ms, double px_per_block) {

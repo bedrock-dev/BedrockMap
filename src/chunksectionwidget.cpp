@@ -48,8 +48,6 @@ void ChunkSectionWidget::paintEvent(QPaintEvent* event) {
             p.fillRect(rect, QBrush(QColor(c.r, c.g, c.b)));
             p.setPen(pen);
             if (draw_grid_) p.drawRect(rect);
-
-            // paint info
         }
     }
 
@@ -86,7 +84,6 @@ void ChunkSectionWidget::load_data(bl::chunk* ch) {
                 auto& data = this->get_layer_data(y)[x][z];
                 data.layers.clear();
                 data.biome = ch->get_biome(x, y, z);
-                // collect every block layer (0..n); stop when the layer index runs out
                 for (int layer = 0;; layer++) {
                     auto* raw = ch->get_block_raw(x, y, z, layer);
                     if (!raw) break;

@@ -16,15 +16,7 @@
 #include "render_options.h"
 #include "selectioncontroller.h"
 
-/// Everything about *what* the map shows, with no widget involved: the
-/// world-to-pixel transform, the viewport, the dimension and the selection.
-///
-/// The map is drawn by more than one renderer (the CPU painter and the GPU
-/// widget), and they have to agree exactly - same centre, same zoom, same
-/// selection. Rather than keeping two copies in sync, they share one instance:
-/// a change emits viewChanged() and every attached renderer repaints from the
-/// same numbers. Zoom clamping lives here too, so no renderer can clamp
-/// differently from the others.
+/// Shared map transform, viewport, dimension, layers, and selection state.
 class MapView : public QObject {
     Q_OBJECT
 
@@ -61,9 +53,7 @@ class MapView : public QObject {
     /// Multiply the current scale by a factor about a point in view coordinates.
     void zoomBy(qreal factor, const QPointF& anchorViewPos);
 
-    /// Move to the adjacent discrete zoom level.  Each power-of-two interval is
-    /// divided into equal linear steps, which keeps atlas-resolution transitions
-    /// predictable instead of accumulating multiplicative wheel factors.
+    /// Move to the adjacent discrete zoom level.
     void zoomToAdjacentLevel(int direction, const QPointF& anchorViewPos);
 
     void translate(const QPointF& delta);
@@ -73,17 +63,10 @@ class MapView : public QObject {
     [[nodiscard]] qreal minScale() const { return min_scale_; }
     [[nodiscard]] qreal maxScale() const { return max_scale_; }
 
-    /// The configured zoom limits. The floor is the whole-world overview scale
-    /// while the chunk coordinate index is available (everything is mapped, so
-    /// zooming out further still shows something), otherwise the configured
-    /// minimum. Renderers call this so they all clamp identically.
+    /// Apply configured zoom limits, including the overview floor.
     void applyConfiguredZoomLimits(bool chunk_index_available);
 
-    /// Transform mapping chunk coordinates to the pixels of a viewport of the
-    /// given size that shows this view. For the viewport the view was sized for
-    /// this is identical to worldToView(); a renderer drawing into a differently
-    /// sized widget needs its own, and this is how it gets one without having to
-    /// redo the centre/scale maths.
+    /// Return the world transform for an explicit viewport size.
     [[nodiscard]] QTransform transformForViewport(const QSize& size) const;
 
     // --- overlay state shared by every renderer ---
@@ -95,16 +78,13 @@ class MapView : public QObject {
 
     // --- content ---
 
-    /// Dimension, layer and overlay toggles. Renderers read this so they cannot
-    /// disagree about what is being shown.
+    /// Shared dimension, layer, and overlay options.
     [[nodiscard]] RenderOption& options() { return options_; }
     [[nodiscard]] const RenderOption& options() const { return options_; }
 
     void setDim(int dim);
 
-    /// Layer and overlay toggles. These go through the view rather than the
-    /// RenderOption getter so that every renderer repaints: the chrome of one
-    /// renderer can then change what the other one shows.
+    /// Change a layer or overlay and notify all renderers.
     void setLayer(RenderOption::LayerType layer);
     void setOther(RenderOption::OtherType other, bool value);
 
@@ -112,9 +92,7 @@ class MapView : public QObject {
 
     // --- selection ---
     //
-    // The selection is shared, but the drag that changes it is driven by
-    // whichever renderer received the mouse event, so the mutations go through
-    // the view: that way every renderer repaints, not just the one clicked on.
+    // Selection mutations are shared by all renderers.
 
     [[nodiscard]] SelectionController& selection() { return selection_; }
     [[nodiscard]] const SelectionController& selection() const { return selection_; }
@@ -125,8 +103,7 @@ class MapView : public QObject {
     void clearSelection();
     void setSelectionMode(SelectionController::Mode mode);
 
-    /// Keep the selection rectangle out of a screenshot. Shared state, because
-    /// the capture can be taken from either renderer.
+    /// Include or exclude the selection rectangle from captures.
     void setSelectionVisible(bool visible);
     [[nodiscard]] bool selectionVisible() const { return selection_visible_; }
 

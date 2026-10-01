@@ -1682,6 +1682,10 @@
         <translation>启用GPU渲染（实验性）</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.orthographicView</source>
+        <translation>使用正交视角</translation>
+    </message>
+    <message>
         <source>settingsDialog.gpu.rendererGroup</source>
         <translation>GPU渲染器</translation>
     </message>

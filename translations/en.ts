@@ -1682,6 +1682,10 @@
         <translation>Enable GPU rendering (experimental)</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.orthographicView</source>
+        <translation>Use orthographic view</translation>
+    </message>
+    <message>
         <source>settingsDialog.gpu.rendererGroup</source>
         <translation>GPU Renderer</translation>
     </message>

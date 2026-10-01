@@ -34,9 +34,7 @@ QFont MapOverlays::CHUNK_TEXT_FONT = QFont("JetBrains Mono", 8);
 MapOverlays::MapOverlays(MapView* view, AsyncLevelLoader* loader) : view_(view), level_loader_(loader) {}
 
 QSize MapOverlays::targetSize(const QPainter* painter) const {
-    // The widget (or image) being painted into. Taking it from the paint device
-    // means the layers behave the same whether they are drawn into a widget or
-    // into an offscreen image, which is how the benchmarks capture them.
+    // Use the paint device so widget and offscreen rendering share the same scale.
     const QPaintDevice* device = painter->device();
     if (!device) return view_ ? view_->viewportSize() : QSize();
     return QSize(device->width(), device->height());
@@ -93,16 +91,12 @@ void MapOverlays::drawCoordsOverview(QPainter* painter) const {
 
     const auto bounds = level_loader_->chunkCoordsBoundingBox(view_->dim());
     if (!bounds || !bounds->valid) {
-        // The index is still being scanned, so the whole view is the same
-        // "loading" tile: fill it in one call instead of a blit per tile, which
-        // on a far-out view would be tens of thousands of them.
+        // During the index scan, fill the view with one loading tile.
         painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), QBrush(MapTile::COORDS_LOADING_TILE()));
         return;
     }
 
-    // Tiles outside the archive's bounding box hold no chunks: lay their colour
-    // down once and blit only the tiles the world covers, so a far-out view costs
-    // what the world costs instead of what the (much larger) view span costs.
+    // Fill outside the archive bounds once; draw individual tiles only inside them.
     painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), MapTile::COORDS_EMPTY_TILE().pixelColor(0, 0));
     const int x0 = std::max(view_x0, tile_floor(bounds->min_x));
     const int z0 = std::max(view_z0, tile_floor(bounds->min_z));
@@ -282,8 +276,7 @@ void MapOverlays::drawCoordsMiniMap(QPainter* painter) const {
     const qreal boundsHeight = static_cast<qreal>(bounds->max_z) - bounds->min_z + 1.0;
     if (boundsWidth <= 0.0 || boundsHeight <= 0.0) return;
 
-    // The configured dimensions limit the side lengths; the aspect ratio follows
-    // the world's bounding box rather than a fixed panel ratio.
+    // Keep the configured dimensions while following the world's aspect ratio.
     const qreal maxWidth = static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_WIDTH, size.width()));
     const qreal maxHeight =
         static_cast<qreal>(std::min(setting::current().COORDS_MINIMAP_HEIGHT, std::max(0, size.height() - screen_inset_)));

@@ -143,10 +143,7 @@ QPointF MapView::centerWorldPos() const {
 }
 
 QTransform MapView::transformForViewport(const QSize& size) const {
-    // Rebuild the same mapping worldToView() expresses, but anchored on the
-    // centre of the requested viewport instead of the one this view was sized
-    // for. For the matching size the result is bit-identical, so renderers do
-    // not diverge merely by being different widgets.
+    // Rebuild worldToView() for a different viewport size.
     const QPointF world_center = centerWorldPos();
     QTransform result;
     result.translate(size.width() / 2.0, size.height() / 2.0);

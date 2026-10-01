@@ -25,9 +25,7 @@ void RegionRenderScheduler::setViewport(const region_pos& minRegion, const regio
     viewport_max_ = maxRegion;
     viewport_valid_ = true;
 
-    // Requests are generated from the visible map area. Drop queued work that
-    // is no longer relevant after a pan or zoom; running tasks are allowed to
-    // finish because QThreadPool cannot safely interrupt their LevelDB reads.
+    // Drop stale queued work; running LevelDB reads are allowed to finish.
     discardPendingOutsideViewport();
     rebuildQueue();
     dispatch();
@@ -57,10 +55,7 @@ RegionRenderScheduler::QueueEntry RegionRenderScheduler::makeQueueEntry(const Pe
 }
 
 void RegionRenderScheduler::maybeRebuildQueue() {
-    // Every request adds a new ordering entry. Replacing an existing pending
-    // task leaves its old entry behind, and dispatched tasks do the same until
-    // their stale entries reach the top. Periodically compact the heap so the
-    // amount of bookkeeping remains proportional to live pending work.
+    // Compact stale heap entries so bookkeeping stays proportional to live work.
     constexpr std::size_t kQueueSlack = 64;
     const auto pendingSize = pending_.size();
     const auto rebuildLimit = pendingSize * 2 + kQueueSlack;
@@ -95,9 +90,7 @@ std::optional<RegionRenderScheduler::PendingTask> RegionRenderScheduler::takeBes
             if (it != pending_.end() && it->second.version == entry.version) return std::move(it->second);
         }
 
-        // A queue rebuild is normally triggered by maybeRebuildQueue(), but
-        // this fallback keeps the scheduler correct if all heap entries were
-        // invalidated between two dispatches.
+        // Rebuild as a fallback if all heap entries were invalidated.
         if (pending_.empty()) return std::nullopt;
         rebuildQueue();
     }
@@ -137,8 +130,7 @@ void RegionRenderScheduler::onTaskFinished(const region_pos& pos, ChunkRegion* r
 }
 
 void RegionRenderScheduler::clear() {
-    // Stopping the pool is safe from the close worker. The scheduler maps are
-    // UI-thread owned and are cleared there after the worker pool has stopped.
+    // Stop workers before clearing the UI-thread-owned scheduler maps.
     accepting_.store(false, std::memory_order_release);
     pool_.clear();
     pool_.waitForDone();
@@ -147,9 +139,7 @@ void RegionRenderScheduler::clear() {
         queue_ = {};
         active_.clear();
     } else {
-        // Finish on the owning thread after all queued task-completion events
-        // already posted by the worker have been delivered. This is a small
-        // bookkeeping barrier, not a synchronous wait for rendering work.
+        // Finish on the owning thread after queued worker completions are delivered.
         QMetaObject::invokeMethod(
             this,
             [this]() {

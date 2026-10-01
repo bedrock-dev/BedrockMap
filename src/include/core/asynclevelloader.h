@@ -105,24 +105,14 @@ class AsyncLevelLoader : public QObject {
     /*region cache*/
     QImage bakedBiomeImage(const region_pos& rp);
 
-    /// What a region currently has to draw. The GPU renderer needs to tell a
-    /// finished bake apart from a region that is known to hold no chunks at all
-    /// (which the map draws as a dark background) and from one whose bake has not
-    /// finished yet (light background). Requests an async bake when the region is
-    /// neither cached nor already running. GUI-thread only, like the other
-    /// cache accessors.
+    /// Region bake state: unloaded, known empty, or ready.
     enum class RegionState { Unloaded, Empty, Ready };
     RegionState regionState(const region_pos& rp, const ChunkRegion** region);
 
-    /// Region bakes queued or running, for diagnostics that need to wait until
-    /// the cache has caught up with the requested viewport.
+    /// Number of queued or running region bakes.
     [[nodiscard]] int pendingRegionTasks() const;
 
-    /// True only when the chunk provably holds no data and a region bake may skip
-    /// it: the global coordinate index has finished scanning the database and
-    /// reports it absent, and no uncommitted edit is waiting for the index to
-    /// catch up. False is always safe, so a caller may ignore this.
-    /// Thread-safe, unlike the cache accessors above.
+    /// True when the indexed database has no uncommitted chunk at `pos`.
     [[nodiscard]] bool isChunkAbsent(const bl::chunk_pos& pos) const;
 
     QImage bakedTerrainImage(const region_pos& rp);
@@ -139,33 +129,27 @@ class AsyncLevelLoader : public QObject {
 
     std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos& rp);
 
-    /// Height-map cache for shadow rendering.
-    /// Returns world-space heights (-128 = void, others = raw + chunk's min_y).
-    /// Thread-safe — safe to call from worker threads during renderStyle2.
+    /// Thread-safe world-space height-map lookup (-128 means void).
     std::optional<std::array<int16_t, 256>> getHeightMap(const bl::chunk_pos& pos);
 
-    /// Preload a height map directly (avoids LevelDB read when data is already
-    /// available from a loaded chunk). Thread-safe.
+    /// Insert a height map already loaded from a chunk.
     void putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& hm);
 
     /*Modify*/
-    // return a chunk from cache or loader; caller owns the returned pointer and must delete it
+    // Caller owns the returned chunk.
     bl::chunk* getChunk(const bl::chunk_pos& p, bl::chunk_load_policy policy = bl::chunk_load_policy::All);
 
-    // return a raw chunk from cache or loader
+    // Return a raw chunk from cache or storage.
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos& p);
 
-    // delete chunk
     bool deleteChunk(const bl::chunk_pos& p);
-    // modify a chunk
     bool putRawChunk(const bl::raw_chunk& raw);
 
     bool createVoid(const bl::chunk_pos& p);
 
     bool setRawChunkBiome(const bl::chunk_pos& p, bl::biome biome);
 
-    /// Drop cached region tiles covering the given edited chunks. Thread-safe:
-    /// safe to call from the bulk-edit worker threads after the edits land.
+    /// Drop cached region tiles covering edited chunks.
     void invalidateRegionTiles(const std::vector<bl::chunk_pos>& chunks);
 
     /// Convenience overload for a rectangular chunk selection.

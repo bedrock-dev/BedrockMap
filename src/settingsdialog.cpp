@@ -143,6 +143,7 @@ void SettingsDialog::loadSettings() {
 
     // --- Rendering ---
     ui->gpuRenderCheck->setChecked(setting::current().GPU_RENDER_ENABLED);
+    ui->gpuOrthographicCheck->setChecked(setting::current().GPU_ORTHOGRAPHIC_VIEW);
     ui->renderStyleCombo->setCurrentIndex(std::clamp(setting::current().MAP_RENDER_STYLE, 0, 2));
     {
         const int scaleVals[] = {1, 2, 4, 8, 16, 32};
@@ -317,6 +318,7 @@ void SettingsDialog::onSave() {
 
     values.PRELOAD_ALL_CHUNK_COORDS = ui->preloadCoordsCheck->isChecked();
     values.GPU_RENDER_ENABLED = ui->gpuRenderCheck->isChecked();
+    values.GPU_ORTHOGRAPHIC_VIEW = ui->gpuOrthographicCheck->isChecked();
     values.GPU_AO_STRENGTH = static_cast<float>(ui->gpuAoSpin->value());
     values.GPU_BEVEL_STRENGTH = static_cast<float>(ui->gpuBevelSpin->value());
     values.GPU_BEVEL_WIDTH = static_cast<float>(ui->gpuBevelWidthSpin->value());

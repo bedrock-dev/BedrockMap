@@ -18,7 +18,6 @@ void ExportedRegion::removeChunk(const bl::chunk_pos& pos) {
 void ExportedRegion::clear() { chunks_.clear(); }
 
 std::vector<char> ExportedRegion::serialize() {
-    // Compute total size
     size_t total = 6;  // magic(5) + version(1)
     total += 4;        // chunk count
     for (auto& chunk : chunks_) {
@@ -29,12 +28,10 @@ std::vector<char> ExportedRegion::serialize() {
     std::vector<char> buf(total);
     char* p = buf.data();
 
-    // magic + version
     std::memcpy(p, MAGIC, 5);
     p += 5;
     *p++ = VERSION;
 
-    // chunk count
     int32_t n = static_cast<int32_t>(chunks_.size());
     std::memcpy(p, &n, 4);
     p += 4;

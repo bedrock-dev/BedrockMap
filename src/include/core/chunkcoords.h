@@ -49,9 +49,7 @@ struct ChunkCoordsBoundingBox {
 /// Counters and phase timings from one ChunkCoordsIndex::load(). The benchmark
 /// reads them to attribute the scan's cost; the map renderer ignores them.
 struct ChunkCoordsLoadStats {
-    /// Keys the iterator actually visited. A run that was skipped wholesale is not
-    /// counted, so this is below the database's key count whenever run_skips is
-    /// non-zero.
+    /// Number of keys visited by the iterator, excluding skipped runs.
     std::uint64_t scanned_keys{0};
     /// Visited keys that classified as a chunk key, whatever their type.
     std::uint64_t chunk_keys{0};
@@ -128,9 +126,7 @@ class CoordsRegion {
         return chunk_mask_.test(bitIndex(pos));
     }
 
-    /// True when any chunk of the size x size window at `min` is set. Pure bit
-    /// tests, so the caller must have established that the window lies inside this
-    /// region; ChunkCoordsIndex::containsAnyChunk does that.
+    /// True when any chunk in an in-region square is set.
     [[nodiscard]] bool containsAnyChunk(const bl::chunk_pos& min, int32_t size) const noexcept {
         const int32_t x0 = min.x - region_x_;
         const int32_t z0 = min.z - region_z_;
@@ -181,8 +177,6 @@ class CoordsRegion {
 };
 
 /// Stores existing chunk coordinates grouped by dimension and compact region.
-/// The index is a view of the archive: every chunk write goes through
-/// updateChunk() on the writing thread, so it never lags behind the edits.
 class ChunkCoordsIndex {
    public:
     static constexpr int32_t MIN_DIMENSION = -1024;
@@ -193,18 +187,12 @@ class ChunkCoordsIndex {
 
     using ProgressCallback = std::function<void(std::uint64_t scannedKeys, std::uint64_t chunks)>;
 
-    /// Scan all LevelDB keys, build the index, and generate region images.
-    /// Returns false when the scan is cancelled or fails. Progress is reported
-    /// periodically from the scanning worker and is therefore only advisory.
-    /// Chunk writes made while this runs are held and replayed at the end, so the
-    /// index is correct for a level that is edited during its initial scan too.
-    /// `stats` receives the counters and phase timings; it is optional.
+    /// Scan LevelDB keys, build the index, and generate region images.
+    /// Writes arriving during the scan are replayed before interactive mode.
     bool load(bl::bedrock_level& level, const std::atomic_bool& stop, ProgressCallback progress = {},
               ChunkCoordsLoadStats* stats = nullptr);
 
-    /// Leave the scan phase: replay the writes that arrived during it and let
-    /// later ones apply directly. Both parts run in one critical section, so no
-    /// write can slip between the replay and the switch.
+    /// Replay queued writes and enter interactive mode atomically.
     void finishScan();
 
     bool insert(const bl::chunk_pos& pos) {
@@ -257,9 +245,7 @@ class ChunkCoordsIndex {
         return dim_it != regions_by_dimension_.end() && dim_it->second.find(CoordsRegion(region_x, region_z)) != dim_it->second.end();
     }
 
-    /// True when any chunk of the size x size window at (x, z) is indexed. A caller
-    /// that draws one such window at a time can answer "nothing here" without
-    /// touching LevelDB, and the answer is exact for a finished scan.
+    /// True when any chunk in the indexed square is present.
     [[nodiscard]] bool containsAnyChunk(int32_t x, int32_t z, int32_t dim, int32_t size) const;
 
     QImage image(int32_t dim, int32_t region_x, int32_t region_z) const {
@@ -343,9 +329,7 @@ class ChunkCoordsIndex {
     std::unordered_map<int32_t, RegionSet> regions_by_dimension_;
     mutable std::unordered_map<int32_t, ChunkCoordsBoundingBox> bounds_by_dimension_;
     mutable std::unordered_set<int32_t> bounds_dirty_;
-    /// Writes that arrived while the scan was rebuilding the index; the scan
-    /// cannot contain them and would overwrite them, so they are replayed at the
-    /// end instead of being applied immediately.
+    /// Writes queued while the index is rebuilding.
     std::vector<std::pair<bl::chunk_pos, bool>> queued_writes_;
     mutable QMutex mutex_;
     std::atomic_bool interactive_{false};

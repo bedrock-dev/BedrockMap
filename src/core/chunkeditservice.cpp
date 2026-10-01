@@ -12,9 +12,7 @@ ChunkEditService::ChunkEditService(ChunkStorage& storage, RegionCacheManager& ca
       preload_all_chunk_coords_(preloadAllChunkCoords) {}
 
 void ChunkEditService::markChanged(const bl::chunk_pos& pos, bool present) {
-    // The index is a view of the archive: it is updated here, on the editing
-    // thread, so a caller that returns from an edit has both the storage cache
-    // and the coordinate index in agreement.
+    // Update the coordinate index on the edit thread.
     if (!preload_all_chunk_coords_) return;
     coords_service_.update(pos, present);
 }
@@ -54,8 +52,7 @@ bool ChunkEditService::createVoid(const bl::chunk_pos& pos) {
         raw->clear_terrain();
         return putRawChunk(raw.value());
     }
-    // Keep the existing behavior until creation of a brand-new raw chunk is
-    // implemented by the bedrock-level data layer.
+    // Preserve current behavior until raw chunk creation is supported.
     return true;
 }
 

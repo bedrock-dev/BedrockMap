@@ -19,22 +19,15 @@ namespace bl::config {
 }
 
 namespace {
-    /// Classification reads a key, it never keeps it: the scan passes the iterator's
-    /// own bytes instead of materialising a string per key.
+    /// View key bytes without allocating a string.
     [[nodiscard]] inline std::string_view slice_view(const leveldb::Slice& slice) noexcept {
         return std::string_view(slice.data(), slice.size());
     }
 
-    /// The largest chunk coordinate a world can hold, and deliberately far beyond
-    /// one: the world border is 30M blocks (1.875M chunks), so this is nine times
-    /// it. The bound decides whether a four-byte prefix may be skipped, so making
-    /// it too small would silently lose real chunks; being generous only costs a
-    /// skipped run or two.
+    /// Bound used to distinguish coordinate prefixes from other LevelDB keys.
     constexpr std::int32_t kMaxChunkCoordinate = 1 << 24;
 
-    /// The smallest key that sorts after every key starting with `prefix`: the
-    /// prefix with its last byte that is not 0xFF incremented. Empty when there is
-    /// no such key (the prefix is all 0xFF, i.e. it ends the key space).
+    /// Return the smallest key that sorts after every key with this prefix.
     [[nodiscard]] std::string prefixSuccessor(std::string_view prefix) {
         std::string next(prefix);
         while (!next.empty() && static_cast<unsigned char>(next.back()) == 0xFF) next.pop_back();
@@ -43,17 +36,7 @@ namespace {
         return next;
     }
 
-    /// Where a key that cannot be a chunk key should jump to, or empty to step on.
-    ///
-    /// A chunk key stores its column's x in its first four bytes, so a key whose
-    /// first four bytes hold an impossible x cannot be a chunk key -- and neither
-    /// can any other key sharing them, because keys with a common prefix are
-    /// adjacent in the sorted key space. One Seek then steps over such a run whole,
-    /// and LevelDB never reads or inflates the blocks in between.
-    ///
-    /// This is what skips the actor keys: a world with entities is dominated by
-    /// them, they all start with the same non-coordinate four bytes, and nothing in
-    /// a chunk-coordinate scan wants them.
+    /// Return a seek target for a run whose four-byte prefix cannot be a chunk key.
     [[nodiscard]] std::string skipRunTarget(std::string_view key) {
         if (key.size() < 4) return {};
         std::int32_t x = 0;
@@ -85,8 +68,7 @@ bool ChunkCoordsIndex::load(bl::bedrock_level& level, const std::atomic_bool& st
     auto* db = level.db();
     if (!db) return false;
 
-    // Rebuild from scratch, but keep writes that arrived since open(): they are
-    // replayed by finishScan(), which the scan below cannot do for them.
+    // Replay writes that arrived while rebuilding.
     {
         std::lock_guard<QMutex> lock(mutex_);
         regions_by_dimension_.clear();
@@ -200,10 +182,7 @@ bool ChunkCoordsIndex::removeUnlocked(const bl::chunk_pos& pos) {
 }
 
 void ChunkCoordsIndex::updateChunk(const bl::chunk_pos& pos, bool present) {
-    // Always locked, unlike the read paths: during the scan this only appends to
-    // the queue, and once the scan is over it is the write path itself. The phase
-    // is re-read under the lock because finishScan() switches it while holding it,
-    // which is what keeps the append from landing after the replay.
+    // Check the scan phase and queue updates under the same lock as finishScan().
     std::lock_guard<QMutex> lock(mutex_);
     if (!interactive_.load(std::memory_order_acquire)) {
         queued_writes_.emplace_back(pos, present);
@@ -235,10 +214,7 @@ bool ChunkCoordsIndex::containsAnyChunk(int32_t x, int32_t z, int32_t dim, int32
     const auto dim_it = regions_by_dimension_.find(dim);
     if (dim_it == regions_by_dimension_.end()) return false;
 
-    // A render window is smaller than a region and aligned to it, so it stays
-    // inside one and the whole answer costs one lookup plus the bits. A window that
-    // straddles (only possible for a caller that is not region-aligned) falls back
-    // to per-chunk lookups rather than answering for the wrong region.
+    // Region-aligned windows use one lookup; straddling windows fall back to chunks.
     const bl::chunk_pos min{x, z, dim};
     const auto region = CoordsRegion::fromChunk(min);
     const auto region_it = dim_it->second.find(region);

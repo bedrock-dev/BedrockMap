@@ -172,6 +172,7 @@ void setting::load() {
     s.beginGroup("Rendering");
     loaded.MAP_RENDER_STYLE = s.value("render_style", loaded.MAP_RENDER_STYLE).toInt();
     loaded.GPU_RENDER_ENABLED = s.value("gpu_render_enabled", loaded.GPU_RENDER_ENABLED).toBool();
+    loaded.GPU_ORTHOGRAPHIC_VIEW = s.value("gpu_orthographic_view", loaded.GPU_ORTHOGRAPHIC_VIEW).toBool();
     loaded.GPU_AO_STRENGTH = std::clamp(s.value("gpu_ao_strength", loaded.GPU_AO_STRENGTH).toFloat(), 0.0f, 1.0f);
     loaded.GPU_BEVEL_STRENGTH = std::clamp(s.value("gpu_bevel_strength", loaded.GPU_BEVEL_STRENGTH).toFloat(), 0.0f, 1.0f);
     loaded.GPU_BEVEL_WIDTH = std::clamp(s.value("gpu_bevel_width", loaded.GPU_BEVEL_WIDTH).toFloat(), 0.25f, 2.0f);
@@ -242,9 +243,7 @@ void setting::save(const Settings& values) {
     s.beginGroup("Rendering");
     s.setValue("render_style", values.MAP_RENDER_STYLE);
     s.setValue("gpu_render_enabled", values.GPU_RENDER_ENABLED);
-    // The renderer now uploads all visible atlas tiles in one paint. Drop the
-    // obsolete staged-upload preference when an existing configuration is saved.
-    s.remove("gpu_staged_uploads");
+    s.setValue("gpu_orthographic_view", values.GPU_ORTHOGRAPHIC_VIEW);
     s.setValue("gpu_ao_strength", values.GPU_AO_STRENGTH);
     s.setValue("gpu_bevel_strength", values.GPU_BEVEL_STRENGTH);
     s.setValue("gpu_bevel_width", values.GPU_BEVEL_WIDTH);
@@ -262,20 +261,10 @@ void setting::save(const Settings& values) {
     s.endGroup();
 
     s.beginGroup("Map");
-    // Rendering settings now have their own group. Remove the old entries so
-    // saving from an existing installation produces the new layout cleanly.
-    for (const auto& key :
-         {"render_style", "gpu_render_enabled", "gpu_ao_strength", "gpu_bevel_strength", "gpu_bevel_width", "gpu_saturation", "gpu_brightness",
-          "gpu_shadow_strength", "gpu_grass_height_enabled", "gpu_grass_height_base", "gpu_grass_height_color", "gpu_grass_height_range",
-          "tile_render_scale",
-          "shadow_pcf_radius", "shadow_map_scale", "terrian_shadow_level"}) {
-        s.remove(key);
-    }
     s.setValue("min_scale_level", values.MINIMUM_SCALE_LEVEL);
     s.setValue("max_scale_level", values.MAXIMUM_SCALE_LEVEL);
     s.setValue("coords_minimap_width", values.COORDS_MINIMAP_WIDTH);
     s.setValue("coords_minimap_height", values.COORDS_MINIMAP_HEIGHT);
-    s.remove("zoom_speed");
     s.setValue("grid_line_color", values.GRID_LINE_COLOR);
     s.setValue("actor_render_style", values.ACTOR_RENDER_STYLE);
     s.setValue("actor_border_width", values.ACTOR_BORDER_WIDTH);
@@ -285,7 +274,6 @@ void setting::save(const Settings& values) {
     s.setValue("void_color", values.VOID_MAP_COLOR);
     s.setValue("voxel_selection_color", values.VOXEL_SELECTION_COLOR);
     s.setValue("transparent_water", values.TRANSPARENT_WATER);
-    s.remove("tint_brightness");
     s.endGroup();
 
     s.beginGroup("Cache");

@@ -943,6 +943,16 @@
            <item row="0" column="1">
             <widget class="QCheckBox" name="gpuRenderCheck"/>
            </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_gpu_orthographic">
+             <property name="text">
+              <string>settingsDialog.gpu.orthographicView</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="gpuOrthographicCheck"/>
+           </item>
           </layout>
          </item>
          <item>

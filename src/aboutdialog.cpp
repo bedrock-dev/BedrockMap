@@ -16,16 +16,13 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDia
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
     setWindowTitle(tr("aboutDialog.title.about") + " - " + constant::SOFTWARE_NAME.c_str());
 
-    // Set logo
     ui->logo->setPixmap(QPixmap(":/res/ui/classic/icon.png").scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    // Set name & version with rich text formatting
     QString name = QString::fromStdString(constant::SOFTWARE_NAME);
     QString ver = constant::SOFTWARE_VERSION.toString() + "." + QString(GIT_COMMIT_HASH);
     QString text = QString("<h2>%1</h2><p>%2</p>").arg(name, ver);
     ui->name_version_label->setText(text);
 
-    // Hyperlinks — URLs stay in code, display text via tr() for i18n
     auto link = [](const QString& url, const QString& text) { return QString("<a href=\"%1\">%2</a>").arg(url, text); };
 
     ui->developer_link->setText(QString(tr("aboutDialog.developer")).arg(link(QStringLiteral("https://github.com/hhhxiao"), "hhhxiao")));
@@ -35,20 +32,17 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDia
     ui->githubLink->setText(link(QStringLiteral("https://github.com/bedrock-dev/BedrockMap"), tr("aboutDialog.github")));
     restoreCheckLink();
 
-    // Check for updates — triggered by clicking the check-update link
     connect(ui->checkUpdateLink, &QLabel::linkActivated, this, &AboutDialog::onCheckForUpdates);
     connect(updater_, &UpdateChecker::updateAvailable, this, &AboutDialog::onUpdateAvailable);
     connect(updater_, &UpdateChecker::upToDate, this, &AboutDialog::onUpToDate);
     connect(updater_, &UpdateChecker::checkFailed, this, &AboutDialog::onCheckFailed);
 
-    // Close button
     connect(ui->closeBtn, &QPushButton::clicked, this, &QDialog::close);
 }
 
 AboutDialog::~AboutDialog() { delete ui; }
 
 void AboutDialog::restoreCheckLink() {
-    // The link never navigates; clicking it only triggers the update check.
     ui->checkUpdateLink->setText(QString("<a href=\"%1\">%2</a>").arg(UpdateChecker::apiUrl(), tr("aboutDialog.checkUpdate")));
 }
 

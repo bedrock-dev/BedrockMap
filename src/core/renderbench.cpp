@@ -223,8 +223,7 @@ namespace renderbench {
                 " 1px/block = one drawImage of a 1 px-per-block composite covering the viewport)\n");
         }
 
-        /// Number of distinct colours in a sampled grid, as a cheap "did anything
-        /// actually render" check for the captures.
+        /// Count distinct sampled pixels.
         int countDistinctColors(const QImage& image) {
             QSet<QRgb> seen;
             for (int y = 0; y < image.height(); y += 3) {
@@ -233,13 +232,8 @@ namespace renderbench {
             return static_cast<int>(seen.size());
         }
 
-        /// Compares a GPU capture of one region against the CPU tile of the same
-        /// region, cell by cell. Getting the view transform wrong (a mirrored z,
-        /// a shifted origin) still produces a plausible-looking map, so this is
-        /// asserted rather than left to the eye.
-        /// `region_block` is the region's origin in world blocks, which is what
-        /// locates the tile inside the capture; it is not derivable from the
-        /// capture centre, which may be any block in the area.
+        /// Compare GPU and CPU region orientation cell by cell.
+        /// `region_block` locates the region inside the capture.
         void checkOrientation(const QImage& gpu_frame, const QImage& cpu_tile, const QPointF& centre_block, double px_per_block,
                               const QPointF& region_block) {
             constexpr int kCells = 8;
@@ -303,9 +297,7 @@ namespace renderbench {
                         normal < flipped ? "same way up" : "VERTICALLY MIRRORED");
         }
 
-        /// Per-region cost of the CPU shading pass (style 2: bevel + shadow) at the
-        /// loaded settings. This is what the CPU map pays per newly visible region
-        /// and what the GPU does per frame instead, so it is the comparable number.
+        /// Measure CPU shading cost per region.
         double measureCpuStyleCostMs(AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions, const MapFilter& filter) {
             if (regions.empty()) return 0.0;
             auto original = setting::current();
@@ -331,11 +323,7 @@ namespace renderbench {
             return baked_regions > 0 ? static_cast<double>(shading) / baked_regions / 1000.0 : 0.0;
         }
 
-        /// Times the GPU frame itself and puts it next to the CPU cost of showing
-        /// the same area. The GPU renderer consumes the same region bakes (chunk
-        /// load + surface colours), so that part is common to both paths; what the
-        /// comparison has to isolate is the shading, which is the per-region
-        /// bevel/shadow pass on the CPU and free per extra frame on the GPU.
+        /// Compare GPU frame shading with CPU per-region shading.
         void runGpuTimingBench(const Request& request, AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions,
                                const MapFilter& filter) {
             const auto& centre_region = regions.front().pos;
@@ -417,9 +405,7 @@ namespace renderbench {
                 " comparable parameter; what matters is that the GPU cost stays flat as quality goes up.)\n");
         }
 
-        /// Head-to-head for the case that actually stutters: a screen's worth of
-        /// terrain entering the view for the first time. Both paths read the same
-        /// chunks; the difference is what they do with them afterwards.
+        /// Compare first-frame costs for a newly visible screen.
         void runScreenCostBench(const Request& request, AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions,
                                 const MapFilter& filter) {
             const auto& centre_region = regions.front().pos;
@@ -483,9 +469,7 @@ namespace renderbench {
                 setting::current().THREAD_NUM);
         }
 
-        /// A block position that actually has terrain, taken from a baked region.
-        /// A region's geometric centre is often a chunk-less hole, which makes a
-        /// high-zoom capture show nothing but background.
+        /// Find a terrain pixel so high-zoom captures avoid empty holes.
         QPointF terrainCentreBlock(const std::vector<BakedRegion>& regions) {
             constexpr int kHalf = (constant::RW << 4) / 2;
             for (const auto& sample : regions) {
@@ -503,11 +487,7 @@ namespace renderbench {
             return QPointF(64.0, 64.0);  // fall back to the region centre
         }
 
-        /// Times the GPU frame itself and puts it next to the CPU cost of showing
-        /// the same area. The GPU renderer consumes the same region bakes (chunk
-        /// load + surface colours), so that part is common to both paths; what the
-        /// comparison has to isolate is the shading, which is the per-region
-        /// bevel/shadow pass on the CPU and free per extra frame on the GPU.
+        /// Capture representative CPU and GPU frames.
         void runShotBench(const Request& request, AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions) {
             const QString& prefix = request.shot_prefix;
             for (size_t i = 0; i < regions.size() && i < 4; i++) {
@@ -563,12 +543,7 @@ namespace renderbench {
             }
         }
 
-        /// Constructs the real widgets and paints them offscreen. This is the
-        /// check that the shared view, the shared host and the event wiring are
-        /// actually sound - none of which the loader-level benchmarks touch.
-        /// Renders a frame with the CPU renderer and one with the GPU renderer
-        /// from the same MapView, so a divergence or a crash shows up here. The
-        /// two are peers: both are handed the one host's shared state.
+        /// Smoke-test both renderers with one shared host and view.
         int runWidgetSmoke(AsyncLevelLoader& loader) {
             MapHost host(nullptr, &loader);
             CpuMapWidget map(nullptr, &loader, host.mapView(), &host.overlays(), host.importOverlay(), &host);
@@ -577,20 +552,16 @@ namespace renderbench {
             GpuMapWidget gpu(nullptr, &loader, host.mapView(), &host.overlays(), host.importOverlay(), &host);
             gpu.resize(800, 600);
             gpu.setGpuTimingEnabled(true);
-            // Shading knobs start from the settings, so pin them here: a user's own
-            // config.ini must not change what this smoke measures.
+            // Keep smoke-test shading independent of config.ini.
             gpu.setBevelStrength(1.0f);
             gpu.setSaturation(1.0f);
             gpu.setBrightness(1.0f);
 
-            // Give the loader a few frames to bake what the viewport asks for.
             for (int i = 0; i < 300; i++) {
                 QCoreApplication::processEvents();
                 if (i > 0 && loader.pendingRegionTasks() == 0) break;
             }
 
-            // The CPU map requests regions as it paints, so painting in a loop
-            // (with the event loop pumped) is what lets its bakes land.
             QImage cpu_frame(map.size(), QImage::Format_RGB32);
             int cpu_colors = 0;
             for (int i = 0; i < 300; i++) {
@@ -608,8 +579,6 @@ namespace renderbench {
                 if (i > 0 && loader.pendingRegionTasks() == 0 && gpu.pendingUploadCount() == 0) break;
             }
 
-            // Zoom has to move the one shared transform, so whatever drives it
-            // moves every renderer.
             MapView* view = host.mapView();
             const QTransform before = view->worldToView();
             view->zoomBy(1.5, QPointF(400, 300));
@@ -622,10 +591,6 @@ namespace renderbench {
             std::printf("renderbench: widget smoke - zoom moves the shared transform: %s; same view object: %s\n",
                         zoom_applied ? "yes" : "NO", same_view ? "yes" : "NO");
 
-            // Overlays: the grid is drawn by shared code, so both renderers must
-            // gain pixels of the grid colour when it is switched on. Comparing
-            // against the same renderer with the layer off keeps terrain colours
-            // out of the count.
             const QColor grid_color(setting::current().GRID_LINE_COLOR);
             const auto count_grid_pixels = [&](const QImage& image) {
                 int found = 0;
@@ -648,8 +613,6 @@ namespace renderbench {
                 return frame;
             };
             const auto render_gpu = [&]() {
-                // The capture path deliberately skips overlays, so paint the real
-                // widget instead.
                 QImage frame = gpu.grabFramebuffer();
                 QCoreApplication::processEvents();
                 return frame;
@@ -675,10 +638,6 @@ namespace renderbench {
             std::printf("renderbench: widget smoke - overlays: %s\n", overlays_ok ? "grid drawn by both renderers" : "MISSING");
             int failures = overlays_ok ? 0 : 1;
 
-            // Saturation is a post-process on the shaded colour. At 1 the frame has to
-            // still carry chroma - a uniform that is never set reads as 0, which would
-            // grey the whole map - and at 0 every pixel has to come out exactly grey
-            // without the brightness moving, which is what mixing towards the luma does.
             struct Chroma {
                 double max_chroma{0};
                 double mean_luma{0};
@@ -711,10 +670,6 @@ namespace renderbench {
                         saturation_ok ? "ok" : "WRONG");
             if (!saturation_ok) ++failures;
 
-            // Context menu coordinates: the menu is shared, but each widget
-            // resolves the click with its own transform, so the same screen point
-            // on the two differently sized maps must land on the same chunk.
-            // (The menu itself is not exec'd here - it would block on user input.)
             {
                 const QPointF local(200.0, 150.0);
                 const bl::chunk_pos cpu_chunk = host.mapView()->viewPosToChunkPos(local);
@@ -728,9 +683,6 @@ namespace renderbench {
                 std::printf("renderbench: widget smoke - click resolution agrees: %s\n", clicks_agree ? "yes" : "NO");
                 if (!clicks_agree) ++failures;
 
-                // The menu is built from the host, and the GPU pane's clicks are
-                // routed to that same host - so a GPU click must produce the same
-                // entries a CPU click would.
                 const auto menu_entries = [&](const bl::chunk_pos& c, const QPoint& b) {
                     MapMenuRequest req;
                     req.global_pos = QPoint(0, 0);
@@ -1023,16 +975,12 @@ namespace renderbench {
                 if (!import_ok) ++failures;
             }
 
-            // Settings: the category list is hand-numbered and indexes the stack
-            // directly, so a page inserted without renumbering shows the wrong one.
             {
                 SettingsDialog dialog;
                 auto* tree = dialog.findChild<QTreeWidget*>("categoryTree");
                 auto* stack = dialog.findChild<QStackedWidget*>("settingsStack");
                 bool pages_ok = tree && stack && tree->topLevelItemCount() > 0;
                 if (pages_ok) {
-                    // Every category must select its own page, and no page may be
-                    // left unreachable.
                     bool seen[16] = {};
                     for (int i = 0; i < tree->topLevelItemCount(); ++i) {
                         tree->setCurrentItem(tree->topLevelItem(i));
@@ -1060,8 +1008,6 @@ namespace renderbench {
                 std::printf("renderbench: widget smoke - settings categories match the pages: %s\n", pages_ok ? "yes" : "NO");
                 if (!pages_ok) ++failures;
 
-                // The GPU page's shading controls: each slider and spin box pair edits
-                // one value, and those values are what onSave writes.
                 auto* ao_spin = dialog.findChild<QDoubleSpinBox*>("gpuAoSpin");
                 auto* ao_slider = dialog.findChild<QSlider*>("gpuAoSlider");
                 auto* bevel_spin = dialog.findChild<QDoubleSpinBox*>("gpuBevelSpin");
@@ -1092,9 +1038,6 @@ namespace renderbench {
                     shadow_slider->setValue(40);
                     ao_ok = ao_ok && std::abs(shadow_spin->value() - 0.4) < 1e-6;
                 }
-                // Saving has to carry it into the settings snapshot. The dialog
-                // also writes config.ini, which a benchmark must not touch, so
-                // the file is put back byte for byte afterwards.
                 auto* gpu_check = dialog.findChild<QCheckBox*>("gpuRenderCheck");
                 bool saved_ok = false;
                 if (ao_ok && gpu_check) {
@@ -1125,8 +1068,8 @@ namespace renderbench {
                         "saturation=%.2f brightness=%.2f shadow=%.2f)\n",
                         saved_ok ? "yes" : "NO", setting::current().GPU_RENDER_ENABLED ? 1 : 0,
                         static_cast<double>(setting::current().GPU_AO_STRENGTH), static_cast<double>(setting::current().GPU_BEVEL_STRENGTH),
-                        static_cast<double>(setting::current().GPU_BEVEL_WIDTH),
-                        static_cast<double>(setting::current().GPU_SATURATION), static_cast<double>(setting::current().GPU_BRIGHTNESS),
+                        static_cast<double>(setting::current().GPU_BEVEL_WIDTH), static_cast<double>(setting::current().GPU_SATURATION),
+                        static_cast<double>(setting::current().GPU_BRIGHTNESS),
                         static_cast<double>(setting::current().GPU_SHADOW_STRENGTH));
                     setting::apply(saved);
 
@@ -1152,16 +1095,14 @@ namespace renderbench {
                     MapView probe_view;
                     GpuMapWidget probe(nullptr, nullptr, &probe_view, nullptr, nullptr, nullptr);
                     const bool wired = std::abs(probe.aoStrength() - 0.7f) < 1e-6 && std::abs(probe.bevelStrength() - 0.4f) < 1e-6 &&
-                                       std::abs(probe.bevelWidth() - 1.5f) < 1e-6 &&
-                                       std::abs(probe.saturation() - 1.4f) < 1e-6 && std::abs(probe.brightness() - 1.1f) < 1e-6 &&
-                                       std::abs(probe.shadowStrength() - 0.6f) < 1e-6;
+                                       std::abs(probe.bevelWidth() - 1.5f) < 1e-6 && std::abs(probe.saturation() - 1.4f) < 1e-6 &&
+                                       std::abs(probe.brightness() - 1.1f) < 1e-6 && std::abs(probe.shadowStrength() - 0.6f) < 1e-6;
                     std::printf(
                         "renderbench: widget smoke - the renderer starts from the configured shading (ao=%.2f bevel=%.2f width=%.2f "
                         "saturation=%.2f brightness=%.2f shadow=%.2f): %s\n",
                         static_cast<double>(probe.aoStrength()), static_cast<double>(probe.bevelStrength()),
-                        static_cast<double>(probe.bevelWidth()),
-                        static_cast<double>(probe.saturation()), static_cast<double>(probe.brightness()),
-                        static_cast<double>(probe.shadowStrength()), wired ? "yes" : "NO");
+                        static_cast<double>(probe.bevelWidth()), static_cast<double>(probe.saturation()),
+                        static_cast<double>(probe.brightness()), static_cast<double>(probe.shadowStrength()), wired ? "yes" : "NO");
                     if (!wired) ++failures;
                 }
                 setting::apply(probe_saved);
@@ -1172,9 +1113,7 @@ namespace renderbench {
             return ok ? 0 : 3;
         }
 
-        /// Fraction of the frame still showing the "not baked yet" background.
-        /// Those pixels are exactly the light chessboard shades, because the
-        /// shader returns the raw colour for a column with no blocks.
+        /// Fraction of the frame still showing the unloaded checkerboard.
         double unloadedFraction(const QImage& frame) {
             if (frame.isNull() || frame.width() == 0) return 0.0;
             int64_t unloaded = 0;
@@ -1191,10 +1130,7 @@ namespace renderbench {
             return total > 0 ? static_cast<double>(unloaded) / static_cast<double>(total) : 0.0;
         }
 
-        /// Walks the zoom range in large steps, the way a fast wheel scroll does,
-        /// and reports how much of the frame is still background on the frame
-        /// immediately after each resolution change versus once it has settled.
-        /// A large gap there is the flicker: the rebuild is visible.
+        /// Measure background coverage after each large zoom step.
         void runZoomSweepBench(AsyncLevelLoader& loader) {
             const QSize size(1024, 640);
             MapView view;
@@ -1204,10 +1140,6 @@ namespace renderbench {
             gpu.setGpuTimingEnabled(true);
 
             const auto pump = [&]() {
-                // This bench builds a bare renderer without a MapHost, so nothing
-                // else reports the viewport and the scheduler would keep working
-                // on the previous one - which is why the earlier version never saw
-                // it settle.
                 const auto [min_chunk, max_chunk, rect] = view.renderRange();
                 (void)rect;
                 loader.setRenderViewport(constant::c2r(min_chunk), constant::c2r(max_chunk));
@@ -1226,8 +1158,6 @@ namespace renderbench {
             for (int i = 0; i < kFrames; i++) std::printf("%6d", i);
             std::printf("\n");
 
-            // The wide end is where the resolution changes and where the most new
-            // terrain enters, so it is stepped one band at a time.
             for (double scale : {256.0, 64.0, 32.0, 24.0, 16.0, 12.0, 9.0, 8.0, 6.0, 4.0}) {
                 view.setScale(scale, QPointF(size.width() / 2.0, size.height() / 2.0));
                 std::printf("%11.2f %6d %7s", scale, gpu.blocksPerTexel(), "");
@@ -1245,9 +1175,6 @@ namespace renderbench {
                 "(each column is one frame after the zoom step. Decaying within a frame or two is loading; staying high\n"
                 " means terrain that is already in memory is not being drawn.)\n");
 
-            // No zooming at all: if the widget keeps uploading once everything is
-            // in, the slot mapping is aliasing and slots are overwriting each
-            // other. That is invisible in a single frame but flickers in motion.
             std::printf("\n== steady state, no input - should be 0 uploads ==\n");
             std::printf("%11s %8s %10s %12s %12s\n", "scale", "texel", "resident", "uploads/60f", "queued");
             for (double scale : {64.0, 16.0, 8.0, 4.0}) {
@@ -1261,11 +1188,7 @@ namespace renderbench {
             std::printf("(a settled view must show 0; anything else means slots are re-filled every frame.)\n");
         }
 
-        /// Walks the whole zoom range in fine steps and checks that the atlas
-        /// always has a slot for every region the view spans. Breaking this
-        /// aliases slots together, which shows up as permanent uploads and
-        /// flickering edges - and the coverage assertion inside the widget turns
-        /// it into a crash, so it is checked here instead.
+        /// Verify atlas slot coverage across the zoom range.
         int runCoverageBench(AsyncLevelLoader& loader, const QSize& viewport, int shadow_steps) {
             MapView view;
             GpuMapWidget gpu(nullptr, &loader, &view, nullptr, nullptr, nullptr);
@@ -1299,18 +1222,8 @@ namespace renderbench {
             return failures == 0 ? 0 : 4;
         }
 
-        /// Measures the background checkerboard: the run lengths of the blank
-        /// tile shades along a scanline. The pattern is a 64-block grid, so at a
-        /// Where the chunk-coordinate preload spends its time, and what the
-        /// achievable ceiling is.
-        ///
-        /// That scan wants 3 marker key types (`bl::raw_chunk::MARKER_KEYS`) out of
-        /// every key a chunk column holds - sub-chunk terrain, data2D/3D, block
-        /// entities, pending ticks, checksums and so on - so what decides its cost
-        /// is the key:column ratio (how much of the iteration cannot match) and how
-        /// the time splits between LevelDB's own stepping and the per-key work on
-        /// top of it. Both are measured here rather than assumed: the fix differs
-        /// completely depending on which one dominates.
+        /// Verify checkerboard run lengths across atlas resolution changes.
+        // Measures coordinate-index scan cost and its main contributors.
         int runCoordsBench(AsyncLevelLoader& loader) {
             auto* db = loader.level().db();
             if (!db) {
@@ -1328,10 +1241,7 @@ namespace renderbench {
             const auto elapsed_ms = [](const auto& start) {
                 return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
             };
-            // The production scan classifies the iterator's key bytes in place, and runs
-            // with these read options. Every pass below does both, so the rows attribute
-            // its cost rather than measuring a differently configured traversal; the
-            // variant table further down isolates the options on their own.
+            // Match the production scan's key classification and read options.
             const auto key_view = [](const leveldb::Slice& slice) { return std::string_view(slice.data(), slice.size()); };
             const auto scan_options = loader.level().bulk_read_options();
 
@@ -1619,14 +1529,7 @@ namespace renderbench {
             return failures == 0 ? 0 : 5;
         }
 
-        /// Renders the same view with ambient occlusion off and on and reports
-        /// the difference. AO must only darken, and it must be concentrated
-        /// rather than a flat wash: the check compares the deepest darkening
-        /// against the median so a uniform multiply (which would mean the
-        /// proximity weighting collapsed) is distinguishable from real occlusion.
-        ///
-        /// Sweeps several strengths so the default can be chosen from numbers
-        /// rather than by eye.
+        /// Check that AO darkens only concave corners in a real capture.
         int runAoCheck(const Request& request, AsyncLevelLoader& loader, const std::vector<BakedRegion>& regions) {
             const QPointF centre_block = terrainCentreBlock(regions);
             const QSize size(1024, 640);
@@ -1747,20 +1650,7 @@ namespace renderbench {
             return ok ? 0 : 6;
         }
 
-        /// Runs the real map2d shader over a manufactured height field, so the
-        /// shading model can be checked against known geometry instead of
-        /// whatever terrain happens to be in the loaded world. Eyeballing
-        /// captures has repeatedly been misleading here.
-        ///
-        /// The field is a raised plateau (height 1 over ground height 0) with a
-        /// pit carved out of it, which covers both faces of every step. The light
-        /// is at the top-left of the map, so what is checked is:
-        ///   - a raised area is lit on its west and north edges,
-        ///   - the shadow of that step lands on the lower ground's west and north
-        ///     edge, i.e. just outside the raised area's east and south sides,
-        ///   - a pit is shaded on its north-west inside, not on its south-east,
-        ///   - flat interior stays untouched, and shading is continuous across
-        ///     block boundaries on level ground.
+        /// Check map2d shading against a manufactured height field.
         int runShadeProbe(const QString& shot_prefix, float ao_strength, int ao_directions, int ao_steps, bool quality_sweep) {
             constexpr int kBlocks = 64;
             constexpr int kPixPerBlock = 12;
@@ -2086,8 +1976,7 @@ namespace renderbench {
             check(sample(no_ao, kPit1 - in, kPit1 - in) <= sample(no_ao, kPit1 - in, kPit0 + 0.5) + 8,
                   "the lit bands meet at a pit's inside corner too");
             check(pit_nw[1] < pit_nw[0] - 10, "a pit is shaded at its north-west inside corner");
-            check(std::abs(pit_nw[1] - pit_nw[2]) <= 2 && std::abs(pit_nw[1] - pit_nw[3]) <= 2,
-                  "two dark edges at a corner do not stack");
+            check(std::abs(pit_nw[1] - pit_nw[2]) <= 2 && std::abs(pit_nw[1] - pit_nw[3]) <= 2, "two dark edges at a corner do not stack");
             check(pit_nw[4] > pit_nw[1] + 10 && pit_nw[4] >= pit_nw[0], "the pit's shading fades towards its south-east side");
             check(pit_se[1] >= pit_se[0] - 5 && pit_se[4] >= pit_se[0] - 5, "a pit's south-east inside gets no bevel shading");
 

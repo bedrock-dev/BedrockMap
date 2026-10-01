@@ -51,11 +51,7 @@ ChunkRegion* AsyncLevelLoader::tryGetRegion(const region_pos& p, bool& empty) {
     auto* region = cache_manager_.findRegion(p, empty);
     if (empty) return nullptr;
     if (region) return region;
-    // A cache miss reaches the index before the scheduler: a bake is pointless when
-    // the archive holds no chunk in this tile at all. This also covers a bake that is
-    // still in flight, and it cannot disagree with it -- the index and the bake decide
-    // existence by the same rule (marker key present and non-empty), so a completion
-    // arriving later can only conclude the same thing.
+    // Skip known-empty regions before scheduling a bake.
     if (isRegionAbsent(p)) {
         cache_manager_.insertEmpty(p);
         empty = true;
@@ -88,8 +84,7 @@ bool AsyncLevelLoader::open(const std::string& path) {
 AsyncLevelLoader::~AsyncLevelLoader() { this->close(); }
 
 void AsyncLevelLoader::close() {
-    // Keep the expensive shutdown on the caller's worker thread. UI-owned
-    // caches are cleared by the GUI close-completion handler before deletion.
+    // Perform storage shutdown on the caller's worker thread.
     if (this->thread() != QThread::currentThread()) {
         if (!loaded_.exchange(false, std::memory_order_acq_rel)) return;
         LOG_F(INFO, "Try close level");
@@ -156,8 +151,7 @@ void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos>& c
     for (const auto& c : chunks) regions.insert(constant::c2r(c));
     if (regions.empty()) return;
 
-    // Region cache is GUI-thread owned. The coordinate index already reflects
-    // these chunks: the edit applied it synchronously on its own thread.
+    // The index already reflects the edit; invalidate cached region tiles.
     const auto drop = [this, regions, chunks]() {
         for (const auto& r : regions) cache_manager_.removeRegion(r);
         // Edited terrain changes the surface heights the shadow pass reads.
@@ -203,9 +197,7 @@ void AsyncLevelLoader::clearAllCache() {
 }
 
 std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl::chunk_pos& pos) {
-    // Render workers may still be unwinding while close() is initiated. The
-    // scheduler waits for those workers before closing LevelDB, but callers
-    // that arrive after the close barrier must not start a new read.
+    // Wait for workers before closing LevelDB; reject reads after the barrier.
     if (!loaded_.load(std::memory_order_acquire)) return std::nullopt;
     if (auto cached = cache_manager_.heightMap(pos)) return cached;
 
@@ -221,8 +213,7 @@ std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl:
             bool ok = (kt == bl::chunk_key::Data3D) ? b3d.load_from_d3d(raw.data(), raw.size()) : b3d.load_from_d2d(raw.data(), raw.size());
             if (ok) {
                 auto hm = b3d.height_map();
-                // Data3D anchors its layers at the dimension's bottom, so the raw heights are
-                // relative and need that baseline. -128 is the void sentinel and stays as-is.
+                // Data3D heights are relative to the dimension's minimum Y; preserve -128 as void.
                 const int miny = kt == bl::chunk_key::Data3D ? bl::dimension_min_y(pos.dim) : 0;
                 for (auto& h : hm)
                     if (h != -128) h += miny;
@@ -320,23 +311,16 @@ AsyncLevelLoader::RegionState AsyncLevelLoader::regionState(const region_pos& rp
 int AsyncLevelLoader::pendingRegionTasks() const { return region_scheduler_.pendingCount() + region_scheduler_.activeCount(); }
 
 bool AsyncLevelLoader::isChunkAbsent(const bl::chunk_pos& pos) const {
-    // Only a completed scan ever sets ready_, so it covers the whole database and
-    // is what puts the index into the lock-protected phase that worker threads
-    // may read. Without it there is no index to trust.
+    // Only the completed scan makes the index safe for worker reads.
     if (!chunk_coords_service_.ready()) return false;
-    // An uncommitted edit is held in the storage cache and reaches the index
-    // asynchronously, so during that window the index would call a chunk we are
-    // still holding absent.
+    // Pending edits are not in the index yet.
     if (storage_.hasPendingEdit(pos)) return false;
     return !chunk_coords_service_.index().contains(pos);
 }
 
 bool AsyncLevelLoader::isRegionAbsent(const region_pos& p) const {
     if (!chunk_coords_service_.ready()) return false;
-    // Unlike a single chunk this needs no pending-edit guard: a memoized empty tile
-    // is dropped by the same call every edit path makes afterwards
-    // (invalidateRegionTiles / clearChunkCache), so a region that gains a chunk is
-    // re-examined before it is drawn again.
+    // Edit paths invalidate memoized empty regions before they are drawn again.
     return !chunk_coords_service_.index().containsAnyChunk(p.x, p.z, p.dim, constant::RW);
 }
 

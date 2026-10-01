@@ -42,7 +42,6 @@ BiomePickerDialog::BiomePickerDialog(QWidget* parent) : QDialog(parent), ui(new 
     setupTable(ui->leftTable);
     setupTable(ui->rightTable);
 
-    // Ensure only one table has a selection at a time
     connect(ui->leftTable, &QTableWidget::itemSelectionChanged, [this]() {
         if (!ui->leftTable->selectedItems().isEmpty()) ui->rightTable->clearSelection();
     });
@@ -81,18 +80,15 @@ void BiomePickerDialog::populateTables() {
             int row = i - start;
             auto b = list[i];
 
-            // Color swatch
             auto* swatch = new QTableWidgetItem();
             swatch->setBackground(QBrush(toQColor(bl::get_biome_color(b))));
             swatch->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 0, swatch);
 
-            // Name
             auto* name = new QTableWidgetItem(QString::fromStdString(bl::get_biome_name(b)));
             name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 1, name);
 
-            // ID
             auto* idItem = new QTableWidgetItem(QString::number(static_cast<int>(b)));
             idItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             t->setItem(row, 2, idItem);
