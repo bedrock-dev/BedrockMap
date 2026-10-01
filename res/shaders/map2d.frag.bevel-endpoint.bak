@@ -33,10 +33,6 @@ uniform float uAoRadius;       // distance to the last sample, in blocks
 uniform float uBevelStrength;  // bevel depth; 0 removes it, 1 is the full bevel
 uniform float uSaturation;     // 0 = greyscale, 1 = the colours as stored, 2 = boosted
 uniform float uBrightness;     // 1 = neutral, 0 = black, 2 = twice as bright
-uniform float uGrassHeightEnabled;
-uniform float uGrassHeightBase;
-uniform float uGrassHeightRange;
-uniform vec3 uGrassHeightColor;
 uniform float uFlatShading;    // 1 = output the raw colour, for A/B comparison
 uniform vec3 uWaterBaseColor;  // unblended minecraft:water palette colour
 
@@ -133,6 +129,27 @@ float bevelFactor(float t, float cur, float lightSide) {
 // corner becomes brighter/darker than either of its adjoining edges.
 float dominantBevel(float a, float b) {
     return abs(a - 1.0) >= abs(b - 1.0) ? a : b;
+}
+
+// A bevel edge is continuous along its tangent only when the height step keeps
+// the same direction in the neighbouring cell.  Comparing the sign rather than
+// the magnitude keeps a wall with changing heights continuous while still
+// detecting the end of a finite wall.
+float edgeContinues(float a0, float b0, float a1, float b1) {
+    float d0 = a0 - b0;
+    float d1 = a1 - b1;
+    if (abs(d0) <= 0.5 || abs(d1) <= 0.5) return 0.0;
+    return sign(d0) == sign(d1) ? 1.0 : 0.0;
+}
+
+// Fade an edge only at the ends where its tangent continuation is absent.  This
+// keeps a finite wall from stopping with a hard one-texel cutoff.
+float edgeEndpointFade(float coord, float width, float towardStart, float towardEnd) {
+    float fade = 1.0;
+    float safeWidth = max(width, 0.001);
+    if (towardStart < 0.5) fade *= smoothstep(0.0, 1.0, clamp(coord / safeWidth, 0.0, 1.0));
+    if (towardEnd < 0.5) fade *= smoothstep(0.0, 1.0, clamp((1.0 - coord) / safeWidth, 0.0, 1.0));
+    return fade;
 }
 
 // Continuation of the bevel across the light-side corner.
@@ -300,13 +317,6 @@ void main() {
         if ((flags & WATER_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 0, material.r);
         if ((flags & LEAVES_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 1, material.r);
         if ((flags & GRASS_TINT) != 0) surface_rgb *= interpolatedBiomeTint(world, 2, material.r);
-        if ((flags & GRASS_TINT) != 0 && uGrassHeightEnabled > 0.5) {
-            // Grass already carries its biome tint. Mix that resolved colour
-            // towards the configured marker over the configured range above the base,
-            // leaving lower terrain unchanged.
-            float height_mix = clamp((top - uGrassHeightBase) / max(uGrassHeightRange, 1.0), 0.0, 1.0);
-            surface_rgb = mix(surface_rgb, uGrassHeightColor, height_mix);
-        }
         if ((flags & WATER_OVERLAY) != 0) {
             vec3 water = uWaterBaseColor * interpolatedBiomeTint(world, 0, material.r);
             float opacity = clamp(0.30 + 0.15 * max(top - solid, 0.0), 0.0, 0.92);
@@ -328,7 +338,26 @@ void main() {
 
         float left = heightAt(cell + vec2(-uBlocksPerTexel, 0.0)).r;
         float up = heightAt(cell + vec2(0.0, -uBlocksPerTexel)).r;
+        float right = heightAt(cell + vec2(uBlocksPerTexel, 0.0)).r;
+        float down = heightAt(cell + vec2(0.0, uBlocksPerTexel)).r;
         float up_left = heightAt(cell + vec2(-uBlocksPerTexel, -uBlocksPerTexel)).r;
+        float up_right = heightAt(cell + vec2(uBlocksPerTexel, -uBlocksPerTexel)).r;
+        float down_left = heightAt(cell + vec2(-uBlocksPerTexel, uBlocksPerTexel)).r;
+
+        // The edge ramp runs perpendicular to the step.  At the finite end of
+        // a wall it also needs to fade along the edge, otherwise it ends with a
+        // one-texel discontinuity where the neighbouring cell has no step.
+        const float edge_threshold = 0.5;
+        if (abs(solid - left) > edge_threshold) {
+            float toward_up = edgeContinues(solid, left, up, up_left);
+            float toward_down = edgeContinues(solid, left, down, down_left);
+            tLeft *= edgeEndpointFade(local.y, w, toward_up, toward_down);
+        }
+        if (abs(solid - up) > edge_threshold) {
+            float toward_left = edgeContinues(solid, up, left, up_left);
+            float toward_right = edgeContinues(solid, up, right, up_right);
+            tTop *= edgeEndpointFade(local.x, w, toward_left, toward_right);
+        }
 
         float bevel = dominantBevel(bevelFactor(tLeft, solid, left), bevelFactor(tTop, solid, up));
         bevel = clamp(bevel, 0.55, 1.58) * lightCornerContinuity(tLeft, tTop, solid, left, up, up_left);

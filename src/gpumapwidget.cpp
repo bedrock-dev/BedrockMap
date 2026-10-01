@@ -333,6 +333,12 @@ void GpuMapWidget::initializeGL() {
 
     const auto water_base = bl::get_block_color("minecraft:water");
     water_base_color_ = {water_base.r / 255.0f, water_base.g / 255.0f, water_base.b / 255.0f};
+    const QColor configured_grass_color(setting::current().GPU_GRASS_HEIGHT_COLOR);
+    const QColor grass_color = configured_grass_color.isValid() ? configured_grass_color : QColor(Qt::red);
+    grass_height_color_ = {grass_color.redF(), grass_color.greenF(), grass_color.blueF()};
+    grass_height_enabled_ = setting::current().GPU_GRASS_HEIGHT_ENABLED;
+    grass_height_base_ = setting::current().GPU_GRASS_HEIGHT_BASE;
+    grass_height_range_ = std::max(1.0f, setting::current().GPU_GRASS_HEIGHT_RANGE);
     initBiomePaletteTexture();
 
     initAtlasTextures();
@@ -811,6 +817,10 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uBevelStrength", bevel_strength_);
         shader_->setUniformValue("uSaturation", saturation_);
         shader_->setUniformValue("uBrightness", brightness_);
+        shader_->setUniformValue("uGrassHeightEnabled", grass_height_enabled_ ? 1.0f : 0.0f);
+        shader_->setUniformValue("uGrassHeightBase", grass_height_base_);
+        shader_->setUniformValue("uGrassHeightRange", grass_height_range_);
+        shader_->setUniformValue("uGrassHeightColor", grass_height_color_[0], grass_height_color_[1], grass_height_color_[2]);
         // Biome bake is a categorical visualisation, not terrain material:
         // height-driven bevel, AO, shadows, and water treatment must not alter it.
         const bool biome_layer = view_ && view_->options().layer == RenderOption::Biome;

@@ -288,6 +288,10 @@ class GpuMapWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     /// Three rows of RGB tint colours indexed by the biome id.
     GLuint biome_palette_texture_{0};
     std::array<float, 3> water_base_color_{0.64f, 0.64f, 0.64f};
+    std::array<float, 3> grass_height_color_{1.0f, 0.0f, 0.0f};
+    bool grass_height_enabled_{false};
+    float grass_height_base_{64.0f};
+    float grass_height_range_{128.0f};
 
     int atlas_dim_{-1};        // dimension the atlas currently holds, -1 = nothing
     int blocks_per_texel_{1};  // atlas resolution, see blocksPerTexelFor()

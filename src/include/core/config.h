@@ -87,6 +87,12 @@ namespace setting {
         // Brightness multiplier for the GPU renderer: 1 leaves the shaded image
         // unchanged, 0 is black, and values above 1 lift it.
         float GPU_BRIGHTNESS{1.0f};
+        // Blend grass/foliage biome colours towards a configured warning colour
+        // as the surface rises above the configured height baseline.
+        bool GPU_GRASS_HEIGHT_ENABLED{false};
+        float GPU_GRASS_HEIGHT_BASE{80.0f};
+        QString GPU_GRASS_HEIGHT_COLOR{"#ff2222"};
+        float GPU_GRASS_HEIGHT_RANGE{180.0f};
         // How much of the GPU renderer's terrain shadow is applied. 0 removes it and
         // 1 is the full shadow. It scales the shadow the ray march produces, so it
         // composes with SHADOW_LEVEL rather than replacing it.
