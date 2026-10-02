@@ -96,8 +96,9 @@ void MapOverlays::drawCoordsOverview(QPainter* painter) const {
         return;
     }
 
-    // Fill outside the archive bounds once; draw individual tiles only inside them.
-    painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), MapTile::COORDS_EMPTY_TILE().pixelColor(0, 0));
+    // Fill outside the archive bounds with the same checkerboard used by empty
+    // coordinate tiles; draw individual presence tiles only inside the bounds.
+    painter->fillRect(QRectF(view_x0, view_z0, view_x1 - view_x0, view_z1 - view_z0), QBrush(MapTile::COORDS_EMPTY_TILE()));
     const int x0 = std::max(view_x0, tile_floor(bounds->min_x));
     const int z0 = std::max(view_z0, tile_floor(bounds->min_z));
     const int x1 = std::min(view_x1, tile_ceil(bounds->max_x + 1));
