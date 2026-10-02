@@ -117,6 +117,7 @@
         <translation>3D视图</translation>
     </message>
     <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
         <source>chunkEditor.exportChunkData</source>
         <translation>导出</translation>
     </message>

@@ -88,6 +88,10 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
     if (setting::current().PRELOAD_ALL_CHUNK_COORDS) {
         coords_progress_ = new ChunkCoordsProgressWidget(this);
         mapRow->addWidget(coords_progress_);
+        // The renderer is temporarily detached from the layout. It is still a
+        // visible child of this page, so hide it explicitly or it can paint
+        // its default-sized rectangle at the page's top-left corner.
+        activeMapPane()->hide();
     } else {
         mapRow->addWidget(activeMapPane());
     }

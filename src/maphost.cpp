@@ -215,8 +215,16 @@ void MapHost::pasteFromClipboard(int dim) {
 
 void MapHost::exportSelectionToFile(int dim) {
     if (view_.selection().isEmpty()) return;
-    auto fp = QFileDialog::getSaveFileName(paneWidget(), QObject::tr("mapHost.rightMenu.exportRegion"), {}, msg::ALL_FILES());
+    const QRect bounds = view_.selection().region().boundingRect();
+    const QString defaultName = QStringLiteral("region_x%1_z%2_x%3_z%4_dim%5.bchks")
+                                    .arg(bounds.left())
+                                    .arg(bounds.top())
+                                    .arg(bounds.right())
+                                    .arg(bounds.bottom())
+                                    .arg(dim);
+    auto fp = QFileDialog::getSaveFileName(paneWidget(), QObject::tr("mapHost.rightMenu.exportRegion"), defaultName, msg::BCHKS_FILES());
     if (fp.isEmpty()) return;
+    if (QFileInfo(fp).suffix().compare(QStringLiteral("bchks"), Qt::CaseInsensitive) != 0) fp += QStringLiteral(".bchks");
     ChunkOperator::exportRegion(view_.selection().region(), fp, *level_loader_, dim);
     INFO(msg::EXPORT_COMPLETE());
 }

@@ -117,6 +117,7 @@
         <translation>3D View</translation>
     </message>
     <message>
+        <location filename="../src/chunkeditorwidget.cpp"/>
         <source>chunkEditor.exportChunkData</source>
         <translation>Export</translation>
     </message>

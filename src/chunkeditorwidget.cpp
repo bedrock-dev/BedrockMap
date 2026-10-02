@@ -7,6 +7,7 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QHideEvent>
@@ -410,8 +411,10 @@ void ChunkEditorWidget::on_export_btn_clicked() {
     if (!this->has_chunk_) return;
     ExportedRegion region;
     region.addChunk(this->raw_chunk_);
-    auto fileName = QFileDialog::getSaveFileName(this, "", QString(), "BedrockMap Chunk Files (*.bchks)");
+    const QString defaultName = QStringLiteral("chunk_x%1_z%2_dim%3.bchks").arg(cp_.x).arg(cp_.z).arg(cp_.dim);
+    auto fileName = QFileDialog::getSaveFileName(this, tr("chunkEditor.exportChunkData"), defaultName, msg::BCHKS_FILES());
     if (fileName.isEmpty()) return;
+    if (QFileInfo(fileName).suffix().compare(QStringLiteral("bchks"), Qt::CaseInsensitive) != 0) fileName += QStringLiteral(".bchks");
     auto data = region.serialize();
 
     QFile file(fileName);
