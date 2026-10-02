@@ -46,6 +46,9 @@ class SettingsDialog : public QDialog {
     /// Set the brightness on both of its controls.
     void setGpuBrightness(double value);
 
+    /// Set the biome tint interpolation span on both of its controls.
+    void setGpuBiomeBlendBlocks(int value);
+
    private:
     void setupCategories();
     void loadSettings();

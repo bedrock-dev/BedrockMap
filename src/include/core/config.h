@@ -66,9 +66,9 @@ namespace setting {
         // Rendering
         int MAP_RENDER_STYLE{1};
         // Select the GPU map renderer.
-        bool GPU_RENDER_ENABLED{false};
+        bool GPU_RENDER_ENABLED{true};
         // Use the GPU renderer's orthographic heightfield camera.
-        bool GPU_ORTHOGRAPHIC_VIEW{true};
+        bool GPU_ORTHOGRAPHIC_VIEW{false};
         // GPU ambient occlusion strength.
         float GPU_AO_STRENGTH{0.22f};
         // GPU bevel depth.
@@ -76,16 +76,19 @@ namespace setting {
         // GPU bevel width multiplier.
         float GPU_BEVEL_WIDTH{1.0f};
         // GPU output saturation.
-        float GPU_SATURATION{1.0f};
+        float GPU_SATURATION{1.05f};
         // GPU output brightness.
-        float GPU_BRIGHTNESS{1.0f};
+        float GPU_BRIGHTNESS{1.1f};
         // Blend grass/foliage colours above a height threshold.
         bool GPU_GRASS_HEIGHT_ENABLED{false};
         float GPU_GRASS_HEIGHT_BASE{80.0f};
-        QString GPU_GRASS_HEIGHT_COLOR{"#ff2222"};
-        float GPU_GRASS_HEIGHT_RANGE{180.0f};
+        QString GPU_GRASS_HEIGHT_COLOR{"#dd2222"};
+        float GPU_GRASS_HEIGHT_RANGE{320.0f};
         // GPU terrain shadow strength; composes with SHADOW_LEVEL.
         float GPU_SHADOW_STRENGTH{1.0f};
+        // Width of the GPU biome tint interpolation area in blocks.
+        float GPU_BIOME_BLEND_BLOCKS{8.0f};
+        // for cpu
         int TILE_RENDER_SCALE{4};
         int SHADOW_PCF_RADIUS{0};
         int SHADOW_MAP_SCALE{2};
@@ -118,7 +121,7 @@ namespace setting {
 
         // Misc
         bool LOAD_GLOBAL_DATA{true};
-        bool PRELOAD_ALL_CHUNK_COORDS{false};
+        bool PRELOAD_ALL_CHUNK_COORDS{true};
         int MAX_GLOBAL_DATA_LOAD_COUNT{4096};
         QString ICON_THEME{"default"};
         bool CHECK_UPDATE{true};

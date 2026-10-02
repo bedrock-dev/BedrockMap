@@ -1593,6 +1593,10 @@
         <translation>亮度</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.biomeBlendBlocks</source>
+        <translation>群系混合范围（方块）</translation>
+    </message>
+    <message>
         <source>settingsDialog.map.renderStyle</source>
         <translation>渲染风格</translation>
     </message>

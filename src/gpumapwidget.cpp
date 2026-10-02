@@ -91,6 +91,7 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
     gpu_options_.saturation = std::clamp(setting::current().GPU_SATURATION, 0.0f, 2.0f);
     gpu_options_.brightness = std::clamp(setting::current().GPU_BRIGHTNESS, 0.0f, 2.0f);
     gpu_options_.shadow_strength = std::clamp(setting::current().GPU_SHADOW_STRENGTH, 0.0f, 1.0f);
+    gpu_options_.biome_blend_blocks = std::clamp(setting::current().GPU_BIOME_BLEND_BLOCKS, 0.0f, 16.0f);
     uploads_.clear();
     syncSlots();
 
@@ -272,6 +273,7 @@ void GpuMapWidget::setGpuOptions(const GpuRenderOptions& options) {
     gpu_options_.saturation = std::clamp(gpu_options_.saturation, 0.0f, 2.0f);
     gpu_options_.brightness = std::clamp(gpu_options_.brightness, 0.0f, 2.0f);
     gpu_options_.shadow_strength = std::clamp(gpu_options_.shadow_strength, 0.0f, 1.0f);
+    gpu_options_.biome_blend_blocks = std::clamp(gpu_options_.biome_blend_blocks, 0.0f, 16.0f);
     update();
 }
 
@@ -787,6 +789,7 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uPxPerBlock", static_cast<float>(device_px_per_block));
         shader_->setUniformValue("uAtlasTexels", static_cast<float>(ATLAS_TEXELS));
         shader_->setUniformValue("uBlocksPerTexel", static_cast<float>(blocks_per_texel_));
+        shader_->setUniformValue("uBiomeBlendBlocks", gpu_options_.biome_blend_blocks);
         shader_->setUniformValue("uSunStep", static_cast<float>(sx), static_cast<float>(sy));
         shader_->setUniformValue("uShadowDarkness", 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f);
         shader_->setUniformValue("uShadowStrength", gpu_options_.shadow_strength);
@@ -867,7 +870,8 @@ void GpuMapWidget::paintGL() {
 
     gpu_timings_.last_frame_ms = frame_timer.nsecsElapsed() / 1.0e6;
     stage_ms(gpu_timings_.overlay_ms);
-    if (!gpu_options_.orthographic_view) drawStats(painter, gpu_timings_.last_frame_ms, px_per_block);
+    if (!gpu_options_.orthographic_view && (!overlays_ || overlays_->drawDebug()))
+        drawStats(painter, gpu_timings_.last_frame_ms, px_per_block);
     painter.end();
 }
 

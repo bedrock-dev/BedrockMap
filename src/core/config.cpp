@@ -130,10 +130,7 @@ void setting::init() {
     LOG_F(INFO, "Current working directory: %s", QDir::currentPath().toStdString().c_str());
     LOG_F(INFO, "Configuration file path: %s", constant::CONFIG_FILE_PATH.c_str());
 
-    if (!QFile::exists(constant::CONFIG_FILE_PATH.c_str())) {
-        LOG_F(INFO, "Config file not found, writing defaults");
-        setting::save();
-    }
+    if (!QFile::exists(constant::CONFIG_FILE_PATH.c_str())) LOG_F(INFO, "Config file not found, using defaults");
     setting::load();
 }
 
@@ -183,6 +180,7 @@ void setting::load() {
     loaded.GPU_GRASS_HEIGHT_COLOR = s.value("gpu_grass_height_color", loaded.GPU_GRASS_HEIGHT_COLOR).toString();
     loaded.GPU_GRASS_HEIGHT_RANGE = std::clamp(s.value("gpu_grass_height_range", loaded.GPU_GRASS_HEIGHT_RANGE).toFloat(), 1.0f, 4096.0f);
     loaded.GPU_SHADOW_STRENGTH = std::clamp(s.value("gpu_shadow_strength", loaded.GPU_SHADOW_STRENGTH).toFloat(), 0.0f, 1.0f);
+    loaded.GPU_BIOME_BLEND_BLOCKS = std::clamp(s.value("gpu_biome_blend_blocks", loaded.GPU_BIOME_BLEND_BLOCKS).toFloat(), 0.0f, 16.0f);
     loaded.TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", loaded.TILE_RENDER_SCALE).toInt(), 1, 16);
     loaded.SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", loaded.SHADOW_PCF_RADIUS).toInt(), 0, 8);
     loaded.SHADOW_MAP_SCALE = std::clamp(s.value("shadow_map_scale", loaded.SHADOW_MAP_SCALE).toInt(), 1, 8);
@@ -254,6 +252,7 @@ void setting::save(const Settings& values) {
     s.setValue("gpu_grass_height_color", values.GPU_GRASS_HEIGHT_COLOR);
     s.setValue("gpu_grass_height_range", values.GPU_GRASS_HEIGHT_RANGE);
     s.setValue("gpu_shadow_strength", values.GPU_SHADOW_STRENGTH);
+    s.setValue("gpu_biome_blend_blocks", values.GPU_BIOME_BLEND_BLOCKS);
     s.setValue("tile_render_scale", values.TILE_RENDER_SCALE);
     s.setValue("shadow_pcf_radius", values.SHADOW_PCF_RADIUS);
     s.setValue("shadow_map_scale", values.SHADOW_MAP_SCALE);

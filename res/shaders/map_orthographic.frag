@@ -29,6 +29,7 @@ uniform float uAoStep0;
 uniform float uAoRadius;
 uniform float uSaturation;
 uniform float uBrightness;
+uniform float uBiomeBlendBlocks;
 uniform float uGrassHeightEnabled;
 uniform float uGrassHeightBase;
 uniform float uGrassHeightRange;
@@ -53,8 +54,6 @@ const int GRASS_TINT = 2;
 const int LEAVES_TINT = 4;
 const int WATER_OVERLAY = 8;
 const float BIOME_TINT_BRIGHTNESS = 1.30;
-const float BIOME_BLEND_BLOCKS = 16.0;
-
 vec2 atlasUV(vec2 block) { return fract((floor(block / uBlocksPerTexel) + 0.5) / uAtlasTexels); }
 vec4 colorAt(vec2 block) { return texture(uColor, atlasUV(block)); }
 vec2 heightAt(vec2 block) { return texture(uHeight, atlasUV(block)).rg; }
@@ -68,7 +67,7 @@ vec3 paletteTint(float biome_id, int row) {
 }
 
 vec3 interpolatedBiomeTint(vec2 world, int row, float fallback_biome) {
-    float span = max(BIOME_BLEND_BLOCKS, uBlocksPerTexel);
+    float span = max(uBiomeBlendBlocks, uBlocksPerTexel);
     vec2 cell = floor(world / span) * span;
     vec2 local = (world - cell) / span;
     vec2 east = cell + vec2(span, 0.0);

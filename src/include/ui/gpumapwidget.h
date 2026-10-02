@@ -48,8 +48,9 @@ struct GpuRenderOptions {
     float bevel_width{1.0f};
     float saturation{1.0f};
     float brightness{1.0f};
+    float biome_blend_blocks{8.0f};
     bool flat_shading{false};
-    bool orthographic_view{true};
+    bool orthographic_view{false};
 };
 
 struct GpuRenderTimings {

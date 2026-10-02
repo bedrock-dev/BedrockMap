@@ -51,6 +51,8 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::Se
     connect(ui->gpuSaturationSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuSaturation);
     connect(ui->gpuBrightnessSlider, &QSlider::valueChanged, this, [this](int value) { setGpuBrightness(value / 100.0); });
     connect(ui->gpuBrightnessSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &SettingsDialog::setGpuBrightness);
+    connect(ui->gpuBiomeBlendSlider, &QSlider::valueChanged, this, &SettingsDialog::setGpuBiomeBlendBlocks);
+    connect(ui->gpuBiomeBlendSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setGpuBiomeBlendBlocks);
 
     // Init interdependent state
     updateShadowOptions();
@@ -174,6 +176,7 @@ void SettingsDialog::loadSettings() {
     setGpuBevelWidth(setting::current().GPU_BEVEL_WIDTH);
     setGpuSaturation(setting::current().GPU_SATURATION);
     setGpuBrightness(setting::current().GPU_BRIGHTNESS);
+    setGpuBiomeBlendBlocks(static_cast<int>(std::lround(setting::current().GPU_BIOME_BLEND_BLOCKS)));
 
     // --- Lang ---
     ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
@@ -229,6 +232,13 @@ void SettingsDialog::setGpuBrightness(double value) {
     const QSignalBlocker block_spin(ui->gpuBrightnessSpin);
     ui->gpuBrightnessSpin->setValue(value);
     ui->gpuBrightnessSlider->setValue(static_cast<int>(std::lround(value * 100.0)));
+}
+
+void SettingsDialog::setGpuBiomeBlendBlocks(int value) {
+    const QSignalBlocker block_slider(ui->gpuBiomeBlendSlider);
+    const QSignalBlocker block_spin(ui->gpuBiomeBlendSpin);
+    ui->gpuBiomeBlendSpin->setValue(value);
+    ui->gpuBiomeBlendSlider->setValue(value);
 }
 
 void SettingsDialog::onGridColorPick() { onPickColor(ui->gridColorEdit); }
@@ -325,6 +335,7 @@ void SettingsDialog::onSave() {
     values.GPU_SATURATION = static_cast<float>(ui->gpuSaturationSpin->value());
     values.GPU_BRIGHTNESS = static_cast<float>(ui->gpuBrightnessSpin->value());
     values.GPU_SHADOW_STRENGTH = static_cast<float>(ui->gpuShadowSpin->value());
+    values.GPU_BIOME_BLEND_BLOCKS = static_cast<float>(ui->gpuBiomeBlendSpin->value());
 
     values.LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
 

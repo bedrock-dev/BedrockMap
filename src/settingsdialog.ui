@@ -1209,6 +1209,46 @@
              </item>
             </layout>
            </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_gpu_biome_blend">
+             <property name="text">
+              <string>settingsDialog.gpu.biomeBlendBlocks</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_gpu_biome_blend">
+             <item>
+              <widget class="QSlider" name="gpuBiomeBlendSlider">
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>16</number>
+               </property>
+               <property name="value">
+                <number>8</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="gpuBiomeBlendSpin">
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>16</number>
+               </property>
+               <property name="value">
+                <number>8</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
          </layout>
         </item>
         <item>

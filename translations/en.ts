@@ -1593,6 +1593,10 @@
         <translation>Brightness</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.biomeBlendBlocks</source>
+        <translation>Biome Blend (blocks)</translation>
+    </message>
+    <message>
         <source>settingsDialog.map.renderStyle</source>
         <translation>Render Style</translation>
     </message>
