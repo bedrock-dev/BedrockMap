@@ -24,6 +24,7 @@ uniform vec2 uSunStep;         // one ray step towards the sun, in blocks (45 de
 uniform float uShadowDarkness; // colour multiplier where the shadow is fully dark
 uniform float uShadowStrength; // how much of that darkening the shadow applies
 uniform float uShadowReach;    // ray march length, in blocks
+uniform float uShadowStep;     // distance between shadow samples, in blocks
 uniform float uEdgeWidth;      // bevel width, as a fraction of one texel
 uniform float uAoStrength;     // ambient occlusion depth; 0 disables it
 uniform int uAoDirections;     // azimuths marched for the ambient occlusion
@@ -49,7 +50,7 @@ const float EDGE_BRIGHT = 1.18;
 // occlusion gradient is ambientOcclusion()'s job now, so this is kept shallow
 // rather than doing both jobs as it did before.
 const float EDGE_DARK = 0.86;
-const int MAX_SHADOW_STEPS = 256;
+const int MAX_SHADOW_STEPS = 2048;
 // Upper bounds for the ambient occlusion march; the uniforms select how much of it
 // is used, so the cost is adjustable without recompiling.
 const int MAX_AO_DIRECTIONS = 16;
@@ -229,19 +230,16 @@ float aoLodFade() {
     return 1.0;
 }
 
-// A deterministic binary DDA ray through height texels.  The former per-screen-
-// pixel march rounded every sample independently with floor(), so adjacent pixels
-// could visit different cells half way down a ray.  That produced split, grey
-// shadow branches behind one obstacle.  Starting on the current height texel and
-// advancing exactly one height texel per iteration gives the whole texel one stable
-// path and a deliberately hard edge.
+// A high-resolution world-space shadow ray. The height atlas is still sampled
+// with nearest filtering, but the receiver and the ray position stay continuous
+// between atlas texels, so the shadow boundary is not forced onto whole-texel
+// squares. uShadowStep controls the quality/performance trade-off.
 float shadowOcclusion(vec2 world, float topY) {
-    vec2 texel = floor(world / uBlocksPerTexel);
+    float step_blocks = max(uShadowStep, 0.0625);
     for (int i = 1; i <= MAX_SHADOW_STEPS; i++) {
-        float travelled = float(i) * uBlocksPerTexel;
+        float travelled = float(i) * step_blocks;
         if (travelled > uShadowReach) break;
-        vec2 sampleCell = (texel + uSunStep * float(i)) * uBlocksPerTexel;
-        float occluder = heightAt(sampleCell).g;
+        float occluder = heightAt(world + uSunStep * travelled).g;
         // A genuine empty column is transparent to directional light; a later
         // hill can still shadow across it.
         if (occluder <= VOID_HEIGHT) continue;

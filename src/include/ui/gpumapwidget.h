@@ -36,6 +36,8 @@ struct GpuRenderOptions {
 
     bool shadow_enabled{true};
     int shadow_steps{48};
+    // World-space distance between samples of the GPU shadow ray.
+    float shadow_step{0.0625f};
     float shadow_strength{1.0f};
 
     float ao_strength{0.10f};

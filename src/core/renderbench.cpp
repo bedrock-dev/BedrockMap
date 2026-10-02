@@ -1800,6 +1800,7 @@ namespace renderbench {
             // The terrain-only frames draw with no ray march, so the darkness only has
             // to be a value the shadow frames can be measured against.
             shader.setUniformValue("uShadowReach", 0.0f);
+            shader.setUniformValue("uShadowStep", 0.25f);
             shader.setUniformValue("uShadowStrength", 1.0f);
             shader.setUniformValue("uShadowDarkness", 0.7f);
             shader.setUniformValue("uEdgeWidth", 0.3f);

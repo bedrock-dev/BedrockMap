@@ -91,6 +91,7 @@ GpuMapWidget::GpuMapWidget(QWidget* parent, AsyncLevelLoader* loader, MapView* v
     gpu_options_.saturation = std::clamp(setting::current().GPU_SATURATION, 0.0f, 2.0f);
     gpu_options_.brightness = std::clamp(setting::current().GPU_BRIGHTNESS, 0.0f, 2.0f);
     gpu_options_.shadow_strength = std::clamp(setting::current().GPU_SHADOW_STRENGTH, 0.0f, 1.0f);
+    gpu_options_.shadow_step = 2.0f / static_cast<float>(std::clamp(setting::current().GPU_SHADOW_STEP, 4, 32));
     gpu_options_.biome_blend_blocks = std::clamp(setting::current().GPU_BIOME_BLEND_BLOCKS, 0.0f, 16.0f);
     uploads_.clear();
     syncSlots();
@@ -265,6 +266,7 @@ void GpuMapWidget::focusOutEvent(QFocusEvent* event) {
 void GpuMapWidget::setGpuOptions(const GpuRenderOptions& options) {
     gpu_options_ = options;
     gpu_options_.shadow_steps = std::clamp(gpu_options_.shadow_steps, 1, 128);
+    gpu_options_.shadow_step = std::clamp(gpu_options_.shadow_step, 0.0625f, 1.0f);
     gpu_options_.ao_strength = std::clamp(gpu_options_.ao_strength, 0.0f, 1.0f);
     gpu_options_.ao_directions = std::clamp(gpu_options_.ao_directions, 1, 16);
     gpu_options_.ao_steps = std::clamp(gpu_options_.ao_steps, 1, 32);
@@ -597,8 +599,8 @@ void GpuMapWidget::collectVisibleRegions(double px_per_block, const QPointF& wor
 }
 
 int GpuMapWidget::shadowReachBlocks() const {
-    // The shader marches in half-texel steps within a 256-iteration bound, so it
-    // covers this many blocks at every resolution the atlas uses.
+    // The shader's world-space step controls precision; shadow_steps remains the
+    // maximum reach in blocks and the shader's loop bound covers its minimum step.
     return gpu_options_.shadow_enabled && gpu_options_.shadow_strength > 0.0f ? gpu_options_.shadow_steps : 0;
 }
 
@@ -794,6 +796,7 @@ void GpuMapWidget::paintGL() {
         shader_->setUniformValue("uShadowDarkness", 1.0f - std::clamp(setting::current().SHADOW_LEVEL, 0, 255) / 255.0f * 0.75f);
         shader_->setUniformValue("uShadowStrength", gpu_options_.shadow_strength);
         shader_->setUniformValue("uShadowReach", static_cast<float>(shadowReachBlocks()));
+        shader_->setUniformValue("uShadowStep", gpu_options_.shadow_step);
         const double base_edge_width = std::clamp(std::max(0.25, 1.0 / texel_px), 0.25, 0.5);
         shader_->setUniformValue("uEdgeWidth", static_cast<float>(std::clamp(base_edge_width * gpu_options_.bevel_width, 0.0625, 0.75)));
         shader_->setUniformValue("uAoStrength", gpu_options_.ao_strength);

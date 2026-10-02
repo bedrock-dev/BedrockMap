@@ -80,12 +80,14 @@ namespace setting {
         // GPU output brightness.
         float GPU_BRIGHTNESS{1.1f};
         // Blend grass/foliage colours above a height threshold.
-        bool GPU_GRASS_HEIGHT_ENABLED{false};
+        bool GPU_GRASS_HEIGHT_ENABLED{true};
         float GPU_GRASS_HEIGHT_BASE{80.0f};
         QString GPU_GRASS_HEIGHT_COLOR{"#dd2222"};
         float GPU_GRASS_HEIGHT_RANGE{320.0f};
         // GPU terrain shadow strength; composes with SHADOW_LEVEL.
         float GPU_SHADOW_STRENGTH{1.0f};
+        // GPU shadow quality; the shader step is 2.0 / this value.
+        int GPU_SHADOW_STEP{8};
         // Width of the GPU biome tint interpolation area in blocks.
         float GPU_BIOME_BLEND_BLOCKS{8.0f};
         // for cpu

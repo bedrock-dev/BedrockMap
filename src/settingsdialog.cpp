@@ -177,6 +177,18 @@ void SettingsDialog::loadSettings() {
     setGpuSaturation(setting::current().GPU_SATURATION);
     setGpuBrightness(setting::current().GPU_BRIGHTNESS);
     setGpuBiomeBlendBlocks(static_cast<int>(std::lround(setting::current().GPU_BIOME_BLEND_BLOCKS)));
+    {
+        const int shadowPrecisionValues[] = {4, 8, 16, 32};
+        const int shadowPrecision = setting::current().GPU_SHADOW_STEP;
+        int index = 1;
+        for (int i = 0; i < 4; ++i) {
+            if (shadowPrecisionValues[i] == shadowPrecision) {
+                index = i;
+                break;
+            }
+        }
+        ui->gpuShadowPrecisionCombo->setCurrentIndex(index);
+    }
 
     // --- Lang ---
     ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
@@ -336,6 +348,11 @@ void SettingsDialog::onSave() {
     values.GPU_BRIGHTNESS = static_cast<float>(ui->gpuBrightnessSpin->value());
     values.GPU_SHADOW_STRENGTH = static_cast<float>(ui->gpuShadowSpin->value());
     values.GPU_BIOME_BLEND_BLOCKS = static_cast<float>(ui->gpuBiomeBlendSpin->value());
+    {
+        const int shadowPrecisionValues[] = {4, 8, 16, 32};
+        const int index = std::clamp(ui->gpuShadowPrecisionCombo->currentIndex(), 0, 3);
+        values.GPU_SHADOW_STEP = shadowPrecisionValues[index];
+    }
 
     values.LANGUAGE = ui->langCombo->currentIndex() == 1 ? "en" : "zh_CN";
 

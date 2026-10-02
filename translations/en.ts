@@ -1577,6 +1577,10 @@
         <translation>Shadow Strength</translation>
     </message>
     <message>
+        <source>settingsDialog.gpu.shadowPrecision</source>
+        <translation>Shadow Precision</translation>
+    </message>
+    <message>
         <source>settingsDialog.gpu.bevelStrength</source>
         <translation>Bevel Strength</translation>
     </message>
@@ -1647,6 +1651,22 @@
     <message>
         <source>settingsDialog.map.shadowLevel</source>
         <translation>Shadow Level</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>8</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>16</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>32</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
