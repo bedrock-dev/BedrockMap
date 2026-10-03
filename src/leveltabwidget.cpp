@@ -34,6 +34,7 @@ LevelTabWidget::LevelTabWidget(QWidget* parent) : QTabWidget(parent) {
 
     // welcome tab signals — forward to mainwindow-level slots
     // (mainwindow will connect these after construction)
+    connect(welcome_tab_, &WorldListTab::dataManagementRequested, this, &LevelTabWidget::openDataManager);
 }
 
 void LevelTabWidget::openNewLevel(const QString& path) {
@@ -47,6 +48,18 @@ void LevelTabWidget::openNewLevel(const QString& path) {
     this->setCurrentIndex(idx);
     this->level_pages_[page->getTabId()] = page;
     emit currentLevelChanged(page);
+}
+
+bool LevelTabWidget::openDataManager(const QString& path) {
+    auto* page = new DataManagerPageWidget(this);
+    if (!page->loadArchive(path)) {
+        WARN(msg::OPEN_LEVEL_FAILED());
+        delete page;
+        return false;
+    }
+    const int idx = addTab(page, page->getPageName());
+    setCurrentIndex(idx);
+    return true;
 }
 
 bool LevelTabWidget::openMcstructure(const QString& path) {

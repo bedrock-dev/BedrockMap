@@ -253,6 +253,11 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult& result, std::atomic_b
         "map_", [&result, &stop](const auto& key, const auto& value) { result.mapData.append_nbt(key, value); }, stop,
         setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
 
+    LOG_F(INFO, "Loading Global Data(Structures)");
+    storage_.level().foreach_key_with_prefix(
+        "structuretemplate_", [&result, &stop](const auto& key, const auto& value) { result.structuresData.append_nbt(key, value); }, stop,
+        setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
+
     LOG_F(INFO, "Loading Global Data(Player)");
 
     std::string local_player;

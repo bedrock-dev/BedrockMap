@@ -24,6 +24,7 @@ class WorldListItem : public QWidget {
 
    signals:
     void clicked(const std::string& path);
+    void dataManagementRequested(const std::string& path);
 
    protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -59,6 +60,7 @@ class WorldListTab : public QWidget {
 
    signals:
     void openLevelRequested(const QString& path);
+    void dataManagementRequested(const QString& path);
 
    private:
     void setupUI();

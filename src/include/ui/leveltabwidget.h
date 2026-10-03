@@ -8,6 +8,7 @@
 #include <QTableWidget>
 
 #include "guitaskrunner.h"
+#include "datamanagerpagewidget.h"
 #include "levelpagewidget.h"
 #include "mcstructurepagewidget.h"
 #include "renderfilterdialog.h"
@@ -60,6 +61,7 @@ class LevelTabWidget : public QTabWidget {
     LevelTabWidget(QWidget* parent);
 
     void openNewLevel(const QString& path);
+    bool openDataManager(const QString& path);
     bool openMcstructure(const QString& path);
     bool openNbtFile(const QString& path);
     bool openNewNbtFile();

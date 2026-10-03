@@ -153,6 +153,7 @@ class LevelPageWidget : public TabPageWidget {
     NbtWidget* player_editor_;
     NbtWidget* village_editor_;
     NbtWidget* other_nbt_editor_;
+    NbtWidget* structures_editor_;
     MapItemEditor* map_item_editor_;
     // status bar
     LevelStatusBar* status_bar_;

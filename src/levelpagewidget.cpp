@@ -392,20 +392,23 @@ void LevelPageWidget::setupDataWidget() {
     player_editor_ = new NbtWidget(nbtTabWidget_);
     village_editor_ = new NbtWidget(nbtTabWidget_);
     other_nbt_editor_ = new NbtWidget(nbtTabWidget_);
+    structures_editor_ = new NbtWidget(nbtTabWidget_);
     level_dat_editor_->setMode(NbtMode::Memory);
     player_editor_->setMode(NbtMode::Memory);
     village_editor_->setMode(NbtMode::Memory);
     other_nbt_editor_->setMode(NbtMode::Memory);
+    structures_editor_->setMode(NbtMode::Memory);
     map_item_editor_ = new MapItemEditor(nbtTabWidget_);
 
     nbtTabWidget_->addTab(level_dat_editor_, "level.dat");
     nbtTabWidget_->addTab(player_editor_, "players");
     nbtTabWidget_->addTab(village_editor_, "villages");
     nbtTabWidget_->addTab(other_nbt_editor_, "other");
+    nbtTabWidget_->addTab(structures_editor_, "structures");
     nbtTabWidget_->addTab(map_item_editor_, "Map");
     nbtTabWidget_->setTabPosition(QTabWidget::West);
 
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
         connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
         connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
             QWidget* realTab = editor;
@@ -431,7 +434,7 @@ QString LevelPageWidget::getLevelName() {
 }
 
 bool LevelPageWidget::isDirty() const {
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
         if (editor && editor->dirty()) return true;
     }
     return level_loader_->isDirty();
@@ -465,7 +468,7 @@ bool LevelPageWidget::commit() {
     }
 
     std::unordered_map<std::string, std::string> allModifies;
-    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
         if (editor) {
             for (auto& kv : editor->getModifyCache()) {
                 allModifies[kv.first] = kv.second;
@@ -489,6 +492,7 @@ void LevelPageWidget::onCommitFinished() {
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
     other_nbt_editor_->clearModifyCache();
+    structures_editor_->clearModifyCache();
     map_item_editor_->nbtEditor()->clearModifyCache();
     pending_level_dat_.reset();
     pending_global_modifies_.clear();
@@ -654,6 +658,15 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
 
     LOG_F(INFO, "Filling map data (%zu)...", res.mapData.data().size());
     this->map_item_editor_->load_map_data(res.mapData);
+
+    LOG_F(INFO, "Filling structures data (%zu)...", res.structuresData.data().size());
+    std::vector<NBTListItem*> structuresNBTList;
+    for (auto& kv : res.structuresData.data()) {
+        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
+        item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
+        structuresNBTList.push_back(item);
+    }
+    this->structures_editor_->loadNewData(structuresNBTList);
 }
 
 void LevelPageWidget::onLoadGlobalDataFinished() {

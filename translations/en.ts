@@ -257,6 +257,68 @@
     </message>
 </context>
 <context>
+    <name>DataManagerPageWidget</name>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.scanning</source>
+        <translation>Scanning all LevelDB keys...</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.noSelection</source>
+        <translation>Double-click a key to view its value.</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.title</source>
+        <translation>Data Manager</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.titleWithName</source>
+        <translation>Data Manager - %1</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.stats</source>
+        <translation>Scanned %1 database keys, indexed %2 keys</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.failed</source>
+        <translation>Failed to scan LevelDB keys.</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.readFailed</source>
+        <translation>Failed to read key: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.keyInfo</source>
+        <translation>%1 (%2 bytes)</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.exportNbt</source>
+        <translation>Export as NBT</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.nbtFilter</source>
+        <translation>NBT files (*.nbt);;All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.writeFailed</source>
+        <translation>Failed to write file: %1</translation>
+    </message>
+</context>
+<context>
     <name>GoToPositionDialog</name>
     <message>
         <source>goto.title</source>
@@ -1960,6 +2022,11 @@ Arrow keys: Rotate 90 degrees</translation>
         <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.openFolder</source>
         <translation>Open folder location</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.dataManagement</source>
+        <translation>Data Management</translation>
     </message>
 </context>
 <context>

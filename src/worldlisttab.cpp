@@ -185,6 +185,8 @@ void WorldListItem::contextMenuEvent(QContextMenuEvent* event) {
         // Use explorer /select, to open the folder and highlight the world folder
         QDesktopServices::openUrl(QUrl::fromLocalFile(winPath));
     });
+    auto* dataAction = menu.addAction(tr("msg.welcome.dataManagement"));
+    connect(dataAction, &QAction::triggered, this, [this]() { emit dataManagementRequested(info_.path); });
     menu.exec(event->globalPos());
 }
 
@@ -296,6 +298,8 @@ void WorldListTab::rebuildRecentList() {
         recent_list_->setItemWidget(item, w);
 
         connect(w, &WorldListItem::clicked, this, [this](const std::string& p) { emit openLevelRequested(QString::fromStdString(p)); });
+        connect(w, &WorldListItem::dataManagementRequested, this,
+                [this](const std::string& p) { emit dataManagementRequested(QString::fromStdString(p)); });
         ++validCount;
     }
     // rebuild the internal list to skip dead entries
@@ -355,6 +359,8 @@ void WorldListTab::rebuildScannedLists() {
         list->setItemWidget(item, w);
 
         connect(w, &WorldListItem::clicked, this, [this](const std::string& p) { emit openLevelRequested(QString::fromStdString(p)); });
+        connect(w, &WorldListItem::dataManagementRequested, this,
+                [this](const std::string& p) { emit dataManagementRequested(QString::fromStdString(p)); });
     };
 
     for (const auto& level : discovered_levels_) {

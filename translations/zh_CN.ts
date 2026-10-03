@@ -257,6 +257,68 @@
     </message>
 </context>
 <context>
+    <name>DataManagerPageWidget</name>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.scanning</source>
+        <translation>正在扫描所有 LevelDB 键...</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.noSelection</source>
+        <translation>双击具体的键查看其内容。</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.title</source>
+        <translation>存档数据管理</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.titleWithName</source>
+        <translation>数据管理 - %1</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.stats</source>
+        <translation>已扫描 %1 个数据库键，已索引 %2 个键</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.progress.failed</source>
+        <translation>扫描 LevelDB 键失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.readFailed</source>
+        <translation>读取键失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.keyInfo</source>
+        <translation>%1（%2 字节）</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.exportNbt</source>
+        <translation>导出为 NBT</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.nbtFilter</source>
+        <translation>NBT 文件 (*.nbt);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.writeFailed</source>
+        <translation>写入文件失败：%1</translation>
+    </message>
+</context>
+<context>
     <name>GoToPositionDialog</name>
     <message>
         <source>goto.title</source>
@@ -1960,6 +2022,11 @@ M：切换移动模式（拖动控制点平移选区）
         <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.openFolder</source>
         <translation>打开文件夹位置</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.dataManagement</source>
+        <translation>数据管理</translation>
     </message>
 </context>
 <context>

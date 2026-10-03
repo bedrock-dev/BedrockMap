@@ -31,12 +31,14 @@ struct GlobalNBTLoadResult {
     bl::village_data villageData;
     bl::general_kv_nbts playerData;
     bl::general_kv_nbts mapData;
+    bl::general_kv_nbts structuresData;
     bl::general_kv_nbts otherData;
 
     void clear() {
         villageData.clear_data();
         playerData.clear_data();
         mapData.clear_data();
+        structuresData.clear_data();
         otherData.clear_data();
     }
 };
