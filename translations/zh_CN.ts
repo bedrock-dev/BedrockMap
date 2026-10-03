@@ -309,6 +309,11 @@
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.copyKey</source>
+        <translation>复制键名</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
         <source>dataManager.nbtFilter</source>
         <translation>NBT 文件 (*.nbt);;所有文件 (*)</translation>
     </message>

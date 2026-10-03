@@ -41,7 +41,7 @@ class DataKeyModel final : public QAbstractItemModel {
         Kind kind{Kind::Root};
         Node* parent{nullptr};
         std::vector<std::unique_ptr<Node>> children;
-        DataKeyCategory category{DataKeyCategory::Others};
+        DataKeyCategory category{DataKeyCategory::Unknown};
         std::int32_t dimension{0};
         QString group;
         QString label;
@@ -50,6 +50,8 @@ class DataKeyModel final : public QAbstractItemModel {
         std::size_t scan_position{0};
         bool children_loaded{false};
         bool has_more{false};
+        bool chunk_missing_main_key{false};
+        bool value_empty{false};
     };
 
     static constexpr std::size_t PAGE_SIZE = 500;

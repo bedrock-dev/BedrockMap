@@ -16,6 +16,7 @@
 
 class QLabel;
 class QHexView;
+class NbtWidget;
 class QProgressBar;
 class QStackedWidget;
 class QTreeView;
@@ -57,7 +58,9 @@ class DataManagerPageWidget : public TabPageWidget {
     QTreeView* tree_{nullptr};
     DataKeyModel* model_{nullptr};
     QLabel* key_label_{nullptr};
+    QStackedWidget* value_stack_{nullptr};
     QHexView* hex_view_{nullptr};
+    NbtWidget* nbt_view_{nullptr};
 };
 
 #endif  // BEDROCKMAP_DATAMANAGERPAGEWIDGET_H

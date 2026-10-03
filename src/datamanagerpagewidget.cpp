@@ -5,6 +5,8 @@
 #include <QHexView/qhexview.h>
 
 #include <QAbstractItemView>
+#include <QApplication>
+#include <QClipboard>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -22,6 +24,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 
+#include "nbtwidget.h"
 #include <string>
 
 DataManagerPageWidget::DataManagerPageWidget(QWidget* parent) : TabPageWidget(parent) {
@@ -85,13 +88,23 @@ DataManagerPageWidget::DataManagerPageWidget(QWidget* parent) : TabPageWidget(pa
     key_label_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     right_layout->addWidget(key_label_);
 
-    hex_view_ = new QHexView(right);
+    value_stack_ = new QStackedWidget(right);
+
+    hex_view_ = new QHexView(value_stack_);
     QFont font;
     font.setFamilies({"JetBrains Mono", "Microsoft YaHei", "Microsoft YaHei UI"});
     hex_view_->setFont(font);
     hex_view_->setReadOnly(true);
     hex_view_->setDocument(QHexDocument::fromMemory<QMemoryBuffer>(QByteArray(), hex_view_));
-    right_layout->addWidget(hex_view_);
+
+    nbt_view_ = new NbtWidget(value_stack_);
+    nbt_view_->setMode(NbtMode::Memory);
+    nbt_view_->setReadOnly(true);
+
+    value_stack_->addWidget(hex_view_);
+    value_stack_->addWidget(nbt_view_);
+    value_stack_->setCurrentWidget(hex_view_);
+    right_layout->addWidget(value_stack_);
 
     splitter->addWidget(left);
     splitter->addWidget(right);
@@ -159,8 +172,16 @@ void DataManagerPageWidget::onTreeContextMenu(const QPoint& position) {
 
     tree_->setCurrentIndex(index);
     QMenu menu(tree_);
+    QAction* copy_key_action = menu.addAction(tr("dataManager.copyKey"));
+    menu.addSeparator();
     QAction* export_action = menu.addAction(tr("dataManager.exportNbt"));
-    if (menu.exec(tree_->viewport()->mapToGlobal(position)) == export_action) exportEntry(*entry_index);
+    const QAction* selected_action = menu.exec(tree_->viewport()->mapToGlobal(position));
+    if (selected_action == copy_key_action) {
+        const auto& entry = index_.entries()[*entry_index];
+        QApplication::clipboard()->setText(QString::fromUtf8(entry.key.data(), static_cast<int>(entry.key.size())));
+    } else if (selected_action == export_action) {
+        exportEntry(*entry_index);
+    }
 }
 
 void DataManagerPageWidget::exportEntry(std::size_t index) {
@@ -196,12 +217,33 @@ void DataManagerPageWidget::showEntry(std::size_t index) {
     if (!level_->load_raw(entry.key, value)) {
         const QString label = QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
         key_label_->setText(tr("dataManager.readFailed").arg(label));
+        nbt_view_->clearData();
+        value_stack_->setCurrentWidget(hex_view_);
         hex_view_->setDocument(QHexDocument::fromMemory<QMemoryBuffer>(QByteArray(), hex_view_));
         return;
     }
 
     const QString label = QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
     key_label_->setText(tr("dataManager.keyInfo").arg(label).arg(static_cast<qulonglong>(value.size())));
+
+    constexpr std::size_t MAX_NBT_DISPLAY_SIZE = 16u * 1024u * 1024u;
+    if (value.size() <= MAX_NBT_DISPLAY_SIZE) {
+        auto palette = bl::nbt::read_palette_to_end(value.data(), value.size());
+        if (!palette.empty()) {
+            std::vector<NBTListItem*> items;
+            items.reserve(palette.size());
+            for (std::size_t i = 0; i < palette.size(); ++i) {
+                items.push_back(NBTListItem::from(palette[i], QString::number(static_cast<qulonglong>(i)), label));
+            }
+            nbt_view_->loadNewData(items);
+            nbt_view_->openItem(0);
+            value_stack_->setCurrentWidget(nbt_view_);
+            return;
+        }
+    }
+
+    nbt_view_->clearData();
+    value_stack_->setCurrentWidget(hex_view_);
     const QByteArray bytes(value.data(), static_cast<int>(value.size()));
     hex_view_->setDocument(QHexDocument::fromMemory<QMemoryBuffer>(bytes, hex_view_));
 }

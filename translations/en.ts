@@ -309,6 +309,11 @@
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.copyKey</source>
+        <translation>Copy key</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
         <source>dataManager.nbtFilter</source>
         <translation>NBT files (*.nbt);;All files (*)</translation>
     </message>

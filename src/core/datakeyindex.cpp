@@ -10,6 +10,7 @@
 #include "actor.h"
 #include "bedrock_key.h"
 #include "bedrock_level.h"
+#include "global.h"
 
 namespace {
 
@@ -37,7 +38,18 @@ namespace {
         return value.size() >= prefix.size() && value.substr(0, prefix.size()) == prefix;
     }
 
+    [[nodiscard]] std::string chunkGroupId(std::int32_t dimension, std::string_view group) {
+        std::string id = std::to_string(dimension);
+        id.push_back('\0');
+        id.append(group);
+        return id;
+    }
+
 }  // namespace
+
+bool DataKeyIndex::chunkGroupHasMainKey(std::int32_t dimension, const std::string& group) const {
+    return chunk_groups_with_main_keys_.find(chunkGroupId(dimension, group)) != chunk_groups_with_main_keys_.end();
+}
 
 bool DataKeyIndex::load(bl::bedrock_level& level, const std::atomic_bool& stop, ProgressCallback progress) {
     clear();
@@ -81,6 +93,7 @@ bool DataKeyIndex::load(bl::bedrock_level& level, const std::atomic_bool& stop, 
         DataKeyEntry entry;
         entry.key = key;
         entry.label = printableKey(key_view);
+        entry.value_empty = iterator->value().empty();
 
         const auto chunk_key = bl::chunk_key::parse(key_view);
         if (chunk_key.valid()) {
@@ -91,6 +104,10 @@ bool DataKeyIndex::load(bl::bedrock_level& level, const std::atomic_bool& stop, 
             entry.label = bl::chunk_key::chunk_key_to_str(chunk_key.type);
             if (chunk_key.type == bl::chunk_key::SubChunkTerrain) {
                 entry.label += "[" + std::to_string(chunk_key.y_index) + "]";
+            }
+            if (chunk_key.type == bl::chunk_key::LegacyTerrain || chunk_key.type == bl::chunk_key::VersionOld ||
+                chunk_key.type == bl::chunk_key::VersionNew) {
+                chunk_groups_with_main_keys_.insert(chunkGroupId(entry.dimension, entry.group));
             }
         } else {
             const auto village_key = bl::village_key::parse(key);
@@ -108,10 +125,18 @@ bool DataKeyIndex::load(bl::bedrock_level& level, const std::atomic_bool& stop, 
                 entry.category = DataKeyCategory::Digp;
                 const auto digest_key = bl::actor_digest_key::parse(key);
                 entry.label = digest_key.valid() ? "digp " + digest_key.to_string() : printableKey(key_view);
+            } else if (hasPrefix(key_view, "structuretemplate_")) {
+                entry.category = DataKeyCategory::Structures;
+            } else if (hasPrefix(key_view, "RealmsStoriesData_")) {
+                entry.category = DataKeyCategory::RealmsStoriesData;
+            } else if (hasPrefix(key_view, "tickingarea_")) {
+                entry.category = DataKeyCategory::TickingAreas;
             } else if (key == "~local_player" || key_view.find("player") != std::string_view::npos) {
                 entry.category = DataKeyCategory::Players;
             } else if (hasPrefix(key_view, "map")) {
                 entry.category = DataKeyCategory::MapItems;
+            } else if (bl::global_key::is_other_key(key_view)) {
+                entry.category = DataKeyCategory::Others;
             }
         }
 

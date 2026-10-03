@@ -1,5 +1,6 @@
 #include "datakeymodel.h"
 
+#include <QColor>
 #include <QVariant>
 
 #include <array>
@@ -19,14 +20,22 @@ namespace {
                 return QStringLiteral("players");
             case DataKeyCategory::MapItems:
                 return QStringLiteral("map items");
+            case DataKeyCategory::Structures:
+                return QStringLiteral("strcutures");
+            case DataKeyCategory::RealmsStoriesData:
+                return QStringLiteral("RealmsStoriesData");
+            case DataKeyCategory::TickingAreas:
+                return QStringLiteral("tickingareas");
             case DataKeyCategory::Actors:
                 return QStringLiteral("actors");
             case DataKeyCategory::Digp:
                 return QStringLiteral("digp");
             case DataKeyCategory::Others:
                 return QStringLiteral("others");
+            case DataKeyCategory::Unknown:
+                return QStringLiteral("unknown");
         }
-        return QStringLiteral("others");
+        return QStringLiteral("unknown");
     }
 
     [[nodiscard]] bool hasHierarchy(DataKeyCategory category) noexcept {
@@ -50,9 +59,10 @@ void DataKeyModel::resetIndex(const DataKeyIndex* index) {
     index_ = index;
     root_ = std::make_unique<Node>();
 
-    static constexpr std::array<DataKeyCategory, 7> categories = {DataKeyCategory::Chunks, DataKeyCategory::Villages, DataKeyCategory::Players,
-                                                                   DataKeyCategory::MapItems, DataKeyCategory::Actors, DataKeyCategory::Digp,
-                                                                   DataKeyCategory::Others};
+    static constexpr std::array<DataKeyCategory, 11> categories = {
+        DataKeyCategory::Chunks,          DataKeyCategory::Villages,     DataKeyCategory::Players, DataKeyCategory::MapItems,
+        DataKeyCategory::Structures,      DataKeyCategory::RealmsStoriesData, DataKeyCategory::TickingAreas,
+        DataKeyCategory::Actors,          DataKeyCategory::Digp,         DataKeyCategory::Others,  DataKeyCategory::Unknown};
     for (const auto category : categories) {
         auto child = std::make_unique<Node>();
         child->kind = Kind::Category;
@@ -108,6 +118,12 @@ QVariant DataKeyModel::data(const QModelIndex& model_index, int role) const {
     if (!model_index.isValid()) return {};
     const auto* node = nodeForIndex(model_index);
     if (role == Qt::DisplayRole) return model_index.column() == 0 ? node->label : node->value;
+    if (role == Qt::ForegroundRole && model_index.column() == 0 && node->kind == Kind::Group && node->chunk_missing_main_key) {
+        return QColor(Qt::red);
+    }
+    if (role == Qt::ForegroundRole && model_index.column() == 0 && node->kind == Kind::Entry && node->value_empty) {
+        return QColor(Qt::gray);
+    }
     if (role == Qt::TextAlignmentRole && model_index.column() == 1) return static_cast<int>(Qt::AlignRight | Qt::AlignVCenter);
     return {};
 }
@@ -263,6 +279,8 @@ void DataKeyModel::appendPage(Node* node) {
                 child->dimension = node->dimension;
                 child->group = group;
                 child->label = (node->category == DataKeyCategory::Chunks ? QStringLiteral("chunk ") : QStringLiteral("village ")) + group;
+                child->chunk_missing_main_key = node->category == DataKeyCategory::Chunks &&
+                                                !index_->chunkGroupHasMainKey(node->dimension, group.toStdString());
                 pending.push_back(std::move(child));
             } else {
                 auto child = std::make_unique<Node>();
@@ -270,6 +288,7 @@ void DataKeyModel::appendPage(Node* node) {
                 child->entry_index = i;
                 child->label = entryLabel(entries[i]);
                 child->value = entryValueSize(i);
+                child->value_empty = entries[i].value_empty;
                 pending.push_back(std::move(child));
             }
         }

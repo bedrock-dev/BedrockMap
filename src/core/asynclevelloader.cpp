@@ -228,14 +228,13 @@ std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl:
 void AsyncLevelLoader::putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& hm) { cache_manager_.putHeightMap(pos, hm); }
 
 void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult& result, std::atomic_bool& stop) {
-    static const std::vector<std::string> others_keys{"portals",   "scoreboard", "AutonomousEntities", "BiomeData", "Nether",
-                                                      "Overworld", "TheEnd",     "schedulerWT",        "mobevents"};
     std::string value;
     LOG_F(INFO, "Loading Global Data(Others)");
-    for (auto& key : others_keys) {
-        if (storage_.level().load_raw(key, value)) {
+    for (const auto key : bl::global_key::other_keys()) {
+        const std::string key_string(key);
+        if (storage_.level().load_raw(key_string, value)) {
             if (stop) break;
-            result.otherData.append_nbt(key, value);
+            result.otherData.append_nbt(key_string, value);
         }
     }
 
