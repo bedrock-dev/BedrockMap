@@ -52,8 +52,13 @@ bool ChunkEditService::createVoid(const bl::chunk_pos& pos) {
         raw->clear_terrain();
         return putRawChunk(raw.value());
     }
-    // Preserve current behavior until raw chunk creation is supported.
-    return true;
+
+    const auto format = storage_.level().chunk_format();
+    bl::raw_chunk created(pos);
+    created.set_chunk_format(format);
+    const auto marker = bl::is_new_chunk_format(format) ? bl::chunk_key::VersionNew : bl::chunk_key::VersionOld;
+    created.set_normal(marker, std::string(1, static_cast<char>(format)));
+    return putRawChunk(created);
 }
 
 bool ChunkEditService::setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biome) {

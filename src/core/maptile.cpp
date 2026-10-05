@@ -240,7 +240,8 @@ void MapTile::bakeChunkActors(bl::chunk* ch, const MapFilter& filter, ChunkRegio
     auto entities = ch->entities();
     auto mode = setting::current().ACTOR_RENDER_STYLE;
     for (auto& e : entities) {
-        auto key = QString(e->identifier().c_str()).replace("minecraft:", "");
+        const auto identifier = e->identifier();
+        auto key = QString::fromUtf8(identifier.data(), static_cast<qsizetype>(identifier.size())).replace("minecraft:", "");
         if ((filter.actors_list_.count(key.toStdString()) == 0) == filter.actor_black_mode_) {
             if (mode == 0) {
                 region->actors_[ActorImage(key)].push_back(e->pos());

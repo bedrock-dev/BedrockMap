@@ -11,8 +11,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
-#include <QHeaderView>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
@@ -23,9 +23,26 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
+#include <string>
 
 #include "nbtwidget.h"
-#include <string>
+
+namespace {
+
+    [[nodiscard]] QString binaryKeyString(const std::string& key) {
+        static constexpr char HEX[] = "0123456789ABCDEF";
+        QString result;
+        result.reserve(static_cast<int>(key.size() * 3));
+        for (std::size_t i = 0; i < key.size(); ++i) {
+            if (i != 0) result += QLatin1Char(' ');
+            const auto byte = static_cast<unsigned char>(key[i]);
+            result += QChar(HEX[byte >> 4]);
+            result += QChar(HEX[byte & 0x0f]);
+        }
+        return result;
+    }
+
+}  // namespace
 
 DataManagerPageWidget::DataManagerPageWidget(QWidget* parent) : TabPageWidget(parent) {
     auto* root = new QVBoxLayout(this);
@@ -134,7 +151,9 @@ bool DataManagerPageWidget::loadArchive(const QString& path) {
         return index_.load(*level_, stop_scan_, [this](std::uint64_t scannedKeys, std::uint64_t indexedKeys) {
             QMetaObject::invokeMethod(
                 this,
-                [this, scannedKeys, indexedKeys]() { updateProgress(static_cast<qulonglong>(scannedKeys), static_cast<qulonglong>(indexedKeys)); },
+                [this, scannedKeys, indexedKeys]() {
+                    updateProgress(static_cast<qulonglong>(scannedKeys), static_cast<qulonglong>(indexedKeys));
+                },
                 Qt::QueuedConnection);
         });
     });
@@ -172,13 +191,17 @@ void DataManagerPageWidget::onTreeContextMenu(const QPoint& position) {
 
     tree_->setCurrentIndex(index);
     QMenu menu(tree_);
-    QAction* copy_key_action = menu.addAction(tr("dataManager.copyKey"));
+    QAction* copy_readable_action = menu.addAction(tr("dataManager.copyReadableKey"));
+    QAction* copy_binary_action = menu.addAction(tr("dataManager.copyBinaryKey"));
     menu.addSeparator();
     QAction* export_action = menu.addAction(tr("dataManager.exportNbt"));
     const QAction* selected_action = menu.exec(tree_->viewport()->mapToGlobal(position));
-    if (selected_action == copy_key_action) {
+    if (selected_action == copy_readable_action) {
         const auto& entry = index_.entries()[*entry_index];
-        QApplication::clipboard()->setText(QString::fromUtf8(entry.key.data(), static_cast<int>(entry.key.size())));
+        QApplication::clipboard()->setText(QString::fromStdString(index_.labelForEntry(*entry_index)));
+    } else if (selected_action == copy_binary_action) {
+        const auto& entry = index_.entries()[*entry_index];
+        QApplication::clipboard()->setText(binaryKeyString(std::string(index_.keyForEntry(*entry_index))));
     } else if (selected_action == export_action) {
         exportEntry(*entry_index);
     }
@@ -187,25 +210,26 @@ void DataManagerPageWidget::onTreeContextMenu(const QPoint& position) {
 void DataManagerPageWidget::exportEntry(std::size_t index) {
     if (!level_ || index >= index_.entries().size()) return;
     const auto& entry = index_.entries()[index];
+    const std::string key(index_.keyForEntry(index));
     std::string value;
-    if (!level_->load_raw(entry.key, value)) {
-        QMessageBox::warning(this, tr("dataManager.exportNbt"), tr("dataManager.readFailed").arg(
-                                                                         QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()))));
+    if (!level_->load_raw(key, value)) {
+        QMessageBox::warning(this, tr("dataManager.exportNbt"),
+                             tr("dataManager.readFailed").arg(QString::fromStdString(index_.labelForEntry(index))));
         return;
     }
 
-    QString base_name = QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
+    QString base_name = QString::fromStdString(index_.labelForEntry(index));
     for (QChar& character : base_name) {
         if (QStringLiteral("/:*?\\\"<>|").contains(character)) character = QLatin1Char('_');
     }
     if (base_name.isEmpty()) base_name = QStringLiteral("key");
     const QString suggested_name = base_name + QStringLiteral(".nbt");
-    const QString file_name = QFileDialog::getSaveFileName(this, tr("dataManager.exportNbt"), suggested_name,
-                                                           tr("dataManager.nbtFilter"));
+    const QString file_name = QFileDialog::getSaveFileName(this, tr("dataManager.exportNbt"), suggested_name, tr("dataManager.nbtFilter"));
     if (file_name.isEmpty()) return;
 
     QFile file(file_name);
-    if (!file.open(QIODevice::WriteOnly) || file.write(value.data(), static_cast<qint64>(value.size())) != static_cast<qint64>(value.size())) {
+    if (!file.open(QIODevice::WriteOnly) ||
+        file.write(value.data(), static_cast<qint64>(value.size())) != static_cast<qint64>(value.size())) {
         QMessageBox::warning(this, tr("dataManager.exportNbt"), tr("dataManager.writeFailed").arg(file.errorString()));
     }
 }
@@ -213,9 +237,10 @@ void DataManagerPageWidget::exportEntry(std::size_t index) {
 void DataManagerPageWidget::showEntry(std::size_t index) {
     if (!level_ || index >= index_.entries().size()) return;
     const auto& entry = index_.entries()[index];
+    const std::string key(index_.keyForEntry(index));
     std::string value;
-    if (!level_->load_raw(entry.key, value)) {
-        const QString label = QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
+    if (!level_->load_raw(key, value)) {
+        const QString label = QString::fromStdString(index_.labelForEntry(index));
         key_label_->setText(tr("dataManager.readFailed").arg(label));
         nbt_view_->clearData();
         value_stack_->setCurrentWidget(hex_view_);
@@ -223,11 +248,21 @@ void DataManagerPageWidget::showEntry(std::size_t index) {
         return;
     }
 
-    const QString label = QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
+    const QString label = QString::fromStdString(index_.labelForEntry(index));
     key_label_->setText(tr("dataManager.keyInfo").arg(label).arg(static_cast<qulonglong>(value.size())));
 
+    // JigsawStructureBlueprint is intentionally kept opaque until its value
+    // format is implemented; do not guess that it is an NBT payload.
+    if (entry.raw_value) {
+        nbt_view_->clearData();
+        value_stack_->setCurrentWidget(hex_view_);
+        const QByteArray bytes(value.data(), static_cast<int>(value.size()));
+        hex_view_->setDocument(QHexDocument::fromMemory<QMemoryBuffer>(bytes, hex_view_));
+        return;
+    }
+
     constexpr std::size_t MAX_NBT_DISPLAY_SIZE = 16u * 1024u * 1024u;
-    if (value.size() <= MAX_NBT_DISPLAY_SIZE) {
+    if (entry.nbt_value && value.size() <= MAX_NBT_DISPLAY_SIZE) {
         auto palette = bl::nbt::read_palette_to_end(value.data(), value.size());
         if (!palette.empty()) {
             std::vector<NBTListItem*> items;

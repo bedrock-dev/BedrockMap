@@ -309,8 +309,13 @@
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.copyKey</source>
-        <translation>复制键名</translation>
+        <source>dataManager.copyReadableKey</source>
+        <translation>复制可读字符串</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.copyBinaryKey</source>
+        <translation>复制二进制串</translation>
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>

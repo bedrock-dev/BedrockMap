@@ -155,7 +155,9 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
     this->has_chunk_ = true;
     auto ptr = std::make_unique<bl::chunk>(this->raw_chunk_.pos());
     auto* chunk = ptr.get();
-    if (!chunk->load_from_raw_chunk(this->raw_chunk_, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others)) return;
+    if (!chunk->load_from_raw_chunk(this->raw_chunk_,
+                                    bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others | bl::chunk_load_policy::Jigsaw))
+        return;
 
     this->cp_ = chunk->get_pos();
     this->refreshBasicData();
@@ -227,7 +229,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         } else {
             this->actor_stack_->setCurrentIndex(0);
             std::vector<NBTListItem*> actor_items;
-            auto addActorRaw = [&actor_items, &index](const std::string& raw) {
+            auto addActorRaw = [&actor_items, &index](std::string_view raw) {
                 if (raw.empty()) return;
                 auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
                 for (auto* b : palettes) {
@@ -247,7 +249,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
 
     // stats
     {
-        auto shortHash = [](const std::string& data) {
+        auto shortHash = [](std::string_view data) {
             auto hash =
                 QCryptographicHash::hash(QByteArray::fromRawData(data.data(), static_cast<int>(data.size())), QCryptographicHash::Sha256);
             return QString(hash.toHex().left(8));
@@ -256,10 +258,11 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         // one table row per data key: name / size / hash + an export button
         ui->stats_table->setRowCount(0);
         stats_export_rows_.clear();
-        auto addStatRow = [&](const QString& name, const std::string& data) {
+        auto addStatRow = [&](const QString& name, std::string_view data) {
             int row = ui->stats_table->rowCount();
             ui->stats_table->insertRow(row);
-            stats_export_rows_.emplace_back(name, data);
+            std::string data_copy(data);
+            stats_export_rows_.emplace_back(name, data_copy);
             auto* nameItem = new QTableWidgetItem(name);
             nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
             ui->stats_table->setItem(row, 0, nameItem);
@@ -274,7 +277,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             actionsLayout->setSpacing(2);
             auto* viewBtn = new QPushButton(tr("chunkEditor.stats.view"), actions);
             viewBtn->setCursor(Qt::PointingHandCursor);
-            connect(viewBtn, &QPushButton::clicked, this, [this, name, data] {
+            connect(viewBtn, &QPushButton::clicked, this, [this, name, data = std::move(data_copy)] {
                 HexViewerDialog dialog(this);
                 dialog.setWindowTitle(name);
                 dialog.setData(QByteArray::fromRawData(data.data(), static_cast<int>(data.size())));
@@ -290,6 +293,10 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         };
         for (auto& [kt, data] : this->raw_chunk_.get_normal_data()) {
             addStatRow(bl::chunk_key::chunk_key_to_str(kt).c_str(), data);
+        }
+        for (const auto& [identifier_hash, data] : this->raw_chunk_.get_jigsaw_data()) {
+            const auto hashText = QString::number(static_cast<qulonglong>(identifier_hash), 16).rightJustified(16, QLatin1Char('0'));
+            addStatRow(QStringLiteral("JigsawStructureBlueprint[0x%1]").arg(hashText), data);
         }
         for (auto& [y, data] : this->raw_chunk_.get_sub_chunks()) {
             if (data.empty()) continue;

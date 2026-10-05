@@ -408,7 +408,8 @@ void LevelPageWidget::setupDataWidget() {
     nbtTabWidget_->addTab(map_item_editor_, "Map");
     nbtTabWidget_->setTabPosition(QTabWidget::West);
 
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor :
+         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
         connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
         connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
             QWidget* realTab = editor;
@@ -434,7 +435,8 @@ QString LevelPageWidget::getLevelName() {
 }
 
 bool LevelPageWidget::isDirty() const {
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor :
+         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
         if (editor && editor->dirty()) return true;
     }
     return level_loader_->isDirty();

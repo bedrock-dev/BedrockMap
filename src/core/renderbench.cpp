@@ -1668,7 +1668,7 @@ namespace renderbench {
             constexpr int PIX_PER_BLOCK = 12;
             constexpr int PLATEAU0 = 8, PLATEAU1 = 56;  // plateau extent
             constexpr int PIT0 = 30, PIT1 = 34;         // pit carved out of it
-            constexpr unsigned char BASE = 200;          // flat colour, so shading is the only signal
+            constexpr unsigned char BASE = 200;         // flat colour, so shading is the only signal
 
             QOpenGLContext context;
             QSurfaceFormat format;
@@ -1975,8 +1975,8 @@ namespace renderbench {
             // neighbouring block it must match that block's band, and away from the
             // corner it must be gone, or the line runs on over ground with no step.
             // Measured on the AO-off frame, so this is the bevel and nothing else.
-            const double in = 1.5 / PIX_PER_BLOCK;                                         // clear of the corner tip
-            const double tip = 0.4 / PIX_PER_BLOCK;                                        // just inside the corner
+            const double in = 1.5 / PIX_PER_BLOCK;                                      // clear of the corner tip
+            const double tip = 0.4 / PIX_PER_BLOCK;                                     // just inside the corner
             const int bevel_band = sample(no_ao, PLATEAU1 + in, PLATEAU1 - 0.5);        // the band along the wall
             const int bevel_tip = sample(no_ao, PLATEAU1 + tip, PLATEAU1 + tip);        // the corner itself
             const int bevel_far_west = sample(no_ao, PLATEAU1 + tip, PLATEAU1 + 0.95);  // same edge, far end

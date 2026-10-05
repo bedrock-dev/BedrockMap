@@ -2,11 +2,12 @@
 
 #include <QColor>
 #include <QVariant>
-
-#include <array>
 #include <algorithm>
-#include <string>
+#include <array>
 #include <set>
+#include <string>
+
+#include "bedrock_key.h"
 
 namespace {
 
@@ -44,25 +45,28 @@ namespace {
 
     [[nodiscard]] QString dimensionTitle(std::int32_t dimension) { return QStringLiteral("dim %1").arg(dimension); }
 
-    [[nodiscard]] QString entryLabel(const DataKeyEntry& entry) {
-        return QString::fromUtf8(entry.label.data(), static_cast<int>(entry.label.size()));
+    [[nodiscard]] QString groupForEntry(const DataKeyEntry& entry, std::string_view key) {
+        if (entry.category == DataKeyCategory::Chunks || entry.category == DataKeyCategory::Digp) {
+            return QStringLiteral("%1,%2").arg(entry.group_x).arg(entry.group_z);
+        }
+        const auto village = bl::village_key::parse(key);
+        return village.valid() ? QString::fromStdString(village.uuid) : QString();
     }
 
 }  // namespace
 
-DataKeyModel::DataKeyModel(const DataKeyIndex* index, QObject* parent) : QAbstractItemModel(parent), index_(index) {
-    resetIndex(index);
-}
+DataKeyModel::DataKeyModel(const DataKeyIndex* index, QObject* parent) : QAbstractItemModel(parent), index_(index) { resetIndex(index); }
 
 void DataKeyModel::resetIndex(const DataKeyIndex* index) {
     beginResetModel();
     index_ = index;
     root_ = std::make_unique<Node>();
 
-    static constexpr std::array<DataKeyCategory, 11> categories = {
-        DataKeyCategory::Chunks,          DataKeyCategory::Villages,     DataKeyCategory::Players, DataKeyCategory::MapItems,
-        DataKeyCategory::Structures,      DataKeyCategory::RealmsStoriesData, DataKeyCategory::TickingAreas,
-        DataKeyCategory::Actors,          DataKeyCategory::Digp,         DataKeyCategory::Others,  DataKeyCategory::Unknown};
+    static constexpr std::array<DataKeyCategory, 10> categories = {DataKeyCategory::Chunks,       DataKeyCategory::Villages,
+                                                                   DataKeyCategory::Players,      DataKeyCategory::MapItems,
+                                                                   DataKeyCategory::Structures,   DataKeyCategory::RealmsStoriesData,
+                                                                   DataKeyCategory::TickingAreas, DataKeyCategory::Actors,
+                                                                   DataKeyCategory::Others,       DataKeyCategory::Unknown};
     for (const auto category : categories) {
         auto child = std::make_unique<Node>();
         child->kind = Kind::Category;
@@ -121,7 +125,8 @@ QVariant DataKeyModel::data(const QModelIndex& model_index, int role) const {
     if (role == Qt::ForegroundRole && model_index.column() == 0 && node->kind == Kind::Group && node->chunk_missing_main_key) {
         return QColor(Qt::red);
     }
-    if (role == Qt::ForegroundRole && model_index.column() == 0 && node->kind == Kind::Entry && node->value_empty) {
+    if (role == Qt::ForegroundRole && model_index.column() == 0 && node->kind == Kind::Entry && node->category == DataKeyCategory::Digp &&
+        node->value_empty) {
         return QColor(Qt::gray);
     }
     if (role == Qt::TextAlignmentRole && model_index.column() == 1) return static_cast<int>(Qt::AlignRight | Qt::AlignVCenter);
@@ -136,18 +141,26 @@ Qt::ItemFlags DataKeyModel::flags(const QModelIndex& model_index) const {
 bool DataKeyModel::hasChildren(const QModelIndex& parent) const {
     const Node* node = nodeForIndex(parent);
     if (!node) return false;
-    if (node->kind == Kind::Entry || node->kind == Kind::LoadMore) return false;
+    if (node->kind == Kind::LoadMore) return false;
+    if (node->kind == Kind::Entry) {
+        if (node->category != DataKeyCategory::Digp) return false;
+        return node->children_loaded ? !node->children.empty() || node->has_more : nodeHasMore(node);
+    }
     return !node->children.empty() || !node->children_loaded || node->has_more;
 }
 
 bool DataKeyModel::canFetchMore(const QModelIndex& parent) const {
     const Node* node = nodeForIndex(parent);
-    return node && node->kind != Kind::Entry && node->kind != Kind::LoadMore && !node->children_loaded;
+    if (!node || node->kind == Kind::LoadMore) return false;
+    if (node->kind == Kind::Entry) {
+        return node->category == DataKeyCategory::Digp && !node->children_loaded && nodeHasMore(node);
+    }
+    return !node->children_loaded;
 }
 
 void DataKeyModel::fetchMore(const QModelIndex& parent) {
     Node* node = nodeForIndex(parent);
-    if (!node || node->kind == Kind::Entry || node->kind == Kind::LoadMore) return;
+    if (!node || node->kind == Kind::LoadMore) return;
     appendPage(node);
 }
 
@@ -171,7 +184,7 @@ bool DataKeyModel::nodeHasMore(const Node* node) const {
     if (node->kind == Kind::Dimension) {
         for (std::size_t i = node->scan_position; i < entries.size(); ++i) {
             if (!matches(node, entries[i])) continue;
-            const QString group = QString::fromStdString(entries[i].group);
+            const QString group = groupForEntry(entries[i], index_->keyForEntry(i));
             bool exists = false;
             for (const auto& child : node->children) {
                 if (child->kind == Kind::Group && child->group == group) {
@@ -190,15 +203,37 @@ bool DataKeyModel::nodeHasMore(const Node* node) const {
 }
 
 bool DataKeyModel::matches(const Node* node, const DataKeyEntry& entry) const {
-    if (node->kind == Kind::Category) return entry.category == node->category;
-    if (node->kind == Kind::Dimension) return entry.category == node->category && entry.has_dimension && entry.dimension == node->dimension;
+    if (node->kind == Kind::Category) {
+        if (node->category == DataKeyCategory::Actors) return entry.category == node->category && !entry.hasParent();
+        if (node->category == DataKeyCategory::Chunks) {
+            return entry.category == DataKeyCategory::Chunks || entry.category == DataKeyCategory::Digp;
+        }
+        return entry.category == node->category;
+    }
+    if (node->kind == Kind::Dimension) {
+        const bool is_chunk_entry = entry.category == DataKeyCategory::Chunks || entry.category == DataKeyCategory::Digp;
+        return node->category == DataKeyCategory::Chunks
+                   ? is_chunk_entry && entry.has_dimension && entry.dimension == node->dimension
+                   : entry.category == node->category && entry.has_dimension && entry.dimension == node->dimension;
+    }
     if (node->kind == Kind::Group)
-        return entry.category == node->category && entry.has_dimension && entry.dimension == node->dimension &&
-               QString::fromStdString(entry.group) == node->group;
+        if (!entry.has_dimension || entry.dimension != node->dimension) return false;
+    if (node->category == DataKeyCategory::Chunks) {
+        return (entry.category == DataKeyCategory::Chunks || entry.category == DataKeyCategory::Digp) && entry.group_x == node->group_x &&
+               entry.group_z == node->group_z;
+    }
+    const auto entry_index = static_cast<std::size_t>(&entry - index_->entries().data());
+    return entry.category == node->category && groupForEntry(entry, index_->keyForEntry(entry_index)) == node->group;
+    if (node->kind == Kind::Entry && node->category == DataKeyCategory::Digp) {
+        if (!index_ || node->entry_index >= index_->entries().size()) return false;
+        return entry.hasParent() && entry.parent_index == node->entry_index;
+    }
     return false;
 }
 
-QString DataKeyModel::entryLabel(const DataKeyEntry& entry) const { return ::entryLabel(entry); }
+QString DataKeyModel::entryLabel(std::size_t entry_index) const {
+    return index_ ? QString::fromStdString(index_->labelForEntry(entry_index)) : QString();
+}
 
 QString DataKeyModel::entryValueSize(std::size_t entry_index) const {
     // Values are intentionally read only when a page is materialized. The key
@@ -253,12 +288,25 @@ void DataKeyModel::appendPage(Node* node) {
             pending.push_back(std::move(child));
         }
         node->scan_position = entries.size();
+    } else if (node->kind == Kind::Entry && node->category == DataKeyCategory::Digp) {
+        for (std::size_t i = node->scan_position; i < entries.size() && pending.size() < PAGE_SIZE; ++i) {
+            if (!matches(node, entries[i])) continue;
+            node->scan_position = i + 1;
+            auto child = std::make_unique<Node>();
+            child->kind = Kind::Entry;
+            child->category = entries[i].category;
+            child->entry_index = i;
+            child->label = entryLabel(i);
+            child->value = entryValueSize(i);
+            child->value_empty = entries[i].value_empty;
+            pending.push_back(std::move(child));
+        }
     } else {
         for (std::size_t i = node->scan_position; i < entries.size() && pending.size() < PAGE_SIZE; ++i) {
             if (!matches(node, entries[i])) continue;
             node->scan_position = i + 1;
             if (node->kind == Kind::Dimension) {
-                const QString group = QString::fromStdString(entries[i].group);
+                const QString group = groupForEntry(entries[i], index_->keyForEntry(i));
                 bool duplicate = false;
                 for (const auto& child : node->children) {
                     if (child->kind == Kind::Group && child->group == group) {
@@ -278,15 +326,21 @@ void DataKeyModel::appendPage(Node* node) {
                 child->category = node->category;
                 child->dimension = node->dimension;
                 child->group = group;
+                child->scan_position = i;
+                if (node->category == DataKeyCategory::Chunks) {
+                    child->group_x = entries[i].group_x;
+                    child->group_z = entries[i].group_z;
+                }
                 child->label = (node->category == DataKeyCategory::Chunks ? QStringLiteral("chunk ") : QStringLiteral("village ")) + group;
                 child->chunk_missing_main_key = node->category == DataKeyCategory::Chunks &&
-                                                !index_->chunkGroupHasMainKey(node->dimension, group.toStdString());
+                                                !index_->chunkGroupHasMainKey(node->dimension, child->group_x, child->group_z);
                 pending.push_back(std::move(child));
             } else {
                 auto child = std::make_unique<Node>();
                 child->kind = Kind::Entry;
+                child->category = entries[i].category;
                 child->entry_index = i;
-                child->label = entryLabel(entries[i]);
+                child->label = entryLabel(i);
                 child->value = entryValueSize(i);
                 child->value_empty = entries[i].value_empty;
                 pending.push_back(std::move(child));

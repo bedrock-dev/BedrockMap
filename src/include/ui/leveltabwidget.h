@@ -7,8 +7,8 @@
 
 #include <QTableWidget>
 
-#include "guitaskrunner.h"
 #include "datamanagerpagewidget.h"
+#include "guitaskrunner.h"
 #include "levelpagewidget.h"
 #include "mcstructurepagewidget.h"
 #include "renderfilterdialog.h"

@@ -4,7 +4,6 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QString>
-
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -33,7 +32,7 @@ class DataManagerPageWidget : public TabPageWidget {
     bool loadArchive(const QString& path);
     [[nodiscard]] QString getPageName() const;
 
-    private slots:
+   private slots:
     void onScanFinished();
     void onTreeItemDoubleClicked(const QModelIndex& index);
     void onTreeContextMenu(const QPoint& position);

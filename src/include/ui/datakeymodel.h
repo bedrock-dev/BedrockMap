@@ -3,7 +3,6 @@
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
-
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -43,6 +42,8 @@ class DataKeyModel final : public QAbstractItemModel {
         std::vector<std::unique_ptr<Node>> children;
         DataKeyCategory category{DataKeyCategory::Unknown};
         std::int32_t dimension{0};
+        std::int32_t group_x{0};
+        std::int32_t group_z{0};
         QString group;
         QString label;
         QString value;
@@ -63,7 +64,7 @@ class DataKeyModel final : public QAbstractItemModel {
     void appendLoadMore(Node* node);
     void removeLoadMore(Node* node);
     void appendChild(Node* parent, std::unique_ptr<Node> child);
-    [[nodiscard]] QString entryLabel(const DataKeyEntry& entry) const;
+    [[nodiscard]] QString entryLabel(std::size_t entry_index) const;
     [[nodiscard]] QString entryValueSize(std::size_t entry_index) const;
     [[nodiscard]] bool matches(const Node* node, const DataKeyEntry& entry) const;
 

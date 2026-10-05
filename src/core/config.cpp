@@ -181,7 +181,10 @@ void setting::load() {
     loaded.GPU_GRASS_HEIGHT_RANGE = std::clamp(s.value("gpu_grass_height_range", loaded.GPU_GRASS_HEIGHT_RANGE).toFloat(), 1.0f, 4096.0f);
     loaded.GPU_SHADOW_STRENGTH = std::clamp(s.value("gpu_shadow_strength", loaded.GPU_SHADOW_STRENGTH).toFloat(), 0.0f, 1.0f);
     const int requested_gpu_shadow_step = std::clamp(s.value("gpu_shadow_step", loaded.GPU_SHADOW_STEP).toInt(), 4, 32);
-    loaded.GPU_SHADOW_STEP = requested_gpu_shadow_step <= 4 ? 4 : requested_gpu_shadow_step <= 8 ? 8 : requested_gpu_shadow_step <= 16 ? 16 : 32;
+    loaded.GPU_SHADOW_STEP = requested_gpu_shadow_step <= 4    ? 4
+                             : requested_gpu_shadow_step <= 8  ? 8
+                             : requested_gpu_shadow_step <= 16 ? 16
+                                                               : 32;
     loaded.GPU_BIOME_BLEND_BLOCKS = std::clamp(s.value("gpu_biome_blend_blocks", loaded.GPU_BIOME_BLEND_BLOCKS).toFloat(), 0.0f, 16.0f);
     loaded.TILE_RENDER_SCALE = std::clamp(s.value("tile_render_scale", loaded.TILE_RENDER_SCALE).toInt(), 1, 16);
     loaded.SHADOW_PCF_RADIUS = std::clamp(s.value("shadow_pcf_radius", loaded.SHADOW_PCF_RADIUS).toInt(), 0, 8);

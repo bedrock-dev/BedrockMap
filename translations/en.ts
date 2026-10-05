@@ -309,8 +309,13 @@
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.copyKey</source>
-        <translation>Copy key</translation>
+        <source>dataManager.copyReadableKey</source>
+        <translation>Copy readable string</translation>
+    </message>
+    <message>
+        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <source>dataManager.copyBinaryKey</source>
+        <translation>Copy binary string</translation>
     </message>
     <message>
         <location filename="../src/datamanagerpagewidget.cpp"/>

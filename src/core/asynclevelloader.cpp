@@ -12,6 +12,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "bedrock_key.h"
@@ -212,7 +213,8 @@ std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl:
             b3d.set_chunk_pos(pos);
             bool ok = (kt == bl::chunk_key::Data3D) ? b3d.load_from_d3d(raw.data(), raw.size()) : b3d.load_from_d2d(raw.data(), raw.size());
             if (ok) {
-                auto hm = b3d.height_map();
+                std::array<int16_t, 256> hm{};
+                std::copy(b3d.height_map().begin(), b3d.height_map().end(), hm.begin());
                 // Data3D heights are relative to the dimension's minimum Y; preserve -128 as void.
                 const int miny = kt == bl::chunk_key::Data3D ? bl::dimension_min_y(pos.dim) : 0;
                 for (auto& h : hm)
@@ -265,7 +267,7 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult& result, std::atomic_b
     }
     storage_.level().foreach_key_with_prefix(
         "player_",
-        [&result, &stop](const std::string& key, const std::string& value) {
+        [&result, &stop](std::string_view key, std::string_view value) {
             // 43:key with player_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
             // 50:key with player_server_20f2a225-0aaa-3c7d-9e2d-c57b7ec01be5
             if (key.size() != 43 && key.size() != 50) return;
