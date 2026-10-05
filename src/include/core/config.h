@@ -70,7 +70,7 @@ namespace setting {
         // Use the GPU renderer's orthographic heightfield camera.
         bool GPU_ORTHOGRAPHIC_VIEW{false};
         // GPU ambient occlusion strength.
-        float GPU_AO_STRENGTH{0.22f};
+        float GPU_AO_STRENGTH{0.15f};
         // GPU bevel depth.
         float GPU_BEVEL_STRENGTH{1.0f};
         // GPU bevel width multiplier.
@@ -85,7 +85,7 @@ namespace setting {
         QString GPU_GRASS_HEIGHT_COLOR{"#dd2222"};
         float GPU_GRASS_HEIGHT_RANGE{320.0f};
         // GPU terrain shadow strength; composes with SHADOW_LEVEL.
-        float GPU_SHADOW_STRENGTH{1.0f};
+        float GPU_SHADOW_STRENGTH{0.7f};
         // GPU shadow quality; the shader step is 2.0 / this value.
         int GPU_SHADOW_STEP{8};
         // Width of the GPU biome tint interpolation area in blocks.
