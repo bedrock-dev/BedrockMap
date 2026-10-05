@@ -307,7 +307,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
         }
         for (auto& [key, data] : this->raw_chunk_.get_entities()) {
             if (key.size() != 8) {
-                LOG_F(WARNING, "Entity uid size is %zu, expected 8, skipping", key.size());
+                LOG_F(WARNING, "Entity uid size is %llu, expected 8, skipping", static_cast<unsigned long long>(key.size()));
                 continue;
             }
             QString hexKey = QString::fromLatin1(QByteArray::fromRawData(key.data(), 8).toHex());

@@ -747,18 +747,18 @@ void NbtWidget::putModifyToCache(const std::string& key, const std::string& valu
     if (value.empty()) {
         LOG_F(INFO, "Delete key: %s", key.c_str());
     } else {
-        LOG_F(INFO, "Modify key: %s -> Data[%zu]", key.c_str(), value.size());
+        LOG_F(INFO, "Modify key: %s -> Data[%llu]", key.c_str(), static_cast<unsigned long long>(value.size()));
     }
     emit nbtModified();
 }
 
 void NbtWidget::on_print_cache_btn_clicked() {
-    LOG_F(INFO, "Total %zu items in the modify cache:", this->modified_cache_.size());
+    LOG_F(INFO, "Total %llu items in the modify cache:", static_cast<unsigned long long>(this->modified_cache_.size()));
     for (auto& [fst, snd] : this->modified_cache_) {
         if (snd.empty()) {
             LOG_F(INFO, " - Delete key: %s", fst.c_str());
         } else {
-            LOG_F(INFO, " - Modify key: %s -> Data[%zu]", fst.c_str(), snd.size());
+            LOG_F(INFO, " - Modify key: %s -> Data[%llu]", fst.c_str(), static_cast<unsigned long long>(snd.size()));
         }
     }
 }

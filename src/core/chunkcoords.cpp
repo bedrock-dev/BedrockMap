@@ -146,7 +146,7 @@ bool ChunkCoordsIndex::load(bl::bedrock_level& level, const std::atomic_bool& st
     const double images_ms = elapsed_ms(images_start);
 
     for (const auto& [dim, count] : dimensionCounts()) {
-        LOG_F(INFO, "Preloaded chunk coordinates: dimension %d, %zu chunks", dim, count);
+        LOG_F(INFO, "Preloaded chunk coordinates: dimension %d, %llu chunks", dim, static_cast<unsigned long long>(count));
     }
     const auto finish_start = std::chrono::steady_clock::now();
     finishScan();

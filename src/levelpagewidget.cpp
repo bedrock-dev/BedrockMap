@@ -617,7 +617,7 @@ void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_tab
 }
 
 void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
-    LOG_F(INFO, "Filling player data (%zu)...", res.playerData.data().size());
+    LOG_F(INFO, "Filling player data (%llu)...", static_cast<unsigned long long>(res.playerData.data().size()));
     auto& playerData = res.playerData.data();
     std::vector<NBTListItem*> playerNBTList;
     for (auto& kv : playerData) {
@@ -627,7 +627,7 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     }
     this->player_editor_->loadNewData(playerNBTList);
 
-    LOG_F(INFO, "Filling other data (%zu)...", res.otherData.data().size());
+    LOG_F(INFO, "Filling other data (%llu)...", static_cast<unsigned long long>(res.otherData.data().size()));
     auto& otherData = res.otherData.data();
     std::vector<NBTListItem*> otherNBTList;
     for (auto& kv : otherData) {
@@ -637,7 +637,7 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     }
     this->other_nbt_editor_->loadNewData(otherNBTList);
 
-    LOG_F(INFO, "Filling village data (%zu)...", res.villageData.data().size());
+    LOG_F(INFO, "Filling village data (%llu)...", static_cast<unsigned long long>(res.villageData.data().size()));
     auto& villData = res.villageData.data();
     this->collectVillagesGuiData(villData);
     map_host_->setVillages(this->villages_);
@@ -658,10 +658,10 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     }
     this->village_editor_->loadNewData(villNBTList);
 
-    LOG_F(INFO, "Filling map data (%zu)...", res.mapData.data().size());
+    LOG_F(INFO, "Filling map data (%llu)...", static_cast<unsigned long long>(res.mapData.data().size()));
     this->map_item_editor_->load_map_data(res.mapData);
 
-    LOG_F(INFO, "Filling structures data (%zu)...", res.structuresData.data().size());
+    LOG_F(INFO, "Filling structures data (%llu)...", static_cast<unsigned long long>(res.structuresData.data().size()));
     std::vector<NBTListItem*> structuresNBTList;
     for (auto& kv : res.structuresData.data()) {
         auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());

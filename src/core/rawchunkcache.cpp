@@ -47,7 +47,7 @@ void RawChunkCache::putMissing(bl::bedrock_level& level, const bl::chunk_pos& po
 }
 
 void RawChunkCache::commit(leveldb::WriteBatch& batch) {
-    LOG_F(INFO, "Cache size is %zu", cache_.size());
+    LOG_F(INFO, "Cache size is %llu", static_cast<unsigned long long>(cache_.size()));
     for (auto& [pos, entry] : cache_) {
         entry.chunk.write(batch, entry.shouldDelete);
     }

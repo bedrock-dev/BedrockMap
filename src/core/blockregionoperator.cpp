@@ -260,7 +260,7 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
 
     if (edited.empty()) return false;
     loader.invalidateRegionTiles(edited);
-    LOG_F(INFO, "BlockRegionOperator: imported mcstructure (%d x %d x %d) at (%d, %d, %d) into %zu chunks", size.x, size.y, size.z,
-          position.x, position.y, position.z, edited.size());
+    LOG_F(INFO, "BlockRegionOperator: imported mcstructure (%d x %d x %d) at (%d, %d, %d) into %llu chunks", size.x, size.y, size.z,
+          position.x, position.y, position.z, static_cast<unsigned long long>(edited.size()));
     return true;
 }

@@ -1107,7 +1107,8 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
             }
         }
     }
-    LOG_F(INFO, "Voxel Size: %zu (Y) * %zu (X) * %zu (Z)", data.size(), data[0].size(), data[0][0].size());
+    LOG_F(INFO, "Voxel Size: %llu (Y) * %llu (X) * %llu (Z)", static_cast<unsigned long long>(data.size()),
+          static_cast<unsigned long long>(data[0].size()), static_cast<unsigned long long>(data[0][0].size()));
 
     int n = 0;
     for (int xIdx = 0; xIdx < width; ++xIdx) {
@@ -1181,6 +1182,7 @@ std::vector<std::vector<std::vector<Voxel>>> VoxelWidget::createVoxelDataFromChu
     if (firstWorldY) *firstWorldY = world_min_y + static_cast<int>(std::distance(data.cbegin(), firstIt));
 
     std::vector<std::vector<std::vector<Voxel>>> ret(firstIt, lastIt);
-    LOG_F(INFO, "Real Voxel Size: %zu (Y) * %zu (X) * %zu (Z)", ret.size(), ret[0].size(), ret[0][0].size());
+    LOG_F(INFO, "Real Voxel Size: %llu (Y) * %llu (X) * %llu (Z)", static_cast<unsigned long long>(ret.size()),
+          static_cast<unsigned long long>(ret[0].size()), static_cast<unsigned long long>(ret[0][0].size()));
     return ret;
 }
