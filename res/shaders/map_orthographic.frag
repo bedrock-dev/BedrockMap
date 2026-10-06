@@ -68,7 +68,9 @@ vec3 paletteTint(float biome_id, int row) {
 
 vec3 interpolatedBiomeTint(vec2 world, int row, float fallback_biome) {
     float span = max(uBiomeBlendBlocks, uBlocksPerTexel);
-    vec2 cell = floor(world / span) * span;
+    // Keep the blend grid centred on the actual boundary instead of placing
+    // its sample points at the north-west corner of each blend cell.
+    vec2 cell = floor((world + 0.5 * span) / span) * span - 0.5 * span;
     vec2 local = (world - cell) / span;
     vec2 east = cell + vec2(span, 0.0);
     vec2 south = cell + vec2(0.0, span);

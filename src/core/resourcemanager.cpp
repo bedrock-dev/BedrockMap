@@ -95,7 +95,7 @@ namespace {
 }  // namespace
 
 void initResources() {
-    QDirIterator it(":/res/entity", QDirIterator::Subdirectories);
+    QDirIterator it(":/res/icons/entity", QDirIterator::Subdirectories);
     while (it.hasNext()) {
         auto img = QImage(it.next());
         auto key = it.fileName().replace(".png", "");
@@ -106,26 +106,26 @@ void initResources() {
         }
     }
 
-    village_dwellers_nbt = scale2(QImage(":/res/village/dwellers.png"));
-    village_players_nbt = scale2(QImage(":/res/village/players.png"));
-    village_info_nbt = scale2(QImage(":/res/village/info.png"));
-    village_poi_nbt = scale2(QImage(":/res/village/poi.png"));
+    village_dwellers_nbt = scale2(QImage(":/res/icons/village/dwellers.png"));
+    village_players_nbt = scale2(QImage(":/res/icons/village/players.png"));
+    village_info_nbt = scale2(QImage(":/res/icons/village/info.png"));
+    village_poi_nbt = scale2(QImage(":/res/icons/village/poi.png"));
     // Keep portal markers at the same native size as entity markers and use the
     // same configurable outline treatment.
-    portal_img = addBorder(QImage(":/res/portal/portal.png"), setting::current().ACTOR_BORDER_WIDTH);
-    player_nbt = scale2(QImage(":/res/village/players.png"));
-    other_nbt = scale2(QImage(":/res/village/info.png"));
+    portal_img = addBorder(QImage(":/res/icons/portal/portal.png"), setting::current().ACTOR_BORDER_WIDTH);
+    player_nbt = scale2(QImage(":/res/icons/village/players.png"));
+    other_nbt = scale2(QImage(":/res/icons/village/info.png"));
 
-    unknown_img = new QImage(":/res/what.png");
+    unknown_img = new QImage(":/res/icons/what.png");
 
-    QDirIterator it2(":/res/block_actor", QDirIterator::Subdirectories);
+    QDirIterator it2(":/res/icons/block_actor", QDirIterator::Subdirectories);
     while (it2.hasNext()) {
         auto img = QImage(it2.next());
         auto key = it2.fileName().replace(".png", "");
         block_actor_icon_pool[key] = scale2(img);
     }
 
-    QDirIterator it3(":/res/nbt/", QDirIterator::Subdirectories);
+    QDirIterator it3(":/res/icons/nbt/", QDirIterator::Subdirectories);
     while (it3.hasNext()) {
         auto img = QImage(it3.next());
         auto key = it3.fileName().replace(".png", "").replace("TAG_", "");

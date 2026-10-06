@@ -12,16 +12,16 @@
 #include <QLayout>
 #include <QMessageBox>
 #include <QSpacerItem>
-#include <QStackedWidget>
 #include <QSplitter>
+#include <QStackedWidget>
 #include <QToolButton>
 #include <functional>
 #include <memory>
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
-#include "color.h"
 #include "chunkeditorwidget.h"
+#include "color.h"
 #include "cpumapwidget.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
@@ -104,7 +104,7 @@ void StructureEditorWidget::loadStructureData(const bl::general_kv_nbts& data) {
     this->nbt_editor_->loadNewData(items);
     this->preview_stack_->setCurrentWidget(this->preview_status_);
     this->preview_status_->setText(items.empty() ? tr("levelPageWidget.structurePreview.noData")
-                                                  : tr("levelPageWidget.structurePreview.selectStructure"));
+                                                 : tr("levelPageWidget.structurePreview.selectStructure"));
     if (!items.empty()) this->nbt_editor_->openItem(0);
 }
 
@@ -510,8 +510,8 @@ void LevelPageWidget::setupDataWidget() {
     nbtTabWidget_->addTab(map_item_editor_, "Map");
     nbtTabWidget_->setTabPosition(QTabWidget::West);
 
-    for (auto* editor :
-         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(),
+                         map_item_editor_->nbtEditor()}) {
         connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
         connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
             QWidget* realTab = editor;
@@ -537,8 +537,8 @@ QString LevelPageWidget::getLevelName() {
 }
 
 bool LevelPageWidget::isDirty() const {
-    for (auto* editor :
-        {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(),
+                         map_item_editor_->nbtEditor()}) {
         if (editor && editor->dirty()) return true;
     }
     return level_loader_->isDirty();
@@ -572,7 +572,8 @@ bool LevelPageWidget::commit() {
     }
 
     std::unordered_map<std::string, std::string> allModifies;
-    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
+    for (auto* editor :
+         {player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
         if (editor) {
             for (auto& kv : editor->getModifyCache()) {
                 allModifies[kv.first] = kv.second;

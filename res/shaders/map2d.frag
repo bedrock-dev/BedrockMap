@@ -84,7 +84,10 @@ vec3 paletteTint(float biome_id, int row) {
 // the IDs themselves. Neighbours without terrain use the shaded texel's biome.
 vec3 interpolatedBiomeTint(vec2 world, int row, float fallback_biome) {
     float span = max(uBiomeBlendBlocks, uBlocksPerTexel);
-    vec2 cell = floor(world / span) * span;
+    // Sample at the centres of the blend cells. Sampling at the cell's
+    // north-west corner makes a boundary on a cell edge blend in the previous
+    // cell, shifting the blend midpoint by half a span towards the north-west.
+    vec2 cell = floor((world + 0.5 * span) / span) * span - 0.5 * span;
     vec2 local = (world - cell) / span;
     vec2 east = cell + vec2(span, 0.0);
     vec2 south = cell + vec2(0.0, span);
