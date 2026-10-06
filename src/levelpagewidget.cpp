@@ -12,6 +12,7 @@
 #include <QLayout>
 #include <QMessageBox>
 #include <QSpacerItem>
+#include <QStackedWidget>
 #include <QSplitter>
 #include <QToolButton>
 #include <functional>
@@ -19,16 +20,118 @@
 
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
+#include "color.h"
 #include "chunkeditorwidget.h"
 #include "cpumapwidget.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
 #include "magic-enum/magic_enum.hpp"
 #include "mapitemeditor.h"
+#include "mcstructure.h"
 #include "msg.h"
 #include "pleasewaitdialog.h"
 #include "resourcemanager.h"
 #include "utils.h"
+#include "voxelwidget.h"
+
+namespace {
+    VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
+        const int sx = structure.size_x();
+        const int sy = structure.size_y();
+        const int sz = structure.size_z();
+
+        VoxelGrid data(sy, std::vector<std::vector<Voxel>>(sx, std::vector<Voxel>(sz, Voxel(QColor(255, 255, 255, 0), true))));
+        if (sx <= 0 || sy <= 0 || sz <= 0 || structure.palette_size() == 0) return data;
+
+        for (int x = 0; x < sx; ++x) {
+            for (int y = 0; y < sy; ++y) {
+                for (int z = 0; z < sz; ++z) {
+                    const auto* block = structure.block_at(x, y, z);
+                    if (!block || block->name == "minecraft:air" || block->name == "minecraft:unknown") continue;
+
+                    const auto baseColor = bl::get_block_by_name_tag(block->name);
+                    // mcstructure files do not carry biome data; use plains as a stable preview biome.
+                    const auto color = bl::blend_color_with_biome(block->name, baseColor, bl::biome::plains);
+                    data[y][x][z] = Voxel(QColor(color.r, color.g, color.b, color.a), color.a < 255);
+                }
+            }
+        }
+        return data;
+    }
+}  // namespace
+
+StructureEditorWidget::StructureEditorWidget(QWidget* parent) : QWidget(parent) {
+    auto* splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->setChildrenCollapsible(false);
+
+    this->nbt_editor_ = new NbtWidget(splitter);
+    this->nbt_editor_->setMode(NbtMode::Memory);
+    this->nbt_editor_->setReadOnly(true);
+
+    this->preview_stack_ = new QStackedWidget(splitter);
+    this->preview_status_ = new QLabel(this->preview_stack_);
+    this->preview_status_->setAlignment(Qt::AlignCenter);
+    this->preview_status_->setWordWrap(true);
+    this->preview_status_->setText(tr("levelPageWidget.structurePreview.noData"));
+    this->voxel_widget_ = new VoxelWidget(this->preview_stack_);
+    this->voxel_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->preview_stack_->addWidget(this->preview_status_);
+    this->preview_stack_->addWidget(this->voxel_widget_);
+    this->preview_stack_->setCurrentWidget(this->preview_status_);
+
+    splitter->addWidget(this->nbt_editor_);
+    splitter->addWidget(this->preview_stack_);
+    // Give the NBT editor a little more room than the 3D preview by default.
+    splitter->setStretchFactor(0, 3);
+    splitter->setStretchFactor(1, 2);
+
+    auto* layout = new QHBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(splitter);
+
+    connect(this->nbt_editor_, &NbtWidget::itemOpened, this, &StructureEditorWidget::onItemOpened);
+}
+
+void StructureEditorWidget::loadStructureData(const bl::general_kv_nbts& data) {
+    std::vector<NBTListItem*> items;
+    items.reserve(data.data().size());
+    for (const auto& kv : data.data()) {
+        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
+        item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
+        items.push_back(item);
+    }
+
+    this->nbt_editor_->loadNewData(items);
+    this->preview_stack_->setCurrentWidget(this->preview_status_);
+    this->preview_status_->setText(items.empty() ? tr("levelPageWidget.structurePreview.noData")
+                                                  : tr("levelPageWidget.structurePreview.selectStructure"));
+    if (!items.empty()) this->nbt_editor_->openItem(0);
+}
+
+void StructureEditorWidget::clearData() {
+    this->nbt_editor_->clearData();
+    this->preview_stack_->setCurrentWidget(this->preview_status_);
+    this->preview_status_->setText(tr("levelPageWidget.structurePreview.noData"));
+}
+
+void StructureEditorWidget::onItemOpened(NBTListItem* item) {
+    if (!item || !item->root_) {
+        this->preview_stack_->setCurrentWidget(this->preview_status_);
+        this->preview_status_->setText(tr("levelPageWidget.structurePreview.invalid"));
+        return;
+    }
+
+    const auto raw = item->root_->to_raw();
+    const auto structure = bl::parse_mcstructure(reinterpret_cast<const byte_t*>(raw.data()), raw.size());
+    if (structure.size_x() <= 0 || structure.size_y() <= 0 || structure.size_z() <= 0) {
+        this->preview_stack_->setCurrentWidget(this->preview_status_);
+        this->preview_status_->setText(tr("levelPageWidget.structurePreview.invalid"));
+        return;
+    }
+
+    this->preview_stack_->setCurrentWidget(this->voxel_widget_);
+    this->voxel_widget_->updateVoxelData(buildVoxelDataFromMcstructure(structure));
+}
 
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget* parent) : QWidget(parent) {
@@ -392,12 +495,11 @@ void LevelPageWidget::setupDataWidget() {
     player_editor_ = new NbtWidget(nbtTabWidget_);
     village_editor_ = new NbtWidget(nbtTabWidget_);
     other_nbt_editor_ = new NbtWidget(nbtTabWidget_);
-    structures_editor_ = new NbtWidget(nbtTabWidget_);
+    structures_editor_ = new StructureEditorWidget(nbtTabWidget_);
     level_dat_editor_->setMode(NbtMode::Memory);
     player_editor_->setMode(NbtMode::Memory);
     village_editor_->setMode(NbtMode::Memory);
     other_nbt_editor_->setMode(NbtMode::Memory);
-    structures_editor_->setMode(NbtMode::Memory);
     map_item_editor_ = new MapItemEditor(nbtTabWidget_);
 
     nbtTabWidget_->addTab(level_dat_editor_, "level.dat");
@@ -409,7 +511,7 @@ void LevelPageWidget::setupDataWidget() {
     nbtTabWidget_->setTabPosition(QTabWidget::West);
 
     for (auto* editor :
-         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
+         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
         connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
         connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
             QWidget* realTab = editor;
@@ -436,7 +538,7 @@ QString LevelPageWidget::getLevelName() {
 
 bool LevelPageWidget::isDirty() const {
     for (auto* editor :
-         {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
+        {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
         if (editor && editor->dirty()) return true;
     }
     return level_loader_->isDirty();
@@ -470,7 +572,7 @@ bool LevelPageWidget::commit() {
     }
 
     std::unordered_map<std::string, std::string> allModifies;
-    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, structures_editor_, map_item_editor_->nbtEditor()}) {
+    for (auto* editor : {player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
         if (editor) {
             for (auto& kv : editor->getModifyCache()) {
                 allModifies[kv.first] = kv.second;
@@ -494,7 +596,7 @@ void LevelPageWidget::onCommitFinished() {
     player_editor_->clearModifyCache();
     village_editor_->clearModifyCache();
     other_nbt_editor_->clearModifyCache();
-    structures_editor_->clearModifyCache();
+    structures_editor_->nbtEditor()->clearModifyCache();
     map_item_editor_->nbtEditor()->clearModifyCache();
     pending_level_dat_.reset();
     pending_global_modifies_.clear();
@@ -662,13 +764,7 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     this->map_item_editor_->load_map_data(res.mapData);
 
     LOG_F(INFO, "Filling structures data (%llu)...", static_cast<unsigned long long>(res.structuresData.data().size()));
-    std::vector<NBTListItem*> structuresNBTList;
-    for (auto& kv : res.structuresData.data()) {
-        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
-        item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
-        structuresNBTList.push_back(item);
-    }
-    this->structures_editor_->loadNewData(structuresNBTList);
+    this->structures_editor_->loadStructureData(res.structuresData);
 }
 
 void LevelPageWidget::onLoadGlobalDataFinished() {

@@ -1743,6 +1743,27 @@
     </message>
 </context>
 <context>
+    <name>StructureEditorWidget</name>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.noData</source>
+        <translation>没有结构数据</translation>
+    </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.selectStructure</source>
+        <translation>请选择要预览的结构</translation>
+    </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.invalid</source>
+        <translation>所选数据不是有效的 mcstructure</translation>
+    </message>
+</context>
+<context>
     <name>UpdateChecker</name>
     <message>
         <location filename="../src/core/updatechecker.cpp"/>

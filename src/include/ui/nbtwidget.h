@@ -173,6 +173,9 @@ class NbtWidget : public QWidget {
 
    signals:
     void nbtModified();
+    /// Emitted when an item is opened in the NBT list/tree.
+    /// The item remains owned by NbtWidget and must not be deleted by receivers.
+    void itemOpened(NBTListItem* item);
     /// Emitted after saveToFile() has written the data back to disk.
     void dataSaved();
 

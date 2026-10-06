@@ -214,6 +214,7 @@ bool NbtWidget::openItem(int index) {
     LOG_F(INFO, "Open NBT item : [%s]", item->raw_key.toStdString().c_str());
     this->openNBTItem(item->root_);
     this->refreshLabel();
+    emit itemOpened(item);
     return true;
 }
 
@@ -239,6 +240,7 @@ void NbtWidget::on_list_widget_itemDoubleClicked(QListWidgetItem* item) {
           nbtItem->getLabel().toStdString().c_str());
     this->openNBTItem(nbtItem->root_);
     this->refreshLabel();
+    emit itemOpened(nbtItem);
 }
 
 void NbtWidget::applyToolbarVisibility() {

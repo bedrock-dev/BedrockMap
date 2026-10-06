@@ -45,6 +45,32 @@ class LevelStatusBar : public QWidget {
     QLabel* modify_info_;
 };
 class LevelTabWidget;
+class QStackedWidget;
+class VoxelWidget;
+
+/// Read-only global structure viewer: NBT on the left and a voxel preview on
+/// the right. The NBT editor remains exposed so LevelPageWidget can reuse the
+/// existing dirty/commit handling for global data.
+class StructureEditorWidget : public QWidget {
+    Q_OBJECT
+
+   public:
+    explicit StructureEditorWidget(QWidget* parent = nullptr);
+
+    [[nodiscard]] NbtWidget* nbtEditor() const { return nbt_editor_; }
+    void loadStructureData(const bl::general_kv_nbts& data);
+    void clearData();
+
+   private slots:
+    void onItemOpened(NBTListItem* item);
+
+   private:
+    NbtWidget* nbt_editor_{nullptr};
+    VoxelWidget* voxel_widget_{nullptr};
+    QStackedWidget* preview_stack_{nullptr};
+    QLabel* preview_status_{nullptr};
+};
+
 class LevelPageWidget : public TabPageWidget {
     Q_OBJECT
 
@@ -153,7 +179,7 @@ class LevelPageWidget : public TabPageWidget {
     NbtWidget* player_editor_;
     NbtWidget* village_editor_;
     NbtWidget* other_nbt_editor_;
-    NbtWidget* structures_editor_;
+    StructureEditorWidget* structures_editor_;
     MapItemEditor* map_item_editor_;
     // status bar
     LevelStatusBar* status_bar_;

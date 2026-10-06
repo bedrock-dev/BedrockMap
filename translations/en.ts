@@ -1743,6 +1743,27 @@
     </message>
 </context>
 <context>
+    <name>StructureEditorWidget</name>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.noData</source>
+        <translation>No structure data</translation>
+    </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.selectStructure</source>
+        <translation>Select a structure to preview</translation>
+    </message>
+    <message>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/levelpagewidget.cpp"/>
+        <source>levelPageWidget.structurePreview.invalid</source>
+        <translation>Selected data is not a valid mcstructure</translation>
+    </message>
+</context>
+<context>
     <name>UpdateChecker</name>
     <message>
         <location filename="../src/core/updatechecker.cpp"/>
