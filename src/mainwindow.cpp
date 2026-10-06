@@ -168,6 +168,8 @@ void MainWindow::setupMenuBar() {
     action_layers_actors_->setShortcut(QKeySequence("Alt+A"));
     action_layers_village_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.villages"));
     action_layers_village_->setShortcut(QKeySequence("Alt+V"));
+    action_layers_portal_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.portals"));
+    action_layers_portal_->setShortcut(QKeySequence("Alt+P"));
     action_layers_hsa_ = layers_menu_->addAction(tr("levelPageWidget.toolBar.HSAs"));
     action_layers_hsa_->setShortcut(QKeySequence("Alt+H"));
     action_transparent_void_ = layers_menu_->addAction(tr("mainWindow.menu.transparentVoid"));
@@ -366,6 +368,12 @@ void MainWindow::setupMenuActions() {
     connect(action_layers_village_, &QAction::triggered, this, [this]() {
         if (auto* w = currentMapHost()) {
             w->toggleOther(Mr::Village);
+            w->syncToolbars();
+        }
+    });
+    connect(action_layers_portal_, &QAction::triggered, this, [this]() {
+        if (auto* w = currentMapHost()) {
+            w->toggleOther(Mr::Portal);
             w->syncToolbars();
         }
     });

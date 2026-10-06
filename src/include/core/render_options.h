@@ -19,7 +19,7 @@ struct ChunkRegion;
 /// headers; it is intentionally not nested inside a widget class.
 struct RenderOption {
     enum LayerType { Terrain = 0, Biome = 1 };
-    enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, OtherLen = 6 };
+    enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, Portal = 6, OtherLen = 7 };
 
     static constexpr int OverWorld = 0;
     static constexpr int Nether = 1;

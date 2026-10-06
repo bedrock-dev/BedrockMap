@@ -152,6 +152,11 @@ void MapHost::setVillages(const QMap<QString, VillageDrawInfo>& villages) {
     view_.notifyChanged();
 }
 
+void MapHost::setPortals(const QVector<PortalDrawInfo>& portals) {
+    overlays_.setPortals(portals);
+    view_.notifyChanged();
+}
+
 void MapHost::gotoBlockPos(int x, int z) {
     const QPointF view_pos = view_.blockPosToViewPos(bl::block_pos(x, 0, z));
     const QPointF delta = (QPointF(view_.camera().center()) - view_pos) / std::abs(view_.scaleLevel());

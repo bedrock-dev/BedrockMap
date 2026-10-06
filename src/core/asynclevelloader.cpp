@@ -240,6 +240,11 @@ void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult& result, std::atomic_b
         }
     }
 
+    LOG_F(INFO, "Loading Global Data(Portal)");
+    if (storage_.level().load_raw("portals", value)) {
+        result.portalData.append_nbt("portals", value);
+    }
+
     LOG_F(INFO, "Loading Global Data(Village)");
     storage_.level().foreach_key_with_prefix(
         "VILLAGE_",

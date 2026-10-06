@@ -28,6 +28,8 @@ QImage* TagIcon(bl::nbt::tag_type t);
 
 QImage* VillageNBTIcon(bl::village_key::key_type t);
 
+QImage* PortalImage();
+
 QImage* BlockActorNBTIcon(const QString& key);
 
 QImage* EntityNBTIcon(const QString& key);

@@ -866,6 +866,7 @@ void GpuMapWidget::paintGL() {
         if (import_ && import_->active()) import_->draw(&painter, view_->scale());
         painter.resetTransform();
         if (options.getOther(RenderOption::Actors)) overlays_->drawActors(&painter);
+        if (options.getOther(RenderOption::Portal)) overlays_->drawPortals(&painter);
         if (options.getOther(RenderOption::Coords)) overlays_->drawChunkPosText(&painter);
         overlays_->drawCoordsMiniMap(&painter);
         overlays_->drawDebugWindow(&painter);

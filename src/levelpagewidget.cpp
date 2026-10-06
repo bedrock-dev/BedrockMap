@@ -718,6 +718,31 @@ void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_tab
     }
 }
 
+void LevelPageWidget::collectPortalsGuiData(const bl::nbt::compound_tag* portals) {
+    if (!portals) return;
+    const auto* data = portals->get("data");
+    const auto* dataCompound = data ? data->as<const bl::nbt::compound_tag*>() : nullptr;
+    const auto* records = dataCompound ? dataCompound->get("PortalRecords") : nullptr;
+    const auto* recordList = records ? records->as<const bl::nbt::list_tag*>() : nullptr;
+    if (!recordList) return;
+
+    for (const auto* item : recordList->value) {
+        if (!item) continue;
+        const auto* record = item->as<const bl::nbt::compound_tag*>();
+        if (!record) continue;
+        const auto* dimTag = record->get("DimId");
+        const auto* xTag = record->get("TpX");
+        const auto* yTag = record->get("TpY");
+        const auto* zTag = record->get("TpZ");
+        const auto* dim = dimTag ? dimTag->as<const bl::nbt::int_tag*>() : nullptr;
+        const auto* x = xTag ? xTag->as<const bl::nbt::int_tag*>() : nullptr;
+        const auto* y = yTag ? yTag->as<const bl::nbt::int_tag*>() : nullptr;
+        const auto* z = zTag ? zTag->as<const bl::nbt::int_tag*>() : nullptr;
+        if (!dim || !x || !y || !z) continue;
+        portals_.append(PortalDrawInfo{bl::block_pos{x->value, y->value, z->value}, dim->value});
+    }
+}
+
 void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
     LOG_F(INFO, "Filling player data (%llu)...", static_cast<unsigned long long>(res.playerData.data().size()));
     auto& playerData = res.playerData.data();
@@ -759,6 +784,13 @@ void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
         }
     }
     this->village_editor_->loadNewData(villNBTList);
+
+    LOG_F(INFO, "Filling portal data (%llu)...", static_cast<unsigned long long>(res.portalData.data().size()));
+    portals_.clear();
+    if (const auto it = res.portalData.data().find("portals"); it != res.portalData.data().end()) {
+        collectPortalsGuiData(it->second);
+    }
+    map_host_->setPortals(portals_);
 
     LOG_F(INFO, "Filling map data (%llu)...", static_cast<unsigned long long>(res.mapData.data().size()));
     this->map_item_editor_->load_map_data(res.mapData);

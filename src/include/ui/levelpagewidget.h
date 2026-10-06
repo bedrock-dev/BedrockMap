@@ -130,6 +130,7 @@ class LevelPageWidget : public TabPageWidget {
    private:
     // data
     void collectVillagesGuiData(const bl::village_data::village_table_type& vs);
+    void collectPortalsGuiData(const bl::nbt::compound_tag* portals);
     void fillGlobalData(GlobalNBTLoadResult& result);
 
     // gui
@@ -157,6 +158,7 @@ class LevelPageWidget : public TabPageWidget {
     std::atomic_bool stop_loading_global_data_{false};
     GlobalNBTLoadResult global_data_;
     QMap<QString, VillageDrawInfo> villages_;
+    QVector<PortalDrawInfo> portals_;
 
     // GUI
     LevelTabWidget* parent_;

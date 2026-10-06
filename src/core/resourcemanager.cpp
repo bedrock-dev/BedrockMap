@@ -38,6 +38,7 @@ namespace {
     QImage* village_poi_nbt;
     QImage* village_info_nbt;
     QImage* village_dwellers_nbt;
+    QImage* portal_img;
     QImage* other_nbt;
     QImage* player_nbt;
 
@@ -109,6 +110,9 @@ void initResources() {
     village_players_nbt = scale2(QImage(":/res/village/players.png"));
     village_info_nbt = scale2(QImage(":/res/village/info.png"));
     village_poi_nbt = scale2(QImage(":/res/village/poi.png"));
+    // Keep portal markers at the same native size as entity markers and use the
+    // same configurable outline treatment.
+    portal_img = addBorder(QImage(":/res/portal/portal.png"), setting::current().ACTOR_BORDER_WIDTH);
     player_nbt = scale2(QImage(":/res/village/players.png"));
     other_nbt = scale2(QImage(":/res/village/info.png"));
 
@@ -166,6 +170,8 @@ QImage* VillageNBTIcon(bl::village_key::key_type t) {
     }
     return unknown_img;
 }
+
+QImage* PortalImage() { return portal_img; }
 
 QImage* EntityNBTIcon(const QString& key) {
     auto it = entity_icon_pool.find(key);

@@ -76,6 +76,7 @@ class MapHost : public QObject {
     bool toggleTransparentVoid();
 
     void setVillages(const QMap<QString, VillageDrawInfo>& villages);
+    void setPortals(const QVector<PortalDrawInfo>& portals);
 
     // --- the chunk the chunk editor is showing ---
 

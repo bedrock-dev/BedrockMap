@@ -16,6 +16,7 @@
 #include "maptile.h"
 #include "mapview.h"
 #include "processmonitor.h"
+#include "resourcemanager.h"
 #include "utils.h"
 
 namespace {
@@ -161,6 +162,20 @@ void MapOverlays::drawVillages(QPainter* painter) const {
     for (auto i = villages_.cbegin(), end = villages_.cend(); i != end; ++i) {
         if (view_->dim() != i.value().dim) continue;
         painter->drawRect(QRectF(blockPosToChunkPos(i->p1), blockPosToChunkPos(i->p2)));
+    }
+}
+
+void MapOverlays::drawPortals(QPainter* painter) const {
+    if (coordsOverviewMode() || portals_.isEmpty() || !view_) return;
+    const auto* image = PortalImage();
+    if (!image || image->isNull()) return;
+
+    for (const auto& portal : portals_) {
+        if (view_->dim() != portal.dim) continue;
+        const auto pos = blockPosToViewPos(portal.pos);
+        const auto width = image->width();
+        const auto height = image->height();
+        painter->drawImage(QRectF(pos.x() - width / 2.0, pos.y() - height / 2.0, width, height), *image, image->rect());
     }
 }
 

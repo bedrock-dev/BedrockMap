@@ -715,6 +715,11 @@
     </message>
     <message>
         <location filename="../src/mainwindow.cpp"/>
+        <source>levelPageWidget.toolBar.portals</source>
+        <translation type="unfinished">传送门</translation>
+    </message>
+    <message>
+        <location filename="../src/mainwindow.cpp"/>
         <source>mainWindow.menu.selection</source>
         <translation>选区</translation>
     </message>

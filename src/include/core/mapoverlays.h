@@ -9,6 +9,7 @@
 
 #include <QMap>
 #include <QString>
+#include <QVector>
 #include <functional>
 
 #include "bedrock_key.h"
@@ -22,6 +23,12 @@ class QPainter;
 struct VillageDrawInfo {
     bl::block_pos p1;
     bl::block_pos p2;
+    int dim{0};
+};
+
+/// Destination of one portal record, used as a point map overlay.
+struct PortalDrawInfo {
+    bl::block_pos pos;
     int dim{0};
 };
 
@@ -59,6 +66,9 @@ class MapOverlays {
     void setVillages(const QMap<QString, VillageDrawInfo>& villages) { villages_ = villages; }
     [[nodiscard]] const QMap<QString, VillageDrawInfo>& villages() const { return villages_; }
 
+    void setPortals(const QVector<PortalDrawInfo>& portals) { portals_ = portals; }
+    [[nodiscard]] const QVector<PortalDrawInfo>& portals() const { return portals_; }
+
     void setDrawDebug(bool enable) { draw_debug_ = enable; }
     [[nodiscard]] bool drawDebug() const { return draw_debug_; }
 
@@ -89,6 +99,7 @@ class MapOverlays {
     void drawCoordsBoundingBox(QPainter* painter) const;
     void drawHSAs(QPainter* painter) const;
     void drawVillages(QPainter* painter) const;
+    void drawPortals(QPainter* painter) const;
     void drawSlimeChunks(QPainter* painter) const;
     void drawGrid(QPainter* painter) const;
     void drawSelection(QPainter* painter) const;
@@ -115,6 +126,7 @@ class MapOverlays {
     AsyncLevelLoader* level_loader_{nullptr};
     QTransform world_to_view_;
     QMap<QString, VillageDrawInfo> villages_;
+    QVector<PortalDrawInfo> portals_;
     bool draw_debug_{false};
     bool coords_minimap_{false};
     int screen_inset_{0};

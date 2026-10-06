@@ -133,6 +133,7 @@ void CpuMapWidget::paintEvent(QPaintEvent* event) {
     p.resetTransform();
     if (overlays_) {
         if (option.getOther(RenderOption::Actors)) overlays_->drawActors(&p);
+        if (option.getOther(RenderOption::Portal)) overlays_->drawPortals(&p);
         if (option.getOther(RenderOption::Coords)) overlays_->drawChunkPosText(&p);
         overlays_->drawCoordsMiniMap(&p);
         overlays_->drawDebugWindow(&p);

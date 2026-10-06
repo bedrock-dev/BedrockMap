@@ -107,6 +107,7 @@ class MainWindow : public QMainWindow {
     QAction* action_layers_slime_;
     QAction* action_layers_actors_;
     QAction* action_layers_village_;
+    QAction* action_layers_portal_;
     QAction* action_layers_hsa_;
     QAction* action_layers_filter_;
     QAction* action_sel_replace_;
