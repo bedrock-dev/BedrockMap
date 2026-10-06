@@ -18,6 +18,7 @@
 #include "cpumapwidget.h"
 #include "floatingtoolbar.h"
 #include "gpumapwidget.h"
+#include "globaldatapanelwidget.h"
 #include "guitaskrunner.h"
 #include "maphost.h"
 #include "mapitemeditor.h"
@@ -45,32 +46,6 @@ class LevelStatusBar : public QWidget {
     QLabel* modify_info_;
 };
 class LevelTabWidget;
-class QStackedWidget;
-class VoxelWidget;
-
-/// Read-only global structure viewer: NBT on the left and a voxel preview on
-/// the right. The NBT editor remains exposed so LevelPageWidget can reuse the
-/// existing dirty/commit handling for global data.
-class StructureEditorWidget : public QWidget {
-    Q_OBJECT
-
-   public:
-    explicit StructureEditorWidget(QWidget* parent = nullptr);
-
-    [[nodiscard]] NbtWidget* nbtEditor() const { return nbt_editor_; }
-    void loadStructureData(const bl::general_kv_nbts& data);
-    void clearData();
-
-   private slots:
-    void onItemOpened(NBTListItem* item);
-
-   private:
-    NbtWidget* nbt_editor_{nullptr};
-    VoxelWidget* voxel_widget_{nullptr};
-    QStackedWidget* preview_stack_{nullptr};
-    QLabel* preview_status_{nullptr};
-};
-
 class LevelPageWidget : public TabPageWidget {
     Q_OBJECT
 
@@ -85,7 +60,7 @@ class LevelPageWidget : public TabPageWidget {
     /// shared view, so whichever renderer is enabled, the same set drives it.
     void setupToolBar();
     void setupSelectionToolBar();
-    void setupDataWidget();
+    void setupGlobalDataPanel();
 
     /// Selection mode is shared state, so it lives on the shared view rather
     /// than on a toolbar.
@@ -102,7 +77,7 @@ class LevelPageWidget : public TabPageWidget {
     [[nodiscard]] QWidget* activeMapPane() const;
     [[nodiscard]] CpuMapWidget* cpuMapPane() const { return this->cpu_pane_; }
     AsyncLevelLoader* levelLoader() { return this->level_loader_.get(); }
-    const QMap<QString, VillageDrawInfo>& getVillages() const { return this->villages_; }
+    const QMap<QString, VillageDrawInfo>& getVillages() const { return global_data_panel_->villages(); }
     bool isDirty() const override;
 
     QString getLevelName();
@@ -128,11 +103,6 @@ class LevelPageWidget : public TabPageWidget {
     void commitFinished(bool success);
 
    private:
-    // data
-    void collectVillagesGuiData(const bl::village_data::village_table_type& vs);
-    void collectPortalsGuiData(const bl::nbt::compound_tag* portals);
-    void fillGlobalData(GlobalNBTLoadResult& result);
-
     // gui
     void setLevelStatusBar(const QString& status) { status_bar_->setStatus(status); }
 
@@ -157,8 +127,6 @@ class LevelPageWidget : public TabPageWidget {
     std::unordered_map<std::string, std::string> pending_global_modifies_;
     std::atomic_bool stop_loading_global_data_{false};
     GlobalNBTLoadResult global_data_;
-    QMap<QString, VillageDrawInfo> villages_;
-    QVector<PortalDrawInfo> portals_;
 
     // GUI
     LevelTabWidget* parent_;
@@ -174,15 +142,8 @@ class LevelPageWidget : public TabPageWidget {
     /// not a pair, and both read the state they show from the shared view.
     FloatingToolBar* toolbar_{nullptr};
     FloatingToolBar* selection_toolbar_{nullptr};
-    QTabWidget* nbtTabWidget_;
+    GlobalDataPanelWidget* global_data_panel_{nullptr};
     ChunkEditorWidget* chunkWidget_{nullptr};
-    // nbt editor tabs
-    NbtWidget* level_dat_editor_;
-    NbtWidget* player_editor_;
-    NbtWidget* village_editor_;
-    NbtWidget* other_nbt_editor_;
-    StructureEditorWidget* structures_editor_;
-    MapItemEditor* map_item_editor_;
     // status bar
     LevelStatusBar* status_bar_;
     // id in tabwidget

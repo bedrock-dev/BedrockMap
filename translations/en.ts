@@ -329,6 +329,44 @@
     </message>
 </context>
 <context>
+    <name>GlobalDataPanelWidget</name>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.levelDat</source>
+        <translation type="unfinished">level.dat</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.players</source>
+        <translation type="unfinished">Players</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.villages</source>
+        <translation type="unfinished">Villages</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.portals</source>
+        <translation type="unfinished">Portals</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.other</source>
+        <translation type="unfinished">Other</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.structures</source>
+        <translation type="unfinished">Structures</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.maps</source>
+        <translation type="unfinished">Maps</translation>
+    </message>
+</context>
+<context>
     <name>GoToPositionDialog</name>
     <message>
         <source>goto.title</source>
@@ -1750,20 +1788,20 @@
 <context>
     <name>StructureEditorWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.noData</source>
         <translation>No structure data</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.selectStructure</source>
         <translation>Select a structure to preview</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.invalid</source>
         <translation>Selected data is not a valid mcstructure</translation>
     </message>

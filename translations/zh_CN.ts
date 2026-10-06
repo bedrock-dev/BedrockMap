@@ -329,6 +329,44 @@
     </message>
 </context>
 <context>
+    <name>GlobalDataPanelWidget</name>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.levelDat</source>
+        <translation type="unfinished">level.dat</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.players</source>
+        <translation type="unfinished">玩家</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.villages</source>
+        <translation type="unfinished">村庄</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.portals</source>
+        <translation type="unfinished">传送门</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.other</source>
+        <translation type="unfinished">其他</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.structures</source>
+        <translation type="unfinished">结构</translation>
+    </message>
+    <message>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <source>levelPageWidget.globalData.maps</source>
+        <translation type="unfinished">地图</translation>
+    </message>
+</context>
+<context>
     <name>GoToPositionDialog</name>
     <message>
         <source>goto.title</source>
@@ -1750,20 +1788,20 @@
 <context>
     <name>StructureEditorWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.noData</source>
         <translation>没有结构数据</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.selectStructure</source>
         <translation>请选择要预览的结构</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.invalid</source>
         <translation>所选数据不是有效的 mcstructure</translation>
     </message>

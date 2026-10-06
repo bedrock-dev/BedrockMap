@@ -13,7 +13,6 @@
 #include <QMessageBox>
 #include <QSpacerItem>
 #include <QSplitter>
-#include <QStackedWidget>
 #include <QToolButton>
 #include <functional>
 #include <memory>
@@ -21,118 +20,14 @@
 #include "asynclevelloader.h"
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
-#include "color.h"
 #include "cpumapwidget.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
 #include "magic-enum/magic_enum.hpp"
-#include "mapitemeditor.h"
-#include "mcstructure.h"
 #include "msg.h"
 #include "pleasewaitdialog.h"
 #include "resourcemanager.h"
 #include "utils.h"
-#include "voxelwidget.h"
-
-namespace {
-    VoxelGrid buildVoxelDataFromMcstructure(const bl::mcstructure& structure) {
-        const int sx = structure.size_x();
-        const int sy = structure.size_y();
-        const int sz = structure.size_z();
-
-        VoxelGrid data(sy, std::vector<std::vector<Voxel>>(sx, std::vector<Voxel>(sz, Voxel(QColor(255, 255, 255, 0), true))));
-        if (sx <= 0 || sy <= 0 || sz <= 0 || structure.palette_size() == 0) return data;
-
-        for (int x = 0; x < sx; ++x) {
-            for (int y = 0; y < sy; ++y) {
-                for (int z = 0; z < sz; ++z) {
-                    const auto* block = structure.block_at(x, y, z);
-                    if (!block || block->name == "minecraft:air" || block->name == "minecraft:unknown") continue;
-
-                    const auto baseColor = bl::get_block_by_name_tag(block->name);
-                    // mcstructure files do not carry biome data; use plains as a stable preview biome.
-                    const auto color = bl::blend_color_with_biome(block->name, baseColor, bl::biome::plains);
-                    data[y][x][z] = Voxel(QColor(color.r, color.g, color.b, color.a), color.a < 255);
-                }
-            }
-        }
-        return data;
-    }
-}  // namespace
-
-StructureEditorWidget::StructureEditorWidget(QWidget* parent) : QWidget(parent) {
-    auto* splitter = new QSplitter(Qt::Horizontal, this);
-    splitter->setChildrenCollapsible(false);
-
-    this->nbt_editor_ = new NbtWidget(splitter);
-    this->nbt_editor_->setMode(NbtMode::Memory);
-    this->nbt_editor_->setReadOnly(true);
-
-    this->preview_stack_ = new QStackedWidget(splitter);
-    this->preview_status_ = new QLabel(this->preview_stack_);
-    this->preview_status_->setAlignment(Qt::AlignCenter);
-    this->preview_status_->setWordWrap(true);
-    this->preview_status_->setText(tr("levelPageWidget.structurePreview.noData"));
-    this->voxel_widget_ = new VoxelWidget(this->preview_stack_);
-    this->voxel_widget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    this->preview_stack_->addWidget(this->preview_status_);
-    this->preview_stack_->addWidget(this->voxel_widget_);
-    this->preview_stack_->setCurrentWidget(this->preview_status_);
-
-    splitter->addWidget(this->nbt_editor_);
-    splitter->addWidget(this->preview_stack_);
-    // Give the NBT editor a little more room than the 3D preview by default.
-    splitter->setStretchFactor(0, 3);
-    splitter->setStretchFactor(1, 2);
-
-    auto* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(splitter);
-
-    connect(this->nbt_editor_, &NbtWidget::itemOpened, this, &StructureEditorWidget::onItemOpened);
-}
-
-void StructureEditorWidget::loadStructureData(const bl::general_kv_nbts& data) {
-    std::vector<NBTListItem*> items;
-    items.reserve(data.data().size());
-    for (const auto& kv : data.data()) {
-        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
-        item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
-        items.push_back(item);
-    }
-
-    this->nbt_editor_->loadNewData(items);
-    this->preview_stack_->setCurrentWidget(this->preview_status_);
-    this->preview_status_->setText(items.empty() ? tr("levelPageWidget.structurePreview.noData")
-                                                 : tr("levelPageWidget.structurePreview.selectStructure"));
-    if (!items.empty()) this->nbt_editor_->openItem(0);
-}
-
-void StructureEditorWidget::clearData() {
-    this->nbt_editor_->clearData();
-    this->preview_stack_->setCurrentWidget(this->preview_status_);
-    this->preview_status_->setText(tr("levelPageWidget.structurePreview.noData"));
-}
-
-void StructureEditorWidget::onItemOpened(NBTListItem* item) {
-    if (!item || !item->root_) {
-        this->preview_stack_->setCurrentWidget(this->preview_status_);
-        this->preview_status_->setText(tr("levelPageWidget.structurePreview.invalid"));
-        return;
-    }
-
-    const auto raw = item->root_->to_raw();
-    const auto structure = bl::parse_mcstructure(reinterpret_cast<const byte_t*>(raw.data()), raw.size());
-    if (structure.size_x() <= 0 || structure.size_y() <= 0 || structure.size_z() <= 0) {
-        this->preview_stack_->setCurrentWidget(this->preview_status_);
-        this->preview_status_->setText(tr("levelPageWidget.structurePreview.invalid"));
-        return;
-    }
-
-    this->preview_stack_->setCurrentWidget(this->voxel_widget_);
-    this->voxel_widget_->updateVoxelData(buildVoxelDataFromMcstructure(structure));
-}
-
 // status bar
 LevelStatusBar::LevelStatusBar(QWidget* parent) : QWidget(parent) {
     status_msg_ = new QLabel(this);
@@ -175,7 +70,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
 
     // gui
     setupMapPane();  // also builds the map chrome: toolbars for the active renderer
-    setupDataWidget();
+    setupGlobalDataPanel();
 
     // status bar
     status_bar_ = new LevelStatusBar(this);
@@ -203,7 +98,7 @@ LevelPageWidget::LevelPageWidget(LevelTabWidget* parent, int id) : TabPageWidget
 
     vertSplitter_ = new QSplitter(Qt::Vertical, this);
     vertSplitter_->addWidget(mapRow);
-    vertSplitter_->addWidget(nbtTabWidget_);
+    vertSplitter_->addWidget(global_data_panel_);
     vertSplitter_->setStretchFactor(0, 1);
     vertSplitter_->setStretchFactor(1, 0);
 
@@ -487,48 +382,9 @@ void LevelPageWidget::syncToolbars() {
     }
 }
 
-void LevelPageWidget::setupDataWidget() {
-    // nbt
-    nbtTabWidget_ = new QTabWidget(this);
-    nbtTabWidget_->setContentsMargins(0, 0, 0, 0);
-    level_dat_editor_ = new NbtWidget(nbtTabWidget_);
-    player_editor_ = new NbtWidget(nbtTabWidget_);
-    village_editor_ = new NbtWidget(nbtTabWidget_);
-    other_nbt_editor_ = new NbtWidget(nbtTabWidget_);
-    structures_editor_ = new StructureEditorWidget(nbtTabWidget_);
-    level_dat_editor_->setMode(NbtMode::Memory);
-    player_editor_->setMode(NbtMode::Memory);
-    village_editor_->setMode(NbtMode::Memory);
-    other_nbt_editor_->setMode(NbtMode::Memory);
-    map_item_editor_ = new MapItemEditor(nbtTabWidget_);
-
-    nbtTabWidget_->addTab(level_dat_editor_, "level.dat");
-    nbtTabWidget_->addTab(player_editor_, "players");
-    nbtTabWidget_->addTab(village_editor_, "villages");
-    nbtTabWidget_->addTab(other_nbt_editor_, "other");
-    nbtTabWidget_->addTab(structures_editor_, "structures");
-    nbtTabWidget_->addTab(map_item_editor_, "Map");
-    nbtTabWidget_->setTabPosition(QTabWidget::West);
-
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(),
-                         map_item_editor_->nbtEditor()}) {
-        connect(editor, &NbtWidget::nbtModified, this, &LevelPageWidget::refreshDirty);
-        connect(editor, &NbtWidget::nbtModified, this, [this, editor]() {
-            QWidget* realTab = editor;
-            if (editor == map_item_editor_->nbtEditor()) realTab = map_item_editor_;
-            int idx = nbtTabWidget_->indexOf(realTab);
-
-            if (idx < 0) return;
-            auto text = nbtTabWidget_->tabText(idx);
-            if (editor->dirty()) {
-                if (!text.endsWith(" *")) text += " *";
-            } else {
-                if (text.endsWith(" *")) text.chop(2);
-            }
-            nbtTabWidget_->setTabText(idx, text);
-        });
-    }
-    nbtTabWidget_->hide();
+void LevelPageWidget::setupGlobalDataPanel() {
+    global_data_panel_ = new GlobalDataPanelWidget(this);
+    connect(global_data_panel_, &GlobalDataPanelWidget::dirtyChanged, this, &LevelPageWidget::refreshDirty);
 }
 
 QString LevelPageWidget::getLevelName() {
@@ -537,11 +393,7 @@ QString LevelPageWidget::getLevelName() {
 }
 
 bool LevelPageWidget::isDirty() const {
-    for (auto* editor : {level_dat_editor_, player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(),
-                         map_item_editor_->nbtEditor()}) {
-        if (editor && editor->dirty()) return true;
-    }
-    return level_loader_->isDirty();
+    return (global_data_panel_ && global_data_panel_->isDirty()) || level_loader_->isDirty();
 }
 
 void LevelPageWidget::refreshDirty() {
@@ -560,8 +412,8 @@ bool LevelPageWidget::commit() {
     if (commit_task_.isRunning() || (map_host_ && map_host_->chunkEditRunning())) return false;
 
     std::unique_ptr<bl::nbt::compound_tag> levelDat;
-    if (this->level_dat_editor_->dirty()) {
-        auto nbts = this->level_dat_editor_->getPaletteCopy();
+    if (global_data_panel_->levelDatEditor()->dirty()) {
+        auto nbts = global_data_panel_->levelDatEditor()->getPaletteCopy();
         if (nbts.size() == 1 && nbts[0]) {
             levelDat.reset(nbts[0]);
         } else {
@@ -571,15 +423,7 @@ bool LevelPageWidget::commit() {
         }
     }
 
-    std::unordered_map<std::string, std::string> allModifies;
-    for (auto* editor :
-         {player_editor_, village_editor_, other_nbt_editor_, structures_editor_->nbtEditor(), map_item_editor_->nbtEditor()}) {
-        if (editor) {
-            for (auto& kv : editor->getModifyCache()) {
-                allModifies[kv.first] = kv.second;
-            }
-        }
-    }
+    auto allModifies = global_data_panel_->collectModifyCache();
 
     pending_level_dat_ = std::move(levelDat);
     pending_global_modifies_ = std::move(allModifies);
@@ -593,12 +437,7 @@ bool LevelPageWidget::commit() {
 
 void LevelPageWidget::onCommitFinished() {
     PleaseWaitDialog::instance().hideBusy();
-    level_dat_editor_->clearModifyCache();
-    player_editor_->clearModifyCache();
-    village_editor_->clearModifyCache();
-    other_nbt_editor_->clearModifyCache();
-    structures_editor_->nbtEditor()->clearModifyCache();
-    map_item_editor_->nbtEditor()->clearModifyCache();
+    global_data_panel_->clearModifyCache();
     pending_level_dat_.reset();
     pending_global_modifies_.clear();
     refreshDirty();
@@ -627,7 +466,7 @@ bool LevelPageWidget::loadLevel(const QString& path) {
           std::string(magic_enum::enum_name(format)).c_str());
     Assert(dat.root() != nullptr, "The level.dat file is nullptr");
     auto* ld = dat.root()->as<bl::nbt::compound_tag*>();
-    this->level_dat_editor_->loadNewData({NBTListItem::from(ld->copy()->as<bl::nbt::compound_tag*>(), "level.dat")});
+    global_data_panel_->loadLevelDat(ld);
     setLevelStatusBar(path + "  " + dat.min_compat_version().to_string().c_str());
     if (!setting::current().LOAD_GLOBAL_DATA) return true;
     global_data_task_.start([this](GuiTaskRunner* task) {
@@ -658,9 +497,8 @@ void LevelPageWidget::closeLevel() {
 }
 
 void LevelPageWidget::toggleGlobalDataWidget() {
-    if (!nbtTabWidget_) return;
-    auto vis = nbtTabWidget_->isVisible();
-    nbtTabWidget_->setVisible(!vis);
+    if (!global_data_panel_) return;
+    global_data_panel_->setVisible(!global_data_panel_->isVisible());
 }
 
 void LevelPageWidget::openFilterDialog() {
@@ -701,107 +539,10 @@ void LevelPageWidget::showChunkEditor(const bl::chunk_pos& pos) {
     chunkWidget_->show();
 }
 
-void LevelPageWidget::collectVillagesGuiData(const bl::village_data::village_table_type& vs) {
-    for (int i = 0; i < vs.size(); i++) {
-        auto& villsInDim = vs[i];
-        for (auto kv : villsInDim) {
-            auto* nbt = kv.second[static_cast<int>(bl::village_key::key_type::INFO)];
-            if (!nbt) continue;
-            auto x0 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("X0"));
-            auto z0 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("Z0"));
-            auto x1 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("X1"));
-            auto z1 = dynamic_cast<bl::nbt::int_tag*>(nbt->get("Z1"));
-            if (!x0 || !z0 || !x1 || !z1) continue;
-            auto pos0 = bl::block_pos(x0->value, 0, z0->value);
-            auto pos1 = bl::block_pos(x1->value, 0, z1->value);
-            this->villages_.insert(kv.first.c_str(), VillageDrawInfo{pos0, pos1, i});
-        }
-    }
-}
-
-void LevelPageWidget::collectPortalsGuiData(const bl::nbt::compound_tag* portals) {
-    if (!portals) return;
-    const auto* data = portals->get("data");
-    const auto* dataCompound = data ? data->as<const bl::nbt::compound_tag*>() : nullptr;
-    const auto* records = dataCompound ? dataCompound->get("PortalRecords") : nullptr;
-    const auto* recordList = records ? records->as<const bl::nbt::list_tag*>() : nullptr;
-    if (!recordList) return;
-
-    for (const auto* item : recordList->value) {
-        if (!item) continue;
-        const auto* record = item->as<const bl::nbt::compound_tag*>();
-        if (!record) continue;
-        const auto* dimTag = record->get("DimId");
-        const auto* xTag = record->get("TpX");
-        const auto* yTag = record->get("TpY");
-        const auto* zTag = record->get("TpZ");
-        const auto* dim = dimTag ? dimTag->as<const bl::nbt::int_tag*>() : nullptr;
-        const auto* x = xTag ? xTag->as<const bl::nbt::int_tag*>() : nullptr;
-        const auto* y = yTag ? yTag->as<const bl::nbt::int_tag*>() : nullptr;
-        const auto* z = zTag ? zTag->as<const bl::nbt::int_tag*>() : nullptr;
-        if (!dim || !x || !y || !z) continue;
-        portals_.append(PortalDrawInfo{bl::block_pos{x->value, y->value, z->value}, dim->value});
-    }
-}
-
-void LevelPageWidget::fillGlobalData(GlobalNBTLoadResult& res) {
-    LOG_F(INFO, "Filling player data (%llu)...", static_cast<unsigned long long>(res.playerData.data().size()));
-    auto& playerData = res.playerData.data();
-    std::vector<NBTListItem*> playerNBTList;
-    for (auto& kv : playerData) {
-        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
-        item->setIcon(QIcon(QPixmap::fromImage(*PlayerNBTIcon())));
-        playerNBTList.push_back(item);
-    }
-    this->player_editor_->loadNewData(playerNBTList);
-
-    LOG_F(INFO, "Filling other data (%llu)...", static_cast<unsigned long long>(res.otherData.data().size()));
-    auto& otherData = res.otherData.data();
-    std::vector<NBTListItem*> otherNBTList;
-    for (auto& kv : otherData) {
-        auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(kv.second->copy()), kv.first.c_str(), kv.first.c_str());
-        item->setIcon(QIcon(QPixmap::fromImage(*OtherNBTIcon())));
-        otherNBTList.push_back(item);
-    }
-    this->other_nbt_editor_->loadNewData(otherNBTList);
-
-    LOG_F(INFO, "Filling village data (%llu)...", static_cast<unsigned long long>(res.villageData.data().size()));
-    auto& villData = res.villageData.data();
-    this->collectVillagesGuiData(villData);
-    map_host_->setVillages(this->villages_);
-    std::vector<NBTListItem*> villNBTList;
-    for (const auto& dim : villData) {
-        for (const auto& kv : dim) {
-            int index = 0;
-            for (auto& p : kv.second) {
-                if (p) {
-                    auto key = kv.first + "_" + bl::village_key::village_key_type_to_str(static_cast<bl::village_key::key_type>(index));
-                    auto* item = NBTListItem::from(dynamic_cast<compound_tag*>(p->copy()), key.c_str(), ("VILLAGE_" + key).c_str());
-                    item->setIcon(QIcon(QPixmap::fromImage(*VillageNBTIcon(static_cast<bl::village_key::key_type>(index)))));
-                    villNBTList.push_back(item);
-                }
-                index++;
-            }
-        }
-    }
-    this->village_editor_->loadNewData(villNBTList);
-
-    LOG_F(INFO, "Filling portal data (%llu)...", static_cast<unsigned long long>(res.portalData.data().size()));
-    portals_.clear();
-    if (const auto it = res.portalData.data().find("portals"); it != res.portalData.data().end()) {
-        collectPortalsGuiData(it->second);
-    }
-    map_host_->setPortals(portals_);
-
-    LOG_F(INFO, "Filling map data (%llu)...", static_cast<unsigned long long>(res.mapData.data().size()));
-    this->map_item_editor_->load_map_data(res.mapData);
-
-    LOG_F(INFO, "Filling structures data (%llu)...", static_cast<unsigned long long>(res.structuresData.data().size()));
-    this->structures_editor_->loadStructureData(res.structuresData);
-}
-
 void LevelPageWidget::onLoadGlobalDataFinished() {
-    fillGlobalData(this->global_data_);
+    global_data_panel_->loadGlobalData(this->global_data_);
+    map_host_->setVillages(global_data_panel_->villages());
+    map_host_->setPortals(global_data_panel_->portals());
     this->global_data_.clear();
 }
 
