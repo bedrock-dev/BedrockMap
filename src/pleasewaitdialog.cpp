@@ -1,6 +1,8 @@
 #include "pleasewaitdialog.h"
 
+#include <QApplication>
 #include <QCoreApplication>
+#include <QEventLoop>
 #include <QLabel>
 #include <QVBoxLayout>
 
@@ -25,3 +27,10 @@ PleaseWaitDialog::PleaseWaitDialog() {
 void PleaseWaitDialog::showBusy() { show(); }
 
 void PleaseWaitDialog::hideBusy() { hide(); }
+
+PleaseWaitScope::PleaseWaitScope() {
+    PleaseWaitDialog::instance().showBusy();
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+}
+
+PleaseWaitScope::~PleaseWaitScope() { PleaseWaitDialog::instance().hideBusy(); }

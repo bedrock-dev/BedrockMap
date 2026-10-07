@@ -26,7 +26,9 @@ class McstructurePageWidget : public TabPageWidget {
 
    private:
     void setupUI();
-    void exportMcstructure(const VoxelSelection& selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
+    [[nodiscard]] QByteArray buildMcstructureRaw(const bl::block_box& selection, bool exportEntities, bool useNewFormat) const;
+    void exportMcstructure(const bl::block_box& selection, bool compress, bool exportEntities, bool useNewFormat);
+    void copyMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat);
 
     // data
     std::shared_ptr<bl::mcstructure> structure_;

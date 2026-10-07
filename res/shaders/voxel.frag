@@ -13,9 +13,9 @@ out vec4 FragColor;
 float faceShade(vec3 n)
 {
     n = normalize(n);
-    if (abs(n.y) >= abs(n.x) && abs(n.y) >= abs(n.z)) return n.y > 0.0 ? 1.00 : 0.56;
-    if (abs(n.x) >= abs(n.z)) return 0.71;
-    return 0.86;
+    if (abs(n.y) >= abs(n.x) && abs(n.y) >= abs(n.z)) return n.y > 0.0 ? 1.00 : 0.64;
+    if (abs(n.x) >= abs(n.z)) return 0.78;
+    return 0.91;
 }
 
 void main()

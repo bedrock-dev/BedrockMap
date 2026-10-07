@@ -8,6 +8,7 @@
 #include <qprogressbar.h>
 #include <qwidget.h>
 
+#include <QByteArray>
 #include <QCheckBox>
 #include <QColor>
 #include <QFuture>
@@ -50,16 +51,7 @@ struct Voxel {
     Voxel(const QColor& c, bool trans = false) : color(c), transparent(trans) {}
 };
 
-/// An axis-aligned selection in model-local voxel coordinates.
-/// The minimum boundary is inclusive and the maximum boundary is exclusive.
-struct VoxelSelection {
-    QVector3D minimum;
-    QVector3D maximum;
-
-    [[nodiscard]] bool isValid() const { return minimum.x() < maximum.x() && minimum.y() < maximum.y() && minimum.z() < maximum.z(); }
-};
-
-Q_DECLARE_METATYPE(VoxelSelection)
+Q_DECLARE_METATYPE(bl::block_box)
 
 using VoxelGrid = std::vector<std::vector<std::vector<Voxel>>>;
 
@@ -75,8 +67,8 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     void updateVoxelData(std::vector<std::vector<std::vector<Voxel>>>&& newData);
     void setSelectionEnabled(bool enabled);
     [[nodiscard]] bool isSelectionEnabled() const { return selection_enabled_; }
-    [[nodiscard]] VoxelSelection getSelection() const { return selection_; }
-    void setSelection(const VoxelSelection& selection);
+    [[nodiscard]] bl::block_box getSelection() const { return selection_; }
+    void setSelection(const bl::block_box& selection);
     void setSelectionMoveMode(bool enabled);
     [[nodiscard]] bool isSelectionMoveMode() const { return selection_move_mode_; }
     /// Import placement lock: the selection keeps its size and can only be moved.
@@ -103,7 +95,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
                                                                                   int* firstWorldY = nullptr);
 
    signals:
-    void selectionChanged(VoxelSelection selection);
+    void selectionChanged(bl::block_box selection);
     void selectionEnabledChanged(bool enabled);
     void viewOptionsChanged();  // axes visibility, projection mode, or selection move mode
 
@@ -245,7 +237,7 @@ class VoxelWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     bool selection_enabled_{false};
     bool selection_move_mode_{false};  // true: dragging a handle moves the selection instead of resizing it
     bool selection_locked_{false};     // true: the selection size is fixed and it cannot be disabled
-    VoxelSelection selection_;
+    bl::block_box selection_;
     SelectionHandle active_selection_handle_{SelectionHandle::None};
     QPointF selection_drag_start_;
     QPointF selection_drag_axis_screen_;
@@ -282,14 +274,17 @@ class VoxelPreviewWidget : public QWidget {
     void beginImportMode(const bl::block_pos& importedSize);
 
    signals:
-    void exportMcstructureRequested(VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat);
+    void exportMcstructureRequested(bl::block_box selection, bool compress, bool exportEntities, bool useNewFormat);
+    void copyMcstructureRequested(bl::block_box selection, bool exportEntities, bool useNewFormat);
     /// World-space placement of the imported model: minimum corner inclusive, maximum exclusive.
-    void importConfirmed(VoxelSelection placement, std::shared_ptr<const bl::mcstructure> structure);
+    void importConfirmed(bl::block_box placement, std::shared_ptr<const bl::mcstructure> structure);
 
    private:
     void setVoxelData(VoxelGrid&& data, const bl::block_pos& origin);
     void exportGlbModel();
     void chooseImportFile();
+    bool beginImportFromRaw(const QByteArray& raw);
+    void pasteMcstructureFromClipboard();
     void endImportMode();
     // side panel
     [[nodiscard]] QWidget* buildModelPanel();
@@ -303,6 +298,7 @@ class VoxelPreviewWidget : public QWidget {
     void refreshSelectionFields();
     void refreshViewOptions();
     void applySelectionFields();
+    [[nodiscard]] bl::block_box exportBounds() const;
 
     QProgressBar* bar_;
     VoxelWidget* voxelWidget_;
@@ -319,6 +315,8 @@ class VoxelPreviewWidget : public QWidget {
     QCheckBox* mcstructureNewFormatBox_{nullptr};
     QPushButton* mcstructure_import_button_{nullptr};
     QPushButton* mcstructure_export_button_{nullptr};
+    QPushButton* mcstructure_copy_button_{nullptr};
+    QPushButton* mcstructure_paste_button_{nullptr};
     QPushButton* glb_export_button_{nullptr};
     QWidget* import_bar_{nullptr};
     std::shared_ptr<const bl::mcstructure> import_structure_;

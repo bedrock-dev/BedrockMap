@@ -1,11 +1,12 @@
 #include "blockregionoperator.h"
 
+#include <QFile>
 #include <algorithm>
 #include <cmath>
 #include <functional>
-#include <limits>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,7 +37,6 @@ namespace {
         const auto* nameTag = block->get("name");
         const auto* name = nameTag ? nameTag->as<const bl::nbt::string_tag*>() : nullptr;
         if (!name) return true;
-        // "minecraft:unknown" means there is no usable palette entry, so treat it as empty.
         return name->value == "minecraft:air" || name->value == "minecraft:unknown";
     }
 
@@ -52,8 +52,6 @@ namespace {
         return read("x", position.x) && read("y", position.y) && read("z", position.z);
     }
 
-    /// Entity position from the "Pos" tag; false when it is missing or malformed. Entities carry
-    /// their position as floats (doubles in older files), unlike block entities' int x/y/z.
     bool readEntityPosition(const bl::nbt::compound_tag* entity, bl::vec3& out) {
         if (!entity) return false;
         const auto* tag = entity->get("Pos");
@@ -88,30 +86,22 @@ namespace {
         return chunks;
     }
 
+    QRegion chunkRegionForBounds(const bl::block_box& bounds) {
+        if (!bounds.is_valid()) return {};
+        const auto first = bl::block_pos{bounds.min_pos.x, 0, bounds.min_pos.z}.to_chunk_pos();
+        const auto last = bl::block_pos{bounds.max_pos.x - 1, 0, bounds.max_pos.z - 1}.to_chunk_pos();
+        return QRegion(QRect(first.x, first.z, last.x - first.x + 1, last.z - first.z + 1));
+    }
+
 }  // namespace
 
-bool BlockRegionOperator::exportMcstructure(const QRegion& chunkRegion, const QString& filePath, AsyncLevelLoader& loader, int dim,
-                                            bool /*compress*/, const std::optional<bl::block_box>& blockBounds, int32_t version,
-                                            bool exportEntities) {
-    if (chunkRegion.isEmpty()) return false;
+std::string BlockRegionOperator::exportMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
+                                                       bool /*compress*/, int32_t version, bool exportEntities) {
+    if (!exportBounds.is_valid()) return {};
 
-    const auto chunkBounds = chunkRegion.boundingRect();
+    const QRegion chunkRegion = chunkRegionForBounds(exportBounds);
     const auto chunks = loadChunks(chunkRegion, loader, dim);
-    if (chunks.empty()) return false;
-
-    int minY = std::numeric_limits<int>::max();
-    int maxY = std::numeric_limits<int>::min();
-    for (const auto& [key, chunk] : chunks) {
-        if (!chunk) continue;
-        const auto [chunkMinY, chunkMaxY] = chunk->get_y_range();
-        minY = std::min(minY, chunkMinY);
-        maxY = std::max(maxY, chunkMaxY);
-    }
-    if (minY > maxY) return false;
-
-    const bl::block_box exportBounds = blockBounds.value_or(bl::block_box::from_min_and_size(
-        {chunkBounds.x() * 16, minY, chunkBounds.y() * 16}, chunkBounds.width() * 16, maxY - minY + 1, chunkBounds.height() * 16));
-    if (!exportBounds.is_valid()) return false;
+    if (chunks.empty()) return {};
 
     const bl::block_pos origin = exportBounds.min_pos;
     const bl::block_pos size{exportBounds.size_x(), exportBounds.size_y(), exportBounds.size_z()};
@@ -127,7 +117,6 @@ bool BlockRegionOperator::exportMcstructure(const QRegion& chunkRegion, const QS
         for (int y = intersection.min_pos.y; y < intersection.max_pos.y; ++y) {
             for (int x = intersection.min_pos.x; x < intersection.max_pos.x; ++x) {
                 for (int z = intersection.min_pos.z; z < intersection.max_pos.z; ++z) {
-                    // Write every block layer (0..n); stop when the layer runs out.
                     for (int layer = 0;; ++layer) {
                         const auto* block = chunk->get_block_raw(x - baseX, y, z - baseZ, layer);
                         if (!block) break;
@@ -164,7 +153,16 @@ bool BlockRegionOperator::exportMcstructure(const QRegion& chunkRegion, const QS
         }
     }
 
-    const bool saved = builder.build().save_to_file(filePath.toStdString());
+    return builder.build().to_raw();
+}
+
+bool BlockRegionOperator::exportMcstructure(const QString& filePath, AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds,
+                                            bool compress, int32_t version, bool exportEntities) {
+    const auto raw = exportMcstructureData(loader, dim, blockBounds, compress, version, exportEntities);
+    if (raw.empty()) return false;
+
+    QFile output(filePath);
+    const bool saved = output.open(QIODevice::WriteOnly) && output.write(raw.data(), static_cast<qint64>(raw.size())) == raw.size();
     if (saved) {
         LOG_F(INFO, "ChunkOperator: exported mcstructure to %s", filePath.toStdString().c_str());
     } else {
@@ -178,12 +176,9 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
     const bl::block_pos size = structure.size();
     if (size.x <= 0 || size.y <= 0 || size.z <= 0) return false;
 
-    // Chunk range the placed box covers. The box is right-open, so the last covered
-    // block sits one short of the far corner.
     const auto firstChunk = bl::block_pos{position.x, 0, position.z}.to_chunk_pos();
     const auto lastChunk = bl::block_pos{position.x + size.x - 1, 0, position.z + size.z - 1}.to_chunk_pos();
     const auto placedBounds = bl::block_box::from_min_and_size(position, size.x, size.y, size.z);
-    // Entities carry absolute world positions, so they travel by the same delta the blocks do.
     const bl::block_pos delta = position - structure.origin();
 
     std::vector<bl::chunk_pos> edited;
@@ -223,12 +218,10 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
             for (size_t i = 0; i < structure.block_entity_count(); ++i) {
                 const auto* entity = structure.block_entities()[i];
                 if (!entity) continue;
-                // Local position -> world position; only this chunk's share is written here.
                 const auto local = structure.block_entity_local_position(i);
                 const int worldX = position.x + local.x;
                 const int worldZ = position.z + local.z;
                 if (worldX < x0 || worldX >= x1 || worldZ < z0 || worldZ >= z1) continue;
-                // Blocks skipped by replaceAir have no block to attach to.
                 if (!replaceAir && !structure.block_at(local.x, local.y, local.z)) continue;
                 target.set_block_entity(worldX - baseX, position.y + local.y, worldZ - baseZ, entity);
                 changed = true;
@@ -243,7 +236,6 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
                 if (!placedBounds.contains(block)) continue;
                 const auto entityChunk = block.to_chunk_pos();
                 if (entityChunk.x != cx || entityChunk.z != cz) continue;
-                // add_actor rejects a tag without Pos/identifier/UniqueID.
                 if (!target.add_actor(loader.level(), entity, world)) {
                     LOG_F(WARNING, "BlockRegionOperator: skipping a structure entity with no usable id");
                     continue;

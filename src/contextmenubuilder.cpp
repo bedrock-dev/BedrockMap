@@ -7,13 +7,14 @@
 #include <QMimeData>
 
 #include "biomepickerdialog.h"
+#include "clipboarddata.h"
 #include "color.h"
 #include "maphost.h"
 #include "mapview.h"
 #include "msg.h"
 
 namespace {
-    constexpr const char* REGION_MIME_TYPE = "application/x-bedrockmap-region";
+    const QStringList REGION_FILE_EXTENSIONS{QStringLiteral("bchks")};
 }
 
 void ContextMenuBuilder::show(MapHost* host, const MapMenuRequest& request) {
@@ -63,15 +64,13 @@ void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest&
     }
 
     // Paste is offered whenever the clipboard actually holds a region.
-    const QMimeData* paste_data = clipboard->mimeData();
-    if (paste_data && paste_data->hasFormat(REGION_MIME_TYPE) && !paste_data->data(REGION_MIME_TYPE).isEmpty()) {
+    const QMimeData* paste_data = clipboard ? clipboard->mimeData() : nullptr;
+    const bool has_region_data = !clipboard_data::read(paste_data, clipboard_data::CHUNK_REGION_MIME_TYPE, REGION_FILE_EXTENSIONS).isEmpty();
+    if (has_region_data) {
         menu.addAction(QObject::tr("mapHost.rightMenu.paste"), [host, chunk = request.chunk, dim] {
-            const QMimeData* data = QApplication::clipboard()->mimeData();
-            if (!data || !data->hasFormat(REGION_MIME_TYPE)) {
-                WARN(msg::PASTE_NO_DATA());
-                return;
-            }
-            const QByteArray raw = data->data(REGION_MIME_TYPE);
+            auto* currentClipboard = QApplication::clipboard();
+            const QByteArray raw = clipboard_data::read(currentClipboard ? currentClipboard->mimeData() : nullptr,
+                                                        clipboard_data::CHUNK_REGION_MIME_TYPE, {QStringLiteral("bchks")});
             if (raw.isEmpty()) {
                 INFO(msg::PASTE_DATA_EMPTY());
                 return;

@@ -21,6 +21,7 @@
 #include "config.h"
 #include "loguru/loguru.hpp"
 #include "mcstructure.h"
+#include "clipboarddata.h"
 #include "msg.h"
 #include "pleasewaitdialog.h"
 #include "voxelwidget.h"
@@ -55,25 +56,34 @@ MapHost::MapHost(QWidget* page, AsyncLevelLoader* loader)
         QMessageBox::warning(paneWidget(), tr("mapHost.editFailed"), error);
     });
     connect(voxel_preview_window_, &VoxelPreviewWidget::exportMcstructureRequested, this,
-            [this](VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat) {
-                std::optional<bl::block_box> blockBounds;
-                if (hasSelection && selection.isValid()) {
-                    const auto origin = voxel_preview_window_->voxelOrigin();
-                    blockBounds = bl::block_box{origin + bl::block_pos{static_cast<int>(std::floor(selection.minimum.x())),
-                                                                       static_cast<int>(std::floor(selection.minimum.y())),
-                                                                       static_cast<int>(std::floor(selection.minimum.z()))},
-                                                origin + bl::block_pos{static_cast<int>(std::ceil(selection.maximum.x())),
-                                                                       static_cast<int>(std::ceil(selection.maximum.y())),
-                                                                       static_cast<int>(std::ceil(selection.maximum.z()))}};
+            [this](bl::block_box selection, bool compress, bool exportEntities, bool useNewFormat) {
+                const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
+                exportSelectionToMcstructure(view_.dim(), blockBounds, compress, exportEntities, useNewFormat ? 2 : 1);
+            });
+    connect(voxel_preview_window_, &VoxelPreviewWidget::copyMcstructureRequested, this,
+            [this](bl::block_box selection, bool exportEntities, bool useNewFormat) {
+                if (view_.selection().isEmpty() || !level_loader_) return;
+                const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
+
+                PleaseWaitScope wait;
+                const auto raw = BlockRegionOperator::exportMcstructureData(*level_loader_, view_.dim(), blockBounds, false,
+                                                                            useNewFormat ? 2 : 1, exportEntities);
+                if (raw.empty()) {
+                    QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"),
+                                         tr("mapHost.rightMenu.exportMcstructureFailed"));
+                    return;
                 }
-                exportSelectionToMcstructure(view_.dim(), compress, exportEntities, blockBounds, useNewFormat ? 2 : 1);
+
+                auto* mimeData = new QMimeData();
+                clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE,
+                                      QByteArray(raw.data(), static_cast<qsizetype>(raw.size())));
+                QApplication::clipboard()->setMimeData(mimeData);
+                INFO(msg::EXPORT_COMPLETE());
             });
     connect(voxel_preview_window_, &VoxelPreviewWidget::importConfirmed, this,
-            [this](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
+            [this](bl::block_box placement, std::shared_ptr<const bl::mcstructure> imported) {
                 if (!imported) return;
-                const bl::block_pos origin{static_cast<int>(std::floor(placement.minimum.x())),
-                                           static_cast<int>(std::floor(placement.minimum.y())),
-                                           static_cast<int>(std::floor(placement.minimum.z()))};
+                const bl::block_pos origin = placement.min_pos;
                 const int dim = view_.dim();
                 if (!startChunkTask([this, origin, dim, imported = std::move(imported)](GuiTaskRunner*) {
                         // Replace-air stays on until a GUI option exists for it.
@@ -178,6 +188,8 @@ void MapHost::clearSelection() { view_.clearSelection(); }
 void MapHost::copySelectionToClipboard(int dim) {
     const auto& selection = view_.selection();
     if (selection.isEmpty()) return;
+    PleaseWaitScope wait;
+
     ExportedRegion region;
     auto sel = selection.region();
     for (const auto& r : sel) {
@@ -191,7 +203,7 @@ void MapHost::copySelectionToClipboard(int dim) {
     if (region.isEmpty()) return;
     auto data = region.serialize();
     auto* md = new QMimeData();
-    md->setData("application/x-bedrockmap-region", QByteArray(data.data(), static_cast<int>(data.size())));
+    clipboard_data::write(*md, clipboard_data::CHUNK_REGION_MIME_TYPE, QByteArray(data.data(), static_cast<int>(data.size())));
     auto* clip = QApplication::clipboard();
     clip->clear(QClipboard::Clipboard);
     clip->setMimeData(md, QClipboard::Clipboard);
@@ -199,15 +211,12 @@ void MapHost::copySelectionToClipboard(int dim) {
 }
 
 void MapHost::pasteFromClipboard(int dim) {
+    PleaseWaitScope wait;
     auto* clip = QApplication::clipboard();
-    const auto* md = clip->mimeData();
-    if (!md || !md->hasFormat("application/x-bedrockmap-region")) {
-        WARN(msg::PASTE_NO_DATA());
-        return;
-    }
-    QByteArray raw_data = md->data("application/x-bedrockmap-region");
+    const QByteArray raw_data = clipboard_data::read(clip ? clip->mimeData() : nullptr, clipboard_data::CHUNK_REGION_MIME_TYPE,
+                                                     {QStringLiteral("bchks")});
     if (raw_data.isEmpty()) {
-        INFO(msg::PASTE_DATA_EMPTY());
+        WARN(msg::PASTE_NO_DATA());
         return;
     }
     bl::chunk_pos anchor(0, 0, dim);
@@ -234,9 +243,8 @@ void MapHost::exportSelectionToFile(int dim) {
     INFO(msg::EXPORT_COMPLETE());
 }
 
-void MapHost::exportSelectionToMcstructure(int dim, bool compress, bool exportEntities, const std::optional<bl::block_box>& blockBounds,
-                                           int32_t version) {
-    if (view_.selection().isEmpty() || !level_loader_) return;
+void MapHost::exportSelectionToMcstructure(int dim, const bl::block_box& blockBounds, bool compress, bool exportEntities, int32_t version) {
+    if (view_.selection().isEmpty() || !level_loader_ || !blockBounds.is_valid()) return;
 
     const auto filePath =
         QFileDialog::getSaveFileName(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"), {}, tr("MCStructure files (*.mcstructure)"));
@@ -245,8 +253,8 @@ void MapHost::exportSelectionToMcstructure(int dim, bool compress, bool exportEn
     QString outputPath = filePath;
     if (QFileInfo(outputPath).suffix().isEmpty()) outputPath += QStringLiteral(".mcstructure");
 
-    if (!BlockRegionOperator::exportMcstructure(view_.selection().region(), outputPath, *level_loader_, dim, compress, blockBounds, version,
-                                                exportEntities)) {
+    PleaseWaitScope wait;
+    if (!BlockRegionOperator::exportMcstructure(outputPath, *level_loader_, dim, blockBounds, compress, version, exportEntities)) {
         QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"), tr("mapHost.rightMenu.exportMcstructureFailed"));
         return;
     }
@@ -357,6 +365,7 @@ void MapHost::show3DView(int dim) {
 }
 
 bool MapHost::beginPaste(const QByteArray& data, int dim, const bl::chunk_pos& at) {
+    PleaseWaitScope wait;
     if (!import_overlay_->startPaste(data, dim, at)) return false;
     view_.notifyChanged();
     return true;

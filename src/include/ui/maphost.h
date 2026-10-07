@@ -98,8 +98,8 @@ class MapHost : public QObject {
     void copySelectionToClipboard(int dim);
     void pasteFromClipboard(int dim);
     void exportSelectionToFile(int dim);
-    void exportSelectionToMcstructure(int dim, bool compress = false, bool exportEntities = false,
-                                      const std::optional<bl::block_box>& blockBounds = std::nullopt, int32_t version = 1);
+    void exportSelectionToMcstructure(int dim, const bl::block_box& blockBounds, bool compress = false, bool exportEntities = false,
+                                      int32_t version = 1);
     void importFromFile(int dim);
     void deleteSelection(int dim);
     void createVoidSelection(int dim);

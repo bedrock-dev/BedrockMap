@@ -392,9 +392,7 @@ QString LevelPageWidget::getLevelName() {
     return QString::fromStdString(level_loader_->level().dat().level_name());
 }
 
-bool LevelPageWidget::isDirty() const {
-    return (global_data_panel_ && global_data_panel_->isDirty()) || level_loader_->isDirty();
-}
+bool LevelPageWidget::isDirty() const { return (global_data_panel_ && global_data_panel_->isDirty()) || level_loader_->isDirty(); }
 
 void LevelPageWidget::refreshDirty() {
     auto dirty = isDirty();

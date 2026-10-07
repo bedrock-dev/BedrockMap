@@ -18,4 +18,14 @@ class PleaseWaitDialog : public QDialog {
     QLabel* label_{nullptr};
 };
 
+/// Shows the shared wait dialog for the lifetime of a synchronous operation.
+class PleaseWaitScope {
+   public:
+    PleaseWaitScope();
+    ~PleaseWaitScope();
+
+    PleaseWaitScope(const PleaseWaitScope&) = delete;
+    PleaseWaitScope& operator=(const PleaseWaitScope&) = delete;
+};
+
 #endif  // BEDROCKMAP_PLEASEWAITDIALOG_H

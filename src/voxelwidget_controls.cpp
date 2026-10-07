@@ -20,6 +20,10 @@ namespace {
     constexpr float VIEW_HALF_HEIGHT = 20.710678f;
     constexpr float SELECTION_HANDLE_SCREEN_SIZE_PX = 8.0f;
     constexpr float SELECTION_HANDLE_PICK_RADIUS = SELECTION_HANDLE_SCREEN_SIZE_PX * 1.35f;
+
+    QVector3D toVector(const bl::block_pos& position) {
+        return {static_cast<float>(position.x), static_cast<float>(position.y), static_cast<float>(position.z)};
+    }
 }  // namespace
 
 void VoxelWidget::setupShortcutHelpButton() {
@@ -191,7 +195,7 @@ QPointF VoxelWidget::projectToWidget(const QVector3D& point, bool* visible) cons
 }
 
 VoxelWidget::SelectionHandle VoxelWidget::pickSelectionHandle(const QPointF& position) const {
-    if (!selection_enabled_ || !selection_.isValid()) return SelectionHandle::None;
+    if (!selection_enabled_ || !selection_.is_valid()) return SelectionHandle::None;
 
     constexpr std::array<SelectionHandle, 6> handles = {
         SelectionHandle::MinX, SelectionHandle::MaxX, SelectionHandle::MinY,
@@ -245,10 +249,11 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
             minimum.setY(std::clamp(minimum.y(), 0.0f, sizeY - span.y()));
             minimum.setZ(std::clamp(minimum.z(), 0.0f, sizeZ - span.z()));
         }
-        if (minimum == selection_.minimum) return;
+        const bl::block_pos newMinimum{qRound(minimum.x()), qRound(minimum.y()), qRound(minimum.z())};
+        if (newMinimum == selection_.min_pos) return;
 
-        selection_.minimum = minimum;
-        selection_.maximum = minimum + span;
+        selection_.min_pos = newMinimum;
+        selection_.max_pos = {newMinimum.x + qRound(span.x()), newMinimum.y + qRound(span.y()), newMinimum.z + qRound(span.z())};
         buildSelectionVertices();
         if (gl_initialized_) {
             makeCurrent();
@@ -271,44 +276,44 @@ void VoxelWidget::updateSelectionFromDrag(const QPointF& position) {
     const int sizeY = static_cast<int>(voxel_data_.size());
     const int sizeZ = static_cast<int>(voxel_data_[0][0].size());
     bool changed = false;
-    auto assign = [&changed](float& target, int newValue) {
-        if (qRound(target) == newValue) return;
-        target = static_cast<float>(newValue);
+    auto assign = [&changed](int& target, int newValue) {
+        if (target == newValue) return;
+        target = newValue;
         changed = true;
     };
 
-    float minimumX = selection_.minimum.x();
-    float minimumY = selection_.minimum.y();
-    float minimumZ = selection_.minimum.z();
-    float maximumX = selection_.maximum.x();
-    float maximumY = selection_.maximum.y();
-    float maximumZ = selection_.maximum.z();
+    int minimumX = selection_.min_pos.x;
+    int minimumY = selection_.min_pos.y;
+    int minimumZ = selection_.min_pos.z;
+    int maximumX = selection_.max_pos.x;
+    int maximumY = selection_.max_pos.y;
+    int maximumZ = selection_.max_pos.z;
     switch (active_selection_handle_) {
         case SelectionHandle::MinX:
-            assign(minimumX, std::clamp(value, 0, qRound(maximumX) - 1));
+            assign(minimumX, std::clamp(value, 0, maximumX - 1));
             break;
         case SelectionHandle::MaxX:
-            assign(maximumX, std::clamp(value, qRound(minimumX) + 1, sizeX));
+            assign(maximumX, std::clamp(value, minimumX + 1, sizeX));
             break;
         case SelectionHandle::MinY:
-            assign(minimumY, std::clamp(value, 0, qRound(maximumY) - 1));
+            assign(minimumY, std::clamp(value, 0, maximumY - 1));
             break;
         case SelectionHandle::MaxY:
-            assign(maximumY, std::clamp(value, qRound(minimumY) + 1, sizeY));
+            assign(maximumY, std::clamp(value, minimumY + 1, sizeY));
             break;
         case SelectionHandle::MinZ:
-            assign(minimumZ, std::clamp(value, 0, qRound(maximumZ) - 1));
+            assign(minimumZ, std::clamp(value, 0, maximumZ - 1));
             break;
         case SelectionHandle::MaxZ:
-            assign(maximumZ, std::clamp(value, qRound(minimumZ) + 1, sizeZ));
+            assign(maximumZ, std::clamp(value, minimumZ + 1, sizeZ));
             break;
         case SelectionHandle::None:
             break;
     }
     if (!changed) return;
 
-    selection_.minimum = QVector3D(minimumX, minimumY, minimumZ);
-    selection_.maximum = QVector3D(maximumX, maximumY, maximumZ);
+    selection_.min_pos = {minimumX, minimumY, minimumZ};
+    selection_.max_pos = {maximumX, maximumY, maximumZ};
     buildSelectionVertices();
     if (gl_initialized_) {
         makeCurrent();
@@ -334,13 +339,13 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
                     QVector3D(0.0f, voxel_size_, 0.0f),
                     QVector3D(0.0f, 0.0f, voxel_size_),
                 };
-                const QVector3D center = (selection_.minimum + selection_.maximum) * 0.5f * voxel_size_;
+                const QVector3D center = (toVector(selection_.min_pos) + toVector(selection_.max_pos)) * 0.5f * voxel_size_;
                 const QPointF projectedCenter = projectToWidget(center);
                 for (int axis = 0; axis < 3; ++axis) {
                     selection_drag_screen_axes_[axis] = projectToWidget(center + worldAxes[axis]) - projectedCenter;
                 }
-                selection_drag_start_minimum_ = selection_.minimum;
-                selection_drag_start_maximum_ = selection_.maximum;
+                selection_drag_start_minimum_ = toVector(selection_.min_pos);
+                selection_drag_start_maximum_ = toVector(selection_.max_pos);
                 setCursor(Qt::SizeAllCursor);
                 buildSelectionVertices();
                 if (gl_initialized_) {
@@ -395,22 +400,22 @@ void VoxelWidget::mousePressEvent(QMouseEvent* e) {
             }
             switch (active_selection_handle_) {
                 case SelectionHandle::MinX:
-                    selection_drag_start_value_ = qRound(selection_.minimum.x());
+                    selection_drag_start_value_ = selection_.min_pos.x;
                     break;
                 case SelectionHandle::MaxX:
-                    selection_drag_start_value_ = qRound(selection_.maximum.x());
+                    selection_drag_start_value_ = selection_.max_pos.x;
                     break;
                 case SelectionHandle::MinY:
-                    selection_drag_start_value_ = qRound(selection_.minimum.y());
+                    selection_drag_start_value_ = selection_.min_pos.y;
                     break;
                 case SelectionHandle::MaxY:
-                    selection_drag_start_value_ = qRound(selection_.maximum.y());
+                    selection_drag_start_value_ = selection_.max_pos.y;
                     break;
                 case SelectionHandle::MinZ:
-                    selection_drag_start_value_ = qRound(selection_.minimum.z());
+                    selection_drag_start_value_ = selection_.min_pos.z;
                     break;
                 case SelectionHandle::MaxZ:
-                    selection_drag_start_value_ = qRound(selection_.maximum.z());
+                    selection_drag_start_value_ = selection_.max_pos.z;
                     break;
                 case SelectionHandle::None:
                     break;

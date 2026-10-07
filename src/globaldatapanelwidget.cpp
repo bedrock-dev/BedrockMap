@@ -7,7 +7,6 @@
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTabBar>
-
 #include <algorithm>
 
 #include "color.h"
@@ -42,9 +41,7 @@ namespace {
         return data;
     }
 
-    QIcon imageIcon(QImage* image) {
-        return image ? QIcon(QPixmap::fromImage(*image)) : QIcon();
-    }
+    QIcon imageIcon(QImage* image) { return image ? QIcon(QPixmap::fromImage(*image)) : QIcon(); }
 
 }  // namespace
 
@@ -295,7 +292,8 @@ void GlobalDataPanelWidget::loadGlobalData(GlobalNBTLoadResult& result) {
 }
 
 bool GlobalDataPanelWidget::isDirty() const {
-    return std::any_of(editor_tabs_.begin(), editor_tabs_.end(), [](const EditorTab& entry) { return entry.editor && entry.editor->dirty(); });
+    return std::any_of(editor_tabs_.begin(), editor_tabs_.end(),
+                       [](const EditorTab& entry) { return entry.editor && entry.editor->dirty(); });
 }
 
 std::unordered_map<std::string, std::string> GlobalDataPanelWidget::collectModifyCache() const {

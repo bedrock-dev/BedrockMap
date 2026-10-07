@@ -1,13 +1,18 @@
+#include <QApplication>
+#include <QClipboard>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QScrollArea>
 #include <QSplitter>
 #include <memory>
 
 #include "color.h"
 #include "mcstructure.h"
+#include "clipboarddata.h"
+#include "pleasewaitdialog.h"
 #include "voxelwidget.h"
 
 namespace {
@@ -15,6 +20,18 @@ namespace {
     // world coordinates so the numbers match the in-game positions.
     QVector3D toVector(const bl::block_pos& pos) {
         return {static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z)};
+    }
+
+    int axisCoordinate(const bl::block_pos& pos, int axis) { return axis == 0 ? pos.x : (axis == 1 ? pos.y : pos.z); }
+
+    void setAxisCoordinate(bl::block_pos& pos, int axis, int value) {
+        if (axis == 0) {
+            pos.x = value;
+        } else if (axis == 1) {
+            pos.y = value;
+        } else {
+            pos.z = value;
+        }
     }
 
     QSpinBox* makeCoordinateBox(QWidget* parent) {
@@ -86,11 +103,16 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     auto* panelScroll = new QScrollArea(splitter);
     panelScroll->setWidgetResizable(true);
     panelScroll->setWidget(panel);
-    panelScroll->setMinimumWidth(360);
+    // The panel is hosted in a splitter and must be allowed to collapse fully.
+    // Its controls keep a useful width when visible, but must not impose a
+    // minimum width on the splitter while it is being hidden.
+    panel->setMinimumWidth(0);
+    panelScroll->setMinimumWidth(0);
     splitter->addWidget(panelScroll);
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);
-    splitter->setChildrenCollapsible(false);
+    splitter->setCollapsible(0, false);
+    splitter->setCollapsible(1, true);
     splitter->setSizes({840, 400});
 
     auto* layout = new QVBoxLayout(this);
@@ -101,9 +123,9 @@ VoxelPreviewWidget::VoxelPreviewWidget(QWidget* parent) : QWidget(parent) {
     setLayout(layout);
     setGeometry({0, 0, 1200, 900});
 
-    connect(voxelWidget_, &VoxelWidget::selectionChanged, this, [this](VoxelSelection) {
+    connect(voxelWidget_, &VoxelWidget::selectionChanged, this, [this](bl::block_box) {
         refreshSelectionFields();
-        if (import_mode_) voxelWidget_->setPreviewOffset(voxelWidget_->getSelection().minimum);
+        if (import_mode_) voxelWidget_->setPreviewOffset(toVector(voxelWidget_->getSelection().min_pos));
     });
     connect(voxelWidget_, &VoxelWidget::selectionEnabledChanged, this, [this](bool enabled) {
         if (selection_group_ && selection_group_->isChecked() != enabled) {
@@ -260,16 +282,31 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
     mcstructure_import_button_ = importButton;
     auto* exportButton = new QPushButton(tr("voxelPreviewWidget.exportMcstructure"), group);
     mcstructure_export_button_ = exportButton;
+    auto* copyButton = new QPushButton(tr("voxelPreviewWidget.copyMcstructure"), group);
+    copyButton->setEnabled(false);
+    mcstructure_copy_button_ = copyButton;
+    auto* pasteButton = new QPushButton(tr("voxelPreviewWidget.pasteMcstructure"), group);
+    pasteButton->setEnabled(false);
+    mcstructure_paste_button_ = pasteButton;
     mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), group);
     mcstructureEntitiesBox_->setChecked(true);
     mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), group);
     mcstructureNewFormatBox_ = new QCheckBox(tr("voxelPreviewWidget.useNewFormat"), group);
     mcstructureNewFormatBox_->setToolTip(tr("voxelPreviewWidget.useNewFormat.tooltip"));
     connect(exportButton, &QPushButton::clicked, this, [this]() {
-        emit exportMcstructureRequested(voxelWidget_->getSelection(), voxelWidget_->isSelectionEnabled(),
-                                        mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
+        emit exportMcstructureRequested(exportBounds(), mcstructureCompressBox_->isChecked(), mcstructureEntitiesBox_->isChecked(),
                                         mcstructureNewFormatBox_->isChecked());
     });
+    connect(copyButton, &QPushButton::clicked, this, [this]() {
+        emit copyMcstructureRequested(exportBounds(), mcstructureEntitiesBox_->isChecked(), mcstructureNewFormatBox_->isChecked());
+    });
+    connect(pasteButton, &QPushButton::clicked, this, &VoxelPreviewWidget::pasteMcstructureFromClipboard);
+
+    auto* clipboardRow = new QHBoxLayout();
+    clipboardRow->setContentsMargins(0, 0, 0, 0);
+    clipboardRow->setSpacing(4);
+    clipboardRow->addWidget(copyButton);
+    clipboardRow->addWidget(pasteButton);
 
     auto* buttonRow = new QHBoxLayout();
     buttonRow->setContentsMargins(0, 0, 0, 0);
@@ -277,6 +314,7 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
     buttonRow->addWidget(exportButton);
     buttonRow->addWidget(importButton);
 
+    layout->addLayout(clipboardRow);
     auto* optionRow = new QHBoxLayout();
     optionRow->setContentsMargins(0, 0, 0, 0);
     optionRow->setSpacing(8);
@@ -310,6 +348,7 @@ void VoxelPreviewWidget::chooseImportFile() {
         QFileDialog::getOpenFileName(this, tr("voxelPreviewWidget.importMcstructure"), QString(), tr("MCStructure files (*.mcstructure)"));
     if (filePath.isEmpty()) return;
 
+    PleaseWaitScope wait;
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
         LOG_F(WARNING, "Can not open mcstructure file: %s", filePath.toStdString().c_str());
@@ -317,16 +356,52 @@ void VoxelPreviewWidget::chooseImportFile() {
         return;
     }
     const QByteArray raw = file.readAll();
+    if (!beginImportFromRaw(raw)) {
+        LOG_F(WARNING, "Invalid mcstructure file: %s", filePath.toStdString().c_str());
+    }
+}
+
+bool VoxelPreviewWidget::beginImportFromRaw(const QByteArray& raw) {
+    if (raw.isEmpty()) {
+        QMessageBox::warning(this, tr("voxelPreviewWidget.importMcstructure"), tr("voxelPreviewWidget.import.invalidFile"));
+        return false;
+    }
+
     auto structure = std::make_shared<bl::mcstructure>(
         bl::parse_mcstructure(reinterpret_cast<const byte_t*>(raw.constData()), static_cast<size_t>(raw.size())));
     if (structure->size_x() <= 0 || structure->size_y() <= 0 || structure->size_z() <= 0) {
-        LOG_F(WARNING, "Invalid mcstructure file: %s", filePath.toStdString().c_str());
         QMessageBox::warning(this, tr("voxelPreviewWidget.importMcstructure"), tr("voxelPreviewWidget.import.invalidFile"));
-        return;
+        return false;
     }
 
     import_structure_ = std::move(structure);
     beginImportMode(import_structure_->size());
+    return true;
+}
+
+void VoxelPreviewWidget::pasteMcstructureFromClipboard() {
+    PleaseWaitScope wait;
+    const QMimeData* mimeData = QApplication::clipboard() ? QApplication::clipboard()->mimeData() : nullptr;
+    const QByteArray raw = clipboard_data::read(mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE, {QStringLiteral("mcstructure")});
+    if (raw.isEmpty()) {
+        QMessageBox::warning(this, tr("voxelPreviewWidget.pasteMcstructure"), tr("voxelPreviewWidget.clipboard.empty"));
+        return;
+    }
+    beginImportFromRaw(raw);
+}
+
+bl::block_box VoxelPreviewWidget::exportBounds() const {
+    const QVector3D modelSize = voxelWidget_->modelSize();
+    if (modelSize.x() <= 0.0f || modelSize.y() <= 0.0f || modelSize.z() <= 0.0f) return {};
+
+    const auto modelBounds =
+        bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(std::round(modelSize.x())),
+                                         static_cast<int>(std::round(modelSize.y())), static_cast<int>(std::round(modelSize.z())));
+    if (voxelWidget_->isSelectionEnabled()) {
+        const auto selection = voxelWidget_->getSelection().normalized().intersected(modelBounds);
+        if (selection.is_valid()) return selection;
+    }
+    return modelBounds;
 }
 
 void VoxelPreviewWidget::beginImportMode(const bl::block_pos& importedSize) {
@@ -345,9 +420,11 @@ void VoxelPreviewWidget::beginImportMode(const bl::block_pos& importedSize) {
     // lock before setting the box: a locked selection may exceed the model bounds
     voxelWidget_->setSelectionLocked(true);
     voxelWidget_->setSelectionEnabled(true);
-    voxelWidget_->setSelection({minimum, minimum + span});
+    voxelWidget_->setSelection(
+        {{static_cast<int>(minimum.x()), static_cast<int>(minimum.y()), static_cast<int>(minimum.z())},
+         {static_cast<int>(minimum.x() + span.x()), static_cast<int>(minimum.y() + span.y()), static_cast<int>(minimum.z() + span.z())}});
     voxelWidget_->setSelectionMoveMode(true);
-    voxelWidget_->setPreviewOffset(voxelWidget_->getSelection().minimum);
+    voxelWidget_->setPreviewOffset(toVector(voxelWidget_->getSelection().min_pos));
 
     // The selection must stay on while placing, so the group checkbox is removed
     // instead of disabled (disabling it would grey out the position fields too).
@@ -357,6 +434,8 @@ void VoxelPreviewWidget::beginImportMode(const bl::block_pos& importedSize) {
     selection_move_box_->setEnabled(false);
     mcstructure_import_button_->setEnabled(false);
     mcstructure_export_button_->setEnabled(false);
+    mcstructure_copy_button_->setEnabled(false);
+    mcstructure_paste_button_->setEnabled(false);
     glb_export_button_->setEnabled(false);
     mcstructureEntitiesBox_->setEnabled(false);
     mcstructureNewFormatBox_->setEnabled(false);
@@ -376,6 +455,8 @@ void VoxelPreviewWidget::endImportMode() {
     for (QSpinBox* box : selection_max_boxes_) box->setEnabled(true);
     selection_move_box_->setEnabled(true);
     mcstructure_export_button_->setEnabled(true);
+    mcstructure_copy_button_->setEnabled(true);
+    mcstructure_paste_button_->setEnabled(true);
     glb_export_button_->setEnabled(true);
     mcstructureEntitiesBox_->setEnabled(true);
     mcstructureNewFormatBox_->setEnabled(true);
@@ -394,9 +475,7 @@ QWidget* VoxelPreviewWidget::buildImportBar() {
 
     auto* confirmButton = new QPushButton(tr("voxelPreviewWidget.import.confirm"), bar);
     connect(confirmButton, &QPushButton::clicked, this, [this]() {
-        VoxelSelection placement = voxelWidget_->getSelection();
-        placement.minimum += worldOrigin();
-        placement.maximum += worldOrigin();
+        bl::block_box placement = voxelWidget_->getSelection().translated(voxel_origin_);
         emit importConfirmed(placement, import_structure_);
         endImportMode();
     });
@@ -415,9 +494,13 @@ void VoxelPreviewWidget::refreshModelInfo() {
     if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) {
         model_info_label_->setText(tr("voxelPreviewWidget.model.empty"));
         if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(false);
+        if (mcstructure_copy_button_) mcstructure_copy_button_->setEnabled(false);
+        if (mcstructure_paste_button_) mcstructure_paste_button_->setEnabled(false);
         return;
     }
     if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(!import_mode_);
+    if (mcstructure_copy_button_) mcstructure_copy_button_->setEnabled(!import_mode_);
+    if (mcstructure_paste_button_) mcstructure_paste_button_->setEnabled(!import_mode_);
 
     const QVector3D origin = worldOrigin();
     const QVector3D end = origin + size;
@@ -438,7 +521,7 @@ void VoxelPreviewWidget::refreshSelectionFields() {
     const QVector3D size = voxelWidget_->modelSize();
     const bool hasModel = size.x() > 0.0f && size.y() > 0.0f && size.z() > 0.0f;
     const QVector3D origin = worldOrigin();
-    const VoxelSelection selection = voxelWidget_->getSelection();
+    const bl::block_box selection = voxelWidget_->getSelection();
 
     syncing_selection_fields_ = true;
     for (int axis = 0; axis < 3; ++axis) {
@@ -446,8 +529,8 @@ void VoxelPreviewWidget::refreshSelectionFields() {
         const int modelHigh = static_cast<int>(std::round(origin[axis] + size[axis]));
         // an import placement box may extend past the model bounds, so the fields
         // cover the model and the current selection
-        const int selectionLow = modelLow + static_cast<int>(std::round(selection.minimum[axis]));
-        const int selectionHigh = modelLow + static_cast<int>(std::round(selection.maximum[axis]));
+        const int selectionLow = modelLow + axisCoordinate(selection.min_pos, axis);
+        const int selectionHigh = modelLow + axisCoordinate(selection.max_pos, axis);
         const int low = std::min(modelLow, selectionLow);
         const int high = std::max(modelHigh, selectionHigh);
         // the maximum boundary is exclusive, so it can never equal the minimum
@@ -463,7 +546,7 @@ void VoxelPreviewWidget::refreshSelectionFields() {
 void VoxelPreviewWidget::applySelectionFields() {
     if (syncing_selection_fields_) return;
     const QVector3D origin = worldOrigin();
-    VoxelSelection selection;
+    bl::block_box selection;
     for (int axis = 0; axis < 3; ++axis) {
         int low = selection_min_boxes_[axis]->value();
         int high = selection_max_boxes_[axis]->value();
@@ -476,11 +559,11 @@ void VoxelPreviewWidget::applySelectionFields() {
                 high = low + 1;
             }
         }
-        selection.minimum[axis] = static_cast<float>(low);
-        selection.maximum[axis] = static_cast<float>(high);
+        setAxisCoordinate(selection.min_pos, axis, low);
+        setAxisCoordinate(selection.max_pos, axis, high);
     }
-    selection.minimum -= origin;
-    selection.maximum -= origin;
+    selection.min_pos -= voxel_origin_;
+    selection.max_pos -= voxel_origin_;
     voxelWidget_->setSelection(selection);
     refreshSelectionFields();  // the widget clamps, so mirror the committed values back
 }

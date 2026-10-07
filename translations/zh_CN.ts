@@ -843,6 +843,7 @@
     <message>
         <location filename="../src/maphost.cpp"/>
         <location filename="../src/maphost.cpp"/>
+        <location filename="../src/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructure</source>
         <translation>导出 mcstructure</translation>
     </message>
@@ -852,6 +853,7 @@
         <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
     <message>
+        <location filename="../src/maphost.cpp"/>
         <location filename="../src/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructureFailed</source>
         <translation>mcstructure 导出失败</translation>
@@ -1881,6 +1883,22 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.copyMcstructure</source>
+        <translation>复制到剪贴板</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.pasteMcstructure</source>
+        <translation>从剪贴板粘贴</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.clipboard.empty</source>
+        <translation>剪贴板中没有 mcstructure 数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>压缩</translation>
     </message>
@@ -1895,6 +1913,7 @@
         <translation>使用新格式</translation>
     </message>
     <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -2029,6 +2048,7 @@
         <translation>无法打开文件。</translation>
     </message>
     <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.invalidFile</source>
         <translation>不是有效的 mcstructure 文件。</translation>

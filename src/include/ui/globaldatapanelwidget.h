@@ -6,7 +6,6 @@
 #include <QTabWidget>
 #include <QVector>
 #include <QWidget>
-
 #include <string>
 #include <unordered_map>
 #include <vector>

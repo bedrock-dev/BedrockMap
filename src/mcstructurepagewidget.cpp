@@ -1,10 +1,13 @@
 #include "mcstructurepagewidget.h"
 
+#include <QApplication>
+#include <QClipboard>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
 #include <QLabel>
+#include <QMimeData>
 #include <QSplitter>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -14,6 +17,8 @@
 
 #include "chunk_data_position.h"
 #include "loguru/loguru.hpp"
+#include "clipboarddata.h"
+#include "pleasewaitdialog.h"
 
 namespace {
     constexpr qsizetype NBT_TREE_DISPLAY_LIMIT = 4 * 1024 * 1024;
@@ -22,19 +27,11 @@ namespace {
         return bl::block_box::from_min_and_size({0, 0, 0}, structure.size_x(), structure.size_y(), structure.size_z());
     }
 
-    bl::block_box blockBoxFromSelection(const VoxelSelection& selection) {
-        return {{static_cast<int>(std::floor(selection.minimum.x())), static_cast<int>(std::floor(selection.minimum.y())),
-                 static_cast<int>(std::floor(selection.minimum.z()))},
-                {static_cast<int>(std::ceil(selection.maximum.x())), static_cast<int>(std::ceil(selection.maximum.y())),
-                 static_cast<int>(std::ceil(selection.maximum.z()))}};
-    }
-
-    bl::block_box selectedBounds(const bl::mcstructure& structure, const VoxelSelection& selection) {
+    bl::block_box selectedBounds(const bl::mcstructure& structure, const bl::block_box& selection) {
         const auto bounds = fullBounds(structure);
-        if (!selection.isValid()) return bounds;
+        if (!selection.is_valid()) return {};
 
-        const auto selected = blockBoxFromSelection(selection).normalized().intersected(bounds);
-        return selected.is_valid() ? selected : bounds;
+        return selection.normalized().intersected(bounds);
     }
 
     std::unique_ptr<bl::nbt::compound_tag> blockEntityAtWorldPosition(const bl::nbt::compound_tag* source,
@@ -152,11 +149,15 @@ void McstructurePageWidget::setupUI() {
 
     voxel_preview_widget_ = new VoxelPreviewWidget(topSplitter);
     connect(voxel_preview_widget_, &VoxelPreviewWidget::exportMcstructureRequested, this,
-            [this](VoxelSelection selection, bool hasSelection, bool compress, bool exportEntities, bool useNewFormat) {
-                exportMcstructure(selection, hasSelection, compress, exportEntities, useNewFormat);
+            [this](bl::block_box selection, bool compress, bool exportEntities, bool useNewFormat) {
+                exportMcstructure(selection, compress, exportEntities, useNewFormat);
+            });
+    connect(voxel_preview_widget_, &VoxelPreviewWidget::copyMcstructureRequested, this,
+            [this](bl::block_box selection, bool exportEntities, bool useNewFormat) {
+                copyMcstructure(selection, exportEntities, useNewFormat);
             });
     connect(voxel_preview_widget_, &VoxelPreviewWidget::importConfirmed, this,
-            [](VoxelSelection placement, std::shared_ptr<const bl::mcstructure> imported) {
+            [](bl::block_box placement, std::shared_ptr<const bl::mcstructure> imported) {
                 // TODO: write the imported structure into this structure at the
                 // placement position and refresh the preview.
                 Q_UNUSED(placement);
@@ -232,12 +233,18 @@ bool McstructurePageWidget::loadStructure(const QString& path) {
     return true;
 }
 
-void McstructurePageWidget::exportMcstructure(const VoxelSelection& selection, bool hasSelection, bool /*compress*/, bool exportEntities,
-                                              bool useNewFormat) {
-    if (!structure_) return;
+QByteArray McstructurePageWidget::buildMcstructureRaw(const bl::block_box& selection, bool exportEntities, bool useNewFormat) const {
+    if (!structure_) return {};
+    const auto bounds = selectedBounds(*structure_, selection);
+    if (!bounds.is_valid()) return {};
 
-    const auto bounds = hasSelection ? selectedBounds(*structure_, selection) : fullBounds(*structure_);
-    if (!bounds.is_valid()) return;
+    const int32_t version = useNewFormat ? 2 : 1;
+    const auto raw = buildExportStructure(*structure_, bounds, version, exportEntities)->to_raw();
+    return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
+}
+
+void McstructurePageWidget::exportMcstructure(const bl::block_box& selection, bool /*compress*/, bool exportEntities, bool useNewFormat) {
+    if (!structure_) return;
 
     QString filePath = QFileDialog::getSaveFileName(this, tr("Export mcstructure"), structure_name_ + ".mcstructure",
                                                     tr("MCStructure files (*.mcstructure)"));
@@ -246,9 +253,25 @@ void McstructurePageWidget::exportMcstructure(const VoxelSelection& selection, b
         filePath += QStringLiteral(".mcstructure");
     }
 
-    const int32_t version = useNewFormat ? 2 : 1;
-    const bool ok = buildExportStructure(*structure_, bounds, version, exportEntities)->save_to_file(filePath.toStdString());
+    PleaseWaitScope wait;
+    const QByteArray raw = buildMcstructureRaw(selection, exportEntities, useNewFormat);
+    if (raw.isEmpty()) return;
+
+    QFile file(filePath);
+    const bool ok = file.open(QIODevice::WriteOnly) && file.write(raw) == raw.size();
     if (!ok) {
         LOG_F(WARNING, "Can not save mcstructure file: %s", filePath.toStdString().c_str());
     }
+}
+
+void McstructurePageWidget::copyMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat) {
+    if (!structure_ || !QApplication::clipboard()) return;
+
+    PleaseWaitScope wait;
+    const QByteArray raw = buildMcstructureRaw(selection, exportEntities, useNewFormat);
+    if (raw.isEmpty()) return;
+
+    auto* mimeData = new QMimeData();
+    clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE, raw);
+    QApplication::clipboard()->setMimeData(mimeData);
 }

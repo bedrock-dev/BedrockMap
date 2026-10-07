@@ -26,7 +26,7 @@ namespace {
 
     // Corner ambient occlusion, indexed by how many of the three neighbours around a corner are
     // filled (0 = most occluded). A face with no occlusion at all keeps its color unchanged.
-    constexpr float AO_BRIGHTNESS[4] = {0.60f, 0.75f, 0.88f, 1.0f};
+    constexpr float AO_BRIGHTNESS[4] = {0.68f, 0.80f, 0.91f, 1.0f};
 }  // namespace
 
 // index template for each face (2 triangles, 6 indices)
@@ -408,7 +408,7 @@ void VoxelWidget::paintGL() {
         glDepthMask(GL_TRUE);
     }
 
-    if (selection_enabled_ && selection_.isValid() && axis_shader_ && axis_shader_->isLinked() && !selection_vertices_.empty()) {
+    if (selection_enabled_ && selection_.is_valid() && axis_shader_ && axis_shader_->isLinked() && !selection_vertices_.empty()) {
         axis_shader_->bind();
         axis_shader_->setUniformValue("model", m_model);
         axis_shader_->setUniformValue("view", m_view);
@@ -515,9 +515,8 @@ void VoxelWidget::resetSelectionToModelBounds() {
         return;
     }
 
-    selection_.minimum = QVector3D(0.0f, 0.0f, 0.0f);
-    selection_.maximum = QVector3D(static_cast<float>(voxel_data_[0].size()), static_cast<float>(voxel_data_.size()),
-                                   static_cast<float>(voxel_data_[0][0].size()));
+    selection_ = bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(voxel_data_[0].size()), static_cast<int>(voxel_data_.size()),
+                                                  static_cast<int>(voxel_data_[0][0].size()));
     emit selectionChanged(selection_);
 }
 
@@ -525,10 +524,10 @@ void VoxelWidget::buildSelectionVertices() {
     selection_vertices_.clear();
     selection_fill_vertex_count_ = 0;
     selection_line_vertex_count_ = 0;
-    if (!selection_enabled_ || !selection_.isValid()) return;
+    if (!selection_enabled_ || !selection_.is_valid()) return;
 
-    const QVector3D minimum = selection_.minimum * voxel_size_;
-    const QVector3D maximum = selection_.maximum * voxel_size_;
+    const QVector3D minimum(selection_.min_pos.x * voxel_size_, selection_.min_pos.y * voxel_size_, selection_.min_pos.z * voxel_size_);
+    const QVector3D maximum(selection_.max_pos.x * voxel_size_, selection_.max_pos.y * voxel_size_, selection_.max_pos.z * voxel_size_);
     const QVector3D p[8] = {
         {minimum.x(), minimum.y(), minimum.z()}, {maximum.x(), minimum.y(), minimum.z()}, {maximum.x(), maximum.y(), minimum.z()},
         {minimum.x(), maximum.y(), minimum.z()}, {minimum.x(), minimum.y(), maximum.z()}, {maximum.x(), minimum.y(), maximum.z()},
@@ -589,8 +588,8 @@ void VoxelWidget::buildSelectionVertices() {
 }
 
 QVector3D VoxelWidget::selectionHandlePosition(SelectionHandle handle) const {
-    const QVector3D minimum = selection_.minimum * voxel_size_;
-    const QVector3D maximum = selection_.maximum * voxel_size_;
+    const QVector3D minimum(selection_.min_pos.x * voxel_size_, selection_.min_pos.y * voxel_size_, selection_.min_pos.z * voxel_size_);
+    const QVector3D maximum(selection_.max_pos.x * voxel_size_, selection_.max_pos.y * voxel_size_, selection_.max_pos.z * voxel_size_);
     const QVector3D center = (minimum + maximum) * 0.5f;
     switch (handle) {
         case SelectionHandle::MinX:
@@ -616,7 +615,7 @@ void VoxelWidget::setSelectionEnabled(bool enabled) {
     selection_enabled_ = enabled;
     active_selection_handle_ = SelectionHandle::None;
     unsetCursor();
-    if (selection_enabled_ && !selection_.isValid()) {
+    if (selection_enabled_ && !selection_.is_valid()) {
         resetSelectionToModelBounds();
     }
     buildSelectionVertices();
@@ -630,21 +629,22 @@ void VoxelWidget::setSelectionEnabled(bool enabled) {
     emit selectionChanged(selection_);
 }
 
-void VoxelWidget::setSelection(const VoxelSelection& selection) {
+void VoxelWidget::setSelection(const bl::block_box& selection) {
     const QVector3D size = modelSize();
     if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) return;
 
-    VoxelSelection candidate;
-    for (int axis = 0; axis < 3; ++axis) {
-        candidate.minimum[axis] = std::round(selection.minimum[axis]);
-        candidate.maximum[axis] = std::round(selection.maximum[axis]);
-        // A locked selection has a fixed size for import placement, so it may
-        // extend past the model bounds.
-        if (selection_locked_) continue;
-        candidate.minimum[axis] = std::clamp(candidate.minimum[axis], 0.0f, size[axis]);
-        candidate.maximum[axis] = std::clamp(candidate.maximum[axis], 0.0f, size[axis]);
+    bl::block_box candidate = selection;
+    // A locked selection has a fixed size for import placement, so it may
+    // extend past the model bounds.
+    if (!selection_locked_) {
+        candidate.min_pos.x = std::clamp(candidate.min_pos.x, 0, static_cast<int>(size.x()));
+        candidate.min_pos.y = std::clamp(candidate.min_pos.y, 0, static_cast<int>(size.y()));
+        candidate.min_pos.z = std::clamp(candidate.min_pos.z, 0, static_cast<int>(size.z()));
+        candidate.max_pos.x = std::clamp(candidate.max_pos.x, 0, static_cast<int>(size.x()));
+        candidate.max_pos.y = std::clamp(candidate.max_pos.y, 0, static_cast<int>(size.y()));
+        candidate.max_pos.z = std::clamp(candidate.max_pos.z, 0, static_cast<int>(size.z()));
     }
-    if (!candidate.isValid() || (candidate.minimum == selection_.minimum && candidate.maximum == selection_.maximum)) return;
+    if (!candidate.is_valid() || (candidate.min_pos == selection_.min_pos && candidate.max_pos == selection_.max_pos)) return;
 
     selection_ = candidate;
     buildSelectionVertices();
@@ -894,14 +894,14 @@ std::optional<bl::block_box> VoxelWidget::fullVoxelBounds() const {
 std::optional<bl::block_box> VoxelWidget::currentExportBounds() const {
     const auto fullBounds = fullVoxelBounds();
     if (!fullBounds) return std::nullopt;
-    if (!selection_enabled_ || !selection_.isValid()) return fullBounds;
+    if (!selection_enabled_ || !selection_.is_valid()) return fullBounds;
 
-    bl::block_box bounds{{std::clamp(static_cast<int>(std::floor(selection_.minimum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
-                          std::clamp(static_cast<int>(std::floor(selection_.minimum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
-                          std::clamp(static_cast<int>(std::floor(selection_.minimum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)},
-                         {std::clamp(static_cast<int>(std::ceil(selection_.maximum.x())), fullBounds->min_pos.x, fullBounds->max_pos.x),
-                          std::clamp(static_cast<int>(std::ceil(selection_.maximum.y())), fullBounds->min_pos.y, fullBounds->max_pos.y),
-                          std::clamp(static_cast<int>(std::ceil(selection_.maximum.z())), fullBounds->min_pos.z, fullBounds->max_pos.z)}};
+    bl::block_box bounds{{std::clamp(selection_.min_pos.x, fullBounds->min_pos.x, fullBounds->max_pos.x),
+                          std::clamp(selection_.min_pos.y, fullBounds->min_pos.y, fullBounds->max_pos.y),
+                          std::clamp(selection_.min_pos.z, fullBounds->min_pos.z, fullBounds->max_pos.z)},
+                         {std::clamp(selection_.max_pos.x, fullBounds->min_pos.x, fullBounds->max_pos.x),
+                          std::clamp(selection_.max_pos.y, fullBounds->min_pos.y, fullBounds->max_pos.y),
+                          std::clamp(selection_.max_pos.z, fullBounds->min_pos.z, fullBounds->max_pos.z)}};
     if (!bounds.is_valid()) return std::nullopt;
     return bounds;
 }
