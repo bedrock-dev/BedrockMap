@@ -156,6 +156,12 @@ void McstructurePageWidget::setupUI() {
             [this](bl::block_box selection, bool exportEntities, bool useNewFormat) {
                 copyMcstructure(selection, exportEntities, useNewFormat);
             });
+    connect(voxel_preview_widget_, &VoxelPreviewWidget::deleteSelectionRequested, this,
+            [this](bl::block_box selection, bool deleteEntities) { deleteMcstructureSelection(selection, deleteEntities); });
+    connect(voxel_preview_widget_, &VoxelPreviewWidget::cutSelectionRequested, this,
+            [this](bl::block_box selection, bool deleteEntities, bool useNewFormat) {
+                if (copyMcstructure(selection, deleteEntities, useNewFormat)) deleteMcstructureSelection(selection, deleteEntities);
+            });
     connect(voxel_preview_widget_, &VoxelPreviewWidget::importConfirmed, this,
             [](bl::block_box placement, std::shared_ptr<const bl::mcstructure> imported) {
                 // TODO: write the imported structure into this structure at the
@@ -264,14 +270,58 @@ void McstructurePageWidget::exportMcstructure(const bl::block_box& selection, bo
     }
 }
 
-void McstructurePageWidget::copyMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat) {
-    if (!structure_ || !QApplication::clipboard()) return;
+bool McstructurePageWidget::copyMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat) {
+    if (!structure_ || !QApplication::clipboard()) return false;
 
     PleaseWaitScope wait;
     const QByteArray raw = buildMcstructureRaw(selection, exportEntities, useNewFormat);
-    if (raw.isEmpty()) return;
+    if (raw.isEmpty()) return false;
 
     auto* mimeData = new QMimeData();
     clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE, raw);
     QApplication::clipboard()->setMimeData(mimeData);
+    return true;
+}
+
+void McstructurePageWidget::deleteMcstructureSelection(const bl::block_box& selection, bool deleteEntities) {
+    if (!structure_) return;
+
+    const auto bounds = selectedBounds(*structure_, selection);
+    if (!bounds.is_valid()) return;
+
+    PleaseWaitScope wait;
+    bl::mcstructure_builder builder(structure_->size(), structure_->origin(), structure_->version());
+    auto air = std::make_unique<bl::nbt::compound_tag>("");
+    air->put(new bl::nbt::string_tag("name", "minecraft:air"));
+    for (int layer = 0; layer < static_cast<int>(structure_->layer_count()); ++layer) {
+        for (int x = 0; x < structure_->size_x(); ++x) {
+            for (int y = 0; y < structure_->size_y(); ++y) {
+                for (int z = 0; z < structure_->size_z(); ++z) {
+                    const bl::block_pos position{x, y, z};
+                    if (bounds.contains(position)) {
+                        builder.set_block(layer, position, air.get());
+                        continue;
+                    }
+                    const auto* block = structure_->block_at(layer, x, y, z);
+                    if (block && block->tag) builder.set_block(layer, position, block->tag);
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < structure_->block_entity_count(); ++i) {
+        const auto position = structure_->block_entity_local_position(i);
+        if (bounds.contains(position)) continue;
+        builder.set_block_entity(position, structure_->block_entities()[i]);
+    }
+
+    // The chunk layer does not expose actor removal yet. Keep this branch so
+    // the checkbox semantics are ready when that API becomes available.
+    if (deleteEntities) {
+        // Reserved for actor removal; the current structure API has no removal operation.
+    }
+    for (const auto* entity : structure_->entities()) builder.add_entity(entity);
+
+    structure_ = std::make_shared<bl::mcstructure>(builder.build());
+    voxel_preview_widget_->loadMcstructureAsync(structure_);
 }

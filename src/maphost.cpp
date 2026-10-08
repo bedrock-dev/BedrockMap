@@ -62,23 +62,14 @@ MapHost::MapHost(QWidget* page, AsyncLevelLoader* loader)
             });
     connect(voxel_preview_window_, &VoxelPreviewWidget::copyMcstructureRequested, this,
             [this](bl::block_box selection, bool exportEntities, bool useNewFormat) {
-                if (view_.selection().isEmpty() || !level_loader_) return;
-                const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
-
-                PleaseWaitScope wait;
-                const auto raw = BlockRegionOperator::exportMcstructureData(*level_loader_, view_.dim(), blockBounds, false,
-                                                                            useNewFormat ? 2 : 1, exportEntities);
-                if (raw.empty()) {
-                    QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"),
-                                         tr("mapHost.rightMenu.exportMcstructureFailed"));
-                    return;
-                }
-
-                auto* mimeData = new QMimeData();
-                clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE,
-                                      QByteArray(raw.data(), static_cast<qsizetype>(raw.size())));
-                QApplication::clipboard()->setMimeData(mimeData);
-                INFO(msg::EXPORT_COMPLETE());
+                copyVoxelSelectionToMcstructure(selection, exportEntities, useNewFormat);
+            });
+    connect(voxel_preview_window_, &VoxelPreviewWidget::deleteSelectionRequested, this,
+            [this](bl::block_box selection, bool deleteEntities) { deleteVoxelSelection(selection, deleteEntities); });
+    connect(voxel_preview_window_, &VoxelPreviewWidget::cutSelectionRequested, this,
+            [this](bl::block_box selection, bool deleteEntities, bool useNewFormat) {
+                if (copyVoxelSelectionToMcstructure(selection, deleteEntities, useNewFormat))
+                    deleteVoxelSelection(selection, deleteEntities);
             });
     connect(voxel_preview_window_, &VoxelPreviewWidget::importConfirmed, this,
             [this](bl::block_box placement, std::shared_ptr<const bl::mcstructure> imported) {
@@ -293,6 +284,40 @@ bool MapHost::startChunkTask(GuiTaskRunner::Worker worker) {
     if (!level_loader_ || chunk_edit_task_.isRunning()) return false;
     PleaseWaitDialog::instance().showBusy();
     return chunk_edit_task_.start(std::move(worker));
+}
+
+bool MapHost::copyVoxelSelectionToMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat) {
+    if (view_.selection().isEmpty() || !level_loader_ || !selection.is_valid() || !QApplication::clipboard()) return false;
+
+    const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
+    PleaseWaitScope wait;
+    const auto raw = BlockRegionOperator::exportMcstructureData(*level_loader_, view_.dim(), blockBounds, false, useNewFormat ? 2 : 1,
+                                                                exportEntities);
+    if (raw.empty()) {
+        QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"),
+                             tr("mapHost.rightMenu.exportMcstructureFailed"));
+        return false;
+    }
+
+    auto* mimeData = new QMimeData();
+    clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE,
+                          QByteArray(raw.data(), static_cast<qsizetype>(raw.size())));
+    QApplication::clipboard()->setMimeData(mimeData);
+    INFO(msg::EXPORT_COMPLETE());
+    return true;
+}
+
+void MapHost::deleteVoxelSelection(const bl::block_box& selection, bool deleteEntities) {
+    if (view_.selection().isEmpty() || !level_loader_ || !selection.is_valid()) return;
+
+    const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
+    const int dim = view_.dim();
+    if (!startChunkTask([this, blockBounds, dim, deleteEntities](GuiTaskRunner* /*task*/) {
+            BlockRegionOperator::deleteBlocks(*level_loader_, dim, blockBounds, deleteEntities);
+        })) {
+        return;
+    }
+    reload_voxel_preview_pending_ = true;
 }
 
 void MapHost::applyImportedRegion(ExportedRegion region) {

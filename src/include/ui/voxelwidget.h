@@ -276,6 +276,8 @@ class VoxelPreviewWidget : public QWidget {
    signals:
     void exportMcstructureRequested(bl::block_box selection, bool compress, bool exportEntities, bool useNewFormat);
     void copyMcstructureRequested(bl::block_box selection, bool exportEntities, bool useNewFormat);
+    void deleteSelectionRequested(bl::block_box selection, bool deleteEntities);
+    void cutSelectionRequested(bl::block_box selection, bool deleteEntities, bool useNewFormat);
     /// World-space placement of the imported model: minimum corner inclusive, maximum exclusive.
     void importConfirmed(bl::block_box placement, std::shared_ptr<const bl::mcstructure> structure);
 
@@ -317,6 +319,8 @@ class VoxelPreviewWidget : public QWidget {
     QPushButton* mcstructure_export_button_{nullptr};
     QPushButton* mcstructure_copy_button_{nullptr};
     QPushButton* mcstructure_paste_button_{nullptr};
+    QPushButton* mcstructure_delete_button_{nullptr};
+    QPushButton* mcstructure_cut_button_{nullptr};
     QPushButton* glb_export_button_{nullptr};
     QWidget* import_bar_{nullptr};
     std::shared_ptr<const bl::mcstructure> import_structure_;

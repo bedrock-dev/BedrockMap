@@ -9,9 +9,9 @@
 #include <QSplitter>
 #include <memory>
 
+#include "clipboarddata.h"
 #include "color.h"
 #include "mcstructure.h"
-#include "clipboarddata.h"
 #include "pleasewaitdialog.h"
 #include "voxelwidget.h"
 
@@ -270,7 +270,7 @@ QWidget* VoxelPreviewWidget::buildViewPanel() {
 }
 
 QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
-    auto* group = new QGroupBox(QStringLiteral("mcstructure"), this);
+    auto* group = new QGroupBox(tr("voxelPreviewWidget.operations"), this);
     auto* layout = new QVBoxLayout(group);
     layout->setContentsMargins(8, 6, 8, 6);
     layout->setSpacing(4);
@@ -288,7 +288,13 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
     auto* pasteButton = new QPushButton(tr("voxelPreviewWidget.pasteMcstructure"), group);
     pasteButton->setEnabled(false);
     mcstructure_paste_button_ = pasteButton;
-    mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.exportEntities"), group);
+    auto* deleteButton = new QPushButton(tr("voxelPreviewWidget.deleteSelection"), group);
+    deleteButton->setEnabled(false);
+    mcstructure_delete_button_ = deleteButton;
+    auto* cutButton = new QPushButton(tr("voxelPreviewWidget.cutSelection"), group);
+    cutButton->setEnabled(false);
+    mcstructure_cut_button_ = cutButton;
+    mcstructureEntitiesBox_ = new QCheckBox(tr("voxelPreviewWidget.includeEntities"), group);
     mcstructureEntitiesBox_->setChecked(true);
     mcstructureCompressBox_ = new QCheckBox(tr("voxelPreviewWidget.compress"), group);
     mcstructureNewFormatBox_ = new QCheckBox(tr("voxelPreviewWidget.useNewFormat"), group);
@@ -301,12 +307,24 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
         emit copyMcstructureRequested(exportBounds(), mcstructureEntitiesBox_->isChecked(), mcstructureNewFormatBox_->isChecked());
     });
     connect(pasteButton, &QPushButton::clicked, this, &VoxelPreviewWidget::pasteMcstructureFromClipboard);
+    connect(deleteButton, &QPushButton::clicked, this, [this]() {
+        emit deleteSelectionRequested(exportBounds(), mcstructureEntitiesBox_->isChecked());
+    });
+    connect(cutButton, &QPushButton::clicked, this, [this]() {
+        emit cutSelectionRequested(exportBounds(), mcstructureEntitiesBox_->isChecked(), mcstructureNewFormatBox_->isChecked());
+    });
 
     auto* clipboardRow = new QHBoxLayout();
     clipboardRow->setContentsMargins(0, 0, 0, 0);
     clipboardRow->setSpacing(4);
     clipboardRow->addWidget(copyButton);
     clipboardRow->addWidget(pasteButton);
+
+    auto* editRow = new QHBoxLayout();
+    editRow->setContentsMargins(0, 0, 0, 0);
+    editRow->setSpacing(4);
+    editRow->addWidget(deleteButton);
+    editRow->addWidget(cutButton);
 
     auto* buttonRow = new QHBoxLayout();
     buttonRow->setContentsMargins(0, 0, 0, 0);
@@ -315,6 +333,7 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
     buttonRow->addWidget(importButton);
 
     layout->addLayout(clipboardRow);
+    layout->addLayout(editRow);
     auto* optionRow = new QHBoxLayout();
     optionRow->setContentsMargins(0, 0, 0, 0);
     optionRow->setSpacing(8);
@@ -436,6 +455,8 @@ void VoxelPreviewWidget::beginImportMode(const bl::block_pos& importedSize) {
     mcstructure_export_button_->setEnabled(false);
     mcstructure_copy_button_->setEnabled(false);
     mcstructure_paste_button_->setEnabled(false);
+    mcstructure_delete_button_->setEnabled(false);
+    mcstructure_cut_button_->setEnabled(false);
     glb_export_button_->setEnabled(false);
     mcstructureEntitiesBox_->setEnabled(false);
     mcstructureNewFormatBox_->setEnabled(false);
@@ -457,6 +478,8 @@ void VoxelPreviewWidget::endImportMode() {
     mcstructure_export_button_->setEnabled(true);
     mcstructure_copy_button_->setEnabled(true);
     mcstructure_paste_button_->setEnabled(true);
+    mcstructure_delete_button_->setEnabled(true);
+    mcstructure_cut_button_->setEnabled(true);
     glb_export_button_->setEnabled(true);
     mcstructureEntitiesBox_->setEnabled(true);
     mcstructureNewFormatBox_->setEnabled(true);
@@ -496,11 +519,15 @@ void VoxelPreviewWidget::refreshModelInfo() {
         if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(false);
         if (mcstructure_copy_button_) mcstructure_copy_button_->setEnabled(false);
         if (mcstructure_paste_button_) mcstructure_paste_button_->setEnabled(false);
+        if (mcstructure_delete_button_) mcstructure_delete_button_->setEnabled(false);
+        if (mcstructure_cut_button_) mcstructure_cut_button_->setEnabled(false);
         return;
     }
     if (mcstructure_import_button_) mcstructure_import_button_->setEnabled(!import_mode_);
     if (mcstructure_copy_button_) mcstructure_copy_button_->setEnabled(!import_mode_);
     if (mcstructure_paste_button_) mcstructure_paste_button_->setEnabled(!import_mode_);
+    if (mcstructure_delete_button_) mcstructure_delete_button_->setEnabled(!import_mode_);
+    if (mcstructure_cut_button_) mcstructure_cut_button_->setEnabled(!import_mode_);
 
     const QVector3D origin = worldOrigin();
     const QVector3D end = origin + size;

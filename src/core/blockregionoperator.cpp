@@ -93,6 +93,52 @@ namespace {
         return QRegion(QRect(first.x, first.z, last.x - first.x + 1, last.z - first.z + 1));
     }
 
+    std::unique_ptr<bl::nbt::compound_tag> makeAirBlock() {
+        auto air = std::make_unique<bl::nbt::compound_tag>("");
+        air->put(new bl::nbt::string_tag("name", "minecraft:air"));
+        return air;
+    }
+
+    bool deleteBlocksInRegion(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim,
+                              const std::optional<bl::block_box>& blockBounds, bool deleteEntities) {
+        if (chunkRegion.isEmpty()) return false;
+
+        const auto chunks = loadChunks(chunkRegion, loader, dim);
+        if (chunks.empty()) return false;
+
+        const auto air = makeAirBlock();
+        std::vector<bl::chunk_pos> edited;
+        edited.reserve(chunks.size());
+        for (const auto& [key, source] : chunks) {
+            if (!source) continue;
+
+            const int baseX = key.first * 16;
+            const int baseZ = key.second * 16;
+            const auto [chunkMinY, chunkMaxY] = source->get_y_range();
+            if (chunkMaxY < chunkMinY) continue;
+
+            const bl::block_box chunkBounds{{baseX, chunkMinY, baseZ}, {baseX + 16, chunkMaxY + 1, baseZ + 16}};
+            const auto intersection = blockBounds ? chunkBounds.intersected(*blockBounds) : chunkBounds;
+            if (!intersection.is_valid()) continue;
+
+            const bl::block_box local{{intersection.min_pos.x - baseX, intersection.min_pos.y, intersection.min_pos.z - baseZ},
+                                      {intersection.max_pos.x - baseX, intersection.max_pos.y, intersection.max_pos.z - baseZ}};
+            source->fill_blocks(local, air.get());
+            source->compact();
+
+            if (deleteEntities) {
+                // Reserved for the chunk actor-removal API; do not alter entity data yet.
+            }
+
+            loader.putRawChunk(source->to_raw_chunk());
+            edited.emplace_back(key.first, key.second, dim);
+        }
+
+        if (edited.empty()) return false;
+        loader.invalidateRegionTiles(edited);
+        return true;
+    }
+
 }  // namespace
 
 std::string BlockRegionOperator::exportMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
@@ -255,4 +301,14 @@ bool BlockRegionOperator::importMcstructure(const bl::mcstructure& structure, co
     LOG_F(INFO, "BlockRegionOperator: imported mcstructure (%d x %d x %d) at (%d, %d, %d) into %llu chunks", size.x, size.y, size.z,
           position.x, position.y, position.z, static_cast<unsigned long long>(edited.size()));
     return true;
+}
+
+bool BlockRegionOperator::deleteBlocks(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, bool deleteEntities) {
+    if (!blockBounds.is_valid()) return false;
+    return deleteBlocksInRegion(chunkRegionForBounds(blockBounds), loader, dim, blockBounds, deleteEntities);
+}
+
+bool BlockRegionOperator::deleteBlocks(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim,
+                                       const std::optional<bl::block_box>& blockBounds) {
+    return deleteBlocksInRegion(chunkRegion, loader, dim, blockBounds, false);
 }

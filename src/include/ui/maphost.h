@@ -133,6 +133,8 @@ class MapHost : public QObject {
 
    private:
     bool startChunkTask(GuiTaskRunner::Worker worker);
+    bool copyVoxelSelectionToMcstructure(const bl::block_box& selection, bool exportEntities, bool useNewFormat);
+    void deleteVoxelSelection(const bl::block_box& selection, bool deleteEntities);
     AsyncLevelLoader* level_loader_{nullptr};
     QWidget* pane_{nullptr};
 

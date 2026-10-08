@@ -1888,6 +1888,16 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.deleteSelection</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.cutSelection</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.pasteMcstructure</source>
         <translation>从剪贴板粘贴</translation>
@@ -1904,8 +1914,8 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportEntities</source>
-        <translation>导出实体</translation>
+        <source>voxelPreviewWidget.includeEntities</source>
+        <translation>包含实体</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1925,6 +1935,11 @@
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.operations</source>
+        <translation>操作</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>

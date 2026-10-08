@@ -1888,6 +1888,16 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.deleteSelection</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.cutSelection</source>
+        <translation>Cut</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.pasteMcstructure</source>
         <translation>Paste from Clipboard</translation>
@@ -1904,8 +1914,8 @@
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportEntities</source>
-        <translation>Export entities</translation>
+        <source>voxelPreviewWidget.includeEntities</source>
+        <translation>Include entities</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>
@@ -1925,6 +1935,11 @@
         <location filename="../src/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>The new format can only be used in version &gt;= 26.50.24</translation>
+    </message>
+    <message>
+        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <source>voxelPreviewWidget.operations</source>
+        <translation>Operations</translation>
     </message>
     <message>
         <location filename="../src/voxelpreviewwidget.cpp"/>

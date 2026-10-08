@@ -31,6 +31,9 @@ class BlockRegionOperator {
     static bool importMcstructure(const bl::mcstructure& structure, const bl::block_pos& position, AsyncLevelLoader& loader, int dim,
                                   bool replaceAir = true);
 
+    /// Clear blocks inside a world-space box. Entity removal is reserved for a future chunk API.
+    static bool deleteBlocks(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, bool deleteEntities = false);
+
     /// Replace blocks in the region or the optional block bounds.
     static bool setBlocks(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim, const bl::nbt::compound_tag* block,
                           const std::optional<bl::block_box>& blockBounds = std::nullopt);
