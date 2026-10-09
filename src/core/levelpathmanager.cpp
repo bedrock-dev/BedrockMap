@@ -13,13 +13,14 @@
 #include "config.h"
 #include "json/json.hpp"
 #include "level_dat.h"
+#include "leveldbxor.h"
 #include "loguru/loguru.hpp"
 
 using json = nlohmann::json;
 
 namespace {
 
-    void scanWorldsInDir(const QString& worldsDir, bool modern, bool preview, std::vector<LevelPathInfo>& out) {
+    void scanWorldsInDir(const QString& worldsDir, bool modern, bool preview, bool netease, std::vector<LevelPathInfo>& out) {
         QDir dir(worldsDir);
         LOG_F(INFO, "scanWorldsInDir: %s exists=%d", worldsDir.toStdString().c_str(), dir.exists());
         if (!dir.exists()) return;
@@ -28,6 +29,7 @@ namespace {
             auto info = LevelPathManager::makeLevelInfo(sub.absoluteFilePath());
             info.modern = modern;
             info.preview = preview;
+            info.netease = netease;
             out.push_back(info);
         }
     }
@@ -42,6 +44,9 @@ LevelPathInfo LevelPathManager::makeLevelInfo(const QString& dirPath) {
     bool hasLevelDat = dir.exists("level.dat");
     bool hasDb = dir.exists("db");
     info.isValid = hasLevelDat && hasDb;
+    // This flag is display metadata only. Opening a world still resolves its
+    // XOR key independently through the normal loading path.
+    info.xorEncrypted = leveldb_xor::isEncrypted(dirPath.toStdString());
 
     // levelname.txt
     QFile nameFile(dirPath + "/levelname.txt");
@@ -171,13 +176,20 @@ void LevelPathManager::initLeviPath() {
 void LevelPathManager::scanNormalPaths() {
     discovered_levels_.clear();
     QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
-    if (localAppData.isEmpty()) return;
+    if (!localAppData.isEmpty()) {
+        scanWorldsInDir(
+            QDir(localAppData + "/" + QString::fromStdString(PACKAGE_UWP)).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)), false,
+            false, false, discovered_levels_);
+        scanWorldsInDir(QDir(localAppData + "/" + QString::fromStdString(PACKAGE_WINDOWS_BETA))
+                            .absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)),
+                        false, false, false, discovered_levels_);
+    }
 
-    scanWorldsInDir(QDir(localAppData + "/" + QString::fromStdString(PACKAGE_UWP)).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)),
-                    false, false, discovered_levels_);
-    scanWorldsInDir(
-        QDir(localAppData + "/" + QString::fromStdString(PACKAGE_WINDOWS_BETA)).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)),
-        false, false, discovered_levels_);
+    const QString appData = qEnvironmentVariable("APPDATA");
+    if (!appData.isEmpty()) {
+        const QString neteaseWorlds = QDir(appData).absoluteFilePath("MinecraftPC_Netease_PB/minecraftWorlds");
+        scanWorldsInDir(neteaseWorlds, false, false, true, discovered_levels_);
+    }
 }
 
 void LevelPathManager::scanModernPaths() {
@@ -223,6 +235,7 @@ void LevelPathManager::scanModernPaths() {
                     auto info = makeLevelInfo(world.absoluteFilePath());
                     info.modern = true;
                     info.preview = di.preview;
+                    info.netease = false;
                     discovered_levels_.push_back(info);
                 }
             }
@@ -237,7 +250,7 @@ void LevelPathManager::dumpPaths() {
     }
     LOG_F(INFO, "=== Discovered levels ===");
     for (const auto& l : discovered_levels_) {
-        LOG_F(INFO, "  [%s] valid=%d modern=%d preview=%d ver=%s name=%s", l.path.c_str(), l.isValid, l.modern, l.preview,
-              l.version.c_str(), l.levelName.c_str());
+        LOG_F(INFO, "  [%s] valid=%d modern=%d preview=%d netease=%d xor=%d ver=%s name=%s", l.path.c_str(), l.isValid, l.modern, l.preview,
+              l.netease, l.xorEncrypted, l.version.c_str(), l.levelName.c_str());
     }
 }

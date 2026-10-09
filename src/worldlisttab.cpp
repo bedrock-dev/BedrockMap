@@ -118,6 +118,11 @@ void WorldListItem::setupUI() {
     name_label_->setFont(nameFont);
     nameRow->addWidget(name_label_);
 
+    xor_label_ = new QLabel("[XOR]", this);
+    xor_label_->setStyleSheet("color: #e74c3c; font-weight: bold;");
+    xor_label_->setVisible(info_.xorEncrypted);
+    nameRow->addWidget(xor_label_);
+
     version_label_ = new QLabel(QString::fromStdString(info_.version), this);
     version_label_->setStyleSheet("color: #aaa; font-size: 10px;");
     nameRow->addWidget(version_label_);
@@ -158,6 +163,7 @@ void WorldListItem::setInfo(const LevelPathInfo& info) {
     thumb_label_->setPixmap(thumb);
 
     name_label_->setText(QString::fromStdString(info_.levelName));
+    xor_label_->setVisible(info_.xorEncrypted);
     version_label_->setText(QString::fromStdString(info_.version));
     path_label_->setText(QString::fromStdString(info_.path));
     time_label_->setText(formatTime(info_.lastModified));
@@ -220,6 +226,9 @@ void WorldListTab::setupUI() {
 
     // --- preview worlds ---
     preview_list_ = createSection(root, tr("msg.welcome.preview"));
+
+    // --- Netease worlds ---
+    netease_list_ = createSection(root, tr("msg.welcome.netease"));
 
     setLayout(root);
 }
@@ -343,13 +352,14 @@ void WorldListTab::loadNextRecentInfo() {
 }
 
 // ---------------------------------------------------------------------------
-//  rebuild scanned lists (release & preview)
+//  rebuild scanned lists (release, preview & Netease)
 // ---------------------------------------------------------------------------
 void WorldListTab::rebuildScannedLists() {
     release_list_->clear();
     preview_list_->clear();
+    netease_list_->clear();
 
-    int releaseCount = 0, previewCount = 0;
+    int releaseCount = 0, previewCount = 0, neteaseCount = 0;
 
     auto addLevel = [this](QListWidget* list, const LevelPathInfo& info) {
         auto* item = new QListWidgetItem();
@@ -365,7 +375,10 @@ void WorldListTab::rebuildScannedLists() {
 
     for (const auto& level : discovered_levels_) {
         if (!level.isValid) continue;
-        if (level.preview) {
+        if (level.netease) {
+            addLevel(netease_list_, level);
+            ++neteaseCount;
+        } else if (level.preview) {
             addLevel(preview_list_, level);
             ++previewCount;
         } else {
@@ -385,8 +398,9 @@ void WorldListTab::rebuildScannedLists() {
     };
     if (releaseCount == 0) addEmpty(release_list_);
     if (previewCount == 0) addEmpty(preview_list_);
+    if (neteaseCount == 0) addEmpty(netease_list_);
 
-    // Update section header counts (order: Recent, Release, Preview)
+    // Update section header counts (order: Recent, Release, Preview, Netease)
     int headerIdx = 0;
     auto* layout = qobject_cast<QVBoxLayout*>(this->layout());
     if (layout) {
@@ -400,6 +414,8 @@ void WorldListTab::rebuildScannedLists() {
                     header->setCount(releaseCount);
                 else if (headerIdx == 2)
                     header->setCount(previewCount);
+                else if (headerIdx == 3)
+                    header->setCount(neteaseCount);
                 ++headerIdx;
             }
         }

@@ -1457,11 +1457,6 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.voxel</source>
-        <translation>3D View</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation>Cache</translation>
     </message>
@@ -1472,18 +1467,8 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.extra</source>
-        <translation>Extra Features</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.render</source>
         <translation>Rendering</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.lang</source>
-        <translation>Language</translation>
     </message>
     <message>
         <source>settingsDialog.restartHint</source>
@@ -1525,6 +1510,14 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>Font Size</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.iconTheme</source>
+        <translation type="unfinished">Icon</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.language</source>
+        <translation>Language</translation>
     </message>
     <message>
         <source>settingsDialog.map.zoomGroup</source>
@@ -1587,11 +1580,11 @@
         <translation>Highlight Width</translation>
     </message>
     <message>
-        <source>settingsDialog.voxel.groupTitle</source>
+        <source>settingsDialog.map.voxelGroup</source>
         <translation>3D View</translation>
     </message>
     <message>
-        <source>settingsDialog.voxel.selectionColor</source>
+        <source>settingsDialog.map.voxelSelectionColor</source>
         <translation>Selection Color</translation>
     </message>
     <message>
@@ -1627,19 +1620,43 @@
         <translation>Unlimited</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.iconTheme</source>
-        <translation>Icon Theme</translation>
+        <source>settingsDialog.misc.globalDataGroup</source>
+        <translation>Global Data</translation>
     </message>
     <message>
-        <source>settingsDialog.extra.groupTitle</source>
-        <translation>Extra Features</translation>
-    </message>
-    <message>
-        <source>settingsDialog.extra.preloadCoords</source>
+        <source>settingsDialog.misc.preloadCoords</source>
         <translation>Preload Global Chunk Coordinates</translation>
     </message>
     <message>
-        <source>settingsDialog.extra.gpuRender</source>
+        <source>settingsDialog.misc.extraGroup</source>
+        <translation>Extra Features</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.xorGroup</source>
+        <translation>LevelDB XOR Encoding</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode</source>
+        <translation>Encoding Mode</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.no</source>
+        <translation>No</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.yes</source>
+        <translation>Yes</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorKey</source>
+        <translation>Encoding key</translation>
+    </message>
+    <message>
+        <source>settingsDialog.render.gpuRender</source>
         <translation>Enable GPU rendering (experimental)</translation>
     </message>
     <message>
@@ -1657,14 +1674,6 @@
     <message>
         <source>settingsDialog.gpu.aoStrength</source>
         <translation>Ambient Occlusion Strength</translation>
-    </message>
-    <message>
-        <source>settingsDialog.lang.groupTitle</source>
-        <translation>Language</translation>
-    </message>
-    <message>
-        <source>settingsDialog.lang.label</source>
-        <translation>Interface Language</translation>
     </message>
     <message>
         <source>...</source>
@@ -1732,7 +1741,7 @@
     </message>
     <message>
         <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>Fake SSAO + Shadow Map (Higher Resource Overhead)</translation>
+        <translation>Bevel + Shadow Map (Higher Resource Overhead)</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowScale</source>
@@ -1772,19 +1781,19 @@
     </message>
     <message>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4x</translation>
     </message>
     <message>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8x</translation>
     </message>
     <message>
         <source>16</source>
-        <translation type="unfinished"></translation>
+        <translation>16x</translation>
     </message>
     <message>
         <source>32</source>
-        <translation type="unfinished"></translation>
+        <translation>32x</translation>
     </message>
 </context>
 <context>
@@ -2154,6 +2163,11 @@ Arrow keys: Rotate 90 degrees</translation>
         <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.preview</source>
         <translation>Preview</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.netease</source>
+        <translation>Netease</translation>
     </message>
     <message>
         <location filename="../src/worldlisttab.cpp"/>

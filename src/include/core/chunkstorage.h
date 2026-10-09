@@ -20,7 +20,10 @@ class ChunkStorage {
         LevelDatWrite,
     };
 
-    bool open(const std::string& path) { return level_.open(path); }
+    bool open(const std::string& path, const std::string& xor_key) {
+        level_.set_xor_key(xor_key);
+        return level_.open(path);
+    }
     void close() { level_.close(); }
 
     bl::bedrock_level& level() { return level_; }

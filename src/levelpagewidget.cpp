@@ -21,6 +21,7 @@
 #include "bedrock_key.h"
 #include "chunkeditorwidget.h"
 #include "cpumapwidget.h"
+#include "leveldbxor.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
 #include "magic-enum/magic_enum.hpp"
@@ -453,7 +454,8 @@ void LevelPageWidget::onCommitFailed(const QString& error) {
 
 bool LevelPageWidget::loadLevel(const QString& path) {
     level_loader_->setPreloadAllChunkCoords(setting::current().PRELOAD_ALL_CHUNK_COORDS);
-    auto ret = level_loader_->open(path.toStdString());
+    const auto path_string = path.toStdString();
+    auto ret = level_loader_->open(path_string, leveldb_xor::keyForLevel(path_string));
     if (!ret) {
         LOG_F(WARNING, "Can not open level: %s", path.toStdString().c_str());
         return false;

@@ -1457,11 +1457,6 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.voxel</source>
-        <translation type="unfinished">3D 视图</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation type="unfinished">缓存</translation>
     </message>
@@ -1472,18 +1467,8 @@
     </message>
     <message>
         <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.extra</source>
-        <translation>额外功能</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
         <source>settingsDialog.category.render</source>
         <translation>渲染</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.lang</source>
-        <translation type="unfinished">语言</translation>
     </message>
     <message>
         <source>settingsDialog.restartHint</source>
@@ -1525,6 +1510,14 @@
     <message>
         <source>settingsDialog.gui.fontSize</source>
         <translation>字号</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.iconTheme</source>
+        <translation type="unfinished">图标</translation>
+    </message>
+    <message>
+        <source>settingsDialog.gui.language</source>
+        <translation>语言</translation>
     </message>
     <message>
         <source>settingsDialog.map.zoomGroup</source>
@@ -1587,11 +1580,11 @@
         <translation>高亮边框宽度</translation>
     </message>
     <message>
-        <source>settingsDialog.voxel.groupTitle</source>
+        <source>settingsDialog.map.voxelGroup</source>
         <translation>3D 视图</translation>
     </message>
     <message>
-        <source>settingsDialog.voxel.selectionColor</source>
+        <source>settingsDialog.map.voxelSelectionColor</source>
         <translation>选框颜色</translation>
     </message>
     <message>
@@ -1627,19 +1620,43 @@
         <translation>无限</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.iconTheme</source>
-        <translation>图标主题</translation>
+        <source>settingsDialog.misc.globalDataGroup</source>
+        <translation>全局数据</translation>
     </message>
     <message>
-        <source>settingsDialog.extra.groupTitle</source>
-        <translation>额外功能</translation>
-    </message>
-    <message>
-        <source>settingsDialog.extra.preloadCoords</source>
+        <source>settingsDialog.misc.preloadCoords</source>
         <translation>预读取全局区块坐标</translation>
     </message>
     <message>
-        <source>settingsDialog.extra.gpuRender</source>
+        <source>settingsDialog.misc.extraGroup</source>
+        <translation>额外功能</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.xorGroup</source>
+        <translation>LevelDB XOR 编解码</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode</source>
+        <translation>编解码模式</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.no</source>
+        <translation>否</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.yes</source>
+        <translation>是</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorMode.auto</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <source>settingsDialog.misc.leveldbXorKey</source>
+        <translation>编解码密钥</translation>
+    </message>
+    <message>
+        <source>settingsDialog.render.gpuRender</source>
         <translation>启用GPU渲染（实验性）</translation>
     </message>
     <message>
@@ -1657,14 +1674,6 @@
     <message>
         <source>settingsDialog.gpu.aoStrength</source>
         <translation>环境光遮蔽强度</translation>
-    </message>
-    <message>
-        <source>settingsDialog.lang.groupTitle</source>
-        <translation>语言</translation>
-    </message>
-    <message>
-        <source>settingsDialog.lang.label</source>
-        <translation>界面语言</translation>
     </message>
     <message>
         <source>...</source>
@@ -1732,7 +1741,7 @@
     </message>
     <message>
         <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>伪SSAO+阴影贴图（更多性能开销）</translation>
+        <translation>倒角+阴影贴图（更多性能开销）</translation>
     </message>
     <message>
         <source>settingsDialog.map.shadowScale</source>
@@ -1772,19 +1781,19 @@
     </message>
     <message>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4x</translation>
     </message>
     <message>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8x</translation>
     </message>
     <message>
         <source>16</source>
-        <translation type="unfinished"></translation>
+        <translation>16x</translation>
     </message>
     <message>
         <source>32</source>
-        <translation type="unfinished"></translation>
+        <translation>32x</translation>
     </message>
 </context>
 <context>
@@ -2154,6 +2163,11 @@ M：切换移动模式（拖动控制点平移选区）
         <location filename="../src/worldlisttab.cpp"/>
         <source>msg.welcome.preview</source>
         <translation>预览版</translation>
+    </message>
+    <message>
+        <location filename="../src/worldlisttab.cpp"/>
+        <source>msg.welcome.netease</source>
+        <translation>网易版</translation>
     </message>
     <message>
         <location filename="../src/worldlisttab.cpp"/>

@@ -46,8 +46,11 @@
        <property name="frameShape">
         <enum>QFrame::Shape::NoFrame</enum>
        </property>
-       <property name="headerHidden">
-        <bool>true</bool>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
        </property>
        <property name="indentation">
         <number>12</number>
@@ -55,11 +58,8 @@
        <property name="rootIsDecorated">
         <bool>false</bool>
        </property>
-       <property name="iconSize">
-        <size>
-         <width>24</width>
-         <height>24</height>
-        </size>
+       <property name="headerHidden">
+        <bool>true</bool>
        </property>
        <column>
         <property name="text">
@@ -76,8 +76,9 @@
        <property name="frameShadow">
         <enum>QFrame::Shadow::Sunken</enum>
        </property>
-
-       <!-- ==================== Page 0: Gui ==================== -->
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
        <widget class="QWidget" name="guiPage">
         <layout class="QVBoxLayout" name="verticalLayout_gui">
          <property name="spacing">
@@ -97,11 +98,11 @@
          </property>
          <item>
           <widget class="QLabel" name="title_gui">
-           <property name="text">
-            <string>settingsDialog.gui.groupTitle</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.gui.groupTitle</string>
            </property>
           </widget>
          </item>
@@ -169,6 +170,53 @@
              </property>
             </widget>
            </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_gui_icon_theme">
+             <property name="text">
+              <string>settingsDialog.gui.iconTheme</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QComboBox" name="iconThemeCombo">
+             <item>
+              <property name="text">
+               <string>default</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>classic</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>new</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_lang">
+             <property name="text">
+              <string>settingsDialog.gui.language</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QComboBox" name="langCombo">
+             <item>
+              <property name="text">
+               <string>中文 (zh_CN)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>English (en)</string>
+              </property>
+             </item>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
@@ -177,7 +225,7 @@
             <enum>Qt::Orientation::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
+            <enum>QSizePolicy::Policy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -189,8 +237,6 @@
          </item>
         </layout>
        </widget>
-
-       <!-- ==================== Page 1: Map ==================== -->
        <widget class="QWidget" name="mapPage">
         <layout class="QVBoxLayout" name="verticalLayout_map">
          <property name="spacing">
@@ -210,11 +256,11 @@
          </property>
          <item>
           <widget class="QLabel" name="title_map_zoom">
-           <property name="text">
-            <string>settingsDialog.map.zoomGroup</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.map.zoomGroup</string>
            </property>
           </widget>
          </item>
@@ -267,11 +313,11 @@
          </item>
          <item>
           <widget class="QLabel" name="title_map_appearance">
-           <property name="text">
-            <string>settingsDialog.map.appearanceGroup</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.map.appearanceGroup</string>
            </property>
           </widget>
          </item>
@@ -304,7 +350,7 @@
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
                 <string>...</string>
@@ -334,7 +380,7 @@
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
                 <string>...</string>
@@ -347,11 +393,11 @@
          </item>
          <item>
           <widget class="QLabel" name="title_map_actor">
-           <property name="text">
-            <string>settingsDialog.map.actorGroup</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.map.actorGroup</string>
            </property>
           </widget>
          </item>
@@ -422,7 +468,7 @@
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
                 <string>...</string>
@@ -435,11 +481,11 @@
          </item>
          <item>
           <widget class="QLabel" name="title_map_chunk_editor">
-           <property name="text">
-            <string>settingsDialog.map.chunkEditorGroup</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.map.chunkEditorGroup</string>
            </property>
           </widget>
          </item>
@@ -472,7 +518,7 @@
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
                 <string>...</string>
@@ -501,49 +547,12 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_map">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>2</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-
-       <!-- ==================== Page 2: 3D View ==================== -->
-       <widget class="QWidget" name="voxelPage">
-        <layout class="QVBoxLayout" name="verticalLayout_voxel">
-         <property name="spacing">
-          <number>4</number>
-         </property>
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>4</number>
-         </property>
-         <property name="rightMargin">
-          <number>4</number>
-         </property>
-         <property name="bottomMargin">
-          <number>4</number>
-         </property>
-         <item>
           <widget class="QLabel" name="title_voxel">
-           <property name="text">
-            <string>settingsDialog.voxel.groupTitle</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.map.voxelGroup</string>
            </property>
           </widget>
          </item>
@@ -558,7 +567,7 @@
            <item row="0" column="0">
             <widget class="QLabel" name="label_voxel_selection_color">
              <property name="text">
-              <string>settingsDialog.voxel.selectionColor</string>
+              <string>settingsDialog.map.voxelSelectionColor</string>
              </property>
             </widget>
            </item>
@@ -576,7 +585,7 @@
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
                 <string>...</string>
@@ -588,12 +597,12 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_voxel">
+          <spacer name="verticalSpacer_map">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
+            <enum>QSizePolicy::Policy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -605,8 +614,6 @@
          </item>
         </layout>
        </widget>
-
-       <!-- ==================== Page 3: Cache ==================== -->
        <widget class="QWidget" name="cachePage">
         <layout class="QVBoxLayout" name="verticalLayout_cache">
          <property name="spacing">
@@ -626,11 +633,11 @@
          </property>
          <item>
           <widget class="QLabel" name="title_cache">
-           <property name="text">
-            <string>settingsDialog.cache.groupTitle</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.cache.groupTitle</string>
            </property>
           </widget>
          </item>
@@ -707,7 +714,7 @@
             <enum>Qt::Orientation::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
+            <enum>QSizePolicy::Policy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -719,8 +726,6 @@
          </item>
         </layout>
        </widget>
-
-       <!-- ==================== Page 3: Misc ==================== -->
        <widget class="QWidget" name="miscPage">
         <layout class="QVBoxLayout" name="verticalLayout_misc">
          <property name="spacing">
@@ -740,11 +745,21 @@
          </property>
          <item>
           <widget class="QLabel" name="title_misc">
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
            <property name="text">
             <string>settingsDialog.misc.groupTitle</string>
            </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_misc_global">
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.misc.globalDataGroup</string>
            </property>
           </widget>
          </item>
@@ -775,41 +790,105 @@
            </item>
            <item row="1" column="1">
             <widget class="QSpinBox" name="maxGlobalDataSpin">
+             <property name="specialValueText">
+              <string>settingsDialog.misc.maxGlobalData.unlimited</string>
+             </property>
              <property name="minimum">
               <number>-1</number>
              </property>
              <property name="maximum">
               <number>65536</number>
              </property>
-             <property name="specialValueText">
-              <string>settingsDialog.misc.maxGlobalData.unlimited</string>
-             </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_icon_theme">
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_misc_extra">
+           <property name="text">
+            <string>settingsDialog.misc.extraGroup</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_misc_extra">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_preload_coords">
              <property name="text">
-              <string>settingsDialog.misc.iconTheme</string>
+              <string>settingsDialog.misc.preloadCoords</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QComboBox" name="iconThemeCombo">
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="preloadCoordsCheck"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="title_misc_xor">
+           <property name="styleSheet">
+            <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.misc.xorGroup</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_misc_xor">
+           <property name="verticalSpacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>16</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_leveldb_xor_mode">
+             <property name="text">
+              <string>settingsDialog.misc.leveldbXorMode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="leveldbXorModeCombo">
              <item>
               <property name="text">
-               <string>default</string>
+               <string>settingsDialog.misc.leveldbXorMode.no</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>classic</string>
+               <string>settingsDialog.misc.leveldbXorMode.yes</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>new</string>
+               <string>settingsDialog.misc.leveldbXorMode.auto</string>
               </property>
              </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_leveldb_xor_key">
+             <property name="text">
+              <string>settingsDialog.misc.leveldbXorKey</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="leveldbXorKeyEdit">
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
           </layout>
@@ -820,7 +899,7 @@
             <enum>Qt::Orientation::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
+            <enum>QSizePolicy::Policy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -832,75 +911,6 @@
          </item>
         </layout>
        </widget>
-
-       <!-- ==================== Page 4: Extra Features ==================== -->
-       <widget class="QWidget" name="extraPage">
-        <layout class="QVBoxLayout" name="verticalLayout_extra">
-         <property name="spacing">
-          <number>4</number>
-         </property>
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>4</number>
-         </property>
-         <property name="rightMargin">
-          <number>4</number>
-         </property>
-         <property name="bottomMargin">
-          <number>4</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="title_extra">
-           <property name="text">
-            <string>settingsDialog.extra.groupTitle</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-size:14px;font-weight:bold;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QFormLayout" name="formLayout_extra">
-           <property name="verticalSpacing">
-            <number>2</number>
-           </property>
-           <property name="leftMargin">
-            <number>16</number>
-           </property>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_preload_coords">
-             <property name="text">
-              <string>settingsDialog.extra.preloadCoords</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="preloadCoordsCheck"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_extra">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>2</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-
-       <!-- ==================== Page 6: Rendering ==================== -->
        <widget class="QWidget" name="renderPage">
         <layout class="QVBoxLayout" name="verticalLayout_render">
          <property name="spacing">
@@ -920,11 +930,11 @@
          </property>
          <item>
           <widget class="QLabel" name="title_gpu_renderer">
-           <property name="text">
-            <string>settingsDialog.gpu.rendererGroup</string>
-           </property>
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.gpu.rendererGroup</string>
            </property>
           </widget>
          </item>
@@ -936,7 +946,7 @@
            <item row="0" column="0">
             <widget class="QLabel" name="label_gpu_render">
              <property name="text">
-              <string>settingsDialog.extra.gpuRender</string>
+              <string>settingsDialog.render.gpuRender</string>
              </property>
             </widget>
            </item>
@@ -1081,7 +1091,7 @@
                </property>
               </widget>
              </item>
-           </layout>
+            </layout>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_gpu_bevel_width">
@@ -1280,130 +1290,20 @@
              </item>
             </widget>
            </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="title_cpu_renderer">
-          <property name="text">
-           <string>settingsDialog.render.cpuGroup</string>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">font-size:14px;font-weight:bold;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout_cpu">
-          <property name="verticalSpacing">
-           <number>2</number>
-          </property>
-          <property name="leftMargin">
-           <number>16</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_render_style">
-            <property name="text">
-             <string>settingsDialog.map.renderStyle</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="renderStyleCombo">
-            <item><property name="text"><string>settingsDialog.map.renderStyle.noShadow</string></property></item>
-            <item><property name="text"><string>settingsDialog.map.renderStyle.basicShadow</string></property></item>
-            <item><property name="text"><string>settingsDialog.map.renderStyle.ssaoShadow</string></property></item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_shadow_scale">
-            <property name="text"><string>settingsDialog.map.shadowScale</string></property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="shadowScaleCombo">
-            <item><property name="text"><string>1x</string></property></item>
-            <item><property name="text"><string>2x</string></property></item>
-            <item><property name="text"><string>4x</string></property></item>
-            <item><property name="text"><string>8x</string></property></item>
-            <item><property name="text"><string>16x</string></property></item>
-            <item><property name="text"><string>32x</string></property></item>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_shadow_map_scale">
-            <property name="text"><string>settingsDialog.map.shadowMapScale</string></property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="shadowMapScaleCombo">
-            <item><property name="text"><string>1x</string></property></item>
-            <item><property name="text"><string>2x</string></property></item>
-            <item><property name="text"><string>4x</string></property></item>
-            <item><property name="text"><string>8x</string></property></item>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_shadow_level">
-            <property name="text"><string>settingsDialog.map.shadowLevel</string></property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QSpinBox" name="shadowLevelSpin">
-            <property name="minimum"><number>0</number></property>
-            <property name="maximum"><number>255</number></property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-          <spacer name="verticalSpacer_render">
-           <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>2</height>
-            </size>
-           </property>
-          </spacer>
+          </layout>
          </item>
-        </layout>
-       </widget>
-
-       <!-- ==================== Page 7: Lang ==================== -->
-       <widget class="QWidget" name="langPage">
-        <layout class="QVBoxLayout" name="verticalLayout_lang">
-         <property name="spacing">
-          <number>4</number>
-         </property>
-         <property name="leftMargin">
-          <number>4</number>
-         </property>
-         <property name="topMargin">
-          <number>4</number>
-         </property>
-         <property name="rightMargin">
-          <number>4</number>
-         </property>
-         <property name="bottomMargin">
-          <number>4</number>
-         </property>
          <item>
-          <widget class="QLabel" name="title_lang">
-           <property name="text">
-            <string>settingsDialog.lang.groupTitle</string>
-           </property>
+          <widget class="QLabel" name="title_cpu_renderer">
            <property name="styleSheet">
             <string notr="true">font-size:14px;font-weight:bold;</string>
+           </property>
+           <property name="text">
+            <string>settingsDialog.render.cpuGroup</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QFormLayout" name="formLayout_lang">
+          <layout class="QFormLayout" name="formLayout_cpu">
            <property name="verticalSpacing">
             <number>2</number>
            </property>
@@ -1411,35 +1311,129 @@
             <number>16</number>
            </property>
            <item row="0" column="0">
-            <widget class="QLabel" name="label_lang">
+            <widget class="QLabel" name="label_render_style">
              <property name="text">
-              <string>settingsDialog.lang.label</string>
+              <string>settingsDialog.map.renderStyle</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="langCombo">
+            <widget class="QComboBox" name="renderStyleCombo">
              <item>
               <property name="text">
-               <string>中文 (zh_CN)</string>
+               <string>settingsDialog.map.renderStyle.noShadow</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>English (en)</string>
+               <string>settingsDialog.map.renderStyle.basicShadow</string>
               </property>
              </item>
+             <item>
+              <property name="text">
+               <string>settingsDialog.map.renderStyle.ssaoShadow</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_shadow_scale">
+             <property name="text">
+              <string>settingsDialog.map.shadowScale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="shadowScaleCombo">
+             <item>
+              <property name="text">
+               <string>1x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>8x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>16x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>32x</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_shadow_map_scale">
+             <property name="text">
+              <string>settingsDialog.map.shadowMapScale</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="shadowMapScaleCombo">
+             <item>
+              <property name="text">
+               <string>1x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>8x</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_shadow_level">
+             <property name="text">
+              <string>settingsDialog.map.shadowLevel</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="shadowLevelSpin">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>255</number>
+             </property>
             </widget>
            </item>
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_lang">
+          <spacer name="verticalSpacer_render">
            <property name="orientation">
             <enum>Qt::Orientation::Vertical</enum>
            </property>
            <property name="sizeType">
-            <enum>QSpacerItem::Policy::Expanding</enum>
+            <enum>QSizePolicy::Policy::Expanding</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -1462,11 +1456,11 @@
      </property>
      <item>
       <widget class="QLabel" name="restartHintLabel">
-       <property name="text">
-        <string>settingsDialog.restartHint</string>
-       </property>
        <property name="styleSheet">
         <string notr="true">color: #888888; font-size: 11px;</string>
+       </property>
+       <property name="text">
+        <string>settingsDialog.restartHint</string>
        </property>
       </widget>
      </item>

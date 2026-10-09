@@ -69,8 +69,8 @@ ChunkRegion* AsyncLevelLoader::peekRegion(const region_pos& p, bool& empty) {
     return cache_manager_.peekRegion(p, empty);
 }
 
-bool AsyncLevelLoader::open(const std::string& path) {
-    this->loaded_ = this->storage_.open(path);
+bool AsyncLevelLoader::open(const std::string& path, const std::string& xor_key) {
+    this->loaded_ = this->storage_.open(path, xor_key);
     if (this->loaded_) {
         if (this->preload_all_chunk_coords_) {
             LOG_F(INFO, "Start loading all chunk cooords");

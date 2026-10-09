@@ -69,7 +69,7 @@ class AsyncLevelLoader : public QObject {
 
     void clearAllCache();
 
-    bool open(const std::string& path);
+    bool open(const std::string& path, const std::string& xor_key);
 
     void close();
 

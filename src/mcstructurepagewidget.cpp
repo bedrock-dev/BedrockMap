@@ -16,8 +16,8 @@
 #include <optional>
 
 #include "chunk_data_position.h"
-#include "loguru/loguru.hpp"
 #include "clipboarddata.h"
+#include "loguru/loguru.hpp"
 #include "pleasewaitdialog.h"
 
 namespace {

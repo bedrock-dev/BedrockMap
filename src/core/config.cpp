@@ -148,6 +148,8 @@ void setting::load() {
     loaded.COLOR_THEME = s.value("theme", loaded.COLOR_THEME).toString();
     loaded.FONT_FAMILY = s.value("font_family", loaded.FONT_FAMILY).toString();
     loaded.FONT_SIZE = s.value("font_size", loaded.FONT_SIZE).toInt();
+    loaded.ICON_THEME = s.value("icon_theme", loaded.ICON_THEME).toString();
+    loaded.LANGUAGE = s.value("lang", loaded.LANGUAGE).toString();
     s.endGroup();
 
     s.beginGroup("Map");
@@ -201,21 +203,15 @@ void setting::load() {
 
     s.beginGroup("Misc");
     loaded.LOAD_GLOBAL_DATA = s.value("load_global_data", loaded.LOAD_GLOBAL_DATA).toBool();
-    loaded.MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", loaded.MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
-    loaded.ICON_THEME = s.value("icon_theme", loaded.ICON_THEME).toString();
-    loaded.CHECK_UPDATE = s.value("check_update", loaded.CHECK_UPDATE).toBool();
-    s.endGroup();
-
-    s.beginGroup("ExtraFunctions");
     loaded.PRELOAD_ALL_CHUNK_COORDS = s.value("preload_all_chunk_coords", loaded.PRELOAD_ALL_CHUNK_COORDS).toBool();
+    loaded.MAX_GLOBAL_DATA_LOAD_COUNT = s.value("max_global_data_load_count", loaded.MAX_GLOBAL_DATA_LOAD_COUNT).toInt();
+    loaded.CHECK_UPDATE = s.value("check_update", loaded.CHECK_UPDATE).toBool();
+    loaded.LEVELDB_XOR_MODE = std::clamp(s.value("leveldb_xor_mode", loaded.LEVELDB_XOR_MODE).toInt(), 0, 2);
+    loaded.LEVELDB_XOR_KEY = s.value("leveldb_xor_key", loaded.LEVELDB_XOR_KEY).toString();
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
     loaded.SCAN_LEVI_PATH = s.value("scan_levi_path", loaded.SCAN_LEVI_PATH).toBool();
-    s.endGroup();
-
-    s.beginGroup("Lang");
-    loaded.LANGUAGE = s.value("lang", loaded.LANGUAGE).toString();
     s.endGroup();
 
     if (s.status() != QSettings::NoError) {
@@ -241,6 +237,8 @@ void setting::save(const Settings& values) {
     s.setValue("theme", values.COLOR_THEME);
     s.setValue("font_family", values.FONT_FAMILY);
     s.setValue("font_size", values.FONT_SIZE);
+    s.setValue("icon_theme", values.ICON_THEME);
+    s.setValue("lang", values.LANGUAGE);
     s.endGroup();
 
     s.beginGroup("Rendering");
@@ -290,21 +288,15 @@ void setting::save(const Settings& values) {
 
     s.beginGroup("Misc");
     s.setValue("load_global_data", values.LOAD_GLOBAL_DATA);
-    s.setValue("max_global_data_load_count", values.MAX_GLOBAL_DATA_LOAD_COUNT);
-    s.setValue("icon_theme", values.ICON_THEME);
-    s.setValue("check_update", values.CHECK_UPDATE);
-    s.endGroup();
-
-    s.beginGroup("ExtraFunctions");
     s.setValue("preload_all_chunk_coords", values.PRELOAD_ALL_CHUNK_COORDS);
+    s.setValue("max_global_data_load_count", values.MAX_GLOBAL_DATA_LOAD_COUNT);
+    s.setValue("check_update", values.CHECK_UPDATE);
+    s.setValue("leveldb_xor_mode", values.LEVELDB_XOR_MODE);
+    s.setValue("leveldb_xor_key", values.LEVELDB_XOR_KEY);
     s.endGroup();
 
     s.beginGroup("LeviLauncher");
     s.setValue("scan_levi_path", values.SCAN_LEVI_PATH);
-    s.endGroup();
-
-    s.beginGroup("Lang");
-    s.setValue("lang", values.LANGUAGE);
     s.endGroup();
 
     s.sync();

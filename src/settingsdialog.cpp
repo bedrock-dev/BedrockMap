@@ -77,28 +77,17 @@ void SettingsDialog::setupCategories() {
     mapItem->setText(0, tr("settingsDialog.category.map"));
     mapItem->setData(0, Qt::UserRole, 1);
 
-    auto* voxelItem = new QTreeWidgetItem(ui->categoryTree);
-    voxelItem->setText(0, tr("settingsDialog.category.voxel"));
-    voxelItem->setData(0, Qt::UserRole, 2);
-
     auto* cacheItem = new QTreeWidgetItem(ui->categoryTree);
     cacheItem->setText(0, tr("settingsDialog.category.cache"));
-    cacheItem->setData(0, Qt::UserRole, 3);
+    cacheItem->setData(0, Qt::UserRole, 2);
 
     auto* miscItem = new QTreeWidgetItem(ui->categoryTree);
     miscItem->setText(0, tr("settingsDialog.category.misc"));
-    miscItem->setData(0, Qt::UserRole, 4);
+    miscItem->setData(0, Qt::UserRole, 3);
 
-    auto* extraItem = new QTreeWidgetItem(ui->categoryTree);
-    extraItem->setText(0, tr("settingsDialog.category.extra"));
-    extraItem->setData(0, Qt::UserRole, 5);
     auto* renderItem = new QTreeWidgetItem(ui->categoryTree);
     renderItem->setText(0, tr("settingsDialog.category.render"));
-    renderItem->setData(0, Qt::UserRole, 6);
-
-    auto* langItem = new QTreeWidgetItem(ui->categoryTree);
-    langItem->setText(0, tr("settingsDialog.category.lang"));
-    langItem->setData(0, Qt::UserRole, 7);
+    renderItem->setData(0, Qt::UserRole, 4);
 }
 
 void SettingsDialog::loadSettings() {
@@ -115,10 +104,10 @@ void SettingsDialog::loadSettings() {
     }
     ui->fontSizeSpin->setValue(setting::current().FONT_SIZE > 0 ? setting::current().FONT_SIZE
                                                                 : ui->fontFamilyCombo->currentFont().pointSize());
+    ui->iconThemeCombo->setCurrentText(setting::current().ICON_THEME);
+    ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
 
     // --- Map ---
-    // Rendering controls live on the Rendering page; map keeps only camera,
-    // overlay, and appearance settings.
     ui->minScaleSpin->setValue(setting::current().MINIMUM_SCALE_LEVEL);
     ui->maxScaleSpin->setValue(setting::current().MAXIMUM_SCALE_LEVEL);
     ui->gridColorEdit->setText(setting::current().GRID_LINE_COLOR);
@@ -138,10 +127,9 @@ void SettingsDialog::loadSettings() {
     // --- Misc ---
     ui->loadGlobalDataCheck->setChecked(setting::current().LOAD_GLOBAL_DATA);
     ui->maxGlobalDataSpin->setValue(setting::current().MAX_GLOBAL_DATA_LOAD_COUNT);
-    ui->iconThemeCombo->setCurrentText(setting::current().ICON_THEME);
-
-    // --- Extra features ---
     ui->preloadCoordsCheck->setChecked(setting::current().PRELOAD_ALL_CHUNK_COORDS);
+    ui->leveldbXorKeyEdit->setText(setting::current().LEVELDB_XOR_KEY);
+    ui->leveldbXorModeCombo->setCurrentIndex(std::clamp(setting::current().LEVELDB_XOR_MODE, 0, 2));
 
     // --- Rendering ---
     ui->gpuRenderCheck->setChecked(setting::current().GPU_RENDER_ENABLED);
@@ -189,9 +177,6 @@ void SettingsDialog::loadSettings() {
         }
         ui->gpuShadowPrecisionCombo->setCurrentIndex(index);
     }
-
-    // --- Lang ---
-    ui->langCombo->setCurrentIndex(setting::current().LANGUAGE == "en" ? 1 : 0);
 }
 
 void SettingsDialog::onCategoryChanged(QTreeWidgetItem* current, QTreeWidgetItem* /*previous*/) {
@@ -339,6 +324,8 @@ void SettingsDialog::onSave() {
     values.ICON_THEME = ui->iconThemeCombo->currentText();
 
     values.PRELOAD_ALL_CHUNK_COORDS = ui->preloadCoordsCheck->isChecked();
+    values.LEVELDB_XOR_KEY = ui->leveldbXorKeyEdit->text();
+    values.LEVELDB_XOR_MODE = ui->leveldbXorModeCombo->currentIndex();
     values.GPU_RENDER_ENABLED = ui->gpuRenderCheck->isChecked();
     values.GPU_ORTHOGRAPHIC_VIEW = ui->gpuOrthographicCheck->isChecked();
     values.GPU_AO_STRENGTH = static_cast<float>(ui->gpuAoSpin->value());

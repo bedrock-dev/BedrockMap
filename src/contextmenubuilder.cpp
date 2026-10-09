@@ -65,7 +65,8 @@ void ContextMenuBuilder::build(QMenu& menu, MapHost* host, const MapMenuRequest&
 
     // Paste is offered whenever the clipboard actually holds a region.
     const QMimeData* paste_data = clipboard ? clipboard->mimeData() : nullptr;
-    const bool has_region_data = !clipboard_data::read(paste_data, clipboard_data::CHUNK_REGION_MIME_TYPE, REGION_FILE_EXTENSIONS).isEmpty();
+    const bool has_region_data =
+        !clipboard_data::read(paste_data, clipboard_data::CHUNK_REGION_MIME_TYPE, REGION_FILE_EXTENSIONS).isEmpty();
     if (has_region_data) {
         menu.addAction(QObject::tr("mapHost.rightMenu.paste"), [host, chunk = request.chunk, dim] {
             auto* currentClipboard = QApplication::clipboard();

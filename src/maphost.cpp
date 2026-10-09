@@ -18,10 +18,10 @@
 
 #include "blockregionoperator.h"
 #include "chunkoperator.h"
+#include "clipboarddata.h"
 #include "config.h"
 #include "loguru/loguru.hpp"
 #include "mcstructure.h"
-#include "clipboarddata.h"
 #include "msg.h"
 #include "pleasewaitdialog.h"
 #include "voxelwidget.h"
@@ -204,8 +204,8 @@ void MapHost::copySelectionToClipboard(int dim) {
 void MapHost::pasteFromClipboard(int dim) {
     PleaseWaitScope wait;
     auto* clip = QApplication::clipboard();
-    const QByteArray raw_data = clipboard_data::read(clip ? clip->mimeData() : nullptr, clipboard_data::CHUNK_REGION_MIME_TYPE,
-                                                     {QStringLiteral("bchks")});
+    const QByteArray raw_data =
+        clipboard_data::read(clip ? clip->mimeData() : nullptr, clipboard_data::CHUNK_REGION_MIME_TYPE, {QStringLiteral("bchks")});
     if (raw_data.isEmpty()) {
         WARN(msg::PASTE_NO_DATA());
         return;
@@ -291,17 +291,15 @@ bool MapHost::copyVoxelSelectionToMcstructure(const bl::block_box& selection, bo
 
     const bl::block_box blockBounds = selection.translated(voxel_preview_window_->voxelOrigin());
     PleaseWaitScope wait;
-    const auto raw = BlockRegionOperator::exportMcstructureData(*level_loader_, view_.dim(), blockBounds, false, useNewFormat ? 2 : 1,
-                                                                exportEntities);
+    const auto raw =
+        BlockRegionOperator::exportMcstructureData(*level_loader_, view_.dim(), blockBounds, false, useNewFormat ? 2 : 1, exportEntities);
     if (raw.empty()) {
-        QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"),
-                             tr("mapHost.rightMenu.exportMcstructureFailed"));
+        QMessageBox::warning(paneWidget(), tr("mapHost.rightMenu.exportMcstructure"), tr("mapHost.rightMenu.exportMcstructureFailed"));
         return false;
     }
 
     auto* mimeData = new QMimeData();
-    clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE,
-                          QByteArray(raw.data(), static_cast<qsizetype>(raw.size())));
+    clipboard_data::write(*mimeData, clipboard_data::MCSTRUCTURE_MIME_TYPE, QByteArray(raw.data(), static_cast<qsizetype>(raw.size())));
     QApplication::clipboard()->setMimeData(mimeData);
     INFO(msg::EXPORT_COMPLETE());
     return true;

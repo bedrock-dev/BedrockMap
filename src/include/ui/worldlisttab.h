@@ -41,6 +41,7 @@ class WorldListItem : public QWidget {
     LevelPathInfo info_;
     QLabel* thumb_label_ = nullptr;
     QLabel* name_label_ = nullptr;
+    QLabel* xor_label_ = nullptr;
     QLabel* version_label_ = nullptr;
     QLabel* path_label_ = nullptr;
     QLabel* time_label_ = nullptr;
@@ -48,7 +49,7 @@ class WorldListItem : public QWidget {
 };
 
 // ---------------------------------------------------------------------------
-// WorldListTab — tab widget with three world lists
+// WorldListTab — tab widget with four world lists
 // ---------------------------------------------------------------------------
 class WorldListTab : public QWidget {
     Q_OBJECT
@@ -74,6 +75,7 @@ class WorldListTab : public QWidget {
     QListWidget* recent_list_ = nullptr;
     QListWidget* release_list_ = nullptr;
     QListWidget* preview_list_ = nullptr;
+    QListWidget* netease_list_ = nullptr;
     SectionHeader* recent_header_ = nullptr;
 
     // -- data --

@@ -16,6 +16,8 @@ struct LevelPathInfo {
     bool isValid{false};
     bool modern{false};
     bool preview{false};
+    bool netease{false};
+    bool xorEncrypted{false};
 };
 
 struct ScanPathEntry {

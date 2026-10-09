@@ -25,6 +25,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <string>
 
+#include "leveldbxor.h"
 #include "nbtwidget.h"
 
 namespace {
@@ -143,7 +144,7 @@ DataManagerPageWidget::~DataManagerPageWidget() {
 
 bool DataManagerPageWidget::loadArchive(const QString& path) {
     path_ = path;
-    level_ = std::make_unique<bl::bedrock_level>();
+    level_ = std::make_unique<bl::bedrock_level>(false, leveldb_xor::keyForLevel(path.toStdString()));
     if (!level_->open(path.toStdString())) return false;
 
     stop_scan_.store(false, std::memory_order_release);

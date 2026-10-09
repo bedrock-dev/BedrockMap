@@ -307,9 +307,8 @@ QWidget* VoxelPreviewWidget::buildMcstructurePanel() {
         emit copyMcstructureRequested(exportBounds(), mcstructureEntitiesBox_->isChecked(), mcstructureNewFormatBox_->isChecked());
     });
     connect(pasteButton, &QPushButton::clicked, this, &VoxelPreviewWidget::pasteMcstructureFromClipboard);
-    connect(deleteButton, &QPushButton::clicked, this, [this]() {
-        emit deleteSelectionRequested(exportBounds(), mcstructureEntitiesBox_->isChecked());
-    });
+    connect(deleteButton, &QPushButton::clicked, this,
+            [this]() { emit deleteSelectionRequested(exportBounds(), mcstructureEntitiesBox_->isChecked()); });
     connect(cutButton, &QPushButton::clicked, this, [this]() {
         emit cutSelectionRequested(exportBounds(), mcstructureEntitiesBox_->isChecked(), mcstructureNewFormatBox_->isChecked());
     });

@@ -62,6 +62,9 @@ namespace setting {
         QString COLOR_THEME{"system"};
         QString FONT_FAMILY;
         int FONT_SIZE{-1};
+        QString ICON_THEME{"default"};
+        // Empty means auto-detect from the system locale.
+        QString LANGUAGE;
 
         // Rendering
         int MAP_RENDER_STYLE{1};
@@ -124,15 +127,15 @@ namespace setting {
         // Misc
         bool LOAD_GLOBAL_DATA{true};
         bool PRELOAD_ALL_CHUNK_COORDS{true};
+        // LevelDB XOR mode: 0 = disabled, 1 = enabled, 2 = detect in the GUI.
+        int LEVELDB_XOR_MODE{2};
+        // Repeating-key XOR used by NetEase LevelDB files.
+        QString LEVELDB_XOR_KEY{"88329851"};
         int MAX_GLOBAL_DATA_LOAD_COUNT{4096};
-        QString ICON_THEME{"default"};
         bool CHECK_UPDATE{true};
 
         // LeviLauncher
         bool SCAN_LEVI_PATH{true};
-
-        // Lang (empty = auto-detect from the system locale)
-        QString LANGUAGE;
     };
 
     void init();

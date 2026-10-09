@@ -39,6 +39,7 @@
 #include "cpumapwidget.h"
 #include "floatingtoolbar.h"
 #include "gpumapwidget.h"
+#include "leveldbxor.h"
 #include "levelpagewidget.h"
 #include "leveltabwidget.h"
 #include "maphost.h"
@@ -2316,7 +2317,8 @@ namespace renderbench {
         }
 
         AsyncLevelLoader loader;
-        if (!loader.open(request.level_path.toStdString())) {
+        const auto level_path = request.level_path.toStdString();
+        if (!loader.open(level_path, leveldb_xor::keyForLevel(level_path))) {
             std::printf("renderbench: cannot open level '%s'\n", request.level_path.toStdString().c_str());
             return 1;
         }
