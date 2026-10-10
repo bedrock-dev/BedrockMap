@@ -32,6 +32,7 @@ set(BEDROCK_LEVEL_ROOT "${PROJECT_SOURCE_DIR}/bedrock-level")
 # The library's standalone scripts own its unit-test builds; keep the GUI build
 # focused on the application and never pull GoogleTest into this build tree.
 set(BEDROCK_LEVEL_BUILD_TESTS OFF CACHE BOOL "Disable bedrock-level tests in the GUI build" FORCE)
+set(BEDROCK_LEVEL_BUILD_BENCHMARKS ON CACHE BOOL "Build bedrock-level benchmarks" FORCE)
 add_subdirectory(${BEDROCK_LEVEL_ROOT} bedrock-level)
 
 find_package(Qt6 REQUIRED COMPONENTS 

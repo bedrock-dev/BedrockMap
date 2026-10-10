@@ -51,7 +51,7 @@ bool NbtFilePageWidget::loadFile(const QString& path) {
         return false;
     }
 
-    auto palette = bl::nbt::read_palette_to_end(data.data(), data.size());
+    auto palette = bl::nbt::parse_all(data.data(), data.size());
     if (palette.empty()) {
         LOG_F(WARNING, "No NBT tags found in file: %s", path.toStdString().c_str());
         return false;

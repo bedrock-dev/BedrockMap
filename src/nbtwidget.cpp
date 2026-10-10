@@ -189,7 +189,7 @@ void NbtWidget::on_load_btn_clicked() {
         return;
     }
 
-    auto palette = bl::nbt::read_palette_to_end(data.data(), data.size());
+    auto palette = bl::nbt::parse_all(data.data(), data.size());
 
     if (palette.empty()) {
         WARN(msg::NBT_PARSE_FAILED());
@@ -317,7 +317,7 @@ void NbtWidget::tryModifyCurrentNode() {
             WARN(msg::MODIFY_NODE_FAILED(err));
         } else {
             current->updateLabel(hex_mode_);
-            putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+            putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
             emit nbtModified();
         }
     }
@@ -406,7 +406,7 @@ void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem* item, int column) {
         editing_in_progress_ = true;
         nbtItem->updateLabel(hex_mode_);
         editing_in_progress_ = false;
-        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
         emit nbtModified();
         return;
     }
@@ -426,7 +426,7 @@ void NbtWidget::on_tree_widget_itemChanged(QTreeWidgetItem* item, int column) {
     editing_in_progress_ = true;
     nbtItem->updateLabel(hex_mode_);
     editing_in_progress_ = false;
-    putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+    putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
     emit nbtModified();
 }
 
@@ -468,7 +468,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint& pos) {
                 WARN(msg::CREATE_NODE_FAILED(""));
             } else {
                 current->updateLabel(hex_mode_);
-                putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+                putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
             }
         }
     });
@@ -500,7 +500,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint& pos) {
             tag->remove(idx);
             parent->updateLabel(hex_mode_);
         }
-        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
         parent->removeChild(current);
         delete current;
     });
@@ -524,7 +524,7 @@ void NbtWidget::prepareTreeWidgetMenu(const QPoint& pos) {
         auto children = current->takeChildren();
         qDeleteAll(children);
         current->updateLabel(hex_mode_);
-        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->to_raw());
+        putModifyToCache(current_opened_->raw_key.toStdString(), current_opened_->root_->serialize());
     });
     menu.exec(ui->tree_widget->mapToGlobal(pos));
 }
@@ -560,7 +560,7 @@ void NbtWidget::prepareListWidgetMenu(const QPoint& pos) {
             // create a new NBT item and push back to the end
             auto* nbtItem = NBTListItem::from(new bl::nbt::compound_tag("New"), QString::number(ui->list_widget->count()));
             ui->list_widget->addItem(nbtItem);
-            putModifyToCache(nbtItem->raw_key.toStdString(), nbtItem->root_->to_raw());
+            putModifyToCache(nbtItem->raw_key.toStdString(), nbtItem->root_->serialize());
             this->refreshLabel();
         });
         QObject::connect(clearAction, &QAction::triggered, [this, pos](bool) {
@@ -663,11 +663,11 @@ std::string NbtWidget::collectRawNBT(bool selectOnly) const {
     std::string res;
     if (selectOnly) {
         for (const auto& item : ui->list_widget->selectedItems()) {
-            if (!item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->to_raw();
+            if (!item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->serialize();
         }
     } else {
         for (int i = 0; i < ui->list_widget->count(); ++i) {
-            if (auto* item = ui->list_widget->item(i); !item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->to_raw();
+            if (auto* item = ui->list_widget->item(i); !item->isHidden()) res += dynamic_cast<NBTListItem*>(item)->root_->serialize();
         }
     }
     return res;
@@ -676,7 +676,7 @@ std::string NbtWidget::collectRawNBT(bool selectOnly) const {
 std::string NbtWidget::getCurrentPaletteRaw() const {
     std::string res;
     for (int i = 0; i < ui->list_widget->count(); ++i) {
-        res += dynamic_cast<NBTListItem*>(ui->list_widget->item(i))->root_->to_raw();
+        res += dynamic_cast<NBTListItem*>(ui->list_widget->item(i))->root_->serialize();
     }
     return res;
 }

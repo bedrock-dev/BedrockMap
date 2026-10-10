@@ -264,7 +264,7 @@ void DataManagerPageWidget::showEntry(std::size_t index) {
 
     constexpr std::size_t MAX_NBT_DISPLAY_SIZE = 16u * 1024u * 1024u;
     if (entry.nbt_value && value.size() <= MAX_NBT_DISPLAY_SIZE) {
-        auto palette = bl::nbt::read_palette_to_end(value.data(), value.size());
+        auto palette = bl::nbt::parse_all(value.data(), value.size());
         if (!palette.empty()) {
             std::vector<NBTListItem*> items;
             items.reserve(palette.size());

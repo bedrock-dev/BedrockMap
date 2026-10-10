@@ -113,7 +113,7 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
             LOG_F(ERROR, "Failed to copy level.dat NBT before commit");
             return false;
         }
-        levelDatRaw = level_.dat().header() + levelDatCopy->to_raw();
+        levelDatRaw = level_.dat().header() + levelDatCopy->serialize();
     }
 
     if (!cache_.empty() || !globalModifies.empty()) {

@@ -29,7 +29,8 @@ if (!(Test-Path $build_dir)) {
 }
 if (!(Test-Path (Join-Path $build_dir "CMakeCache.txt"))) {
     # Use the Qt/MinGW64 toolchain available in the current environment.
-    cmake -G "Ninja" -B $build_dir "-DCMAKE_BUILD_TYPE=$config_type" .
+    cmake -G "Ninja" -B $build_dir "-DCMAKE_BUILD_TYPE=$config_type" `
+        -DBEDROCK_LEVEL_BUILD_BENCHMARKS=ON .
 }
 
 if ($Jobs -eq 0) {

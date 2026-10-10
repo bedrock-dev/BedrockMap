@@ -352,6 +352,6 @@ void MapItemEditor::on_change_map_btn_clicked() {
             color_tag->value[n + 3] = static_cast<uint8_t>(c.alpha());
         }
     }
-    this->map_nbt_editor_->putModifyToCache(it->raw_key.toStdString(), it->root_->to_raw());
+    this->map_nbt_editor_->putModifyToCache(it->raw_key.toStdString(), it->root_->serialize());
     this->update();
 }

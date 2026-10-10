@@ -222,7 +222,7 @@ bool McstructurePageWidget::loadStructure(const QString& path) {
     if (showNbtTree) {
         // Small files can be expanded in the regular NBT tree without blocking the UI.
         int read = 0;
-        if (auto* root = bl::nbt::read_one_palette(data, len, read)) {
+        if (auto* root = bl::nbt::parse_one(data, len, read)) {
             nbt_editor_->loadNewData({NBTListItem::from(root, QFileInfo(path).fileName())});
             // The item list is hidden in this view, so open the first item directly
             // to populate the NBT tree.

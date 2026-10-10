@@ -112,7 +112,7 @@ void StructureEditorWidget::onItemOpened(NBTListItem* item) {
         return;
     }
 
-    const auto raw = item->root_->to_raw();
+    const auto raw = item->root_->serialize();
     const auto structure = bl::parse_mcstructure(reinterpret_cast<const byte_t*>(raw.data()), raw.size());
     if (structure.size_x() <= 0 || structure.size_y() <= 0 || structure.size_z() <= 0) {
         preview_stack_->setCurrentWidget(preview_status_);

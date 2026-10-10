@@ -182,7 +182,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->block_entity_stack_->setCurrentIndex(0);
             std::vector<NBTListItem*> block_entity_items;
             if (!raw.empty()) {
-                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::parse_all(raw.data(), raw.size());
                 for (auto* b : palettes) {
                     auto id_tag = b->get("id");
                     QString name = "unknown";
@@ -208,7 +208,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             this->pending_tick_stack_->setCurrentIndex(0);
             std::vector<NBTListItem*> pt_items;
             if (!raw.empty()) {
-                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::parse_all(raw.data(), raw.size());
                 index = 0;
                 for (auto* b : palettes) {
                     auto* item = NBTListItem::from(b, QString::number(index), QString::number(index));
@@ -231,7 +231,7 @@ void ChunkEditorWidget::loadChunkData(bl::raw_chunk raw) {
             std::vector<NBTListItem*> actor_items;
             auto addActorRaw = [&actor_items, &index](std::string_view raw) {
                 if (raw.empty()) return;
-                auto palettes = bl::nbt::read_palette_to_end(raw.data(), raw.size());
+                auto palettes = bl::nbt::parse_all(raw.data(), raw.size());
                 for (auto* b : palettes) {
                     auto id = actorLabel(b);
                     auto* item = NBTListItem::from(b, id, QString::number(index));
