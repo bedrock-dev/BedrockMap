@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.title.about</source>
         <translation>关于</translation>
     </message>
@@ -13,7 +13,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.developer</source>
         <translation>由%1开发</translation>
     </message>
@@ -46,34 +46,34 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.checkUpdate</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.joinQQGroup</source>
         <translation>加入QQ群</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.github</source>
         <translation>Github</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.checkingUpdate</source>
         <translation>检查中…</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>updateChecker.upToDate</source>
         <translation>当前已是最新版本</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>updateChecker.checkFailed</source>
         <translation>检查更新失败：%1</translation>
     </message>
@@ -96,12 +96,12 @@
 <context>
     <name>ChunkCoordsProgressWidget</name>
     <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <location filename="../src/widgets/chunkcoordsprogresswidget.cpp"/>
         <source>chunkCoordsProgress.scanning</source>
         <translation>正在扫描区块坐标...</translation>
     </message>
     <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <location filename="../src/widgets/chunkcoordsprogresswidget.cpp"/>
         <source>chunkCoordsProgress.stats</source>
         <translation>已扫描 %1 个数据库键，发现 %2 个区块</translation>
     </message>
@@ -117,7 +117,7 @@
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.exportChunkData</source>
         <translation>导出</translation>
     </message>
@@ -170,37 +170,37 @@
         <translation>统计数据</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.hash</source>
         <translation>哈希</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.action</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.view</source>
         <translation>查看</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.exportTitle</source>
         <translation>导出数据</translation>
     </message>
@@ -213,22 +213,22 @@
         <translation>HSA区域</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.blockEntity.tooLarge</source>
         <translation>方块实体数据过大无法打开</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.actor.tooLarge</source>
         <translation>实体数据过大无法打开</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.pendingTick.tooLarge</source>
         <translation>计划刻数据过大无法打开</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.tooLarge.delete</source>
         <translation>删除数据</translation>
     </message>
@@ -236,22 +236,22 @@
 <context>
     <name>ChunkSectionWidget</name>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.position</source>
         <translation>位置: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.blockName</source>
         <translation>方块: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation>群系: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.palette</source>
         <translation>调色板: </translation>
     </message>
@@ -259,71 +259,71 @@
 <context>
     <name>DataManagerPageWidget</name>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.scanning</source>
         <translation>正在扫描所有 LevelDB 键...</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.noSelection</source>
         <translation>双击具体的键查看其内容。</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.title</source>
         <translation>存档数据管理</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.titleWithName</source>
         <translation>数据管理 - %1</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.stats</source>
         <translation>已扫描 %1 个数据库键，已索引 %2 个键</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.failed</source>
         <translation>扫描 LevelDB 键失败。</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.readFailed</source>
         <translation>读取键失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.keyInfo</source>
         <translation>%1（%2 字节）</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.exportNbt</source>
         <translation>导出为 NBT</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.copyReadableKey</source>
         <translation>复制可读字符串</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.copyBinaryKey</source>
         <translation>复制二进制串</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.nbtFilter</source>
         <translation>NBT 文件 (*.nbt);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.writeFailed</source>
         <translation>写入文件失败：%1</translation>
     </message>
@@ -331,37 +331,37 @@
 <context>
     <name>GlobalDataPanelWidget</name>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.levelDat</source>
         <translation type="unfinished">level.dat</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.players</source>
         <translation type="unfinished">玩家</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.villages</source>
         <translation type="unfinished">村庄</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.portals</source>
         <translation type="unfinished">传送门</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.other</source>
         <translation type="unfinished">其他</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.structures</source>
         <translation type="unfinished">结构</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.maps</source>
         <translation type="unfinished">地图</translation>
     </message>
@@ -381,7 +381,7 @@
         <translation>X: </translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.cpp"/>
+        <location filename="../src/widgets/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation>跳转到位置</translation>
     </message>
@@ -389,12 +389,12 @@
 <context>
     <name>GpuMapWidget</name>
     <message>
-        <location filename="../src/gpumapwidget.cpp"/>
+        <location filename="../src/widgets/gpumapwidget.cpp"/>
         <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gpumapwidget.cpp"/>
+        <location filename="../src/widgets/gpumapwidget.cpp"/>
         <source>  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -402,32 +402,32 @@
 <context>
     <name>HsaEditorWidget</name>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colIndex</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMin</source>
         <translation>最小坐标</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMax</source>
         <translation>最大坐标</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colType</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.remove</source>
         <translation>删除</translation>
     </message>
@@ -435,17 +435,17 @@
 <context>
     <name>ImageCropDialog</name>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.title.cropImage</source>
         <translation>裁剪图片</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.confirm</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.cancel</source>
         <translation>取消</translation>
     </message>
@@ -453,93 +453,93 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation>替换</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation>减去</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>显示坐标</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>主世界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>下界</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>末地</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>地形</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>群系</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>实体</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>村庄</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSA</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>过滤</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>全局NBT</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>Save failed</source>
         <translation>保存失败</translation>
     </message>
@@ -547,7 +547,7 @@
 <context>
     <name>LevelTabWidget</name>
     <message>
-        <location filename="../src/leveltabwidget.cpp"/>
+        <location filename="../src/widgets/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation>欢迎</translation>
     </message>
@@ -555,279 +555,279 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.file</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openFile</source>
         <translation>打开文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.openFile.filter</source>
         <translation>Minecraft 数据文件 (*.mcstructure *.nbt *.nbts *.palette)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.newNbt</source>
         <translation>NBT 文件</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.tool</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>透明虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>显示坐标</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>主世界</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>下界</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>末地</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>地形</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>群系</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>实体</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>村庄</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSA</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>过滤</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>显示LevelDB数据</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation>调试窗口</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.coordsMiniMap</source>
         <translation>坐标范围小窗</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.goto</source>
         <translation>前往</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.helpAction</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.joinQQGroup</source>
         <translation>加入QQ群</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.feedback</source>
         <translation>反馈</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.about</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openRecent</source>
         <translation>最近打开</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.customDim</source>
         <translation>自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.customDim.empty</source>
         <translation>无自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(空)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.layers</source>
         <translation>图层</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.customDim</source>
         <translation>自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.portals</source>
         <translation type="unfinished">传送门</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selection</source>
         <translation>选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selReplace</source>
         <translation>添加选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selAdd</source>
         <translation>增量添加</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selSubtract</source>
         <translation>删除选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selClear</source>
         <translation>清空选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selCopy</source>
         <translation>复制选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selPaste</source>
         <translation>粘贴选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selExport</source>
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selImport</source>
         <translation>导入选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selDelete</source>
         <translation>删除选区</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selVoid</source>
         <translation>创建虚空</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selBiome</source>
         <translation>修改群系</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selScreenshot</source>
         <translation>选区截图</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.sel3D</source>
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.chunk</source>
         <translation>区块</translation>
     </message>
@@ -835,31 +835,31 @@
 <context>
     <name>MapHost</name>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructure</source>
         <translation>导出 mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructureFailed</source>
         <translation>mcstructure 导出失败</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.editFailed</source>
         <translation>编辑失败</translation>
     </message>
@@ -879,17 +879,17 @@
         <translation>修改图像</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation>地图物品编辑器</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation>打开文件</translation>
     </message>
@@ -897,12 +897,12 @@
 <context>
     <name>McstructurePageWidget</name>
     <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <location filename="../src/widgets/mcstructurepagewidget.cpp"/>
         <source>Export mcstructure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <location filename="../src/widgets/mcstructurepagewidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
@@ -914,12 +914,12 @@
         <translation>修改NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
+        <location filename="../src/widgets/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.create</source>
         <translation>新建NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
+        <location filename="../src/widgets/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.modify</source>
         <translation>修改NBT</translation>
     </message>
@@ -971,58 +971,58 @@
         <translation>打印缓存</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.open</source>
         <translation>打开文件</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.new</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.modify</source>
         <translation>修改</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.exportSelected</source>
         <translation>导出选中</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.deleteSelected</source>
         <translation>删除选中</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.unselectAll</source>
         <translation>取消全选</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation>保存文件</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT文件 (*.*)</translation>
     </message>
@@ -1030,7 +1030,7 @@
 <context>
     <name>PleaseWaitDialog</name>
     <message>
-        <location filename="../src/pleasewaitdialog.cpp"/>
+        <location filename="../src/widgets/pleasewaitdialog.cpp"/>
         <source>Please wait...</source>
         <translation>请稍候...</translation>
     </message>
@@ -1053,7 +1053,7 @@
         <translation>无法打开结构文件</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>msg.clear</source>
         <translation>清空</translation>
     </message>
@@ -1089,7 +1089,7 @@
     </message>
     <message>
         <location filename="../src/include/core/msg.h"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
         <translation>确认清空全部</translation>
     </message>
@@ -1236,32 +1236,32 @@
         <translation>成功保存数据</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.unselect</source>
         <translation>取消选择</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.selectionOps</source>
         <translation>选区操作</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.delete</source>
         <translation>删除选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.createVoid</source>
         <translation>创建虚空</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.export</source>
         <translation>导出选区</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportRegion</source>
         <translation>导出选区</translation>
     </message>
@@ -1271,12 +1271,12 @@
         <translation>所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copy</source>
         <translation>复制选区</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.paste</source>
         <translation>粘贴</translation>
     </message>
@@ -1296,13 +1296,13 @@
         <translation>剪贴板数据不合法，无法解析</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.import</source>
         <translation>导入</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.importRegion</source>
         <translation>导入选区</translation>
     </message>
@@ -1312,92 +1312,92 @@
         <translation>BCHKS 文件 (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.gotoPosition</source>
         <translation>前往坐标</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.saveSelectionScreenshot</source>
         <translation>选区截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.openchunkEditor</source>
         <translation>在区块编辑器中打开</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyInfo</source>
         <translation>复制信息</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.setBiome</source>
         <translation>设置选区群系</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyBlockName</source>
         <translation>方块名字: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyBiomeName</source>
         <translation>群系名字: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyAltitude</source>
         <translation>高度信息: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyTPCommand</source>
         <translation>TP命令: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.saveScreenshot</source>
         <translation>截图</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.view3D</source>
         <translation>3D视图</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
+        <location filename="../src/widgets/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
+        <location filename="../src/widgets/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.netherFortress</source>
         <translation>下界要塞</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.swampHut</source>
         <translation>沼泽小屋</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.oceanMonument</source>
         <translation>海底神殿</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.pillagerOutpost</source>
         <translation>掠夺者前哨站</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.unknown</source>
         <translation>未知</translation>
     </message>
@@ -1433,7 +1433,7 @@
         <translation>物品</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp"/>
+        <location filename="../src/widgets/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation>渲染过滤</translation>
     </message>
@@ -1441,32 +1441,32 @@
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.title</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.gui</source>
         <translation type="unfinished">界面</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.map</source>
         <translation type="unfinished">地图</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation type="unfinished">缓存</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.misc</source>
         <translation type="unfinished">杂项</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.render</source>
         <translation>渲染</translation>
     </message>
@@ -1479,7 +1479,7 @@
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.colorPicker.title</source>
         <translation>选择颜色</translation>
     </message>
@@ -1799,20 +1799,20 @@
 <context>
     <name>StructureEditorWidget</name>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.noData</source>
         <translation>没有结构数据</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.selectStructure</source>
         <translation>请选择要预览的结构</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.invalid</source>
         <translation>所选数据不是有效的 mcstructure</translation>
     </message>
@@ -1834,12 +1834,12 @@
 <context>
     <name>UpdateDialog</name>
     <message>
-        <location filename="../src/updatedialog.cpp"/>
+        <location filename="../src/widgets/updatedialog.cpp"/>
         <source>updateDialog.title</source>
         <translation>发现新版本</translation>
     </message>
     <message>
-        <location filename="../src/updatedialog.cpp"/>
+        <location filename="../src/widgets/updatedialog.cpp"/>
         <source>updateDialog.newVersion</source>
         <translation>发现新版本 %1（当前版本 %2）</translation>
     </message>
@@ -1863,217 +1863,217 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.title</source>
         <translation>导出 GLB</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>导出为 glTF 二进制（.glb）</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.fileFilter</source>
         <translation>GLB 文件 (*.glb)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.completed</source>
         <translation>GLB 导出完成。</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.copyMcstructure</source>
         <translation>复制到剪贴板</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.deleteSelection</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.cutSelection</source>
         <translation>剪切</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.pasteMcstructure</source>
         <translation>从剪贴板粘贴</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.clipboard.empty</source>
         <translation>剪贴板中没有 mcstructure 数据。</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>压缩</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.includeEntities</source>
         <translation>包含实体</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>使用新格式</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>导入</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.operations</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.modelGroup</source>
         <translation>模型</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.empty</source>
         <translation>未加载模型</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.info</source>
         <translation>区域: (%1, %2, %3) ~ (%7, %8, %9)
 大小: %4 x %5 x %6</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selectionGroup</source>
         <translation>选区</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.tooltip</source>
         <translation>坐标与游戏内的世界坐标一致；最大边界不包含在内</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.moveMode</source>
         <translation>移动模式</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.moveMode.tooltip</source>
         <translation>中键拖动控制点时整体平移选区，不改变大小</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.viewGroup</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.axes</source>
         <translation>坐标轴</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.ortho</source>
         <translation>正交投影</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.lockRotation</source>
         <translation>锁定旋转</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.lockRotation.tooltip</source>
         <translation>禁止用左键拖动旋转视角</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateUp</source>
         <translation>向上旋转 90°</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateDown</source>
         <translation>向下旋转 90°</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateLeft</source>
         <translation>向左旋转 90°</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateRight</source>
         <translation>向右旋转 90°</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.faceFront</source>
         <translation>正视当前最接近屏幕的面 (F)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.tooltip</source>
         <translation>进入放置模式，拖动选框选择导入位置</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure 文件 (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.openFailed</source>
         <translation>无法打开文件。</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.invalidFile</source>
         <translation>不是有效的 mcstructure 文件。</translation>
     </message>
@@ -2081,13 +2081,13 @@
 <context>
     <name>VoxelWidget</name>
     <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.buttonTooltip</source>
         <translation>快捷键</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
-        <location filename="../src/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.content</source>
         <translation>左键拖动：旋转
 右键拖动：平移
@@ -2104,32 +2104,32 @@ M：切换移动模式（拖动控制点平移选区）
 方向键：旋转 90°</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Export path is empty.</source>
         <translation>导出路径为空。</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>There is no voxel data to export.</source>
         <translation>没有可导出的 voxel 数据。</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>The selected range has no visible voxel faces.</source>
         <translation>选中范围内没有可见 voxel 面。</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to open export file: %1</source>
         <translation>无法打开导出文件：%1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to write export file: %1</source>
         <translation>无法写入导出文件：%1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to finish export file: %1</source>
         <translation>无法完成导出文件：%1</translation>
     </message>
@@ -2137,12 +2137,12 @@ M：切换移动模式（拖动控制点平移选区）
 <context>
     <name>WorldListItem</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.openFolder</source>
         <translation>打开文件夹位置</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.dataManagement</source>
         <translation>数据管理</translation>
     </message>
@@ -2150,27 +2150,27 @@ M：切换移动模式（拖动控制点平移选区）
 <context>
     <name>WorldListTab</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.recentLevels</source>
         <translation>最近存档</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.release</source>
         <translation>正式版</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.preview</source>
         <translation>预览版</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.netease</source>
         <translation>网易版</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation>无近期文件</translation>
     </message>

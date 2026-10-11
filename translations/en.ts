@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.title.about</source>
         <translation>About</translation>
     </message>
@@ -13,7 +13,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.developer</source>
         <translation>Developed by %1</translation>
     </message>
@@ -46,34 +46,34 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.checkUpdate</source>
         <translation>Check Update</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.joinQQGroup</source>
         <translation>Join QQ Group</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.github</source>
         <translation>Github</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>aboutDialog.checkingUpdate</source>
         <translation>Checking…</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>updateChecker.upToDate</source>
         <translation>You are up to date</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/widgets/aboutdialog.cpp"/>
         <source>updateChecker.checkFailed</source>
         <translation>Failed to check for updates: %1</translation>
     </message>
@@ -96,12 +96,12 @@
 <context>
     <name>ChunkCoordsProgressWidget</name>
     <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <location filename="../src/widgets/chunkcoordsprogresswidget.cpp"/>
         <source>chunkCoordsProgress.scanning</source>
         <translation>Scanning chunk coordinates...</translation>
     </message>
     <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
+        <location filename="../src/widgets/chunkcoordsprogresswidget.cpp"/>
         <source>chunkCoordsProgress.stats</source>
         <translation>Scanned %1 database keys, found %2 chunks</translation>
     </message>
@@ -117,7 +117,7 @@
         <translation>3D View</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.exportChunkData</source>
         <translation>Export</translation>
     </message>
@@ -170,37 +170,37 @@
         <translation>Stats</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.size</source>
         <translation>Size</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.hash</source>
         <translation>Hash</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.action</source>
         <translation>Action</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.view</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.stats.exportTitle</source>
         <translation>Export Data</translation>
     </message>
@@ -213,22 +213,22 @@
         <translation>HSA Areas</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.blockEntity.tooLarge</source>
         <translation>The block entities data is too large</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.actor.tooLarge</source>
         <translation>The entities data is too large</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.pendingTick.tooLarge</source>
         <translation>The pending ticks data is too large</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
+        <location filename="../src/widgets/chunkeditorwidget.cpp"/>
         <source>chunkEditor.tooLarge.delete</source>
         <translation>Delete Data</translation>
     </message>
@@ -236,22 +236,22 @@
 <context>
     <name>ChunkSectionWidget</name>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.position</source>
         <translation>Position: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.blockName</source>
         <translation>Block: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.biome</source>
         <translation>Biome: </translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
+        <location filename="../src/widgets/chunksectionwidget.cpp"/>
         <source>chunkSectionWidget.tooltip.palette</source>
         <translation>Palette: </translation>
     </message>
@@ -259,71 +259,71 @@
 <context>
     <name>DataManagerPageWidget</name>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.scanning</source>
         <translation>Scanning all LevelDB keys...</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.noSelection</source>
         <translation>Double-click a key to view its value.</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.title</source>
         <translation>Data Manager</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.titleWithName</source>
         <translation>Data Manager - %1</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.stats</source>
         <translation>Scanned %1 database keys, indexed %2 keys</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.progress.failed</source>
         <translation>Failed to scan LevelDB keys.</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.readFailed</source>
         <translation>Failed to read key: %1</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.keyInfo</source>
         <translation>%1 (%2 bytes)</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.exportNbt</source>
         <translation>Export as NBT</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.copyReadableKey</source>
         <translation>Copy readable string</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.copyBinaryKey</source>
         <translation>Copy binary string</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.nbtFilter</source>
         <translation>NBT files (*.nbt);;All files (*)</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
+        <location filename="../src/widgets/datamanagerpagewidget.cpp"/>
         <source>dataManager.writeFailed</source>
         <translation>Failed to write file: %1</translation>
     </message>
@@ -331,37 +331,37 @@
 <context>
     <name>GlobalDataPanelWidget</name>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.levelDat</source>
         <translation type="unfinished">level.dat</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.players</source>
         <translation type="unfinished">Players</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.villages</source>
         <translation type="unfinished">Villages</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.portals</source>
         <translation type="unfinished">Portals</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.other</source>
         <translation type="unfinished">Other</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.structures</source>
         <translation type="unfinished">Structures</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.globalData.maps</source>
         <translation type="unfinished">Maps</translation>
     </message>
@@ -381,7 +381,7 @@
         <translation>X: </translation>
     </message>
     <message>
-        <location filename="../src/gotopositiondialog.cpp"/>
+        <location filename="../src/widgets/gotopositiondialog.cpp"/>
         <source>goToPositionDialog.title.goto</source>
         <translation>Go To Position</translation>
     </message>
@@ -389,12 +389,12 @@
 <context>
     <name>GpuMapWidget</name>
     <message>
-        <location filename="../src/gpumapwidget.cpp"/>
+        <location filename="../src/widgets/gpumapwidget.cpp"/>
         <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gpumapwidget.cpp"/>
+        <location filename="../src/widgets/gpumapwidget.cpp"/>
         <source>  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6</source>
         <translation type="unfinished"></translation>
     </message>
@@ -402,32 +402,32 @@
 <context>
     <name>HsaEditorWidget</name>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colIndex</source>
         <translation>#</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMin</source>
         <translation>Min</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colMax</source>
         <translation>Max</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.colType</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.add</source>
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.remove</source>
         <translation>Remove</translation>
     </message>
@@ -435,17 +435,17 @@
 <context>
     <name>ImageCropDialog</name>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.title.cropImage</source>
         <translation>Crop Image</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.confirm</source>
         <translation>Ok</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>imageCropDialog.button.cancel</source>
         <translation>Cancel</translation>
     </message>
@@ -453,93 +453,93 @@
 <context>
     <name>LevelPageWidget</name>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.replace</source>
         <translation>Replace</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.add</source>
         <translation>Add</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.subtract</source>
         <translation>Subtract</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.selection.save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>Show Grid</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>Show Coordinates</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>Overworld</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>Nether</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>The End</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>Terrain</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>Biome</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>Slime Chunks</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>Entities</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>Villages</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSAs</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>Filter</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>levelPageWidget.toolBar.globalNbt</source>
         <translation>Global NBT</translation>
     </message>
     <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
+        <location filename="../src/widgets/levelpagewidget.cpp"/>
         <source>Save failed</source>
         <translation>Save failed</translation>
     </message>
@@ -547,7 +547,7 @@
 <context>
     <name>LevelTabWidget</name>
     <message>
-        <location filename="../src/leveltabwidget.cpp"/>
+        <location filename="../src/widgets/leveltabwidget.cpp"/>
         <source>levelTabWidget.title.welcome</source>
         <translation>Welcome</translation>
     </message>
@@ -555,279 +555,279 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.file</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openFile</source>
         <translation>Open File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.openFile.filter</source>
         <translation>Minecraft Data Files (*.mcstructure *.nbt *.nbts *.palette)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.new</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.newNbt</source>
         <translation>NBT File</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.exit</source>
         <translation>Exit</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.tool</source>
         <translation>Tools</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.transparentVoid</source>
         <translation>Transparent Void</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showGrid</source>
         <translation>Toggle Grid</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.showCoord</source>
         <translation>Toggle Coordinates</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.overworld</source>
         <translation>Overworld</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.nether</source>
         <translation>Nether</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.theend</source>
         <translation>The End</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.terrain</source>
         <translation>Terrain</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.biome</source>
         <translation>Biome</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.slimeChunks</source>
         <translation>Slime Chunks</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.entities</source>
         <translation>Entities</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.villages</source>
         <translation>Villages</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.HSAs</source>
         <translation>HSAs</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.filter</source>
         <translation>Filter</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.showLevelDBData</source>
         <translation>Show LevelDB Data</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.debugWindow</source>
         <translation>Debug Window</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.coordsMiniMap</source>
         <translation>Coordinates Minimap</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.goto</source>
         <translation>Goto</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.help</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.helpAction</source>
         <translation>Help</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.joinQQGroup</source>
         <translation>Join QQ Group</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.feedback</source>
         <translation>Feedback</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.about</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openRecent</source>
         <translation>Open Recent</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.customDim</source>
         <translation>Custom Dimensions</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.customDim.empty</source>
         <translation>No custom dimensions</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.emptyRecent</source>
         <translation>(Empty)</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.layers</source>
         <translation>Layers</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.customDim</source>
         <translation>Custom Dimensions</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>levelPageWidget.toolBar.portals</source>
         <translation type="unfinished">Portals</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selection</source>
         <translation>Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selReplace</source>
         <translation>Add Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selAdd</source>
         <translation>Incremental Add</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selSubtract</source>
         <translation>Delete Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selClear</source>
         <translation>Clear Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selCopy</source>
         <translation>Copy Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selPaste</source>
         <translation>Paste Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selExport</source>
         <translation>Export Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selImport</source>
         <translation>Import Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selDelete</source>
         <translation>Delete Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selVoid</source>
         <translation>Create Void</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selBiome</source>
         <translation>Set Biome</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.selScreenshot</source>
         <translation>Screenshot Selection</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.sel3D</source>
         <translation>3D View</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp"/>
+        <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.chunk</source>
         <translation>Chunk</translation>
     </message>
@@ -835,31 +835,31 @@
 <context>
     <name>MapHost</name>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.fileDialog.save</source>
         <translation>Save File</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructure</source>
         <translation>Export mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure files (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportMcstructureFailed</source>
         <translation>Failed to export mcstructure</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.editFailed</source>
         <translation>Edit failed</translation>
     </message>
@@ -879,17 +879,17 @@
         <translation>Change Image</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.title.mapItemEditor</source>
         <translation>Map Item Editor</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.save</source>
         <translation>Save File</translation>
     </message>
     <message>
-        <location filename="../src/mapitemeditor.cpp"/>
+        <location filename="../src/widgets/mapitemeditor.cpp"/>
         <source>mapItemEditor.fileDialog.open</source>
         <translation>Open File</translation>
     </message>
@@ -897,12 +897,12 @@
 <context>
     <name>McstructurePageWidget</name>
     <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <location filename="../src/widgets/mcstructurepagewidget.cpp"/>
         <source>Export mcstructure</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
+        <location filename="../src/widgets/mcstructurepagewidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure files (*.mcstructure)</translation>
     </message>
@@ -914,12 +914,12 @@
         <translation>Modify NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
+        <location filename="../src/widgets/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.create</source>
         <translation>Create NBT</translation>
     </message>
     <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
+        <location filename="../src/widgets/nbtmodifydialog.cpp"/>
         <source>nbtEditor.dialogTitle.modify</source>
         <translation>Modify NBT</translation>
     </message>
@@ -971,58 +971,58 @@
         <translation>Print Cache</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.open</source>
         <translation>Open File</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.new</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.modify</source>
         <translation>Modify</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.exportSelected</source>
         <translation>Export Selected</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.deleteSelected</source>
         <translation>Delete Selected</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.rightMenu.unselectAll</source>
         <translation>Unselect All</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.save</source>
         <translation>Save File</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT Files (*.*)</translation>
     </message>
@@ -1030,7 +1030,7 @@
 <context>
     <name>PleaseWaitDialog</name>
     <message>
-        <location filename="../src/pleasewaitdialog.cpp"/>
+        <location filename="../src/widgets/pleasewaitdialog.cpp"/>
         <source>Please wait...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1053,7 +1053,7 @@
         <translation>Failed to open structure file</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>msg.clear</source>
         <translation>Clear</translation>
     </message>
@@ -1089,7 +1089,7 @@
     </message>
     <message>
         <location filename="../src/include/core/msg.h"/>
-        <location filename="../src/nbtwidget.cpp"/>
+        <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>msg.confirmClearAll</source>
         <translation>       </translation>
     </message>
@@ -1236,32 +1236,32 @@
         <translation>Save data successfully</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.unselect</source>
         <translation>UnSelect</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.selectionOps</source>
         <translation>Selection Operations</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.delete</source>
         <translation>Delete Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.createVoid</source>
         <translation>Make Region Void</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.export</source>
         <translation>Export Region</translation>
     </message>
     <message>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.exportRegion</source>
         <translation>Export Region</translation>
     </message>
@@ -1271,12 +1271,12 @@
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copy</source>
         <translation>Copy Region</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.paste</source>
         <translation>Paste</translation>
     </message>
@@ -1296,13 +1296,13 @@
         <translation>Invalid clipboard data, cannot parse</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.import</source>
         <translation>Import</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/maphost.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/maphost.cpp"/>
         <source>mapHost.rightMenu.importRegion</source>
         <translation>Import Region</translation>
     </message>
@@ -1312,92 +1312,92 @@
         <translation>BCHKS Files (*.bchks)</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.gotoPosition</source>
         <translation>Go To Position</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.saveSelectionScreenshot</source>
         <translation>Region Screenshot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.openchunkEditor</source>
         <translation>Open In Chunk Editor</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyInfo</source>
         <translation>Copy Information</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.setBiome</source>
         <translation>Set Region Biome</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyBlockName</source>
         <translation>Block Name: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyBiomeName</source>
         <translation>Biome Name: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyAltitude</source>
         <translation>Altitude: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.copyTPCommand</source>
         <translation>TP Command: </translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.saveScreenshot</source>
         <translation>ScreenShot</translation>
     </message>
     <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
+        <location filename="../src/widgets/contextmenubuilder.cpp"/>
         <source>mapHost.rightMenu.view3D</source>
         <translation>3D View</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
+        <location filename="../src/widgets/importoverlay.cpp"/>
         <source>importOverlay.button.confirm</source>
         <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../src/importoverlay.cpp"/>
+        <location filename="../src/widgets/importoverlay.cpp"/>
         <source>importOverlay.button.cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.netherFortress</source>
         <translation>Nether Fortress</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.swampHut</source>
         <translation>Swamp Hut</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.oceanMonument</source>
         <translation>Ocean Monument</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.pillagerOutpost</source>
         <translation>Pillager Outpost</translation>
     </message>
     <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
+        <location filename="../src/widgets/hsaeditorwidget.cpp"/>
         <source>hsaEditor.type.unknown</source>
         <translation>Unknown</translation>
     </message>
@@ -1433,7 +1433,7 @@
         <translation>Item</translation>
     </message>
     <message>
-        <location filename="../src/renderfilterdialog.cpp"/>
+        <location filename="../src/widgets/renderfilterdialog.cpp"/>
         <source>renderFilterDialog.title.filter</source>
         <translation>Render Filter</translation>
     </message>
@@ -1441,32 +1441,32 @@
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.title</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.gui</source>
         <translation>Interface</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.map</source>
         <translation>Map</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.cache</source>
         <translation>Cache</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.misc</source>
         <translation>Misc</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.category.render</source>
         <translation>Rendering</translation>
     </message>
@@ -1479,7 +1479,7 @@
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/settingsdialog.cpp"/>
+        <location filename="../src/widgets/settingsdialog.cpp"/>
         <source>settingsDialog.colorPicker.title</source>
         <translation>Pick a Color</translation>
     </message>
@@ -1799,20 +1799,20 @@
 <context>
     <name>StructureEditorWidget</name>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.noData</source>
         <translation>No structure data</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.selectStructure</source>
         <translation>Select a structure to preview</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
+        <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.invalid</source>
         <translation>Selected data is not a valid mcstructure</translation>
     </message>
@@ -1834,12 +1834,12 @@
 <context>
     <name>UpdateDialog</name>
     <message>
-        <location filename="../src/updatedialog.cpp"/>
+        <location filename="../src/widgets/updatedialog.cpp"/>
         <source>updateDialog.title</source>
         <translation>New Version Available</translation>
     </message>
     <message>
-        <location filename="../src/updatedialog.cpp"/>
+        <location filename="../src/widgets/updatedialog.cpp"/>
         <source>updateDialog.newVersion</source>
         <translation>A new version is available: %1 (current: %2)</translation>
     </message>
@@ -1863,217 +1863,217 @@
 <context>
     <name>VoxelPreviewWidget</name>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.title</source>
         <translation>Export GLB</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.tooltip</source>
         <translation>Export as glTF Binary (.glb)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.fileFilter</source>
         <translation>GLB files (*.glb)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportGlb.completed</source>
         <translation>GLB export completed.</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.exportMcstructure</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.copyMcstructure</source>
         <translation>Copy to Clipboard</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.deleteSelection</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.cutSelection</source>
         <translation>Cut</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.pasteMcstructure</source>
         <translation>Paste from Clipboard</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.clipboard.empty</source>
         <translation>The clipboard does not contain an mcstructure.</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.compress</source>
         <translation>Compress</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.includeEntities</source>
         <translation>Include entities</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat</source>
         <translation>Use new format</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.importMcstructure</source>
         <translation>Import</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.useNewFormat.tooltip</source>
         <translation>The new format can only be used in version &gt;= 26.50.24</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.operations</source>
         <translation>Operations</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.modelGroup</source>
         <translation>Model</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.empty</source>
         <translation>No model loaded</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.model.info</source>
         <translation>World: (%1, %2, %3) ~ (%7, %8, %9)
 Size: %4 x %5 x %6</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selectionGroup</source>
         <translation>Selection</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.tooltip</source>
         <translation>Coordinates match the in-game world coordinates; the maximum boundary is exclusive</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.min</source>
         <translation>Min</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.max</source>
         <translation>Max</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.moveMode</source>
         <translation>Move mode</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.selection.moveMode.tooltip</source>
         <translation>Middle-dragging a handle moves the whole selection without resizing it</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.viewGroup</source>
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.ortho</source>
         <translation>Ortho</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.lockRotation</source>
         <translation>Lock</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.lockRotation.tooltip</source>
         <translation>Prevents rotating the view with a left-button drag</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateUp</source>
         <translation>Rotate up 90 degrees</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateDown</source>
         <translation>Rotate down 90 degrees</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateLeft</source>
         <translation>Rotate left 90 degrees</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.rotateRight</source>
         <translation>Rotate right 90 degrees</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.view.faceFront</source>
         <translation>Face the side currently closest to the screen (F)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.tooltip</source>
         <translation>Enter placement mode and drag the selection to choose where to import</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.confirm</source>
         <translation>Confirm</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>MCStructure files (*.mcstructure)</source>
         <translation>MCStructure files (*.mcstructure)</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.openFailed</source>
         <translation>The file could not be opened.</translation>
     </message>
     <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
+        <location filename="../src/widgets/voxelpreviewwidget.cpp"/>
         <source>voxelPreviewWidget.import.invalidFile</source>
         <translation>Not a valid mcstructure file.</translation>
     </message>
@@ -2081,13 +2081,13 @@ Size: %4 x %5 x %6</translation>
 <context>
     <name>VoxelWidget</name>
     <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.buttonTooltip</source>
         <translation>Shortcuts</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
-        <location filename="../src/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
+        <location filename="../src/widgets/voxelwidget_controls.cpp"/>
         <source>voxelWidget.shortcuts.content</source>
         <translation>LMB drag: Rotate
 RMB drag: Pan
@@ -2104,32 +2104,32 @@ M: Toggle move mode (drag a handle to move the selection)
 Arrow keys: Rotate 90 degrees</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Export path is empty.</source>
         <translation>Export path is empty.</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>There is no voxel data to export.</source>
         <translation>There is no voxel data to export.</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>The selected range has no visible voxel faces.</source>
         <translation>The selected range has no visible voxel faces.</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to open export file: %1</source>
         <translation>Failed to open export file: %1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to write export file: %1</source>
         <translation>Failed to write export file: %1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/widgets/voxelwidget_export.cpp"/>
         <source>Failed to finish export file: %1</source>
         <translation>Failed to finish export file: %1</translation>
     </message>
@@ -2137,12 +2137,12 @@ Arrow keys: Rotate 90 degrees</translation>
 <context>
     <name>WorldListItem</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.openFolder</source>
         <translation>Open folder location</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.dataManagement</source>
         <translation>Data Management</translation>
     </message>
@@ -2150,27 +2150,27 @@ Arrow keys: Rotate 90 degrees</translation>
 <context>
     <name>WorldListTab</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.recentLevels</source>
         <translation>Recent Levels</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.release</source>
         <translation>Release</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.preview</source>
         <translation>Preview</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.netease</source>
         <translation>Netease</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
+        <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation>No Recent</translation>
     </message>

@@ -6,7 +6,7 @@ add_executable(BedrockMapBenchmark EXCLUDE_FROM_ALL
 
 target_include_directories(BedrockMapBenchmark PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include/core
-    ${PROJECT_SOURCE_DIR}/src/include/ui
+    ${PROJECT_SOURCE_DIR}/src/include/widgets
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/third
 )

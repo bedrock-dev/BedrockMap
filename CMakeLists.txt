@@ -104,7 +104,7 @@ add_executable(BedrockMap
 
 target_include_directories(BedrockMap PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include/core
-    ${PROJECT_SOURCE_DIR}/src/include/ui
+    ${PROJECT_SOURCE_DIR}/src/include/widgets
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/third
 )
