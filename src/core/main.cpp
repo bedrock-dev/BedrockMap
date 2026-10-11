@@ -14,9 +14,9 @@
 #include <Qchar>
 #include <Qtranslator>
 #include <chrono>
-#include <filesystem>
 #include <string>
 
+#include "apppaths.h"
 #include "config.h"
 #include "crashhandler.h"
 #include "loguru/loguru.hpp"
@@ -25,11 +25,10 @@
 #include "resourcemanager.h"
 
 void setupLog(int argc, char* argv[]) {
-    namespace fs = std::filesystem;
-    if (!fs::exists("./logs")) fs::create_directory("./logs");
-
     const auto p1 = std::chrono::system_clock::now();
-    auto log_file = "./logs/" + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count()) + ".log";
+    app_paths::initialize();
+    const auto log_file = app_paths::logDirectory().toStdString() + "/" +
+                          std::to_string(std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count()) + ".log";
     loguru::g_preamble_date = false;
     loguru::g_preamble_thread = false;
     loguru::g_colorlogtostderr = true;
@@ -73,8 +72,6 @@ QString resolveLanguage() {
 }
 
 int main(int argc, char* argv[]) {
-    setupLog(argc, argv);
-    LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
     crashhandler::install();
 
     // QOpenGLWidget is a native child window on Windows. The first time it is shown
@@ -92,6 +89,12 @@ int main(int argc, char* argv[]) {
 
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication a(argc, argv);
+    QCoreApplication::setOrganizationName(QStringLiteral("BedrockMap"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("bedrock-dev.github.io"));
+    QCoreApplication::setApplicationName(QString::fromStdString(constant::SOFTWARE_NAME));
+    QCoreApplication::setApplicationVersion(constant::softwareVersion().toString().mid(1));
+    setupLog(argc, argv);
+    LOG_F(INFO, "Start %s", constant::VERSION_STRING().toStdString().c_str());
     setting::init();
     constant::initColorTable();
     initResources();

@@ -4,8 +4,11 @@
 #include <QString>
 #include <QStringList>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
+
+class RecentWorldStore;
 
 struct LevelPathInfo {
     std::string path;
@@ -62,8 +65,7 @@ class LevelPathManager {
    private:
     std::vector<ScanPathEntry> scan_paths_;
     std::vector<LevelPathInfo> discovered_levels_;
-    std::string filePath_;
-    QStringList history_;
+    std::unique_ptr<RecentWorldStore> recent_store_;
 };
 
 #endif  // BEDROCKMAP_LEVELPATHMANAGER_H

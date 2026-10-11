@@ -17,7 +17,7 @@ void UpdateChecker::checkForUpdates() {
 
     QNetworkRequest request{QUrl(apiUrl())};
     request.setHeader(QNetworkRequest::UserAgentHeader,
-                      QString("%1/%2").arg(QString::fromStdString(constant::SOFTWARE_NAME), constant::SOFTWARE_VERSION.toString()));
+                      QString("%1/%2").arg(QString::fromStdString(constant::SOFTWARE_NAME), constant::softwareVersion().toString()));
     request.setTransferTimeout(10000);  // 10 s so the check never hangs forever
 
     QNetworkReply* reply = network_.get(request);
@@ -54,13 +54,13 @@ void UpdateChecker::handleReply(QNetworkReply* reply) {
 
     const auto latest = AppVersion::parse(tagName);
     if (!latest) {
-        LOG_F(WARNING, "Cannot compare versions: current=%s latest=%s", constant::SOFTWARE_VERSION.toString().toStdString().c_str(),
+        LOG_F(WARNING, "Cannot compare versions: current=%s latest=%s", constant::softwareVersion().toString().toStdString().c_str(),
               tagName.toStdString().c_str());
         emit checkFailed(tr("updateChecker.invalidVersion"));
         return;
     }
 
-    if (latest->compare(constant::SOFTWARE_VERSION) > 0) {
+    if (latest->compare(constant::softwareVersion()) > 0) {
         emit updateAvailable(tagName, releaseNotes, htmlUrl);
     } else {
         emit upToDate();

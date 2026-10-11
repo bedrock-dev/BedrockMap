@@ -1,22 +1,22 @@
 #include "levelpathmanager.h"
+#include "apppaths.h"
+#include "recentworldstore.h"
+#include "worldrepository.h"
 
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qjsondocument.h>
-#include <qjsonobject.h>
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include <QStandardPaths>
-#include <fstream>
 
 #include "config.h"
-#include "json/json.hpp"
 #include "level_dat.h"
 #include "leveldbxor.h"
 #include "loguru/loguru.hpp"
-
-using json = nlohmann::json;
 
 namespace {
 
@@ -37,52 +37,7 @@ namespace {
 }  // namespace
 
 LevelPathInfo LevelPathManager::makeLevelInfo(const QString& dirPath) {
-    LevelPathInfo info;
-    info.path = dirPath.toStdString();
-
-    QDir dir(dirPath);
-    bool hasLevelDat = dir.exists("level.dat");
-    bool hasDb = dir.exists("db");
-    info.isValid = hasLevelDat && hasDb;
-    // This flag is display metadata only. Opening a world still resolves its
-    // XOR key independently through the normal loading path.
-    info.xorEncrypted = leveldb_xor::isEncrypted(dirPath.toStdString());
-
-    // levelname.txt
-    QFile nameFile(dirPath + "/levelname.txt");
-    if (nameFile.open(QIODevice::ReadOnly)) {
-        info.levelName = QString::fromUtf8(nameFile.readAll()).trimmed().toStdString();
-        nameFile.close();
-    }
-
-    // version from level.dat clientversion
-    if (hasLevelDat) {
-        bl::level_dat dat;
-        if (dat.load_from_file((dirPath + "/level.dat").toStdString())) {
-            if (info.levelName.empty()) {
-                info.levelName = dat.level_name();
-            }
-            info.version = dat.min_compat_version().to_string();
-        } else {
-            info.isValid = false;
-        }
-    }
-
-    // total size + newest file mtime
-    int64_t totalSize = 0;
-    int64_t newestTime = 0;
-    QDirIterator it(dirPath, QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-        QFileInfo fi = it.fileInfo();
-        totalSize += fi.size();
-        int64_t mtime = fi.lastModified().toSecsSinceEpoch();
-        if (mtime > newestTime) newestTime = mtime;
-    }
-    info.sizeBytes = totalSize;
-    info.lastModified = newestTime;
-
-    return info;
+    return WorldRepository::readWorld(dirPath);
 }
 
 const std::string LevelPathManager::GAMES_REL_PATH = "games/com.mojang/minecraftWorlds";
@@ -91,54 +46,22 @@ const std::string LevelPathManager::PACKAGE_WINDOWS_BETA = "Packages/Microsoft.M
 const std::string LevelPathManager::DIR_MINECRAFT_BEDROCK = "Minecraft Bedrock";
 const std::string LevelPathManager::DIR_MINECRAFT_BEDROCK_PREVIEW = "Minecraft Bedrock Preview";
 
-LevelPathManager::LevelPathManager() {
-    QFileInfo configInfo(constant::CONFIG_FILE_PATH.c_str());
-    filePath_ = configInfo.absoluteDir().absoluteFilePath("cache").toStdString();
-    loadHistory();
-}
+LevelPathManager::LevelPathManager() : recent_store_(std::make_unique<RecentWorldStore>()) {}
 
-LevelPathManager::~LevelPathManager() { saveHistory(); }
+LevelPathManager::~LevelPathManager() = default;
 
 void LevelPathManager::addRecentPath(const QString& path) {
-    history_.removeAll(path);
-    history_.prepend(path);
-    while (history_.size() > MAX_HISTORY) {
-        history_.removeLast();
-    }
+    recent_store_->add(path);
 }
 
-QStringList LevelPathManager::recentPaths() const { return history_; }
+QStringList LevelPathManager::recentPaths() const { return recent_store_->paths(); }
 
 void LevelPathManager::saveHistory() {
-    json root;
-    auto& arr = root["history"];
-    for (const auto& p : history_) {
-        arr.push_back(p.toStdString());
-    }
-
-    std::ofstream out(filePath_);
-    if (!out.is_open()) {
-        LOG_F(WARNING, "LevelPathManager: cannot write cache to %s", filePath_.c_str());
-        return;
-    }
-    out << root.dump(2);
+    recent_store_->save();
 }
 
 void LevelPathManager::loadHistory() {
-    std::ifstream in(filePath_);
-    if (!in.is_open()) return;
-    try {
-        json root;
-        in >> root;
-        if (root.contains("history") && root["history"].is_array()) {
-            for (const auto& item : root["history"]) {
-                history_.append(QString::fromStdString(item.get<std::string>()));
-            }
-        }
-    } catch (std::exception& e) {
-        LOG_F(WARNING, "LevelPathManager: failed to parse cache: %s", e.what());
-        history_.clear();
-    }
+    recent_store_->load();
 }
 
 void LevelPathManager::init() {
@@ -174,73 +97,12 @@ void LevelPathManager::initLeviPath() {
 }
 
 void LevelPathManager::scanNormalPaths() {
-    discovered_levels_.clear();
-    QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
-    if (!localAppData.isEmpty()) {
-        scanWorldsInDir(
-            QDir(localAppData + "/" + QString::fromStdString(PACKAGE_UWP)).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)), false,
-            false, false, discovered_levels_);
-        scanWorldsInDir(QDir(localAppData + "/" + QString::fromStdString(PACKAGE_WINDOWS_BETA))
-                            .absoluteFilePath(QString::fromStdString(GAMES_REL_PATH)),
-                        false, false, false, discovered_levels_);
-    }
-
-    const QString appData = qEnvironmentVariable("APPDATA");
-    if (!appData.isEmpty()) {
-        const QString neteaseWorlds = QDir(appData).absoluteFilePath("MinecraftPC_Netease_PB/minecraftWorlds");
-        scanWorldsInDir(neteaseWorlds, false, false, true, discovered_levels_);
-    }
+    discovered_levels_ = WorldRepository::scanNormal();
 }
 
 void LevelPathManager::scanModernPaths() {
-    struct DirInfo {
-        QString name;
-        bool preview;
-    };
-    static const DirInfo DIRS[] = {
-        {QString::fromStdString(DIR_MINECRAFT_BEDROCK), false},
-        {QString::fromStdString(DIR_MINECRAFT_BEDROCK_PREVIEW), true},
-    };
-
-    for (const auto& entry : scan_paths_) {
-        if (!entry.modern) continue;
-        QString basePath = QString::fromStdString(entry.path);
-
-        for (const auto& di : DIRS) {
-            QString gameDir = basePath + "/" + di.name;
-            QDir dir(gameDir);
-            if (!dir.exists()) {
-                LOG_F(INFO, "scanModern: game dir not found %s", gameDir.toStdString().c_str());
-                continue;
-            }
-
-            QString usersDir = gameDir + "/Users";
-            QDir users(usersDir);
-            if (!users.exists()) {
-                LOG_F(INFO, "scanModern: User dir not found %s", usersDir.toStdString().c_str());
-                continue;
-            }
-
-            const auto userDirs = users.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-            for (const auto& user : userDirs) {
-                QString worldsDir = QDir(user.absoluteFilePath()).absoluteFilePath(QString::fromStdString(GAMES_REL_PATH));
-                QDir worlds(worldsDir);
-                if (!worlds.exists()) {
-                    LOG_F(INFO, "scanModern: worlds dir not found for user %s", user.fileName().toStdString().c_str());
-                    continue;
-                }
-
-                const auto worldEntries = worlds.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-                for (const auto& world : worldEntries) {
-                    auto info = makeLevelInfo(world.absoluteFilePath());
-                    info.modern = true;
-                    info.preview = di.preview;
-                    info.netease = false;
-                    discovered_levels_.push_back(info);
-                }
-            }
-        }
-    }
+    auto modern = WorldRepository::scanModern(scan_paths_);
+    discovered_levels_.insert(discovered_levels_.end(), modern.begin(), modern.end());
 }
 
 void LevelPathManager::dumpPaths() {

@@ -19,7 +19,7 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDia
     ui->logo->setPixmap(QPixmap(":/res/ui/classic/icon.png").scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     QString name = QString::fromStdString(constant::SOFTWARE_NAME);
-    QString ver = constant::SOFTWARE_VERSION.toString() + "." + QString(GIT_COMMIT_HASH);
+    QString ver = constant::softwareVersion().toString() + "." + QString(GIT_COMMIT_HASH);
     QString text = QString("<h2>%1</h2><p>%2</p>").arg(name, ver);
     ui->name_version_label->setText(text);
 

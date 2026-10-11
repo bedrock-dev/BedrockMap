@@ -79,6 +79,49 @@
     </message>
 </context>
 <context>
+    <name>AppSidebar</name>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Maps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Untitled world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>PREVIEW</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>QML interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Ready for touch</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>BiomePickerDialog</name>
     <message>
         <source>biomePicker.title</source>
@@ -91,6 +134,29 @@
     <message>
         <source>biomePicker.id</source>
         <translation>ID</translation>
+    </message>
+</context>
+<context>
+    <name>BottomNavigation</name>
+    <message>
+        <location filename="../src/qml/BottomNavigation.qml"/>
+        <source>Worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/BottomNavigation.qml"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/BottomNavigation.qml"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/BottomNavigation.qml"/>
+        <source>Maps</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -553,6 +619,46 @@
     </message>
 </context>
 <context>
+    <name>Main</name>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>BedrockMap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
+        <source>World workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Maps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Bedrock Edition world workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/widgets/mainwindow.cpp"/>
@@ -679,6 +785,11 @@
         <location filename="../src/widgets/mainwindow.cpp"/>
         <source>mainWindow.menu.openCfgFile</source>
         <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/mainwindow.cpp"/>
+        <source>mainWindow.menu.openConfigFolder</source>
+        <translation>Open configuration folder</translation>
     </message>
     <message>
         <location filename="../src/widgets/mainwindow.cpp"/>
@@ -895,6 +1006,47 @@
     </message>
 </context>
 <context>
+    <name>MapPage</name>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Map canvas placeholder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Overworld  ·  Zoom 1×</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Layers  ·  Markers  ·  Entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MapsPage</name>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Open maps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Select an opened world map to continue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Untitled world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>No maps are open yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>McstructurePageWidget</name>
     <message>
         <location filename="../src/widgets/mcstructurepagewidget.cpp"/>
@@ -1025,6 +1177,16 @@
         <location filename="../src/widgets/nbtwidget.cpp"/>
         <source>nbtEditor.fileDialog.nbtFiles</source>
         <translation>NBT Files (*.*)</translation>
+    </message>
+</context>
+<context>
+    <name>OpenWorldPage</name>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>World workspace</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1797,6 +1959,54 @@
     </message>
 </context>
 <context>
+    <name>SettingsPage</name>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Tune the workspace for your screen and workflow.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Appearance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Dark theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Light theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Renderer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Touch mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Larger controls on small screens</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>StructureEditorWidget</name>
     <message>
         <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
@@ -1815,6 +2025,49 @@
         <location filename="../src/widgets/globaldatapanelwidget.cpp"/>
         <source>levelPageWidget.structurePreview.invalid</source>
         <translation>Selected data is not a valid mcstructure</translation>
+    </message>
+</context>
+<context>
+    <name>ToolsPage</name>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Useful actions for inspecting and editing a world.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>NBT editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Inspect level and chunk data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Coordinate tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Find positions and dimensions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Export and snapshots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Create a portable map image</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2135,6 +2388,24 @@ Arrow keys: Rotate 90 degrees</translation>
     </message>
 </context>
 <context>
+    <name>WorldCard</name>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Unknown version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Unknown time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Bedrock</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>WorldListItem</name>
     <message>
         <location filename="../src/widgets/worldlisttab.cpp"/>
@@ -2145,6 +2416,44 @@ Arrow keys: Rotate 90 degrees</translation>
         <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.dataManagement</source>
         <translation>Data Management</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListPage</name>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Your worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>＋ Add world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>A calm place to start your next journey.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Recent worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>All worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>No imported worlds yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open a Bedrock world to see it here</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2173,6 +2482,84 @@ Arrow keys: Rotate 90 degrees</translation>
         <location filename="../src/widgets/worldlisttab.cpp"/>
         <source>msg.welcome.noRecent</source>
         <translation>No Recent</translation>
+    </message>
+</context>
+<context>
+    <name>WorldWorkspace</name>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>World workspace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Layers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Control what appears on this map.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Terrain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Biomes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Grid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Structures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Zoom in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Zoom out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Center map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Canvas placeholder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Close map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save is ready to be connected</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

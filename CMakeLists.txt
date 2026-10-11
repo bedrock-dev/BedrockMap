@@ -7,7 +7,13 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
-project(BedrockMap VERSION 0.1 LANGUAGES CXX)
+project(BedrockMap VERSION 1.1.0 LANGUAGES CXX)
+# CMake's project(VERSION ...) is intentionally numeric.  Keep prerelease
+# information in a separate cache variable so the complete version can still
+# be generated from one build-system source of truth, for example:
+#   cmake -S . -B build -DBEDROCKMAP_VERSION_SUFFIX=-beta1
+set(BEDROCKMAP_VERSION_SUFFIX "-beta3" CACHE STRING "Optional BedrockMap version suffix, e.g. -beta1")
+set(BEDROCKMAP_VERSION "${PROJECT_VERSION}${BEDROCKMAP_VERSION_SUFFIX}")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -41,8 +47,11 @@ find_package(Qt6 REQUIRED COMPONENTS
     Concurrent 
     OpenGL 
     OpenGLWidgets
+    Qml
+    Quick
     Svg
     Network
+    Test
     LinguistTools
 )
 
@@ -64,6 +73,9 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
         src/*.cpp
         src/include/*.h
 )
+# The QML frontend has its own executable entry point and must not be linked
+# into the Widgets executable assembled from this source glob.
+list(FILTER SRC_FILES EXCLUDE REGEX "/src/qml/")
 
 file(GLOB_RECURSE RESOURCE_FILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/res/*.png
@@ -85,6 +97,8 @@ foreach(FILE ${RESOURCE_FILES})
     string(REPLACE "\\" "/" RESOURCE_PATH ${FILE})
     file(APPEND ${QRC_FILE} "        <file alias=\"${REL_PATH}\">${RESOURCE_PATH}</file>\n")
 endforeach()
+file(APPEND ${QRC_FILE} "        <file alias=\"res/colors/block_color.json\">${CMAKE_CURRENT_SOURCE_DIR}/bedrock-level/data/colors/block_color.json</file>\n")
+file(APPEND ${QRC_FILE} "        <file alias=\"res/colors/biome_color.json\">${CMAKE_CURRENT_SOURCE_DIR}/bedrock-level/data/colors/biome_color.json</file>\n")
 file(APPEND ${QRC_FILE} "    </qresource>\n</RCC>\n")
 
 set(TS_FILES
@@ -101,6 +115,17 @@ add_executable(BedrockMap
     ${APP_ICON_RESOURCE_WINDOWS}
     ${QRC_FILE}
 )
+
+enable_testing()
+add_executable(AppPathsTest
+    tests/apppaths_test.cpp
+    src/core/apppaths.cpp
+)
+target_include_directories(AppPathsTest PRIVATE ${PROJECT_SOURCE_DIR}/src/include/core)
+target_link_libraries(AppPathsTest PRIVATE Qt6::Core Qt6::Test)
+add_test(NAME AppPathsTest COMMAND AppPathsTest)
+set_tests_properties(AppPathsTest PROPERTIES
+    ENVIRONMENT "PATH=$<TARGET_FILE_DIR:Qt6::Core>;$ENV{PATH}")
 
 target_include_directories(BedrockMap PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include/core
@@ -126,6 +151,53 @@ target_precompile_headers(BedrockMap PRIVATE
 )
 
 target_compile_definitions(BedrockMap PRIVATE NOMINMAX)
+target_compile_definitions(BedrockMap PRIVATE BEDROCKMAP_VERSION="${BEDROCKMAP_VERSION}")
+
+# ---------------------------------------------------------------------------
+# QML frontend (parallel implementation)
+# ---------------------------------------------------------------------------
+add_executable(BedrockMapQml
+    src/qml/main.cpp
+    src/qml/worldlistmodel.cpp
+    src/qml/worldlistmodel.h
+    src/qml/qml.qrc
+    src/core/config.cpp
+    src/core/apppaths.cpp
+    src/core/levelpathmanager.cpp
+    src/core/recentworldstore.cpp
+    src/core/worldrepository.cpp
+    src/core/leveldbxor.cpp
+)
+
+target_include_directories(BedrockMapQml PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include/core
+    ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/third
+)
+
+target_link_libraries(BedrockMapQml PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Quick
+    bedrock-level
+)
+
+target_compile_definitions(BedrockMapQml PRIVATE NOMINMAX BEDROCKMAP_VERSION="${BEDROCKMAP_VERSION}")
+
+# Keep the standalone QML executable runnable directly from the build tree.
+# Some Qt installations do not expose their QML import path to applications
+# launched outside Qt Creator, even though the modules are installed.
+set(QT_QML_IMPORT_ROOT "$ENV{QT_ROOT}/qml")
+add_custom_command(TARGET BedrockMapQml POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${QT_QML_IMPORT_ROOT}/QtQml"
+            "$<TARGET_FILE_DIR:BedrockMapQml>/qml/QtQml"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${QT_QML_IMPORT_ROOT}/QtQuick"
+            "$<TARGET_FILE_DIR:BedrockMapQml>/qml/QtQuick"
+    VERBATIM
+)
 
 execute_process(
     COMMAND git rev-parse --short=7 HEAD
@@ -139,6 +211,7 @@ if(NOT GIT_COMMIT_HASH)
 endif()
 message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
 target_compile_definitions(BedrockMap PRIVATE GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+target_compile_definitions(BedrockMapQml PRIVATE GIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 
 # OFF by default: -g1 keeps crash-handler backtraces symbolized without the
 # ~90MB of full debug info. ON gives full -g for gdb local-variable debugging.

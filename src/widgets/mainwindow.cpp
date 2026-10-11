@@ -24,6 +24,7 @@
 #include "aboutdialog.h"
 #include "biomepickerdialog.h"
 #include "config.h"
+#include "apppaths.h"
 #include "leveltabwidget.h"
 #include "loguru/loguru.hpp"
 #include "settingsdialog.h"
@@ -223,6 +224,7 @@ void MainWindow::setupMenuBar() {
     action_levelDB_ = tool_menu_->addAction(tr("mainWindow.menu.showLevelDBData"));
     action_settings_ = tool_menu_->addAction(tr("mainWindow.menu.openCfgFile"));
     action_settings_->setShortcut(QKeySequence("Ctrl+,"));
+    action_open_config_dir_ = tool_menu_->addAction(tr("mainWindow.menu.openConfigFolder"));
 
     // --- Global shortcuts (not in any menu) ---
     action_goto_ = new QAction(tr("mainWindow.menu.goto"), this);
@@ -274,6 +276,9 @@ void MainWindow::setupMenuActions() {
     connect(action_settings_, &QAction::triggered, this, [this]() {
         SettingsDialog dialog(this);
         dialog.exec();
+    });
+    connect(action_open_config_dir_, &QAction::triggered, this, []() {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(app_paths::configDirectory()));
     });
 
     // Layers

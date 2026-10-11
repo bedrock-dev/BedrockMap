@@ -35,6 +35,7 @@
 #include "chunkcoords.h"
 #include "chunkregion.h"
 #include "config.h"
+#include "apppaths.h"
 #include "contextmenubuilder.h"
 #include "cpumapwidget.h"
 #include "floatingtoolbar.h"
@@ -1052,7 +1053,7 @@ namespace renderbench {
                 bool saved_ok = false;
                 if (ao_ok && gpu_check) {
                     const auto saved = setting::current();
-                    const QString config_path = QString::fromStdString(constant::CONFIG_FILE_PATH);
+                    const QString config_path = app_paths::configFile();
                     QFile config_file(config_path);
                     QByteArray original_config;
                     const bool config_readable = config_file.exists() && config_file.open(QIODevice::ReadOnly);

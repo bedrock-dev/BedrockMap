@@ -221,18 +221,16 @@ QString ToolBarIcon(const QString& name) {
     return path.isEmpty() ? QString(":/res/ui/%1/%2.png").arg(setting::current().ICON_THEME, name) : path;
 }
 void TranslatorMgr::init() {
-    const auto& langs = constant::TRANSLATION_FILES_PATH;
-    // tranverse all the .qm files and load them into the translations map
-    QDirIterator it(langs, QStringList() << "*.qm", QDir::Files);
-    while (it.hasNext()) {
-        auto filePath = it.next();
-        auto langName = QFileInfo(filePath).baseName();
+    // Translations are compiled into the application resource system. Keep the
+    // language list explicit so this also works in mobile sandboxes.
+    for (const auto& langName : {QStringLiteral("zh_CN"), QStringLiteral("en")}) {
         auto translator = std::make_shared<QTranslator>();
-        if (translator->load(filePath)) {
-            LOG_F(INFO, "Load translation file %s succeed", filePath.toStdString().c_str());
+        const auto resourcePath = QStringLiteral(":/i18n/") + langName + QStringLiteral(".qm");
+        if (translator->load(resourcePath)) {
+            LOG_F(INFO, "Load translation resource %s succeed", resourcePath.toStdString().c_str());
             translations().insert(langName, translator);
         } else {
-            LOG_F(WARNING, "Load translation file %s failed", filePath.toStdString().c_str());
+            LOG_F(WARNING, "Load translation resource %s failed", resourcePath.toStdString().c_str());
         }
     }
 }

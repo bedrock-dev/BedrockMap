@@ -32,7 +32,7 @@ UpdateDialog::UpdateDialog(const QString& newVersion, const QString& releaseNote
     setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
     setWindowTitle(tr("updateDialog.title") + " - " + QString::fromStdString(constant::SOFTWARE_NAME));
 
-    const QString current = constant::SOFTWARE_VERSION.toString();
+    const QString current = constant::softwareVersion().toString();
     const QString text = tr("updateDialog.newVersion").arg(newVersion, current);
     ui->version_label->setText(QString("<h3>%1</h3>").arg(text.toHtmlEscaped()));
 
