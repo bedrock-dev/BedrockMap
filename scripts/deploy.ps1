@@ -29,12 +29,11 @@ if (Test-Path $release_dir) {
 }
 New-Item -Path "." -Name $release_dir -ItemType Directory 
 
-Copy-Item -Path "$build_dir\BedrockMap.exe" -Destination $release_dir
-New-Item -Path "$release_dir\translations" -ItemType Directory | Out-Null
+Copy-Item -Path "$build_dir\BedrockMapQml.exe" -Destination $release_dir
 
 # Deploy Qt runtime files for the standalone package.
 Push-Location $release_dir
-& $windeployqt --release BedrockMap.exe
+& $windeployqt --release --qmldir "$PSScriptRoot\..\src\qml" BedrockMapQml.exe
 Pop-Location
 
 # windeployqt may copy runtime DLLs from the Qt installation. Replace them
@@ -49,12 +48,6 @@ foreach ($dll in @("libwinpthread-1.dll", "libstdc++-6.dll", "libgcc_s_seh-1.dll
         Write-Warning "MinGW $dll not found at $mingwDll"
     }
 }
-
-Copy-Item -Path .\bedrock-level\data\colors\block_color.json -Destination $release_dir
-Copy-Item -Path .\bedrock-level\data\colors\biome_color.json -Destination $release_dir
-# Copy project translation files.
-Copy-Item -Path "$build_dir\en.qm" -Destination "$release_dir\translations\" -ErrorAction Stop
-Copy-Item -Path "$build_dir\zh_CN.qm" -Destination "$release_dir\translations\" -ErrorAction Stop
 
 # Name the archive after the most recent version tag, e.g. BedrockMap-v1.0.0-beta10.zip
 $versionTag = git describe --tags --abbrev=0 2>$null

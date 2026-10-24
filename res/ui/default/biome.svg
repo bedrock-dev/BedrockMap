@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="lucide lucide-biome-icon lucide-biome">
-  <rect x="0" y="0" width="24" height="24" rx="2" fill="#7cae37"/>
-  <path d="M12 12 Q9 9 10 0 L22 0 A2 2 0 0 1 24 2 L24 10 Q16 9 12 12 Z" fill="#2C2CB0"/>
-  <path d="M12 12 Q16 9 24 10 L24 22 A2 2 0 0 1 22 24 L13 24 Q16 17 12 12 Z" fill="#FFEF5C"/>
-  <path d="M12 12 Q16 17 13 24 L2 24 A2 2 0 0 1 0 22 L0 13 Q8 16 12 12 Z" fill="#FE9DF8"/>
-</svg>

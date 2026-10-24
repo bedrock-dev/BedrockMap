@@ -8,7 +8,7 @@ namespace benchmark {
 
 void printUsage(const char* executable) {
     std::printf("Usage:\n");
-    std::printf("  %s chunkcoords-read <world-path> [--warmup N] [--repeat N]\n", executable);
+    std::printf("  %s chunkcoords-read <world-path> [--compare | --overview] [--warmup N] [--repeat N]\n", executable);
     std::printf("\n");
     std::printf("Tests:\n");
     std::printf("  chunkcoords-read  Measure the production chunk-coordinate scan.\n");
@@ -16,6 +16,8 @@ void printUsage(const char* executable) {
     std::printf("The benchmark calls ChunkCoordsIndex::load() and reports its internal\n");
     std::printf("scan, image-generation, and finish phases.  --warmup defaults to 1\n");
     std::printf("and --repeat defaults to 3.\n");
+    std::printf("--overview enables sampling and overview color generation alongside the scanner.\n");
+    std::printf("--compare measures overview off, then on, with independent warmups.\n");
 }
 
 }  // namespace benchmark

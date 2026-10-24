@@ -82,6 +82,8 @@ config.ini
 logs
 !icon.rc
 build_rls
+build_android/
+build_android_rls/
 *.zip
 *.qrc
 cache
@@ -91,3 +93,5 @@ maps
 config.ini
 .github/agents/*
 docs/*
+!docs/qmlWorldRendering.md
+!docs/nativeDirtyState.md

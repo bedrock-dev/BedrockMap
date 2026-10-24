@@ -4,2175 +4,2742 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.title.about</source>
         <translation>关于</translation>
     </message>
     <message>
-        <source>{NAME_VERSION}</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.developer</source>
         <translation>由%1开发</translation>
     </message>
     <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.copyright</source>
         <translation>采用GNU AGPL v3.0协议</translation>
     </message>
     <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
         <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++17 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
     </message>
     <message>
-        <source>aboutDialog.close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.links</source>
         <translation>链接</translation>
     </message>
     <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.otherContributors</source>
         <translation>其他贡献者</translation>
     </message>
     <message>
-        <source>aboutDialog.contributorIntzot</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>aboutDialog.contributorOeyan</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
-        <location filename="../src/aboutdialog.cpp"/>
-        <source>aboutDialog.checkUpdate</source>
-        <translation>检查更新</translation>
-    </message>
-    <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.joinQQGroup</source>
         <translation>加入QQ群</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.github</source>
         <translation>Github</translation>
     </message>
+</context>
+<context>
+    <name>AppBusyOverlay</name>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <source>aboutDialog.checkingUpdate</source>
-        <translation>检查中…</translation>
+        <location filename="../src/qml/controls/AppBusyOverlay.qml"/>
+        <source>Working…</source>
+        <translation>正在处理……</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <source>updateChecker.upToDate</source>
-        <translation>当前已是最新版本</translation>
-    </message>
-    <message>
-        <location filename="../src/aboutdialog.cpp"/>
-        <source>updateChecker.checkFailed</source>
-        <translation>检查更新失败：%1</translation>
+        <location filename="../src/qml/controls/AppBusyOverlay.qml"/>
+        <source>Please wait…</source>
+        <translation>请稍候……</translation>
     </message>
 </context>
 <context>
-    <name>BiomePickerDialog</name>
+    <name>AppColorField</name>
     <message>
-        <source>biomePicker.title</source>
-        <translation>群系选择器</translation>
+        <location filename="../src/qml/controls/AppColorField.qml"/>
+        <source>Color</source>
+        <translation>颜色</translation>
     </message>
     <message>
-        <source>biomePicker.name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <source>biomePicker.id</source>
-        <translation>ID</translation>
-    </message>
-</context>
-<context>
-    <name>ChunkCoordsProgressWidget</name>
-    <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
-        <source>chunkCoordsProgress.scanning</source>
-        <translation>正在扫描区块坐标...</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkcoordsprogresswidget.cpp"/>
-        <source>chunkCoordsProgress.stats</source>
-        <translation>已扫描 %1 个数据库键，发现 %2 个区块</translation>
+        <location filename="../src/qml/controls/AppColorField.qml"/>
+        <location filename="../src/qml/controls/AppColorField.qml"/>
+        <source>Choose color</source>
+        <translation>选择颜色</translation>
     </message>
 </context>
 <context>
-    <name>ChunkEditorWidget</name>
+    <name>AppController</name>
     <message>
-        <source>(-1,-1)</source>
-        <translation></translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>World import failed.</source>
+        <translation>世界导入失败。</translation>
     </message>
     <message>
-        <source>chunkEditor.view3D</source>
-        <translation>3D视图</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Cannot create the world import directory.</source>
+        <translation>无法创建世界导入目录。</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.exportChunkData</source>
-        <translation>导出</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Cannot access the selected Android folder.</source>
+        <translation>无法访问所选的 Android 文件夹。</translation>
     </message>
     <message>
-        <source>chunkEditor.importChunkData</source>
-        <translation>导入</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Cannot save the imported world.</source>
+        <translation>无法保存导入的世界。</translation>
     </message>
     <message>
-        <source>chunkEditor.location</source>
-        <translation>定位</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>That folder is not a Bedrock world (no level.dat).</source>
+        <translation>该文件夹不是基岩版世界（缺少 level.dat）。</translation>
     </message>
     <message>
-        <source>chunkEditor.title</source>
-        <translation>区块编辑器</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Wait for the current world import to finish.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.exit</source>
-        <translation>关闭</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Only SAF folders can be copied.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.terrain</source>
-        <translation>地形</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Copying the world to internal storage...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.showGrid</source>
-        <translation>显示网格</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>World copied. Changes are saved to the internal copy.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.layer</source>
-        <translation>图层</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Content folders are only supported on Android.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.height</source>
-        <translation>高度 Y</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>The selected directory must contain level.dat and db.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>chunkEditor.entities</source>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Cannot replace the previous imported world.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not open the containing folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not open the configuration folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AppDirtyIndicator</name>
+    <message>
+        <location filename="../src/qml/controls/AppDirtyIndicator.qml"/>
+        <source>Unsaved changes</source>
+        <translation>未保存的更改</translation>
+    </message>
+</context>
+<context>
+    <name>AppSidebar</name>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Collapse sidebar</source>
+        <translation>收起侧栏</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>1 session open</source>
+        <translation>已打开 1 个会话</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>%1 sessions open</source>
+        <translation>已打开 %1 个会话</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Dark mode</source>
+        <translation>深色模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Light mode</source>
+        <translation>浅色模式</translation>
+    </message>
+</context>
+<context>
+    <name>AppTitleBar</name>
+    <message>
+        <location filename="../src/qml/controls/AppTitleBar.qml"/>
+        <source>Back</source>
+        <translation>返回</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkEditorController</name>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>No terrain was found in the current area.</source>
+        <translation>当前区域内未找到地形。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>The world is not open.</source>
+        <translation>世界尚未打开。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>No chunk data was found at this position.</source>
+        <translation>此位置未找到区块数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>%1 to %2</source>
+        <translation>%1 至 %2</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Entity data is too large to preview.</source>
+        <translation>实体数据过大，无法预览。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Block entity data is too large to preview.</source>
+        <translation>方块实体数据过大，无法预览。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Pending tick data is too large to preview.</source>
+        <translation>计划刻数据过大，无法预览。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Could not read this chunk.</source>
+        <translation>无法读取此区块。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Entities</source>
         <translation>实体</translation>
     </message>
     <message>
-        <source>chunkEditor.blockEntities</source>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Block entities</source>
         <translation>方块实体</translation>
     </message>
     <message>
-        <source>chunkEditor.pendingTicks</source>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Pts</source>
+        <translation>计划刻</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkEditorPanel</name>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Chunk %1, %2</source>
+        <translation>区块 %1, %2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Chunk editor</source>
+        <translation>区块编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Dimension %1 · Y %2</source>
+        <translation>维度 %1 · Y %2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Loading chunk data…</source>
+        <translation>正在加载区块数据…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>No chunk selected</source>
+        <translation>未选择区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Pts</source>
         <translation>计划刻</translation>
     </message>
     <message>
-        <source>chunkEditor.stats</source>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Close chunk editor</source>
+        <translation>关闭区块编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>3D</source>
+        <translation>3D</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Terrain</source>
+        <translation>地形</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Entities</source>
+        <translation>实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Block entities</source>
+        <translation>方块实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>HSA</source>
+        <translation>HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Stats</source>
         <translation>统计数据</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.size</source>
-        <translation>大小</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.hash</source>
-        <translation>哈希</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.action</source>
-        <translation>操作</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.export</source>
-        <translation>导出</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.view</source>
-        <translation>查看</translation>
-    </message>
-    <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.stats.exportTitle</source>
-        <translation>导出数据</translation>
-    </message>
-    <message>
-        <source>chunkEditor.save</source>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Save chunk data</source>
         <translation>保存区块数据</translation>
     </message>
     <message>
-        <source>chunkEditor.hsa</source>
-        <translation>HSA区域</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Could not save chunk editor changes.</source>
+        <translation>无法保存区块编辑器更改。</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.blockEntity.tooLarge</source>
-        <translation>方块实体数据过大无法打开</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Chunk changes saved in memory. Save the world to write them to disk.</source>
+        <translation>区块更改已保存到内存。保存世界后才会写入磁盘。</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.actor.tooLarge</source>
-        <translation>实体数据过大无法打开</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>No NBT document is open.</source>
+        <translation>没有打开的 NBT 文档。</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.pendingTick.tooLarge</source>
-        <translation>计划刻数据过大无法打开</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Import NBT file</source>
+        <translation>导入 NBT 文件</translation>
     </message>
     <message>
-        <location filename="../src/chunkeditorwidget.cpp"/>
-        <source>chunkEditor.tooLarge.delete</source>
-        <translation>删除数据</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
     </message>
-</context>
-<context>
-    <name>ChunkSectionWidget</name>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
-        <source>chunkSectionWidget.tooltip.position</source>
-        <translation>位置: </translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
-        <source>chunkSectionWidget.tooltip.blockName</source>
-        <translation>方块: </translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Export NBT file</source>
+        <translation>导出 NBT 文件</translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
-        <source>chunkSectionWidget.tooltip.biome</source>
-        <translation>群系: </translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Replace NBT records</source>
+        <translation>替换 NBT 记录</translation>
     </message>
     <message>
-        <location filename="../src/chunksectionwidget.cpp"/>
-        <source>chunkSectionWidget.tooltip.palette</source>
-        <translation>调色板: </translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Importing will replace the current NBT records. Unsaved changes will be lost.</source>
+        <translation>导入将替换当前 NBT 记录。未保存的更改将丢失。</translation>
     </message>
-</context>
-<context>
-    <name>DataManagerPageWidget</name>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.progress.scanning</source>
-        <translation>正在扫描所有 LevelDB 键...</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Import</source>
+        <translation>导入</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.noSelection</source>
-        <translation>双击具体的键查看其内容。</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Clear all records</source>
+        <translation>清空所有记录</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.title</source>
-        <translation>存档数据管理</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Remove all records from this NBT section? This cannot be undone.</source>
+        <translation>从此 NBT 分区中移除所有记录？此操作无法撤销。</translation>
     </message>
     <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.titleWithName</source>
-        <translation>数据管理 - %1</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.progress.stats</source>
-        <translation>已扫描 %1 个数据库键，已索引 %2 个键</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.progress.failed</source>
-        <translation>扫描 LevelDB 键失败。</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.readFailed</source>
-        <translation>读取键失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.keyInfo</source>
-        <translation>%1（%2 字节）</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.exportNbt</source>
-        <translation>导出为 NBT</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.copyReadableKey</source>
-        <translation>复制可读字符串</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.copyBinaryKey</source>
-        <translation>复制二进制串</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.nbtFilter</source>
-        <translation>NBT 文件 (*.nbt);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/datamanagerpagewidget.cpp"/>
-        <source>dataManager.writeFailed</source>
-        <translation>写入文件失败：%1</translation>
-    </message>
-</context>
-<context>
-    <name>GlobalDataPanelWidget</name>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.levelDat</source>
-        <translation type="unfinished">level.dat</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.players</source>
-        <translation type="unfinished">玩家</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.villages</source>
-        <translation type="unfinished">村庄</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.portals</source>
-        <translation type="unfinished">传送门</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.other</source>
-        <translation type="unfinished">其他</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.structures</source>
-        <translation type="unfinished">结构</translation>
-    </message>
-    <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.globalData.maps</source>
-        <translation type="unfinished">地图</translation>
-    </message>
-</context>
-<context>
-    <name>GoToPositionDialog</name>
-    <message>
-        <source>goto.title</source>
-        <translation>前往</translation>
-    </message>
-    <message>
-        <source>goto.z</source>
-        <translation>Z: </translation>
-    </message>
-    <message>
-        <source>goto.x</source>
-        <translation>X: </translation>
-    </message>
-    <message>
-        <location filename="../src/gotopositiondialog.cpp"/>
-        <source>goToPositionDialog.title.goto</source>
-        <translation>跳转到位置</translation>
-    </message>
-</context>
-<context>
-    <name>GpuMapWidget</name>
-    <message>
-        <location filename="../src/gpumapwidget.cpp"/>
-        <source>GPU map  %1 ms  %2 px/block  texel %3 blk  regions %4  uploads %5  ao %6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/gpumapwidget.cpp"/>
-        <source>  |  collect %1  upload %2 (background %3 / terrain %4)  shade %5  overlay %6</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>HsaEditorWidget</name>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.colIndex</source>
-        <translation>序号</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.colMin</source>
-        <translation>最小坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.colMax</source>
-        <translation>最大坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.colType</source>
-        <translation>类型</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.remove</source>
-        <translation>删除</translation>
-    </message>
-</context>
-<context>
-    <name>ImageCropDialog</name>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>imageCropDialog.title.cropImage</source>
-        <translation>裁剪图片</translation>
-    </message>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>imageCropDialog.button.confirm</source>
-        <translation>确定</translation>
-    </message>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>imageCropDialog.button.cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
-    <name>LevelPageWidget</name>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.selection.replace</source>
-        <translation>替换</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.selection.add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.selection.subtract</source>
-        <translation>减去</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.selection.save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.showGrid</source>
-        <translation>显示网格</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.showCoord</source>
-        <translation>显示坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.overworld</source>
-        <translation>主世界</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.nether</source>
-        <translation>下界</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.theend</source>
-        <translation>末地</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.terrain</source>
-        <translation>地形</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.biome</source>
-        <translation>群系</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.slimeChunks</source>
-        <translation>史莱姆区块</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.entities</source>
-        <translation>实体</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.villages</source>
-        <translation>村庄</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.HSAs</source>
-        <translation>HSA</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.filter</source>
-        <translation>过滤</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>levelPageWidget.toolBar.globalNbt</source>
-        <translation>全局NBT</translation>
-    </message>
-    <message>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <location filename="../src/levelpagewidget.cpp"/>
-        <source>Save failed</source>
-        <translation>保存失败</translation>
-    </message>
-</context>
-<context>
-    <name>LevelTabWidget</name>
-    <message>
-        <location filename="../src/leveltabwidget.cpp"/>
-        <source>levelTabWidget.title.welcome</source>
-        <translation>欢迎</translation>
-    </message>
-</context>
-<context>
-    <name>MainWindow</name>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.file</source>
-        <translation>文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.open</source>
-        <translation>打开</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openFile</source>
-        <translation>打开文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.openFile.filter</source>
-        <translation>Minecraft 数据文件 (*.mcstructure *.nbt *.nbts *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.new</source>
-        <translation>新建</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.newNbt</source>
-        <translation>NBT 文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.exit</source>
-        <translation>退出</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.tool</source>
-        <translation>工具</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.transparentVoid</source>
-        <translation>透明虚空</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.showGrid</source>
-        <translation>显示网格</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.showCoord</source>
-        <translation>显示坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.overworld</source>
-        <translation>主世界</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.nether</source>
-        <translation>下界</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.theend</source>
-        <translation>末地</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.terrain</source>
-        <translation>地形</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.biome</source>
-        <translation>群系</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.slimeChunks</source>
-        <translation>史莱姆区块</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.entities</source>
-        <translation>实体</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.villages</source>
-        <translation>村庄</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.HSAs</source>
-        <translation>HSA</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.filter</source>
-        <translation>过滤</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.showLevelDBData</source>
-        <translation>显示LevelDB数据</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openCfgFile</source>
-        <translation>设置</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.debugWindow</source>
-        <translation>调试窗口</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.coordsMiniMap</source>
-        <translation>坐标范围小窗</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.goto</source>
-        <translation>前往</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.help</source>
-        <translation>帮助</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.helpAction</source>
-        <translation>帮助</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.joinQQGroup</source>
-        <translation>加入QQ群</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.feedback</source>
-        <translation>反馈</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.about</source>
-        <translation>关于</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.openRecent</source>
-        <translation>最近打开</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.customDim</source>
-        <translation>自定义维度</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.customDim.empty</source>
-        <translation>无自定义维度</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.emptyRecent</source>
-        <translation>(空)</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.layers</source>
-        <translation>图层</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.customDim</source>
-        <translation>自定义维度</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>levelPageWidget.toolBar.portals</source>
-        <translation type="unfinished">传送门</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selection</source>
-        <translation>选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selReplace</source>
-        <translation>添加选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selAdd</source>
-        <translation>增量添加</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selSubtract</source>
-        <translation>删除选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selClear</source>
-        <translation>清空选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selCopy</source>
-        <translation>复制选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selPaste</source>
-        <translation>粘贴选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selExport</source>
-        <translation>导出选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selImport</source>
-        <translation>导入选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selDelete</source>
-        <translation>删除选区</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selVoid</source>
-        <translation>创建虚空</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selBiome</source>
-        <translation>修改群系</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.selScreenshot</source>
-        <translation>选区截图</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.sel3D</source>
-        <translation>3D视图</translation>
-    </message>
-    <message>
-        <location filename="../src/mainwindow.cpp"/>
-        <source>mainWindow.menu.chunk</source>
-        <translation>区块</translation>
-    </message>
-</context>
-<context>
-    <name>MapHost</name>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.fileDialog.save</source>
-        <translation>保存文件</translation>
-    </message>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.rightMenu.exportMcstructure</source>
-        <translation>导出 mcstructure</translation>
-    </message>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <source>MCStructure files (*.mcstructure)</source>
-        <translation>MCStructure 文件 (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.rightMenu.exportMcstructureFailed</source>
-        <translation>mcstructure 导出失败</translation>
-    </message>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.editFailed</source>
-        <translation>编辑失败</translation>
-    </message>
-</context>
-<context>
-    <name>MapItemEditor</name>
-    <message>
-        <source>mapItemEditor.title</source>
-        <translation>地图物品编辑器</translation>
-    </message>
-    <message>
-        <source>mapItemEditor.saveImg</source>
-        <translation>保存图像</translation>
-    </message>
-    <message>
-        <source>mapItemEditor.changeImg</source>
-        <translation>修改图像</translation>
-    </message>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>mapItemEditor.title.mapItemEditor</source>
-        <translation>地图物品编辑器</translation>
-    </message>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>mapItemEditor.fileDialog.save</source>
-        <translation>保存文件</translation>
-    </message>
-    <message>
-        <location filename="../src/mapitemeditor.cpp"/>
-        <source>mapItemEditor.fileDialog.open</source>
-        <translation>打开文件</translation>
-    </message>
-</context>
-<context>
-    <name>McstructurePageWidget</name>
-    <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
-        <source>Export mcstructure</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/mcstructurepagewidget.cpp"/>
-        <source>MCStructure files (*.mcstructure)</source>
-        <translation>MCStructure 文件 (*.mcstructure)</translation>
-    </message>
-</context>
-<context>
-    <name>NBTModifyDialog</name>
-    <message>
-        <source>nbtEditor.dialogTitle</source>
-        <translation>修改NBT</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
-        <source>nbtEditor.dialogTitle.create</source>
-        <translation>新建NBT</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtmodifydialog.cpp"/>
-        <source>nbtEditor.dialogTitle.modify</source>
-        <translation>修改NBT</translation>
-    </message>
-    <message>
-        <source>nbtEditor.type</source>
-        <translation>类型</translation>
-    </message>
-    <message>
-        <source>nbtEditor.name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <source>nbtEditor.value</source>
-        <translation>值</translation>
-    </message>
-</context>
-<context>
-    <name>NbtWidget</name>
-    <message>
-        <source>nbtEditor.title</source>
-        <translation>NBT编辑器</translation>
-    </message>
-    <message>
-        <source>nbtEditor.itemCount</source>
-        <translation>物品数量</translation>
-    </message>
-    <message>
-        <source>nbtEditor.load</source>
-        <translation>加载</translation>
-    </message>
-    <message>
-        <source>nbtEditor.save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <source>nbtEditor.saveAs</source>
-        <translation>另存为</translation>
-    </message>
-    <message>
-        <source>nbtEditor.multiSelection</source>
-        <translation>多选</translation>
-    </message>
-    <message>
-        <source>nbtEditor.hex</source>
-        <translation>16进制</translation>
-    </message>
-    <message>
-        <source>nbtEditor.printCache</source>
-        <translation>打印缓存</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.fileDialog.open</source>
-        <translation>打开文件</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.new</source>
-        <translation>新建</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.delete</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.modify</source>
-        <translation>修改</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.clear</source>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.exportSelected</source>
-        <translation>导出选中</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Records</source>
+        <translation>记录</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.deleteSelected</source>
-        <translation>删除选中</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.rightMenu.unselectAll</source>
-        <translation>取消全选</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.fileDialog.save</source>
-        <translation>保存文件</translation>
-    </message>
-    <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>nbtEditor.fileDialog.nbtFiles</source>
-        <translation>NBT文件 (*.*)</translation>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>HSA editing is not available in this preview.</source>
+        <translation>此预览暂不支持编辑 HSA。</translation>
     </message>
 </context>
 <context>
-    <name>PleaseWaitDialog</name>
+    <name>ChunkStatsPage</name>
     <message>
-        <location filename="../src/pleasewaitdialog.cpp"/>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Export binary data</source>
+        <translation>导出二进制数据</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Binary files (*.bin)</source>
+        <translation>二进制文件 (*.bin)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Could not export binary data.</source>
+        <translation>无法导出二进制数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Size</source>
+        <translation>大小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Hash</source>
+        <translation>哈希</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Actions</source>
+        <translation>操作</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>View binary</source>
+        <translation>查看二进制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>No chunk statistics</source>
+        <translation>暂无区块统计数据</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkTerrainPage</name>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Copy position</source>
+        <translation>复制坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Copy block name</source>
+        <translation>复制方块名称</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Copy block palette</source>
+        <translation>复制方块调色板</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Copy biome</source>
+        <translation>复制生物群系</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Y</source>
+        <translation>Y</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Layer</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkTerrainPage.qml"/>
+        <source>Grid</source>
+        <translation>网格</translation>
+    </message>
+</context>
+<context>
+    <name>ConfirmDialog</name>
+    <message>
+        <location filename="../src/qml/controls/ConfirmDialog.qml"/>
+        <source>OK</source>
+        <translation type="unfinished">确定</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/ConfirmDialog.qml"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+</context>
+<context>
+    <name>GlobalNbtPage</name>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>No NBT document is open.</source>
+        <translation>没有打开的 NBT 文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Import NBT file</source>
+        <translation>导入 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Export NBT file</source>
+        <translation>导出 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Replace NBT records</source>
+        <translation>替换 NBT 记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Importing will replace the current NBT records. Unsaved changes will be lost.</source>
+        <translation>导入将替换当前 NBT 记录。未保存的更改将丢失。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Clear all records</source>
+        <translation>清空所有记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Remove all records from this NBT section? This cannot be undone.</source>
+        <translation>从此 NBT 分区中移除所有记录？此操作无法撤销。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Records</source>
+        <translation>记录</translation>
+    </message>
+</context>
+<context>
+    <name>LogModel</name>
+    <message>
+        <location filename="../src/model/logmodel.cpp"/>
+        <source>The selected log destination is not supported.</source>
+        <translation>不支持所选的日志保存位置。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/logmodel.cpp"/>
+        <source>Choose a different file from the active log file.</source>
+        <translation>请选择其他文件，不能覆盖当前日志文件。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/logmodel.cpp"/>
+        <location filename="../src/model/logmodel.cpp"/>
+        <location filename="../src/model/logmodel.cpp"/>
+        <location filename="../src/model/logmodel.cpp"/>
+        <location filename="../src/model/logmodel.cpp"/>
+        <location filename="../src/model/logmodel.cpp"/>
+        <source>Could not save logs: %1</source>
+        <translation>无法保存日志：%1</translation>
+    </message>
+</context>
+<context>
+    <name>LogPage</name>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Export logs</source>
+        <translation>导出日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Log files (*.log *.txt)</source>
+        <translation>日志文件 (*.log *.txt)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Copy displayed logs</source>
+        <translation>复制当前显示的日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Search logs</source>
+        <translation>搜索日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>All levels</source>
+        <translation>所有级别</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Info and above</source>
+        <translation>信息及以上</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Warnings and above</source>
+        <translation>警告及以上</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Errors</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Auto-scroll</source>
+        <translation>自动滚动</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Export the complete log file</source>
+        <translation>导出完整日志文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Clear the view; keep the log file</source>
+        <translation>清空视图，保留日志文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>No matching logs</source>
+        <translation>没有匹配的日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>No logs</source>
+        <translation>暂无日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>%1 displayed / %2 retained | %3 older entries omitted</source>
+        <translation>显示 %1 条 / 保留 %2 条 | 已省略 %3 条较早日志</translation>
+    </message>
+</context>
+<context>
+    <name>Main</name>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>BedrockMap</source>
+        <translation>BedrockMap</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Open world folder</source>
+        <translation>打开世界文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save NBT file</source>
+        <translation>保存 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Could not save world</source>
+        <translation>无法保存世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Unsaved changes</source>
+        <translation>未保存的更改</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Discard</source>
+        <translation>放弃</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Saving…</source>
+        <translation>正在保存……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Wait for the current map operation to finish before saving.</source>
+        <translation>请等待当前地图操作完成后再保存。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Reset all settings to their default values? The reset will not be saved until you click Save.</source>
+        <translation>将所有设置恢复为默认值？在点击“保存”之前，重置不会保存。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Reset</source>
+        <translation>重置</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>SAF folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>This folder cannot be opened in place. To edit it, BedrockMap will copy the save to its internal storage. The original will not be modified. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Copy and open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save world</source>
+        <translation>保存世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Close world</source>
+        <translation>关闭世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>That drop is not a Bedrock world folder or mcstructure file.</source>
+        <translation>拖入的项目不是基岩版世界文件夹或 mcstructure 文件。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Open world</source>
+        <translation>打开世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save changes before closing this session?</source>
+        <translation>关闭此会话前是否保存更改？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Reset settings</source>
+        <translation>重置设置</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Reset to defaults, not saved yet</source>
+        <translation>已恢复默认值，尚未保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save settings</source>
+        <translation>保存设置</translation>
+    </message>
+</context>
+<context>
+    <name>MapCanvas</name>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Export selected chunks</source>
+        <translation>导出所选区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>BedrockMap regions (*.bchks)</source>
+        <translation>BedrockMap 区域 (*.bchks)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Import chunks</source>
+        <translation>导入区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Exporting selected chunks…</source>
+        <translation>正在导出所选区块……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Set biome</source>
+        <translation>设置生物群系</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Apply</source>
+        <translation>应用</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Unselect</source>
+        <translation>取消选择</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Selection operations</source>
+        <translation>选择操作</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Deleting selected chunks…</source>
+        <translation>正在删除所选区块……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Create void</source>
+        <translation>创建虚空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Clearing selected chunks…</source>
+        <translation>正在清空所选区块……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copying selected chunks…</source>
+        <translation>正在复制所选区块……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy info</source>
+        <translation>复制信息</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy block name</source>
+        <translation>复制方块名称</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy biome name</source>
+        <translation>复制生物群系名称</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy altitude</source>
+        <translation>复制高度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Copy TP command</source>
+        <translation>复制传送命令</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Save selection screenshot</source>
+        <translation>保存选区截图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Save screenshot</source>
+        <translation>保存截图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>View in 3D</source>
+        <translation>在 3D 中查看</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Open chunk editor</source>
+        <translation>打开区块编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Map operation completed</source>
+        <translation>地图操作已完成</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Map operation failed</source>
+        <translation>地图操作失败</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Importing chunks…</source>
+        <translation>正在导入区块……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Applying biome…</source>
+        <translation>正在应用生物群系……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Loading region…</source>
+        <translation>正在读取区域……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>%1 · %2 chunks · %3 × %4</source>
+        <translation>%1 · %2 个区块 · %3 × %4</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Drag inside to move; drag outside to pan. Two fingers move the map.</source>
+        <translation>区域内拖动导入区，区域外拖动地图，双指平移或缩放地图。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Target X/Z are chunk coordinates. Existing chunks will be overwritten.</source>
+        <translation>目标 X/Z 为区块坐标，已有区块将被覆盖。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Memory usage: %1 MiB</source>
+        <translation>内存占用：%1 MiB</translation>
+    </message>
+</context>
+<context>
+    <name>MapController</name>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>The clipboard is not available.</source>
+        <translation>剪贴板不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>No chunks were found in the selection.</source>
+        <translation>选区内没有可复制的区块。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>The clipboard does not contain any copied chunks.</source>
+        <translation>剪贴板中没有已复制的区块数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>Clipboard</source>
+        <translation>剪贴板</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>Some imported chunks could not be written.</source>
+        <translation>部分导入区块未能写入。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>The region could not be imported: %1</source>
+        <translation>无法导入区域：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>The region could not be imported.</source>
+        <translation>无法导入区域。</translation>
+    </message>
+</context>
+<context>
+    <name>MapPage</name>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Map canvas placeholder</source>
+        <translation>地图画布占位符</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Overworld  ·  Zoom 1×</source>
+        <translation>主世界  ·  缩放 1×</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapPage.qml"/>
+        <source>Layers  ·  Markers  ·  Entities</source>
+        <translation>图层  ·  标记  ·  实体</translation>
+    </message>
+</context>
+<context>
+    <name>MapsPage</name>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Open maps</source>
+        <translation>打开的地图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Select an opened world map to continue.</source>
+        <translation>选择一个已打开的世界地图以继续。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapsPage.qml"/>
+        <source>No maps are open yet.</source>
+        <translation>尚未打开地图。</translation>
+    </message>
+</context>
+<context>
+    <name>McstructureController</name>
+    <message>
+        <location filename="../src/controller/mcstructurecontroller.cpp"/>
+        <source>Could not build the structure preview: %1</source>
+        <translation>无法生成结构预览：%1</translation>
+    </message>
+</context>
+<context>
+    <name>McstructureDocument</name>
+    <message>
+        <location filename="../src/model/mcstructuredocument.cpp"/>
+        <source>Could not read the structure NBT.</source>
+        <translation>无法读取结构 NBT。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/mcstructuredocument.cpp"/>
+        <source>Invalid or unsupported mcstructure file.</source>
+        <translation>无效或不支持的 mcstructure 文件。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/mcstructuredocument.cpp"/>
+        <location filename="../src/model/mcstructuredocument.cpp"/>
+        <source>Could not read the structure: %1</source>
+        <translation>无法读取结构：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/model/mcstructuredocument.cpp"/>
+        <source>Could not open the structure: %1</source>
+        <translation>无法打开结构：%1</translation>
+    </message>
+</context>
+<context>
+    <name>McstructurePage</name>
+    <message>
+        <location filename="../src/qml/McstructurePage.qml"/>
+        <source>Structure preview</source>
+        <translation>结构预览</translation>
+    </message>
+</context>
+<context>
+    <name>Navigation</name>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Welcome</source>
+        <translation type="unfinished">欢迎</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Open sessions</source>
+        <translation type="unfinished">打开的会话</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Sessions</source>
+        <translation type="unfinished">会话</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Tools</source>
+        <translation type="unfinished">工具</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Settings</source>
+        <translation type="unfinished">设置</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Logs</source>
+        <translation type="unfinished">日志</translation>
+    </message>
+</context>
+<context>
+    <name>NbtDocumentView</name>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Records</source>
+        <translation>记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Hex</source>
+        <translation type="unfinished">十六进制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Expand all</source>
+        <translation type="unfinished">全部展开</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Collapse all</source>
+        <translation type="unfinished">全部折叠</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>No records</source>
+        <translation>没有记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Search nodes</source>
+        <translation>搜索节点</translation>
+    </message>
+</context>
+<context>
+    <name>NbtEditorPage</name>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>No NBT document is open.</source>
+        <translation>没有打开的 NBT 文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Import NBT file</source>
+        <translation>导入 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Replace NBT document</source>
+        <translation>替换 NBT 文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Importing will replace the current NBT document. Unsaved changes in this tab will be lost.</source>
+        <translation>导入将替换当前 NBT 文档。此标签页中未保存的更改将丢失。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Clear all records</source>
+        <translation>清空所有记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Remove all NBT records from this document? This cannot be undone.</source>
+        <translation>从此文档中移除所有 NBT 记录？此操作无法撤销。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Save NBT file</source>
+        <translation>保存 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Export NBT file</source>
+        <translation>导出 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Save NBT document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Close NBT document</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>NBT editor</source>
+        <translation>NBT 编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Import an NBT, NBTS, mcstructure or palette file to inspect and edit its tree.</source>
+        <translation>导入 NBT、NBTS、mcstructure 或 palette 文件以查看和编辑其树结构。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>Import file</source>
+        <translation>导入文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>New document</source>
+        <translation>新建文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorPage.qml"/>
+        <source>NBT roots</source>
+        <translation>NBT 根节点</translation>
+    </message>
+</context>
+<context>
+    <name>NbtEditorSurface</name>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>NBT roots</source>
+        <translation>NBT 根节点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Clear children</source>
+        <translation>清空子项</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Remove all children of this tag?</source>
+        <translation>移除此标签的所有子项？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Add child</source>
+        <translation>添加子项</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Remove</source>
+        <translation>移除</translation>
+    </message>
+</context>
+<context>
+    <name>NbtTagDialog</name>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Add NBT tag</source>
+        <translation>添加 NBT 标签</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Edit NBT tag</source>
+        <translation>编辑 NBT 标签</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Key</source>
+        <translation>键</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Value</source>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Container children are edited in the tree</source>
+        <translation>容器子项请在树中编辑</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Enter a value; arrays accept spaces or commas</source>
+        <translation>输入值；数组可用空格或逗号分隔</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Apply</source>
+        <translation>应用</translation>
+    </message>
+</context>
+<context>
+    <name>NbtToolbar</name>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Search</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Save</source>
+        <translation type="unfinished">保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NotificationStack</name>
+    <message>
+        <location filename="../src/qml/NotificationStack.qml"/>
+        <source>×%1</source>
+        <translation>×%1</translation>
+    </message>
+</context>
+<context>
+    <name>OpenWorldPage</name>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>Building world coordinate index</source>
+        <translation>正在构建世界坐标索引</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>Opening world</source>
+        <translation>正在打开世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>The map will be available when indexing is complete.</source>
+        <translation>索引完成后即可使用地图。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>Opening LevelDB and preparing the world...</source>
+        <translation>正在打开 LevelDB 并准备世界……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
+        <source>Scanned keys: %1   Chunks: %2</source>
+        <translation>已扫描键：%1   区块：%2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldPage.qml"/>
         <source>Please wait...</source>
         <translation>请稍候...</translation>
     </message>
 </context>
 <context>
-    <name>QObject</name>
+    <name>OpenWorldsPage</name>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.levelNotOpen</source>
-        <translation>未打开存档</translation>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>1 session open</source>
+        <translation>已打开 1 个会话</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.openLevelFailed</source>
-        <translation>无法打开存档</translation>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>%1 sessions open</source>
+        <translation>已打开 %1 个会话</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.openMcstructureFailed</source>
-        <translation>无法打开结构文件</translation>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
     </message>
     <message>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>msg.clear</source>
-        <translation>清空</translation>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>No open sessions</source>
+        <translation>没有打开的会话</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.cannotOpenFile</source>
-        <translation>无法保存文件</translation>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>Open a world or NBT document from the Welcome page.</source>
+        <translation>从“欢迎”页面打开世界或 NBT 文档。</translation>
+    </message>
+</context>
+<context>
+    <name>RegionImportController</name>
+    <message>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region file could not be opened.</source>
+        <translation>无法打开区域文件。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.nbtDataCorrupted</source>
-        <translation>NBT数据损坏</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region file could not be read.</source>
+        <translation>无法读取区域文件。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.initFailed</source>
-        <translation>初始化失败</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region data is empty or invalid.</source>
+        <translation>区域数据为空或无效。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.cannotDeleteRoot</source>
-        <translation>无法删除根节点</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region data could not be loaded: %1</source>
+        <translation>无法加载区域数据：%1</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.nbtParseFailed</source>
-        <translation>NBT解析失败</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region data could not be loaded.</source>
+        <translation>无法加载区域数据。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.emptyNbtData</source>
-        <translation>空的NBT数据</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region contains invalid chunk coordinates or multiple dimensions.</source>
+        <translation>区域包含无效区块坐标或多个维度。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <location filename="../src/nbtwidget.cpp"/>
-        <source>msg.confirmClearAll</source>
-        <translation>确认清空全部</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region contains duplicate chunks.</source>
+        <translation>区域包含重复区块。</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.nothingToSave</source>
-        <translation>无需保存</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region file could not be loaded: %1</source>
+        <translation>无法加载区域文件：%1</translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.levelSaved</source>
-        <translation>存档已保存</translation>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region file could not be loaded.</source>
+        <translation>无法加载区域文件。</translation>
     </message>
+</context>
+<context>
+    <name>SessionController</name>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.importFailed</source>
-        <translation>导入失败</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.invalidChunkFormat</source>
-        <translation>不合法的区块格式</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.unsavedChanges</source>
-        <translation>未保存的修改</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.unsavedChangesPrompt</source>
-        <translation>发现未保存的修改，关闭之前要保存修改吗?</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.exportSucc</source>
-        <translation>导出成功</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.exportComplete</source>
-        <translation>导出完成</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.noChunkFound</source>
-        <translation>找不到区块</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.createNodeFailed</source>
-        <translation>节点创建失败</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.modifyNodeFailed</source>
-        <translation>修改节点失败</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.imageAspectMismatch</source>
+        <location filename="../src/controller/sessioncontroller.cpp"/>
+        <source>World path is not available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.pleaseWait</source>
-        <translation>请稍等</translation>
+        <location filename="../src/controller/sessioncontroller.cpp"/>
+        <source>Could not open %1: the world database is locked by another program or unreadable.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.tagNameEmpty</source>
-        <translation>TAG名字不能为空</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.tagTypeInvalid</source>
-        <translation>TAG类型不合法</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.tagValueInvalid</source>
-        <translation>TAG的值不合法</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.tagUnknownType</source>
-        <translation>未知的TAG类型</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.tagValueEmpty</source>
-        <translation>TAG的值为空</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.selectLevelDir</source>
-        <translation>选择存档目录</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.invalidCoordinate</source>
-        <translation>无效的坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.openLevelSucc</source>
-        <translation>成功打开存档</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.loadGlobalDataFailed</source>
-        <translation>无法加载全局数据</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.setScaleLevel</source>
-        <translation>设置缩放等级</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.saveAs</source>
-        <translation>另存为</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.info</source>
-        <translation>信息</translation>
-    </message>
-    <message>
-        <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.saveDataSucc</source>
-        <translation>成功保存数据</translation>
-    </message>
-    <message>
-        <location filename="../src/core/msg.cpp"/>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.saveDataFailed</source>
-        <translation>成功保存数据</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.unselect</source>
-        <translation>取消选择</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.selectionOps</source>
-        <translation>选区操作</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.delete</source>
-        <translation>删除选区</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.createVoid</source>
-        <translation>创建虚空</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.export</source>
-        <translation>导出选区</translation>
-    </message>
-    <message>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.rightMenu.exportRegion</source>
-        <translation>导出选区</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.allFiles</source>
-        <translation>所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copy</source>
-        <translation>复制选区</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.paste</source>
-        <translation>粘贴</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.pasteNoData</source>
-        <translation>剪贴板中没有可粘贴的区块数据</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.pasteDataEmpty</source>
-        <translation>剪贴板数据为空</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.pasteDataInvalid</source>
-        <translation>剪贴板数据不合法，无法解析</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.import</source>
-        <translation>导入</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <location filename="../src/maphost.cpp"/>
-        <source>mapHost.rightMenu.importRegion</source>
-        <translation>导入选区</translation>
-    </message>
-    <message>
-        <location filename="../src/include/core/msg.h"/>
-        <source>msg.bchksFiles</source>
-        <translation>BCHKS 文件 (*.bchks)</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.gotoPosition</source>
-        <translation>前往坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.saveSelectionScreenshot</source>
-        <translation>选区截图</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.openchunkEditor</source>
-        <translation>在区块编辑器中打开</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copyInfo</source>
-        <translation>复制信息</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.setBiome</source>
-        <translation>设置选区群系</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copyBlockName</source>
-        <translation>方块名字: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copyBiomeName</source>
-        <translation>群系名字: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copyAltitude</source>
-        <translation>高度信息: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.copyTPCommand</source>
-        <translation>TP命令: </translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.saveScreenshot</source>
-        <translation>截图</translation>
-    </message>
-    <message>
-        <location filename="../src/contextmenubuilder.cpp"/>
-        <source>mapHost.rightMenu.view3D</source>
-        <translation>3D视图</translation>
-    </message>
-    <message>
-        <location filename="../src/importoverlay.cpp"/>
-        <source>importOverlay.button.confirm</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location filename="../src/importoverlay.cpp"/>
-        <source>importOverlay.button.cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.type.netherFortress</source>
-        <translation>下界要塞</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.type.swampHut</source>
-        <translation>沼泽小屋</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.type.oceanMonument</source>
-        <translation>海底神殿</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.type.pillagerOutpost</source>
-        <translation>掠夺者前哨站</translation>
-    </message>
-    <message>
-        <location filename="../src/hsaeditorwidget.cpp"/>
-        <source>hsaEditor.type.unknown</source>
-        <translation>未知</translation>
+        <location filename="../src/controller/sessioncontroller.cpp"/>
+        <source>Could not open %1 (%2).</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>RenderFilterDialog</name>
+    <name>SettingsPage</name>
     <message>
-        <source>filter.title</source>
-        <translation>过滤器</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Interface</source>
+        <translation>界面</translation>
     </message>
     <message>
-        <source>filter.enableLayer</source>
-        <translation>启用选层</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Map</source>
+        <translation>地图</translation>
     </message>
     <message>
-        <source>filter.biomeFilter</source>
-        <translation>群系过滤</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Cache</source>
+        <translation>缓存</translation>
     </message>
     <message>
-        <source>filter.blackList</source>
-        <translation>黑名单</translation>
-    </message>
-    <message>
-        <source>filter.blockFilter</source>
-        <translation>方块过滤器</translation>
-    </message>
-    <message>
-        <source>filter.entitiesFilter</source>
-        <translation>实体过滤</translation>
-    </message>
-    <message>
-        <source>item</source>
-        <translation>物品</translation>
-    </message>
-    <message>
-        <location filename="../src/renderfilterdialog.cpp"/>
-        <source>renderFilterDialog.title.filter</source>
-        <translation>渲染过滤</translation>
-    </message>
-</context>
-<context>
-    <name>SettingsDialog</name>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.title</source>
-        <translation>设置</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.gui</source>
-        <translation type="unfinished">界面</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.map</source>
-        <translation type="unfinished">地图</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.cache</source>
-        <translation type="unfinished">缓存</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.misc</source>
-        <translation type="unfinished">杂项</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.category.render</source>
-        <translation>渲染</translation>
-    </message>
-    <message>
-        <source>settingsDialog.restartHint</source>
-        <translation>所有设置将在应用重启后生效</translation>
-    </message>
-    <message>
-        <source>settingsDialog.save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <location filename="../src/settingsdialog.cpp"/>
-        <source>settingsDialog.colorPicker.title</source>
-        <translation>选择颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.groupTitle</source>
-        <translation>界面选项</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.theme</source>
-        <translation>主题</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.theme.light</source>
-        <translation>浅色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.theme.dark</source>
-        <translation>深色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.theme.system</source>
-        <translation>跟随系统</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.fontFamily</source>
-        <translation>字体</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.fontSize</source>
-        <translation>字号</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.iconTheme</source>
-        <translation type="unfinished">图标</translation>
-    </message>
-    <message>
-        <source>settingsDialog.gui.language</source>
-        <translation>语言</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.zoomGroup</source>
-        <translation>缩放选项</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.minScale</source>
-        <translation>最小缩放等级</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.maxScale</source>
-        <translation>最大缩放等级</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.appearanceGroup</source>
-        <translation>外观</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.gridColor</source>
-        <translation>网格线颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.voidColor</source>
-        <translation>空白区域颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorGroup</source>
-        <translation>实体显示</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorStyle</source>
-        <translation>实体渲染风格</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorStyle.individual</source>
-        <translation>独立图标</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorStyle.consolidated</source>
-        <translation>合并显示</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorBorderWidth</source>
-        <translation>实体边框宽度</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.actorBorderColor</source>
-        <translation>实体边框颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.chunkEditorGroup</source>
-        <translation>区块编辑器</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.chunkEditorColor</source>
-        <translation>高亮边框颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.chunkEditorWidth</source>
-        <translation>高亮边框宽度</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.voxelGroup</source>
-        <translation>3D 视图</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.voxelSelectionColor</source>
-        <translation>选框颜色</translation>
-    </message>
-    <message>
-        <source>settingsDialog.cache.groupTitle</source>
-        <translation>缓存选项</translation>
-    </message>
-    <message>
-        <source>settingsDialog.cache.regionCacheSize</source>
-        <translation>区域缓存大小</translation>
-    </message>
-    <message>
-        <source>settingsDialog.cache.emptyCacheSize</source>
-        <translation>空白区域缓存大小</translation>
-    </message>
-    <message>
-        <source>settingsDialog.cache.threadNum</source>
-        <translation>后台线程数</translation>
-    </message>
-    <message>
-        <source>settingsDialog.misc.groupTitle</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Misc</source>
         <translation>杂项</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.loadGlobalData</source>
-        <translation>加载全局数据</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Rendering</source>
+        <translation>渲染</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.maxGlobalData</source>
-        <translation>最大全局数据加载数</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Add world folder</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>settingsDialog.misc.maxGlobalData.unlimited</source>
-        <translation>无限</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Save</source>
+        <translation type="unfinished">保存</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.globalDataGroup</source>
-        <translation>全局数据</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Appearance</source>
+        <translation>外观</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.preloadCoords</source>
-        <translation>预读取全局区块坐标</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Theme</source>
+        <translation>主题</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.extraGroup</source>
-        <translation>额外功能</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Light</source>
+        <translation>浅色</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.xorGroup</source>
-        <translation>LevelDB XOR 编解码</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Dark</source>
+        <translation>深色</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.leveldbXorMode</source>
-        <translation>编解码模式</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>System</source>
+        <translation>跟随系统</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.leveldbXorMode.no</source>
-        <translation>否</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Language</source>
+        <translation>语言</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.leveldbXorMode.yes</source>
-        <translation>是</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Chinese</source>
+        <translation>中文</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.leveldbXorMode.auto</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>English</source>
+        <translation>英文</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Font size</source>
+        <translation>字体大小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Accent color</source>
+        <translation>强调色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Button styles</source>
+        <translation>按钮样式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Primary</source>
+        <translation>强调</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Default</source>
+        <translation>默认</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Active</source>
+        <translation>激活</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Danger</source>
+        <translation>危险</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Ghost</source>
+        <translation>幽灵</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Zoom and appearance</source>
+        <translation>缩放与外观</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Automatic</source>
         <translation>自动</translation>
     </message>
     <message>
-        <source>settingsDialog.misc.leveldbXorKey</source>
-        <translation>编解码密钥</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>OpenGL ES</source>
+        <translation>OpenGL ES</translation>
     </message>
     <message>
-        <source>settingsDialog.render.gpuRender</source>
-        <translation>启用GPU渲染（实验性）</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Vulkan</source>
+        <translation>Vulkan</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.orthographicView</source>
-        <translation>使用正交视角</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Direct3D 11</source>
+        <translation>Direct3D 11</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.rendererGroup</source>
-        <translation>GPU渲染器</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>OpenGL</source>
+        <translation>OpenGL</translation>
     </message>
     <message>
-        <source>settingsDialog.render.cpuGroup</source>
-        <translation>CPU渲染</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Collapse sidebar</source>
+        <translation>折叠侧边栏</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.aoStrength</source>
-        <translation>环境光遮蔽强度</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Automatically collapse the sidebar on startup</source>
+        <translation>启动时自动折叠侧边栏</translation>
     </message>
     <message>
-        <source>...</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Minimum scale</source>
+        <translation>最小缩放</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Maximum scale</source>
+        <translation>最大缩放</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Pan inertia</source>
+        <translation>平移惯性</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Grid color</source>
+        <translation>网格颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Map selection color</source>
+        <translation>大地图选区颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Void color</source>
+        <translation>虚空颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Tile colors</source>
+        <translation>瓦片颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Actors</source>
+        <translation>实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Actor style</source>
+        <translation>实体样式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Individual</source>
+        <translation>单独</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Consolidated</source>
+        <translation>合并</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Border width</source>
+        <translation>边框宽度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Border color</source>
+        <translation>边框颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Chunk editor and voxel selection</source>
+        <translation>区块编辑器与体素选择</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Editor color</source>
+        <translation>编辑器颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Editor width</source>
+        <translation>编辑器宽度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Voxel selection color</source>
+        <translation>体素选择颜色</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Caches</source>
+        <translation>缓存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Region cache size</source>
+        <translation>区域缓存大小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Empty region cache size</source>
+        <translation>空区域缓存大小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Height map cache size</source>
+        <translation>高度图缓存大小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Background threads</source>
+        <translation>后台线程</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World sources</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>classic</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Add folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>new</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Requires All files access</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>English (en)</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Requires privileged access</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>中文 (zh_CN)</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Remove world folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World data</source>
+        <translation>世界数据</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.shadowStrength</source>
-        <translation>阴影强度</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Load global data</source>
+        <translation>加载全局数据</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.shadowPrecision</source>
-        <translation>阴影精度</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Maximum global data entries</source>
+        <translation>全局数据最大条目数</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.bevelStrength</source>
-        <translation>倒角强度</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Preload chunk coordinates</source>
+        <translation>预加载区块坐标</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.bevelWidth</source>
-        <translation>倒角宽度</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Terrain overview</source>
+        <translation>地形概览</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.saturation</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>LevelDB XOR</source>
+        <translation>LevelDB XOR</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Disabled</source>
+        <translation>禁用</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Auto detect</source>
+        <translation>自动检测</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Key</source>
+        <translation>键</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Startup</source>
+        <translation>启动</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Check for updates</source>
+        <translation>检查更新</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Scan LeviLauncher paths</source>
+        <translation>扫描 LeviLauncher 路径</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Renderer</source>
+        <translation>渲染器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Graphics backend</source>
+        <translation>图形后端</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Graphics backend changes take effect after restarting the application.</source>
+        <translation>图形后端更改将在重启应用后生效。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Orthographic view</source>
+        <translation>正交视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>GPU shadow strength</source>
+        <translation>GPU 阴影强度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>GPU ambient occlusion</source>
+        <translation>GPU 环境光遮蔽</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>GPU bevel strength</source>
+        <translation>GPU 斜角强度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>GPU bevel width</source>
+        <translation>GPU 斜角宽度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Saturation</source>
         <translation>饱和度</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.brightness</source>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Brightness</source>
         <translation>亮度</translation>
     </message>
     <message>
-        <source>settingsDialog.gpu.biomeBlendBlocks</source>
-        <translation>群系混合范围（方块）</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Biome blend blocks</source>
+        <translation>生物群系混合距离（方块）</translation>
     </message>
     <message>
-        <source>settingsDialog.map.renderStyle</source>
-        <translation>渲染风格</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Shadow precision</source>
+        <translation>阴影精度</translation>
     </message>
     <message>
-        <source>settingsDialog.map.renderStyle.noShadow</source>
-        <translation>无阴影</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Tile snapshot cache (MiB)</source>
+        <translation>瓦片快照缓存（MiB）</translation>
     </message>
     <message>
-        <source>settingsDialog.map.renderStyle.basicShadow</source>
-        <translation>基础阴影</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Grass height shading</source>
+        <translation>草地高度着色</translation>
     </message>
     <message>
-        <source>settingsDialog.map.renderStyle.ssaoShadow</source>
-        <translation>倒角+阴影贴图（更多性能开销）</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Base height</source>
+        <translation>基础高度</translation>
     </message>
     <message>
-        <source>settingsDialog.map.shadowScale</source>
-        <translation>阴影缩放</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Range</source>
+        <translation>范围</translation>
     </message>
     <message>
-        <source>1x</source>
-        <translation>1x</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Marker color</source>
+        <translation>标记颜色</translation>
     </message>
     <message>
-        <source>2x</source>
-        <translation>2x</translation>
-    </message>
-    <message>
-        <source>4x</source>
-        <translation>4x</translation>
-    </message>
-    <message>
-        <source>8x</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>16x</source>
-        <translation>16x</translation>
-    </message>
-    <message>
-        <source>32x</source>
-        <translation>32x</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowMapScale</source>
-        <translation>阴影贴图缩放</translation>
-    </message>
-    <message>
-        <source>settingsDialog.map.shadowLevel</source>
-        <translation>阴影等级</translation>
-    </message>
-    <message>
-        <source>4</source>
-        <translation>4x</translation>
-    </message>
-    <message>
-        <source>8</source>
-        <translation>8x</translation>
-    </message>
-    <message>
-        <source>16</source>
-        <translation>16x</translation>
-    </message>
-    <message>
-        <source>32</source>
-        <translation>32x</translation>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Settings saved</source>
+        <translation>设置已保存</translation>
     </message>
 </context>
 <context>
-    <name>StructureEditorWidget</name>
+    <name>ToolsPage</name>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.structurePreview.noData</source>
-        <translation>没有结构数据</translation>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Show logs</source>
+        <translation>显示日志</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.structurePreview.selectStructure</source>
-        <translation>请选择要预览的结构</translation>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Inspect application events and diagnostics</source>
+        <translation>查看应用事件和诊断信息</translation>
     </message>
     <message>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <location filename="../src/globaldatapanelwidget.cpp"/>
-        <source>levelPageWidget.structurePreview.invalid</source>
-        <translation>所选数据不是有效的 mcstructure</translation>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Open config folder</source>
+        <translation>打开配置文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Open config.ini and the application data directory</source>
+        <translation>打开 config.ini 和应用数据目录</translation>
     </message>
 </context>
 <context>
     <name>UpdateChecker</name>
     <message>
-        <location filename="../src/core/updatechecker.cpp"/>
-        <location filename="../src/core/updatechecker.cpp"/>
+        <location filename="../src/base/updatechecker.cpp"/>
+        <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.parseFailed</source>
         <translation>无法解析更新数据</translation>
     </message>
     <message>
-        <location filename="../src/core/updatechecker.cpp"/>
+        <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.invalidVersion</source>
         <translation>无法比较版本号</translation>
     </message>
 </context>
 <context>
-    <name>UpdateDialog</name>
+    <name>VoxelMesh</name>
     <message>
-        <location filename="../src/updatedialog.cpp"/>
-        <source>updateDialog.title</source>
-        <translation>发现新版本</translation>
-    </message>
-    <message>
-        <location filename="../src/updatedialog.cpp"/>
-        <source>updateDialog.newVersion</source>
-        <translation>发现新版本 %1（当前版本 %2）</translation>
-    </message>
-    <message>
-        <source>updateDialog.download</source>
-        <translation>下载</translation>
-    </message>
-    <message>
-        <source>updateDialog.close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <source>updateDialog.noUpdateCheck</source>
-        <translation>启动时不再检查更新</translation>
-    </message>
-    <message>
-        <source>{VERSION}</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VoxelPreviewWidget</name>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportGlb.title</source>
-        <translation>导出 GLB</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportGlb.tooltip</source>
-        <translation>导出为 glTF 二进制（.glb）</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportGlb.fileFilter</source>
-        <translation>GLB 文件 (*.glb)</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportGlb.completed</source>
-        <translation>GLB 导出完成。</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.exportMcstructure</source>
-        <translation>导出</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.copyMcstructure</source>
-        <translation>复制到剪贴板</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.deleteSelection</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.cutSelection</source>
-        <translation>剪切</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.pasteMcstructure</source>
-        <translation>从剪贴板粘贴</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.clipboard.empty</source>
-        <translation>剪贴板中没有 mcstructure 数据。</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.compress</source>
-        <translation>压缩</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.includeEntities</source>
-        <translation>包含实体</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.useNewFormat</source>
-        <translation>使用新格式</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.importMcstructure</source>
-        <translation>导入</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.useNewFormat.tooltip</source>
-        <translation>新格式仅可用于版本 &gt;= 26.50.24</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.operations</source>
-        <translation>操作</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.modelGroup</source>
-        <translation>模型</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.model.empty</source>
-        <translation>未加载模型</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.model.info</source>
-        <translation>区域: (%1, %2, %3) ~ (%7, %8, %9)
-大小: %4 x %5 x %6</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selectionGroup</source>
-        <translation>选区</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selection.tooltip</source>
-        <translation>坐标与游戏内的世界坐标一致；最大边界不包含在内</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selection.min</source>
-        <translation>最小</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selection.max</source>
-        <translation>最大</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selection.moveMode</source>
-        <translation>移动模式</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.selection.moveMode.tooltip</source>
-        <translation>中键拖动控制点时整体平移选区，不改变大小</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.viewGroup</source>
-        <translation>视图</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.axes</source>
-        <translation>坐标轴</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.ortho</source>
-        <translation>正交投影</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.lockRotation</source>
-        <translation>锁定旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.lockRotation.tooltip</source>
-        <translation>禁止用左键拖动旋转视角</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.rotateUp</source>
-        <translation>向上旋转 90°</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.rotateDown</source>
-        <translation>向下旋转 90°</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.rotateLeft</source>
-        <translation>向左旋转 90°</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.rotateRight</source>
-        <translation>向右旋转 90°</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.view.faceFront</source>
-        <translation>正视当前最接近屏幕的面 (F)</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.tooltip</source>
-        <translation>进入放置模式，拖动选框选择导入位置</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.confirm</source>
-        <translation>确认</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>MCStructure files (*.mcstructure)</source>
-        <translation>MCStructure 文件 (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.openFailed</source>
-        <translation>无法打开文件。</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <location filename="../src/voxelpreviewwidget.cpp"/>
-        <source>voxelPreviewWidget.import.invalidFile</source>
-        <translation>不是有效的 mcstructure 文件。</translation>
-    </message>
-</context>
-<context>
-    <name>VoxelWidget</name>
-    <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
-        <source>voxelWidget.shortcuts.buttonTooltip</source>
-        <translation>快捷键</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelwidget_controls.cpp"/>
-        <location filename="../src/voxelwidget_controls.cpp"/>
-        <source>voxelWidget.shortcuts.content</source>
-        <translation>左键拖动：旋转
-右键拖动：平移
-Shift + 右键拖动：沿 Z 轴平移
-中键拖动控制点：调整选区
-滚轮：缩放
-R：重置视图
-F：正视表面
-O：切换投影
-A：切换坐标轴
-L：锁定左键旋转
-S：切换选区启用
-M：切换移动模式（拖动控制点平移选区）
-方向键：旋转 90°</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/render/voxel_mesh_export.cpp"/>
         <source>Export path is empty.</source>
         <translation>导出路径为空。</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
-        <source>There is no voxel data to export.</source>
-        <translation>没有可导出的 voxel 数据。</translation>
-    </message>
-    <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/render/voxel_mesh_export.cpp"/>
         <source>The selected range has no visible voxel faces.</source>
-        <translation>选中范围内没有可见 voxel 面。</translation>
+        <translation>选中范围内没有可见体素面。</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/render/voxel_mesh_export.cpp"/>
         <source>Failed to open export file: %1</source>
         <translation>无法打开导出文件：%1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/render/voxel_mesh_export.cpp"/>
         <source>Failed to write export file: %1</source>
         <translation>无法写入导出文件：%1</translation>
     </message>
     <message>
-        <location filename="../src/voxelwidget_export.cpp"/>
+        <location filename="../src/render/voxel_mesh_export.cpp"/>
         <source>Failed to finish export file: %1</source>
         <translation>无法完成导出文件：%1</translation>
     </message>
 </context>
 <context>
-    <name>WorldListItem</name>
+    <name>VoxelOverviewPanel</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.openFolder</source>
-        <translation>打开文件夹位置</translation>
+        <location filename="../src/qml/VoxelOverviewPanel.qml"/>
+        <source>Current area · 3D</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.dataManagement</source>
-        <translation>数据管理</translation>
+        <location filename="../src/qml/VoxelOverviewPanel.qml"/>
+        <source>Close 3D view</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>WorldListTab</name>
+    <name>VoxelPreview</name>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.recentLevels</source>
-        <translation>最近存档</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Maximum (exclusive)</source>
+        <translation>最大坐标（不含）</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.release</source>
-        <translation>正式版</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Minimum</source>
+        <translation>最小坐标</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.preview</source>
-        <translation>预览版</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Hide controls panel</source>
+        <translation>隐藏操作面板</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.netease</source>
-        <translation>网易版</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Show controls panel</source>
+        <translation>显示操作面板</translation>
     </message>
     <message>
-        <location filename="../src/worldlisttab.cpp"/>
-        <source>msg.welcome.noRecent</source>
-        <translation>无近期文件</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Enable selection</source>
+        <translation>启用选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Move selection</source>
+        <translation>移动选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Start</source>
+        <translation>起始</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>End</source>
+        <translation>结束</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Orthographic projection</source>
+        <translation>正交投影</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Lock rotation</source>
+        <translation>锁定旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Rotate up</source>
+        <translation>向上旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Rotate left</source>
+        <translation>向左旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Face front</source>
+        <translation>正面对准</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Rotate right</source>
+        <translation>向右旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Rotate down</source>
+        <translation>向下旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import structure</source>
+        <translation>导入结构</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export structure</source>
+        <translation>导出结构</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Structure exported.</source>
+        <translation>结构已导出。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>GLB exported.</source>
+        <translation>GLB 已导出。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Minecraft structures (*.mcstructure)</source>
+        <translation type="unfinished">Minecraft 结构文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>The structure is not ready for export.</source>
+        <translation>结构尚未就绪，无法导出。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>GLB models (*.glb)</source>
+        <translation>GLB 模型 (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>The model is not ready for export.</source>
+        <translation>模型尚未就绪，无法导出。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Exporting…</source>
+        <translation>正在导出…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export entities</source>
+        <translation>导出实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Old format</source>
+        <translation>旧版格式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>New format</source>
+        <translation>新版格式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Structure format</source>
+        <translation>结构格式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export GLB</source>
+        <translation>导出 GLB</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Under development</source>
+        <translation>开发中</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelSceneController</name>
+    <message>
+        <location filename="../src/controller/voxelscenecontroller.cpp"/>
+        <source>Could not generate the structure data.</source>
+        <translation>无法生成结构数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/voxelscenecontroller.cpp"/>
+        <location filename="../src/controller/voxelscenecontroller.cpp"/>
+        <source>Could not export the structure: %1</source>
+        <translation>无法导出结构：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/voxelscenecontroller.cpp"/>
+        <source>Could not export GLB: %1</source>
+        <translation>无法导出 GLB：%1</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelView</name>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Building voxel terrain… %1%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Building voxel terrain…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Origin: %1, %2, %3</source>
+        <translation>起点：%1, %2, %3</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Size: %1 × %2 × %3</source>
+        <translation>尺寸：%1 × %2 × %3</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>One finger: rotate · Two fingers: pan and zoom</source>
+        <translation>单指：旋转 · 双指：平移和缩放</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Left drag: rotate · Right drag: pan · Wheel: zoom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Drag a handle to edit the selection</source>
+        <translation>拖动手柄编辑选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Middle drag a handle to edit the selection</source>
+        <translation>鼠标中键拖动手柄编辑选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Rotation locked · Two fingers: pan and zoom</source>
+        <translation>旋转已锁定 · 双指：平移和缩放</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>No terrain loaded.</source>
+        <translation>尚未加载体素数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelView.qml"/>
+        <source>Rotation locked · Right drag: pan · Wheel: zoom</source>
+        <translation>旋转已锁定 · 右键拖动：平移 · 滚轮：缩放</translation>
+    </message>
+</context>
+<context>
+    <name>WorldCard</name>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Unknown version</source>
+        <translation>未知版本</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Unknown time</source>
+        <translation>未知时间</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Bedrock</source>
+        <translation>基岩版</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Open containing folder</source>
+        <translation>打开所在文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Open world</source>
+        <translation>打开世界</translation>
+    </message>
+</context>
+<context>
+    <name>WorldListPage</name>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open file</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>No worlds</source>
+        <translation>没有世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Inspect or edit an NBT-based file</source>
+        <translation>查看或编辑基于 NBT 的文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open world</source>
+        <translation>打开世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Minecraft structures (*.mcstructure)</source>
+        <translation>Minecraft 结构文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Getting Started</source>
+        <translation>开始使用</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open a world or file, or start a new NBT document.</source>
+        <translation>打开世界或文件，或新建一个 NBT 文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open a Bedrock world folder</source>
+        <translation>打开基岩版世界文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Create NBT</source>
+        <translation>新建 NBT</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Start a new untitled NBT document</source>
+        <translation>新建一个未命名 NBT 文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Worlds</source>
+        <translation>世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Refresh worlds</source>
+        <translation>刷新世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Scanning worlds… %1%</source>
+        <translation>正在扫描世界…… %1%</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>1 world</source>
+        <translation>1 个世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>%1 worlds</source>
+        <translation>%1 个世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Cards</source>
+        <translation>卡片</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Table</source>
+        <translation>表格</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Recent worlds</source>
+        <translation>最近的世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>All worlds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>No worlds yet</source>
+        <translation>还没有世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open a Bedrock world folder to add one</source>
+        <translation>打开基岩版世界文件夹以添加一个</translation>
+    </message>
+</context>
+<context>
+    <name>WorldSession</name>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Save chunk editor changes before saving the world.</source>
+        <translation>请先保存区块编辑器更改，再保存世界。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Saving the world failed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>WorldWorkspace</name>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Layers</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Terrain</source>
+        <translation>地形</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Biomes</source>
+        <translation>生物群系</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>World saved</source>
+        <translation>世界已保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Could not save world</source>
+        <translation>无法保存世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>View</source>
+        <translation>视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Grid</source>
+        <translation type="unfinished">网格</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Coords</source>
+        <translation>坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Transparent void</source>
+        <translation>透明虚空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Dimension</source>
+        <translation>维度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Overworld</source>
+        <translation>主世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Nether</source>
+        <translation>下界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>The End</source>
+        <translation>末地</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Layer</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Overlays</source>
+        <translation>叠加层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Slime</source>
+        <translation>史莱姆</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Entities</source>
+        <translation>实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Villages</source>
+        <translation>村庄</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>HSA</source>
+        <translation>HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Selection</source>
+        <translation>选择</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Subtract</source>
+        <translation>减去</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Zoom in</source>
+        <translation>放大</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Zoom out</source>
+        <translation>缩小</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Chunk editor</source>
+        <translation type="unfinished">区块编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>3D view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save world</source>
+        <translation>保存世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Debug panels</source>
+        <translation>调试面板</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Close world</source>
+        <translation>关闭世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Return to origin</source>
+        <translation>回到原点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Map</source>
+        <translation>地图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Saving…</source>
+        <translation>正在保存……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Wait for the current map operation to finish before saving.</source>
+        <translation>请等待当前地图操作完成后再保存。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Exit selection mode (%1 chunks)</source>
+        <translation>退出选区模式（已选 %1 个区块）</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Selection mode</source>
+        <translation>选区模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Saving world…</source>
+        <translation>正在保存世界……</translation>
     </message>
 </context>
 </TS>

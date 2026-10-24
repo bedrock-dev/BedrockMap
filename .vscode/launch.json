@@ -8,7 +8,7 @@
             "name": "Launch",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/build/BedrockMap.exe",
+            "program": "${workspaceRoot}/build/BedrockMapQml.exe",
             "args": [],
             "cwd": "${workspaceRoot}"
         }

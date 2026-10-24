@@ -1,2 +1,15 @@
 # Qt translation files — lupdate 输出 LF，接受 LF 避免每次构建后 git 报 warning
 *.ts text eol=lf
+
+# Keep source and build files LF on every platform.
+*.c text eol=lf
+*.cc text eol=lf
+*.cpp text eol=lf
+*.cxx text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.hxx text eol=lf
+*.qml text eol=lf
+*.js text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf

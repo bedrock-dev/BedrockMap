@@ -1,0 +1,269 @@
+import BedrockMap 1.0
+import QtQuick
+import QtQuick.Dialogs
+import "controls"
+
+Item {
+    id: page
+    signal openWorld(string path, string title)
+    signal addRequested
+    property bool tableMode: false
+    readonly property bool listOnly: !Theme.showWorldCards
+    readonly property bool effectiveTableMode: listOnly || tableMode
+    property var recentWorlds: Worlds ? Worlds.recentWorlds : []
+    property var allWorlds: Worlds ? Worlds.allWorlds : []
+
+    FileDialog {
+        id: openFileDialog
+        title: qsTr("Open file")
+        fileMode: FileDialog.OpenFile
+        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("Minecraft structures (*.mcstructure)"), qsTr("All files (*)")]
+        onAccepted: {
+            if (selectedNameFilter.index === 1)
+                App.openMcstructureFile(String(selectedFile))
+            else
+                App.openNbtFile(String(selectedFile))
+        }
+    }
+
+    component SectionTitle: Row {
+        property string title
+        property int count
+        spacing: Theme.gapSmall
+        Text {
+            text: parent.title
+            color: Theme.text
+            font.pixelSize: Theme.fontLabel
+            font.bold: true
+        }
+        Text {
+            text: parent.count
+            color: Theme.muted
+            font.pixelSize: Theme.fontBody
+        }
+    }
+
+    component WorldSection: Column {
+        id: section
+        property string title
+        property var worlds
+        readonly property int count: page.effectiveTableMode ? listView.count : gridView.count
+        width: parent.width
+        spacing: Theme.gapMedium
+
+        SectionTitle {
+            title: section.title
+            count: section.count
+        }
+
+        GridView {
+            id: gridView
+            visible: !page.effectiveTableMode
+            width: parent.width
+            height: count > 0 ? contentHeight : 42
+            interactive: false
+            cellWidth: Math.max(1, width / Math.max(1, Math.floor(width / Math.round(230 * Theme.metricScale))))
+            cellHeight: Math.round((Theme.compact ? 166 : 178) * Theme.metricScale)
+            model: section.worlds
+            delegate: WorldCardDelegate {
+                width: GridView.view.cellWidth
+                height: GridView.view.cellHeight
+                gridMode: true
+                onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
+            }
+        }
+
+        ListView {
+            id: listView
+            visible: page.effectiveTableMode
+            width: parent.width
+            height: count > 0 ? contentHeight : 42
+            interactive: false
+            spacing: Theme.cardGap
+            model: section.worlds
+            delegate: WorldCardDelegate {
+                width: ListView.view.width
+                height: Math.round((Theme.compact ? 76 : 92) * Theme.metricScale)
+                gridMode: false
+                onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
+            }
+            Text {
+                visible: listView.count === 0
+                anchors.centerIn: parent
+                text: qsTr("No worlds")
+                color: Theme.muted
+                font.pixelSize: Theme.fontBody
+            }
+        }
+    }
+
+    Flickable {
+        anchors.fill: parent
+        contentHeight: body.height + Theme.gapSection
+        clip: true
+        Column {
+            id: body
+            x: Theme.pageGutter
+            y: Theme.gapMedium
+            width: parent.width - Theme.pageGutter * 2
+            spacing: Theme.gapMedium
+
+            Text {
+                text: qsTr("Getting Started")
+                color: Theme.text
+                font.pixelSize: Theme.fontDisplay
+                font.bold: true
+            }
+            Text {
+                width: parent.width
+                text: qsTr("Open a world or file, or start a new NBT document.")
+                color: Theme.muted
+                font.pixelSize: Theme.fontSubtitle
+                wrapMode: Text.WordWrap
+            }
+            Flow {
+                id: welcomeActions
+                width: parent.width
+                spacing: Theme.gapMedium
+                readonly property real actionWidth: (width - spacing * 2) / 3
+                AppListRow {
+                    width: welcomeActions.actionWidth
+                    height: Theme.compact ? 64 : 68
+                    stacked: Theme.compact
+                    iconName: "opened_world_list"
+                    label: qsTr("Open world")
+                    detail: Theme.compact ? "" : qsTr("Open a Bedrock world folder")
+                    onClicked: page.addRequested()
+                }
+                AppListRow {
+                    width: welcomeActions.actionWidth
+                    height: Theme.compact ? 64 : 68
+                    stacked: Theme.compact
+                    iconName: "open"
+                    label: qsTr("Open file")
+                    detail: Theme.compact ? "" : qsTr("Inspect or edit an NBT-based file")
+                    onClicked: openFileDialog.open()
+                }
+                AppListRow {
+                    width: welcomeActions.actionWidth
+                    height: Theme.compact ? 64 : 68
+                    stacked: Theme.compact
+                    iconName: "nbt_editor"
+                    label: qsTr("Create NBT")
+                    detail: Theme.compact ? "" : qsTr("Start a new untitled NBT document")
+                    onClicked: App.newNbtDocument()
+                }
+            }
+
+            Item {
+                width: parent.width
+                height: Math.max(worldsTitle.implicitHeight, refreshButton.height)
+                Text {
+                    id: worldsTitle
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Worlds")
+                    color: Theme.text
+                    font.pixelSize: Theme.fontHeading
+                    font.bold: true
+                }
+                AppIconButton {
+                    id: refreshButton
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconName: "refresh"
+                    label: qsTr("Refresh worlds")
+                    buttonSize: 30
+                    onClicked: Worlds.refresh()
+                }
+            }
+
+            Row {
+                width: parent.width
+                spacing: Theme.gapSmall
+                Text {
+                    width: Math.max(0, parent.width - (viewMode.visible ? viewMode.width + parent.spacing : 0))
+                    text: Worlds && Worlds.loading ? qsTr("Scanning worlds… %1%").arg(Worlds.progress) : (worldsSection.count
+                                                                                                           === 1 ? qsTr(
+                                                                                                                       "1 world") :
+                                                                                                                   qsTr("%1 worlds").arg(
+                                                                                                                       worldsSection.count))
+                    color: Theme.muted
+                    font.pixelSize: Theme.fontBody
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                AppSegmentedControl {
+                    id: viewMode
+                    visible: Theme.showWorldCards
+                    width: 150
+                    options: [qsTr("Cards"), qsTr("Table")]
+                    currentIndex: page.effectiveTableMode ? 1 : 0
+                    onActivated: index => page.tableMode = index === 1
+                }
+            }
+
+            WorldSection {
+                id: recentSection
+                visible: count > 0
+                title: qsTr("Recent worlds")
+                worlds: page.recentWorlds
+            }
+
+            WorldSection {
+                id: worldsSection
+                visible: count > 0
+                title: qsTr("All worlds")
+                worlds: page.allWorlds
+            }
+
+            Rectangle {
+                visible: worldsSection.count === 0 && recentSection.count === 0 && !(Worlds && Worlds.loading)
+                width: parent.width
+                height: 62
+                radius: Theme.radiusCard
+                color: emptyMouse.pressed ? Theme.surfaceAlt : Theme.surface
+                border.color: Theme.border
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: Theme.gapLarge
+                    Rectangle {
+                        width: 74
+                        height: 42
+                        radius: Theme.radiusSmall
+                        color: Theme.accentSoft
+                        AppIcon {
+                            anchors.centerIn: parent
+                            width: 22
+                            height: 22
+                            name: "world_list"
+                            iconSize: width
+                            iconColor: Theme.accent
+                        }
+                    }
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: Theme.gapSmall
+                        Text {
+                            text: qsTr("No worlds yet")
+                            color: Theme.text
+                            font.bold: true
+                            font.pixelSize: Theme.fontSubtitle
+                        }
+                        Text {
+                            text: qsTr("Open a Bedrock world folder to add one")
+                            color: Theme.muted
+                            font.pixelSize: Theme.fontBody
+                        }
+                    }
+                }
+                MouseArea {
+                    id: emptyMouse
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: page.addRequested()
+                }
+            }
+        }
+    }
+}

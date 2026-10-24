@@ -11,7 +11,7 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-**BedrockMap** is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++17. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.
+**BedrockMap** is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt 6, Qt Quick, and C++20. It provides tools for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across dimensions.
 
 ## Features
 
@@ -22,7 +22,7 @@
 - **NBT Editor** — View and modify NBT data including `level.dat`, player inventories, villages, map items, and more
 - **mcstructure Support** — Browse and edit `.mcstructure` files with a 3D voxel preview, and export selected regions or chunks as `.mcstructure` files
 - **Voxel Rendering** — 3D voxel visualization of selected regions, exportable as GLB models
-- **Multi-Tab Workspace** — Open and manage multiple worlds simultaneously
+- **Multiple Sessions** — Open and manage multiple worlds simultaneously
 
 ## Download
 
@@ -30,25 +30,11 @@ Grab the latest release from the [Releases page](https://github.com/bedrock-dev/
 
 ## System Requirements
 
-- **OS** — Windows 10
+- **OS** — Windows 10 or newer; Android builds are also supported
 
 ## Quick Start
 
-Open a world via **File → Open World** (`Ctrl+O`), or drag & drop a world folder, `.mcstructure` or `.nbt` file onto the window.
-
-In the map view: **left-drag** to pan, **right-click** for the context menu, **middle-mouse drag** to select a region, and **scroll** to zoom.
-
-Key shortcuts:
-
-| Shortcut                  | Action                                                   |
-| ------------------------- | -------------------------------------------------------- |
-| `Ctrl+O` / `Ctrl+Shift+O` | Open world / open file (`.mcstructure`, `.nbt`, `.nbts`) |
-| `Ctrl+C` / `Ctrl+V`       | Copy / paste selected region (works across worlds)       |
-| `Ctrl+E` / `Ctrl+I`       | Export / import selection                                |
-| `Ctrl+D`                  | Delete selected chunks                                   |
-| `Ctrl+H`                  | Open 3D voxel view                                       |
-| `Alt+1`–`Alt+4`           | Switch dimension (Overworld / Nether / The End / custom) |
-| `Ctrl+G`                  | Go to coordinates                                        |
+Open a world from the world list, or drag and drop a world folder or `.mcstructure` file onto the application. The map supports panning, zooming, selection, and a context menu.
 
 ## Build
 
@@ -56,8 +42,11 @@ Key shortcuts:
 # Clone with submodules
 git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 
-# Build BedrockMap
-.\scripts\build.ps1 -buildBL
+# Build the Qt Quick application
+.\scripts\build.ps1
+
+# Run it
+.\scripts\run.ps1
 ```
 
 ## Supported MCBE Versions

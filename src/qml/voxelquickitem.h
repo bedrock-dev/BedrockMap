@@ -1,0 +1,111 @@
+#ifndef BEDROCKMAP_VOXELQUICKITEM_H
+#define BEDROCKMAP_VOXELQUICKITEM_H
+
+#include <QMutex>
+#include <QPointer>
+#include <QQuickRhiItem>
+#include <QVector3D>
+#include <memory>
+
+#include "controller/voxelscenecontroller.h"
+#include "render/voxel_mesh.h"
+#include "render/voxel_scene.h"
+
+struct VoxelRhiCameraState {
+    float yaw{45.0f};
+    float pitch{45.0f};
+    float zoom{1.0f};
+    QVector3D pan;
+    bool orthoMode{false};
+};
+
+struct VoxelRhiSelectionState {
+    bl::block_box bounds;
+    QColor color{QStringLiteral("#e641b9dc")};
+    VoxelSelectionHandle active{VoxelSelectionHandle::None};
+    bool enabled{false};
+};
+
+class VoxelQuickItem : public QQuickRhiItem {
+    Q_OBJECT
+    Q_PROPERTY(VoxelSceneController* controller READ controller WRITE setController NOTIFY controllerChanged)
+    Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode NOTIFY viewOptionsChanged)
+    Q_PROPERTY(bool rotationLocked READ rotationLocked WRITE setRotationLocked NOTIFY viewOptionsChanged)
+    Q_PROPERTY(QVector3D modelSize READ modelSize NOTIFY sceneChanged)
+    Q_PROPERTY(QVector3D modelOrigin READ modelOrigin NOTIFY sceneChanged)
+    Q_PROPERTY(bool selectionEnabled READ selectionEnabled WRITE setSelectionEnabled NOTIFY selectionOptionsChanged)
+    Q_PROPERTY(bool selectionMoveMode READ selectionMoveMode WRITE setSelectionMoveMode NOTIFY selectionOptionsChanged)
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionOptionsChanged)
+    Q_PROPERTY(QVector3D selectionMinimum READ selectionMinimum NOTIFY selectionChanged)
+    Q_PROPERTY(QVector3D selectionMaximum READ selectionMaximum NOTIFY selectionChanged)
+    Q_PROPERTY(bool selectionDragging READ selectionDragging NOTIFY selectionInteractionChanged)
+
+   public:
+    explicit VoxelQuickItem(QQuickItem* parent = nullptr);
+
+    [[nodiscard]] VoxelSceneController* controller() const { return controller_; }
+    void setController(VoxelSceneController* controller);
+    [[nodiscard]] std::shared_ptr<const VoxelSceneData> currentScene() const;
+    [[nodiscard]] VoxelRhiCameraState cameraState() const;
+    [[nodiscard]] bool orthoMode() const;
+    void setOrthoMode(bool ortho);
+    [[nodiscard]] bool rotationLocked() const;
+    void setRotationLocked(bool locked);
+    [[nodiscard]] QVector3D modelSize() const;
+    [[nodiscard]] QVector3D modelOrigin() const;
+    [[nodiscard]] VoxelRhiSelectionState selectionState() const;
+    [[nodiscard]] bool selectionEnabled() const;
+    void setSelectionEnabled(bool enabled);
+    [[nodiscard]] bool selectionMoveMode() const;
+    void setSelectionMoveMode(bool enabled);
+    [[nodiscard]] QColor selectionColor() const;
+    void setSelectionColor(const QColor& color);
+    [[nodiscard]] QVector3D selectionMinimum() const;
+    [[nodiscard]] QVector3D selectionMaximum() const;
+    [[nodiscard]] bool selectionDragging() const;
+    Q_INVOKABLE void setSelectionBoundary(int axis, bool maximum, int value);
+    Q_INVOKABLE bool beginSelectionDrag(const QPointF& position, qreal pickRadius = 10.8);
+    Q_INVOKABLE void dragSelection(const QPointF& position);
+    Q_INVOKABLE void endSelectionDrag();
+    Q_INVOKABLE void rotateView(float yawDegrees, float pitchDegrees);
+    Q_INVOKABLE void focusFrontFace();
+    Q_INVOKABLE void beginRotate(const QPointF& position);
+    Q_INVOKABLE void beginPan(const QPointF& position);
+    Q_INVOKABLE void dragView(const QPointF& position);
+    Q_INVOKABLE void endView();
+    Q_INVOKABLE void zoomBy(qreal factor);
+
+   signals:
+    void controllerChanged();
+    void sceneChanged();
+    void viewOptionsChanged();
+    void selectionOptionsChanged();
+    void selectionChanged();
+    void selectionInteractionChanged();
+
+   protected:
+    QQuickRhiItemRenderer* createRenderer() override;
+
+   private:
+    void syncScene();
+    void resetView();
+
+    QPointer<VoxelSceneController> controller_;
+    QMetaObject::Connection scene_connection_;
+    mutable QMutex state_mutex_;
+    std::shared_ptr<const VoxelSceneData> scene_;
+    float yaw_{45.0f};
+    float pitch_{45.0f};
+    float zoom_{1.0f};
+    QVector3D pan_;
+    QPointF last_mouse_position_;
+    bool rotating_{false};
+    bool panning_{false};
+    bool ortho_mode_{false};
+    bool rotation_locked_{false};
+    VoxelRhiSelectionState selection_;
+    VoxelSelectionDrag selection_drag_;
+    bool selection_move_mode_{false};
+};
+
+#endif  // BEDROCKMAP_VOXELQUICKITEM_H
