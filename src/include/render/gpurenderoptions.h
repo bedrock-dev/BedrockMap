@@ -18,9 +18,7 @@ struct GpuRenderOptions {
     float shadow_strength{1.0f};
 
     float ao_strength{0.10f};
-    int ao_directions{16};
-    int ao_steps{16};
-    float ao_step0{0.5f};
+    int ao_steps{8};
     float ao_radius{16.0f};
 
     float bevel_strength{1.0f};

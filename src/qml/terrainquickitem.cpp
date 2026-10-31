@@ -60,6 +60,12 @@ namespace {
         return 1.0 / u;
     }
 
+    double minimumTerrainTexelPixels(bool highDetail, double width, double height, int layers) {
+        if (!highDetail) return terrain_render_config::balanced_texel_pixels;
+        return std::clamp(texelPixelsForLayerBudget(width, height, layers), terrain_render_config::high_detail_texel_pixels,
+                          terrain_render_config::balanced_texel_pixels);
+    }
+
     /// Shrink a region window symmetrically until it fits the level's atlas.
     void clampToRegionBudget(int& x0, int& x1, int& z0, int& z1, qint64 budget) {
         while (static_cast<qint64>(x1 - x0 + 1) * (z1 - z0 + 1) > budget) {
@@ -474,16 +480,11 @@ void TerrainQuickItem::publishFrameState() {
 
 int TerrainQuickItem::blocksPerTexelFor() const {
     const qreal pxPerBlock = std::max<qreal>(0.0001, camera_.pixelsPerChunk / 16.0);
-    double minimumTexelPixels = terrain_render_config::balanced_texel_pixels;
-    if (render_settings_ && render_settings_->highDetailMap) {
-        // Finer tiers are limited by the slices the render thread actually
-        // created, so a large viewport degrades to a coarser level instead of
-        // exhausting the tile array.
-        int layers = render_settings_->tileLayers;
-        if (const int created = created_tile_layers_.load(std::memory_order_acquire); created > 0) layers = std::min(layers, created);
-        minimumTexelPixels = std::clamp(texelPixelsForLayerBudget(width(), height(), layers),
-                                        terrain_render_config::high_detail_texel_pixels, terrain_render_config::balanced_texel_pixels);
-    }
+    // Respect the device's actual slice budget when retaining finer levels.
+    int layers = render_settings_ ? render_settings_->tileLayers : terrain_render_config::tile_array_layers;
+    if (const int created = created_tile_layers_.load(std::memory_order_acquire); created > 0) layers = std::min(layers, created);
+    const double minimumTexelPixels =
+        minimumTerrainTexelPixels(render_settings_ && render_settings_->highDetailMap, width(), height(), layers);
     int level = 1;
     while (level < terrain_render_config::max_blocks_per_texel && level * pxPerBlock < minimumTexelPixels) level *= 2;
     return level;
@@ -913,7 +914,11 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
         body.shade = {static_cast<float>(sunX), static_cast<float>(sunZ), static_cast<float>(shadowReach), gpu.shadow_step};
         body.shadow = {static_cast<float>(1.0 - std::clamp(settings->cpuShadowLevel, 0, 255) / 255.0 * 0.75), gpu.shadow_strength,
                        std::clamp(baseEdgeWidth * gpu.bevel_width, 0.0625f, 0.75f), gpu.biome_blend_blocks};
-        body.ao = {gpu.ao_strength, static_cast<float>(gpu.ao_directions), static_cast<float>(gpu.ao_steps), gpu.ao_radius};
+        // Fade AO to zero before the full-resolution tiles switch to a coarser LOD.
+        const double minimumTexelPixels = minimumTerrainTexelPixels(settings->highDetailMap, width(), height(), layerCount);
+        const float aoZoom = static_cast<float>(std::clamp(pxPerBlock / minimumTexelPixels - 1.0, 0.0, 1.0));
+        const float aoFade = aoZoom * aoZoom * (3.0f - 2.0f * aoZoom);
+        body.ao = {gpu.ao_strength, aoFade, gpu.ao_radius, static_cast<float>(gpu.ao_steps)};
         body.tint = {gpu.saturation, gpu.brightness, gpu.bevel_strength, overviewOnly ? 1.0f : 0.0f};
         body.water = {gpu.water_base_color[0], gpu.water_base_color[1], gpu.water_base_color[2], 0.0f};
         body.grass = {gpu.grass_height_base, gpu.grass_height_range, gpu.grass_height_enabled ? 1.0f : 0.0f, gpu.biome_blend_blocks};

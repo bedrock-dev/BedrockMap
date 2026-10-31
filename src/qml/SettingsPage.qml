@@ -563,6 +563,21 @@ Item {
                                 onMoved: App.settings.gpuAoStrength = value
                             }
                         }
+                        SettingRow {
+                            label: qsTr("AO quality")
+                            AppComboBox {
+                                model: [qsTr("Low"), qsTr("Medium"), qsTr("High")]
+                                currentIndex: [2, 4, 8].indexOf(App.settings.gpuAoSteps)
+                                onActivated: App.settings.gpuAoSteps = [2, 4, 8][currentIndex]
+                            }
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: qsTr("Higher AO quality improves occlusion detail at a higher rendering cost.")
+                            color: Theme.muted
+                            font.pixelSize: Theme.fontCaption
+                            wrapMode: Text.Wrap
+                        }
                     }
                     SettingGroup {
                         title: qsTr("Terrain appearance")

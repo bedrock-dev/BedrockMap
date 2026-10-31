@@ -72,6 +72,7 @@ namespace setting {
 #else
         float gpuAoStrength{0.15f};  // Ambient occlusion strength.
 #endif
+        int gpuAoSteps{8};  // Samples per direction; 2, 4 or 8.
         float gpuBevelStrength{1.0f};      // Bevel depth.
         float gpuBevelWidth{1.0f};         // Bevel width multiplier.
         float gpuSaturation{1.05f};        // Output saturation.
@@ -148,6 +149,10 @@ namespace setting {
         int scale = 2;
         while (scale < 4096 && scale <= value / 2) scale *= 2;
         return scale;
+    }
+
+    constexpr int normalizeAoSteps(int value) {
+        return value <= 2 ? 2 : value <= 4 ? 4 : 8;
     }
 
     /// Uses the bundled UI font on mobile and the system UI font on desktop.

@@ -197,6 +197,7 @@ void setting::load() {
     loaded.gpuOrthographicView = s.value("gpu_orthographic_view", loaded.gpuOrthographicView).toBool();
     const float stored_ao_strength = s.value("gpu_ao_strength", loaded.gpuAoStrength).toFloat();
     loaded.gpuAoStrength = std::clamp(stored_ao_strength, 0.0f, 1.0f);
+    loaded.gpuAoSteps = normalizeAoSteps(s.value("gpu_ao_steps", loaded.gpuAoSteps).toInt());
     loaded.gpuBevelStrength = std::clamp(s.value("gpu_bevel_strength", loaded.gpuBevelStrength).toFloat(), 0.0f, 1.0f);
     loaded.gpuBevelWidth = std::clamp(s.value("gpu_bevel_width", loaded.gpuBevelWidth).toFloat(), 0.25f, 2.0f);
     loaded.gpuSaturation = std::clamp(s.value("gpu_saturation", loaded.gpuSaturation).toFloat(), 0.0f, 2.0f);
@@ -285,6 +286,7 @@ void setting::save(const Settings& values) {
     s.setValue("qsg_rhi_backend", values.renderBackend);
     s.setValue("gpu_orthographic_view", values.gpuOrthographicView);
     s.setValue("gpu_ao_strength", values.gpuAoStrength);
+    s.setValue("gpu_ao_steps", normalizeAoSteps(values.gpuAoSteps));
     s.setValue("gpu_bevel_strength", values.gpuBevelStrength);
     s.setValue("gpu_bevel_width", values.gpuBevelWidth);
     s.setValue("gpu_saturation", values.gpuSaturation);

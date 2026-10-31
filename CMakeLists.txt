@@ -207,6 +207,11 @@ qt_add_qml_module(BedrockMap
 target_include_directories(BedrockMap PRIVATE "${PROJECT_SOURCE_DIR}/src/qml")
 
 if(WIN32)
+    set_target_properties(BedrockMap PROPERTIES WIN32_EXECUTABLE TRUE)
+    if(MINGW)
+        # MinGW can start the GUI subsystem through main without Qt's CRT-specific wrapper.
+        set_target_properties(BedrockMap PROPERTIES qt_no_entrypoint TRUE)
+    endif()
     target_sources(BedrockMap PRIVATE ${APP_ICON_RESOURCE_WINDOWS})
 endif()
 

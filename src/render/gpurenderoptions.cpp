@@ -11,6 +11,7 @@ GpuRenderOptions gpuRenderOptionsFromSettings() {
     GpuRenderOptions options;
     options.orthographic_view = s.gpuOrthographicView;
     options.ao_strength = std::clamp(s.gpuAoStrength, 0.0f, 1.0f);
+    options.ao_steps = setting::normalizeAoSteps(s.gpuAoSteps);
     options.bevel_strength = std::clamp(s.gpuBevelStrength, 0.0f, 1.0f);
     options.bevel_width = std::clamp(s.gpuBevelWidth, 0.25f, 2.0f);
     options.saturation = std::clamp(s.gpuSaturation, 0.0f, 2.0f);

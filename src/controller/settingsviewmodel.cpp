@@ -29,6 +29,7 @@ void SettingsViewModel::emitAllChanged() {
     emit gpuOrthographicViewChanged();
     emit gpuShadowStrengthChanged();
     emit gpuAoStrengthChanged();
+    emit gpuAoStepsChanged();
     emit gpuBevelStrengthChanged();
     emit gpuBevelWidthChanged();
     emit gpuSaturationChanged();
@@ -75,6 +76,7 @@ void SettingsViewModel::applyFont() {
 
 void SettingsViewModel::setSettings(const setting::Settings& values) {
     values_ = values;
+    values_.gpuAoSteps = setting::normalizeAoSteps(values_.gpuAoSteps);
     values_.minimumScaleLevel = setting::normalizeZoomScale(values_.minimumScaleLevel);
     values_.maximumScaleLevel = std::max(values_.minimumScaleLevel, setting::normalizeZoomScale(values_.maximumScaleLevel));
     emitAllChanged();
@@ -222,6 +224,13 @@ BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, gpuOrthographicViewChan
 BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, chunkOverviewEnabledChanged)
 BM_SET_DOUBLE(setGpuShadowStrength, gpuShadowStrength, gpuShadowStrengthChanged, 0.0, 1.0)
 BM_SET_DOUBLE(setGpuAoStrength, gpuAoStrength, gpuAoStrengthChanged, 0.0, 1.0)
+void SettingsViewModel::setGpuAoSteps(int value) {
+    value = setting::normalizeAoSteps(value);
+    if (values_.gpuAoSteps == value) return;
+    values_.gpuAoSteps = value;
+    emit gpuAoStepsChanged();
+}
+
 BM_SET_DOUBLE(setGpuBevelStrength, gpuBevelStrength, gpuBevelStrengthChanged, 0.0, 1.0)
 BM_SET_DOUBLE(setGpuBevelWidth, gpuBevelWidth, gpuBevelWidthChanged, 0.25, 2.0)
 BM_SET_DOUBLE(setGpuSaturation, gpuSaturation, gpuSaturationChanged, 0.0, 2.0)

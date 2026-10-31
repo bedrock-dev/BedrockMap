@@ -30,6 +30,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(bool gpuOrthographicView READ gpuOrthographicView WRITE setGpuOrthographicView NOTIFY gpuOrthographicViewChanged)
     Q_PROPERTY(double gpuShadowStrength READ gpuShadowStrength WRITE setGpuShadowStrength NOTIFY gpuShadowStrengthChanged)
     Q_PROPERTY(double gpuAoStrength READ gpuAoStrength WRITE setGpuAoStrength NOTIFY gpuAoStrengthChanged)
+    Q_PROPERTY(int gpuAoSteps READ gpuAoSteps WRITE setGpuAoSteps NOTIFY gpuAoStepsChanged)
     Q_PROPERTY(double gpuBevelStrength READ gpuBevelStrength WRITE setGpuBevelStrength NOTIFY gpuBevelStrengthChanged)
     Q_PROPERTY(double gpuBevelWidth READ gpuBevelWidth WRITE setGpuBevelWidth NOTIFY gpuBevelWidthChanged)
     Q_PROPERTY(double gpuSaturation READ gpuSaturation WRITE setGpuSaturation NOTIFY gpuSaturationChanged)
@@ -88,6 +89,7 @@ class SettingsViewModel final : public QObject {
     bool gpuOrthographicView() const { return values_.gpuOrthographicView; }
     double gpuShadowStrength() const { return values_.gpuShadowStrength; }
     double gpuAoStrength() const { return values_.gpuAoStrength; }
+    int gpuAoSteps() const { return values_.gpuAoSteps; }
     double gpuBevelStrength() const { return values_.gpuBevelStrength; }
     double gpuBevelWidth() const { return values_.gpuBevelWidth; }
     double gpuSaturation() const { return values_.gpuSaturation; }
@@ -152,6 +154,7 @@ class SettingsViewModel final : public QObject {
     void setGpuOrthographicView(bool value);
     void setGpuShadowStrength(double value);
     void setGpuAoStrength(double value);
+    void setGpuAoSteps(int value);
     void setGpuBevelStrength(double value);
     void setGpuBevelWidth(double value);
     void setGpuSaturation(double value);
@@ -205,6 +208,7 @@ class SettingsViewModel final : public QObject {
     void gpuOrthographicViewChanged();
     void gpuShadowStrengthChanged();
     void gpuAoStrengthChanged();
+    void gpuAoStepsChanged();
     void gpuBevelStrengthChanged();
     void gpuBevelWidthChanged();
     void gpuSaturationChanged();

@@ -21,7 +21,7 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
-        <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++17 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
+        <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++20 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2516,6 +2516,31 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Startup</source>
         <translation>启动</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>AO quality</source>
+        <translation>AO 质量</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Low</source>
+        <translation>低</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Medium</source>
+        <translation>中</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>High</source>
+        <translation>高</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Higher AO quality improves occlusion detail at a higher rendering cost.</source>
+        <translation>较高的 AO 质量可改善遮挡细节，但会增加渲染开销。</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

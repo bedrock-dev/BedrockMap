@@ -28,7 +28,7 @@ struct TerrainArrayUniformBody {
     std::array<float, 4> params{128.0f, 256.0f, 0.0f, 1.0f};
     std::array<float, 4> shade{-1.0f, -1.0f, 0.0f, 8.0f};
     std::array<float, 4> shadow{0.45f, 0.7f, 0.25f, 0.0f};
-    std::array<float, 4> ao{0.15f, 8.0f, 8.0f, 16.0f};
+    std::array<float, 4> ao{0.15f, 1.0f, 16.0f, 8.0f};  // Strength, zoom fade, radius, steps.
     std::array<float, 4> tint{1.0f, 1.0f, 1.0f, 0.0f};
     std::array<float, 4> water{0.64f, 0.64f, 0.64f, 0.0f};
     std::array<float, 4> grass{80.0f, 320.0f, 0.0f, 8.0f};

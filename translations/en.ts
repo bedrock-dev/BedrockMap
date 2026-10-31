@@ -21,7 +21,7 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
-        <translation>BedrockMap is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++17. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.</translation>
+        <translation>BedrockMap is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++20. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2516,6 +2516,31 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Startup</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>AO quality</source>
+        <translation>AO quality</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Low</source>
+        <translation>Low</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Medium</source>
+        <translation>Medium</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>High</source>
+        <translation>High</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Higher AO quality improves occlusion detail at a higher rendering cost.</source>
+        <translation>Higher AO quality improves occlusion detail at a higher rendering cost.</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

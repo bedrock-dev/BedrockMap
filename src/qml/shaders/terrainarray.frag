@@ -12,7 +12,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 uParams; // tile world size, page-table side, desired LOD index, blocks per texel
     vec4 uShade;  // sun step xz, shadow reach, shadow step
     vec4 uShadow; // darkness, strength, bevel width, biome blend
-    vec4 uAo;     // strength, directions, steps, radius
+    vec4 uAo;     // strength, zoom fade, radius, steps
     vec4 uTint;   // saturation, brightness, bevel strength, overview-only
     vec4 uWater;  // water base color
     vec4 uGrass;  // base, range, enabled, biome blend
@@ -123,13 +123,22 @@ bool targetSample(vec2 block, out vec3 color, out vec2 heights, out float biome,
 
 /// Heights and biome of a neighbouring block at the requested level. Lighting
 /// and biome blending never read its colour, so the colour fetch is skipped.
-bool neighbourSample(vec2 block, out vec2 heights, out float biome) {
+bool neighbourSample(vec2 block, out vec2 heights, out float biome, out int flags) {
     int desiredLod = max(0, int(floor(uParams.z + 0.5)));
     int layer = 0;
     vec2 uv;
     if (!residentLayer(block, desiredLod, layer, uv)) return false;
-    int flags;
     return readSurface(vec3(uv, float(layer)), heights, biome, flags);
+}
+
+bool neighbourSample(vec2 block, out vec2 heights, out float biome) {
+    int flags;
+    return neighbourSample(block, heights, biome, flags);
+}
+
+float lightingHeight(vec2 heights, int flags) {
+    // Only transparent water exposes the bed; opaque water is lit at its surface.
+    return (flags & WATER_OVERLAY) != 0 ? heights.r : heights.g;
 }
 
 float biomeAt(vec2 block, float fallbackBiome) {
@@ -253,28 +262,43 @@ float bevelLodFade() {
     return 1.0;
 }
 
-float ambientOcclusion(vec2 world, float solid) {
-    if (uAo.x <= 0.0 || uParams.z >= 1.0) return 1.0;
-    int directions = clamp(int(uAo.y), 1, 8);
-    int steps = clamp(int(uAo.z), 1, 8);
+const vec2 AO_DIRECTIONS[8] = vec2[8](
+    vec2(1.0, 0.0), vec2(0.70710678, 0.70710678),
+    vec2(0.0, 1.0), vec2(-0.70710678, 0.70710678),
+    vec2(-1.0, 0.0), vec2(-0.70710678, -0.70710678),
+    vec2(0.0, -1.0), vec2(0.70710678, -0.70710678)
+);
+
+float ambientOcclusion(vec2 world, float surfaceHeight) {
+    float strength = uAo.x * uAo.y;
+    if (strength <= 0.0 || uParams.z >= 1.0) return 1.0;
+    float radius = max(uAo.z, 1.0);
+    int steps = clamp(int(uAo.w), 2, 8);
+    // Preserve adjacent blockers and spend fewer samples on distant terrain.
+    float distances[8];
+    float inverseDistances[8];
+    float stepFraction = 1.0 / float(steps - 1);
+    for (int k = 0; k < 8; ++k) {
+        if (k >= steps) break;
+        float t = float(k) * stepFraction;
+        distances[k] = 1.0 + (radius - 1.0) * t * t;
+        inverseDistances[k] = 1.0 / distances[k];
+    }
     float sum = 0.0;
     for (int i = 0; i < 8; ++i) {
-        if (i >= directions) break;
-        float angle = (float(i) + 0.5) * 6.28318530718 / float(directions);
-        vec2 dir = vec2(cos(angle), sin(angle));
-        float distance = max(1.0, uAo.w / float(steps));
         float steepest = 0.0;
         for (int k = 0; k < 8; ++k) {
             if (k >= steps) break;
             vec2 h;
             float biome;
-            if (neighbourSample(floor(world + dir * distance), h, biome))
-                steepest = max(steepest, (h.r - solid) / max(distance, 1.0));
-            distance += max(1.0, uAo.w / float(steps));
+            int flags;
+            if (neighbourSample(floor(world + AO_DIRECTIONS[i] * distances[k]), h, biome, flags) &&
+                (flags & MISSING_CHUNK) == 0 && h.g > VOID_HEIGHT)
+                steepest = max(steepest, (lightingHeight(h, flags) - surfaceHeight) * inverseDistances[k]);
         }
-        sum += steepest / sqrt(1.0 + steepest * steepest);
+        sum += steepest * inversesqrt(1.0 + steepest * steepest);
     }
-    return 1.0 - uAo.x * clamp(sum / float(directions), 0.0, 1.0);
+    return 1.0 - strength * clamp(sum * 0.125, 0.0, 1.0);
 }
 
 float shadowOcclusion(vec2 world, float top) {
@@ -331,6 +355,14 @@ void main() {
     }
     vec3 surface = surfaceMaterial(world, color, heights, biome, flags);
 
+    bool waterOverlay = (flags & WATER_OVERLAY) != 0;
+    float waterFade = waterOverlay ? clamp(1.0 - (heights.g - heights.r) / 5.0, 0.0, 1.0) : 1.0;
+    if (waterFade <= 0.0) {
+        // Deep transparent water discards all terrain lighting, including AO.
+        fragColor = vec4(gradeColor(surface, 1.0), 1.0);
+        return;
+    }
+    float surfaceHeight = lightingHeight(heights, flags);
     float factor = 1.0;
     float bevelFade = bevelLodFade() * uTint.z;
     if (bevelFade > 0.0) {
@@ -345,23 +377,26 @@ void main() {
         vec2 upHeights;
         vec2 diagonalHeights;
         float neighbourBiome;
-        bool hasLeft = neighbourSample(cell + vec2(-texel, 0.0), leftHeights, neighbourBiome);
-        bool hasUp = neighbourSample(cell + vec2(0.0, -texel), upHeights, neighbourBiome);
-        bool hasDiagonal = neighbourSample(cell - vec2(texel), diagonalHeights, neighbourBiome);
+        int leftFlags;
+        int upFlags;
+        int diagonalFlags;
+        bool hasLeft = neighbourSample(cell + vec2(-texel, 0.0), leftHeights, neighbourBiome, leftFlags);
+        bool hasUp = neighbourSample(cell + vec2(0.0, -texel), upHeights, neighbourBiome, upFlags);
+        bool hasDiagonal = neighbourSample(cell - vec2(texel), diagonalHeights, neighbourBiome, diagonalFlags);
         if (hasLeft && hasUp && hasDiagonal) {
-            float bevel = dominantBevel(bevelFactor(tLeft, heights.r, leftHeights.r), bevelFactor(tTop, heights.r, upHeights.r));
+            float leftHeight = lightingHeight(leftHeights, leftFlags);
+            float upHeight = lightingHeight(upHeights, upFlags);
+            float diagonalHeight = lightingHeight(diagonalHeights, diagonalFlags);
+            float bevel = dominantBevel(bevelFactor(tLeft, surfaceHeight, leftHeight), bevelFactor(tTop, surfaceHeight, upHeight));
             bevel = clamp(bevel, 0.55, 1.58) *
-                    lightCornerContinuity(tLeft, tTop, heights.r, leftHeights.r, upHeights.r, diagonalHeights.r);
+                    lightCornerContinuity(tLeft, tTop, surfaceHeight, leftHeight, upHeight, diagonalHeight);
             factor = 1.0 + (bevel - 1.0) * bevelFade;
         }
     }
 
-    factor *= ambientOcclusion(world, heights.r);
-    if ((flags & WATER_OVERLAY) != 0) {
-        float waterFade = clamp(1.0 - (heights.g - heights.r) / 5.0, 0.0, 1.0);
-        factor = 1.0 + (factor - 1.0) * waterFade;
-    }
-    if ((flags & WATER_OVERLAY) == 0)
+    factor *= ambientOcclusion(world, surfaceHeight);
+    factor = 1.0 + (factor - 1.0) * waterFade;
+    if (!waterOverlay)
         factor *= mix(1.0, uShadow.x, shadowOcclusion(world, heights.g) * uShadow.y);
 
     fragColor = vec4(gradeColor(surface, factor), 1.0);
