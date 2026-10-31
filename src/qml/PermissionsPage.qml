@@ -93,6 +93,43 @@ Item {
                 actionText: App.rootPermission === "Granted" ? qsTr("Check again") : qsTr("Request access")
                 onRequestAccess: App.requestRootPermission()
             }
+            AppCard {
+                Layout.fillWidth: true
+                implicitHeight: permissionHelp.implicitHeight + Theme.cardPadding * 2
+
+                ColumnLayout {
+                    id: permissionHelp
+                    x: Theme.cardPadding
+                    y: Theme.cardPadding
+                    width: parent.width - Theme.cardPadding * 2
+                    spacing: Theme.gapMedium
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("What are these permissions for?")
+                        color: Theme.text
+                        font.pixelSize: Theme.fontLabel
+                        font.bold: true
+                        wrapMode: Text.Wrap
+                    }
+                    Repeater {
+                        model: [
+                            qsTr("All files access: lets the app scan, read and save worlds in shared storage."),
+                            qsTr("Shizuku: provides access to additional world directories through the Shizuku service, depending on Android restrictions and how the service is running."),
+                            qsTr("Root: lets the app read and save worlds in protected directories on rooted devices."),
+                            qsTr("All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.")
+                        ]
+                        delegate: Label {
+                            required property string modelData
+                            Layout.fillWidth: true
+                            text: modelData
+                            color: Theme.text
+                            font.pixelSize: Theme.fontBody
+                            wrapMode: Text.Wrap
+                        }
+                    }
+                }
+            }
         }
     }
 

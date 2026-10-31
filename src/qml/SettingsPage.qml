@@ -9,6 +9,56 @@ Item {
     id: page
     property int category: 0
     readonly property bool compact: Theme.compact
+    readonly property var openSourceCredits: [
+        {
+            name: "Qt",
+            license: "LGPL-3.0 / GPL-2.0 / GPL-3.0",
+            url: "https://www.qt.io/",
+            licenseUrl: "https://doc.qt.io/qt-6/licensing.html"
+        },
+        {
+            name: "bedrock-level",
+            license: "AGPL-3.0",
+            url: "https://github.com/bedrock-dev/bedrock-level",
+            licenseUrl: "https://github.com/bedrock-dev/bedrock-level/blob/main/LICENSE"
+        },
+        {
+            name: "JSON for Modern C++",
+            license: "MIT",
+            url: "https://github.com/nlohmann/json",
+            licenseUrl: "https://opensource.org/license/mit"
+        },
+        {
+            name: "LevelDB",
+            license: "BSD-3-Clause",
+            url: "https://github.com/google/leveldb",
+            licenseUrl: "https://github.com/google/leveldb/blob/main/LICENSE"
+        },
+        {
+            name: "leveldb-mcne",
+            license: "MIT",
+            url: "https://github.com/HTMonkeyG/leveldb-mcne",
+            licenseUrl: "https://opensource.org/license/mit"
+        },
+        {
+            name: "loguru",
+            license: qsTr("Public domain"),
+            url: "https://github.com/emilk/loguru",
+            licenseUrl: "https://github.com/emilk/loguru#license"
+        },
+        {
+            name: "magic_enum",
+            license: "MIT",
+            url: "https://github.com/Neargye/magic_enum",
+            licenseUrl: "https://opensource.org/license/mit"
+        },
+        {
+            name: "stb_image_write",
+            license: "MIT / Unlicense",
+            url: "https://github.com/nothings/stb",
+            licenseUrl: "https://github.com/nothings/stb/blob/master/LICENSE"
+        }
+    ]
     readonly property var categoryNames: [qsTr("Interface"), qsTr("Map"), qsTr("Cache"), qsTr("Rendering"), qsTr("Misc"),
         qsTranslate("AboutDialog", "aboutDialog.title.about")]
     readonly property var zoomScaleLevels: [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
@@ -453,13 +503,6 @@ Item {
                     SettingGroup {
                         title: qsTr("Startup")
                         SettingRow {
-                            label: qsTr("Check for updates")
-                            AppSwitch {
-                                checked: App.settings.checkUpdate
-                                onToggled: App.settings.checkUpdate = checked
-                            }
-                        }
-                        SettingRow {
                             label: qsTr("Scan LeviLauncher paths")
                             AppSwitch {
                                 checked: App.settings.scanLeviPath
@@ -637,9 +680,11 @@ Item {
                 ColumnLayout {
                     visible: page.category === 5
                     Layout.fillWidth: true
+                    Layout.maximumWidth: Theme.ui(820)
+                    Layout.alignment: Qt.AlignHCenter
                     spacing: Theme.gapMedium
                     SettingGroup {
-                        title: qsTranslate("AboutDialog", "aboutDialog.title.about")
+                        title: qsTr("Application information")
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: Theme.gapLarge
@@ -662,10 +707,12 @@ Item {
                                 Layout.fillWidth: true
                                 spacing: Theme.gapSmall
                                 Text {
+                                    Layout.fillWidth: true
                                     text: Qt.application.name
                                     color: Theme.text
                                     font.pixelSize: Theme.fontHeading
                                     font.bold: true
+                                    wrapMode: Text.Wrap
                                 }
                                 Text {
                                     text: Qt.application.version
@@ -699,11 +746,9 @@ Item {
                             wrapMode: Text.WordWrap
                             onLinkActivated: link => Qt.openUrlExternally(link)
                         }
-                    }
-                    SettingGroup {
-                        title: qsTranslate("AboutDialog", "aboutDialog.links")
-                        RowLayout {
+                        Flow {
                             Layout.fillWidth: true
+                            Layout.preferredHeight: implicitHeight
                             spacing: Theme.gapSmall
                             AppButton {
                                 text: qsTranslate("AboutDialog", "aboutDialog.github")
@@ -714,13 +759,29 @@ Item {
                                 onClicked: Qt.openUrlExternally("https://qm.qq.com/q/3KJZZCkDbW")
                             }
                         }
-                        Text {
+                    }
+                    SettingGroup {
+                        title: qsTr("Updates")
+                        GridLayout {
                             Layout.fillWidth: true
-                            text: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
-                            color: Theme.text
-                            font.pixelSize: Theme.fontSubtitle
-                            font.bold: true
+                            columns: page.compact ? 1 : 2
+                            columnSpacing: Theme.gapLarge
+                            rowSpacing: Theme.gapSmall
+                            AppButton {
+                                text: App.checkingForUpdates ? qsTr("Checking...") : qsTr("Check for updates")
+                                enabled: !App.checkingForUpdates
+                                onClicked: App.checkForUpdates(true)
+                            }
+                            AppCheckBox {
+                                Layout.fillWidth: true
+                                text: qsTr("Don't check for updates on startup")
+                                checked: !App.settings.checkUpdate
+                                onToggled: App.settings.checkUpdate = !checked
+                            }
                         }
+                    }
+                    SettingGroup {
+                        title: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
                         Text {
                             Layout.fillWidth: true
                             textFormat: Text.StyledText
@@ -729,34 +790,74 @@ Item {
                             color: Theme.muted
                             linkColor: Theme.accent
                             font.pixelSize: Theme.fontBody
+                            wrapMode: Text.Wrap
                             onLinkActivated: link => Qt.openUrlExternally(link)
                         }
                     }
                     SettingGroup {
-                        visible: !page.compact
-                        title: qsTr("Button styles")
+                        title: qsTr("Open-source credits")
+                        Text {
+                            Layout.fillWidth: true
+                            text: qsTr("Thanks to the following open-source projects.")
+                            color: Theme.muted
+                            font.pixelSize: Theme.fontBody
+                            wrapMode: Text.WordWrap
+                        }
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: Theme.gapMedium
-                            AppButton {
-                                text: qsTr("Primary")
-                                primary: true
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 0
+                                text: qsTr("Component")
+                                color: Theme.muted
+                                font.pixelSize: Theme.fontCaption
                             }
-                            AppButton {
-                                text: qsTr("Default")
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 0
+                                text: qsTr("License")
+                                color: Theme.muted
+                                font.pixelSize: Theme.fontCaption
                             }
-                            AppButton {
-                                text: qsTr("Active")
-                                active: true
-                            }
-                            AppButton {
-                                text: qsTr("Danger")
-                                danger: true
-                            }
-                            AppButton {
-                                text: qsTr("Ghost")
-                                ghost: true
-                                bordered: false
+                        }
+                        Repeater {
+                            model: page.openSourceCredits
+                            delegate: RowLayout {
+                                id: creditRow
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.minimumHeight: Theme.controlHeight
+                                spacing: Theme.gapMedium
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 0
+                                    Layout.minimumWidth: 0
+                                    Layout.alignment: Qt.AlignTop
+                                    text: creditRow.modelData.url ? "<a href=\"" + creditRow.modelData.url + "\">"
+                                                                  + creditRow.modelData.name + "</a>" : creditRow.modelData.name
+                                    textFormat: Text.StyledText
+                                    color: Theme.text
+                                    linkColor: Theme.accent
+                                    font.pixelSize: Theme.fontBody
+                                    wrapMode: Text.Wrap
+                                    onLinkActivated: link => Qt.openUrlExternally(link)
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 0
+                                    Layout.minimumWidth: 0
+                                    Layout.alignment: Qt.AlignTop
+                                    text: creditRow.modelData.licenseUrl ? "<a href=\"" + creditRow.modelData.licenseUrl
+                                                                         + "\">" + creditRow.modelData.license + "</a>" :
+                                                                         creditRow.modelData.license
+                                    textFormat: Text.StyledText
+                                    color: Theme.text
+                                    linkColor: Theme.accent
+                                    font.pixelSize: Theme.fontBody
+                                    wrapMode: Text.Wrap
+                                    onLinkActivated: link => Qt.openUrlExternally(link)
+                                }
                             }
                         }
                     }

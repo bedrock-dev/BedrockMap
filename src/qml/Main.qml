@@ -44,6 +44,12 @@ Window {
     Component.onCompleted: {
         Theme.windowWidth = width
         sidebarCollapsed = App.settings.collapseSidebarOnStartup
+        Qt.callLater(function () {
+            if (App.startupNoticeRequired)
+                startupNoticeDialog.open()
+            else
+                App.checkForUpdates()
+        })
     }
     property int currentPage: App.currentPage
     property bool workspaceOpen: App.workspaceOpen
@@ -274,6 +280,20 @@ Window {
         close.accepted = false
         window.closingAfterDirty = true
         window.promptNextDirtySession()
+    }
+    UpdateDialog {
+        id: updateDialog
+    }
+    StartupNoticeDialog {
+        id: startupNoticeDialog
+        onAccepted: App.acknowledgeStartupNotice()
+        onClosed: App.checkForUpdates()
+    }
+    Connections {
+        target: App
+        function onUpdateAvailable(newVersion, releaseNotes, htmlUrl) {
+            updateDialog.present(newVersion, releaseNotes, htmlUrl)
+        }
     }
     Dialog {
         id: closeWorldDialog

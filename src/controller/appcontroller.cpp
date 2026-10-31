@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QImageWriter>
 #include <QPointer>
+#include <QSettings>
 #include <QUrl>
 #include <QtConcurrent>
 #include <memory>
@@ -66,11 +67,27 @@ AppController::AppController(std::unique_ptr<LogModel> logs, ResourceManager& re
       settings_(this),
       worlds_(this),
       notifications_(this),
+      update_checker_(this),
       sessions_(this) {
     if (applicationController) qFatal("Only one AppController can exist");
     if (!logs_) qFatal("AppController requires an initialized log model");
     applicationController = this;
+    QSettings startupSettings(app_paths::configFile(), QSettings::IniFormat);
+    startup_notice_required_ = !startupSettings.value(QStringLiteral("Startup/notice_acknowledged"), false).toBool();
     logs_->setParent(this);
+    connect(&update_checker_, &UpdateChecker::updateAvailable, this,
+            [this](const QString& version, const QString& notes, const QString& url) {
+                finishUpdateCheck();
+                emit updateAvailable(version, notes, url);
+            });
+    connect(&update_checker_, &UpdateChecker::upToDate, this, [this] {
+        if (manual_update_check_) notifications_.info(tr("Already up to date."));
+        finishUpdateCheck();
+    });
+    connect(&update_checker_, &UpdateChecker::checkFailed, this, [this](const QString&) {
+        if (manual_update_check_) notifications_.error(tr("Unable to check for updates."));
+        finishUpdateCheck();
+    });
     sessions_.setResourceManager(resources_);
     sessions_.setWorldListModel(&worlds_);
     initializePermissionListeners();
@@ -108,6 +125,30 @@ AppController::~AppController() {
 }
 
 AppController* AppController::instance() { return applicationController; }
+
+void AppController::acknowledgeStartupNotice() {
+    if (!startup_notice_required_) return;
+    QSettings startupSettings(app_paths::configFile(), QSettings::IniFormat);
+    startupSettings.setValue(QStringLiteral("Startup/notice_acknowledged"), true);
+    startupSettings.sync();
+    startup_notice_required_ = false;
+    emit startupNoticeRequiredChanged();
+}
+
+void AppController::checkForUpdates(bool manual) {
+    if (!manual && !settings_.checkUpdate()) return;
+    if (manual) manual_update_check_ = true;
+    if (checking_for_updates_) return;
+    checking_for_updates_ = true;
+    emit checkingForUpdatesChanged();
+    update_checker_.checkForUpdates();
+}
+
+void AppController::finishUpdateCheck() {
+    checking_for_updates_ = false;
+    manual_update_check_ = false;
+    emit checkingForUpdatesChanged();
+}
 
 void AppController::setCurrentPage(int page) {
     // Application-level destinations only. World-internal data and tools live

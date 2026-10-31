@@ -5,7 +5,6 @@
     <name>AboutDialog</name>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.title.about</source>
         <translation>关于</translation>
     </message>
@@ -23,11 +22,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
         <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++17 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.links</source>
-        <translation>链接</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -278,6 +272,16 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import successful</source>
         <translation>导入成功</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Already up to date.</source>
+        <translation>已是最新版本。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Unable to check for updates.</source>
+        <translation>无法检查更新。</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -1997,6 +2001,31 @@
     </message>
     <message>
         <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>What are these permissions for?</source>
+        <translation>权限用途说明</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>All files access: lets the app scan, read and save worlds in shared storage.</source>
+        <translation>所有文件访问：用于扫描、读取和保存共享存储中的存档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Shizuku: provides access to additional world directories through the Shizuku service, depending on Android restrictions and how the service is running.</source>
+        <translation>Shizuku：通过 Shizuku 服务访问更多存档目录，实际可访问范围取决于 Android 系统限制和服务的运行方式。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Root: lets the app read and save worlds in protected directories on rooted devices.</source>
+        <translation>Root：用于在已获取 Root 权限的设备上读取和保存受保护目录中的存档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.</source>
+        <translation>以上权限均为可选，不申请也能正常使用。你仍然可以通过导入存档或文件进行编辑，再通过导出保存处理结果。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
         <source>Root access</source>
         <translation>Root 权限</translation>
     </message>
@@ -2224,33 +2253,33 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Button styles</source>
-        <translation>按钮样式</translation>
+        <source>Checking...</source>
+        <translation>正在检查…</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Primary</source>
-        <translation>强调</translation>
+        <source>Open-source credits</source>
+        <translation>开源致谢</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Default</source>
-        <translation>默认</translation>
+        <source>Don&apos;t check for updates on startup</source>
+        <translation>启动时不自动检查更新</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Active</source>
-        <translation>激活</translation>
+        <source>Thanks to the following open-source projects.</source>
+        <translation>感谢以下开源项目。</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Danger</source>
-        <translation>危险</translation>
+        <source>Component</source>
+        <translation>组件</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Ghost</source>
-        <translation>幽灵</translation>
+        <source>License</source>
+        <translation>开源协议</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2321,6 +2350,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Show debug panel button</source>
         <translation>显示调试面板按钮</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Public domain</source>
+        <translation>公有领域</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2485,6 +2519,16 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Application information</source>
+        <translation>应用信息</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Updates</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Check for updates</source>
         <translation>检查更新</translation>
     </message>
@@ -2560,6 +2604,34 @@
     </message>
 </context>
 <context>
+    <name>StartupNoticeDialog</name>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Before you start</source>
+        <translation>首次使用须知</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Editing worlds carries a risk of data loss or corruption. The developer accepts no responsibility for any resulting world damage or data loss. Back up important worlds before use and keep your backups up to date.</source>
+        <translation>编辑存档可能造成数据丢失或损坏。开发者不对使用本软件导致的任何存档损坏或数据丢失承担责任。使用前请备份重要存档，并及时更新备份。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Due to Android&apos;s storage restrictions, access to shared storage requires the All files access permission. Open Tools &gt; Permissions in this app and request it manually, then enable it in system settings.</source>
+        <translation>受 Android 存储限制，访问共享存储需要“所有文件访问”权限。请前往应用内的“工具 → 权限管理”手动申请，并在系统设置中授权。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>BedrockMap is an independent, unofficial tool. It is not affiliated with, endorsed by, or associated with Mojang or Minecraft.</source>
+        <translation>BedrockMap 是独立开发的非官方工具，与 Mojang 及 Minecraft 无任何隶属、授权或关联关系，亦未获得其认可或背书。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>I understand</source>
+        <translation>我已了解</translation>
+    </message>
+</context>
+<context>
     <name>ToolsPage</name>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
@@ -2596,6 +2668,10 @@
     <name>UpdateChecker</name>
     <message>
         <location filename="../src/base/updatechecker.cpp"/>
+        <source>Unable to check for updates.</source>
+        <translation>无法检查更新。</translation>
+    </message>
+    <message>
         <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.parseFailed</source>
         <translation>无法解析更新数据</translation>
@@ -2604,6 +2680,36 @@
         <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.invalidVersion</source>
         <translation>无法比较版本号</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Update available</source>
+        <translation>发现新版本</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>New version: %1
+Current version: %2</source>
+        <translation>新版本：%1
+当前版本：%2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>No release notes provided.</source>
+        <translation>暂无更新日志。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Later</source>
+        <translation>稍后</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Download</source>
+        <translation>下载</translation>
     </message>
 </context>
 <context>

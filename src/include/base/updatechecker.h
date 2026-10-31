@@ -1,21 +1,25 @@
 #ifndef BEDROCKMAP_UPDATECHECKER_H
 #define BEDROCKMAP_UPDATECHECKER_H
+#include <QByteArray>
+#include <QObject>
+#include <QString>
+#ifdef Q_OS_ANDROID
+#include <QFutureWatcher>
+#else
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QObject>
 #include <QPointer>
-#include <QString>
+#endif
 
-// Asynchronously queries the GitHub latest-release API and compares the result
-// against the current build. Emits exactly one of updateAvailable / upToDate /
-// checkFailed per checkForUpdates() call.
+// Asynchronously queries GitHub releases and compares them against the build.
+// Completed checks emit updateAvailable, upToDate or checkFailed.
 class UpdateChecker : public QObject {
     Q_OBJECT
 
    public:
     explicit UpdateChecker(QObject* parent = nullptr);
 
-    // Start an async check. Any in-flight request is cancelled first.
+    // Start an async check unless one is already in flight.
     void checkForUpdates();
 
     [[nodiscard]] static QString apiUrl();
@@ -26,9 +30,14 @@ class UpdateChecker : public QObject {
     void checkFailed(const QString& message);
 
    private:
+    void handleResponse(const QByteArray& data);
+#ifdef Q_OS_ANDROID
+    QFutureWatcher<QByteArray> fetch_watcher_;
+#else
     void handleReply(QNetworkReply* reply);
 
     QNetworkAccessManager network_;
     QPointer<QNetworkReply> active_reply_;
+#endif
 };
 #endif  // BEDROCKMAP_UPDATECHECKER_H

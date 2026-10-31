@@ -5,7 +5,6 @@
     <name>AboutDialog</name>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.title.about</source>
         <translation>About</translation>
     </message>
@@ -23,11 +22,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
         <translation>BedrockMap is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++17. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.links</source>
-        <translation>Links</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -278,6 +272,16 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import successful</source>
         <translation>Import successful</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Already up to date.</source>
+        <translation>Already up to date.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Unable to check for updates.</source>
+        <translation>Unable to check for updates.</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -1997,6 +2001,31 @@
     </message>
     <message>
         <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>What are these permissions for?</source>
+        <translation>What are these permissions for?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>All files access: lets the app scan, read and save worlds in shared storage.</source>
+        <translation>All files access: lets the app scan, read and save worlds in shared storage.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Shizuku: provides access to additional world directories through the Shizuku service, depending on Android restrictions and how the service is running.</source>
+        <translation>Shizuku: provides access to additional world directories through the Shizuku service, depending on Android restrictions and how the service is running.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Root: lets the app read and save worlds in protected directories on rooted devices.</source>
+        <translation>Root: lets the app read and save worlds in protected directories on rooted devices.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.</source>
+        <translation>All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
         <source>Root access</source>
         <translation>Root access</translation>
     </message>
@@ -2224,33 +2253,33 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Button styles</source>
-        <translation type="unfinished"></translation>
+        <source>Checking...</source>
+        <translation>Checking...</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Primary</source>
-        <translation type="unfinished"></translation>
+        <source>Open-source credits</source>
+        <translation>Open-source credits</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
+        <source>Don&apos;t check for updates on startup</source>
+        <translation>Don&apos;t check for updates on startup</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Active</source>
-        <translation type="unfinished"></translation>
+        <source>Thanks to the following open-source projects.</source>
+        <translation>Thanks to the following open-source projects.</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Danger</source>
-        <translation type="unfinished"></translation>
+        <source>Component</source>
+        <translation>Component</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Ghost</source>
-        <translation type="unfinished"></translation>
+        <source>License</source>
+        <translation>License</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2321,6 +2350,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Show debug panel button</source>
         <translation>Show debug panel button</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Public domain</source>
+        <translation>Public domain</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2485,6 +2519,16 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Application information</source>
+        <translation>Application information</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Updates</source>
+        <translation>Updates</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Check for updates</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2560,6 +2604,34 @@
     </message>
 </context>
 <context>
+    <name>StartupNoticeDialog</name>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Before you start</source>
+        <translation>Before you start</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Editing worlds carries a risk of data loss or corruption. The developer accepts no responsibility for any resulting world damage or data loss. Back up important worlds before use and keep your backups up to date.</source>
+        <translation>Editing worlds carries a risk of data loss or corruption. The developer accepts no responsibility for any resulting world damage or data loss. Back up important worlds before use and keep your backups up to date.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>Due to Android&apos;s storage restrictions, access to shared storage requires the All files access permission. Open Tools &gt; Permissions in this app and request it manually, then enable it in system settings.</source>
+        <translation>Due to Android&apos;s storage restrictions, access to shared storage requires the All files access permission. Open Tools &gt; Permissions in this app and request it manually, then enable it in system settings.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>BedrockMap is an independent, unofficial tool. It is not affiliated with, endorsed by, or associated with Mojang or Minecraft.</source>
+        <translation>BedrockMap is an independent, unofficial tool. It is not affiliated with, endorsed by, or associated with Mojang or Minecraft.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/StartupNoticeDialog.qml"/>
+        <source>I understand</source>
+        <translation>I understand</translation>
+    </message>
+</context>
+<context>
     <name>ToolsPage</name>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
@@ -2596,6 +2668,10 @@
     <name>UpdateChecker</name>
     <message>
         <location filename="../src/base/updatechecker.cpp"/>
+        <source>Unable to check for updates.</source>
+        <translation>Unable to check for updates.</translation>
+    </message>
+    <message>
         <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.parseFailed</source>
         <translation>Unable to parse update data</translation>
@@ -2604,6 +2680,36 @@
         <location filename="../src/base/updatechecker.cpp"/>
         <source>updateChecker.invalidVersion</source>
         <translation>Unable to compare versions</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateDialog</name>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Update available</source>
+        <translation>Update available</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>New version: %1
+Current version: %2</source>
+        <translation>New version: %1
+Current version: %2</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>No release notes provided.</source>
+        <translation>No release notes provided.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Later</source>
+        <translation>Later</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/UpdateDialog.qml"/>
+        <source>Download</source>
+        <translation>Download</translation>
     </message>
 </context>
 <context>

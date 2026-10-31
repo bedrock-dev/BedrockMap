@@ -8,6 +8,7 @@
 #include <QUrl>
 #include <memory>
 
+#include "base/updatechecker.h"
 #include "controller/sessioncontroller.h"
 #include "controller/settingsviewmodel.h"
 #include "model/logmodel.h"
@@ -32,6 +33,8 @@ class AppController final : public QObject {
     Q_PROPERTY(bool importingWorld READ importingWorld NOTIFY importingWorldChanged)
     Q_PROPERTY(bool deletingWorld READ deletingWorld NOTIFY deletingWorldChanged)
     Q_PROPERTY(bool exportingWorld READ exportingWorld NOTIFY exportingWorldChanged)
+    Q_PROPERTY(bool checkingForUpdates READ checkingForUpdates NOTIFY checkingForUpdatesChanged)
+    Q_PROPERTY(bool startupNoticeRequired READ startupNoticeRequired NOTIFY startupNoticeRequiredChanged)
     Q_PROPERTY(bool allFilesPermission READ allFilesPermission NOTIFY permissionsChanged)
     Q_PROPERTY(QString shizukuPermission READ shizukuPermission NOTIFY permissionsChanged)
     Q_PROPERTY(QString rootPermission READ rootPermission NOTIFY permissionsChanged)
@@ -55,6 +58,9 @@ class AppController final : public QObject {
     [[nodiscard]] bool importingWorld() const { return importing_world_; }
     [[nodiscard]] bool deletingWorld() const { return deleting_world_; }
     [[nodiscard]] bool exportingWorld() const { return exporting_world_; }
+    [[nodiscard]] bool checkingForUpdates() const { return checking_for_updates_; }
+    [[nodiscard]] bool startupNoticeRequired() const { return startup_notice_required_; }
+    Q_INVOKABLE void acknowledgeStartupNotice();
     [[nodiscard]] bool allFilesPermission() const;
     Q_INVOKABLE void requestAllFilesPermission();
     [[nodiscard]] QString shizukuPermission() const;
@@ -88,6 +94,7 @@ class AppController final : public QObject {
     /// Returns false when no dirty session remains.
     [[nodiscard]] Q_INVOKABLE bool requestCloseFirstDirtySession();
     Q_INVOKABLE void openConfigDirectory();
+    Q_INVOKABLE void checkForUpdates(bool manual = false);
 
     [[nodiscard]] Q_INVOKABLE bool isWorldFolder(const QUrl& url) const;
     [[nodiscard]] Q_INVOKABLE int firstDirtySessionIndex() const { return sessions_.firstDirtyIndex(); }
@@ -100,12 +107,16 @@ class AppController final : public QObject {
     void importingWorldChanged();
     void deletingWorldChanged();
     void exportingWorldChanged();
+    void checkingForUpdatesChanged();
+    void startupNoticeRequiredChanged();
     void permissionsChanged();
     void worldCopyRequested(const QUrl& url);
     void sessionCloseRequested(QObject* session, int index);
     void sessionAboutToClose(QObject* session);
+    void updateAvailable(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl);
 
    private:
+    void finishUpdateCheck();
     void setWorkspaceOpen(bool open);
     void importWorldToInternal(const QUrl& url, bool archive);
     [[nodiscard]] bool checkWorldFileOperationIdle();
@@ -117,6 +128,10 @@ class AppController final : public QObject {
     SettingsViewModel settings_;
     WorldListModel worlds_;
     NotificationCenter notifications_;
+    UpdateChecker update_checker_;
+    bool checking_for_updates_{false};
+    bool manual_update_check_{false};
+    bool startup_notice_required_{true};
     int current_page_{0};
     bool workspace_open_{false};
     SessionController sessions_;
