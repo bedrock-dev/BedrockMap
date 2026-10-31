@@ -5,19 +5,21 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QUrl>
 #include <memory>
 #include <vector>
 
 #include "controller/worldsession.h"
 
 class WorldListModel;
+class ResourceManager;
 
 class WorkspaceSessionModel final : public QAbstractListModel {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
    public:
     enum Role { PathRole = Qt::UserRole + 1, TitleRole, SessionIndexRole, SessionRole, DirtyRole, KindRole };
-    explicit WorkspaceSessionModel(QObject* parent = nullptr);
+    explicit WorkspaceSessionModel(QObject* parent);
 
     [[nodiscard]] int count() const { return sessions_.size(); }
     [[nodiscard]] int rowCount(const QModelIndex& parent = {}) const override;
@@ -49,6 +51,7 @@ class SessionController final : public QObject {
     ~SessionController() override;
 
     void setWorldListModel(WorldListModel* model) { world_model_ = model; }
+    void setResourceManager(ResourceManager* resources) { resources_ = resources; }
     [[nodiscard]] WorkspaceSessionModel* sessions() { return &open_sessions_; }
     [[nodiscard]] WorkspaceSession* activeSession() const;
     [[nodiscard]] int activeIndex() const { return active_index_; }
@@ -56,8 +59,8 @@ class SessionController final : public QObject {
     [[nodiscard]] WorkspaceSession* firstDirtySession() const;
 
     WorkspaceSession* openWorld(const QString& path, const QString& title = {});
-    WorkspaceSession* openMcstructureFile(const QString& path);
-    WorkspaceSession* openNbtFile(const QString& path);
+    WorkspaceSession* openMcstructureFile(const QUrl& url);
+    WorkspaceSession* openNbtFile(const QUrl& url);
     WorkspaceSession* newNbtDocument();
     void setActiveIndex(int index);
     void setActive(bool active);
@@ -85,6 +88,7 @@ class SessionController final : public QObject {
 
     WorkspaceSessionModel open_sessions_;
     WorldListModel* world_model_{nullptr};
+    ResourceManager* resources_{nullptr};
     std::vector<std::unique_ptr<WorkspaceSession>> sessions_;
     int active_index_{0};
     bool active_{false};

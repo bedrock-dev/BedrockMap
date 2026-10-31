@@ -7,7 +7,7 @@ Rectangle {
     readonly property string description: qsTr("Unsaved changes")
 
     visible: dirty
-    width: Theme.touch ? 10 : 9
+    width: Theme.dirtyIndicatorSize
     height: width
     radius: width / 2
     color: Theme.warning

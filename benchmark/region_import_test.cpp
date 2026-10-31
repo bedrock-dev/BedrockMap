@@ -1,7 +1,7 @@
 #include "controller/mapcontroller.h"
 #include "controller/regionimportcontroller.h"
 #include "loader/asynclevelloader.h"
-#include "loader/chunkregion.h"
+#include "loader/exportedregion.h"
 #include "binary_io.h"
 #include "leveldb/db.h"
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     QTemporaryDir files;
     expect(files.isValid(), "temporary fixture folder");
     const auto source = writeRegion(files, "shape.bchks", {{-3, -2, 0}, {-2, -2, 0}, {-3, -1, 0}});
-    RegionImportController placement;
+    RegionImportController placement(nullptr);
     int errors = 0;
     QObject::connect(&placement, &RegionImportController::failed, &app, [&](const QString&) { ++errors; });
     expect(placement.loadFile(source, {10, 20}, 1), "start asynchronous read");
@@ -112,8 +112,8 @@ int main(int argc, char** argv) {
     loader.setPreloadAllChunkCoords(false);
     expect(loader.open(world.path().toStdString(), ""), "open temporary world");
     if (loader.isOpen()) {
-        MapSession session;
-        MapController controller(&session);
+        MapViewState view;
+        MapController controller(&view);
         controller.setLevelLoader(&loader);
         expect(controller.beginImportAsync(source, -10, -20), "start import into temporary world");
         expect(until([&] { return !controller.regionImport()->loading(); }), "wait for import preview");
@@ -128,8 +128,8 @@ int main(int argc, char** argv) {
         expect(controller.confirmImport(), "confirm import");
         expect(until([&] { return !controller.operationRunning(); }), "wait for import operation");
         expect(loader.isDirty() && !controller.regionImport()->active(), "successful import stages changes and clears preview");
-        expect(controller.selectionChunkCount() == 3 && session.view()->selection().contains({-10, -20})
-               && !session.view()->selection().contains({-9, -19}), "imported sparse region becomes selection");
+        expect(controller.selectionChunkCount() == 3 && view.selection().contains({-10, -20}) &&
+               !view.selection().contains({-9, -19}), "imported sparse region becomes selection");
         const auto imported = loader.getRawChunk({-10, -20, 0});
         expect(imported && imported->pos() == bl::chunk_pos(-10, -20, 0), "raw chunk stored at destination");
         controller.setLevelLoader(nullptr);

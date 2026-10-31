@@ -1,57 +1,45 @@
 #include "loader/leveldbxor.h"
 
+#include <QByteArray>
+#include <QDir>
 #include <array>
-#include <filesystem>
-#include <fstream>
+#include <cstddef>
 
-#include "base/config.h"
+#include "base/worldfilesource.h"
 
 namespace {
-
     constexpr std::array<unsigned char, 4> kXorMagic{0x80, 0x1d, 0x30, 0x01};
 
-    [[nodiscard]] bool hasXorMagic(const std::filesystem::path& path) {
-        std::ifstream file(path, std::ios::binary);
-        if (!file) return false;
-
-        std::array<unsigned char, kXorMagic.size()> header{};
-        file.read(reinterpret_cast<char*>(header.data()), static_cast<std::streamsize>(header.size()));
-        if (file.gcount() != static_cast<std::streamsize>(header.size())) return false;
-        return header == kXorMagic;
+    [[nodiscard]] bool hasXorMagic(platform::WorldFileSource& files, const QString& path) {
+        const auto input = files.openRead(path);
+        const QByteArray header = input ? input->read(static_cast<qint64>(kXorMagic.size())) : QByteArray{};
+        if (header.size() != static_cast<qsizetype>(kXorMagic.size())) return false;
+        for (qsizetype index = 0; index < header.size(); ++index)
+            if (static_cast<unsigned char>(header[index]) != kXorMagic[static_cast<std::size_t>(index)]) return false;
+        return true;
     }
-
 }  // namespace
 
 namespace leveldb_xor {
 
-    bool isEncrypted(const std::string& world_root) {
-        namespace fs = std::filesystem;
-        const fs::path db_path = fs::path(world_root) / "db";
-        std::error_code error;
-        if (!fs::is_directory(db_path, error)) return false;
-
-        for (fs::directory_iterator it(db_path, error), end; !error && it != end; it.increment(error)) {
-            const auto& entry = *it;
-            std::error_code entry_error;
-            if (!entry.is_regular_file(entry_error) || entry_error) continue;
+    bool isEncrypted(platform::WorldFileSource& files, const QString& worldRoot) {
+        const QString database = QDir(worldRoot).filePath(QStringLiteral("db"));
+        QStringList children;
+        if (!files.children(database, &children).isEmpty()) return false;
+        for (const auto& name : children) {
             // The mcne format deliberately leaves log files unencrypted.
-            if (entry.path().extension() == ".log") continue;
-            if (hasXorMagic(entry.path())) return true;
+            if (name.endsWith(QStringLiteral(".log"), Qt::CaseInsensitive)) continue;
+            platform::WorldFileInfo info;
+            const QString path = QDir(database).filePath(name);
+            if (!files.fileInfo(path, info).isEmpty() || !info.isFile) continue;
+            if (hasXorMagic(files, path)) return true;
         }
         return false;
     }
 
-    std::string keyForLevel(const std::string& world_root) {
-        const auto& settings = setting::current();
-        switch (settings.leveldbXorMode) {
-            case 0:  // No
-                return {};
-            case 1:  // Yes
-                return settings.leveldbXorKey.toStdString();
-            case 2:  // Auto
-            default:
-                return isEncrypted(world_root) ? settings.leveldbXorKey.toStdString() : std::string{};
-        }
+    bool isEncrypted(const QString& worldRoot) {
+        const auto files = platform::worldFileSource(worldRoot);
+        return files && isEncrypted(*files, worldRoot);
     }
 
 }  // namespace leveldb_xor

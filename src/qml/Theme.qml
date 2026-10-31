@@ -14,7 +14,45 @@ QtObject {
     readonly property bool compact: windowWidth > 0 && windowWidth < compactBreakpoint
     readonly property bool nbtCompact: windowWidth > 0 && windowWidth < nbtCompactBreakpoint
     readonly property bool touch: Qt.platform.os === "android" || Qt.platform.os === "ios"
-    readonly property int touchTarget: 40
+
+    // Scale mobile geometry independently from the user's font size. All values
+    // are logical pixels; Qt handles the device pixel ratio separately.
+    readonly property real mobileUiScale: 1.0
+    readonly property real uiScale: touch ? mobileUiScale : 1.0
+    readonly property int minimumTouchTarget: 40
+    readonly property int touchTarget: Math.max(minimumTouchTarget, ui(40))
+    readonly property int iconSmallSize: ui(16)
+    readonly property int iconSize: ui(18)
+    readonly property int iconLargeSize: ui(24)
+    readonly property int controlPadding: ui(10)
+    readonly property int controlSpacing: ui(8)
+    readonly property int toolbarPadding: touch ? ui(4) : 3
+    readonly property int toolbarRowSpacing: touch ? ui(2) : gapSmall
+    readonly property int segmentedPadding: ui(3)
+    readonly property int checkBoxSize: touch ? ui(20) : 18
+    readonly property int switchWidth: ui(40)
+    readonly property int switchHeight: touch ? ui(24) : 22
+    readonly property int switchInset: ui(3)
+    readonly property int switchThumbSize: switchHeight - switchInset * 2
+    readonly property int sliderHandleSize: touch ? ui(18) : 14
+    readonly property int sliderTrackHeight: ui(4)
+    readonly property int spinBoxArrowWidth: touch ? ui(28) : 20
+    readonly property int controlVisualHeight: touch ? Math.max(ui(32), fontSubtitle + ui(12)) : 28
+    readonly property int controlHeight: touch ? Math.max(touchTarget, controlVisualHeight) : 28
+    readonly property int buttonHeight: touch ? controlHeight : 32
+    readonly property int compactButtonHeight: touch ? controlHeight : 28
+    readonly property int segmentedHeight: touch ? Math.max(controlHeight, controlVisualHeight + segmentedPadding * 2) :
+                                                   controlHeight + segmentedPadding * 2
+    readonly property int menuItemHeight: touch ? controlHeight : 30
+    readonly property int treeRowHeight: touch ? controlHeight : 28
+    readonly property int settingRowHeight: touch ? Math.max(ui(44), controlHeight + ui(4)) : (compact ? 36 : 38)
+    readonly property int sessionRowHeight: touch ? Math.max(ui(56), controlHeight + ui(8), fontSubtitle + fontCaption
+                                                             + ui(2) + cardPadding * 2) : (compact ? 52 : 64)
+    readonly property int dirtyIndicatorSize: touch ? ui(10) : 9
+
+    function ui(value) {
+        return Math.round(value * uiScale)
+    }
 
     // Single source of truth for the differences between the compact and
     // desktop GUI shells.
@@ -22,56 +60,58 @@ QtObject {
     readonly property bool showBottomNavigation: compact
     readonly property bool showTopbar: compact
     readonly property bool showWorldCards: !compact
-    readonly property real sidebarWidth: 232
-    readonly property real sidebarCollapsedWidth: 56
-    readonly property real bottomNavigationHeight: compact ? 64 : 72
-    readonly property real topbarHeight: compact ? 52 : 72
+    readonly property real sidebarWidth: ui(232)
+    readonly property real sidebarCollapsedWidth: ui(56)
+    readonly property real bottomNavigationHeight: touch ? Math.max(ui(56), iconSize + fontCaption + ui(22)) : (compact
+                                                                                                                ? 64 : 72)
+    readonly property real topbarHeight: touch ? Math.max(ui(52), controlHeight + ui(8)) : (compact ? 52 : 72)
 
-    readonly property real fontScale: Settings.fontSize / 12.0
+    readonly property real fontScale: App.settings.fontSize / 12.0
     readonly property bool systemDark: Application.styleHints.colorScheme !== Qt.Light
-    readonly property bool dark: Settings.colorTheme === "dark"
-        || (Settings.colorTheme !== "light" && systemDark)
+    readonly property bool dark: App.settings.colorTheme === "dark" || (App.settings.colorTheme !== "light"
+                                                                        && systemDark)
+
     readonly property var palette: dark ? darkPalette : lightPalette
     readonly property var darkPalette: themeWith({
-        background: "#111419",
-        surface: "#191e26",
-        surfaceAlt: "#202631",
-        border: "#303846",
-        text: "#f1f4f8",
-        muted: "#929baa",
-        accent: "#72d572",
-        accentSoft: "#24452d",
-        onAccent: "#102116",
-        danger: "#ed7785",
-        dangerSoft: "#542d35",
-        warning: "#e6b455",
-        warningSoft: "#4a3d1d",
-        map: "#18241f",
-        overlay: "#d9212121",
-        overlayBorder: "#66888888",
-        overlayText: "#f0f0f0",
-        overlayMuted: "#d0d0d0"
-    })
+                                                     background: "#111419",
+                                                     surface: "#191e26",
+                                                     surfaceAlt: "#202631",
+                                                     border: "#303846",
+                                                     text: "#f1f4f8",
+                                                     muted: "#929baa",
+                                                     accent: "#72d572",
+                                                     accentSoft: "#24452d",
+                                                     onAccent: "#102116",
+                                                     danger: "#ed7785",
+                                                     dangerSoft: "#542d35",
+                                                     warning: "#e6b455",
+                                                     warningSoft: "#4a3d1d",
+                                                     map: "#18241f",
+                                                     overlay: "#d9212121",
+                                                     overlayBorder: "#66888888",
+                                                     overlayText: "#f0f0f0",
+                                                     overlayMuted: "#d0d0d0"
+                                                 })
     readonly property var lightPalette: themeWith({
-        background: "#f4f6f8",
-        surface: "#ffffff",
-        surfaceAlt: "#edf1f4",
-        border: "#d9dfe6",
-        text: "#1a2028",
-        muted: "#68717e",
-        accent: "#318b4b",
-        accentSoft: "#dcefe0",
-        onAccent: "#ffffff",
-        danger: "#b3261e",
-        dangerSoft: "#f7dcda",
-        warning: "#9a6b00",
-        warningSoft: "#fdf1d6",
-        map: "#e1eee5",
-        overlay: "#e8ffffff",
-        overlayBorder: "#33000000",
-        overlayText: "#1a2028",
-        overlayMuted: "#68717e"
-    })
+                                                      background: "#f4f6f8",
+                                                      surface: "#ffffff",
+                                                      surfaceAlt: "#edf1f4",
+                                                      border: "#d9dfe6",
+                                                      text: "#1a2028",
+                                                      muted: "#68717e",
+                                                      accent: "#318b4b",
+                                                      accentSoft: "#dcefe0",
+                                                      onAccent: "#ffffff",
+                                                      danger: "#b3261e",
+                                                      dangerSoft: "#f7dcda",
+                                                      warning: "#9a6b00",
+                                                      warningSoft: "#fdf1d6",
+                                                      map: "#e1eee5",
+                                                      overlay: "#e8ffffff",
+                                                      overlayBorder: "#33000000",
+                                                      overlayText: "#1a2028",
+                                                      overlayMuted: "#68717e"
+                                                  })
 
     readonly property color background: palette.background
     readonly property color surface: palette.surface
@@ -87,8 +127,8 @@ QtObject {
     readonly property color warning: palette.warning
     readonly property color warningSoft: palette.warningSoft
     readonly property color map: palette.map
-    readonly property color mapCheckerBase: Settings.tileColorScheme === "light" ? "#ffffff" : "#141414"
-    readonly property color mapCheckerAlternate: Settings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
+    readonly property color mapCheckerBase: App.settings.tileColorScheme === "light" ? "#ffffff" : "#141414"
+    readonly property color mapCheckerAlternate: App.settings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
     readonly property color overlay: palette.overlay
     readonly property color overlayBorder: palette.overlayBorder
     readonly property color overlayText: palette.overlayText
@@ -113,42 +153,36 @@ QtObject {
     readonly property real pageGutter: palette.pageGutter
     readonly property real cardPadding: palette.cardPadding
     readonly property real cardGap: palette.cardGap
-    readonly property real settingRowHeight: palette.settingRowHeight
-    readonly property int controlHeight: palette.controlHeight
-    readonly property int buttonHeight: palette.buttonHeight
 
     function themeWith(palette) {
         const scale = fontScale
         const compactSpacing = compact || touch
         const text = base => Math.max(8, Math.round(base * scale))
         return Object.assign({}, palette, accentTones(palette), {
-            metricScale: Math.max(1.0, scale),
-            radiusSmall: 5,
-            radiusControl: 8,
-            radiusCard: 10,
-            radiusPill: 17,
-            fontCaption: text(10),
-            fontBody: text(11),
-            fontSubtitle: text(12),
-            fontLabel: text(14),
-            fontTitle: text(17),
-            fontHeading: text(22),
-            fontDisplay: text(25),
-            gapSmall: compactSpacing ? 4 : 6,
-            gapMedium: compactSpacing ? 5 : 10,
-            gapLarge: compactSpacing ? 8 : 14,
-            gapSection: compactSpacing ? 12 : 20,
-            pageGutter: compactSpacing ? 10 : 22,
-            cardPadding: compactSpacing ? 7 : 12,
-            cardGap: compactSpacing ? 6 : 14,
-            settingRowHeight: touch ? 48 : (compact ? 36 : 38),
-            controlHeight: touch ? touchTarget : 28,
-            buttonHeight: touch ? touchTarget : 30
-        })
+                                 metricScale: Math.max(1.0, scale) * uiScale,
+                                 radiusSmall: ui(5),
+                                 radiusControl: ui(8),
+                                 radiusCard: ui(10),
+                                 radiusPill: ui(17),
+                                 fontCaption: text(10),
+                                 fontBody: text(11),
+                                 fontSubtitle: text(12),
+                                 fontLabel: text(14),
+                                 fontTitle: text(17),
+                                 fontHeading: text(22),
+                                 fontDisplay: text(25),
+                                 gapSmall: ui(compactSpacing ? 4 : 6),
+                                 gapMedium: ui(touch ? 6 : (compact ? 5 : 10)),
+                                 gapLarge: ui(touch ? 10 : (compact ? 8 : 14)),
+                                 gapSection: ui(compactSpacing ? 12 : 20),
+                                 pageGutter: ui(compactSpacing ? 10 : 22),
+                                 cardPadding: ui(touch ? 8 : (compact ? 7 : 12)),
+                                 cardGap: ui(compactSpacing ? 6 : 14)
+                             })
     }
 
     function accentTones(palette) {
-        const accent = Settings.accentColor
+        const accent = App.settings.accentColor
         if (!accent)
             return {}
         return {

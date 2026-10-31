@@ -7,7 +7,7 @@ MenuItem {
     property bool danger: false
     property string iconName
 
-    readonly property real rowHeight: Theme.touch ? Theme.touchTarget : 30
+    readonly property real rowHeight: Theme.menuItemHeight
 
     // Submenu rows are generated from the menu delegate and may fall back to
     // implicit content sizing. Keep platform padding and spacing out of that
@@ -19,19 +19,24 @@ MenuItem {
     spacing: 0
     implicitHeight: visible ? rowHeight : 0
     height: visible ? rowHeight : 0
-    implicitWidth: visible ? Math.max(160, contentItem ? contentItem.implicitWidth + 20 : 160) : 0
+    implicitWidth: visible ? Math.max(Theme.ui(160), contentItem ? contentItem.implicitWidth + Theme.controlPadding * 2 :
+                                                                   Theme.ui(160)) : 0
     width: visible && parent ? parent.width : 0
 
     contentItem: Item {
-        implicitWidth: Math.max(160, label.implicitWidth + 20 + (root.iconName.length > 0 ? 24 : 0)
-                                       + (root.subMenu ? 14 : 0))
+        implicitWidth: Math.max(Theme.ui(160), label.implicitWidth + Theme.controlPadding * 2 + (root.iconName.length > 0
+                                                                                                 ? Theme.iconSmallSize
+                                                                                                   + Theme.controlSpacing :
+                                                                                                   0) + (root.subMenu
+                                                                                                         ? Theme.ui(14) :
+                                                                                                           0))
         implicitHeight: root.rowHeight
         AppIcon {
             visible: root.iconName.length > 0
-            width: 16
-            height: 16
+            width: Theme.iconSmallSize
+            height: width
             anchors.left: parent.left
-            anchors.leftMargin: 10
+            anchors.leftMargin: Theme.controlPadding
             anchors.verticalCenter: parent.verticalCenter
             name: root.iconName
             iconSize: width
@@ -40,9 +45,10 @@ MenuItem {
         Text {
             id: label
             anchors.left: parent.left
-            anchors.leftMargin: 10 + (root.iconName.length > 0 ? 24 : 0)
+            anchors.leftMargin: Theme.controlPadding + (root.iconName.length > 0 ? Theme.iconSmallSize + Theme.controlSpacing :
+                                                                                   0)
             anchors.right: parent.right
-            anchors.rightMargin: root.subMenu ? 24 : 10
+            anchors.rightMargin: root.subMenu ? Theme.iconSmallSize + Theme.controlSpacing : Theme.controlPadding
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: root.danger ? Theme.danger : Theme.text
@@ -52,7 +58,7 @@ MenuItem {
         }
         Text {
             anchors.right: parent.right
-            anchors.rightMargin: 10
+            anchors.rightMargin: Theme.controlPadding
             anchors.verticalCenter: parent.verticalCenter
             visible: root.subMenu !== null
             text: "›"

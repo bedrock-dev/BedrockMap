@@ -15,7 +15,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 /**
- * Requests shared-storage access once per app launch.
+ * Checks shared-storage access and requests it only on explicit user action.
  *
  * Android 11+ has no runtime dialog for MANAGE_EXTERNAL_STORAGE; the only way
  * to ask is the dedicated system settings page. Android 10 and older still use
@@ -23,7 +23,6 @@ import androidx.core.content.ContextCompat;
  */
 public final class StoragePermission {
     private static final int REQUEST_CODE = 1001;
-    private static boolean requestedThisLaunch;
 
     private StoragePermission() {}
 
@@ -37,9 +36,14 @@ public final class StoragePermission {
                         == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void ensure(Activity activity) {
-        if (requestedThisLaunch || hasAccess(activity)) return;
-        requestedThisLaunch = true;
+    public static void request(Context context) {
+        if (!(context instanceof Activity) || hasAccess(context)) return;
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(() -> requestFromActivity(activity));
+    }
+
+    private static void requestFromActivity(Activity activity) {
+        if (hasAccess(activity)) return;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             final Intent appSettings = new Intent(

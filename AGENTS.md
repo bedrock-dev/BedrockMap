@@ -13,8 +13,8 @@ BedrockMap is a Qt Quick application. The former Qt Widgets frontend has been re
 - `bedrock-level/` is the standalone C++ data library for LevelDB, NBT, chunks, actors and palettes. It has no Qt dependency.
 - `src/base/`, `src/loader/`, `src/model/`, `src/controller/` and `src/render/` build into `BedrockMapCore`. They contain configuration, world access, sessions, editing operations and CPU data preparation.
 - `src/qml/` contains the Qt Quick entry point, QML pages, controls, scene graph items and shaders. `BedrockMapQml` is the only GUI target.
-- `AppController` manages application navigation and open sessions through `SessionController`. Each `WorldSession` owns its loader, `MapSession`, `MapController`, terrain provider and world editing controllers.
-- `TerrainQuickItem` and `MapOverlayQuickItem` render data supplied by `TerrainDataProvider` and the world controllers. Keep camera, selection and map operations in `MapView`/`MapController`, not in a rendering item.
+- `AppController` manages application navigation and open sessions through `SessionController`. Each `WorldSession` owns its loader, `MapViewState`, `MapController`, terrain provider and world editing controllers.
+- `TerrainQuickItem` and `MapOverlayQuickItem` render data supplied by `TerrainDataProvider` and the world controllers. Keep camera, selection and map operations in `MapViewState`/`MapController`, not in a rendering item.
 - `WorkspaceSession` provides the common lifecycle and dirty state for world, NBT and mcstructure sessions.
 
 ## Coding standards
@@ -26,6 +26,7 @@ BedrockMap is a Qt Quick application. The former Qt Widgets frontend has been re
 - Only load visible terrain regions and respect the configured thread and cache limits.
 - Use `tr()`, `qsTr()` or `QCoreApplication::translate()` for user-visible text, and update `translations/zh_CN.ts` and `translations/en.ts` with `lupdate`.
 - Prefer editing an existing file over introducing a wrapper with no clear responsibility.
+- Do not add or modify tests unless the user explicitly requests tests. Use builds and focused manual checks for routine verification.
 
 ## Working in this repository
 

@@ -7,9 +7,9 @@ ToolTip {
     property bool shown: false
 
     delay: 350
-    padding: 6
+    padding: Theme.ui(6)
     x: parent ? (parent.width - width) / 2 : 0
-    y: parent ? -height - 4 : 0
+    y: parent ? -height - Theme.gapSmall : 0
     contentItem: Text {
         text: root.text
         color: Theme.text

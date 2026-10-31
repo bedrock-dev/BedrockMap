@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "render/maptile.h"
 #include "render/terraintiles.h"
 
 namespace {
@@ -20,7 +19,6 @@ RegionCacheManager::RegionCacheManager()
       invalid_cache_(setting::current().emptyRegionCacheSize),
       owner_thread_(QThread::currentThread()) {
     slime_chunk_cache_ = std::make_unique<QCache<region_pos, QImage>>(slimeCacheLimit());
-    height_map_cache_ = std::make_unique<QCache<bl::chunk_pos, std::array<int16_t, 256>>>(heightMapCacheLimit());
 }
 
 void RegionCacheManager::assertOwnerThread() const {
@@ -80,15 +78,11 @@ int RegionCacheManager::regionCount() const { return region_cache_.size(); }
 
 int RegionCacheManager::emptyCount() const { return invalid_cache_.size(); }
 
-int RegionCacheManager::heightMapCount() const { return height_map_cache_ ? static_cast<int>(height_map_cache_->size()) : 0; }
-
 void RegionCacheManager::clear() {
     assertOwnerThread();
     region_cache_.clear();
     invalid_cache_.clear();
     slime_chunk_cache_->clear();
-    QMutexLocker lock(&height_map_mutex_);
-    height_map_cache_->clear();
 }
 
 void RegionCacheManager::setActive(bool active) {
@@ -97,8 +91,6 @@ void RegionCacheManager::setActive(bool active) {
     active_ = active;
     region_cache_.setMaxCost(regionCacheLimitBytes());
     slime_chunk_cache_->setMaxCost(slimeCacheLimit());
-    QMutexLocker lock(&height_map_mutex_);
-    height_map_cache_->setMaxCost(heightMapCacheLimit());
 }
 
 int RegionCacheManager::regionCacheLimitBytes() const {
@@ -108,29 +100,7 @@ int RegionCacheManager::regionCacheLimitBytes() const {
     return static_cast<int>(std::clamp<qint64>(budget, 64 * 1024 * 1024, std::numeric_limits<int>::max()));
 }
 
-int RegionCacheManager::heightMapCacheLimit() const {
-    const int configured = std::max(1, setting::current().heightMapCacheSize);
-    return active_ ? configured : std::clamp(static_cast<int>(configured * INACTIVE_CACHE_FRACTION), 1024, 32768);
-}
-
 int RegionCacheManager::slimeCacheLimit() const { return active_ ? 8192 : 512; }
-
-std::optional<std::array<int16_t, 256>> RegionCacheManager::heightMap(const bl::chunk_pos& pos) {
-    QMutexLocker lock(&height_map_mutex_);
-    auto* cached = height_map_cache_->object(pos);
-    if (cached) return *cached;
-    return std::nullopt;
-}
-
-void RegionCacheManager::putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& heightMap) {
-    QMutexLocker lock(&height_map_mutex_);
-    if (!height_map_cache_->object(pos)) height_map_cache_->insert(pos, new std::array<int16_t, 256>(heightMap));
-}
-
-void RegionCacheManager::removeHeightMap(const bl::chunk_pos& pos) {
-    QMutexLocker lock(&height_map_mutex_);
-    height_map_cache_->remove(pos);
-}
 
 QImage RegionCacheManager::slimeChunkImage(const region_pos& pos) {
     assertOwnerThread();

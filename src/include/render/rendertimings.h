@@ -91,8 +91,7 @@ class RenderTimings {
     void recordFrameUploadPeak(double frameMs, int terrainTiles, int blocksPerTexel) {
         if (terrainTiles <= 0) return;
         const QMutexLocker lock(&mutex_);
-        if (frameMs > upload_peak_.frameMs)
-            upload_peak_ = UploadPeak{frameMs, terrainTiles, blocksPerTexel};
+        if (frameMs > upload_peak_.frameMs) upload_peak_ = UploadPeak{frameMs, terrainTiles, blocksPerTexel};
     }
     void setGraphicsInfo(const QString& info) {
         const QMutexLocker lock(&mutex_);
@@ -185,10 +184,9 @@ class RenderTimings {
             gpuPeak = gpu_peak_ms_;
             uploadPeak = upload_peak_;
             if (drag_events_) {
-                dragCurrentLines
-                    << QStringLiteral("Drag ms latest: event->camera %1 | GUI slip %2")
-                           .arg(dispatch_latency_.latest, 0, 'f', 1)
-                           .arg(gui_slip_.latest, 0, 'f', 1);
+                dragCurrentLines << QStringLiteral("Drag ms latest: event->camera %1 | GUI slip %2")
+                                        .arg(dispatch_latency_.latest, 0, 'f', 1)
+                                        .arg(gui_slip_.latest, 0, 'f', 1);
                 dragCurrentLines << QStringLiteral("  Input->sync %1 | ->submit %2")
                                         .arg(sync_latency_.latest, 0, 'f', 1)
                                         .arg(submit_latency_.latest, 0, 'f', 1);
@@ -204,16 +202,12 @@ class RenderTimings {
         }
         QStringList lines;
         lines << QStringLiteral("FRAME BLOCKING");
-        lines << QStringLiteral("Frame interval (incl. idle): %1 ms | avg %2 ms")
-                     .arg(interval, 0, 'f', 2)
-                     .arg(intervalAverage, 0, 'f', 2);
+        lines << QStringLiteral("Frame interval (incl. idle): %1 ms | avg %2 ms").arg(interval, 0, 'f', 2).arg(intervalAverage, 0, 'f', 2);
         const auto renderCapture = captures.constFind(QStringLiteral("Render frame CPU"));
         const bool hasRenderCapture = renderCapture != captures.cend();
         const auto rhiCapture = captures.constFind(QStringLiteral("RHI texture commit"));
-        const bool rhiNestedInFrame =
-            hasRenderCapture &&
-            (nodeContainsName(renderCapture->latest, QStringLiteral("RHI texture commit")) ||
-             nodeContainsName(renderCapture->slowest, QStringLiteral("RHI texture commit")));
+        const bool rhiNestedInFrame = hasRenderCapture && (nodeContainsName(renderCapture->latest, QStringLiteral("RHI texture commit")) ||
+                                                           nodeContainsName(renderCapture->slowest, QStringLiteral("RHI texture commit")));
         if (hasRenderCapture) {
             lines << QStringLiteral("Render frame CPU: latest %1 ms | avg %2 ms | n=%3")
                          .arg(renderCapture->latest.nanoseconds / 1.0e6, 0, 'f', 2)
@@ -228,20 +222,17 @@ class RenderTimings {
                          .arg(rhiCapture->total / rhiCapture->count / 1.0e6, 0, 'f', 2)
                          .arg(rhiCapture->count);
         }
-        lines << (gpu > 0.0 ? QStringLiteral("GPU (delayed): %1 ms").arg(gpu, 0, 'f', 2)
-                            : QStringLiteral("GPU: pending / unavailable"));
+        lines << (gpu > 0.0 ? QStringLiteral("GPU (delayed): %1 ms").arg(gpu, 0, 'f', 2) : QStringLiteral("GPU: pending / unavailable"));
 
         lines << QString() << QStringLiteral("FRAME BLOCKING PEAKS (NOT LIVE)");
         lines << QStringLiteral("Frame interval peak (incl. idle): %1 ms").arg(intervalPeak, 0, 'f', 2);
         if (hasRenderCapture && renderCapture->slowest.nanoseconds >= displayThresholdNs) {
-            lines << QStringLiteral("Render frame CPU peak: %1 ms")
-                         .arg(renderCapture->slowest.nanoseconds / 1.0e6, 0, 'f', 2);
+            lines << QStringLiteral("Render frame CPU peak: %1 ms").arg(renderCapture->slowest.nanoseconds / 1.0e6, 0, 'f', 2);
             lines << QStringLiteral("Slowest execution tree");
             appendTree(lines, renderCapture->slowest, 0);
         }
         if (!rhiNestedInFrame && rhiCapture != captures.cend() && rhiCapture->slowest.nanoseconds >= displayThresholdNs) {
-            lines << QStringLiteral("RHI texture commit peak: %1 ms")
-                         .arg(rhiCapture->slowest.nanoseconds / 1.0e6, 0, 'f', 2);
+            lines << QStringLiteral("RHI texture commit peak: %1 ms").arg(rhiCapture->slowest.nanoseconds / 1.0e6, 0, 'f', 2);
             appendTree(lines, rhiCapture->slowest, 0);
         }
         if (gpuPeak > 0.0) lines << QStringLiteral("GPU peak: %1 ms").arg(gpuPeak, 0, 'f', 2);

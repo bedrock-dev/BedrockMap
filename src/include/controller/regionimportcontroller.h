@@ -9,7 +9,7 @@
 #include <QUrl>
 #include <memory>
 
-#include "loader/chunkregion.h"
+#include "loader/exportedregion.h"
 
 /// A read-only source and a chunk-aligned placement, independent of any UI.
 class RegionImportController final : public QObject {
@@ -24,7 +24,7 @@ class RegionImportController final : public QObject {
     Q_PROPERTY(QString sourceName READ sourceName NOTIFY activeChanged)
 
    public:
-    explicit RegionImportController(QObject* parent = nullptr);
+    explicit RegionImportController(QObject* parent);
     ~RegionImportController() override;
     [[nodiscard]] bool active() const { return bool(source_); }
     [[nodiscard]] bool loading() const { return loading_; }

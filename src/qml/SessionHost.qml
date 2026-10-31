@@ -1,5 +1,5 @@
-import BedrockMap 1.0
 pragma ComponentBehavior: Bound
+import BedrockMap 1.0
 
 import QtQuick
 
@@ -22,6 +22,7 @@ Item {
     readonly property bool internalPageOpen: worldVisible && worldPage ? worldPage.internalPageOpen === true : false
     readonly property string internalPageTitle: internalPageOpen ? worldPage.internalPageTitle : ""
     signal closeRequested(int index)
+    signal backRequested
 
     Connections {
         target: App
@@ -89,7 +90,7 @@ Item {
         id: structureComponent
         McstructurePage {
             session: host.structureSession
-            onCloseRequested: host.closeRequested(host.currentIndex)
+            onBackRequested: host.backRequested()
         }
     }
 

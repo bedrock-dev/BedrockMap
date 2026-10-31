@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 # Release runs (-Rel) use the build_rls/ output.
 $buildDir = Join-Path $projectRoot $(if ($Rel) { "build_rls" } else { "build" })
-$exePath = Join-Path $buildDir "BedrockMapQml.exe"
+$exePath = Join-Path $buildDir "BedrockMap.exe"
 $qtPath = $env:QT_ROOT
 $cmakeCachePath = Join-Path $buildDir "CMakeCache.txt"
 

@@ -6,8 +6,10 @@ import "controls"
 AppCard {
     id: card
     interactive: true
-    hovered: hover.containsMouse || hover.pressed
+    hovered: hover.containsMouse || hover.pressed || actionsButton.hovered || cardMenu.visible
     signal openRequested(string path, string title)
+    signal deleteRequested(string path, string title)
+    signal exportRequested(string path, string title)
     property string title
     property string versionText
     property string tag
@@ -17,9 +19,10 @@ AppCard {
     property url thumbnailSource
     property bool xorMarked
     property bool gridMode: false
+    property bool appInternal: false
 
     component WorldThumbnail: Rectangle {
-        color: Theme.map
+        color: Theme.surfaceAlt
         radius: Theme.radiusControl
         clip: true
         AppIcon {
@@ -56,7 +59,7 @@ AppCard {
 
         Column {
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - listThumbnail.width - Theme.gapLarge
+            width: Math.max(0, parent.width - listThumbnail.width - actionsButton.width - Theme.gapLarge * 2)
             spacing: Theme.gapSmall
 
             Row {
@@ -104,7 +107,8 @@ AppCard {
                 }
             }
             Text {
-                text: (card.sourceText || qsTr("Bedrock")) + "  ·  " + card.pathText
+                text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
+                      + card.pathText
                 color: Theme.muted
                 font.pixelSize: Theme.fontCaption
                 elide: Text.ElideMiddle
@@ -114,6 +118,7 @@ AppCard {
     }
 
     Column {
+        id: gridContent
         visible: card.gridMode
         anchors.fill: parent
         anchors.margins: Theme.cardPadding
@@ -124,57 +129,64 @@ AppCard {
             height: Math.round((Theme.compact ? 88 : 92) * Theme.metricScale)
         }
 
-        Row {
-            width: parent.width
+        Column {
+            id: gridDetails
+            width: Math.max(0, parent.width - actionsButton.width - Theme.gapSmall)
             spacing: Theme.gapSmall
-            Text {
-                text: card.title
-                color: Theme.text
-                font.bold: true
-                font.pixelSize: Theme.fontSubtitle
-                elide: Text.ElideRight
-                width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? gridBadge.implicitWidth
-                                                                                            + parent.spacing : 0)))
+
+            Row {
+                width: parent.width
+                spacing: Theme.gapSmall
+                Text {
+                    text: card.title
+                    color: Theme.text
+                    font.bold: true
+                    font.pixelSize: Theme.fontSubtitle
+                    elide: Text.ElideRight
+                    width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? gridBadge.implicitWidth
+                                                                                                + parent.spacing : 0)))
+                }
+                Text {
+                    id: gridBadge
+                    visible: card.xorMarked
+                    text: "[XOR]"
+                    color: Theme.danger
+                    font.bold: true
+                    font.pixelSize: Theme.fontCaption
+                }
+            }
+            Row {
+                width: parent.width
+                spacing: Theme.gapSmall
+                Text {
+                    id: gridVersionText
+                    text: card.versionText || qsTr("Unknown")
+                    color: Theme.accent
+                    font.pixelSize: Theme.fontCaption
+                    width: Math.min(implicitWidth, Math.max(0, parent.width * 0.6))
+                    elide: Text.ElideRight
+                }
+                Text {
+                    text: "•"
+                    color: Theme.muted
+                    font.pixelSize: Theme.fontCaption
+                }
+                Text {
+                    width: Math.max(0, parent.width - gridVersionText.width - parent.spacing * 2 - 8)
+                    text: card.sizeText || "0 B"
+                    color: Theme.muted
+                    font.pixelSize: Theme.fontCaption
+                    elide: Text.ElideRight
+                }
             }
             Text {
-                id: gridBadge
-                visible: card.xorMarked
-                text: "[XOR]"
-                color: Theme.danger
-                font.bold: true
-                font.pixelSize: Theme.fontCaption
-            }
-        }
-        Row {
-            width: parent.width
-            spacing: Theme.gapSmall
-            Text {
-                id: gridVersionText
-                text: card.versionText || qsTr("Unknown")
-                color: Theme.accent
-                font.pixelSize: Theme.fontCaption
-                width: Math.min(implicitWidth, Math.max(0, parent.width * 0.6))
-                elide: Text.ElideRight
-            }
-            Text {
-                text: "•"
+                width: parent.width
+                text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
+                      + card.tag
                 color: Theme.muted
                 font.pixelSize: Theme.fontCaption
-            }
-            Text {
-                width: Math.max(0, parent.width - gridVersionText.width - parent.spacing * 2 - 8)
-                text: card.sizeText || "0 B"
-                color: Theme.muted
-                font.pixelSize: Theme.fontCaption
                 elide: Text.ElideRight
             }
-        }
-        Text {
-            width: parent.width
-            text: (card.sourceText || qsTr("Bedrock")) + "  ·  " + card.tag
-            color: Theme.muted
-            font.pixelSize: Theme.fontCaption
-            elide: Text.ElideRight
         }
     }
 
@@ -191,16 +203,39 @@ AppCard {
         }
     }
 
+    AppIconButton {
+        id: actionsButton
+        anchors.right: parent.right
+        anchors.rightMargin: Theme.cardPadding
+        y: card.gridMode ? gridContent.y + gridDetails.y + (gridDetails.height - height) / 2 : (card.height - height)
+                           / 2
+        z: 1
+        iconName: "menu"
+        label: qsTr("World actions")
+        buttonSize: 28
+        selected: cardMenu.visible
+        onClicked: cardMenu.popup(actionsButton, actionsButton.width - cardMenu.width, actionsButton.height)
+    }
+
     AppMenu {
         id: cardMenu
         AppMenuItem {
+            visible: !Theme.touch
             text: qsTr("Open containing folder")
             onTriggered: if (card.pathText.length > 0)
                              App.revealPath(card.pathText)
         }
         AppMenuItem {
-            text: qsTr("Open world")
-            onTriggered: card.openRequested(card.pathText, card.title)
+            enabled: !App.exportingWorld && !App.importingWorld && !App.deletingWorld
+            text: qsTr("Export as mcworld")
+            onTriggered: card.exportRequested(card.pathText, card.title)
+        }
+        AppMenuItem {
+            visible: card.appInternal
+            enabled: !App.deletingWorld && !App.importingWorld && !App.exportingWorld
+            danger: true
+            text: qsTr("Delete world")
+            onTriggered: card.deleteRequested(card.pathText, card.title)
         }
     }
 }

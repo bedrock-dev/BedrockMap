@@ -1,6 +1,8 @@
 #ifndef BEDROCKMAP_NBTSESSION_H
 #define BEDROCKMAP_NBTSESSION_H
 
+#include <QUrl>
+
 #include "controller/nbtdocumentcontroller.h"
 #include "controller/workspacesession.h"
 
@@ -15,7 +17,7 @@ class NbtSession final : public WorkspaceSession {
     [[nodiscard]] NbtDocumentController* document() const { return document_; }
     [[nodiscard]] bool commit() override;
 
-    bool loadFile(const QString& path);
+    bool loadFile(const QUrl& url);
     void createNew();
 
    private:

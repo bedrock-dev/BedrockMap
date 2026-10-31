@@ -1,7 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Dialogs
 import QtQuick.Layouts
 import "controls"
 
@@ -9,22 +8,23 @@ Rectangle {
     id: root
     property var controller
     property bool headerVisible: true
-    readonly property string headerTitle: controller && controller.hasChunk
-                                          ? qsTr("Chunk %1, %2").arg(controller.chunkX).arg(controller.chunkZ)
-                                          : qsTr("Chunk editor")
-    readonly property string headerSubtitle: controller && controller.hasChunk
-                                             ? qsTr("Dimension %1 · Y %2").arg(controller.dimension).arg(controller.yRange)
-                                             : (controller && controller.loading ? qsTr("Loading chunk data…") : qsTr("No chunk selected"))
+    readonly property string headerTitle: controller && controller.hasChunk ? qsTr("Chunk %1, %2").arg(
+                                                                                  controller.chunkX).arg(
+                                                                                  controller.chunkZ) : qsTr(
+                                                                                  "Chunk editor")
+    readonly property string headerSubtitle: controller && controller.hasChunk ? qsTr("Dimension %1 · Y %2").arg(
+                                                                                     controller.dimension).arg(
+                                                                                     controller.yRange) : (controller
+                                                                                                           && controller.loading
+                                                                                                           ? qsTr("Loading chunk data…") :
+                                                                                                             qsTr("No chunk selected"))
     property int category: 0
-    readonly property var categoryNames: [
-        qsTr("3D"),
-        qsTr("Terrain"),
-        qsTr("Entities") + (root.controller && root.controller.entitiesDocument.dirty ? " *" : ""),
-        qsTr("Block entities") + (root.controller && root.controller.blockEntitiesDocument.dirty ? " *" : ""),
-        qsTr("Pts") + (root.controller && root.controller.pendingTicksDocument.dirty ? " *" : ""),
-        qsTr("HSA"),
-        qsTr("Stats")
-    ]
+    readonly property var categoryNames: [qsTr("3D"), qsTr("Terrain"), qsTr("Entities") + (root.controller
+                                                                                           && root.controller.entitiesDocument.dirty
+                                                                                           ? " *" : ""), qsTr(
+            "Block entities") + (root.controller && root.controller.blockEntitiesDocument.dirty ? " *" : ""), qsTr(
+            "Pts") + (root.controller && root.controller.pendingTicksDocument.dirty ? " *" : ""), qsTr("HSA"), qsTr(
+            "Stats")]
     signal closeRequested
 
     color: Theme.surface
@@ -88,7 +88,7 @@ Rectangle {
 
         AppSegmentedControl {
             Layout.fillWidth: true
-            Layout.preferredHeight: Theme.touch ? Theme.controlHeight + 6 : 36
+            Layout.preferredHeight: Theme.touch ? Theme.segmentedHeight : 36
             Layout.leftMargin: Theme.gapSmall
             Layout.rightMargin: Theme.gapSmall
             Layout.topMargin: Theme.gapSmall
@@ -140,10 +140,10 @@ Rectangle {
             enabled: root.controller && root.controller.hasChunk && root.controller.dirty
             onClicked: {
                 if (!root.controller.saveToCache()) {
-                    Notifications.error(qsTr("Could not save chunk editor changes."))
+                    App.notifications.error(qsTr("Save failed"))
                     return
                 }
-                Notifications.info(qsTr("Chunk changes saved in memory. Save the world to write them to disk."))
+                App.notifications.info(qsTr("Save successful"))
             }
         }
     }
@@ -190,60 +190,11 @@ Rectangle {
         id: nbtPage
         property var document
         property string itemFilter
-        property string pendingImportPath
 
-        function performImport(path) {
-            if (!nbtPage.document || !nbtPage.document.importFile(path))
-                Notifications.error(nbtPage.document ? nbtPage.document.lastError : qsTr("No NBT document is open."))
-        }
-
-        FileDialog {
-            id: importDialog
-            title: qsTr("Import NBT file")
-            fileMode: FileDialog.OpenFile
-            nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-            onAccepted: {
-                const path = String(selectedFile)
-                if (nbtPage.document && nbtPage.document.hasDocument && !nbtPage.document.isEmpty()) {
-                    nbtPage.pendingImportPath = path
-                    importConfirmDialog.open()
-                } else if (nbtPage.document) {
-                    nbtPage.performImport(path)
-                }
-            }
-        }
-        FileDialog {
-            id: exportDialog
-            title: qsTr("Export NBT file")
-            fileMode: FileDialog.SaveFile
-            defaultSuffix: "nbt"
-            nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-            onAccepted: {
-                if (!nbtPage.document.exportFile(String(selectedFile)))
-                    Notifications.error(nbtPage.document.lastError)
-            }
-        }
-        ConfirmDialog {
-            id: importConfirmDialog
-            title: qsTr("Replace NBT records")
-            message: qsTr("Importing will replace the current NBT records. Unsaved changes will be lost.")
-            confirmText: qsTr("Import")
-            danger: true
-            onConfirmed: {
-                const path = nbtPage.pendingImportPath
-                nbtPage.pendingImportPath = ""
-                nbtPage.performImport(path)
-            }
-            onCancelled: nbtPage.pendingImportPath = ""
-        }
-        ConfirmDialog {
-            id: clearConfirmDialog
-            title: qsTr("Clear all records")
-            message: qsTr("Remove all records from this NBT section? This cannot be undone.")
-            confirmText: qsTr("Clear")
-            danger: true
-            onConfirmed: if (!nbtPage.document.clearContents())
-                             Notifications.error(nbtPage.document.lastError)
+        NbtDocumentActions {
+            id: documentActions
+            document: nbtPage.document
+            allowSave: false
         }
 
         ColumnLayout {
@@ -258,9 +209,10 @@ Rectangle {
                 allowAddRemove: true
                 showSearch: true
                 searchText: nbtPage.itemFilter
-                onImportRequested: importDialog.open()
-                onExportRequested: exportDialog.open()
-                onClearRequested: clearConfirmDialog.open()
+                onImportRequested: documentActions.openImport()
+                onExportRequested: documentActions.openExport()
+                onExportCurrentRequested: documentActions.openExportCurrent()
+                onClearRequested: documentActions.openClear()
                 onSearchTextEdited: function (text) {
                     nbtPage.itemFilter = text
                 }

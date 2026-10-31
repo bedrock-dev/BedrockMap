@@ -48,6 +48,8 @@ class NbtTreeModel : public QAbstractListModel {
     [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
     void setRoot(bl::nbt::compound_tag* root);
+    /// Insert or replace a top-level tag and notify the owning document of the edit.
+    bool setRootChild(std::unique_ptr<bl::nbt::abstract_tag> tag);
     [[nodiscard]] bl::nbt::compound_tag* root() const { return root_; }
     [[nodiscard]] bool hexMode() const { return hex_mode_; }
     [[nodiscard]] bool editable() const { return editable_; }

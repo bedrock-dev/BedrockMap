@@ -1,4 +1,5 @@
 import BedrockMap 1.0
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Dialogs
@@ -8,6 +9,7 @@ import "controls"
 
 Window {
     id: window
+    readonly property Navigation navigation: Navigation {}
     visible: true
     readonly property bool touchUi: Theme.touch
     readonly property bool compactLayout: Theme.compact
@@ -39,17 +41,9 @@ Window {
     property var pendingCloseSession: null
     property bool closingAfterDirty: false
     onWidthChanged: Theme.windowWidth = width
-    onActiveChanged: {
-        // Android returns here after the all-files access settings page. The
-        // initial scan may have run before the grant, so rescan the sources.
-        if (active && Qt.platform.os === "android" && Worlds) {
-            Settings.refreshWorldSources()
-            Worlds.refresh()
-        }
-    }
     Component.onCompleted: {
         Theme.windowWidth = width
-        sidebarCollapsed = Settings.collapseSidebarOnStartup
+        sidebarCollapsed = App.settings.collapseSidebarOnStartup
     }
     property int currentPage: App.currentPage
     property bool workspaceOpen: App.workspaceOpen
@@ -59,23 +53,26 @@ Window {
     readonly property var sessionHostItem: sessionHostLazy.item
     readonly property bool structureSessionActive: !!activeSession && activeSession.kind === "mcstructure"
     readonly property bool nbtSessionActive: !!activeSession && activeSession.kind === "nbt"
-    readonly property bool workspaceChildOpen: workspaceOpen && !!sessionHostItem
-                                               && sessionHostItem.internalPageOpen
+    readonly property bool workspaceChildOpen: workspaceOpen && !!sessionHostItem && sessionHostItem.internalPageOpen
     readonly property bool childTitleBarVisible: compactLayout && workspaceChildOpen
     onChildTitleBarVisibleChanged: {
         if (childTitleBarVisible && workspaceSectionMenu)
             workspaceSectionMenu.close()
     }
-    readonly property bool canNavigateBack: compactLayout && (workspaceOpen
-                                                              || (!workspaceOpen && currentPage === Navigation.pageLogs))
+    readonly property bool canNavigateBack: (!workspaceOpen && currentPage === window.navigation.pagePermissions) || (
+                                                compactLayout && (workspaceOpen || currentPage
+                                                                  === window.navigation.pageLogs))
     readonly property string shellTitle: {
         if (workspaceOpen) {
             return activeSession ? activeSession.title + (activeSession.dirty ? " *" : "") : qsTr("Open world")
         }
-        return Navigation.pages[currentPage].title
+        return currentPage === window.navigation.pagePermissions ? qsTr("Permissions") :
+                                                                   window.navigation.pages[currentPage].title
     }
-    readonly property var workspaceSections: activeSession && activeSession.kind === "world" && activeSession.globalData ? activeSession.globalData.sections : []
-    readonly property int workspaceSection: activeSession && activeSession.kind === "world" ? activeSession.workspaceSection : 0
+    readonly property var workspaceSections: activeSession && activeSession.kind === "world"
+                                             && activeSession.globalData ? activeSession.globalData.sections : []
+    readonly property int workspaceSection: activeSession && activeSession.kind === "world"
+                                            ? activeSession.workspaceSection : 0
     readonly property string workspaceSectionTitle: {
         if (workspaceSection <= 0)
             return "Map"
@@ -104,7 +101,7 @@ Window {
     }
 
     Shortcut {
-        sequence: StandardKey.Back
+        sequences: [StandardKey.Back]
         enabled: window.canNavigateBack
         onActivated: window.navigateBack()
     }
@@ -126,11 +123,11 @@ Window {
         if (workspaceOpen) {
             if (sessionHostItem && sessionHostItem.goBack())
                 return
-            App.navigateToPage(Navigation.pageSessions)
+            App.navigateToPage(window.navigation.pageSessions)
             return
         }
-        if (currentPage === Navigation.pageLogs)
-            App.navigateToPage(Navigation.pageTools)
+        if (currentPage === window.navigation.pageLogs || currentPage === window.navigation.pagePermissions)
+            App.navigateToPage(window.navigation.pageTools)
     }
     /// Worlds page: the folder picker lives here so the header button, the empty
     /// state card and a dropped folder all take the same path. App
@@ -141,10 +138,10 @@ Window {
         if (!App.importingWorld)
             folderDialog.open()
     }
-    function openWorldFolder(path) {
-        if (path.length === 0)
+    function openWorldFolder(url) {
+        if (!url || url.toString().length === 0)
             return
-        App.openWorldFolder(path)
+        App.openWorldFolder(url)
     }
     function cancelPendingClose() {
         if (!window.pendingCloseSession)
@@ -181,14 +178,13 @@ Window {
         // fully closed, so the next prompt cannot race the current one.
         closeWorldDialog.close()
     }
-    FolderDialog {
+    FolderUrlDialog {
         id: folderDialog
         title: qsTr("Open world folder")
-        // Start at the Minecraft Bedrock worlds folder.
-        currentFolder: App ? App.defaultWorldFolderUrl() : ""
-        onAccepted: window.openWorldFolder(String(selectedFolder))
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: window.openWorldFolder(selectedUrl)
     }
-    FileDialog {
+    FileUrlDialog {
         id: nbtCloseSaveDialog
         title: qsTr("Save NBT file")
         fileMode: FileDialog.SaveFile
@@ -198,49 +194,52 @@ Window {
             const session = window.pendingCloseSession
             if (!session || !session.document)
                 return
-            if (session.document.saveAs(String(selectedFile)))
+            if (session.document.saveAs(selectedUrl))
                 window.completePendingSessionClose()
             else
-                Notifications.error(session.document.lastError)
+                App.notifications.error(qsTr("Save failed"))
         }
     }
 
     AppMenu {
         id: workspaceSectionMenu
-        readonly property real sectionItemHeight: Theme.touch ? Theme.touchTarget : 30
+        readonly property real sectionItemHeight: Theme.menuItemHeight
         Repeater {
             model: {
-                const items = [{
-                    title: "Map",
-                    iconName: "map",
-                    count: 0,
-                    dirty: false,
-                    section: 0,
-                    showCount: false
-                }]
+                const items = [
+                          {
+                              title: "Map",
+                              iconName: "map",
+                              count: 0,
+                              dirty: false,
+                              section: 0,
+                              showCount: false
+                          }
+                      ]
                 for (let i = 0; i < window.workspaceSections.length; ++i) {
                     const section = window.workspaceSections[i]
                     items.push({
-                        title: section.title,
-                        iconName: section.iconName ? section.iconName : "nbt_editor",
-                        count: section.count,
-                        dirty: section.dirty,
-                        section: i + 1,
-                        showCount: true
-                    })
+                                   title: section.title,
+                                   iconName: section.iconName ? section.iconName : "nbt_editor",
+                                   count: section.count,
+                                   dirty: section.dirty,
+                                   section: i + 1,
+                                   showCount: true
+                               })
                 }
                 return items
             }
             delegate: AppMenuItem {
                 required property var modelData
-                text: modelData.title + (modelData.showCount ? " " + modelData.count : "")
-                      + (modelData.dirty ? " *" : "")
+                text: modelData.title + (modelData.showCount ? " " + modelData.count : "") + (modelData.dirty ? " *" :
+                                                                                                                "")
                 iconName: modelData.iconName
                 implicitHeight: workspaceSectionMenu.sectionItemHeight
                 height: workspaceSectionMenu.sectionItemHeight
                 enabled: !window.childTitleBarVisible
-                onTriggered: if (window.activeSession && window.activeSession.kind === "world" && !window.childTitleBarVisible)
-                    window.activeSession.workspaceSection = modelData.section
+                onTriggered: if (window.activeSession && window.activeSession.kind === "world" &&
+                                     !window.childTitleBarVisible)
+                                 window.activeSession.workspaceSection = modelData.section
             }
         }
     }
@@ -253,7 +252,8 @@ Window {
         }
     }
     Connections {
-        target: window.pendingCloseSession && window.pendingCloseSession.kind === "world" ? window.pendingCloseSession : null
+        target: window.pendingCloseSession && window.pendingCloseSession.kind === "world" ? window.pendingCloseSession :
+                                                                                            null
         function onSaved() {
             if (window.pendingCloseSession)
                 window.completePendingSessionClose()
@@ -262,7 +262,6 @@ Window {
             window.pendingCloseSession = null
             window.closingAfterDirty = false
             closeWorldDialog.close()
-            Notifications.error(qsTr("Could not save world"), "", message)
         }
     }
     onClosing: function (close) {
@@ -346,7 +345,8 @@ Window {
                 }
                 AppButton {
                     primary: true
-                    text: window.pendingCloseSession && window.pendingCloseSession.saving ? qsTr("Saving…") : qsTr("Save")
+                    text: window.pendingCloseSession && window.pendingCloseSession.saving ? qsTr("Saving…") : qsTr(
+                                                                                                "Save")
                     enabled: window.pendingCloseSession && !window.pendingCloseSession.saving
                     onClicked: {
                         const session = window.pendingCloseSession
@@ -360,11 +360,12 @@ Window {
                             if (session.commit())
                                 window.completePendingSessionClose()
                             else if (session.document)
-                                Notifications.error(session.document.lastError)
+                                App.notifications.error(qsTr("Save failed"))
                             return
                         }
                         if (!session.commit())
-                            Notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
+                            App.notifications.warning(qsTr(
+                                                          "Wait for the current map operation to finish before saving."))
                     }
                 }
             }
@@ -378,18 +379,19 @@ Window {
         confirmText: qsTr("Reset")
         danger: true
         onConfirmed: {
-            Settings.reset()
-            Notifications.info(qsTr("Reset to defaults, not saved yet"))
+            App.settings.reset()
+            App.notifications.info(qsTr("Reset to defaults, not saved yet"))
         }
     }
     ConfirmDialog {
-        id: safWorldCopyDialog
-        property string sourcePath
-        title: qsTr("SAF folder")
-        message: qsTr("This folder cannot be opened in place. To edit it, BedrockMap will copy the save to its internal storage. The original will not be modified. Continue?")
+        id: worldCopyDialog
+        property url sourcePath
+        title: qsTr("Copy world to internal storage")
+        message: qsTr(
+                     "This world cannot be edited in place with the current access permissions. Copy it to internal storage and open the copy? Changes will be saved only to the internal copy. Close Minecraft before copying.")
         confirmText: qsTr("Copy and open")
         onConfirmed: {
-            App.copySafWorld(sourcePath)
+            App.copyWorldToInternal(sourcePath)
             sourcePath = ""
         }
         onCancelled: sourcePath = ""
@@ -398,46 +400,44 @@ Window {
     // The world scan is the last failure path that had nowhere to show up: it
     // runs in the background while the page looks perfectly normal.
     Connections {
-        target: Worlds
+        target: App.worlds
         function onErrorChanged() {
-            if (Worlds && Worlds.error.length > 0)
-                Notifications.error(Worlds.error)
+            if (App.worlds && App.worlds.error.length > 0)
+                App.notifications.error(App.worlds.error)
         }
     }
     Connections {
-        target: Settings
+        target: App.settings
+        function onLanguageChanged() {
+            window.navigation.retranslate()
+        }
         function onSaved() {
-            if (Worlds) Worlds.refresh()
+            App.notifications.info(qsTr("Save successful"))
+            if (App.worlds)
+                App.worlds.refresh()
         }
     }
     Connections {
         target: App
-        function onSafWorldCopyRequested(path) {
-            safWorldCopyDialog.sourcePath = path
-            safWorldCopyDialog.open()
-        }
-    }
-    Connections {
-        target: App
-        function onWorldSourceDiscovered(path) {
-            Settings.addCustomWorldPath(path)
-            Settings.saveWorldSources()
+        function onWorldCopyRequested(path) {
+            worldCopyDialog.sourcePath = path
+            worldCopyDialog.open()
         }
     }
     Connections {
         target: Qt.application
         function onStateChanged() {
-            // The storage permission dialog/settings page also pauses and
-            // resumes the app; refresh sources once it is safe again.
-            if (Qt.application.state === Qt.ApplicationActive && Qt.platform.os === "android" && Worlds) {
-                Settings.refreshWorldSources()
-                Worlds.refresh()
+            // Returning to the foreground updates permission indicators only.
+            // The user refreshes worlds explicitly with the refresh button.
+            if (Qt.application.state === Qt.ApplicationActive && Qt.platform.os === "android") {
+                App.refreshPermissions()
             }
         }
     }
 
     AppSidebar {
         id: sidebar
+        navigation: window.navigation
         visible: Theme.showSidebar
         width: window.sidebarCollapsed ? Theme.sidebarCollapsedWidth : Theme.sidebarWidth
         collapsed: window.sidebarCollapsed
@@ -447,11 +447,12 @@ Window {
         anchors.leftMargin: window.safeLeft
         anchors.topMargin: window.safeTop
         anchors.bottomMargin: window.safeBottom
-        currentIndex: window.workspaceOpen ? -1 : window.currentPage
+        currentIndex: window.workspaceOpen ? -1 : window.currentPage === window.navigation.pagePermissions
+                                             ? window.navigation.pageTools : window.currentPage
         darkMode: Theme.dark
         onToggleCollapsed: window.sidebarCollapsed = !window.sidebarCollapsed
         // Preview the explicit opposite mode; Save settings persists it.
-        onToggleTheme: Settings.colorTheme = Theme.dark ? "light" : "dark"
+        onToggleTheme: App.settings.colorTheme = Theme.dark ? "light" : "dark"
         onNavigate: index => App.navigateToPage(index)
     }
 
@@ -475,12 +476,13 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottomMargin: 18
             width: Math.min(420, Math.max(240, parent.width - 24))
-            center: Notifications
+            center: App.notifications
         }
 
         Rectangle {
             id: topbar
-            visible: Theme.showTopbar && !window.nbtSessionActive && !(window.workspaceOpen && window.structureSessionActive)
+            visible: Theme.showTopbar && !window.nbtSessionActive && !(window.workspaceOpen
+                                                                       && window.structureSessionActive)
             height: window.safeTop + Theme.topbarHeight
             anchors.top: parent.top
             anchors.left: parent.left
@@ -506,44 +508,53 @@ Window {
 
                     actions: [
                         AppIconButton {
-                            visible: window.currentPage === Navigation.pageSettings && !window.workspaceOpen
+                            visible: window.currentPage === window.navigation.pageSettings && !window.workspaceOpen
                             iconName: "refresh"
                             label: qsTr("Reset settings")
                             buttonSize: 34
                             onClicked: resetSettingsDialog.open()
                         },
                         AppIconButton {
-                            visible: window.compactLayout && window.currentPage === Navigation.pageSettings && !window.workspaceOpen
+                            visible: window.compactLayout && window.currentPage === window.navigation.pageSettings &&
+                                     !window.workspaceOpen
                             iconName: "save"
                             label: qsTr("Save settings")
                             buttonSize: 34
-                            onClicked: Settings.save()
+                            onClicked: App.settings.save()
                         },
                         AppButton {
                             id: workspaceSectionButton
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession && window.activeSession.kind === "world"
+                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
+                                     && window.activeSession.kind === "world"
                             compact: window.compactLayout
                             iconName: window.workspaceSectionIcon
-                            text: window.workspaceSectionTitle + (window.workspaceSectionCount > 0 ? " "
-                                                                                                + window.workspaceSectionCount : "")
-                                  + (window.workspaceSectionDirty ? " *" : "") + "  ▾"
-                            onClicked: workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width - workspaceSectionMenu.width, workspaceSectionButton.height + 4)
+                            text: window.workspaceSectionTitle + (window.workspaceSectionCount > 0 ? " " + window.workspaceSectionCount :
+                                                                                                     "") + (window.workspaceSectionDirty
+                                                                                                            ? " *" : "")
+                                  + "  ▾"
+                            onClicked: workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
+                                                                  - workspaceSectionMenu.width,
+                                                                  workspaceSectionButton.height + 4)
                         },
                         AppIconButton {
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession && window.activeSession.kind === "world"
+                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
+                                     && window.activeSession.kind === "world"
                             iconName: window.activeSession && !window.activeSession.saving ? "save" : ""
                             icon: window.activeSession && window.activeSession.saving ? "…" : ""
                             label: qsTr("Save world")
                             dirty: !!window.activeSession && window.activeSession.dirty
                             buttonSize: 34
-                            enabled: !!window.activeSession && window.activeSession.kind === "world" && window.activeSession.canSave
+                            enabled: !!window.activeSession && window.activeSession.kind === "world"
+                                     && window.activeSession.canSave
                             onClicked: {
                                 if (window.activeSession && !window.activeSession.commit())
-                                    Notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
+                                    App.notifications.warning(qsTr(
+                                                                  "Wait for the current map operation to finish before saving."))
                             }
                         },
                         AppIconButton {
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession && window.activeSession.kind === "world"
+                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
+                                     && window.activeSession.kind === "world"
                             iconName: "exit"
                             label: qsTr("Close world")
                             danger: true
@@ -574,28 +585,28 @@ Window {
             anchors.leftMargin: sidebar.visible ? 0 : window.safeLeft
             anchors.right: parent.right
             anchors.rightMargin: window.safeRight
-            currentIndex: window.workspaceOpen ? Navigation.pageWorkspace : window.currentPage
+            currentIndex: window.workspaceOpen ? window.navigation.pageWorkspace : window.currentPage
 
             // Pages stay loaded after their first visit, so switching sections
             // no longer discards table modes, filters or the map scene graph.
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === Navigation.pageWorlds
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds
                 sourceComponent: worldsPage
             }
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === Navigation.pageSessions
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageSessions
                 sourceComponent: openWorldsPage
             }
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === Navigation.pageTools
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageTools
                 sourceComponent: toolsPage
             }
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === Navigation.pageSettings
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageSettings
                 sourceComponent: settingsPage
             }
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === Navigation.pageLogs
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageLogs
                 sourceComponent: logsPage
             }
             LazyPage {
@@ -603,11 +614,16 @@ Window {
                 pageActive: window.workspaceOpen
                 sourceComponent: sessionHostPage
             }
+            LazyPage {
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pagePermissions
+                sourceComponent: permissionsPage
+            }
         }
     }
 
     BottomNavigation {
         id: mobileNav
+        navigation: window.navigation
         visible: Theme.showBottomNavigation
         height: Theme.bottomNavigationHeight + window.safeBottom
         bottomInset: window.safeBottom
@@ -616,11 +632,12 @@ Window {
         anchors.right: parent.right
         anchors.rightMargin: window.safeRight
         anchors.bottom: parent.bottom
-        currentIndex: window.workspaceOpen ? -1 : window.currentPage
+        currentIndex: window.workspaceOpen ? -1 : window.currentPage === window.navigation.pagePermissions
+                                             ? window.navigation.pageTools : window.currentPage
         onNavigate: index => App.navigateToPage(index)
     }
 
-    // Open dropped world folders and standalone structure files.
+    // Open dropped world folders, world archives and standalone structure files.
     DropArea {
         id: worldDrop
         anchors.fill: parent
@@ -628,17 +645,22 @@ Window {
             if (!drop.hasUrls)
                 return
             for (let i = 0; i < drop.urls.length; ++i) {
-                const path = String(drop.urls[i])
-                if (path.toLowerCase().endsWith(".mcstructure")) {
+                const path = drop.urls[i]
+                if (path.toString().toLowerCase().endsWith(".mcworld")) {
+                    App.openMcworldFile(path)
+                    return
+                }
+                if (path.toString().toLowerCase().endsWith(".mcstructure")) {
                     App.openMcstructureFile(path)
                     return
                 }
                 if (App.isWorldFolder(path)) {
-                    window.openWorld(path, "")
+                    window.openWorld(path.toLocalFile(), "")
                     return
                 }
             }
-            Notifications.warning(qsTr("That drop is not a Bedrock world folder or mcstructure file."))
+            App.notifications.warning(qsTr(
+                                          "That drop is not a Bedrock world folder, mcworld archive or mcstructure file."))
         }
         Rectangle {
             anchors.fill: parent
@@ -675,12 +697,12 @@ Window {
     }
     Component {
         id: openWorldsPage
-        OpenWorldsPage {
-        }
+        OpenWorldsPage {}
     }
     Component {
         id: toolsPage
         ToolsPage {
+            navigation: window.navigation
         }
     }
     Component {
@@ -689,16 +711,19 @@ Window {
             activeSession: window.activeSession
             currentIndex: window.workspaceIndex
             onCloseRequested: index => App.closeSession(index)
+            onBackRequested: window.navigateBack()
         }
     }
     Component {
         id: settingsPage
-        SettingsPage {
-        }
+        SettingsPage {}
     }
     Component {
         id: logsPage
-        LogPage {
-        }
+        LogPage {}
+    }
+    Component {
+        id: permissionsPage
+        PermissionsPage {}
     }
 }

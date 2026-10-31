@@ -5,12 +5,31 @@ Rectangle {
     id: root
     property var options: []
     property int currentIndex: 0
+    property bool fitLabels: false
     readonly property int optionCount: options.length
-    readonly property real buttonWidth: optionCount > 0 ? Math.max(48, (width - 6 - 2 * Math.max(0, optionCount - 1))
-                                                                   / optionCount) : 0
+    readonly property real buttonWidth: optionCount > 0 ? Math.max(Theme.ui(48), (width - Theme.segmentedPadding * 2
+                                                                                  - Theme.ui(2) * Math.max(0,
+                                                                                                           optionCount
+                                                                                                           - 1)) / optionCount) :
+                                                          0
     signal activated(int index)
 
-    implicitHeight: Theme.controlHeight + 6
+    function ensureCurrentVisible() {
+        if (!fitLabels)
+            return
+        const button = optionButtons.itemAt(currentIndex)
+        if (!button)
+            return
+        const targetX = button.x < tabFlick.contentX ? button.x : Math.max(tabFlick.contentX, button.x + button.width
+                                                                           - tabFlick.width)
+        tabFlick.contentX = Math.max(0, Math.min(targetX, tabFlick.contentWidth - tabFlick.width))
+    }
+    onCurrentIndexChanged: Qt.callLater(ensureCurrentVisible)
+    onOptionsChanged: Qt.callLater(ensureCurrentVisible)
+    onWidthChanged: Qt.callLater(ensureCurrentVisible)
+
+    implicitHeight: Theme.segmentedHeight
+    implicitWidth: fitLabels ? row.implicitWidth + Theme.segmentedPadding * 2 : 0
     radius: Theme.radiusControl
     color: Theme.surfaceAlt
     border.width: 1
@@ -20,7 +39,10 @@ Rectangle {
     Flickable {
         id: tabFlick
         anchors.fill: parent
-        anchors.margins: 3
+        anchors.leftMargin: Theme.segmentedPadding
+        anchors.rightMargin: Theme.segmentedPadding
+        anchors.topMargin: Theme.touch ? 0 : Theme.segmentedPadding
+        anchors.bottomMargin: Theme.touch ? 0 : Theme.segmentedPadding
         contentWidth: row.width
         contentHeight: height
         clip: true
@@ -50,8 +72,9 @@ Rectangle {
         Row {
             id: row
             height: parent.height
-            spacing: 2
+            spacing: Theme.ui(2)
             Repeater {
+                id: optionButtons
                 model: root.options
                 delegate: AppButton {
                     required property string modelData
@@ -61,8 +84,9 @@ Rectangle {
                     ghost: true
                     bordered: false
                     active: root.currentIndex === index
-                    width: root.buttonWidth
+                    width: root.fitLabels ? implicitWidth : root.buttonWidth
                     height: row.height
+                    visualHeight: Theme.touch ? height - Theme.segmentedPadding * 2 : height
                     onClicked: root.activated(index)
                 }
             }

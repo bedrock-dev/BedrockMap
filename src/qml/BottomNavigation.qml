@@ -4,6 +4,7 @@ import "controls"
 
 Rectangle {
     id: root
+    required property Navigation navigation
     property int currentIndex: 0
     property real bottomInset: 0
     signal navigate(int index)
@@ -14,16 +15,16 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.leftMargin: 6
-        anchors.rightMargin: 6
-        anchors.topMargin: 6
+        anchors.leftMargin: Theme.ui(6)
+        anchors.rightMargin: Theme.ui(6)
+        anchors.topMargin: Theme.ui(6)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 6 + root.bottomInset
+        anchors.bottomMargin: Theme.ui(6) + root.bottomInset
         Repeater {
-            model: Navigation.bottomPages
+            model: root.navigation.bottomPages
             delegate: Item {
                 required property var modelData
-                width: parent.width / Navigation.bottomPages.length
+                width: parent.width / root.navigation.bottomPages.length
                 height: parent.height
                 AppNavigationButton {
                     iconName: modelData.icon

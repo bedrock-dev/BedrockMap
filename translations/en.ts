@@ -75,67 +75,229 @@
 <context>
     <name>AppController</name>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>World import failed.</source>
-        <translation>World import failed.</translation>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Directory nesting is too deep.</source>
+        <translation>Directory nesting is too deep.</translation>
     </message>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Invalid file name in world directory.</source>
+        <translation>Invalid file name in world directory.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Unsupported file in world directory: %1</source>
+        <translation>Unsupported file in world directory: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The world is too large for this ZIP format (2 GiB or 65534 entries).</source>
+        <translation>The world is too large for this ZIP format (2 GiB or 65534 entries).</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Could not write the world archive.</source>
+        <translation>Could not write the world archive.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot read world file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The world changed during export. Close Minecraft and try again.</source>
+        <translation>The world changed during export. Close Minecraft and try again.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot create import directory: %1</source>
+        <translation>Cannot create import directory: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The source world changed while copying. Close Minecraft and try again.</source>
+        <translation>The source world changed while copying. Close Minecraft and try again.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Could not delete the world completely. Some files may remain.</source>
+        <translation>Could not delete the world completely. Some files may remain.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot access the source world directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The world archive is invalid or unsupported.</source>
+        <translation>The world archive is invalid or unsupported.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The world archive contains an unsupported or damaged file: %1</source>
+        <translation>The world archive contains an unsupported or damaged file: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Save the archive outside the source world folder.</source>
+        <translation>Save the archive outside the source world folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Close Minecraft and other programs using this world before exporting.
+%1</source>
+        <translation>Close Minecraft and other programs using this world before exporting.
+%1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot create the world import directory.</source>
         <translation>Cannot create the world import directory.</translation>
     </message>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Cannot access the selected Android folder.</source>
-        <translation>Cannot access the selected Android folder.</translation>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The selected directory must contain a valid level.dat file and a db directory.</source>
+        <translation>The selected directory must contain a valid level.dat file and a db directory.</translation>
     </message>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The internal copy already exists and cannot be replaced.</source>
+        <translation>The internal copy already exists and cannot be replaced.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot remove the incomplete internal copy.</source>
+        <translation>Cannot remove the incomplete internal copy.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The world archive does not contain a valid level.dat file and db directory.</source>
+        <translation>The world archive does not contain a valid level.dat file and db directory.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot save the imported world.</source>
         <translation>Cannot save the imported world.</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
-        <source>That folder is not a Bedrock world (no level.dat).</source>
-        <translation>That folder is not a Bedrock world (no level.dat).</translation>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Save successful</source>
+        <translation>Save successful</translation>
     </message>
     <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Import failed</source>
+        <translation>Import failed</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Wait for the current world deletion to finish.</source>
+        <translation>Wait for the current world deletion to finish.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Wait for the current world export to finish.</source>
+        <translation>Wait for the current world export to finish.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Wait for the current world import to finish.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wait for the current world import to finish.</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Only SAF folders can be copied.</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Only worlds in the app&apos;s internal storage can be deleted.</source>
+        <translation>Only worlds in the app&apos;s internal storage can be deleted.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Close the world and any files inside it before deleting it.</source>
+        <translation>Close the world and any files inside it before deleting it.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Deleting world...</source>
+        <translation>Deleting world...</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>World deleted.</source>
+        <translation>World deleted.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>World deletion failed.</source>
+        <translation>World deletion failed.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Import successful</source>
+        <translation>Import successful</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Close the world and any files inside it before exporting it.</source>
+        <translation>Close the world and any files inside it before exporting it.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Exporting world...</source>
+        <translation>Exporting world...</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Copying the world to internal storage...</source>
-        <translation type="unfinished"></translation>
+        <translation>Copying the world to internal storage...</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
-        <source>World copied. Changes are saved to the internal copy.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Content folders are only supported on Android.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>The selected directory must contain level.dat and db.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Cannot replace the previous imported world.</source>
-        <translation type="unfinished"></translation>
+        <source>Extracting the world to internal storage...</source>
+        <translation>Extracting the world to internal storage...</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -199,12 +361,91 @@
     </message>
 </context>
 <context>
-    <name>ChunkEditorController</name>
+    <name>BlockVolumeController</name>
     <message>
-        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <source>Clipboard</source>
+        <translation>Clipboard</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not copy the selected blocks.</source>
+        <translation>Could not copy the selected blocks.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>The clipboard does not contain a copied structure.</source>
+        <translation>The clipboard does not contain a copied structure.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>The clipboard is not available.</source>
+        <translation>The clipboard is not available.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not import the structure.</source>
+        <translation>Could not import the structure.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not read the import structure.</source>
+        <translation>Could not read the import structure.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not read the import structure: %1</source>
+        <translation>Could not read the import structure: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not build the block volume.</source>
+        <translation>Could not build the block volume.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not build the block volume: %1</source>
+        <translation>Could not build the block volume: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not delete the selected blocks.</source>
+        <translation>Could not delete the selected blocks.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
         <source>No terrain was found in the current area.</source>
         <translation>No terrain was found in the current area.</translation>
     </message>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
+        <source>The world is not open.</source>
+        <translation>The world is not open.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <source>Could not read the structure NBT.</source>
+        <translation>Could not read the structure NBT.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <source>Invalid or unsupported mcstructure file.</source>
+        <translation>Invalid or unsupported mcstructure file.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <source>Could not read the structure: %1</source>
+        <translation>Could not read the structure: %1</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <source>The world is not open.</source>
@@ -245,7 +486,6 @@
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
-        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <source>Entities</source>
         <translation>Entities</translation>
     </message>
@@ -253,12 +493,10 @@
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
-        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <source>Block entities</source>
         <translation>Block entities</translation>
     </message>
     <message>
-        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
@@ -305,6 +543,16 @@
     </message>
     <message>
         <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <source>Save successful</source>
+        <translation>Save successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
         <source>3D</source>
         <translation>3D</translation>
     </message>
@@ -340,73 +588,6 @@
     </message>
     <message>
         <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Could not save chunk editor changes.</source>
-        <translation>Could not save chunk editor changes.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Chunk changes saved in memory. Save the world to write them to disk.</source>
-        <translation>Chunk changes saved in memory. Save the world to write them to disk.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>No NBT document is open.</source>
-        <translation>No NBT document is open.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Import NBT file</source>
-        <translation>Import NBT file</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation>NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>All files (*)</source>
-        <translation>All files (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Export NBT file</source>
-        <translation>Export NBT file</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Replace NBT records</source>
-        <translation>Replace NBT records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Importing will replace the current NBT records. Unsaved changes will be lost.</source>
-        <translation>Importing will replace the current NBT records. Unsaved changes will be lost.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Import</source>
-        <translation>Import</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Clear all records</source>
-        <translation>Clear all records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Remove all records from this NBT section? This cannot be undone.</source>
-        <translation>Remove all records from this NBT section? This cannot be undone.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>Clear</source>
-        <translation>Clear</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
         <source>Records</source>
         <translation>Records</translation>
     </message>
@@ -435,8 +616,13 @@
     </message>
     <message>
         <location filename="../src/qml/ChunkStatsPage.qml"/>
-        <source>Could not export binary data.</source>
-        <translation>Could not export binary data.</translation>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ChunkStatsPage.qml"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
     </message>
     <message>
         <location filename="../src/qml/ChunkStatsPage.qml"/>
@@ -526,68 +712,76 @@
     </message>
 </context>
 <context>
+    <name>GlobalDataController</name>
+    <message>
+        <location filename="../src/controller/globaldatacontroller.cpp"/>
+        <source>%1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>GlobalNbtPage</name>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>No NBT document is open.</source>
-        <translation type="unfinished">No NBT document is open.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Import NBT file</source>
-        <translation type="unfinished">Import NBT file</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>All files (*)</source>
-        <translation type="unfinished">All files (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Export NBT file</source>
-        <translation type="unfinished">Export NBT file</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Replace NBT records</source>
-        <translation type="unfinished">Replace NBT records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Importing will replace the current NBT records. Unsaved changes will be lost.</source>
-        <translation type="unfinished">Importing will replace the current NBT records. Unsaved changes will be lost.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">Import</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Clear all records</source>
-        <translation type="unfinished">Clear all records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Remove all records from this NBT section? This cannot be undone.</source>
-        <translation type="unfinished">Remove all records from this NBT section? This cannot be undone.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Clear</source>
-        <translation type="unfinished">Clear</translation>
-    </message>
     <message>
         <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Records</source>
         <translation type="unfinished">Records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>No map image available</source>
+        <translation>No map image available</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Save image</source>
+        <translation>Save image</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>PNG images (*.png)</source>
+        <translation>PNG images (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Save successful</source>
+        <translation>Save successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Modify image</source>
+        <translation>Modify image</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Images (*.png *.jpg *.jpeg *.bmp *.webp)</source>
+        <translation>Images (*.png *.jpg *.jpeg *.bmp *.webp)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>All files (*)</source>
+        <translation>All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Import successful</source>
+        <translation>Import successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Import failed</source>
+        <translation>Import failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/GlobalNbtPage.qml"/>
+        <source>Lock map image</source>
+        <translation>Lock map image</translation>
     </message>
 </context>
 <context>
@@ -603,11 +797,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/model/logmodel.cpp"/>
-        <location filename="../src/model/logmodel.cpp"/>
-        <location filename="../src/model/logmodel.cpp"/>
-        <location filename="../src/model/logmodel.cpp"/>
-        <location filename="../src/model/logmodel.cpp"/>
         <location filename="../src/model/logmodel.cpp"/>
         <source>Could not save logs: %1</source>
         <translation type="unfinished"></translation>
@@ -627,12 +816,20 @@
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/LogPage.qml"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
+    </message>
+    <message>
         <location filename="../src/qml/LogPage.qml"/>
         <source>Copy</source>
         <translation type="unfinished">Copy</translation>
     </message>
     <message>
-        <location filename="../src/qml/LogPage.qml"/>
         <location filename="../src/qml/LogPage.qml"/>
         <source>Copy displayed logs</source>
         <translation type="unfinished"></translation>
@@ -664,8 +861,8 @@
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
-        <source>Auto-scroll</source>
-        <translation type="unfinished"></translation>
+        <source>Show prefix</source>
+        <translation>Show prefix</translation>
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
@@ -712,6 +909,11 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
+        <source>Permissions</source>
+        <translation>Permissions</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
         <source>Open world folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -729,11 +931,6 @@
         <location filename="../src/qml/Main.qml"/>
         <source>All files (*)</source>
         <translation type="unfinished">All files (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Could not save world</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -783,18 +980,8 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>SAF folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>This folder cannot be opened in place. To edit it, BedrockMap will copy the save to its internal storage. The original will not be modified. Continue?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
         <source>Copy and open</source>
-        <translation type="unfinished"></translation>
+        <translation>Copy and open</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -808,13 +995,19 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>That drop is not a Bedrock world folder or mcstructure file.</source>
-        <translation>That drop is not a Bedrock world folder or mcstructure file.</translation>
+        <source>That drop is not a Bedrock world folder, mcworld archive or mcstructure file.</source>
+        <translation>That drop is not a Bedrock world folder, mcworld archive or mcstructure file.</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
         <source>Open world</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -834,7 +1027,45 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
+        <source>Copy world to internal storage</source>
+        <translation>Copy world to internal storage</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>This world cannot be edited in place with the current access permissions. Copy it to internal storage and open the copy? Changes will be saved only to the internal copy. Close Minecraft before copying.</source>
+        <translation>This world cannot be edited in place with the current access permissions. Copy it to internal storage and open the copy? Changes will be saved only to the internal copy. Close Minecraft before copying.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Save successful</source>
+        <translation>Save successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/Main.qml"/>
         <source>Save settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MapBiomeDialog</name>
+    <message>
+        <location filename="../src/qml/MapBiomeDialog.qml"/>
+        <source>Set biome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapBiomeDialog.qml"/>
+        <source>Filter biomes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapBiomeDialog.qml"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapBiomeDialog.qml"/>
+        <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -863,44 +1094,17 @@
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Set biome</source>
+        <source>Save screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Apply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Unselect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Selection operations</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <source>PNG images (*.png)</source>
+        <translation type="unfinished">PNG images (*.png)</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Deleting selected chunks…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Create void</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -910,73 +1114,7 @@
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy</source>
-        <translation type="unfinished">Copy</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
         <source>Copying selected chunks…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Export</source>
-        <translation type="unfinished">Export</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Paste</source>
-        <translation type="unfinished">Paste</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">Import</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy block name</source>
-        <translation type="unfinished">Copy block name</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy biome name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy altitude</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Copy TP command</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Save selection screenshot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Save screenshot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>View in 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Open chunk editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -996,6 +1134,16 @@
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Save successful</source>
+        <translation>Save successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
         <source>Applying biome…</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1004,24 +1152,97 @@
         <source>Loading region…</source>
         <translation>Loading region…</translation>
     </message>
+</context>
+<context>
+    <name>MapContextMenu</name>
     <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>%1 · %2 chunks · %3 × %4</source>
-        <translation>%1 · %2 chunks · %3 × %4</translation>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Unselect</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Drag inside to move; drag outside to pan. Two fingers move the map.</source>
-        <translation>Drag inside to move; drag outside to pan. Two fingers move the map.</translation>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Selection operations</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Target X/Z are chunk coordinates. Existing chunks will be overwritten.</source>
-        <translation>Target X/Z are chunk coordinates. Existing chunks will be overwritten.</translation>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
     </message>
     <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>Memory usage: %1 MiB</source>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Create void</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Set biome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy</source>
+        <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Export</source>
+        <translation type="unfinished">Export</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Paste</source>
+        <translation type="unfinished">Paste</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Import</source>
+        <translation type="unfinished">Import</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy block name</source>
+        <translation type="unfinished">Copy block name</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy biome name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy altitude</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Copy TP command</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Save selection screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Save screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>View in 3D</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Open chunk editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1066,76 +1287,146 @@
     </message>
 </context>
 <context>
-    <name>MapPage</name>
+    <name>MapFilterPanel</name>
     <message>
-        <location filename="../src/qml/MapPage.qml"/>
-        <source>Map canvas placeholder</source>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Map filters</source>
+        <translation>Map filters</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Blocks</source>
+        <translation>Blocks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Exclude</source>
+        <translation>Exclude</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Include</source>
+        <translation>Include</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Block IDs, separated by commas</source>
+        <translation>Block IDs, separated by commas</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Biomes</source>
+        <translation>Biomes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Biome IDs, separated by commas</source>
+        <translation>Biome IDs, separated by commas</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Entities</source>
+        <translation type="unfinished">Entities</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Entity keys, separated by commas</source>
+        <translation>Entity keys, separated by commas</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Fixed Y layer</source>
+        <translation>Fixed Y layer</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapPage.qml"/>
-        <source>Overworld  ·  Zoom 1×</source>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapPage.qml"/>
-        <source>Layers  ·  Markers  ·  Entities</source>
+        <location filename="../src/qml/MapFilterPanel.qml"/>
+        <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>MapsPage</name>
+    <name>MapImportPlacementOverlay</name>
     <message>
-        <location filename="../src/qml/MapsPage.qml"/>
-        <source>Open maps</source>
+        <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
+        <source>%1 chunks · %2 × %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapsPage.qml"/>
-        <source>Select an opened world map to continue.</source>
+        <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
+        <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/MapsPage.qml"/>
-        <source>Untitled world</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapsPage.qml"/>
-        <source>No maps are open yet.</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
+        <source>Import</source>
+        <translation type="unfinished">Import</translation>
     </message>
 </context>
 <context>
-    <name>McstructureController</name>
+    <name>MapItemController</name>
     <message>
-        <location filename="../src/controller/mcstructurecontroller.cpp"/>
-        <source>Could not build the structure preview: %1</source>
-        <translation>Could not build the structure preview: %1</translation>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>No editable map record is selected.</source>
+        <translation>No editable map record is selected.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>No map image is available to save.</source>
+        <translation>No map image is available to save.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>Could not save map image: %1</source>
+        <translation>Could not save map image: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>The selected map has no colors byte array.</source>
+        <translation>The selected map has no colors byte array.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>Could not load map image: %1</source>
+        <translation>Could not load map image: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>Could not prepare map image.</source>
+        <translation>Could not prepare map image.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <location filename="../src/controller/mapitemcontroller.cpp"/>
+        <source>Could not update the map record.</source>
+        <translation>Could not update the map record.</translation>
     </message>
 </context>
 <context>
-    <name>McstructureDocument</name>
+    <name>MapRenderDebugPanel</name>
     <message>
-        <location filename="../src/model/mcstructuredocument.cpp"/>
-        <source>Could not read the structure NBT.</source>
-        <translation>Could not read the structure NBT.</translation>
-    </message>
-    <message>
-        <location filename="../src/model/mcstructuredocument.cpp"/>
-        <source>Invalid or unsupported mcstructure file.</source>
-        <translation>Invalid or unsupported mcstructure file.</translation>
-    </message>
-    <message>
-        <location filename="../src/model/mcstructuredocument.cpp"/>
-        <location filename="../src/model/mcstructuredocument.cpp"/>
-        <source>Could not read the structure: %1</source>
-        <translation>Could not read the structure: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/model/mcstructuredocument.cpp"/>
-        <source>Could not open the structure: %1</source>
-        <translation>Could not open the structure: %1</translation>
+        <location filename="../src/qml/MapRenderDebugPanel.qml"/>
+        <source>Memory usage: %1 MiB</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1192,6 +1483,131 @@
     </message>
 </context>
 <context>
+    <name>NbtDocumentActions</name>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>No NBT document is open.</source>
+        <translation type="unfinished">No NBT document is open.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Import NBT file</source>
+        <translation type="unfinished">Import NBT file</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>All files (*)</source>
+        <translation type="unfinished">All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Import failed</source>
+        <translation>Import failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Import successful</source>
+        <translation>Import successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Replace NBT record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Save NBT file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Export NBT file</source>
+        <translation type="unfinished">Export NBT file</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Export current NBT record</source>
+        <translation type="unfinished">Export current NBT record</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Clear all records</source>
+        <translation type="unfinished">Clear all records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Remove all records from this NBT section? This cannot be undone.</source>
+        <translation type="unfinished">Remove all records from this NBT section? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Clear</source>
+        <translation type="unfinished">Clear</translation>
+    </message>
+</context>
+<context>
+    <name>NbtDocumentController</name>
+    <message>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <source>No LevelDB key rule is configured for record %1.</source>
+        <translation>No LevelDB key rule is configured for record %1.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <source>Cannot generate a LevelDB key for record %1.</source>
+        <translation>Cannot generate a LevelDB key for record %1.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <source>Duplicate LevelDB key: %1.</source>
+        <translation>Duplicate LevelDB key: %1.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <source>A single-record section requires exactly one NBT root.</source>
+        <translation>A single-record section requires exactly one NBT root.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <source>A single-record section already contains a record. Clear it before importing.</source>
+        <translation>A single-record section already contains a record. Clear it before importing.</translation>
+    </message>
+</context>
+<context>
     <name>NbtDocumentView</name>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
@@ -1226,70 +1642,6 @@
 </context>
 <context>
     <name>NbtEditorPage</name>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>No NBT document is open.</source>
-        <translation type="unfinished">No NBT document is open.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Import NBT file</source>
-        <translation type="unfinished">Import NBT file</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>All files (*)</source>
-        <translation type="unfinished">All files (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Replace NBT document</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Importing will replace the current NBT document. Unsaved changes in this tab will be lost.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">Import</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Clear all records</source>
-        <translation type="unfinished">Clear all records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Remove all NBT records from this document? This cannot be undone.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Clear</source>
-        <translation type="unfinished">Clear</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Save NBT file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Export NBT file</source>
-        <translation type="unfinished">Export NBT file</translation>
-    </message>
     <message>
         <location filename="../src/qml/NbtEditorPage.qml"/>
         <source>Save NBT document</source>
@@ -1438,7 +1790,7 @@
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Delete</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -1452,13 +1804,33 @@
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Show NBT details</source>
+        <translation>Show NBT details</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Hide NBT details</source>
+        <translation>Hide NBT details</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Export current</source>
+        <translation>Export current</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Close</translation>
     </message>
 </context>
 <context>
@@ -1521,6 +1893,11 @@
     </message>
     <message>
         <location filename="../src/qml/OpenWorldsPage.qml"/>
+        <source>Close session</source>
+        <translation>Close session</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/OpenWorldsPage.qml"/>
         <source>No open sessions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1531,17 +1908,122 @@
     </message>
 </context>
 <context>
+    <name>PermissionsPage</name>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>All files access</source>
+        <translation>All files access</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Allow access to shared storage. Tap the button to request access in Android.</source>
+        <translation>Allow access to shared storage. Tap the button to request access in Android.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Granted</source>
+        <translation>Granted</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Not granted</source>
+        <translation>Not granted</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Shizuku service</source>
+        <translation>Shizuku service</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Install and start Shizuku, then return here to request access.</source>
+        <translation>Install and start Shizuku, then return here to request access.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Update Shizuku to version 11 or later.</source>
+        <translation>Update Shizuku to version 11 or later.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Access was permanently denied. Allow this app in Shizuku&apos;s authorized applications.</source>
+        <translation>Access was permanently denied. Allow this app in Shizuku&apos;s authorized applications.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Tap the button to request Shizuku access.</source>
+        <translation>Tap the button to request Shizuku access.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Waiting for authorization…</source>
+        <translation>Waiting for authorization…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Denied</source>
+        <translation>Denied</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Unsupported version</source>
+        <translation>Unsupported version</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Request failed</source>
+        <translation>Request failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Service unavailable</source>
+        <translation>Service unavailable</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Tap the button to request access through your root manager. The authorized connection is reused for world scanning.</source>
+        <translation>Tap the button to request access through your root manager. The authorized connection is reused for world scanning.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Check again</source>
+        <translation>Check again</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Root access</source>
+        <translation>Root access</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Root unavailable</source>
+        <translation>Root unavailable</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Request timed out</source>
+        <translation>Request timed out</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Not checked</source>
+        <translation>Not checked</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <location filename="../src/qml/PermissionsPage.qml"/>
+        <source>Request access</source>
+        <translation>Request access</translation>
+    </message>
+</context>
+<context>
     <name>RegionImportController</name>
-    <message>
-        <location filename="../src/controller/regionimportcontroller.cpp"/>
-        <source>The region file could not be opened.</source>
-        <translation>The region file could not be opened.</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/regionimportcontroller.cpp"/>
-        <source>The region file could not be read.</source>
-        <translation>The region file could not be read.</translation>
-    </message>
     <message>
         <location filename="../src/controller/regionimportcontroller.cpp"/>
         <source>The region data is empty or invalid.</source>
@@ -1564,6 +2046,11 @@
     </message>
     <message>
         <location filename="../src/controller/regionimportcontroller.cpp"/>
+        <source>The region file could not be read: %1</source>
+        <translation>The region file could not be read: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/regionimportcontroller.cpp"/>
         <source>The region contains duplicate chunks.</source>
         <translation>The region contains duplicate chunks.</translation>
     </message>
@@ -1583,17 +2070,22 @@
     <message>
         <location filename="../src/controller/sessioncontroller.cpp"/>
         <source>World path is not available.</source>
-        <translation type="unfinished"></translation>
+        <translation>World path is not available.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/sessioncontroller.cpp"/>
+        <source>Could not open %1: the world directory is not writable.</source>
+        <translation>Could not open %1: the world directory is not writable.</translation>
     </message>
     <message>
         <location filename="../src/controller/sessioncontroller.cpp"/>
         <source>Could not open %1: the world database is locked by another program or unreadable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Could not open %1: the world database is locked by another program or unreadable.</translation>
     </message>
     <message>
         <location filename="../src/controller/sessioncontroller.cpp"/>
         <source>Could not open %1 (%2).</source>
-        <translation type="unfinished"></translation>
+        <translation>Could not open %1 (%2).</translation>
     </message>
 </context>
 <context>
@@ -1626,7 +2118,7 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Add world folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Add world folder</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -1684,6 +2176,51 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Accent color</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Secret key</source>
+        <translation>Secret key</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Backend</source>
+        <translation>Backend</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Shadows and occlusion</source>
+        <translation>Shadows and occlusion</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Shadow strength</source>
+        <translation>Shadow strength</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Ambient occlusion</source>
+        <translation>Ambient occlusion</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Terrain appearance</source>
+        <translation>Terrain appearance</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Bevel strength</source>
+        <translation>Bevel strength</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Bevel width</source>
+        <translation>Bevel width</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Performance</source>
+        <translation>Performance</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -1782,6 +2319,11 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Show debug panel button</source>
+        <translation>Show debug panel button</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Map selection color</source>
         <translation>Map selection color</translation>
     </message>
@@ -1862,38 +2404,28 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Height map cache size</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Background threads</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>World sources</source>
-        <translation type="unfinished"></translation>
+        <translation>World sources</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Add folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Add folder</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Requires All files access</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Requires privileged access</source>
-        <translation type="unfinished"></translation>
+        <source>Not configured</source>
+        <translation>Not configured</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Remove world folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove world folder</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -1948,11 +2480,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Startup</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1968,11 +2495,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Renderer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Graphics backend</source>
         <translation>Graphics backend</translation>
     </message>
@@ -1980,31 +2502,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Graphics backend changes take effect after restarting the application.</source>
         <translation>Graphics backend changes take effect after restarting the application.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Orthographic view</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>GPU shadow strength</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>GPU ambient occlusion</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>GPU bevel strength</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>GPU bevel width</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2024,6 +2521,16 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Shadow precision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>High-detail map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Keep full-resolution terrain and shading further out when zooming. Uses up to 256 MiB more GPU memory and builds more tiles.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2051,14 +2558,19 @@
         <source>Marker color</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Settings saved</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>ToolsPage</name>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Permissions</source>
+        <translation>Permissions</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Manage storage access and privileged services</source>
+        <translation>Manage storage access and privileged services</translation>
+    </message>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
         <source>Show logs</source>
@@ -2106,21 +2618,6 @@
         <source>The selected range has no visible voxel faces.</source>
         <translation>The selected range has no visible voxel faces.</translation>
     </message>
-    <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
-        <source>Failed to open export file: %1</source>
-        <translation>Failed to open export file: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
-        <source>Failed to write export file: %1</source>
-        <translation>Failed to write export file: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
-        <source>Failed to finish export file: %1</source>
-        <translation>Failed to finish export file: %1</translation>
-    </message>
 </context>
 <context>
     <name>VoxelOverviewPanel</name>
@@ -2137,6 +2634,53 @@
 </context>
 <context>
     <name>VoxelPreview</name>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Copy failed</source>
+        <translation>Copy failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Copying…</source>
+        <translation>Copying…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Structure copied.</source>
+        <translation>Structure copied.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Confirm import</source>
+        <translation>Confirm import</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import failed</source>
+        <translation>Import failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import structure</source>
+        <translation>Import structure</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Importing…</source>
+        <translation>Importing…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Delete failed</source>
+        <translation>Delete failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Deleting…</source>
+        <translation>Deleting…</translation>
+    </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Maximum (exclusive)</source>
@@ -2156,6 +2700,11 @@
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Show controls panel</source>
         <translation>Show controls panel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Selection</source>
+        <translation>Selection</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -2179,13 +2728,18 @@
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Orthographic projection</source>
-        <translation>Orthographic projection</translation>
+        <source>View</source>
+        <translation>View</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Lock rotation</source>
         <translation>Lock rotation</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Show axes</source>
+        <translation>Show axes</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -2214,34 +2768,39 @@
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Import structure</source>
-        <translation>Import structure</translation>
+        <source>Model</source>
+        <translation>Model</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Structure</source>
+        <translation>Structure</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export</source>
+        <translation type="unfinished">Export</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Applies to structure and clipboard operations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Export structure</source>
         <translation>Export structure</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Structure exported.</source>
-        <translation>Structure exported.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>GLB exported.</source>
-        <translation>GLB exported.</translation>
-    </message>
-    <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Minecraft structures (*.mcstructure)</source>
         <translation type="unfinished">Minecraft structures (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>The structure is not ready for export.</source>
-        <translation>The structure is not ready for export.</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -2250,8 +2809,28 @@
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>The model is not ready for export.</source>
-        <translation>The model is not ready for export.</translation>
+        <source>Orthographic projection</source>
+        <translation>Orthographic projection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Include entities</source>
+        <translation>Include entities</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Compress mesh</source>
+        <translation>Compress mesh</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import</source>
+        <translation type="unfinished">Import</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -2261,8 +2840,15 @@
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Export entities</source>
-        <translation>Export entities</translation>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -2291,24 +2877,9 @@
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Cut</source>
-        <translation>Cut</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Export GLB</source>
         <translation>Export GLB</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Under development</source>
-        <translation>Under development</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>OK</source>
-        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -2335,12 +2906,12 @@
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
         <source>Building voxel terrain… %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Building voxel terrain… %1%</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
         <source>Building voxel terrain…</source>
-        <translation type="unfinished"></translation>
+        <translation>Building voxel terrain…</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
@@ -2360,7 +2931,7 @@
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
         <source>Left drag: rotate · Right drag: pan · Wheel: zoom</source>
-        <translation type="unfinished"></translation>
+        <translation>Left drag: rotate · Right drag: pan · Wheel: zoom</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
@@ -2413,13 +2984,23 @@
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <source>World actions</source>
+        <translation>World actions</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
-        <source>Open world</source>
-        <translation type="unfinished"></translation>
+        <source>Export as mcworld</source>
+        <translation>Export as mcworld</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
+        <source>Delete world</source>
+        <translation>Delete world</translation>
     </message>
 </context>
 <context>
@@ -2447,18 +3028,44 @@
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Inspect or edit an NBT-based file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Open world</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>All</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Delete world</source>
+        <translation>Delete world</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Permanently delete &quot;%1&quot; from app storage? This cannot be undone.</source>
+        <translation>Permanently delete &quot;%1&quot; from app storage? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Minecraft structures (*.mcstructure)</source>
         <translation>Minecraft structures (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Minecraft worlds (*.mcworld)</source>
+        <translation>Minecraft worlds (*.mcworld)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export as mcworld</source>
+        <translation>Export as mcworld</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -2477,13 +3084,18 @@
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Create NBT</source>
-        <translation type="unfinished"></translation>
+        <source>Open NBT, mcstructure, or mcworld files</source>
+        <translation>Open NBT, mcstructure, or mcworld files</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Start a new untitled NBT document</source>
-        <translation type="unfinished"></translation>
+        <source>New NBT document</source>
+        <translation>New NBT document</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Create an empty NBT document</source>
+        <translation>Create an empty NBT document</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -2497,8 +3109,8 @@
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Scanning worlds… %1%</source>
-        <translation type="unfinished"></translation>
+        <source>Scanning worlds…</source>
+        <translation>Scanning worlds…</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -2528,7 +3140,7 @@
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>All worlds</source>
-        <translation type="unfinished"></translation>
+        <translation>All worlds</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -2555,6 +3167,54 @@
     </message>
 </context>
 <context>
+    <name>WorldSource</name>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Release</source>
+        <translation>Release</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Preview</source>
+        <translation>Preview</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>NetEase</source>
+        <translation>NetEase</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Levi</source>
+        <translation>Levi</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Legacy</source>
+        <translation>Legacy</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Release internal</source>
+        <translation>Release internal</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>Release external</source>
+        <translation>Release external</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>App internal</source>
+        <translation>App internal</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/worldsource.cpp"/>
+        <source>External</source>
+        <translation>External</translation>
+    </message>
+</context>
+<context>
     <name>WorldWorkspace</name>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -2569,22 +3229,12 @@
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Biomes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>World saved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Could not save world</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Biomes</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">View</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -2628,6 +3278,11 @@
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Map filters</source>
+        <translation>Map filters</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Overlays</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2654,7 +3309,7 @@
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Selection</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -2740,6 +3395,14 @@
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Saving world…</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>platform</name>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The document provider returned no file descriptor.</source>
+        <translation>The document provider returned no file descriptor.</translation>
     </message>
 </context>
 </TS>

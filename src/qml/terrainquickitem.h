@@ -1,8 +1,10 @@
 #ifndef BEDROCKMAP_TERRAINQUICKITEM_H
 #define BEDROCKMAP_TERRAINQUICKITEM_H
 
-#include <QElapsedTimer>
+#include <QtQml/qqmlregistration.h>
+
 #include <QColor>
+#include <QElapsedTimer>
 #include <QHash>
 #include <QImage>
 #include <QMutex>
@@ -17,10 +19,11 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "controller/mapcontroller.h"
 #include "maprenderstate.h"
-#include "render/gpu_render_options.h"
+#include "render/gpurenderoptions.h"
 #include "render/rendertimings.h"
 #include "render/terraindataprovider.h"
 #include "render/terraintiles.h"
@@ -35,6 +38,9 @@ class QQuickWindow;
 struct TerrainRenderSettingsSnapshot {
     GpuRenderOptions gpu;
     int cpuShadowLevel{150};
+    bool highDetailMap{false};
+    /// Requested tile-array slices; the render thread clamps to the device limit.
+    int tileLayers{terrain_render_config::tile_array_layers};
 };
 
 /// Immutable GUI-to-render view state. The render thread consumes one instance
@@ -43,10 +49,10 @@ struct TerrainRenderSettingsSnapshot {
 struct TerrainFrameState {
     MapCameraState camera;
     TerrainViewportRequest request;
-    int requestedLevel{1};
+    std::shared_ptr<const TerrainRenderSettingsSnapshot> settings;
+    int requestedBlocksPerTexel{1};
     bool overviewOnly{false};
     bool transparentVoid{false};
-    quint64 revision{0};
 };
 
 struct TerrainWorldTileKey {
@@ -62,8 +68,7 @@ struct TerrainWorldTileKey {
 struct TerrainWorldTileReady {
     TerrainWorldTileKey key;
     QImage color;
-    QImage height;
-    QImage material;
+    QImage surface;
     QPoint destination;
     bool empty{false};
 };
@@ -86,9 +91,172 @@ inline std::size_t qHash(const TerrainWorldTileKey& key, std::size_t seed = 0) n
     return value ^ seed;
 }
 
-/// Scene Graph terrain layer backed by renderer-neutral height snapshots.
+/// Scene-graph objects reset together. Qt owns the material and textures through
+/// the geometry node, so these pointers must remain non-owning.
+struct ArrayGpuResources {
+    QSGGeometryNode* node{nullptr};
+    TerrainArrayMaterial* material{nullptr};
+    TerrainAtlasTexture* color{nullptr};
+    TerrainAtlasTexture* surface{nullptr};
+    TerrainAtlasTexture* pageTable{nullptr};
+    TerrainAtlasTexture* overview{nullptr};
+    QImage biomePalette;
+
+    void resetPointers() {
+        node = nullptr;
+        material = nullptr;
+        color = nullptr;
+        surface = nullptr;
+        pageTable = nullptr;
+        overview = nullptr;
+    }
+};
+
+/// Render-thread tile residency and page-table bookkeeping.
+struct ArrayTilePool {
+    QRect overviewChunks;
+    qint64 overviewCacheKey{0};
+    QHash<TerrainWorldTileKey, int> tileLayers;
+    QHash<int, quint64> layerLastUsed;
+    QHash<int, quint64> retiringLayers;
+    QSet<TerrainWorldTileKey> uploadedTiles;
+    QSet<TerrainWorldTileKey> terrainTiles;
+    QVector<int> freeLayers;
+    std::array<QImage, terrain_render_config::page_table_levels> pageTableImages;
+    /// Slices last queued for upload; a rebuilt slice is uploaded only if it differs.
+    std::array<QImage, terrain_render_config::page_table_levels> uploadedPageTables;
+    /// Set when residency changes; the page table is rebuilt only then or when
+    /// the visible region window moves.
+    bool pageTableDirty{true};
+    QRect pageTableWindow;
+    int activeLod{1};
+    int activeDimension{-1};
+    int activeLayer{-1};
+    /// Slices in the current color/surface arrays.
+    int layerCount{0};
+    quint64 frameCounter{0};
+    QSizeF geometrySize;
+    TerrainArrayUniformBody lastUniforms;
+    bool hasLastUniforms{false};
+    /// Shared transparent image that clears a reused packed layer.
+    QImage clearLayerImage;
+    bool layersExhaustedLogged{false};
+
+    void clearResidency() {
+        tileLayers.clear();
+        layerLastUsed.clear();
+        retiringLayers.clear();
+        uploadedTiles.clear();
+        terrainTiles.clear();
+        freeLayers.clear();
+        pageTableDirty = true;
+    }
+
+    void initializeFreeLayers(int layer_count) {
+        freeLayers.clear();
+        freeLayers.reserve(layer_count);
+        for (int layer = 0; layer < layer_count; ++layer) freeLayers.push_back(layer);
+    }
+
+    void resetOverview() {
+        overviewChunks = {};
+        overviewCacheKey = 0;
+    }
+
+    void resetForRendererLoss(int layer_count) {
+        resetOverview();
+        clearResidency();
+        initializeFreeLayers(layer_count);
+        activeDimension = -1;
+        activeLayer = -1;
+        // The new page-table texture has undefined contents; upload every slice.
+        uploadedPageTables.fill({});
+        pageTableWindow = {};
+        geometrySize = {};
+        hasLastUniforms = false;
+    }
+
+    void resetForViewChange(int dimension, int layer, int layer_count) {
+        resetOverview();
+        clearResidency();
+        initializeFreeLayers(layer_count);
+        activeDimension = dimension;
+        activeLayer = layer;
+    }
+};
+
+struct TerrainOverviewSnapshot {
+    QImage image;
+    QRect chunks;
+    int dimension{-1};
+};
+
+/// GUI-to-render hand-off. All fields are protected by the same mutex.
+struct TileDeliveryQueue {
+    mutable QMutex mutex;
+    QVector<TerrainWorldTileReady> readyTiles;
+    QImage overview;
+    QRect overviewChunks;
+    int overviewDimension{-1};
+
+    void clear() {
+        const QMutexLocker lock(&mutex);
+        readyTiles.clear();
+        overview = {};
+        overviewChunks = {};
+        overviewDimension = -1;
+    }
+
+    void pushTile(TerrainWorldTileReady tile) {
+        const QMutexLocker lock(&mutex);
+        readyTiles.append(std::move(tile));
+    }
+
+    [[nodiscard]] QVector<TerrainWorldTileReady> takeTiles() {
+        const QMutexLocker lock(&mutex);
+        QVector<TerrainWorldTileReady> result;
+        result.swap(readyTiles);
+        return result;
+    }
+
+    void restoreTiles(QVector<TerrainWorldTileReady> tiles) {
+        const QMutexLocker lock(&mutex);
+        tiles += readyTiles;
+        readyTiles = std::move(tiles);
+    }
+
+    void setOverview(QImage image, const QRect& chunks, int dimension) {
+        const QMutexLocker lock(&mutex);
+        overview = std::move(image);
+        overviewChunks = chunks;
+        overviewDimension = dimension;
+    }
+
+    [[nodiscard]] TerrainOverviewSnapshot overviewSnapshot() const {
+        const QMutexLocker lock(&mutex);
+        return {overview, overviewChunks, overviewDimension};
+    }
+};
+
+struct FrameStateChannel {
+    mutable QMutex mutex;
+    std::shared_ptr<const TerrainFrameState> state;
+
+    void publish(std::shared_ptr<const TerrainFrameState> next) {
+        const QMutexLocker lock(&mutex);
+        state = std::move(next);
+    }
+
+    [[nodiscard]] std::shared_ptr<const TerrainFrameState> take() const {
+        const QMutexLocker lock(&mutex);
+        return state;
+    }
+};
+
+/// Scene Graph terrain layer backed by renderer-neutral surface snapshots.
 class TerrainQuickItem : public QQuickItem {
     Q_OBJECT
+    QML_ELEMENT
     Q_PROPERTY(MapController* controller READ controller WRITE setController NOTIFY controllerChanged)
     Q_PROPERTY(TerrainDataProvider* provider READ provider WRITE setProvider NOTIFY providerChanged)
     Q_PROPERTY(bool hasData READ hasData NOTIFY hasDataChanged)
@@ -156,12 +324,10 @@ class TerrainQuickItem : public QQuickItem {
    private:
     void syncViewState();
     void publishFrameState();
-    QSGNode* updateArrayPaintNode(QSGNode* oldNode, const MapCameraState& camera, int requestedLevel, bool overviewOnly,
-                                 bool transparentVoid);
+    QSGNode* updateArrayPaintNode(QSGNode* oldNode, const MapCameraState& camera, int requestedBlocksPerTexel, bool overviewOnly,
+                                  bool transparentVoid, const std::shared_ptr<const TerrainRenderSettingsSnapshot>& render_settings);
     void queueArrayRegionPiece(int regionX, int regionZ, int dimension, int blocksPerTexel, int layer, const QImage& color,
-                               const QImage& height, const QImage& material, const QImage& preparedColor,
-                               const QImage& preparedHeight, const QImage& preparedMaterial, const QImage& overviewColor,
-                               bool empty, bool makeDetail);
+                               const QImage& surface, bool empty);
     void connectFrameTimings(QQuickWindow* window);
     std::shared_ptr<RenderTimings> timings_{std::make_shared<RenderTimings>()};
     std::shared_ptr<MapRenderState> render_state_{std::make_shared<MapRenderState>()};
@@ -173,7 +339,10 @@ class TerrainQuickItem : public QQuickItem {
     void publishViewport();
 
     /// Shadow ray reach in blocks; 0 when shadows are off.
-    [[nodiscard]] int shadowReachBlocks() const;
+    [[nodiscard]] static int shadowReachBlocks(const GpuRenderOptions& gpu);
+    /// Repaint this item and the window, again on the next event-loop pass for
+    /// a scene graph that is still being created.
+    void requestWindowRepaint();
     /// Atlas level that covers the current viewport: the smallest level whose atlas spans
     /// the view, with hysteresis so a zoom across a band does not rebuild it.
     [[nodiscard]] int blocksPerTexelFor() const;
@@ -181,8 +350,7 @@ class TerrainQuickItem : public QQuickItem {
     /// Coalesce camera-driven LOD changes until the target has stayed stable.
     void scheduleLodRequest();
     void commitLodRequest(int level);
-    void refreshRenderSettings();
-    [[nodiscard]] std::shared_ptr<const TerrainRenderSettingsSnapshot> renderSettings() const;
+    bool refreshRenderSettings();
     void refreshMetrics();
     void publishMetrics(const TerrainFrameMetrics& metrics);
 
@@ -193,59 +361,26 @@ class TerrainQuickItem : public QQuickItem {
     MapCameraState camera_;
     /// Last published demand, with its window expressed in region indices.
     TerrainViewportRequest request_;
-    /// Immutable snapshot consumed by updatePaintNode(). libc++ shipped with
-    /// the Android NDK does not implement atomic<shared_ptr>, so the pointer
-    /// swap is protected by a short-lived mutex instead.
-    mutable QMutex frame_state_mutex_;
-    std::shared_ptr<const TerrainFrameState> frame_state_;
-    quint64 frame_state_revision_{0};
-    QImage cpu_biome_palette_;
-    QSGGeometryNode* array_node_{nullptr};
-    TerrainArrayMaterial* array_material_{nullptr};
-    TerrainAtlasTexture* array_color_texture_{nullptr};
-    TerrainAtlasTexture* array_height_texture_{nullptr};
-    TerrainAtlasTexture* array_material_texture_{nullptr};
-    TerrainAtlasTexture* array_page_table_texture_{nullptr};
-    TerrainAtlasTexture* array_overview_texture_{nullptr};
-    QVector<TerrainWorldTileReady> array_ready_tiles_;
-    QImage sampled_overview_;
-    QRect sampled_overview_chunks_;
-    int sampled_overview_dimension_{-1};
-    QRect array_overview_chunks_;
-    qint64 array_overview_cache_key_{0};
-    QHash<TerrainWorldTileKey, int> array_tile_layers_;
-    QHash<int, quint64> array_layer_last_used_;
-    QHash<int, quint64> array_retiring_layers_;
-    QSet<TerrainWorldTileKey> array_uploaded_tiles_;
-    QSet<TerrainWorldTileKey> array_terrain_tiles_;
-    QVector<int> array_free_layers_;
-    std::array<QImage, 8> array_page_table_images_;
-    int array_active_lod_{1};
-    int array_active_dimension_{-1};
-    int array_active_layer_{-1};
-    quint64 array_page_table_signature_{0};
-    std::array<quint64, 8> array_page_table_layer_signatures_{};
-    quint64 array_frame_counter_{0};
-    QSizeF array_geometry_size_;
-    TerrainArrayUniformBody array_last_uniforms_;
-    bool array_has_last_uniforms_{false};
-    /// GUI-thread snapshot consumed by the scene-graph thread. Reading
-    /// setting::current() from updatePaintNode() would race with Save Settings.
-    mutable QMutex render_settings_mutex_;
+    FrameStateChannel frame_state_channel_;
+    ArrayGpuResources array_gpu_;
+    ArrayTilePool array_tile_pool_;
+    TileDeliveryQueue tile_delivery_;
     std::shared_ptr<const TerrainRenderSettingsSnapshot> render_settings_;
     quint64 render_settings_revision_{0};
-    /// Level the provider has been asked to re-sample the window at. Publication
-    /// uses the latest layout-level refill snapshot; edge slots may fill later.
-    std::atomic<int> requested_level_{1};
-    int lod_candidate_level_{1};
+    /// Blocks per texel the provider has been asked to re-sample the window at.
+    /// Publication uses the latest layout-level refill snapshot; edge slots may fill later.
+    std::atomic<int> requested_blocks_per_texel_{1};
+    int candidate_blocks_per_texel_{1};
     QTimer lod_settle_timer_;
     /// Incremented whenever the renderer is attached to another world. The
     /// scene-graph thread consumes it once, before sampling anything, so state
     /// owned by the previous session can never reach the new world's atlas.
     std::atomic<quint64> render_reset_generation_{0};
     quint64 applied_render_reset_generation_{0};
+    /// Slices the render thread created after clamping to the device limit;
+    /// bounds the level of detail the GUI thread may request.
+    std::atomic<int> created_tile_layers_{0};
 
-    mutable QMutex tiles_mutex_;
     bool has_data_{false};
     QTimer metrics_timer_;
     QTimer input_probe_timer_;

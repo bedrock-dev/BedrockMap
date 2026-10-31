@@ -4,14 +4,19 @@
 #include <QFutureWatcher>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <vector>
 
-#include "model/worldmetadata.h"
+#include "loader/worldsource.h"
+
+struct WorldScanResult {
+    std::vector<WorldMetadata> worlds;
+    std::vector<WorldMetadata> recentWorlds;
+};
 
 class WorldScanService final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
-    Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
 
    public:
@@ -19,31 +24,28 @@ class WorldScanService final : public QObject {
     ~WorldScanService() override;
 
     [[nodiscard]] bool isLoading() const { return loading_; }
-    [[nodiscard]] int progress() const { return progress_; }
     [[nodiscard]] QString error() const { return error_; }
-    [[nodiscard]] const std::vector<WorldMetadata>& worlds() const { return worlds_; }
+    [[nodiscard]] const std::vector<WorldMetadata>& worlds() const { return result_.worlds; }
+    [[nodiscard]] const std::vector<WorldMetadata>& recentWorlds() const { return result_.recentWorlds; }
 
     // Starts a scan on a worker thread. Returns false if a scan is already running.
-    bool start();
-    void reportProgress(int value);
+    bool start(const QStringList& recentPaths = {});
 
    signals:
     void loadingChanged();
-    void progressChanged();
     void errorChanged();
     void finished();
 
    private:
     void setLoading(bool value);
-    void setProgress(int value);
     void setError(const QString& value);
     void onFinished();
 
-    QFutureWatcher<std::vector<WorldMetadata>> watcher_;
-    std::vector<WorldMetadata> worlds_;
+    QFutureWatcher<WorldScanResult> watcher_;
+    WorldScanResult result_;
+    QStringList recent_paths_;
     bool loading_{false};
     bool restart_pending_{false};
-    int progress_{0};
     QString error_;
 };
 

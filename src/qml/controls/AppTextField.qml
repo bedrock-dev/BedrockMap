@@ -5,7 +5,7 @@ import QtQuick.Controls
 TextField {
     id: root
 
-    implicitWidth: 170
+    implicitWidth: Theme.ui(170)
     implicitHeight: Theme.controlHeight
     font.pixelSize: Theme.fontSubtitle
     color: Theme.text
@@ -13,6 +13,8 @@ TextField {
     selectionColor: Theme.accent
     selectedTextColor: Theme.onAccent
     background: Rectangle {
+        y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
+        height: root.height - y * 2
         radius: Theme.radiusSmall
         color: Theme.surfaceAlt
         border.width: 1

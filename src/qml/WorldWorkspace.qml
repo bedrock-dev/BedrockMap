@@ -13,6 +13,7 @@ Item {
     property bool restoringSection: false
     property bool compact: Theme.compact
     property bool layerPanelOpen: false
+    property bool mapFilterPanelOpen: false
     property bool debugVisible: false
     property bool chunkEditorOpen: false
     property bool voxelViewOpen: false
@@ -25,12 +26,6 @@ Item {
 
     Connections {
         target: workspace.session
-        function onSaved() {
-            Notifications.info(qsTr("World saved"))
-        }
-        function onSaveFailed(message) {
-            Notifications.error(qsTr("Could not save world"), "", message)
-        }
         function onWorkspaceSectionChanged() {
             restoringSection = true
             section = session ? session.workspaceSection : 0
@@ -52,6 +47,8 @@ Item {
             chunkEditorOpen = false
             return
         }
+        if (!session || !session.chunkEditor || (!session.chunkEditor.hasChunk && !session.chunkEditor.loading))
+            return
         canvas.selectionToolActive = false
         voxelViewOpen = false
         chunkEditorOpen = true
@@ -108,6 +105,15 @@ Item {
         chunkEditorOpen = false
         voxelViewOpen = false
         layerPanelOpen = false
+        mapFilterPanelOpen = false
+    }
+    onMapFilterPanelOpenChanged: {
+        if (!mapFilterPanel)
+            return
+        if (mapFilterPanelOpen)
+            mapFilterPanel.openFor(mapFilterButton)
+        else
+            mapFilterPanel.close()
     }
     onGlobalSectionsChanged: if (session && section >= globalSections.length + 1)
                                  section = 0
@@ -142,7 +148,7 @@ Item {
                 showSlimeChunks: slimeToggle.active
                 showVillages: villagesToggle.active
                 showHsa: hsaToggle.active
-                showRenderDebug: workspace.debugVisible
+                showRenderDebug: workspace.debugVisible && App.settings.showMapDebugButton
                 onChunkEditorRequested: function (chunkX, chunkZ, dimension) {
                     if (workspace.session && workspace.session.chunkEditor)
                         workspace.session.chunkEditor.openChunk(chunkX, chunkZ, dimension)
@@ -319,7 +325,7 @@ Item {
                         AppSegmentedControl {
                             id: dimensionBar
                             width: parent.width
-                            height: Theme.touch ? Theme.controlHeight + 6 : 28
+                            height: Theme.touch ? Theme.segmentedHeight : 28
                             options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
                             currentIndex: workspace.mapController ? workspace.mapController.dimension : 0
                             onActivated: index => {
@@ -335,7 +341,7 @@ Item {
                         AppSegmentedControl {
                             id: layerBar
                             width: parent.width
-                            height: Theme.touch ? Theme.controlHeight + 6 : 28
+                            height: Theme.touch ? Theme.segmentedHeight : 28
                             options: [qsTr("Terrain"), qsTr("Biomes")]
                             currentIndex: workspace.mapController ? workspace.mapController.layer : 0
                             onActivated: index => {
@@ -382,7 +388,7 @@ Item {
                         AppSegmentedControl {
                             id: selectionModeControl
                             width: parent.width
-                            height: Theme.touch ? Theme.controlHeight + 6 : 28
+                            height: Theme.touch ? Theme.segmentedHeight : 28
                             options: [qsTr("Replace"), qsTr("Add"), qsTr("Subtract")]
                             currentIndex: workspace.mapController ? workspace.mapController.selectionMode : 0
                             onActivated: index => {
@@ -398,7 +404,7 @@ Item {
                 id: navigationToolbar
                 z: 1
                 readonly property real horizontalPadding: workspace.compact ? 8 : 10
-                readonly property real verticalPadding: Theme.touch ? 4 : 3
+                readonly property real verticalPadding: Theme.toolbarPadding
                 width: navigationRow.width + horizontalPadding * 2
                 height: navigationRow.height + verticalPadding * 2
                 anchors.top: parent.top
@@ -407,7 +413,7 @@ Item {
                 Row {
                     id: navigationRow
                     x: navigationToolbar.horizontalPadding
-                    height: Theme.touch ? Theme.touchTarget : 34
+                    height: Theme.touch ? Theme.controlHeight : 34
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
                     AppIconButton {
@@ -452,21 +458,50 @@ Item {
             AppCard {
                 id: layerToolbar
                 z: 3
-                readonly property real toolbarPadding: Theme.touch ? 4 : 3
-                width: layerButton.width + toolbarPadding * 2
-                height: layerButton.height + toolbarPadding * 2
+                readonly property real toolbarPadding: Theme.toolbarPadding
+                width: layerToolbarRow.width + toolbarPadding * 2
+                height: layerToolbarRow.height + toolbarPadding * 2
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
                 anchors.margins: Theme.gapLarge
 
-                AppIconButton {
-                    id: layerButton
-                    anchors.centerIn: parent
-                    iconName: "layers"
-                    label: qsTr("Layers")
-                    selected: workspace.layerPanelOpen
-                    buttonSize: 34
-                    onClicked: workspace.layerPanelOpen = !workspace.layerPanelOpen
+                Row {
+                    id: layerToolbarRow
+                    x: layerToolbar.toolbarPadding
+                    height: Theme.touch ? Theme.controlHeight : 34
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+
+                    AppIconButton {
+                        id: layerButton
+                        iconName: "layers"
+                        label: qsTr("Layers")
+                        selected: workspace.layerPanelOpen
+                        buttonSize: 34
+                        onClicked: workspace.layerPanelOpen = !workspace.layerPanelOpen
+                    }
+
+                    AppIconButton {
+                        id: mapFilterButton
+                        iconName: "filter"
+                        label: qsTr("Map filters")
+                        selected: workspace.mapFilterPanelOpen
+                        buttonSize: 34
+                        onClicked: workspace.mapFilterPanelOpen = !workspace.mapFilterPanelOpen
+                    }
+
+                    AppIconButton {
+                        visible: Theme.touch
+                        enabled: !canvas.importActive && !canvas.inputBlocked
+                        iconName: "selection"
+                        label: canvas.selectionToolActive ? qsTr("Exit selection mode (%1 chunks)").arg(
+                                                                workspace.mapController
+                                                                ? workspace.mapController.selectionChunkCount : 0) :
+                                                            qsTr("Selection mode")
+                        selected: canvas.selectionToolActive
+                        buttonSize: 34
+                        onClicked: canvas.selectionToolActive = !canvas.selectionToolActive
+                    }
                 }
             }
         }
@@ -580,7 +615,7 @@ Item {
                 enabled: workspace.session && workspace.session.canSave
                 onClicked: {
                     if (!workspace.session.commit())
-                        Notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
+                        App.notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
                 }
             }
             AppIconButton {
@@ -597,8 +632,9 @@ Item {
     AppCard {
         id: workspaceToolbar
         z: 7
-        visible: workspace.section === 0 && !workspace.chunkEditorOpen && !workspace.voxelViewOpen
-        readonly property real toolbarPadding: Theme.touch ? 4 : 3
+        visible: App.settings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen
+                 && !workspace.voxelViewOpen
+        readonly property real toolbarPadding: Theme.toolbarPadding
         width: workspaceToolbarRow.width + toolbarPadding * 2
         height: workspaceToolbarRow.height + toolbarPadding * 2
         anchors.top: parent.top
@@ -607,21 +643,9 @@ Item {
         Row {
             id: workspaceToolbarRow
             x: workspaceToolbar.toolbarPadding
-            height: Theme.touch ? Theme.touchTarget : 34
+            height: Theme.touch ? Theme.controlHeight : 34
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
-            AppIconButton {
-                visible: Theme.touch
-                enabled: !canvas.importActive && !canvas.inputBlocked
-                icon: "▣"
-                label: canvas.selectionToolActive ? qsTr("Exit selection mode (%1 chunks)").arg(workspace.mapController
-                                                                                                ? workspace.mapController.selectionChunkCount :
-                                                                                                  0) : qsTr(
-                                                        "Selection mode")
-                selected: canvas.selectionToolActive
-                buttonSize: 34
-                onClicked: canvas.selectionToolActive = !canvas.selectionToolActive
-            }
             AppIconButton {
                 iconName: "debug"
                 label: qsTr("Debug panels")
@@ -630,6 +654,13 @@ Item {
                 onClicked: workspace.debugVisible = !workspace.debugVisible
             }
         }
+    }
+
+    MapFilterPanel {
+        id: mapFilterPanel
+        controller: workspace.mapController
+        onOpened: workspace.mapFilterPanelOpen = true
+        onClosed: workspace.mapFilterPanelOpen = false
     }
 
     AppBusyOverlay {

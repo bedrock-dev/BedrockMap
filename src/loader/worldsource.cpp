@@ -1,157 +1,199 @@
 #include "loader/worldsource.h"
 
+#include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSet>
 #include <QStandardPaths>
 #include <algorithm>
+#include <utility>
 
-#include "loader/levelpathmanager.h"
-#include "loader/worldrepository.h"
-#include "model/worldpath.h"
+#include "base/platform.h"
+#include "base/worldfilesource.h"
+#include "level_dat.h"
+#include "loader/leveldbxor.h"
+#include "loader/leveloperator.h"
 
 namespace {
+    QByteArray readAll(platform::WorldFileSource& source, const QString& path) {
+        const auto input = source.openRead(path);
+        return input ? input->readAll() : QByteArray{};
+    }
 
-    QString appWorldsRoot() {
-        const QString base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-        return base.isEmpty() ? QString{} : QDir(base).filePath(QStringLiteral("worlds"));
+    WorldMetadata readMetadata(const QString& path, platform::WorldFileSource& source) {
+        WorldMetadata info;
+        info.path = path.toStdString();
+        const QDir directory(path);
+        const auto child = [&](const char* name) { return directory.filePath(QString::fromLatin1(name)); };
+        bl::level_dat dat;
+        if (!LevelOperator::loadLevelDat(source, path, dat)) return info;
+        info.levelName = dat.level_name();
+        info.version = dat.min_compat_version().to_string();
+        info.xorEncrypted = leveldb_xor::isEncrypted(source, path);
+        const QByteArray nameRaw = readAll(source, child("levelname.txt"));
+        if (!nameRaw.isEmpty()) {
+            const auto name = QString::fromUtf8(nameRaw).trimmed();
+            if (!name.isEmpty()) info.levelName = name.toStdString();
+        }
+        const QByteArray thumbnail = readAll(source, child("world_icon.jpeg"));
+        if (!thumbnail.isEmpty()) {
+            info.thumbnailDataUrl = "data:image/jpeg;base64," + thumbnail.toBase64().toStdString();
+        }
+        platform::WorldFileInfo file;
+        QStringList directories{path};
+        while (!directories.empty()) {
+            const QString current = directories.takeLast();
+            QStringList children;
+            if (!source.children(current, &children).isEmpty()) continue;
+            for (const auto& name : children) {
+                const QString entry = QDir(current).filePath(name);
+                if (!source.fileInfo(entry, file).isEmpty() || file.isLink) continue;
+                if (file.isDirectory)
+                    directories.push_back(entry);
+                else if (file.isFile) {
+                    info.sizeBytes += file.size;
+                    info.lastModified = std::max(info.lastModified, file.modified);
+                }
+            }
+        }
+        info.isValid = true;
+        return info;
     }
 
 #ifdef Q_OS_WIN
-    QStringList desktopMinecraftRoots(bool scanLeviPath) {
-        QStringList roots;
-        const QString games = QString::fromStdString(LevelPathManager::GAMES_REL_PATH);
-        const QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
-        if (!localAppData.isEmpty()) {
-            for (const auto& package : {LevelPathManager::PACKAGE_UWP, LevelPathManager::PACKAGE_WINDOWS_BETA}) {
-                roots << QDir(localAppData + QLatin1Char('/') + QString::fromStdString(package)).absoluteFilePath(games);
+    void appendMinecraftPaths(std::vector<WorldSource>& sources, bool scanLeviPath) {
+        const QString games = QStringLiteral("games/com.mojang/minecraftWorlds");
+        QSet<QString> seen;
+        const auto append = [&](WorldSource source) {
+            source.path = platform::normalizeLocalPath(source.path);
+            if (source.path.isEmpty() || seen.contains(source.path)) return;
+            seen.insert(source.path);
+            sources.push_back(std::move(source));
+        };
+
+        const QString local = qEnvironmentVariable("LOCALAPPDATA");
+        if (!local.isEmpty()) {
+            for (bool preview : {false, true}) {
+                const QString package = preview ? QStringLiteral("Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState")
+                                                : QStringLiteral("Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState");
+                append({.path = QDir(local + QLatin1Char('/') + package).filePath(games),
+                        .kind = preview ? WorldSourceKind::Preview : WorldSourceKind::Release});
             }
         }
 
         const QString appData = qEnvironmentVariable("APPDATA");
-        if (!appData.isEmpty()) {
-            roots << QDir(appData).absoluteFilePath(QStringLiteral("MinecraftPC_Netease_PB/minecraftWorlds"));
-            const auto appendUsers = [&roots, &games](const QString& base) {
-                for (const auto& product : {QStringLiteral("Minecraft Bedrock"), QStringLiteral("Minecraft Bedrock Preview")}) {
-                    const QDir users(QDir(base).absoluteFilePath(product + QStringLiteral("/Users")));
-                    for (const auto& user : users.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
-                        roots << QDir(user.absoluteFilePath()).absoluteFilePath(games);
-                    }
-                }
-            };
-            appendUsers(appData);
+        if (appData.isEmpty()) return;
+        append(
+            {.path = QDir(appData).filePath(QStringLiteral("MinecraftPC_Netease_PB/minecraftWorlds")), .kind = WorldSourceKind::NetEase});
 
-            if (scanLeviPath) {
-                QFile config(appData + QStringLiteral("/LeviLauncher.exe/config.json"));
-                if (config.open(QIODevice::ReadOnly)) {
-                    const auto doc = QJsonDocument::fromJson(config.readAll());
-                    const QString baseRoot = doc.isObject() ? doc.object().value(QStringLiteral("base_root")).toString() : QString{};
-                    if (!baseRoot.isEmpty()) {
-                        const QDir versions(QDir(baseRoot).absoluteFilePath(QStringLiteral("versions")));
-                        for (const auto& version : versions.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
-                            appendUsers(version.absoluteFilePath());
-                        }
-                    }
+        const auto appendUsers = [&](const QString& base, bool levi) {
+            for (bool preview : {false, true}) {
+                const QString product = preview ? QStringLiteral("Minecraft Bedrock Preview") : QStringLiteral("Minecraft Bedrock");
+                const QDir users(QDir(base).filePath(product + QStringLiteral("/Users")));
+                for (const auto& user : users.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
+                    append({.path = QDir(user.absoluteFilePath()).filePath(games),
+                            .kind = levi ? WorldSourceKind::Levi : (preview ? WorldSourceKind::Preview : WorldSourceKind::Release)});
                 }
             }
+        };
+        appendUsers(appData, false);
+
+        if (!scanLeviPath) return;
+        QFile config(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json")));
+        if (!config.open(QIODevice::ReadOnly)) return;
+        const auto doc = QJsonDocument::fromJson(config.readAll());
+        const QString baseRoot = doc.object().value(QStringLiteral("base_root")).toString();
+        if (baseRoot.isEmpty()) return;
+        const QDir versions(QDir(baseRoot).filePath(QStringLiteral("versions")));
+        for (const auto& version : versions.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
+            appendUsers(version.absoluteFilePath(), true);
         }
-        QStringList existing;
-        for (const auto& root : roots) {
-            if (QFileInfo(root).isDir()) existing << root;
-        }
-        existing.removeDuplicates();
-        return existing;
     }
 #endif
-
-    void appendUserFolders(std::vector<WorldSource>& sources, const QStringList& customPaths, WorldSourceAvailability availability) {
-        QSet<QString> seen;
-        for (const auto& path : customPaths) {
-            const QString normalized = world_path::normalize(path);
-            if (normalized.isEmpty()) continue;
-            const QString key = world_path::identityKey(normalized);
-            if (seen.contains(key)) continue;
-            seen.insert(key);
-            const QString name = QFileInfo(normalized).fileName();
-            sources.push_back({QStringLiteral("user:") + normalized,
-                               name.isEmpty() ? QStringLiteral("Custom folder") : name,
-                               WorldSourceKind::UserFolder,
-                               WorldSourceAccess::Direct,
-                               availability,
-                               {normalized}});
-        }
-    }
-
 }  // namespace
 
-std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool scanLeviPath, bool allFilesAccess) {
+std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool scanLeviPath) {
     std::vector<WorldSource> sources;
-
-    const QString app_worlds = appWorldsRoot();
-    if (!app_worlds.isEmpty()) {
-        sources.push_back({QStringLiteral("app-internal"), QStringLiteral("App storage"),
-                           WorldSourceKind::AppInternal, WorldSourceAccess::Direct,
-                           WorldSourceAvailability::Available, {app_worlds}});
+    const QString appData = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    if (!appData.isEmpty()) {
+        sources.push_back({.path = QDir(appData).filePath(QStringLiteral("worlds")), .kind = WorldSourceKind::AppInternal});
     }
-
 #ifdef Q_OS_WIN
-    const QStringList minecraft_roots = desktopMinecraftRoots(scanLeviPath);
-    if (!minecraft_roots.isEmpty()) {
-        sources.push_back({QStringLiteral("minecraft-default"), QStringLiteral("Minecraft"),
-                           WorldSourceKind::MinecraftDefault, WorldSourceAccess::Direct,
-                           WorldSourceAvailability::Available, minecraft_roots});
-    }
-    appendUserFolders(sources, customPaths, WorldSourceAvailability::Available);
-#elif defined(Q_OS_ANDROID)
-    // Shared folders need the user to grant "all files access" before the
-    // native filesystem APIs can see them. The activity requests it on launch.
-    const auto availability =
-        allFilesAccess ? WorldSourceAvailability::Available : WorldSourceAvailability::NeedsAllFiles;
-    appendUserFolders(sources, customPaths, availability);
-    // MojangExternal is supplied by the privileged access layer in a later phase.
+    appendMinecraftPaths(sources, scanLeviPath);
 #else
-    appendUserFolders(sources, customPaths, WorldSourceAvailability::Available);
+    Q_UNUSED(scanLeviPath);
 #endif
 
+#ifdef Q_OS_ANDROID
+    sources.push_back({.path = QStringLiteral("/data/user/0/com.mojang.minecraftpe/games/com.mojang/minecraftWorlds"),
+                       .kind = WorldSourceKind::AndroidLegacy});
+    sources.push_back({.path = QStringLiteral("/data/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
+                       .kind = WorldSourceKind::AndroidReleaseInternal});
+    sources.push_back(
+        {.path = QStringLiteral("/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
+         .kind = WorldSourceKind::AndroidReleaseExternal});
+#endif
+
+    QSet<QString> seen;
+    for (const auto& path : customPaths) {
+        const QString normalized = platform::normalizeLocalPath(path);
+        if (normalized.isEmpty() || seen.contains(normalized)) continue;
+        seen.insert(normalized);
+        sources.push_back({.path = normalized, .kind = WorldSourceKind::External});
+    }
     return sources;
+}
+
+WorldMetadata readWorldMetadata(const QString& path) {
+    const auto normalized = platform::normalizeLocalPath(path);
+    if (normalized.isEmpty()) return {};
+    const auto source = platform::worldFileSource(normalized);
+    return source ? readMetadata(normalized, *source) : WorldMetadata{};
 }
 
 std::vector<WorldMetadata> scanWorldSource(const WorldSource& source) {
     std::vector<WorldMetadata> result;
-
-    if (source.kind == WorldSourceKind::MinecraftDefault) {
-        LevelPathManager manager;
-        manager.init();
-        manager.scanNormalPaths();
-        manager.scanModernPaths();
-        result = manager.discoveredLevels();
-    } else {
-        for (const auto& root : source.roots) {
-            if (!QFileInfo(root).isDir()) continue;
-
-            // A selected folder may be the world itself or a directory that
-            // contains several world folders.
-            const auto self = WorldRepository::readWorld(root);
-            if (self.isValid) {
-                result.push_back(self);
-                continue;
-            }
-            const QDir dir(root);
-            for (const auto& entry : dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
-                const auto world = WorldRepository::readWorld(entry.absoluteFilePath());
-                if (world.isValid) result.push_back(world);
-            }
-        }
-    }
-
-    result.erase(std::remove_if(result.begin(), result.end(), [](const WorldMetadata& world) { return !world.isValid; }),
-                 result.end());
-    for (auto& world : result) {
+    if (source.path.isEmpty()) return result;
+    const auto files = platform::worldFileSource(source.path);
+    if (!files) return result;
+    QStringList children;
+    if (!files->children(source.path, &children).isEmpty()) return result;
+    for (const auto& name : children) {
+        const QString path = QDir(source.path).filePath(name);
+        platform::WorldFileInfo file;
+        if (!files->fileInfo(path, file).isEmpty() || !file.isDirectory || file.isLink) continue;
+        auto world = readMetadata(path, *files);
+        if (!world.isValid) continue;
         world.sourceKind = source.kind;
-        world.sourceLabel = source.label.toStdString();
+        result.push_back(std::move(world));
     }
+    qInfo().noquote() << "[WorldScan] Source complete: path=" << source.path << "accepted=" << result.size();
     return result;
+}
+
+QString worldSourceLabel(WorldSourceKind kind) {
+    switch (kind) {
+        case WorldSourceKind::Release:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Release"));
+        case WorldSourceKind::Preview:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Preview"));
+        case WorldSourceKind::NetEase:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "NetEase"));
+        case WorldSourceKind::Levi:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Levi"));
+        case WorldSourceKind::AndroidLegacy:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Legacy"));
+        case WorldSourceKind::AndroidReleaseInternal:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Release internal"));
+        case WorldSourceKind::AndroidReleaseExternal:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "Release external"));
+        case WorldSourceKind::AppInternal:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "App internal"));
+        case WorldSourceKind::External:
+            return QString::fromUtf8(QT_TRANSLATE_NOOP("WorldSource", "External"));
+    }
+    return {};
 }

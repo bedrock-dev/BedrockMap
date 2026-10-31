@@ -11,7 +11,7 @@ AppCard {
     property int pendingExportRow: -1
     readonly property var statistics: controller ? controller.statistics : []
 
-    FileDialog {
+    FileUrlDialog {
         id: exportDialog
         title: qsTr("Export binary data")
         fileMode: FileDialog.SaveFile
@@ -19,8 +19,10 @@ AppCard {
         onAccepted: {
             const row = root.pendingExportRow
             root.pendingExportRow = -1
-            if (!root.controller || !root.controller.exportStatistic(row, String(selectedFile)))
-                Notifications.error(qsTr("Could not export binary data."))
+            if (!root.controller || !root.controller.exportStatistic(row, selectedUrl))
+                App.notifications.error(qsTr("Export failed"))
+            else
+                App.notifications.info(qsTr("Export successful"))
         }
     }
 
@@ -116,14 +118,12 @@ AppCard {
                         text: modelData.hash
                         color: Theme.muted
                         font.pixelSize: Theme.fontCaption
-                        font.family: "JetBrains Mono"
                     }
                     AppButton {
                         Layout.preferredWidth: 68
                         text: qsTr("View binary")
                         compact: true
-                        onClicked: {
-                        }
+                        onClicked: {}
                     }
                     AppButton {
                         Layout.preferredWidth: 60

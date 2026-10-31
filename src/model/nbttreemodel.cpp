@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <limits>
 
+#include "magic-enum/magic_enum.hpp"
+
 using namespace bl::nbt;
 
 namespace {
@@ -65,6 +67,17 @@ void NbtTreeModel::setRoot(compound_tag* root) {
     emit countChanged();
 }
 
+bool NbtTreeModel::setRootChild(std::unique_ptr<abstract_tag> tag) {
+    if (!root_ || !editable_ || !tag || tag->key().empty()) return false;
+    beginResetModel();
+    root_->put(tag.release());
+    rebuild();
+    endResetModel();
+    emit countChanged();
+    emit documentChanged();
+    return true;
+}
+
 int NbtTreeModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid()) return 0;
     return static_cast<int>(visible_.size());
@@ -116,35 +129,11 @@ QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {
 }
 
 QString NbtTreeModel::iconForType(tag_type type) {
-    switch (type) {
-        case Byte:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Byte.png");
-        case Short:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Short.png");
-        case Int:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Int.png");
-        case Long:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Long.png");
-        case Float:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Float.png");
-        case Double:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Double.png");
-        case ByteArray:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Byte_Array.png");
-        case String:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_String.png");
-        case List:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_List.png");
-        case Compound:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Compound.png");
-        case IntArray:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Int_Array.png");
-        case LongArray:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_Long_Array.png");
-        case End:
-            return QStringLiteral("qrc:/res/icons/nbt/TAG_End.png");
-    }
-    return QStringLiteral("qrc:/res/icons/nbt/TAG_End.png");
+    constexpr auto fallback = "qrc:/bedrockmap/icons/nbt/TAG_End.png";
+    const auto name = magic_enum::enum_name(type);
+    if (name.empty()) return QString::fromLatin1(fallback);
+    return QStringLiteral("qrc:/bedrockmap/icons/nbt/TAG_%1.png")
+        .arg(QString::fromLatin1(name.data(), static_cast<qsizetype>(name.size())));
 }
 
 QString NbtTreeModel::hexValueText(const abstract_tag* tag) {

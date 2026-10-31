@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="BedrockMapTheme" parent="BedrockMapThemeBase">
+        <item name="android:windowSplashScreenBackground">@color/startup_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/bedrockmap</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/startup_background</item>
+    </style>
+</resources>

@@ -14,12 +14,12 @@
 #include <QVector>
 #include <functional>
 
-#include "model/mapsession.h"
 #include "controller/regionimportcontroller.h"
+#include "model/mapviewstate.h"
 
 class AsyncLevelLoader;
 
-/// Commands and observable state for one map session.
+/// Commands and observable state for one map view.
 ///
 /// This class contains no dialog or rendering code. QML controls and map items
 /// use it as the map's command and state interface.
@@ -34,15 +34,14 @@ class MapController final : public QObject {
     Q_PROPERTY(int selectionRectCount READ selectionRectCount NOTIFY selectionChanged)
     Q_PROPERTY(bool operationRunning READ operationRunning NOTIFY operationChanged)
     Q_PROPERTY(bool worldLoaded READ worldLoaded NOTIFY worldStateChanged)
-    Q_PROPERTY(quint64 tileRevision READ tileRevision NOTIFY tileRevisionChanged)
     Q_PROPERTY(RegionImportController* regionImport READ regionImport CONSTANT)
 
    public:
-    explicit MapController(MapSession* session, QObject* parent = nullptr);
+    explicit MapController(MapViewState* map_view_state, QObject* parent = nullptr);
     ~MapController() override;
 
     [[nodiscard]] int dimension() const;
-    /// RenderOption::LayerType the map is showing (0 = terrain, 1 = biomes).
+    /// MapRenderOptions::LayerType the map is showing (0 = terrain, 1 = biomes).
     [[nodiscard]] int layer() const;
     [[nodiscard]] bool transparentVoid() const;
     [[nodiscard]] MapCameraState cameraState() const;
@@ -67,9 +66,6 @@ class MapController final : public QObject {
     Q_INVOKABLE bool confirmImport();
     Q_INVOKABLE void cancelImport();
     void setEditingBlocked(bool blocked) { editing_blocked_ = blocked; }
-    /// Enqueue a region bake without synchronously reading or baking an image.
-    Q_INVOKABLE void requestRegionTile(int regionX, int regionZ, int dimension);
-    [[nodiscard]] quint64 tileRevision() const { return tile_revision_; }
 
     Q_INVOKABLE void setViewportSize(const QSize& size);
     Q_INVOKABLE void setDimension(int dimension);
@@ -95,9 +91,14 @@ class MapController final : public QObject {
     Q_INVOKABLE bool copySelectionAsync();
     Q_INVOKABLE bool exportSelectionAsync(const QUrl& destination);
     [[nodiscard]] Q_INVOKABLE QVariantList biomeOptions() const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap mapFilterOptions() const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap defaultMapFilterOptions() const;
+    Q_INVOKABLE bool applyMapFilterOptions(const QVariantMap& options);
     void waitForOperation();
     Q_INVOKABLE void copyText(const QString& text) const;
     void setLevelLoader(AsyncLevelLoader* loader);
+    /// Publish externally edited chunks to the map and terrain providers.
+    void refreshRegions(const QRegion& region, int dimension);
 
    signals:
     void dimensionChanged();
@@ -112,12 +113,11 @@ class MapController final : public QObject {
     void operationFinished();
     void operationFailed(const QString& message);
     void mapDataChanged(const QRegion& region, int dimension);
+    void mapFilterChanged();
     void worldStateChanged();
-    void tileRevisionChanged();
-    void regionTileReady(int regionX, int regionZ, int dimension);
 
    private:
-    [[nodiscard]] MapView* view() const;
+    [[nodiscard]] MapViewState* mapViewState() const;
     /// Re-apply the configured zoom limits for the current loader state.
     void applyZoomLimits();
 
@@ -133,15 +133,13 @@ class MapController final : public QObject {
     bool startRegionOperation(SelectionOperation operation, const QRegion& region, int dimension);
     void finishSelectionOperation();
 
-    MapSession* session_{nullptr};
+    MapViewState* map_view_state_{nullptr};
     RegionImportController region_import_;
     AsyncLevelLoader* loader_{nullptr};
     QFutureWatcher<OperationResult> operation_watcher_;
     bool operation_running_{false};
     QRegion operation_region_;
     int operation_dimension_{0};
-    quint64 tile_revision_{0};
-    bool tile_refresh_pending_{false};
     bool editing_blocked_{false};
 };
 

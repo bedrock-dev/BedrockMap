@@ -8,22 +8,27 @@ Item {
     id: page
     property var session: null
     readonly property var controller: session ? session.controller : null
-    readonly property bool stacked: Theme.touch || Theme.compact
-    signal closeRequested()
+    readonly property bool stacked: Theme.compact
+    readonly property bool portrait: height > width
+    signal backRequested
     objectName: "mcstructurePage"
 
-    Rectangle { anchors.fill: parent; color: Theme.background }
+    Rectangle {
+        anchors.fill: parent
+        color: Theme.background
+    }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
         AppTitleBar {
+            visible: page.stacked
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.topbarHeight
             title: page.session ? page.session.title : qsTr("Structure preview")
             backVisible: true
-            onBackRequested: page.closeRequested()
+            onBackRequested: page.backRequested()
         }
 
         SplitView {
@@ -34,6 +39,7 @@ Item {
             orientation: page.stacked ? Qt.Vertical : Qt.Horizontal
 
             NbtEditorSurface {
+                visible: !page.portrait
                 SplitView.minimumWidth: page.stacked ? 0 : 180
                 SplitView.minimumHeight: page.stacked ? 100 : 0
                 SplitView.preferredWidth: panes.width * 0.45

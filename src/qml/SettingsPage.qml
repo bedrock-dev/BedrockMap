@@ -9,26 +9,30 @@ Item {
     id: page
     property int category: 0
     readonly property bool compact: Theme.compact
-    readonly property var categoryNames: [qsTr("Interface"), qsTr("Map"), qsTr("Cache"), qsTr("Rendering"), qsTr(
-            "Misc"), qsTranslate("AboutDialog", "aboutDialog.title.about")]
+    readonly property var categoryNames: [qsTr("Interface"), qsTr("Map"), qsTr("Cache"), qsTr("Rendering"), qsTr("Misc"),
+        qsTranslate("AboutDialog", "aboutDialog.title.about")]
     readonly property var zoomScaleLevels: [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-    readonly property var renderBackendValues: Qt.platform.os === "android"
-                                                ? ["automatic", "opengl", "vulkan"]
-                                                : Qt.platform.os === "windows"
-                                                  ? ["automatic", "d3d11", "opengl", "vulkan"]
-                                                  : ["automatic", "opengl", "vulkan"]
-    readonly property var renderBackendNames: Qt.platform.os === "android"
-                                               ? [qsTr("Automatic"), qsTr("OpenGL ES"), qsTr("Vulkan")]
-                                               : Qt.platform.os === "windows"
-                                                 ? [qsTr("Automatic"), qsTr("Direct3D 11"), qsTr("OpenGL"), qsTr("Vulkan")]
-                                                 : [qsTr("Automatic"), qsTr("OpenGL"), qsTr("Vulkan")]
+    readonly property var renderBackendValues: Qt.platform.os === "android" ? ["automatic", "opengl", "vulkan"] :
+                                                                              Qt.platform.os === "windows"
+                                                                              ? ["automatic", "d3d11", "opengl",
+                                                                                 "vulkan"] : ["automatic", "opengl",
+                                                                                              "vulkan"]
+    readonly property var renderBackendNames: Qt.platform.os === "android" ? [qsTr("Automatic"), qsTr("OpenGL ES"), qsTr(
+                                                                                  "Vulkan")] : Qt.platform.os
+                                                                             === "windows" ? [qsTr("Automatic"), qsTr(
+                                                                                                  "Direct3D 11"), qsTr(
+                                                                                                  "OpenGL"), qsTr(
+                                                                                                  "Vulkan")] : [qsTr(
+                                                                                                                    "Automatic"),
+                                                                                                                qsTr("OpenGL"),
+                                                                                                                qsTr("Vulkan")]
 
     FolderDialog {
         id: worldFolderDialog
         title: qsTr("Add world folder")
         onAccepted: {
-            Settings.addCustomWorldPath(String(selectedFolder))
-            Settings.saveWorldSources()
+            App.settings.addCustomWorldPath(String(selectedFolder))
+            App.settings.saveWorldSources()
         }
     }
 
@@ -44,7 +48,7 @@ Item {
 
         AppSegmentedControl {
             Layout.fillWidth: true
-            Layout.preferredHeight: Theme.touch ? Theme.controlHeight + 6 : 40
+            Layout.preferredHeight: Theme.touch ? Theme.segmentedHeight : 40
             options: page.categoryNames
             currentIndex: page.category
             onActivated: index => page.category = index
@@ -68,7 +72,7 @@ Item {
                 }
             }
             ColumnLayout {
-                width: Math.max(scroll.availableWidth, 320)
+                width: scroll.availableWidth
                 spacing: Theme.gapLarge
                 RowLayout {
                     Layout.fillWidth: true
@@ -84,7 +88,7 @@ Item {
                         visible: !page.compact
                         text: qsTr("Save")
                         primary: true
-                        onClicked: Settings.save()
+                        onClicked: App.settings.save()
                     }
                 }
                 ColumnLayout {
@@ -97,10 +101,10 @@ Item {
                             label: qsTr("Theme")
                             AppComboBox {
                                 model: [qsTr("Light"), qsTr("Dark"), qsTr("System")]
-                                currentIndex: Settings.colorTheme === "light" ? 0 : Settings.colorTheme
-                                                                                     === "dark" ? 1 : 2
+                                currentIndex: App.settings.colorTheme === "light" ? 0 : App.settings.colorTheme
+                                                                                    === "dark" ? 1 : 2
                                 onActivated: {
-                                    Settings.colorTheme = ["light", "dark", "system"][currentIndex]
+                                    App.settings.colorTheme = ["light", "dark", "system"][currentIndex]
                                 }
                             }
                         }
@@ -108,8 +112,8 @@ Item {
                             label: qsTr("Language")
                             AppComboBox {
                                 model: [qsTr("Chinese"), qsTr("English")]
-                                currentIndex: Settings.language === "en" ? 1 : 0
-                                onActivated: Settings.language = currentIndex === 1 ? "en" : "zh_CN"
+                                currentIndex: App.settings.language === "en" ? 1 : 0
+                                onActivated: App.settings.language = currentIndex === 1 ? "en" : "zh_CN"
                             }
                         }
                         // The icon theme stays in config.ini and is not offered here.
@@ -118,16 +122,23 @@ Item {
                             AppSpinBox {
                                 from: 6
                                 to: 96
-                                value: Settings.fontSize
-                                onValueModified: Settings.fontSize = value
+                                value: App.settings.fontSize
+                                onValueModified: App.settings.fontSize = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Collapse sidebar")
                             AppSwitch {
-                                checked: Settings.collapseSidebarOnStartup
-                                onToggled: Settings.collapseSidebarOnStartup = checked
+                                checked: App.settings.collapseSidebarOnStartup
+                                onToggled: App.settings.collapseSidebarOnStartup = checked
                                 tooltip: qsTr("Automatically collapse the sidebar on startup")
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Show debug panel button")
+                            AppSwitch {
+                                checked: App.settings.showMapDebugButton
+                                onToggled: App.settings.showMapDebugButton = checked
                             }
                         }
                         // One colour drives the whole accent family: the fill, the
@@ -135,27 +146,34 @@ Item {
                         SettingRow {
                             label: qsTr("Accent color")
                             ColumnLayout {
-                                Layout.preferredWidth: 240
+                                Layout.preferredWidth: Theme.ui(240)
                                 spacing: Theme.gapSmall
-                                RowLayout {
+                                Flow {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: implicitHeight
                                     spacing: Theme.gapSmall
                                     Repeater {
                                         model: ["#72d572", "#4c9aff", "#b57bff", "#ff9f43", "#ff6b6b", "#31c9c0"]
-                                        delegate: Rectangle {
+                                        delegate: Item {
+                                            id: swatch
                                             required property string modelData
-                                            width: Theme.touch ? 28 : 18
+                                            width: Theme.touch ? Theme.controlHeight : 18
                                             height: width
-                                            radius: width / 2
-                                            color: modelData
-                                            border.width: Settings.accentColor === modelData ? 2 : 1
-                                            border.color: Settings.accentColor === modelData ? Theme.text :
-                                                                                                    (swatchMouse.pressed
-                                                                                                     ? Theme.accent :
-                                                                                                       Theme.border)
+                                            Rectangle {
+                                                anchors.centerIn: parent
+                                                width: Theme.touch ? Theme.iconLargeSize : 18
+                                                height: width
+                                                radius: width / 2
+                                                color: swatch.modelData
+                                                border.width: App.settings.accentColor === swatch.modelData ? 2 : 1
+                                                border.color: App.settings.accentColor === swatch.modelData
+                                                              ? Theme.text : (swatchMouse.pressed ? Theme.accent :
+                                                                                                    Theme.border)
+                                            }
                                             MouseArea {
                                                 id: swatchMouse
                                                 anchors.fill: parent
-                                                onClicked: Settings.accentColor = modelData
+                                                onClicked: App.settings.accentColor = swatch.modelData
                                             }
                                         }
                                     }
@@ -164,8 +182,8 @@ Item {
                                     spacing: Theme.gapSmall
                                     AppColorField {
                                         Layout.fillWidth: true
-                                        value: Settings.accentColor
-                                        onEdited: color => Settings.accentColor = color
+                                        value: App.settings.accentColor
+                                        onEdited: color => App.settings.accentColor = color
                                     }
                                 }
                             }
@@ -181,17 +199,17 @@ Item {
                         SettingRow {
                             label: qsTr("Minimum scale")
                             AppComboBox {
-                                model: page.zoomScaleLevels.filter(scale => scale <= Settings.maximumScaleLevel)
-                                currentIndex: model.indexOf(Settings.minimumScaleLevel)
-                                onActivated: Settings.minimumScaleLevel = model[currentIndex]
+                                model: page.zoomScaleLevels.filter(scale => scale <= App.settings.maximumScaleLevel)
+                                currentIndex: model.indexOf(App.settings.minimumScaleLevel)
+                                onActivated: App.settings.minimumScaleLevel = model[currentIndex]
                             }
                         }
                         SettingRow {
                             label: qsTr("Maximum scale")
                             AppComboBox {
-                                model: page.zoomScaleLevels.filter(scale => scale >= Settings.minimumScaleLevel)
-                                currentIndex: model.indexOf(Settings.maximumScaleLevel)
-                                onActivated: Settings.maximumScaleLevel = model[currentIndex]
+                                model: page.zoomScaleLevels.filter(scale => scale >= App.settings.minimumScaleLevel)
+                                currentIndex: model.indexOf(App.settings.maximumScaleLevel)
+                                onActivated: App.settings.maximumScaleLevel = model[currentIndex]
                             }
                         }
                         SettingRow {
@@ -200,37 +218,37 @@ Item {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 1
-                                value: Settings.panInertia
-                                onMoved: Settings.panInertia = value
+                                value: App.settings.panInertia
+                                onMoved: App.settings.panInertia = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Grid color")
                             AppColorField {
-                                value: Settings.gridLineColor
-                                onEdited: color => Settings.gridLineColor = color
+                                value: App.settings.gridLineColor
+                                onEdited: color => App.settings.gridLineColor = color
                             }
                         }
                         SettingRow {
                             label: qsTr("Map selection color")
                             AppColorField {
-                                value: Settings.mapSelectionColor
-                                onEdited: color => Settings.mapSelectionColor = color
+                                value: App.settings.mapSelectionColor
+                                onEdited: color => App.settings.mapSelectionColor = color
                             }
                         }
                         SettingRow {
                             label: qsTr("Void color")
                             AppColorField {
-                                value: Settings.voidMapColor
-                                onEdited: color => Settings.voidMapColor = color
+                                value: App.settings.voidMapColor
+                                onEdited: color => App.settings.voidMapColor = color
                             }
                         }
                         SettingRow {
                             label: qsTr("Tile colors")
                             AppComboBox {
                                 model: [qsTr("Dark"), qsTr("Light")]
-                                currentIndex: Settings.tileColorScheme === "light" ? 1 : 0
-                                onActivated: Settings.tileColorScheme = currentIndex === 1 ? "light" : "dark"
+                                currentIndex: App.settings.tileColorScheme === "light" ? 1 : 0
+                                onActivated: App.settings.tileColorScheme = currentIndex === 1 ? "light" : "dark"
                             }
                         }
                     }
@@ -240,8 +258,8 @@ Item {
                             label: qsTr("Actor style")
                             AppComboBox {
                                 model: [qsTr("Individual"), qsTr("Consolidated")]
-                                currentIndex: Settings.actorRenderStyle
-                                onActivated: Settings.actorRenderStyle = currentIndex
+                                currentIndex: App.settings.actorRenderStyle
+                                onActivated: App.settings.actorRenderStyle = currentIndex
                             }
                         }
                         SettingRow {
@@ -249,15 +267,15 @@ Item {
                             AppSpinBox {
                                 from: 0
                                 to: 32
-                                value: Settings.actorBorderWidth
-                                onValueModified: Settings.actorBorderWidth = value
+                                value: App.settings.actorBorderWidth
+                                onValueModified: App.settings.actorBorderWidth = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Border color")
                             AppColorField {
-                                value: Settings.actorBorderColor
-                                onEdited: color => Settings.actorBorderColor = color
+                                value: App.settings.actorBorderColor
+                                onEdited: color => App.settings.actorBorderColor = color
                             }
                         }
                     }
@@ -266,8 +284,8 @@ Item {
                         SettingRow {
                             label: qsTr("Editor color")
                             AppColorField {
-                                value: Settings.chunkEditorHighlightColor
-                                onEdited: color => Settings.chunkEditorHighlightColor = color
+                                value: App.settings.chunkEditorHighlightColor
+                                onEdited: color => App.settings.chunkEditorHighlightColor = color
                             }
                         }
                         SettingRow {
@@ -275,15 +293,15 @@ Item {
                             AppSpinBox {
                                 from: 0
                                 to: 64
-                                value: Settings.chunkEditorHighlightWidth
-                                onValueModified: Settings.chunkEditorHighlightWidth = value
+                                value: App.settings.chunkEditorHighlightWidth
+                                onValueModified: App.settings.chunkEditorHighlightWidth = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Voxel selection color")
                             AppColorField {
-                                value: Settings.voxelSelectionColor
-                                onEdited: color => Settings.voxelSelectionColor = color
+                                value: App.settings.voxelSelectionColor
+                                onEdited: color => App.settings.voxelSelectionColor = color
                             }
                         }
                     }
@@ -299,8 +317,8 @@ Item {
                             AppSpinBox {
                                 from: 0
                                 to: 10000000
-                                value: Settings.regionCacheSize
-                                onValueModified: Settings.regionCacheSize = value
+                                value: App.settings.regionCacheSize
+                                onValueModified: App.settings.regionCacheSize = value
                             }
                         }
                         SettingRow {
@@ -308,17 +326,8 @@ Item {
                             AppSpinBox {
                                 from: 0
                                 to: 10000000
-                                value: Settings.emptyRegionCacheSize
-                                onValueModified: Settings.emptyRegionCacheSize = value
-                            }
-                        }
-                        SettingRow {
-                            label: qsTr("Height map cache size")
-                            AppSpinBox {
-                                from: 0
-                                to: 10000000
-                                value: Settings.heightMapCacheSize
-                                onValueModified: Settings.heightMapCacheSize = value
+                                value: App.settings.emptyRegionCacheSize
+                                onValueModified: App.settings.emptyRegionCacheSize = value
                             }
                         }
                         SettingRow {
@@ -326,8 +335,8 @@ Item {
                             AppSpinBox {
                                 from: 1
                                 to: 128
-                                value: Settings.threadCount
-                                onValueModified: Settings.threadCount = value
+                                value: App.settings.threadCount
+                                onValueModified: App.settings.threadCount = value
                             }
                         }
                     }
@@ -352,11 +361,16 @@ Item {
                             }
                         }
                         Repeater {
-                            model: Settings.worldSources
+                            model: App.settings.worldSources
                             delegate: RowLayout {
                                 required property var modelData
                                 Layout.fillWidth: true
                                 spacing: Theme.gapSmall
+                                Text {
+                                    text: qsTranslate("WorldSource", modelData.label)
+                                    color: Theme.text
+                                    font.pixelSize: Theme.fontCaption
+                                }
                                 Text {
                                     Layout.fillWidth: true
                                     text: modelData.path
@@ -365,9 +379,8 @@ Item {
                                     elide: Text.ElideMiddle
                                 }
                                 Text {
-                                    visible: modelData.availability !== "Available"
-                                    text: modelData.availability === "NeedsAllFiles" ? qsTr("Requires All files access") :
-                                                                                        qsTr("Requires privileged access")
+                                    visible: !modelData.path
+                                    text: qsTr("Not configured")
                                     color: Theme.warning
                                     font.pixelSize: Theme.fontCaption
                                 }
@@ -377,8 +390,8 @@ Item {
                                     label: qsTr("Remove world folder")
                                     buttonSize: 28
                                     onClicked: {
-                                        Settings.removeCustomWorldPath(modelData.path)
-                                        Settings.saveWorldSources()
+                                        App.settings.removeCustomWorldPath(modelData.path)
+                                        App.settings.saveWorldSources()
                                     }
                                 }
                             }
@@ -389,33 +402,33 @@ Item {
                         SettingRow {
                             label: qsTr("Load global data")
                             AppSwitch {
-                                checked: Settings.loadGlobalData
-                                onToggled: Settings.loadGlobalData = checked
+                                checked: App.settings.loadGlobalData
+                                onToggled: App.settings.loadGlobalData = checked
                             }
                         }
                         SettingRow {
                             label: qsTr("Maximum global data entries")
                             AppSpinBox {
-                                enabled: Settings.loadGlobalData
+                                enabled: App.settings.loadGlobalData
                                 from: 0
                                 to: 10000000
-                                value: Settings.maxGlobalDataLoadCount
-                                onValueModified: Settings.maxGlobalDataLoadCount = value
+                                value: App.settings.maxGlobalDataLoadCount
+                                onValueModified: App.settings.maxGlobalDataLoadCount = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Preload chunk coordinates")
                             AppSwitch {
-                                checked: Settings.preloadAllChunkCoords
-                                onToggled: Settings.preloadAllChunkCoords = checked
+                                checked: App.settings.preloadAllChunkCoords
+                                onToggled: App.settings.preloadAllChunkCoords = checked
                             }
                         }
                         SettingRow {
                             label: qsTr("Terrain overview")
                             AppSwitch {
-                                enabled: Settings.preloadAllChunkCoords
-                                checked: enabled && Settings.chunkOverviewEnabled
-                                onToggled: Settings.chunkOverviewEnabled = checked
+                                enabled: App.settings.preloadAllChunkCoords
+                                checked: enabled && App.settings.chunkOverviewEnabled
+                                onToggled: App.settings.chunkOverviewEnabled = checked
                             }
                         }
                     }
@@ -425,15 +438,15 @@ Item {
                             label: qsTr("Mode")
                             AppComboBox {
                                 model: [qsTr("Disabled"), qsTr("Enabled"), qsTr("Auto detect")]
-                                currentIndex: Settings.leveldbXorMode
-                                onActivated: Settings.leveldbXorMode = currentIndex
+                                currentIndex: App.settings.leveldbXorMode
+                                onActivated: App.settings.leveldbXorMode = currentIndex
                             }
                         }
                         SettingRow {
-                            label: qsTr("Key")
+                            label: qsTr("Secret key")
                             AppTextField {
-                                text: Settings.leveldbXorKey
-                                onEditingFinished: Settings.leveldbXorKey = text
+                                text: App.settings.leveldbXorKey
+                                onEditingFinished: App.settings.leveldbXorKey = text
                             }
                         }
                     }
@@ -442,15 +455,15 @@ Item {
                         SettingRow {
                             label: qsTr("Check for updates")
                             AppSwitch {
-                                checked: Settings.checkUpdate
-                                onToggled: Settings.checkUpdate = checked
+                                checked: App.settings.checkUpdate
+                                onToggled: App.settings.checkUpdate = checked
                             }
                         }
                         SettingRow {
                             label: qsTr("Scan LeviLauncher paths")
                             AppSwitch {
-                                checked: Settings.scanLeviPath
-                                onToggled: Settings.scanLeviPath = checked
+                                checked: App.settings.scanLeviPath
+                                onToggled: App.settings.scanLeviPath = checked
                             }
                         }
                     }
@@ -460,13 +473,13 @@ Item {
                     Layout.fillWidth: true
                     spacing: Theme.gapMedium
                     SettingGroup {
-                        title: qsTr("Renderer")
+                        title: qsTr("Backend")
                         SettingRow {
                             label: qsTr("Graphics backend")
                             AppComboBox {
                                 model: page.renderBackendNames
-                                currentIndex: Math.max(0, page.renderBackendValues.indexOf(Settings.renderBackend))
-                                onActivated: Settings.renderBackend = page.renderBackendValues[currentIndex]
+                                currentIndex: Math.max(0, page.renderBackendValues.indexOf(App.settings.renderBackend))
+                                onActivated: App.settings.renderBackend = page.renderBackendValues[currentIndex]
                             }
                         }
                         Text {
@@ -476,61 +489,48 @@ Item {
                             font.pixelSize: Theme.fontCaption
                             wrapMode: Text.WordWrap
                         }
+                    }
+                    SettingGroup {
+                        title: qsTr("Shadows and occlusion")
                         SettingRow {
-                            label: qsTr("Orthographic view")
-                            AppSwitch {
-                                checked: Settings.gpuOrthographicView
-                                onToggled: Settings.gpuOrthographicView = checked
-                            }
-                        }
-                        SettingRow {
-                            label: qsTr("GPU shadow strength")
+                            label: qsTr("Shadow strength")
                             AppSlider {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 1
-                                value: Settings.gpuShadowStrength
-                                onMoved: Settings.gpuShadowStrength = value
+                                value: App.settings.gpuShadowStrength
+                                onMoved: App.settings.gpuShadowStrength = value
                             }
                         }
                         SettingRow {
-                            label: qsTr("GPU ambient occlusion")
+                            label: qsTr("Shadow precision")
+                            AppComboBox {
+                                model: [4, 8, 16, 32]
+                                currentIndex: [4, 8, 16, 32].indexOf(App.settings.gpuShadowStep)
+                                onActivated: App.settings.gpuShadowStep = model[currentIndex]
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Ambient occlusion")
                             AppSlider {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 1
-                                value: Settings.gpuAoStrength
-                                onMoved: Settings.gpuAoStrength = value
+                                value: App.settings.gpuAoStrength
+                                onMoved: App.settings.gpuAoStrength = value
                             }
                         }
-                        SettingRow {
-                            label: qsTr("GPU bevel strength")
-                            AppSlider {
-                                Layout.preferredWidth: 220
-                                from: 0
-                                to: 1
-                                value: Settings.gpuBevelStrength
-                                onMoved: Settings.gpuBevelStrength = value
-                            }
-                        }
-                        SettingRow {
-                            label: qsTr("GPU bevel width")
-                            AppSlider {
-                                Layout.preferredWidth: 220
-                                from: 0.25
-                                to: 2
-                                value: Settings.gpuBevelWidth
-                                onMoved: Settings.gpuBevelWidth = value
-                            }
-                        }
+                    }
+                    SettingGroup {
+                        title: qsTr("Terrain appearance")
                         SettingRow {
                             label: qsTr("Saturation")
                             AppSlider {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 2
-                                value: Settings.gpuSaturation
-                                onMoved: Settings.gpuSaturation = value
+                                value: App.settings.gpuSaturation
+                                onMoved: App.settings.gpuSaturation = value
                             }
                         }
                         SettingRow {
@@ -539,8 +539,28 @@ Item {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 2
-                                value: Settings.gpuBrightness
-                                onMoved: Settings.gpuBrightness = value
+                                value: App.settings.gpuBrightness
+                                onMoved: App.settings.gpuBrightness = value
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Bevel strength")
+                            AppSlider {
+                                Layout.preferredWidth: 220
+                                from: 0
+                                to: 1
+                                value: App.settings.gpuBevelStrength
+                                onMoved: App.settings.gpuBevelStrength = value
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Bevel width")
+                            AppSlider {
+                                Layout.preferredWidth: 220
+                                from: 0.25
+                                to: 2
+                                value: App.settings.gpuBevelWidth
+                                onMoved: App.settings.gpuBevelWidth = value
                             }
                         }
                         SettingRow {
@@ -549,25 +569,8 @@ Item {
                                 Layout.preferredWidth: 220
                                 from: 0
                                 to: 16
-                                value: Settings.gpuBiomeBlendBlocks
-                                onMoved: Settings.gpuBiomeBlendBlocks = value
-                            }
-                        }
-                        SettingRow {
-                            label: qsTr("Shadow precision")
-                            AppComboBox {
-                                model: [4, 8, 16, 32]
-                                currentIndex: [4, 8, 16, 32].indexOf(Settings.gpuShadowStep)
-                                onActivated: Settings.gpuShadowStep = model[currentIndex]
-                            }
-                        }
-                        SettingRow {
-                            label: qsTr("Tile snapshot cache (MiB)")
-                            AppSpinBox {
-                                from: 8
-                                to: 512
-                                value: Settings.gpuTileSnapshotCacheSizeMB
-                                onValueModified: Settings.gpuTileSnapshotCacheSizeMB = value
+                                value: App.settings.gpuBiomeBlendBlocks
+                                onMoved: App.settings.gpuBiomeBlendBlocks = value
                             }
                         }
                     }
@@ -576,36 +579,57 @@ Item {
                         SettingRow {
                             label: qsTr("Enabled")
                             AppSwitch {
-                                checked: Settings.gpuGrassHeightEnabled
-                                onToggled: Settings.gpuGrassHeightEnabled = checked
+                                checked: App.settings.gpuGrassHeightEnabled
+                                onToggled: App.settings.gpuGrassHeightEnabled = checked
                             }
                         }
                         SettingRow {
                             label: qsTr("Base height")
                             AppSpinBox {
-                                enabled: Settings.gpuGrassHeightEnabled
+                                enabled: App.settings.gpuGrassHeightEnabled
                                 from: -128
                                 to: 512
-                                value: Settings.gpuGrassHeightBase
-                                onValueModified: Settings.gpuGrassHeightBase = value
+                                value: App.settings.gpuGrassHeightBase
+                                onValueModified: App.settings.gpuGrassHeightBase = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Range")
                             AppSpinBox {
-                                enabled: Settings.gpuGrassHeightEnabled
+                                enabled: App.settings.gpuGrassHeightEnabled
                                 from: 1
                                 to: 512
-                                value: Settings.gpuGrassHeightRange
-                                onValueModified: Settings.gpuGrassHeightRange = value
+                                value: App.settings.gpuGrassHeightRange
+                                onValueModified: App.settings.gpuGrassHeightRange = value
                             }
                         }
                         SettingRow {
                             label: qsTr("Marker color")
                             AppColorField {
-                                enabled: Settings.gpuGrassHeightEnabled
-                                value: Settings.gpuGrassHeightColor
-                                onEdited: color => Settings.gpuGrassHeightColor = color
+                                enabled: App.settings.gpuGrassHeightEnabled
+                                value: App.settings.gpuGrassHeightColor
+                                onEdited: color => App.settings.gpuGrassHeightColor = color
+                            }
+                        }
+                    }
+                    SettingGroup {
+                        title: qsTr("Performance")
+                        SettingRow {
+                            label: qsTr("High-detail map")
+                            AppSwitch {
+                                checked: App.settings.gpuHighDetailMap
+                                onToggled: App.settings.gpuHighDetailMap = checked
+                                tooltip: qsTr(
+                                             "Keep full-resolution terrain and shading further out when zooming. Uses up to 256 MiB more GPU memory and builds more tiles.")
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Tile snapshot cache (MiB)")
+                            AppSpinBox {
+                                from: 8
+                                to: 512
+                                value: App.settings.gpuTileSnapshotCacheSizeMB
+                                onValueModified: App.settings.gpuTileSnapshotCacheSizeMB = value
                             }
                         }
                     }
@@ -628,7 +652,7 @@ Item {
                                     anchors.centerIn: parent
                                     width: 58
                                     height: 58
-                                    source: "qrc:/BedrockMap.svg"
+                                    source: "qrc:/bedrockmap/icons/app.svg"
                                     sourceSize.width: 116
                                     sourceSize.height: 116
                                     smooth: true
@@ -785,10 +809,4 @@ Item {
         // The second child supplied by each row occupies the trailing column.
     }
 
-    Connections {
-        target: Settings
-        function onSaved() {
-            Notifications.info(qsTr("Settings saved"))
-        }
-    }
 }

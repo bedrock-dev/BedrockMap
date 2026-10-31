@@ -15,25 +15,34 @@ Rectangle {
     property bool stacked: false
     signal clicked
 
+    readonly property real labelHeight: Theme.fontSubtitle + (detail.length > 0 ? Theme.fontBody + Theme.ui(2) : 0)
+    readonly property real rowHeight: Theme.ui(detail.length > 0 ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 :
+                                                                                                                46))
+
     width: parent.width
-    height: stacked ? (Theme.compact ? 64 : 72) : Math.max(
-                         detail.length > 0 ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 : 46),
-                         Theme.touch ? Theme.touchTarget : 0)
+    implicitHeight: stacked ? Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
+                                       + Theme.gapSmall + Theme.cardPadding * 2) : Math.max(rowHeight, Theme.touch
+                                                                                            ? Math.max(
+                                                                                                  Theme.controlHeight,
+                                                                                                  labelHeight
+                                                                                                  + Theme.cardPadding
+                                                                                                  * 2) : 0)
+    height: implicitHeight
     radius: Theme.radiusCard
     color: selected ? Theme.accentSoft : ((mouse.pressed || mouse.containsMouse) && interactive ? Theme.surfaceAlt :
-                                                                                              "transparent")
+                                                                                                  "transparent")
     border.width: 0
     opacity: enabled ? 1.0 : 0.5
 
     Row {
         visible: !root.stacked
-        x: root.compact ? (parent.width - width) / 2 : (Theme.compact ? 8 : 13)
+        x: root.compact ? (parent.width - width) / 2 : Theme.ui(Theme.compact ? 8 : 13)
         width: root.compact ? implicitWidth : parent.width - x * 2
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Theme.compact ? 8 : 13
+        spacing: Theme.ui(Theme.compact ? 8 : 13)
         Item {
-            width: 20
-            height: 20
+            width: Theme.ui(20)
+            height: width
             anchors.verticalCenter: parent.verticalCenter
             AppIcon {
                 anchors.fill: parent
@@ -52,9 +61,9 @@ Rectangle {
         }
         Column {
             visible: !root.compact
-            width: Math.max(0, parent.width - 20 - parent.spacing - 18)
+            width: Math.max(0, parent.width - Theme.ui(20) - parent.spacing - Theme.iconSize)
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 2
+            spacing: Theme.ui(2)
             Text {
                 width: parent.width
                 text: root.label
@@ -81,8 +90,8 @@ Rectangle {
         spacing: Theme.gapSmall
         AppIcon {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 24
-            height: 24
+            width: Theme.iconLargeSize
+            height: width
             name: root.iconName
             fallback: root.icon
             iconSize: width

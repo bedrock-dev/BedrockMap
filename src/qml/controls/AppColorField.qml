@@ -7,9 +7,9 @@ Row {
     property string value
     signal edited(string color)
 
-    width: 224
+    width: Theme.ui(224)
     height: Theme.controlHeight
-    spacing: 6
+    spacing: Theme.ui(6)
 
     AppTextField {
         width: root.width - pickerButton.width - root.spacing
@@ -22,7 +22,7 @@ Row {
     AppIconButton {
         id: pickerButton
         anchors.verticalCenter: parent.verticalCenter
-        buttonSize: Theme.touch ? 36 : 28
+        buttonSize: 28
         iconName: "color_picker"
         label: qsTr("Choose color")
         onClicked: {

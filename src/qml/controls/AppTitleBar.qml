@@ -25,7 +25,7 @@ Rectangle {
 
         AppIconButton {
             visible: root.backVisible
-            icon: "‹"
+            iconName: "back"
             label: qsTr("Back")
             buttonSize: 34
             onClicked: root.backRequested()

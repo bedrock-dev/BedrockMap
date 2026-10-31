@@ -1,25 +1,135 @@
 #include "controller/globaldatacontroller.h"
 
+#include <QCoreApplication>
+#include <QMetaObject>
+#include <QUuid>
 #include <QtConcurrent>
 #include <algorithm>
 #include <utility>
 
+#include "controller/mcstructurevolumesource.h"
 #include "global.h"
 #include "loader/asynclevelloader.h"
 
-GlobalNbtSection::GlobalNbtSection(QString title, QString short_label, QString icon_name,
-                                   std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& raw_keys,
-                                   bool read_only, bool single_record, QObject* parent, const NbtItemPresenter& presenter)
+namespace {
+    NbtItemPresenter rootKeyPresenter(QString icon) {
+        return [icon = std::move(icon)](const bl::nbt::compound_tag*, int, const QString& raw_key) {
+            return NbtItemPresentation{raw_key, icon};
+        };
+    }
+
+    QString keyTagText(const bl::nbt::abstract_tag* tag) {
+        if (!tag) return {};
+        if (const auto* value = tag->as<const bl::nbt::string_tag*>()) return QString::fromStdString(value->value).trimmed();
+        if (const auto* value = tag->as<const bl::nbt::byte_tag*>()) return QString::number(value->value);
+        if (const auto* value = tag->as<const bl::nbt::short_tag*>()) return QString::number(value->value);
+        if (const auto* value = tag->as<const bl::nbt::int_tag*>()) return QString::number(value->value);
+        if (const auto* value = tag->as<const bl::nbt::long_tag*>()) return QString::number(value->value);
+        return {};
+    }
+
+    NbtKeyResolver playerKeyResolver() {
+        return [](bl::nbt::compound_tag* root, int, const QString& existing) {
+            if (existing == QStringLiteral("~local_player") || existing.startsWith(QStringLiteral("player_"))) return existing;
+            const QString server_id = keyTagText(root->get_by_path("ServerId"));
+            return server_id.startsWith(QStringLiteral("player_")) ? server_id : QString{};
+        };
+    }
+
+    NbtKeyResolver mapKeyResolver() {
+        return [](bl::nbt::compound_tag* root, int, const QString& existing) {
+            if (existing.startsWith(QStringLiteral("map_"))) return existing;
+            const QString map_id = keyTagText(root->get_by_path("mapId"));
+            return map_id.isEmpty() ? QString{} : QStringLiteral("map_") + map_id;
+        };
+    }
+
+    NbtKeyResolver structureKeyResolver() {
+        return [](bl::nbt::compound_tag* root, int, const QString& existing) {
+            if (existing.startsWith(QStringLiteral("structuretemplate_"))) return existing;
+            if (!root->get_by_path("format_version") || !root->get_by_path("size")) return QString{};
+            return QStringLiteral("structuretemplate_new_") + QUuid::createUuid().toString(QUuid::WithoutBraces);
+        };
+    }
+
+    NbtKeyResolver otherKeyResolver() {
+        return [](bl::nbt::compound_tag*, int, const QString& existing) {
+            return !existing.isEmpty() && bl::global_key::is_other_key(existing.toStdString()) ? existing : QString{};
+        };
+    }
+}  // namespace
+
+GlobalNbtSection::GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots,
+                                   const QStringList& raw_keys, QObject* parent)
     : QObject(parent),
-      title_(std::move(title)),
-      short_label_(std::move(short_label)),
-      icon_name_(std::move(icon_name)),
+      title_(std::move(policy.title)),
+      short_label_(std::move(policy.shortLabel)),
+      icon_name_(std::move(policy.iconName)),
       count_(static_cast<int>(roots.size())),
-      document_(new NbtDocumentController(this)),
-      single_record_(single_record) {
-    document_->loadMemory(std::move(roots), raw_keys, title_, presenter);
-    document_->setReadOnly(read_only);
+      document_(new NbtDocumentController(this)) {
+    document_->loadMemory(std::move(roots), raw_keys, title_, policy.presenter);
+    document_->setReadOnly(policy.readOnly);
+    document_->setSingleRecord(policy.singleRecord);
+    document_->setSingleRecordKey(std::move(policy.fixedKey));
+    document_->setKeyResolver(std::move(policy.keyResolver));
     connect(document_, &NbtDocumentController::dirtyChanged, this, &GlobalNbtSection::dirtyChanged);
+    if (policy.structurePreview) enableStructurePreview();
+    if (policy.mapPreview) enableMapPreview();
+}
+
+void GlobalNbtSection::enableMapPreview() {
+    if (map_preview_) return;
+    map_preview_ = std::make_unique<MapItemController>(document_);
+    connect(document_, &NbtDocumentController::currentIndexChanged, this, &GlobalNbtSection::reloadMapPreview);
+    connect(document_->treeModel(), &NbtTreeModel::documentChanged, this, &GlobalNbtSection::reloadMapPreview);
+    reloadMapPreview();
+}
+
+void GlobalNbtSection::reloadMapPreview() {
+    if (map_preview_) map_preview_->reload();
+}
+
+void GlobalNbtSection::enableStructurePreview() {
+    if (structure_preview_) return;
+    structure_preview_ = std::make_unique<BlockVolumeController>(std::make_unique<McstructureVolumeSource>());
+    connect(document_, &NbtDocumentController::currentIndexChanged, this, &GlobalNbtSection::reloadStructurePreview);
+    connect(structure_preview_.get(), &VoxelSceneController::loadingChanged, this, [this] {
+        if (structure_preview_->loading() || !pending_structure_preview_) return;
+        QMetaObject::invokeMethod(
+            this,
+            [this] {
+                if (structure_preview_->loading() || !pending_structure_preview_) return;
+                QByteArray raw = std::move(*pending_structure_preview_);
+                pending_structure_preview_.reset();
+                if (raw.isEmpty()) {
+                    structure_preview_->clearPreview();
+                } else {
+                    structure_preview_->loadBytes(raw);
+                }
+            },
+            Qt::QueuedConnection);
+    });
+    reloadStructurePreview();
+}
+
+void GlobalNbtSection::reloadStructurePreview() {
+    if (!structure_preview_) return;
+    const auto root = document_->itemCopy(document_->currentIndex());
+    QByteArray raw;
+    if (root) {
+        const std::string serialized = root->serialize();
+        raw = QByteArray(serialized.data(), static_cast<qsizetype>(serialized.size()));
+    }
+    if (structure_preview_->loading()) {
+        pending_structure_preview_ = std::move(raw);
+        return;
+    }
+    pending_structure_preview_.reset();
+    if (raw.isEmpty()) {
+        structure_preview_->clearPreview();
+    } else {
+        structure_preview_->loadBytes(raw);
+    }
 }
 
 GlobalDataController::GlobalDataController(QObject* parent) : QObject(parent) {
@@ -73,10 +183,8 @@ void GlobalDataController::stopAndWait() {
     loading_ = false;
 }
 
-void GlobalDataController::appendGeneralSection(const QString& title, const QString& short_label, const QString& icon_name,
-                                                const std::unordered_map<std::string, bl::nbt::compound_tag*>& data,
-                                                bool skip_portals, bool read_only, bool single_record,
-                                                const NbtItemPresenter& presenter) {
+GlobalNbtSection* GlobalDataController::appendGeneralSection(
+    GlobalNbtPolicy policy, const std::unordered_map<std::string, bl::nbt::compound_tag*>& data, bool skip_portals) {
     std::vector<std::pair<std::string, bl::nbt::compound_tag*>> ordered;
     ordered.reserve(data.size());
     for (const auto& [key, tag] : data) {
@@ -94,12 +202,15 @@ void GlobalDataController::appendGeneralSection(const QString& title, const QStr
         roots.emplace_back(copy);
         raw_keys.append(QString::fromStdString(key));
     }
-    auto section =
-        std::make_unique<GlobalNbtSection>(title, short_label, icon_name, std::move(roots), raw_keys, read_only,
-                                           single_record, this, presenter);
+    return addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, this));
+}
+
+GlobalNbtSection* GlobalDataController::addSection(std::unique_ptr<GlobalNbtSection> section) {
+    auto* section_ptr = section.get();
     connect(section.get(), &GlobalNbtSection::dirtyChanged, this, &GlobalDataController::dirtyChanged);
     sections_storage_.push_back(std::move(section));
     sections_.push_back(QVariant::fromValue(static_cast<QObject*>(sections_storage_.back().get())));
+    return section_ptr;
 }
 
 void GlobalDataController::appendVillageSection(std::shared_ptr<GlobalNBTLoadResult> result) {
@@ -115,9 +226,12 @@ void GlobalDataController::appendVillageSection(std::shared_ptr<GlobalNBTLoadRes
                 auto* tag = records[type];
                 if (!tag) continue;
                 const auto type_name = bl::village_key::village_key_type_to_str(static_cast<bl::village_key::key_type>(type));
-                ordered.push_back(VillageRecord{
-                    QStringLiteral("%1/%2/%3").arg(dim).arg(QString::fromStdString(uuid)).arg(QString::fromStdString(type_name)).toStdString(),
-                    "VILLAGE_" + uuid + "_" + type_name, tag});
+                ordered.push_back(VillageRecord{QStringLiteral("%1/%2/%3")
+                                                    .arg(dim)
+                                                    .arg(QString::fromStdString(uuid))
+                                                    .arg(QString::fromStdString(type_name))
+                                                    .toStdString(),
+                                                "VILLAGE_" + uuid + "_" + type_name, tag});
             }
         }
     }
@@ -132,31 +246,29 @@ void GlobalDataController::appendVillageSection(std::shared_ptr<GlobalNBTLoadRes
         roots.emplace_back(copy);
         raw_keys.append(QString::fromStdString(record.raw_key));
     }
-    auto section = std::make_unique<GlobalNbtSection>(QStringLiteral("Villages"), QStringLiteral("V"),
-                                                      QStringLiteral("villager"), std::move(roots), raw_keys, false, false,
-                                                      this,
-                                                      [](const bl::nbt::compound_tag*, int, const QString& raw_key) {
-                                                          QString label = raw_key;
-                                                          if (label.startsWith(QStringLiteral("VILLAGE_")))
-                                                              label.remove(0, 8);
-                                                          const qsizetype separator = label.lastIndexOf(QLatin1Char('_'));
-                                                          QString icon = QStringLiteral("qrc:/res/icons/village/info.png");
-                                                          if (separator >= 0) {
-                                                              const QString type = label.mid(separator + 1);
-                                                              const QString normalized = type.toLower();
-                                                              if (normalized == QStringLiteral("dwellers"))
-                                                                  icon = QStringLiteral("qrc:/res/icons/village/dwellers.png");
-                                                              else if (normalized == QStringLiteral("players"))
-                                                                  icon = QStringLiteral("qrc:/res/icons/village/players.png");
-                                                              else if (normalized == QStringLiteral("poi"))
-                                                                  icon = QStringLiteral("qrc:/res/icons/village/poi.png");
-                                                              label = label.left(separator) + QStringLiteral(" / ") + type;
-                                                          }
-                                                          return NbtItemPresentation{label, icon};
-                                                      });
-    connect(section.get(), &GlobalNbtSection::dirtyChanged, this, &GlobalDataController::dirtyChanged);
-    sections_storage_.push_back(std::move(section));
-    sections_.push_back(QVariant::fromValue(static_cast<QObject*>(sections_storage_.back().get())));
+    GlobalNbtPolicy policy;
+    policy.title = QStringLiteral("Villages");
+    policy.shortLabel = QStringLiteral("V");
+    policy.iconName = QStringLiteral("villager");
+    policy.presenter = [](const bl::nbt::compound_tag*, int, const QString& raw_key) {
+                                               QString label = raw_key;
+                                               if (label.startsWith(QStringLiteral("VILLAGE_"))) label.remove(0, 8);
+                                               const qsizetype separator = label.lastIndexOf(QLatin1Char('_'));
+                                               QString icon = QStringLiteral("qrc:/bedrockmap/icons/village/info.png");
+                                               if (separator >= 0) {
+                                                   const QString type = label.mid(separator + 1);
+                                                   const QString normalized = type.toLower();
+                                                   if (normalized == QStringLiteral("dwellers"))
+                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/dwellers.png");
+                                                   else if (normalized == QStringLiteral("players"))
+                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/players.png");
+                                                   else if (normalized == QStringLiteral("poi"))
+                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/poi.png");
+                                                   label = label.left(separator) + QStringLiteral(" / ") + type;
+                                               }
+                                               return NbtItemPresentation{label, icon};
+                                           };
+    addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, this));
 }
 
 void GlobalDataController::appendLevelDatSection() {
@@ -165,13 +277,14 @@ void GlobalDataController::appendLevelDatSection() {
     auto* copy = static_cast<bl::nbt::compound_tag*>(level_dat_root_->copy());
     copy->set_key("level.dat");
     roots.emplace_back(copy);
-    auto section = std::make_unique<GlobalNbtSection>(QStringLiteral("level.dat"), QStringLiteral("LD"),
-                                                      QStringLiteral("level_dat"), std::move(roots), QStringList{"level.dat"},
-                                                      false, true, this);
-    level_dat_section_ = section.get();
-    connect(section.get(), &GlobalNbtSection::dirtyChanged, this, &GlobalDataController::dirtyChanged);
-    sections_storage_.push_back(std::move(section));
-    sections_.push_back(QVariant::fromValue(static_cast<QObject*>(sections_storage_.back().get())));
+    GlobalNbtPolicy policy;
+    policy.title = QStringLiteral("level.dat");
+    policy.shortLabel = QStringLiteral("LD");
+    policy.iconName = QStringLiteral("level_dat");
+    policy.singleRecord = true;
+    policy.fixedKey = QStringLiteral("level.dat");
+    level_dat_section_ =
+        addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, this));
 }
 
 void GlobalDataController::collectVillageRects(GlobalNBTLoadResult& result) {
@@ -200,18 +313,44 @@ void GlobalDataController::publish(std::shared_ptr<GlobalNBTLoadResult> result) 
     clearSections();
     collectVillageRects(*result);
     appendLevelDatSection();
-    appendGeneralSection(
-        QStringLiteral("Players"), QStringLiteral("P"), QStringLiteral("players"), result->playerData.data(), false, false, false,
-        [](const bl::nbt::compound_tag*, int, const QString& raw_key) {
-            return NbtItemPresentation{raw_key, QStringLiteral("qrc:/res/icons/village/players.png")};
-        });
+
+    const auto make_policy = [](QString title, QString short_label, QString icon) {
+        GlobalNbtPolicy policy;
+        policy.title = std::move(title);
+        policy.shortLabel = std::move(short_label);
+        policy.iconName = std::move(icon);
+        return policy;
+    };
+
+    auto players = make_policy(QStringLiteral("Players"), QStringLiteral("P"), QStringLiteral("players"));
+    players.presenter = rootKeyPresenter(QStringLiteral("qrc:/bedrockmap/icons/village/players.png"));
+    players.keyResolver = playerKeyResolver();
+    appendGeneralSection(std::move(players), result->playerData.data());
+
     appendVillageSection(result);
-    appendGeneralSection(QStringLiteral("Portals"), QStringLiteral("⇄"), QStringLiteral("portal"),
-                         result->portalData.data(), false, false, true);
-    appendGeneralSection(QStringLiteral("Structures"), QStringLiteral("S"), QStringLiteral("structure"),
-                         result->structuresData.data(), false, true);
-    appendGeneralSection(QStringLiteral("Maps"), QStringLiteral("M"), QStringLiteral("map_item"), result->mapData.data());
-    appendGeneralSection(QStringLiteral("Other"), QStringLiteral("…"), QString(), result->otherData.data(), true);
+
+    auto portals = make_policy(QStringLiteral("Portals"), QStringLiteral("⇄"), QStringLiteral("portal"));
+    portals.singleRecord = true;
+    portals.fixedKey = QStringLiteral("portals");
+    appendGeneralSection(std::move(portals), result->portalData.data());
+
+    auto structures = make_policy(QStringLiteral("Structures"), QStringLiteral("S"), QStringLiteral("structure"));
+    structures.structurePreview = true;
+    structures.presenter = rootKeyPresenter(QStringLiteral("structure"));
+    structures.keyResolver = structureKeyResolver();
+    appendGeneralSection(std::move(structures), result->structuresData.data());
+
+    auto maps = make_policy(QStringLiteral("Maps"), QStringLiteral("M"), QStringLiteral("map_item"));
+    maps.mapPreview = true;
+    maps.presenter = rootKeyPresenter(QStringLiteral("map_item"));
+    maps.keyResolver = mapKeyResolver();
+    appendGeneralSection(std::move(maps), result->mapData.data());
+
+    auto other = make_policy(QStringLiteral("Other"), QStringLiteral("…"), QString());
+    other.presenter = rootKeyPresenter({});
+    other.keyResolver = otherKeyResolver();
+    appendGeneralSection(std::move(other), result->otherData.data(), true);
+
     emit sectionsChanged();
     emit dirtyChanged();
     level_dat_root_.reset();
@@ -222,11 +361,20 @@ bool GlobalDataController::isDirty() const {
                        [](const auto& section) { return section && section->isDirty(); });
 }
 
-std::unordered_map<std::string, std::string> GlobalDataController::collectLevelDbChanges() const {
+std::unordered_map<std::string, std::string> GlobalDataController::collectLevelDbChanges(QString* error) {
     std::unordered_map<std::string, std::string> result;
+    if (error) error->clear();
     for (const auto& section : sections_storage_) {
         if (!section || section.get() == level_dat_section_) continue;
-        for (const auto& [key, value] : section->levelDbChanges()) result[key] = value;
+        std::unordered_map<std::string, std::string> section_changes;
+        QString section_error;
+        if (!section->collectLevelDbChanges(section_changes, section_error)) {
+            if (error) {
+                *error = QCoreApplication::translate("GlobalDataController", "%1: %2").arg(section->title(), section_error);
+            }
+            return {};
+        }
+        for (const auto& [key, value] : section_changes) result[key] = value;
     }
     return result;
 }
@@ -237,7 +385,7 @@ std::unique_ptr<bl::nbt::compound_tag> GlobalDataController::levelDatSnapshot() 
 
 void GlobalDataController::markSaved() {
     for (const auto& section : sections_storage_) {
-        if (section && section->document()) section->document()->markPersisted();
+        if (section) section->markPersisted();
     }
     emit dirtyChanged();
 }

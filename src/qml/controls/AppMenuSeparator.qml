@@ -5,8 +5,8 @@ import QtQuick.Controls
 MenuSeparator {
     id: root
 
-    implicitHeight: visible ? 9 : 0
-    height: visible ? 9 : 0
+    implicitHeight: visible ? Theme.ui(9) : 0
+    height: implicitHeight
     leftPadding: 0
     topPadding: 0
     rightPadding: 0

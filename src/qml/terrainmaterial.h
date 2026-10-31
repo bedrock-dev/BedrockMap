@@ -4,9 +4,9 @@
 #include <QImage>
 #include <QMutex>
 #include <QPoint>
-#include <QSize>
 #include <QSGMaterial>
 #include <QSGTexture>
+#include <QSize>
 #include <QVector>
 #include <array>
 #include <memory>
@@ -41,8 +41,7 @@ struct TerrainArrayUniformBody {
 
 class TerrainArrayMaterial final : public QSGMaterial {
    public:
-    TerrainArrayMaterial(QSGTexture* color, QSGTexture* height, QSGTexture* material, QSGTexture* page_table,
-                         QSGTexture* overview, QSGTexture* palette);
+    TerrainArrayMaterial(QSGTexture* color, QSGTexture* surface, QSGTexture* page_table, QSGTexture* overview, QSGTexture* palette);
     ~TerrainArrayMaterial() override;
     [[nodiscard]] QSGTexture* texture(int binding) const;
     void setUniforms(const TerrainArrayUniformBody& body) { body_ = body; }
@@ -53,8 +52,7 @@ class TerrainArrayMaterial final : public QSGMaterial {
    private:
     TerrainArrayUniformBody body_;
     QSGTexture* color_{nullptr};
-    QSGTexture* height_{nullptr};
-    QSGTexture* material_{nullptr};
+    QSGTexture* surface_{nullptr};
     QSGTexture* page_table_{nullptr};
     QSGTexture* overview_{nullptr};
     QSGTexture* palette_{nullptr};
@@ -86,17 +84,11 @@ class TerrainAtlasTexture final : public QSGDynamicTexture {
 
     /// Transfer complete tile images with one lock per texture (render thread).
     void queueUploads(QVector<TerrainAtlasUpload> uploads);
-    /// Drop queued tile uploads that belong to a renderer state being replaced.
-    /// The GPU texture keeps its previous contents; the caller must cover every
-    /// slot it is about to sample before the next commit.
-    void discardPendingUploads();
 
     /// True while uploads are queued but not committed to the GPU yet. The
     /// owning node keeps its material dirty for as long as this holds, because
     /// the commit only happens when the scene graph re-queries the samplers.
     [[nodiscard]] bool hasPendingUploads() const;
-    /// Queued sub-region uploads not committed yet.
-    [[nodiscard]] int pendingUploadCount() const;
 
    private:
     QSize size_;

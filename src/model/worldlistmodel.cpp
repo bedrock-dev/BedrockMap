@@ -1,12 +1,11 @@
 #include "model/worldlistmodel.h"
 
 #include <QDateTime>
-#include <QDir>
-#include <QFileInfo>
+#include <QRegularExpression>
 #include <QUrl>
 #include <utility>
 
-#include "loader/worldrepository.h"
+#include "loader/worldsource.h"
 
 namespace {
 
@@ -45,10 +44,9 @@ QHash<int, QByteArray> WorldMetadataListModel::roleNames() const {
         {SizeRole, "size"},
         {ModifiedRole, "modified"},
         {SourceRole, "source"},
-        {PreviewRole, "preview"},
         {ThumbnailRole, "thumbnail"},
-        {NeteaseRole, "netease"},
         {XorEncryptedRole, "xorEncrypted"},
+        {AppInternalRole, "appInternal"},
     };
 }
 
@@ -74,92 +72,62 @@ QVariant WorldMetadataListModel::valueForRole(const WorldMetadata& metadata, int
         case ModifiedRole:
             return static_cast<qlonglong>(metadata.lastModified);
         case SourceRole:
-            switch (metadata.sourceKind) {
-                case WorldSourceKind::AppInternal:
-                    return QStringLiteral("Imported");
-                case WorldSourceKind::UserFolder:
-                    return metadata.sourceLabel.empty() ? QStringLiteral("Custom") : QString::fromStdString(metadata.sourceLabel);
-                case WorldSourceKind::MojangExternal:
-                    return QStringLiteral("Mojang");
-                case WorldSourceKind::MinecraftDefault:
-                    break;
-            }
-            return metadata.preview ? QStringLiteral("Preview")
-                                    : (metadata.netease ? QStringLiteral("NetEase") : QStringLiteral("Bedrock"));
-        case PreviewRole:
-            return metadata.preview;
+            return worldSourceLabel(metadata.sourceKind);
         case ThumbnailRole: {
-            const QFileInfo thumbnail(QString::fromStdString(metadata.path) + QStringLiteral("/world_icon.jpeg"));
-            return thumbnail.isFile() ? QUrl::fromLocalFile(thumbnail.absoluteFilePath()) : QUrl();
+            if (!metadata.thumbnailDataUrl.empty()) return QUrl(QString::fromStdString(metadata.thumbnailDataUrl));
+            return QUrl();
         }
-        case NeteaseRole:
-            return metadata.netease;
         case XorEncryptedRole:
             return metadata.xorEncrypted;
+        case AppInternalRole:
+            return metadata.sourceKind == WorldSourceKind::AppInternal;
         default:
             return {};
     }
 }
 
 WorldListModel::WorldListModel(QObject* parent)
-    : WorldMetadataListModel(parent),
-      scan_service_(this),
-      recent_model_(this),
-      release_model_(this),
-      preview_model_(this),
-      netease_model_(this) {
+    : WorldMetadataListModel(parent), scan_service_(this), recent_model_(this), filtered_model_(this) {
+    filtered_model_.setSourceModel(this);
+    filtered_model_.setFilterRole(SourceRole);
     connect(&scan_service_, &WorldScanService::finished, this, &WorldListModel::updateWorldLists);
     connect(&scan_service_, &WorldScanService::loadingChanged, this, &WorldListModel::loadingChanged);
-    connect(&scan_service_, &WorldScanService::progressChanged, this, &WorldListModel::progressChanged);
     connect(&scan_service_, &WorldScanService::errorChanged, this, &WorldListModel::errorChanged);
     refresh();
 }
 
-void WorldListModel::refresh() {
-    reloadRecentWorlds();
-    scan_service_.start();
+void WorldListModel::setSourceFilter(const QString& source) {
+    if (source_filter_ == source) return;
+    source_filter_ = source;
+    // Match the complete stable label, so "Release" does not also accept
+    // "Release internal". An empty filter represents all sources.
+    filtered_model_.setFilterRegularExpression(source.isEmpty() ? QString{}
+                                                                : QRegularExpression::anchoredPattern(QRegularExpression::escape(source)));
+    emit sourceFilterChanged();
 }
 
-void WorldListModel::reloadRecentWorlds() {
+void WorldListModel::refresh() {
     recent_store_.load();
     recent_store_.pruneMissing();
-    std::vector<WorldMetadata> recent_worlds;
-    for (const auto& path : recent_store_.paths()) {
-        if (!QDir(path).exists()) continue;
-        const auto info = WorldRepository::readWorld(path);
-        if (info.isValid) recent_worlds.push_back(info);
-    }
-    recent_model_.setWorlds(std::move(recent_worlds));
+    scan_service_.start(recent_store_.paths());
 }
 
 void WorldListModel::recordRecentWorld(const QString& path) {
     recent_store_.add(path);
     recent_store_.save();
-    reloadRecentWorlds();
-}
-
-QStringList WorldListModel::recentPaths() const {
-    QStringList result;
-    result.reserve(static_cast<qsizetype>(recent_model_.worlds().size()));
-    for (const auto& world : recent_model_.worlds()) result.append(QString::fromStdString(world.path));
-    return result;
+    scan_service_.start(recent_store_.paths());
 }
 
 void WorldListModel::updateWorldLists() {
-    reloadRecentWorlds();
-    std::vector<WorldMetadata> release;
-    std::vector<WorldMetadata> preview;
-    std::vector<WorldMetadata> netease;
-    for (const auto& world : scan_service_.worlds()) {
-        if (world.netease)
-            netease.push_back(world);
-        else if (world.preview)
-            preview.push_back(world);
-        else
-            release.push_back(world);
-    }
-    release_model_.setWorlds(std::move(release));
-    preview_model_.setWorlds(std::move(preview));
-    netease_model_.setWorlds(std::move(netease));
+    recent_model_.setWorlds(scan_service_.recentWorlds());
     setWorlds(scan_service_.worlds());
+    QStringList sources;
+    for (const auto& world : worlds()) {
+        const QString source = worldSourceLabel(world.sourceKind);
+        if (!sources.contains(source)) sources.append(source);
+    }
+    const bool sourcesChanged = source_options_ != sources;
+    source_options_ = std::move(sources);
+    if (!source_filter_.isEmpty() && !source_options_.contains(source_filter_)) setSourceFilter({});
+    if (sourcesChanged) emit sourceOptionsChanged();
 }

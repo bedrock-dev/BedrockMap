@@ -7,16 +7,33 @@
 #include <QVariantList>
 #include <atomic>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "controller/blockvolumecontroller.h"
+#include "controller/mapitemcontroller.h"
 #include "controller/nbtdocumentcontroller.h"
 #include "nbt.h"
 #include "render/overlay.h"
 
 class AsyncLevelLoader;
 struct GlobalNBTLoadResult;
+
+struct GlobalNbtPolicy {
+    QString title;
+    QString shortLabel;
+    QString iconName;
+    bool readOnly{false};
+    bool singleRecord{false};
+    bool structurePreview{false};
+    bool mapPreview{false};
+    QString fixedKey;
+    NbtItemPresenter presenter;
+    NbtKeyResolver keyResolver;
+};
 
 /// One expandable category in the right-hand global-data inspector. Its root is
 /// a compound whose children are the original global records, so the standard
@@ -28,35 +45,59 @@ class GlobalNbtSection final : public QObject {
     Q_PROPERTY(QString iconName READ iconName CONSTANT)
     Q_PROPERTY(int count READ count CONSTANT)
     Q_PROPERTY(NbtDocumentController* document READ document CONSTANT)
+    Q_PROPERTY(BlockVolumeController* structurePreview READ structurePreview CONSTANT)
+    Q_PROPERTY(MapItemController* mapPreview READ mapPreview CONSTANT)
     Q_PROPERTY(bool dirty READ isDirty NOTIFY dirtyChanged)
-    Q_PROPERTY(bool singleRecord READ singleRecord CONSTANT)
 
    public:
-    GlobalNbtSection(QString title, QString short_label, QString icon_name,
-                     std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& raw_keys, bool read_only,
-                     bool single_record, QObject* parent = nullptr, const NbtItemPresenter& presenter = {});
+    GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& raw_keys,
+                     QObject* parent = nullptr);
 
     [[nodiscard]] QString title() const { return title_; }
     [[nodiscard]] QString shortLabel() const { return short_label_; }
     [[nodiscard]] QString iconName() const { return icon_name_; }
     [[nodiscard]] int count() const { return count_; }
     [[nodiscard]] NbtDocumentController* document() const { return document_; }
+    [[nodiscard]] BlockVolumeController* structurePreview() const { return structure_preview_.get(); }
+    [[nodiscard]] MapItemController* mapPreview() const { return map_preview_.get(); }
     [[nodiscard]] bool isDirty() const { return document_ && document_->dirty(); }
-    [[nodiscard]] bool singleRecord() const { return single_record_; }
-    [[nodiscard]] std::unordered_map<std::string, std::string> levelDbChanges() const {
-        return document_ ? document_->levelDbChanges() : std::unordered_map<std::string, std::string>{};
+    [[nodiscard]] bool collectLevelDbChanges(std::unordered_map<std::string, std::string>& changes, QString& error) {
+        if (!document_) {
+            error.clear();
+            return true;
+        }
+        pending_plan_ = document_->prepareLevelDbChanges();
+        if (!pending_plan_.error.isEmpty()) {
+            error = pending_plan_.error;
+            pending_plan_ = {};
+            return false;
+        }
+        for (const auto& [key, value] : pending_plan_.changes) changes[key] = value;
+        error.clear();
+        return true;
     }
-
+    void markPersisted() {
+        if (document_) document_->markPersisted(pending_plan_);
+        pending_plan_ = {};
+    }
    signals:
     void dirtyChanged();
 
    private:
+    void enableStructurePreview();
+    void reloadStructurePreview();
+    void enableMapPreview();
+    void reloadMapPreview();
+
     QString title_;
     QString short_label_;
     QString icon_name_;
     int count_{0};
     NbtDocumentController* document_{nullptr};
-    bool single_record_{false};
+    std::unique_ptr<MapItemController> map_preview_;
+    std::unique_ptr<BlockVolumeController> structure_preview_;
+    std::optional<QByteArray> pending_structure_preview_;
+    NbtLevelDbPlan pending_plan_;
 };
 
 /// Loads the world's global NBT records once per session and publishes them as
@@ -80,7 +121,7 @@ class GlobalDataController : public QObject {
     [[nodiscard]] QString error() const { return error_; }
     [[nodiscard]] const std::vector<OverlayRect>& villageRects() const { return village_rects_; }
     [[nodiscard]] bool isDirty() const;
-    [[nodiscard]] std::unordered_map<std::string, std::string> collectLevelDbChanges() const;
+    [[nodiscard]] std::unordered_map<std::string, std::string> collectLevelDbChanges(QString* error = nullptr);
     [[nodiscard]] std::unique_ptr<bl::nbt::compound_tag> levelDatSnapshot() const;
     void markSaved();
 
@@ -97,9 +138,10 @@ class GlobalDataController : public QObject {
    private:
     void clearSections();
     void publish(std::shared_ptr<GlobalNBTLoadResult> result);
-    void appendGeneralSection(const QString& title, const QString& short_label, const QString& icon_name,
-                              const std::unordered_map<std::string, bl::nbt::compound_tag*>& data, bool skip_portals = false,
-                              bool read_only = false, bool single_record = false, const NbtItemPresenter& presenter = {});
+    GlobalNbtSection* appendGeneralSection(GlobalNbtPolicy policy,
+                                           const std::unordered_map<std::string, bl::nbt::compound_tag*>& data,
+                                           bool skip_portals = false);
+    GlobalNbtSection* addSection(std::unique_ptr<GlobalNbtSection> section);
     void appendVillageSection(std::shared_ptr<GlobalNBTLoadResult> result);
     void appendLevelDatSection();
     void collectVillageRects(GlobalNBTLoadResult& result);

@@ -3,10 +3,7 @@
 
 #include <qimage.h>
 
-#include <QFuture>
 #include <QRegion>
-#include <QRunnable>
-#include <QThreadPool>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -20,15 +17,15 @@
 #include "chunk.h"
 #include "loader/chunkcoordsservice.h"
 #include "loader/chunkeditservice.h"
+#include "loader/chunkregion.h"
 #include "loader/chunkstorage.h"
 #include "loader/mapfilter.h"
-#include "loader/regionbake.h"
 #include "nbt.h"
 #include "render/regioncachemanager.h"
 #include "render/regionrenderscheduler.h"
 
-class AsyncLevelLoader;
 class RenderTimings;
+class ResourceManager;
 
 struct GlobalNBTLoadResult {
     bl::village_data villageData;
@@ -53,14 +50,10 @@ class AsyncLevelLoader : public QObject {
 
    signals:
     void dirtyChanged();
-    /// Map content changed (a region tile finished, chunk coordinates were
-    /// updated, or a preload completed) — listeners should refresh the view.
-    void regionReady();
     /// A specific region tile finished baking and is ready for a renderer.
     void regionTileReady(region_pos region);
     /// First tile generated in the same worker task as the region bake.
-    void regionSnapshotReady(region_pos region, int blocksPerTexel, int layer, const QImage& color, const QImage& height,
-                             const QImage& material);
+    void regionSnapshotReady(region_pos region, int blocksPerTexel, int layer, const QImage& color, const QImage& surface, bool hasTerrain);
     /// Initial coordinate scan progress, forwarded from ChunkCoordsService.
     void chunkCoordsPreloadProgress(qulonglong scannedKeys, qulonglong chunks);
     /// The initial coordinate scan completed; the map can enter the
@@ -69,9 +62,8 @@ class AsyncLevelLoader : public QObject {
 
    public:
     // AsyncLevelLoader and its region scheduler/cache are UI-thread owned.
-    // Chunk tasks run on the scheduler pool and may only use the explicitly
-    // thread-safe height-map APIs while the loader remains open.
-    AsyncLevelLoader();
+    // Chunk tasks run on the scheduler pool while the loader remains open.
+    explicit AsyncLevelLoader(ResourceManager* resources = nullptr);
 
     ~AsyncLevelLoader() override;
 
@@ -84,23 +76,14 @@ class AsyncLevelLoader : public QObject {
         return timings_;
     }
 
-    void clearAllCache();
-
     /// Cache and scheduler occupancy for debug surfaces: populated region tiles,
-    /// known-empty markers, cached height maps and the bakes the shared
-    /// scheduler has queued or running.
+    /// known-empty markers and the bakes the shared scheduler has queued or running.
     [[nodiscard]] int regionCacheCount() const { return cache_manager_.regionCount(); }
-    [[nodiscard]] qint64 regionCacheBytes() const { return cache_manager_.regionCacheBytes(); }
-    [[nodiscard]] int regionCacheBudgetBytes() const { return cache_manager_.regionCacheBudgetBytes(); }
-    [[nodiscard]] quint64 regionCacheHits() const { return cache_manager_.cacheHits(); }
-    [[nodiscard]] quint64 regionCacheMisses() const { return cache_manager_.cacheMisses(); }
-    [[nodiscard]] quint64 regionCacheInserts() const { return cache_manager_.inserts(); }
     [[nodiscard]] int emptyRegionCount() const { return cache_manager_.emptyCount(); }
-    [[nodiscard]] int heightMapCacheCount() const { return cache_manager_.heightMapCount(); }
     [[nodiscard]] int pendingBakeCount() const { return region_scheduler_.pendingCount(); }
     [[nodiscard]] int activeBakeCount() const { return region_scheduler_.activeCount(); }
 
-    bool open(const std::string& path, const std::string& xor_key);
+    bool open(const std::string& path, const std::string& xor_key, std::shared_ptr<leveldb::Env> env = {});
 
     void close();
 
@@ -110,9 +93,11 @@ class AsyncLevelLoader : public QObject {
 
     inline bool isDirty() const { return storage_.isDirty(); }
 
-    void setFilter(const MapFilter& f) { this->map_filter_ = f; }
+    void setFilter(const MapFilter& filter);
 
     const MapFilter& filter() const { return this->map_filter_; }
+    /// Drop all baked regions and restart work with the current filter.
+    void reloadFilteredRegions();
 
     void setTransparentVoid(bool v) { transparent_void_.store(v); }
 
@@ -138,8 +123,6 @@ class AsyncLevelLoader : public QObject {
 
     const ChunkCoordsIndex& chunkCoords() const { return chunk_coords_service_.index(); }
 
-    std::optional<ChunkCoordsBoundingBox> chunkCoordsBoundingBox(int dim) const;
-
     void loadGlobalData(GlobalNBTLoadResult& result, std::atomic_bool& stop);
 
    public:
@@ -147,9 +130,6 @@ class AsyncLevelLoader : public QObject {
     /// Region bake state: unloaded, known empty, or ready.
     enum class RegionState { Unloaded, Empty, Ready };
     RegionState regionState(const region_pos& rp, const ChunkRegion** region);
-
-    /// Number of queued or running region bakes.
-    [[nodiscard]] int pendingRegionTasks() const;
 
     /// True when the indexed database has no uncommitted chunk at `pos`.
     [[nodiscard]] bool isChunkAbsent(const bl::chunk_pos& pos) const;
@@ -161,17 +141,11 @@ class AsyncLevelLoader : public QObject {
 
     std::string getBlockName(const bl::block_pos& p, int dim);
 
-    std::unordered_map<QImage*, std::vector<bl::vec3>> getActorList(const region_pos& rp);
+    std::unordered_map<const QImage*, std::vector<bl::vec3>> getActorList(const region_pos& rp);
 
-    std::map<bl::chunk_pos, std::map<QImage*, ChunkRegion::ActorCount>> getActorCountList(const region_pos& rp);
+    std::map<bl::chunk_pos, std::map<const QImage*, ChunkRegion::ActorCount>> getActorCountList(const region_pos& rp);
 
     std::vector<bl::hardcoded_spawn_area> getHSAs(const region_pos& rp);
-
-    /// Thread-safe world-space height-map lookup (-128 means void).
-    std::optional<std::array<int16_t, 256>> getHeightMap(const bl::chunk_pos& pos);
-
-    /// Insert a height map already loaded from a chunk.
-    void putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& hm);
 
     /*Modify*/
     // Caller owns the returned chunk.
@@ -206,6 +180,7 @@ class AsyncLevelLoader : public QObject {
     std::pair<int, int> chunkModifyCounts() const { return storage_.chunkModifyCounts(); }
 
    private:
+    void clearAllCache();
     void closeImpl();
 
     ChunkRegion* tryGetRegion(const region_pos& p, bool& empty);
@@ -234,8 +209,6 @@ class AsyncLevelLoader : public QObject {
     bool chunk_overview_enabled_{false};
     ChunkCoordsService chunk_coords_service_;
     ChunkEditService edit_service_;
-
-    void requestRefresh();
 
     RegionTimer region_load_timer_;
     RegionTimer region_render_timer_;

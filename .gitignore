@@ -93,5 +93,6 @@ maps
 config.ini
 .github/agents/*
 docs/*
+!docs/architecture-review.md
 !docs/qmlWorldRendering.md
 !docs/nativeDirtyState.md

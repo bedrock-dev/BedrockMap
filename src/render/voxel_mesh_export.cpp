@@ -1,15 +1,15 @@
-#include "render/voxel_mesh.h"
-
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QIODevice>
-#include <QSaveFile>
+#include <QUrl>
 #include <algorithm>
 #include <cstdint>
 #include <limits>
 #include <vector>
 
+#include "io/documentio.h"
 #include "json/json.hpp"
+#include "render/voxel_mesh.h"
 
 namespace {
     template <typename T>
@@ -135,13 +135,13 @@ namespace {
     }
 }  // namespace
 
-bool voxel_mesh::exportGlb(const VoxelMeshBuffers& mesh, const QString& filePath, QString* errorMessage) {
+bool voxel_mesh::exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, QString* errorMessage) {
     auto fail = [errorMessage](const QString& message) {
         if (errorMessage) *errorMessage = message;
         return false;
     };
 
-    if (filePath.isEmpty()) return fail(QCoreApplication::translate("VoxelMesh", "Export path is empty."));
+    if (url.isEmpty()) return fail(QCoreApplication::translate("VoxelMesh", "Export path is empty."));
 
     const auto& opaqueVertices = mesh.opaqueVertices;
     const auto& opaqueIndices = mesh.opaqueIndices;
@@ -209,17 +209,9 @@ bool voxel_mesh::exportGlb(const VoxelMeshBuffers& mesh, const QString& filePath
     appendRawValue(glb, BINARY_CHUNK_TYPE);
     glb.append(binaryChunk);
 
-    QSaveFile file(filePath);
-    file.setDirectWriteFallback(true);
-    if (!file.open(QIODevice::WriteOnly)) {
-        return fail(QCoreApplication::translate("VoxelMesh", "Failed to open export file: %1").arg(file.errorString()));
-    }
-    if (file.write(glb) != glb.size()) {
-        return fail(QCoreApplication::translate("VoxelMesh", "Failed to write export file: %1").arg(file.errorString()));
-    }
-    if (!file.commit()) {
-        return fail(QCoreApplication::translate("VoxelMesh", "Failed to finish export file: %1").arg(file.errorString()));
-    }
+    const QString writeError = io::DocumentIo::writeStream(
+        url, [&glb](QIODevice& file) { return file.write(glb) == glb.size() ? QString() : file.errorString(); });
+    if (!writeError.isEmpty()) return fail(writeError);
 
     return true;
 }

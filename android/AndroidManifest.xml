@@ -30,12 +30,83 @@
             android:name="org.bedrockmap.BedrockMapActivity"
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
             android:label="-- %%INSERT_APP_NAME%% --"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:screenOrientation="unspecified"
+            android:theme="@style/BedrockMapTheme"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- File managers that include the filename in the URI. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.nbt" />
+                <data android:pathPattern=".*\\.nbts" />
+                <data android:pathPattern=".*\\.mcstructure" />
+                <data android:pathPattern=".*\\.mcworld" />
+                <data android:pathSuffix=".nbt" />
+                <data android:pathSuffix=".nbts" />
+                <data android:pathSuffix=".mcstructure" />
+                <data android:pathSuffix=".mcworld" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.nbt" />
+                <data android:pathPattern=".*\\.nbts" />
+                <data android:pathPattern=".*\\.mcstructure" />
+                <data android:pathPattern=".*\\.mcworld" />
+                <data android:pathSuffix=".nbt" />
+                <data android:pathSuffix=".nbts" />
+                <data android:pathSuffix=".mcstructure" />
+                <data android:pathSuffix=".mcworld" />
+            </intent-filter>
+            <!-- Opaque content URIs cannot be filtered by filename. Binary MIME
+                 fallback lets their providers offer BedrockMap as a handler. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/x-nbt" />
+                <data android:mimeType="application/x-nbts" />
+                <data android:mimeType="application/x-mcstructure" />
+                <data android:mimeType="application/x-mcworld" />
+                <data android:mimeType="application/x-minecraft-nbt" />
+                <data android:mimeType="application/x-minecraft-structure" />
+                <data android:mimeType="application/x-minecraft-world" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/x-zip-compressed" />
+            </intent-filter>
+            <!-- Sharing from private app storage normally uses ACTION_SEND and
+                 a temporary content URI grant. BedrockMapActivity maps it to
+                 ACTION_VIEW so the existing URI-aware open path can be reused. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/x-nbt" />
+                <data android:mimeType="application/x-nbts" />
+                <data android:mimeType="application/x-mcstructure" />
+                <data android:mimeType="application/x-mcworld" />
+                <data android:mimeType="application/x-minecraft-nbt" />
+                <data android:mimeType="application/x-minecraft-structure" />
+                <data android:mimeType="application/x-minecraft-world" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/x-zip-compressed" />
             </intent-filter>
 
           <meta-data
@@ -45,7 +116,25 @@
           <meta-data
                 android:name="android.app.arguments"
                 android:value="-- %%INSERT_APP_ARGUMENTS%% --" />
+
+          <meta-data
+                android:name="android.app.splash_screen_drawable"
+                android:resource="@drawable/startup_screen" />
+
+          <meta-data
+                android:name="android.app.splash_screen_sticky"
+                android:value="true" />
         </activity>
+
+        <service android:name="org.bedrockmap.RootFileService" android:exported="false" />
+
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:multiprocess="false"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

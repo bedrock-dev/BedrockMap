@@ -1,6 +1,8 @@
 #ifndef BEDROCKMAP_MAPOVERLAYQUICKITEM_H
 #define BEDROCKMAP_MAPOVERLAYQUICKITEM_H
 
+#include <QtQml/qqmlregistration.h>
+
 #include <QColor>
 #include <QLineF>
 #include <QMutex>
@@ -33,6 +35,7 @@ struct MapOverlaySelectionSnapshot {
 /// QML items per feature.
 class MapOverlayQuickItem : public QQuickItem {
     Q_OBJECT
+    QML_ELEMENT
     Q_PROPERTY(MapController* controller READ controller WRITE setController NOTIFY controllerChanged)
     Q_PROPERTY(QObject* cameraSource READ cameraSource WRITE setCameraSource NOTIFY cameraSourceChanged)
     Q_PROPERTY(TerrainDataProvider* provider READ provider WRITE setProvider NOTIFY providerChanged)

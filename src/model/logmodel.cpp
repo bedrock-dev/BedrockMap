@@ -11,13 +11,29 @@
 #include <algorithm>
 #ifdef Q_OS_ANDROID
 #include <android/log.h>
+
+#include <QJniEnvironment>
+#include <QJniObject>
 #endif
 
-#include "base/config.h"
-#include "model/worldpath.h"
+#include "base/apppaths.h"
+#include "base/platform.h"
+#include "io/documentio.h"
 
 namespace {
     constexpr auto CallbackId = "bedrockmap-log-tab";
+
+#ifdef Q_OS_ANDROID
+    void onAndroidLogMessage(JNIEnv*, jclass, jint priority, jstring tag, jstring message) {
+        const auto verbosity = priority >= ANDROID_LOG_ERROR  ? loguru::Verbosity_ERROR
+                               : priority >= ANDROID_LOG_WARN ? loguru::Verbosity_WARNING
+                               : priority >= ANDROID_LOG_INFO ? loguru::Verbosity_INFO
+                                                              : loguru::Verbosity{1};
+        const auto nativeTag = QJniObject(tag).toString().toUtf8();
+        const auto nativeMessage = QJniObject(message).toString().toUtf8();
+        loguru::log(verbosity, "Android", 0, "[%s] %s", nativeTag.constData(), nativeMessage.constData());
+    }
+#endif
 
     void qtMessage(QtMsgType type, const QMessageLogContext& context, const QString& text) {
         loguru::Verbosity verbosity = loguru::Verbosity_INFO;
@@ -39,8 +55,10 @@ namespace {
                 break;
         }
         const QString category = QString::fromUtf8(context.category ? context.category : "default");
-        const QByteArray message =
-            (QStringLiteral("[Qt %1%2] ").arg(category, type == QtFatalMsg ? QStringLiteral(" FATAL") : QString()) + text).toUtf8();
+        const QString prefix = category == QLatin1String("default") && type != QtFatalMsg
+                                   ? QString()
+                                   : QStringLiteral("[Qt %1%2] ").arg(category, type == QtFatalMsg ? QStringLiteral(" FATAL") : QString());
+        const QByteArray message = (prefix + text).toUtf8();
         loguru::log(verbosity, context.file ? context.file : "Qt", std::max(context.line, 0), "%s", message.constData());
     }
 }  // namespace
@@ -62,9 +80,22 @@ LogModel::LogModel(int& argc, char** argv, QObject* parent) : QAbstractListModel
     }
     connect(&timer_, &QTimer::timeout, this, &LogModel::drain);
     timer_.start(100);
+#ifdef Q_OS_ANDROID
+    QJniEnvironment env;
+    if (env.registerNativeMethods("org/bedrockmap/AppLog", {{"onMessage", "(ILjava/lang/String;Ljava/lang/String;)V",
+                                                             reinterpret_cast<void*>(onAndroidLogMessage)}})) {
+        QJniObject::callStaticMethod<void>("org/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(true));
+    }
+    env.checkAndClearExceptions();
+#endif
 }
 
 LogModel::~LogModel() {
+#ifdef Q_OS_ANDROID
+    QJniObject::callStaticMethod<void>("org/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(false));
+    QJniEnvironment env;
+    env.checkAndClearExceptions();
+#endif
     timer_.stop();
     qInstallMessageHandler(previous_handler_);
     loguru::remove_callback(CallbackId);
@@ -79,7 +110,7 @@ int LogModel::rowCount(const QModelIndex& parent) const { return parent.isValid(
 QVariant LogModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || index.row() < 0 || index.row() >= visible_.size()) return {};
     const auto& entry = visible_.at(index.row());
-    if (role == TextRole || role == Qt::DisplayRole) return entry.text;
+    if (role == TextRole || role == Qt::DisplayRole) return displayText(entry);
     if (role == SeverityRole) return entry.severity;
     return {};
 }
@@ -92,8 +123,9 @@ void LogModel::receive(void* userData, const loguru::Message& message) {
                          : message.verbosity == loguru::Verbosity_WARNING ? 2
                          : message.verbosity == loguru::Verbosity_INFO    ? 1
                                                                           : 0;
-    const QString text = QString::fromUtf8(message.preamble) + QString::fromUtf8(message.indentation) + QString::fromUtf8(message.prefix) +
-                         QString::fromUtf8(message.message);
+    const QString prefix = QString::fromUtf8(message.preamble);
+    const QString text =
+        prefix + QString::fromUtf8(message.indentation) + QString::fromUtf8(message.prefix) + QString::fromUtf8(message.message);
 #ifdef Q_OS_ANDROID
     const int priority = severity >= 3   ? ANDROID_LOG_ERROR
                          : severity == 2 ? ANDROID_LOG_WARN
@@ -108,15 +140,17 @@ void LogModel::receive(void* userData, const loguru::Message& message) {
         model->pending_.removeFirst();
         ++model->pending_omitted_;
     }
-    model->pending_.append({text.left(32768), severity});
+    model->pending_.append({text.left(32768), prefix.size(), severity});
 }
 
 bool LogModel::matches(const Entry& entry) const {
     return entry.severity >= minimum_level_ && (filter_.isEmpty() || entry.text.contains(filter_, Qt::CaseInsensitive));
 }
 
-QString LogModel::entryHtml(const Entry& entry) {
-    QString text = entry.text.toHtmlEscaped();
+QString LogModel::displayText(const Entry& entry) const { return show_prefix_ ? entry.text : entry.text.mid(entry.prefixLength); }
+
+QString LogModel::entryHtml(const Entry& entry) const {
+    QString text = displayText(entry).toHtmlEscaped();
     text.replace(QLatin1String("\r\n"), QLatin1String("<br/>"));
     text.replace(QLatin1Char('\r'), QLatin1String("<br/>"));
     text.replace(QLatin1Char('\n'), QLatin1String("<br/>"));
@@ -170,6 +204,7 @@ void LogModel::drain() {
         rebuildDisplayHtml();
     else
         for (const auto& entry : additions) display_html_ += entryHtml(entry);
+    emit displayChanged();
     emit countChanged();
 }
 
@@ -180,6 +215,7 @@ void LogModel::rebuild() {
         if (matches(entry)) visible_.append(entry);
     rebuildDisplayHtml();
     endResetModel();
+    emit displayChanged();
 }
 
 void LogModel::setFilter(const QString& text) {
@@ -199,6 +235,15 @@ void LogModel::setMinimumLevel(int level) {
     emit countChanged();
 }
 
+void LogModel::setShowPrefix(bool show) {
+    if (show_prefix_ == show) return;
+    show_prefix_ = show;
+    rebuildDisplayHtml();
+    if (!visible_.isEmpty()) emit dataChanged(index(0), index(visible_.size() - 1), {TextRole, Qt::DisplayRole});
+    emit showPrefixChanged();
+    emit displayChanged();
+}
+
 void LogModel::clear() {
     {
         QMutexLocker lock(&pending_mutex_);
@@ -211,10 +256,11 @@ void LogModel::clear() {
     emit countChanged();
 }
 
-QString LogModel::snapshot() const {
+QString LogModel::snapshot(bool complete) const {
     QStringList lines;
-    lines.reserve(visible_.size());
-    for (const auto& entry : visible_) lines.append(entry.text);
+    const auto& entries = complete ? entries_ : visible_;
+    lines.reserve(entries.size());
+    for (const auto& entry : entries) lines.append(complete ? entry.text : displayText(entry));
     return lines.join(QLatin1Char('\n'));
 }
 
@@ -227,42 +273,32 @@ void LogModel::copyAll() {
 bool LogModel::save(const QUrl& destination) {
     drain();
     error_.clear();
-    if ((!destination.isLocalFile() && destination.scheme() != QStringLiteral("content")) || destination.isEmpty()) {
+    if ((!destination.isLocalFile() && !platform::isContentUri(destination)) || destination.isEmpty()) {
         error_ = tr("The selected log destination is not supported.");
     } else if (destination.isLocalFile() && !log_file_.isEmpty() &&
-               world_path::identityKey(world_path::normalize(destination.toLocalFile())) ==
-                   world_path::identityKey(world_path::normalize(log_file_))) {
+               platform::normalizeLocalPath(destination.toLocalFile()) == platform::normalizeLocalPath(log_file_)) {
         error_ = tr("Choose a different file from the active log file.");
     } else {
-        // Android's QFile engine supports authorized content:// file URLs.
-        QFile file(destination.isLocalFile() ? destination.toLocalFile() : destination.toString());
         loguru::flush();
         QFile source(log_file_);
-        if (!log_file_.isEmpty() && !source.open(QIODevice::ReadOnly)) {
-            error_ = tr("Could not save logs: %1").arg(source.errorString());
-        } else if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            error_ = tr("Could not save logs: %1").arg(file.errorString());
-        } else if (source.isOpen()) {
+        const QString writeError = io::DocumentIo::writeStream(destination, [this, &source](QIODevice& file) {
+            if (!log_file_.isEmpty() && !source.open(QIODevice::ReadOnly)) return source.errorString();
+            if (!source.isOpen()) {
+                const QByteArray bytes = (snapshot(true) + QLatin1Char('\n')).toUtf8();
+                return file.write(bytes) == bytes.size() ? QString() : file.errorString();
+            }
             // Freeze the byte count so concurrent logging cannot extend export
             // indefinitely. The full file includes entries evicted from the UI.
             qint64 remaining = source.size();
             while (remaining > 0) {
                 const QByteArray bytes = source.read(std::min<qint64>(remaining, 256 * 1024));
-                if (bytes.isEmpty()) {
-                    error_ = tr("Could not save logs: %1").arg(source.errorString());
-                    break;
-                }
-                if (file.write(bytes) != bytes.size()) {
-                    error_ = tr("Could not save logs: %1").arg(file.errorString());
-                    break;
-                }
+                if (bytes.isEmpty()) return source.errorString();
+                if (file.write(bytes) != bytes.size()) return file.errorString();
                 remaining -= bytes.size();
             }
-        } else {
-            const QByteArray bytes = (snapshot() + QLatin1Char('\n')).toUtf8();
-            if (file.write(bytes) != bytes.size()) error_ = tr("Could not save logs: %1").arg(file.errorString());
-        }
-        if (file.isOpen() && !file.flush() && error_.isEmpty()) error_ = tr("Could not save logs: %1").arg(file.errorString());
+            return QString();
+        });
+        if (!writeError.isEmpty()) error_ = tr("Could not save logs: %1").arg(writeError);
     }
     emit errorChanged();
     return error_.isEmpty();

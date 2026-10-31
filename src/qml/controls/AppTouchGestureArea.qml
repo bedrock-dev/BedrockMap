@@ -18,7 +18,7 @@ MultiPointTouchArea {
     property bool gestureActive: false
     property bool holdTriggered: false
 
-    signal contactStarted()
+    signal contactStarted
     signal manipulationStarted(int points, point position)
     signal manipulationUpdated(int points, point previous, point position, real scale)
     signal manipulationFinished(bool canceled)
@@ -109,11 +109,17 @@ MultiPointTouchArea {
         manipulationUpdated(count, previous, position, scale)
     }
 
-    onTouchUpdated: function (points) { updateTouches(points) }
+    onTouchUpdated: function (points) {
+        updateTouches(points)
+    }
     onCanceled: cancelGesture()
-    onEnabledChanged: if (!enabled) cancelGesture()
-    onVisibleChanged: if (!visible) cancelGesture()
-    onGestureStarted: function (gesture) { gesture.grab() }
+    onEnabledChanged: if (!enabled)
+                          cancelGesture()
+    onVisibleChanged: if (!visible)
+                          cancelGesture()
+    onGestureStarted: function (gesture) {
+        gesture.grab()
+    }
 
     Timer {
         id: holdTimer

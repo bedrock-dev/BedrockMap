@@ -13,6 +13,7 @@ buildscript {
 repositories {
     google()
     mavenCentral()
+    maven { url 'https://jitpack.io'; content { includeGroup 'com.github.topjohnwu.libsu' } }
 }
 
 apply plugin: qtGradlePluginType
@@ -21,13 +22,21 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     //noinspection GradleDependency
     implementation 'androidx.core:core:1.17.0'
+    implementation 'dev.rikka.shizuku:api:13.1.5'
+    implementation 'dev.rikka.shizuku:provider:13.1.5'
+    implementation 'com.github.topjohnwu.libsu:core:6.0.0'
+    implementation 'com.github.topjohnwu.libsu:service:6.0.0'
 }
 
 android {
+    buildFeatures { aidl = true }
     namespace = androidPackageName
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
     ndkVersion = androidNdkVersion
+    if (project.hasProperty('bedrockmapNdkPath')) {
+        ndkPath = project.property('bedrockmapNdkPath')
+    }
 
     sourceSets {
         main {

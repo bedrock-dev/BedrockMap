@@ -47,21 +47,9 @@ void TerrainAtlasTexture::queueUploads(QVector<TerrainAtlasUpload> uploads) {
     pending_uploads_.append(std::move(uploads));
 }
 
-void TerrainAtlasTexture::discardPendingUploads() {
-    const QMutexLocker lock(&mutex_);
-    pending_image_ = {};
-    pending_uploads_.clear();
-    pending_full_upload_ = false;
-}
-
 bool TerrainAtlasTexture::hasPendingUploads() const {
     const QMutexLocker lock(&mutex_);
     return pending_full_upload_ || !pending_uploads_.isEmpty();
-}
-
-int TerrainAtlasTexture::pendingUploadCount() const {
-    const QMutexLocker lock(&mutex_);
-    return static_cast<int>(pending_uploads_.size());
 }
 
 void TerrainAtlasTexture::commitTextureOperations(QRhi* rhi, QRhiResourceUpdateBatch* updates) {
@@ -73,8 +61,8 @@ void TerrainAtlasTexture::commitTextureOperations(QRhi* rhi, QRhiResourceUpdateB
     const QMutexLocker lock(&mutex_);
     if (!texture_) {
         if (size_.isEmpty()) return;
-        texture_ = array_size_ > 1 ? rhi->newTextureArray(QRhiTexture::RGBA8, array_size_, size_)
-                                   : rhi->newTexture(QRhiTexture::RGBA8, size_);
+        texture_ =
+            array_size_ > 1 ? rhi->newTextureArray(QRhiTexture::RGBA8, array_size_, size_) : rhi->newTexture(QRhiTexture::RGBA8, size_);
         if (!texture_ || !texture_->create()) {
             LOG_F(ERROR, "Terrain atlas texture creation failed: %d x %d, backend %d, maximum texture size %d", size_.width(),
                   size_.height(), static_cast<int>(rhi->backend()), rhi->resourceLimit(QRhi::TextureSizeMax));
@@ -123,8 +111,8 @@ namespace {
     class TerrainArrayMaterialShader final : public QSGMaterialShader {
        public:
         TerrainArrayMaterialShader() {
-            setShaderFileName(VertexStage, QStringLiteral(":/bedrockmap/shaders/src/qml/shaders/terrainarray.vert.qsb"));
-            setShaderFileName(FragmentStage, QStringLiteral(":/bedrockmap/shaders/src/qml/shaders/terrainarray.frag.qsb"));
+            setShaderFileName(VertexStage, QStringLiteral(":/bedrockmap/shaders/terrainarray.vert.qsb"));
+            setShaderFileName(FragmentStage, QStringLiteral(":/bedrockmap/shaders/terrainarray.frag.qsb"));
         }
 
         bool updateUniformData(RenderState& state, QSGMaterial* newMaterial, QSGMaterial*) override {
@@ -140,28 +128,25 @@ namespace {
             return true;
         }
 
-        void updateSampledImage(RenderState& state, int binding, QSGTexture** texture, QSGMaterial* newMaterial,
-                                QSGMaterial*) override {
+        void updateSampledImage(RenderState& state, int binding, QSGTexture** texture, QSGMaterial* newMaterial, QSGMaterial*) override {
             auto* material = static_cast<TerrainArrayMaterial*>(newMaterial);
             QSGTexture* bound = material->texture(binding);
             if (bound) bound->commitTextureOperations(state.rhi(), state.resourceUpdateBatch());
             *texture = bound;
         }
-
     };
     QSGMaterialType arrayType;
 }  // namespace
 
-TerrainArrayMaterial::TerrainArrayMaterial(QSGTexture* color, QSGTexture* height, QSGTexture* material, QSGTexture* page_table,
-                                           QSGTexture* overview, QSGTexture* palette)
-    : color_(color), height_(height), material_(material), page_table_(page_table), overview_(overview), palette_(palette) {
+TerrainArrayMaterial::TerrainArrayMaterial(QSGTexture* color, QSGTexture* surface, QSGTexture* page_table, QSGTexture* overview,
+                                           QSGTexture* palette)
+    : color_(color), surface_(surface), page_table_(page_table), overview_(overview), palette_(palette) {
     setFlag(Blending, false);
 }
 
 TerrainArrayMaterial::~TerrainArrayMaterial() {
     delete color_;
-    delete height_;
-    delete material_;
+    delete surface_;
     delete page_table_;
     delete overview_;
     delete palette_;
@@ -169,16 +154,13 @@ TerrainArrayMaterial::~TerrainArrayMaterial() {
 
 QSGTexture* TerrainArrayMaterial::texture(int binding) const {
     if (binding == 1) return color_;
-    if (binding == 2) return height_;
-    if (binding == 3) return material_;
-    if (binding == 4) return page_table_;
-    if (binding == 5) return overview_;
-    if (binding == 6) return palette_;
+    if (binding == 2) return surface_;
+    if (binding == 3) return page_table_;
+    if (binding == 4) return overview_;
+    if (binding == 5) return palette_;
     return nullptr;
 }
 
 QSGMaterialType* TerrainArrayMaterial::type() const { return &arrayType; }
 
-QSGMaterialShader* TerrainArrayMaterial::createShader(QSGRendererInterface::RenderMode) const {
-    return new TerrainArrayMaterialShader;
-}
+QSGMaterialShader* TerrainArrayMaterial::createShader(QSGRendererInterface::RenderMode) const { return new TerrainArrayMaterialShader; }

@@ -26,15 +26,84 @@ if ([string]::IsNullOrWhiteSpace($BuildDir)) {
 }
 if (-not [System.IO.Path]::IsPathRooted($BuildDir)) { $BuildDir = Join-Path $sourceDir $BuildDir }
 $BuildDir = [System.IO.Path]::GetFullPath($BuildDir)
-# Android packages are Release builds. Only debug symbols are stripped from
-# the app module; no Qt libraries or plugins are removed.
+# Keep the normal Release compiler optimizations; size trimming happens on
+# packaged libraries and resources, without LTO or Java code shrinking.
 $buildType = 'Release'
+
+function Optimize-AndroidDeployment([string]$DeploymentDir, [string]$StripTool, [string]$ReadelfTool) {
+    $deploymentRoot = [IO.Path]::GetFullPath($DeploymentDir)
+    $nativeDir = Join-Path $deploymentRoot 'libs\arm64-v8a'
+    $libraries = @(Get-ChildItem -LiteralPath $nativeDir -Filter '*.so' -File)
+    if ($libraries.Count -eq 0) { throw "No deployed native libraries found in $nativeDir" }
+    # The application fixes Controls to Basic. Optional style imports still
+    # cause Qt's scanner to deploy other styles, even in a release build.
+    $unusedPattern = '^lib(?:Qt6QuickControls2(?:Fusion|Imagine|Material|Universal|FluentWinUI3)|qml_QtQuick_Controls_(?:Fusion|Imagine|Material|Universal|FluentWinUI3)_|plugins_qmltooling_|plugins_styles_|Qt6Widgets_)'
+    $removed = @($libraries | Where-Object Name -Match $unusedPattern)
+    $retained = @($libraries | Where-Object Name -NotMatch $unusedPattern)
+    $removedNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($library in $removed) { [void]$removedNames.Add($library.Name) }
+
+    # Refuse a deployment change if a surviving ELF still links a removed lib.
+    foreach ($library in $retained) {
+        $dynamic = & $ReadelfTool --dynamic $library.FullName
+        if ($LASTEXITCODE -ne 0) { throw "Cannot inspect native dependencies: $($library.Name)" }
+        foreach ($line in $dynamic) {
+            if ($line -match '\(NEEDED\).*\[([^\]]+)\]' -and $removedNames.Contains($Matches[1])) {
+                throw "$($library.Name) still needs excluded library $($Matches[1])."
+            }
+        }
+    }
+    foreach ($library in $removed) {
+        # Delete only individual deployment copies, never the Qt/NDK originals.
+        if (-not $library.FullName.StartsWith($deploymentRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Library outside deployment directory: $($library.FullName)"
+        }
+        Remove-Item -LiteralPath $library.FullName -Force
+    }
+
+    # QtLoader must not try to load libraries removed from the staging folder.
+    $libsXmlPath = Join-Path $deploymentRoot 'res\values\libs.xml'
+    $libsXml = [xml][IO.File]::ReadAllText($libsXmlPath)
+    foreach ($item in @($libsXml.SelectNodes('/resources/array/item'))) {
+        $name = ($item.InnerText -split ';')[1]
+        if ($removedNames.Contains($name) -or $removedNames.Contains("lib$name.so")) {
+            [void]$item.ParentNode.RemoveChild($item)
+        }
+    }
+    $xmlSettings = [Xml.XmlWriterSettings]::new()
+    $xmlSettings.Encoding = [Text.UTF8Encoding]::new($false)
+    $xmlSettings.Indent = $true
+    $writer = [Xml.XmlWriter]::Create($libsXmlPath, $xmlSettings)
+    try { $libsXml.Save($writer) } finally { $writer.Dispose() }
+
+    # In particular, the NDK's libc++_shared.so carries several MiB of DWARF.
+    foreach ($library in $retained) {
+        & $StripTool --strip-unneeded $library.FullName
+        if ($LASTEXITCODE -ne 0) { throw "Cannot strip deployment copy: $($library.Name)" }
+    }
+    Write-Host "Excluded $($removed.Count) unused native libraries; stripped $($retained.Count) deployment copies."
+}
+
+function Remove-StaleApplicationLibraries([string]$Root) {
+    if (-not (Test-Path -LiteralPath $Root -PathType Container)) { return 0 }
+    $rootFull = [IO.Path]::GetFullPath($Root)
+    $removed = 0
+    foreach ($library in @(Get-ChildItem -LiteralPath $rootFull -Filter 'libBedrockMapQml_*.so' -File)) {
+        if (-not $library.FullName.StartsWith($rootFull + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Stale application library outside expected directory: $($library.FullName)"
+        }
+        Remove-Item -LiteralPath $library.FullName -Force
+        ++$removed
+    }
+    return $removed
+}
 
 $requiredPaths = @(
     (Join-Path $qtAndroid 'bin\qt-cmake.bat'),
     (Join-Path $qtHost 'bin\androiddeployqt.exe'),
     (Join-Path $NdkRoot 'build\cmake\android.toolchain.cmake'),
     (Join-Path $NdkRoot 'toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-strip.exe'),
+    (Join-Path $NdkRoot 'toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-readelf.exe'),
     (Join-Path $SdkRoot "platforms\android-$CompileSdk\android.jar"),
     (Join-Path $SdkRoot 'platform-tools\adb.exe')
 )
@@ -86,25 +155,52 @@ try {
         "-DQT_HOST_PATH=$qtHost" "-DANDROID_SDK_ROOT=$SdkRoot" "-DANDROID_NDK_ROOT=$NdkRoot" `
         '-DANDROID_ABI=arm64-v8a' '-DANDROID_PLATFORM=android-28' "-DCMAKE_BUILD_TYPE=$buildType" `
         '-DBEDROCKMAP_FULL_DEBUG=OFF' "-DBEDROCKMAP_ANDROID_COMPILE_SDK=$CompileSdk" `
-        '-DBEDROCKMAP_ANDROID_COMPRESS_LIBS=OFF' '-DQT_NO_GLOBAL_APK_TARGET_PART_OF_ALL=ON'
+        '-DBEDROCKMAP_ANDROID_COMPRESS_LIBS=ON' '-DQT_ANDROID_DEPLOYMENT_TYPE=Release' `
+        '-DQT_NO_GLOBAL_APK_TARGET_PART_OF_ALL=ON'
     if ($LASTEXITCODE -ne 0) { throw "Android configure failed ($LASTEXITCODE)." }
 
-    cmake --build $BuildDir --target BedrockMapQml --parallel $Jobs
+    cmake --build $BuildDir --target BedrockMap --parallel $Jobs
     if ($LASTEXITCODE -ne 0) { throw "Android build failed ($LASTEXITCODE)." }
 
-    # Strip only debug symbols from our own module. Qt's deployment libraries
-    # are already stripped; this does not remove any library or plugin.
-    $nativeSo = Join-Path $BuildDir 'libBedrockMapQml_arm64-v8a.so'
+    # Strip the application before deployment; dependencies are stripped on
+    # their deployment copies below, without changing the installed SDKs.
+    $nativeSo = Join-Path $BuildDir 'libBedrockMap_arm64-v8a.so'
     if (-not (Test-Path -LiteralPath $nativeSo -PathType Leaf)) { throw "Native library not found: $nativeSo" }
+    $needsClean = (Remove-StaleApplicationLibraries $BuildDir) -gt 0
     $stripTool = Join-Path $NdkRoot 'toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-strip.exe'
     & $stripTool --strip-unneeded $nativeSo
     if ($LASTEXITCODE -ne 0) { throw "Stripping native debug symbols failed ($LASTEXITCODE)." }
 
     if (-not $NativeOnly) {
-        cmake --build $BuildDir --target BedrockMapQml_make_apk --parallel $Jobs
-        if ($LASTEXITCODE -ne 0) { throw "Android package failed ($LASTEXITCODE)." }
-        $apk = Join-Path $BuildDir 'android-build\BedrockMapQml.apk'
-        if (-not (Test-Path -LiteralPath $apk -PathType Leaf)) { throw "APK not found after packaging: $apk" }
+        # Separate Qt deployment from Gradle so optional plugins can be removed
+        # together with their loader metadata before the APK is assembled.
+        $deploymentDir = Join-Path $BuildDir 'android-build'
+        $deploymentSettings = Join-Path $BuildDir 'android-BedrockMap-deployment-settings.json'
+        $deployedNativeDir = Join-Path $deploymentDir 'libs\arm64-v8a'
+        [void][IO.Directory]::CreateDirectory($deployedNativeDir)
+        if ((Remove-StaleApplicationLibraries $deployedNativeDir) -gt 0) { $needsClean = $true }
+        Copy-Item -LiteralPath $nativeSo -Destination (Join-Path $deployedNativeDir ([IO.Path]::GetFileName($nativeSo))) -Force
+        & (Join-Path $qtHost 'bin\androiddeployqt.exe') --input $deploymentSettings --output $deploymentDir `
+            --android-platform "android-$CompileSdk" --jdk $JavaRoot --release --aux-mode
+        if ($LASTEXITCODE -ne 0) { throw "Android deployment failed ($LASTEXITCODE)." }
+        $readelfTool = Join-Path $NdkRoot 'toolchains\llvm\prebuilt\windows-x86_64\bin\llvm-readelf.exe'
+        Optimize-AndroidDeployment $deploymentDir $stripTool $readelfTool
+        Push-Location -LiteralPath $deploymentDir
+        try {
+            # Auxiliary deployment may retain gradle.properties from an older
+            # build. Compressed libraries require extractNativeLibs=true.
+            # Preserve the array for a single task; splatting a scalar string
+            # would pass its characters as separate Gradle task arguments.
+            $gradleTargets = @(
+                if ($needsClean) { 'clean' }
+                'assembleRelease'
+            )
+            & (Join-Path $deploymentDir 'gradlew.bat') --no-daemon "-PbedrockmapNdkPath=$NdkRoot" '-PlegacyPackaging=true' @gradleTargets
+            if ($LASTEXITCODE -ne 0) { throw "Android package failed ($LASTEXITCODE)." }
+        } finally { Pop-Location }
+        $unsignedApk = Join-Path $deploymentDir 'build\outputs\apk\release\android-build-release-unsigned.apk'
+        if (-not (Test-Path -LiteralPath $unsignedApk -PathType Leaf)) { throw "Unsigned APK not found: $unsignedApk" }
+        $apk = Join-Path $deploymentDir 'BedrockMap.apk'
 
         # androiddeployqt --release leaves the package unsigned. Sign it with
         # the configured release keystore; credentials stay outside the repo.
@@ -113,9 +209,14 @@ try {
         if (-not $buildTools) { throw 'Android SDK Build-Tools directory not found.' }
         $zipalign = Join-Path $buildTools.FullName 'zipalign.exe'
         $apksigner = Join-Path $buildTools.FullName 'apksigner.bat'
+        $aapt = Join-Path $buildTools.FullName 'aapt2.exe'
         $keystore = $KeystorePath
-        foreach ($tool in @($zipalign, $apksigner, $keystore, $KeystoreCredentials)) {
+        foreach ($tool in @($zipalign, $apksigner, $aapt, $keystore, $KeystoreCredentials)) {
             if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) { throw "Signing dependency not found: $tool" }
+        }
+        $manifestDump = & $aapt dump xmltree $unsignedApk --file AndroidManifest.xml
+        if ($LASTEXITCODE -ne 0 -or -not ($manifestDump -match 'extractNativeLibs.*=true')) {
+            throw 'APK must declare extractNativeLibs=true for compressed native libraries.'
         }
         $credentialValues = ConvertFrom-StringData (Get-Content -LiteralPath $KeystoreCredentials -Raw)
         $storePassword = $credentialValues.storePassword
@@ -130,9 +231,9 @@ try {
             $previousEnvironment[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key, 'Process')
             [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
         }
-        $aligned = Join-Path $BuildDir 'android-build\BedrockMapQml-aligned.tmp.apk'
-        $signed = Join-Path $BuildDir 'android-build\BedrockMapQml-signed.tmp.apk'
-        & $zipalign -f -p 4 $apk $aligned
+        $aligned = Join-Path $BuildDir 'android-build\BedrockMap-aligned.tmp.apk'
+        $signed = Join-Path $BuildDir 'android-build\BedrockMap-signed.tmp.apk'
+        & $zipalign -f -P 16 4 $unsignedApk $aligned
         if ($LASTEXITCODE -ne 0) { throw "APK alignment failed ($LASTEXITCODE)." }
         & $apksigner sign --ks $keystore --ks-key-alias $KeystoreAlias `
             --ks-pass 'env:BEDROCKMAP_KEYSTORE_STORE_PASS' `
@@ -140,9 +241,11 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "APK signing failed ($LASTEXITCODE)." }
         & $apksigner verify $signed
         if ($LASTEXITCODE -ne 0) { throw "APK signature verification failed ($LASTEXITCODE)." }
-        Move-Item -LiteralPath $signed -Destination $apk -Force
+        Copy-Item -LiteralPath $signed -Destination $apk -Force
+        Remove-Item -LiteralPath $signed -Force
         Remove-Item -LiteralPath $aligned -Force
         Write-Host "APK: $apk"
+        Write-Host ('APK size: {0:N2} MiB ({1:N0} bytes)' -f ((Get-Item -LiteralPath $apk).Length / 1MB), (Get-Item -LiteralPath $apk).Length)
     }
 } finally {
     foreach ($entry in $previousEnvironment.GetEnumerator()) {

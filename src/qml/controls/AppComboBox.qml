@@ -5,12 +5,12 @@ import QtQuick.Controls
 ComboBox {
     id: root
 
-    implicitWidth: 190
+    implicitWidth: Theme.ui(190)
     implicitHeight: Theme.controlHeight
     font.pixelSize: Theme.fontSubtitle
     contentItem: Text {
-        leftPadding: 9
-        rightPadding: 24
+        leftPadding: Theme.ui(9)
+        rightPadding: Theme.iconSmallSize + Theme.ui(8)
         text: root.displayText
         font: root.font
         color: Theme.text
@@ -18,13 +18,15 @@ ComboBox {
         elide: Text.ElideRight
     }
     indicator: Text {
-        x: root.width - width - 9
+        x: root.width - width - Theme.ui(9)
         y: root.topPadding + (root.availableHeight - height) / 2
         text: "\u25be"
         color: Theme.muted
         font.pixelSize: Theme.fontBody
     }
     background: Rectangle {
+        y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
+        height: root.height - y * 2
         radius: Theme.radiusSmall
         color: Theme.surfaceAlt
         border.width: 1
@@ -40,8 +42,8 @@ ComboBox {
         highlighted: root.highlightedIndex === index
         text: root.textRole ? modelData[root.textRole] : modelData
         contentItem: Text {
-            leftPadding: 9
-            rightPadding: 9
+            leftPadding: Theme.ui(9)
+            rightPadding: Theme.ui(9)
             text: option.text
             color: Theme.text
             font.pixelSize: Theme.fontSubtitle
@@ -54,10 +56,10 @@ ComboBox {
         }
     }
     popup: Popup {
-        y: root.height + 4
+        y: root.height + Theme.gapSmall
         width: root.width
-        implicitHeight: Math.min(contentItem.implicitHeight + 8, 260)
-        padding: 4
+        implicitHeight: Math.min(contentItem.implicitHeight + padding * 2, Theme.ui(260))
+        padding: Theme.gapSmall
         background: Rectangle {
             radius: Theme.radiusControl
             color: Theme.surface

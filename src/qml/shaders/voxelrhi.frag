@@ -3,6 +3,11 @@ layout(location = 0) in vec4 vColor;
 layout(location = 1) in vec3 vNormal;
 layout(location = 0) out vec4 fragColor;
 
+layout(std140, binding = 0) uniform buf {
+    mat4 uMvp;
+    vec4 uTone; // brightness, saturation
+};
+
 float faceShade(vec3 n) {
     n = normalize(n);
     if (abs(n.y) >= abs(n.x) && abs(n.y) >= abs(n.z))
@@ -16,5 +21,8 @@ void main() {
     if (vColor.a <= 0.0)
         discard;
     float shade = dot(vNormal, vNormal) > 0.000001 ? faceShade(vNormal) : 1.0;
-    fragColor = vec4(vColor.rgb * shade, vColor.a);
+    vec3 color = vColor.rgb * shade * uTone.x;
+    float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    color = mix(vec3(luma), color, uTone.y);
+    fragColor = vec4(clamp(color, 0.0, 1.0), vColor.a);
 }

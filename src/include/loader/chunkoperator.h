@@ -4,10 +4,10 @@
 #include <qregion.h>
 
 #include <QRegion>
-#include <QString>
+#include <QUrl>
 
 #include "bedrock_key.h"
-#include "loader/chunkregion.h"
+#include "loader/exportedregion.h"
 
 class AsyncLevelLoader;
 
@@ -17,7 +17,7 @@ class ChunkOperator {
     ChunkOperator() = delete;
 
     /// Export all chunks inside the given QRegion to a binary file.
-    static bool exportRegion(const QRegion& chunkRegion, const QString& filePath, AsyncLevelLoader& loader, int dim);
+    static bool exportRegion(const QRegion& chunkRegion, const QUrl& url, AsyncLevelLoader& loader, int dim);
 
     /// Import all chunks from an ExportedRegion into the level.
     static bool importRegion(const ExportedRegion& region, AsyncLevelLoader& loader, bool invalidate_tiles = true);

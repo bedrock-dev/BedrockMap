@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
-import QtQuick.Layouts
 import BedrockMap 1.0
 import "controls"
 
@@ -28,20 +27,19 @@ Item {
     property bool selectionToolActive: false
     property real inputRightInset: 0
     property string operationText: ""
-    property real panInertia: Settings ? Settings.panInertia : 0.35
+    property real panInertia: App.settings ? App.settings.panInertia : 0
     property point panVelocity: Qt.point(0, 0)
     property real lastPanSampleMs: 0
     property real lastPanMotionMs: 0
     property real lastInertiaTickMs: 0
     signal chunkEditorRequested(int chunkX, int chunkZ, int dimension)
     signal voxelViewRequested(int chunkX, int chunkZ, int dimension)
-    /// Both debug panels use the bundled monospace face so numbers line up.
+    /// Both debug panels use the platform font.
     readonly property font debugFont: Qt.font({
-                                                  family: "JetBrains Mono",
                                                   pointSize: 8
                                               })
 
-    FileDialog {
+    FileUrlDialog {
         id: importDialog
         title: qsTr("Import chunks")
         fileMode: FileDialog.OpenFile
@@ -52,205 +50,89 @@ Item {
         property var owner: null
         onAccepted: {
             if (owner && owner === canvas.controller && owner.dimension === dimension)
-                owner.beginImportAsync(selectedFile, targetX, targetZ)
+                owner.beginImportAsync(selectedUrl, targetX, targetZ)
             owner = null
         }
         onRejected: owner = null
     }
 
-    FileDialog {
+    FileUrlDialog {
         id: exportDialog
         title: qsTr("Export selected chunks")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "bchks"
         nameFilters: [qsTr("BedrockMap regions (*.bchks)")]
-        onAccepted: if (canvas.controller && canvas.controller.exportSelectionAsync(selectedFile))
+        onAccepted: if (canvas.controller && canvas.controller.exportSelectionAsync(selectedUrl))
                         canvas.operationText = qsTr("Exporting selected chunks…")
     }
 
-    Dialog {
+    FileUrlDialog {
+        id: screenshotDialog
+        title: qsTr("Save screenshot")
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "png"
+        nameFilters: [qsTr("PNG images (*.png)")]
+        onAccepted: canvas.saveScreenshot(selectedUrl)
+    }
+
+    MapBiomeDialog {
         id: biomeDialog
         parent: Overlay.overlay
-        modal: true
-        width: Math.min(420, parent ? parent.width - 32 : 420)
-        height: 196
-        padding: 16
-        x: parent ? Math.round((parent.width - width) / 2) : 0
-        y: parent ? Math.round((parent.height - height) / 2) : 0
-        property var options: []
-
-        background: Rectangle {
-            radius: Theme.radiusCard
-            color: Theme.surface
-            border.width: 1
-            border.color: Theme.border
-        }
-        contentItem: Column {
-            spacing: 12
-            Text {
-                width: parent.width
-                text: qsTr("Set biome")
-                color: Theme.text
-                font.pixelSize: Theme.fontTitle
-                font.bold: true
-            }
-            AppComboBox {
-                id: biomeCombo
-                width: parent.width
-                model: biomeDialog.options
-                textRole: "name"
-            }
-            Row {
-                anchors.right: parent.right
-                spacing: 8
-                AppButton {
-                    text: qsTr("Cancel")
-                    onClicked: biomeDialog.close()
-                }
-                AppButton {
-                    text: qsTr("Apply")
-                    primary: true
-                    onClicked: canvas.applySelectedBiome()
-                }
-            }
+        onBiomeAccepted: function (value) {
+            if (canvas.controller && canvas.controller.setSelectionBiomeAsync(value))
+                canvas.operationText = qsTr("Applying biome…")
         }
     }
 
-    AppMenu {
-        id: debugCopyMenu
-        property string snapshot: ""
-        AppMenuItem {
-            text: "Copy"
-            onTriggered: terrainLayer.copyDebugText(debugCopyMenu.snapshot)
-        }
-        AppMenuItem {
-            text: "Reset timings"
-            onTriggered: terrainLayer.resetTimings()
-        }
-    }
-
-    AppMenu {
+    MapContextMenu {
         id: mapContextMenu
-        property bool insideSelection: false
-        property int selectionRects: 0
-        property int dimension: 0
-        property var blockInfo: ({})
+        operationEnabled: canvas.controller && !canvas.controller.operationRunning
+        inputBlocked: canvas.inputBlocked
+        importActive: canvas.importActive
 
-        AppMenuItem {
-            visible: mapContextMenu.insideSelection
-            text: qsTr("Unselect")
-            onTriggered: canvas.controller.clearSelection()
+        onUnselectRequested: if (canvas.controller)
+                                 canvas.controller.clearSelection()
+        onDeleteSelectionRequested: if (canvas.controller && canvas.controller.deleteSelectionAsync())
+                                        canvas.operationText = qsTr("Deleting selected chunks…")
+        onCreateVoidRequested: if (canvas.controller && canvas.controller.createVoidSelectionAsync())
+                                   canvas.operationText = qsTr("Clearing selected chunks…")
+        onSetBiomeRequested: canvas.openBiomePicker()
+        onCopySelectionRequested: if (canvas.controller && canvas.controller.copySelectionAsync())
+                                      canvas.operationText = qsTr("Copying selected chunks…")
+        onExportSelectionRequested: canvas.openChunkRegionExport()
+        onPasteRequested: {
+            const position = canvas.requestedChunkPosition()
+            if (position && canvas.controller)
+                canvas.controller.beginPasteAsync(position.chunkX, position.chunkZ)
         }
-        AppMenu {
-            title: qsTr("Selection operations")
-            menuItemVisible: mapContextMenu.insideSelection
-            AppMenuItem {
-                text: qsTr("Delete")
-                enabled: canvas.controller && !canvas.controller.operationRunning
-                onTriggered: if (canvas.controller.deleteSelectionAsync())
-                                 canvas.operationText = qsTr("Deleting selected chunks…")
-            }
-            AppMenuItem {
-                text: qsTr("Create void")
-                enabled: canvas.controller && !canvas.controller.operationRunning
-                onTriggered: if (canvas.controller.createVoidSelectionAsync())
-                                 canvas.operationText = qsTr("Clearing selected chunks…")
-            }
-            AppMenuItem {
-                text: qsTr("Set biome")
-                enabled: canvas.controller && !canvas.controller.operationRunning
-                onTriggered: canvas.openBiomePicker()
-            }
-            AppMenuItem {
-                text: qsTr("Copy")
-                enabled: canvas.controller && !canvas.controller.operationRunning
-                onTriggered: if (canvas.controller.copySelectionAsync())
-                                 canvas.operationText = qsTr("Copying selected chunks…")
-            }
-            AppMenuItem {
-                text: qsTr("Export")
-                enabled: canvas.controller && !canvas.controller.operationRunning
-                onTriggered: exportDialog.open()
-            }
+        onImportRequested: {
+            const position = canvas.requestedChunkPosition()
+            if (!position)
+                return
+            importDialog.targetX = position.chunkX
+            importDialog.targetZ = position.chunkZ
+            importDialog.dimension = position.dimension
+            importDialog.owner = canvas.controller
+            importDialog.open()
         }
-        AppMenuSeparator {
-            visible: mapContextMenu.insideSelection
+        onCopyTextRequested: function (text) {
+            if (canvas.controller)
+                canvas.controller.copyText(text)
         }
-        AppMenuItem {
-            text: qsTr("Paste")
-            enabled: !canvas.inputBlocked && !canvas.importActive
-            onTriggered: {
-                const position = canvas.requestedChunkPosition()
-                if (position && canvas.controller)
-                    canvas.controller.beginPasteAsync(position.chunkX, position.chunkZ)
-            }
-        }
-        AppMenuItem {
-            text: qsTr("Import")
-            enabled: !canvas.inputBlocked && !canvas.importActive
-            onTriggered: {
-                const position = canvas.requestedChunkPosition()
-                if (!position)
-                    return
-                importDialog.targetX = position.chunkX
-                importDialog.targetZ = position.chunkZ
-                importDialog.dimension = position.dimension
-                importDialog.owner = canvas.controller
-                importDialog.open()
-            }
-        }
-        AppMenuSeparator {}
-        AppMenu {
-            title: qsTr("Copy info")
-            AppMenuItem {
-                text: qsTr("Copy block name") + " " + (mapContextMenu.blockInfo.blockName || "")
-                onTriggered: canvas.controller.copyText(mapContextMenu.blockInfo.blockName || "")
-            }
-            AppMenuItem {
-                text: qsTr("Copy biome name") + " " + (mapContextMenu.blockInfo.biomeName || "")
-                onTriggered: canvas.controller.copyText(mapContextMenu.blockInfo.biomeName || "")
-            }
-            AppMenuItem {
-                text: qsTr("Copy altitude") + " " + (mapContextMenu.blockInfo.altitude === undefined ? "" :
-                                                                                                       mapContextMenu.blockInfo.altitude)
-                onTriggered: if (mapContextMenu.blockInfo.altitude !== undefined)
-                                 canvas.controller.copyText(String(mapContextMenu.blockInfo.altitude))
-            }
-            AppMenuItem {
-                text: qsTr("Copy TP command") + " " + (mapContextMenu.blockInfo.tpCommand || "")
-                onTriggered: canvas.controller.copyText(mapContextMenu.blockInfo.tpCommand || "")
-            }
-        }
-        AppMenuSeparator {}
-        AppMenuItem {
-            visible: mapContextMenu.insideSelection
-            text: qsTr("Save selection screenshot")
-        }
-        AppMenuItem {
-            visible: !mapContextMenu.insideSelection
-            text: qsTr("Save screenshot")
-        }
-        AppMenuSeparator {}
-        AppMenuItem {
-            visible: mapContextMenu.insideSelection && mapContextMenu.selectionRects === 1
-            text: qsTr("View in 3D")
-            onTriggered: canvas.requestVoxelView()
-        }
-        AppMenuItem {
-            text: qsTr("Open chunk editor")
-            onTriggered: canvas.requestChunkEditor()
-        }
+        onScreenshotRequested: canvas.openScreenshotDialog()
+        onVoxelViewRequested: canvas.requestVoxelView()
+        onChunkEditorRequested: canvas.requestChunkEditor()
     }
 
     Connections {
         target: canvas.controller
         function onOperationFinished() {
             canvas.operationText = ""
-            Notifications.info(qsTr("Map operation completed"))
+            App.notifications.info(qsTr("Map operation completed"))
         }
         function onOperationFailed(message) {
             canvas.operationText = ""
-            Notifications.error(qsTr("Map operation failed"), "", message)
+            App.notifications.error(qsTr("Map operation failed"))
         }
     }
 
@@ -264,31 +146,12 @@ Item {
         }
     }
 
-    Shortcut {
-        sequences: ["Return", "Enter"]
-        enabled: canvas.visible && canvas.importActive && !canvas.inputBlocked && !importXField.activeFocus &&
-                 !importZField.activeFocus
-        onActivated: canvas.confirmImport()
-    }
-
-    Shortcut {
-        sequence: "Esc"
-        enabled: canvas.visible && canvas.importActive && !canvas.inputBlocked
-        onActivated: canvas.controller.cancelImport()
-    }
-
     function confirmImport() {
-        if (!controller || !importXField.acceptableInput || !importZField.acceptableInput)
-            return
-        const targetX = Number(importXField.text)
-        const targetZ = Number(importZField.text)
-        regionImport.targetX = targetX
-        regionImport.targetZ = targetZ
-        if (controller.confirmImport())
+        if (controller && controller.confirmImport())
             operationText = qsTr("Importing chunks…")
     }
 
-    // Zoom steps come from MapView::zoomToAdjacentLevel():
+    // Zoom steps come from MapViewState::zoomToAdjacentLevel():
     // ZOOM_SUBDIVISIONS_PER_OCTAVE equal steps inside each
     // power of two, so a step is a fixed fraction of the current octave instead
     // of an arbitrary multiplier.
@@ -383,25 +246,25 @@ Item {
     function openBiomePicker() {
         if (!controller)
             return
-        biomeDialog.options = controller.biomeOptions()
-        let selected = 0
         const biomeId = mapContextMenu.blockInfo.biomeId
-        for (let index = 0; index < biomeDialog.options.length; ++index) {
-            if (Number(biomeDialog.options[index].value) === Number(biomeId)) {
-                selected = index
-                break
-            }
-        }
-        biomeCombo.currentIndex = selected
-        biomeDialog.open()
+        biomeDialog.openFor(controller.biomeOptions(), biomeId)
     }
-    function applySelectedBiome() {
-        if (!controller || biomeCombo.currentIndex < 0 || biomeCombo.currentIndex >= biomeDialog.options.length)
-            return
-        const biome = biomeDialog.options[biomeCombo.currentIndex]
-        if (controller.setSelectionBiomeAsync(biome.value))
-            operationText = qsTr("Applying biome…")
-        biomeDialog.close()
+    function openChunkRegionExport() {
+        exportDialog.selectedFile = exportDialog.currentFolder + "/chunkregion.bchks"
+        exportDialog.open()
+    }
+    function openScreenshotDialog() {
+        screenshotDialog.selectedFile = screenshotDialog.currentFolder + "/map-screenshot.png"
+        screenshotDialog.open()
+    }
+    function saveScreenshot(targetFile) {
+        canvas.grabToImage(function (result) {
+            if (!result || !App.saveImage(targetFile, result.image)) {
+                App.notifications.error(qsTr("Save failed"))
+                return
+            }
+            App.notifications.info(qsTr("Save successful"))
+        })
     }
     function openMapContextMenu(position) {
         if (inputBlocked || importActive)
@@ -436,11 +299,6 @@ Item {
             dimension: mapContextMenu.dimension
         }
     }
-    function renderDebugSnapshot() {
-        return timingHeading.text + "\n" + rendererInfo.text + "\n" + timingZoom.text + "\n" + atlasState.text + "\n" + uploadState.text
-                + "\n" + viewportState.text + "\n----------------------\n" + timingTree.text
-    }
-
     onWidthChanged: if (controller)
                         controller.setViewportSize(Qt.size(width, height))
     onHeightChanged: if (controller)
@@ -498,7 +356,7 @@ Item {
     }
 
     Connections {
-        target: Settings
+        target: App.settings
         function onSaved() {
             terrainLayer.applySettings()
         }
@@ -518,10 +376,10 @@ Item {
         slimeChunksVisible: canvas.showSlimeChunks
         villagesVisible: canvas.showVillages
         hsaVisible: canvas.showHsa
-        actorRenderStyle: Settings ? Settings.actorRenderStyle : 0
+        actorRenderStyle: App.settings ? App.settings.actorRenderStyle : 0
         gridVisible: canvas.showGrid
-        gridColor: Settings ? Settings.gridLineColor : "#bbbbbb"
-        selectionColor: Settings ? Settings.mapSelectionColor : "#50dafffb"
+        gridColor: App.settings ? App.settings.gridLineColor : "#bbbbbb"
+        selectionColor: App.settings ? App.settings.mapSelectionColor : "#50dafffb"
     }
 
     MapCoordinateLabels {
@@ -540,126 +398,16 @@ Item {
         text: canvas.regionImport && canvas.regionImport.loading ? qsTr("Loading region…") : canvas.operationText
     }
 
-    AppCard {
-        id: importPlacementPanel
-        visible: canvas.importActive
-        enabled: !canvas.inputBlocked
+    MapImportPlacementOverlay {
+        id: importPlacementOverlay
+        anchors.fill: parent
         z: 10
-        x: Math.max(8, (canvas.width - canvas.inputRightInset - width) / 2)
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
-        width: Math.max(0, Math.min(440, canvas.width - canvas.inputRightInset - 16))
-        height: importPanelColumn.implicitHeight + 16
-
-        // Reserve this entire strip from map input, including unused panel space.
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.AllButtons
-            onWheel: function (event) {
-                event.accepted = true
-            }
-        }
-        MultiPointTouchArea {
-            anchors.fill: parent
-            mouseEnabled: false
-        }
-
-        ColumnLayout {
-            id: importPanelColumn
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 6
-            Text {
-                Layout.fillWidth: true
-                text: canvas.regionImport ? qsTr("%1 · %2 chunks · %3 × %4").arg(canvas.regionImport.sourceName).arg(
-                                                canvas.regionImport.chunkCount).arg(canvas.regionImport.width).arg(
-                                                canvas.regionImport.height) : ""
-                elide: Text.ElideMiddle
-                color: Theme.text
-                font.pixelSize: Theme.fontCaption
-            }
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("Drag inside to move; drag outside to pan. Two fingers move the map.")
-                wrapMode: Text.Wrap
-                color: Theme.muted
-                font.pixelSize: Theme.fontCaption
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 6
-                Text {
-                    text: "X"
-                    color: Theme.text
-                }
-                AppTextField {
-                    id: importXField
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 40
-                    implicitWidth: 100
-                    text: canvas.regionImport ? String(canvas.regionImport.targetX) : "0"
-                    validator: IntValidator {}
-                    inputMethodHints: Qt.ImhFormattedNumbersOnly
-                    onEditingFinished: {
-                        if (canvas.regionImport && acceptableInput)
-                            canvas.regionImport.targetX = Number(text)
-                        syncCoordinate()
-                    }
-                    function syncCoordinate() {
-                        text = canvas.regionImport ? String(canvas.regionImport.targetX) : "0"
-                    }
-                }
-                Text {
-                    text: "Z"
-                    color: Theme.text
-                }
-                AppTextField {
-                    id: importZField
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 40
-                    implicitWidth: 100
-                    text: canvas.regionImport ? String(canvas.regionImport.targetZ) : "0"
-                    validator: IntValidator {}
-                    inputMethodHints: Qt.ImhFormattedNumbersOnly
-                    onEditingFinished: {
-                        if (canvas.regionImport && acceptableInput)
-                            canvas.regionImport.targetZ = Number(text)
-                        syncCoordinate()
-                    }
-                    function syncCoordinate() {
-                        text = canvas.regionImport ? String(canvas.regionImport.targetZ) : "0"
-                    }
-                }
-            }
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("Target X/Z are chunk coordinates. Existing chunks will be overwritten.")
-                wrapMode: Text.Wrap
-                color: Theme.muted
-                font.pixelSize: Theme.fontCaption
-            }
-            RowLayout {
-                Layout.alignment: Qt.AlignRight
-                AppButton {
-                    text: qsTr("Cancel")
-                    onClicked: if (canvas.controller)
-                                   canvas.controller.cancelImport()
-                }
-                AppButton {
-                    text: qsTr("Import")
-                    primary: true
-                    enabled: importXField.acceptableInput && importZField.acceptableInput
-                    onClicked: canvas.confirmImport()
-                }
-            }
-        }
-        Connections {
-            target: canvas.regionImport
-            function onPreviewChanged() {
-                importXField.syncCoordinate()
-                importZField.syncCoordinate()
-            }
-        }
+        regionImport: canvas.regionImport
+        inputBlocked: canvas.inputBlocked
+        inputRightInset: canvas.inputRightInset
+        onCancelRequested: if (canvas.controller)
+                               canvas.controller.cancelImport()
+        onConfirmRequested: canvas.confirmImport()
     }
 
     Connections {
@@ -678,7 +426,7 @@ Item {
         id: mapInputRegion
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: importPlacementPanel.visible ? importPlacementPanel.height + 16 : 0
+        anchors.bottomMargin: importPlacementOverlay.reservedHeight
         anchors.left: parent.left
         width: Math.max(0, canvas.width - canvas.inputRightInset)
         z: 4
@@ -882,179 +630,13 @@ Item {
         }
     }
 
-    Rectangle {
-        id: debugPanel
-        visible: canvas.showRenderDebug
+    MapRenderDebugPanel {
+        anchors.fill: parent
         z: 5
-        // Both debug panels use the same monospace font and size.
-        readonly property font panelFont: canvas.debugFont
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.topMargin: 72
-        anchors.rightMargin: 18
-        // Preserve the monospace tree and allow scrolling on small viewports.
-        implicitWidth: 560
-        implicitHeight: debugColumn.implicitHeight + 16
-        width: Math.max(0, Math.min(implicitWidth, parent.width - 36))
-        height: Math.max(0, Math.min(implicitHeight, parent.height - 90))
-        radius: Theme.radiusSmall
-        color: Theme.overlay
-        border.color: Theme.overlayBorder
-        TapHandler {
-            acceptedButtons: Qt.RightButton
-            onTapped: function (eventPoint, button) {
-                debugCopyMenu.snapshot = canvas.renderDebugSnapshot()
-                debugCopyMenu.popup(debugPanel, eventPoint.position.x, eventPoint.position.y)
-            }
-        }
-        Flickable {
-            anchors.fill: parent
-            anchors.margins: 8
-            contentWidth: Math.max(width, timingTree.implicitWidth)
-            contentHeight: debugColumn.implicitHeight
-            clip: true
-            Column {
-                id: debugColumn
-                width: Math.max(debugPanel.width - 16, timingTree.implicitWidth)
-                spacing: 1
-                RowLayout {
-                    width: debugPanel.width - 16
-                    spacing: 2
-                    Text {
-                        id: timingHeading
-                        Layout.fillWidth: true
-                        text: "RENDERER DEBUG  |  %1 FPS".arg(terrainLayer.framesPerSecond.toFixed(1))
-                        color: Theme.overlayText
-                        font.family: debugPanel.panelFont.family
-                        font.pointSize: debugPanel.panelFont.pointSize
-                        wrapMode: Text.Wrap
-                    }
-                    Button {
-                        text: "Reset"
-                        flat: true
-                        font.pixelSize: Theme.fontCaption
-                        padding: 2
-                        onClicked: terrainLayer.resetTimings()
-                    }
-                    Button {
-                        text: "Copy"
-                        flat: true
-                        font.pixelSize: Theme.fontCaption
-                        padding: 2
-                        onClicked: terrainLayer.copyDebugText(canvas.renderDebugSnapshot())
-                    }
-                }
-                Text {
-                    id: rendererInfo
-                    width: parent.width
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                    text: terrainLayer.graphicsInfo
-                    wrapMode: Text.Wrap
-                }
-                Text {
-                    id: timingZoom
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                    width: parent.width
-                    wrapMode: Text.Wrap
-                    text: "Zoom %1 px/chunk | %2 px/block | LOD %3 blocks/texel".arg(canvas.controller
-                                                                                     ? mapOverlay.viewScale.toFixed(2) :
-                                                                                       "-").arg(canvas.controller ? (
-                                                                                                                        Math.abs(mapOverlay.viewScale)
-                                                                                                                        / 16).toFixed(
-                                                                                                                        2) : "-").arg(
-                              terrainLayer.blocksPerTexel)
-                }
-                Text {
-                    id: atlasState
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                    width: parent.width
-                    wrapMode: Text.Wrap
-                    text: "Atlas: %1×%2 | terrain %3 | loading %4 | empty %5".arg(terrainLayer.atlasSlotsPerSide).arg(
-                              terrainLayer.atlasSlotsPerSide).arg(terrainLayer.terrainSlotCount).arg(
-                              terrainLayer.loadingSlotCount).arg(terrainLayer.emptySlotCount)
-                }
-                Text {
-                    id: uploadState
-                    width: parent.width
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                    text: "Uploads: %1 terrain tiles".arg(terrainLayer.uploadedTiles)
-                }
-                Text {
-                    id: viewportState
-                    width: parent.width
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                    text: "Viewport: %1 × %2 px".arg(Math.round(canvas.width)).arg(Math.round(canvas.height))
-                }
-                Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Theme.overlayBorder
-                }
-                Text {
-                    id: timingTree
-                    text: terrainLayer.timingText
-                    textFormat: Text.PlainText
-                    color: Theme.overlayText
-                    font: debugPanel.panelFont
-                }
-            }
-        }
-    }
-    // Data layer debug panel with cache occupancy/capacity per dimension, thread
-    // pool, chunk edits, region load/render timings) plus process memory. The
-    // render stats panel above and this loader panel are separate.
-    Rectangle {
-        id: loaderDebugPanel
         visible: canvas.showRenderDebug
-        z: 5
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.topMargin: canvas.width < debugPanel.width + implicitWidth + 36 ? debugPanel.y + debugPanel.height + 10 :
-                                                                                  72
-        anchors.leftMargin: 18
-        implicitWidth: loaderDebugColumn.implicitWidth + 16
-        implicitHeight: loaderDebugColumn.implicitHeight + 16
-        width: implicitWidth
-        height: implicitHeight
-        radius: Theme.radiusSmall
-        color: Theme.overlay
-        border.color: Theme.overlayBorder
-        readonly property font panelFont: canvas.debugFont
-        TapHandler {
-            acceptedButtons: Qt.RightButton
-            onTapped: function (eventPoint, button) {
-                const lines = canvas.terrainData ? canvas.terrainData.loaderDebug : []
-                debugCopyMenu.snapshot = lines.join("\n") + "\n" + memoryUsage.text
-                debugCopyMenu.popup(loaderDebugPanel, eventPoint.position.x, eventPoint.position.y)
-            }
-        }
-        Column {
-            id: loaderDebugColumn
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.margins: 8
-            spacing: 0
-            Repeater {
-                model: canvas.terrainData ? canvas.terrainData.loaderDebug : []
-                delegate: Text {
-                    required property string modelData
-                    text: modelData
-                    color: Theme.overlayText
-                    font: loaderDebugPanel.panelFont
-                }
-            }
-            Text {
-                id: memoryUsage
-                text: qsTr("Memory usage: %1 MiB").arg(canvas.terrainData ? canvas.terrainData.memoryUsageMiB.toFixed(1) :
-                                                                            "-")
-                color: Theme.overlayText
-                font: loaderDebugPanel.panelFont
-            }
-        }
+        terrainLayer: terrainLayer
+        mapOverlay: mapOverlay
+        terrainData: canvas.terrainData
+        debugFont: canvas.debugFont
     }
 }

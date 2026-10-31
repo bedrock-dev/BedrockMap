@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QFutureWatcher>
 #include <QObject>
+#include <QUrl>
 #include <QVariantList>
 #include <array>
 #include <memory>
@@ -71,7 +72,7 @@ struct ChunkNbtSnapshot {
 
 /// Chunk editor data for the QML frontend. Parsing runs on a worker so opening
 /// a chunk never blocks the map or its render thread.
-class ChunkEditorController final : public VoxelSceneController {
+class ChunkEditorController : public VoxelSceneController {
     Q_OBJECT
     Q_PROPERTY(bool hasChunk READ hasChunk NOTIFY chunkChanged)
     Q_PROPERTY(int chunkX READ chunkX NOTIFY chunkChanged)
@@ -92,7 +93,7 @@ class ChunkEditorController final : public VoxelSceneController {
     Q_PROPERTY(NbtDocumentController* pendingTicksDocument READ pendingTicksDocument CONSTANT)
 
    public:
-    explicit ChunkEditorController(QObject* parent = nullptr);
+    explicit ChunkEditorController(QObject* parent);
     ~ChunkEditorController() override;
 
     [[nodiscard]] bool loading() const override { return loading_; }
@@ -118,12 +119,11 @@ class ChunkEditorController final : public VoxelSceneController {
     [[nodiscard]] NbtDocumentController* pendingTicksDocument() { return &pending_ticks_document_; }
 
     Q_INVOKABLE void openChunk(int chunkX, int chunkZ, int dimension);
-    Q_INVOKABLE void openArea(int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ, int dimension);
     Q_INVOKABLE void clear();
     Q_INVOKABLE void setTerrainY(int y);
     Q_INVOKABLE void setTerrainLayer(int layer);
     Q_INVOKABLE void copyText(const QString& text) const;
-    Q_INVOKABLE [[nodiscard]] bool exportStatistic(int index, const QString& path) const;
+    Q_INVOKABLE [[nodiscard]] bool exportStatistic(int index, const QUrl& url) const;
     /// Write the current editor documents into the loader's raw chunk cache.
     /// The world save remains responsible for committing that cache to disk.
     Q_INVOKABLE [[nodiscard]] bool saveToCache();
@@ -138,7 +138,7 @@ class ChunkEditorController final : public VoxelSceneController {
 
    protected:
     [[nodiscard]] StructureExportTask structureExportTask(const bl::block_box& localBounds, bool exportEntities,
-                                                         bool useNewFormat) const override;
+                                                          bool useNewFormat) const override;
 
    private:
     void finishLoad();

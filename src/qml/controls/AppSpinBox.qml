@@ -5,8 +5,8 @@ import QtQuick.Controls
 SpinBox {
     id: root
 
-    readonly property real arrowWidth: Theme.touch ? 32 : 20
-    implicitWidth: 110
+    readonly property real arrowWidth: Theme.spinBoxArrowWidth
+    implicitWidth: Theme.ui(110)
     implicitHeight: Theme.controlHeight
     font.pixelSize: Theme.fontSubtitle
     editable: true
@@ -21,7 +21,7 @@ SpinBox {
         readOnly: !root.editable
         validator: root.validator
         inputMethodHints: Qt.ImhFormattedNumbersOnly
-        rightPadding: root.arrowWidth + 2
+        rightPadding: root.arrowWidth + Theme.ui(2)
     }
     up.indicator: Rectangle {
         x: root.width - root.arrowWidth
@@ -52,6 +52,8 @@ SpinBox {
         }
     }
     background: Rectangle {
+        y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
+        height: root.height - y * 2
         radius: Theme.radiusSmall
         color: Theme.surfaceAlt
         border.width: 1

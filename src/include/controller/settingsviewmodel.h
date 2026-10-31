@@ -13,6 +13,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(QString colorTheme READ colorTheme WRITE setColorTheme NOTIFY colorThemeChanged)
     Q_PROPERTY(bool collapseSidebarOnStartup READ collapseSidebarOnStartup WRITE setCollapseSidebarOnStartup NOTIFY
                    collapseSidebarOnStartupChanged)
+    Q_PROPERTY(bool showMapDebugButton READ showMapDebugButton WRITE setShowMapDebugButton NOTIFY showMapDebugButtonChanged)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(QString renderBackend READ renderBackend WRITE setRenderBackend NOTIFY renderBackendChanged)
     Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
@@ -37,6 +38,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(int gpuShadowStep READ gpuShadowStep WRITE setGpuShadowStep NOTIFY gpuShadowStepChanged)
     Q_PROPERTY(int gpuTileSnapshotCacheSizeMB READ gpuTileSnapshotCacheSizeMB WRITE setGpuTileSnapshotCacheSizeMB NOTIFY
                    gpuTileSnapshotCacheSizeMBChanged)
+    Q_PROPERTY(bool gpuHighDetailMap READ gpuHighDetailMap WRITE setGpuHighDetailMap NOTIFY gpuHighDetailMapChanged)
     Q_PROPERTY(int cpuShadowLevel READ cpuShadowLevel WRITE setCpuShadowLevel NOTIFY cpuShadowLevelChanged)
     Q_PROPERTY(int minimumScaleLevel READ minimumScaleLevel WRITE setMinimumScaleLevel NOTIFY minimumScaleLevelChanged)
     Q_PROPERTY(int maximumScaleLevel READ maximumScaleLevel WRITE setMaximumScaleLevel NOTIFY maximumScaleLevelChanged)
@@ -62,16 +64,16 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(double gpuGrassHeightBase READ gpuGrassHeightBase WRITE setGpuGrassHeightBase NOTIFY gpuGrassHeightBaseChanged)
     Q_PROPERTY(double gpuGrassHeightRange READ gpuGrassHeightRange WRITE setGpuGrassHeightRange NOTIFY gpuGrassHeightRangeChanged)
     Q_PROPERTY(QString gpuGrassHeightColor READ gpuGrassHeightColor WRITE setGpuGrassHeightColor NOTIFY gpuGrassHeightColorChanged)
-    Q_PROPERTY(int heightMapCacheSize READ heightMapCacheSize WRITE setHeightMapCacheSize NOTIFY heightMapCacheSizeChanged)
     Q_PROPERTY(bool checkUpdate READ checkUpdate WRITE setCheckUpdate NOTIFY checkUpdateChanged)
     Q_PROPERTY(bool scanLeviPath READ scanLeviPath WRITE setScanLeviPath NOTIFY scanLeviPathChanged)
     Q_PROPERTY(QStringList customWorldPaths READ customWorldPaths NOTIFY customWorldPathsChanged)
     Q_PROPERTY(QVariantList worldSources READ worldSources NOTIFY worldSourcesChanged)
 
    public:
-    explicit SettingsViewModel(QObject* parent = nullptr);
+    explicit SettingsViewModel(QObject* parent);
     QString colorTheme() const { return values_.colorTheme; }
     bool collapseSidebarOnStartup() const { return values_.collapseSidebarOnStartup; }
+    bool showMapDebugButton() const { return values_.showMapDebugButton; }
     QString language() const { return values_.language; }
     QString renderBackend() const { return values_.renderBackend; }
     int threadCount() const { return values_.threadCount; }
@@ -93,6 +95,7 @@ class SettingsViewModel final : public QObject {
     double gpuBiomeBlendBlocks() const { return values_.gpuBiomeBlendBlocks; }
     int gpuShadowStep() const { return values_.gpuShadowStep; }
     int gpuTileSnapshotCacheSizeMB() const { return values_.gpuTileSnapshotCacheSizeMB; }
+    bool gpuHighDetailMap() const { return values_.gpuHighDetailMap; }
     int cpuShadowLevel() const { return values_.cpuShadowLevel; }
     int minimumScaleLevel() const { return values_.minimumScaleLevel; }
     int maximumScaleLevel() const { return values_.maximumScaleLevel; }
@@ -116,7 +119,6 @@ class SettingsViewModel final : public QObject {
     double gpuGrassHeightBase() const { return values_.gpuGrassHeightBase; }
     double gpuGrassHeightRange() const { return values_.gpuGrassHeightRange; }
     QString gpuGrassHeightColor() const { return values_.gpuGrassHeightColor; }
-    int heightMapCacheSize() const { return values_.heightMapCacheSize; }
     bool checkUpdate() const { return values_.checkUpdate; }
     bool scanLeviPath() const { return values_.scanLeviPath; }
     QStringList customWorldPaths() const { return values_.customWorldPaths; }
@@ -127,7 +129,7 @@ class SettingsViewModel final : public QObject {
     /// Persists only the custom world folder list, leaving unrelated pending
     /// settings untouched.
     Q_INVOKABLE bool saveWorldSources();
-    /// Re-evaluates platform-dependent scan source availability.
+    /// Refreshes the platform-dependent scan source list.
     Q_INVOKABLE void refreshWorldSources();
     Q_INVOKABLE void reset();
     /// Push the configured UI font onto the application, so a QML frontend
@@ -137,6 +139,7 @@ class SettingsViewModel final : public QObject {
     void setSettings(const setting::Settings& values);
     void setColorTheme(const QString& value);
     void setCollapseSidebarOnStartup(bool value);
+    void setShowMapDebugButton(bool value);
     void setLanguage(const QString& value);
     void setRenderBackend(const QString& value);
     void setThreadCount(int value);
@@ -156,6 +159,7 @@ class SettingsViewModel final : public QObject {
     void setGpuBiomeBlendBlocks(double value);
     void setGpuShadowStep(int value);
     void setGpuTileSnapshotCacheSizeMB(int value);
+    void setGpuHighDetailMap(bool value);
     void setCpuShadowLevel(int value);
     void setMinimumScaleLevel(int value);
     void setMaximumScaleLevel(int value);
@@ -188,6 +192,7 @@ class SettingsViewModel final : public QObject {
    signals:
     void colorThemeChanged();
     void collapseSidebarOnStartupChanged();
+    void showMapDebugButtonChanged();
     void languageChanged();
     void renderBackendChanged();
     void threadCountChanged();
@@ -207,6 +212,7 @@ class SettingsViewModel final : public QObject {
     void gpuBiomeBlendBlocksChanged();
     void gpuShadowStepChanged();
     void gpuTileSnapshotCacheSizeMBChanged();
+    void gpuHighDetailMapChanged();
     void cpuShadowLevelChanged();
     void minimumScaleLevelChanged();
     void maximumScaleLevelChanged();
@@ -230,7 +236,6 @@ class SettingsViewModel final : public QObject {
     void gpuGrassHeightBaseChanged();
     void gpuGrassHeightRangeChanged();
     void gpuGrassHeightColorChanged();
-    void heightMapCacheSizeChanged();
     void checkUpdateChanged();
     void scanLeviPathChanged();
     void customWorldPathsChanged();

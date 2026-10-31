@@ -1,15 +1,14 @@
 #include "controller/chunkeditorcontroller.h"
 
-#include <QtConcurrent>
-
 #include <QClipboard>
 #include <QCryptographicHash>
 #include <QFile>
 #include <QGuiApplication>
 #include <QUrl>
+#include <QtConcurrent>
 #include <algorithm>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -20,8 +19,9 @@
 #include "bedrock_key.h"
 #include "chunk.h"
 #include "color.h"
+#include "io/documentio.h"
 #include "loader/asynclevelloader.h"
-#include "loader/blockregionoperator.h"
+#include "loader/blockvolumeoperator.h"
 #include "nbt.h"
 #include "raw_chunk.h"
 #include "render/voxel_mesh.h"
@@ -72,17 +72,15 @@ namespace {
     }
 
     QString nbtIcon(const QString& category, const QString& name) {
-        const QString resource_path = QStringLiteral(":/res/icons/%1/%2.png").arg(category, name);
-        return QFile::exists(resource_path)
-                   ? QStringLiteral("qrc:/res/icons/%1/%2.png").arg(category, name)
-                   : QStringLiteral("qrc:/res/icons/what.png");
+        const QString resource_path = QStringLiteral(":/bedrockmap/icons/%1/%2.png").arg(category, name);
+        return QFile::exists(resource_path) ? QStringLiteral("qrc:/bedrockmap/icons/%1/%2.png").arg(category, name)
+                                            : QStringLiteral("qrc:/bedrockmap/icons/what.png");
     }
 
     NbtItemPresentation entityPresentation(const bl::nbt::compound_tag* root, int index) {
-        const QString identifier =
-            normalizedNbtName(stringTagValue(root, {"identifier", "ActorIdentifier"}));
+        const QString identifier = normalizedNbtName(stringTagValue(root, {"identifier", "ActorIdentifier"}));
         const QString label = identifier.isEmpty() ? QString::number(index) : identifier;
-        const QString icon = identifier.isEmpty() ? QStringLiteral("qrc:/res/icons/what.png") : nbtIcon("entity", identifier);
+        const QString icon = identifier.isEmpty() ? QStringLiteral("qrc:/bedrockmap/icons/what.png") : nbtIcon("entity", identifier);
         return {label, icon};
     }
 
@@ -90,8 +88,7 @@ namespace {
         const QString rawIdentifier = stringTagValue(root, {"id"});
         const QString identifier = normalizedNbtName(rawIdentifier);
         const QString label = rawIdentifier.isEmpty() ? QString::number(index) : rawIdentifier;
-        const QString icon =
-            identifier.isEmpty() ? QStringLiteral("qrc:/res/icons/what.png") : nbtIcon("block_actor", identifier);
+        const QString icon = identifier.isEmpty() ? QStringLiteral("qrc:/bedrockmap/icons/what.png") : nbtIcon("block_actor", identifier);
         return {label, icon};
     }
 
@@ -113,8 +110,7 @@ namespace {
         }
 
         for (int worldY = worldMinY; worldY <= worldMaxY; ++worldY) {
-            ChunkTerrainLayerSnapshot* terrainLayer =
-                terrain ? &terrain->layers[static_cast<size_t>(worldY - worldMinY)] : nullptr;
+            ChunkTerrainLayerSnapshot* terrainLayer = terrain ? &terrain->layers[static_cast<size_t>(worldY - worldMinY)] : nullptr;
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     const auto biome = chunk->get_biome(x, worldY, z);
@@ -128,8 +124,7 @@ namespace {
                             if (!rawBlock) break;
                             const auto blockInfo = chunk->get_block_with_color(x, worldY, z, blockLayer);
                             const auto blended = bl::blend_color_with_biome(blockInfo.name, blockInfo.color, biome);
-                            const bool visibleBlock =
-                                blockInfo.name != "minecraft:air" && blockInfo.name != "minecraft:unknown";
+                            const bool visibleBlock = blockInfo.name != "minecraft:air" && blockInfo.name != "minecraft:unknown";
                             cell.blocks.push_back(ChunkTerrainBlockSnapshot{
                                 QString::fromStdString(blockInfo.name),
                                 QString::fromStdString(rawBlock->to_readable_string()),
@@ -158,68 +153,6 @@ namespace {
         scene->voxels = std::make_shared<const VoxelGrid>(std::move(grid));
         reportProgress(98);
         return scene;
-    }
-
-    std::shared_ptr<VoxelSceneData> buildVoxelAreaScene(AsyncLevelLoader* loader, const bl::chunk_pos& minChunk,
-                                                        const bl::chunk_pos& maxChunk, const std::function<void(int)>& reportProgress) {
-        if (!loader || minChunk.dim != maxChunk.dim || maxChunk.x < minChunk.x || maxChunk.z < minChunk.z) return {};
-        const int columns = maxChunk.x - minChunk.x + 1;
-        const int rows = maxChunk.z - minChunk.z + 1;
-        const int totalChunks = std::max(1, columns * rows);
-        std::vector<std::vector<bl::chunk*>> chunks(static_cast<size_t>(columns),
-                                                  std::vector<bl::chunk*>(static_cast<size_t>(rows), nullptr));
-        std::vector<std::unique_ptr<bl::chunk>> ownedChunks;
-        ownedChunks.reserve(static_cast<size_t>(totalChunks));
-        int completed = 0;
-        for (int chunkZ = minChunk.z; chunkZ <= maxChunk.z; ++chunkZ) {
-            for (int chunkX = minChunk.x; chunkX <= maxChunk.x; ++chunkX) {
-                auto chunk = std::unique_ptr<bl::chunk>(loader->getChunk(
-                    bl::chunk_pos(chunkX, chunkZ, minChunk.dim), bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others));
-                chunks[chunkX - minChunk.x][chunkZ - minChunk.z] = chunk.get();
-                ownedChunks.push_back(std::move(chunk));
-                ++completed;
-                reportProgress(5 + completed * 30 / totalChunks);
-            }
-        }
-
-        // Mesh the combined volume, as the native preview does, so chunk edges
-        // have the same face culling and ambient occlusion as interior blocks.
-        int firstWorldY = 0;
-        auto grid = voxel_mesh::createVoxelDataFromChunks(
-            chunks, [&](int count) { reportProgress(35 + count * 30 / totalChunks); }, &firstWorldY);
-        ownedChunks.clear();
-        chunks.clear();
-        const auto bounds = voxel_mesh::fullBounds(grid);
-        if (!bounds) return {};
-        reportProgress(70);
-        auto mesh = voxel_mesh::build(grid, *bounds);
-
-        auto result = std::make_shared<VoxelSceneData>();
-        result->origin = QVector3D(minChunk.x * 16, firstWorldY, minChunk.z * 16);
-        result->modelSize = QVector3D(static_cast<float>(columns * 16), static_cast<float>(grid.size()),
-                                      static_cast<float>(rows * 16));
-        result->opaqueVertices = std::move(mesh.opaqueVertices);
-        result->opaqueIndices = std::move(mesh.opaqueIndices);
-        result->transparentVertices = std::move(mesh.transparentVertices);
-        result->transparentIndices = std::move(mesh.transparentIndices);
-        result->voxels = std::make_shared<const VoxelGrid>(std::move(grid));
-        reportProgress(98);
-        return result;
-    }
-
-    std::shared_ptr<ChunkNbtSnapshot> loadAreaSnapshot(AsyncLevelLoader* loader, const bl::chunk_pos& minChunk,
-                                                       const bl::chunk_pos& maxChunk, quint64 generation,
-                                                       const std::function<void(int)>& reportProgress) {
-        auto snapshot = std::make_shared<ChunkNbtSnapshot>();
-        snapshot->generation = generation;
-        snapshot->chunkX = minChunk.x;
-        snapshot->chunkZ = minChunk.z;
-        snapshot->dimension = minChunk.dim;
-        snapshot->voxelScene = buildVoxelAreaScene(loader, minChunk, maxChunk, reportProgress);
-        snapshot->ok = snapshot->voxelScene &&
-                       (!snapshot->voxelScene->opaqueIndices.empty() || !snapshot->voxelScene->transparentIndices.empty());
-        if (!snapshot->ok) snapshot->error = ChunkEditorController::tr("No terrain was found in the current area.");
-        return snapshot;
     }
 
     std::shared_ptr<ChunkNbtSnapshot> loadChunkSnapshot(AsyncLevelLoader* loader, bl::chunk_pos pos, quint64 generation,
@@ -258,21 +191,18 @@ namespace {
             for (const auto& [key, data] : raw->get_normal_data())
                 appendStatistic(*snapshot->statistics, QString::fromStdString(bl::chunk_key::chunk_key_to_str(key)), data);
             for (const auto& [identifierHash, data] : raw->get_jigsaw_data()) {
-                const QString hashText =
-                    QString::number(static_cast<qulonglong>(identifierHash), 16).rightJustified(16, QLatin1Char('0'));
+                const QString hashText = QString::number(static_cast<qulonglong>(identifierHash), 16).rightJustified(16, QLatin1Char('0'));
                 appendStatistic(*snapshot->statistics, QStringLiteral("JigsawStructureBlueprint[0x%1]").arg(hashText), data);
             }
             for (const auto& [y, data] : raw->get_sub_chunks()) {
                 if (!data.empty())
-                    appendStatistic(*snapshot->statistics,
-                                    QStringLiteral("SubChunk[%1 ~ %2]").arg(y * 16).arg((y + 1) * 16 - 1), data);
+                    appendStatistic(*snapshot->statistics, QStringLiteral("SubChunk[%1 ~ %2]").arg(y * 16).arg((y + 1) * 16 - 1), data);
             }
             if (!raw->get_actor_digest().empty())
                 appendStatistic(*snapshot->statistics, QStringLiteral("ActorDigest"), raw->get_actor_digest());
             for (const auto& [key, data] : raw->get_entities()) {
                 if (key.size() != 8) continue;
-                const QString hexKey =
-                    QString::fromLatin1(QByteArray::fromRawData(key.data(), static_cast<qsizetype>(key.size())).toHex());
+                const QString hexKey = QString::fromLatin1(QByteArray::fromRawData(key.data(), static_cast<qsizetype>(key.size())).toHex());
                 appendStatistic(*snapshot->statistics, QStringLiteral("Entity[%1]").arg(hexKey), data);
             }
             snapshot->terrain = std::make_shared<ChunkTerrainSnapshot>();
@@ -348,47 +278,9 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     const quint64 generation = request_generation_;
     watcher_.setFuture(QtConcurrent::run([this, loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation] {
         const auto reportProgress = [this](int progress) {
-            QMetaObject::invokeMethod(
-                this, [this, progress] { setVoxelProgress(progress); }, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, [this, progress] { setVoxelProgress(progress); }, Qt::QueuedConnection);
         };
         return loadChunkSnapshot(loader, pos, generation, reportProgress);
-    }));
-}
-
-void ChunkEditorController::openArea(int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ, int dimension) {
-    if (!loader_ || !loader_->isOpen() || watcher_.isRunning()) return;
-    ++request_generation_;
-    chunk_x_ = minChunkX;
-    chunk_z_ = minChunkZ;
-    dimension_ = dimension;
-    y_range_.clear();
-    error_message_.clear();
-    has_chunk_ = false;
-    entities_document_.loadMemory({}, {}, tr("Entities"));
-    block_entities_document_.loadMemory({}, {}, tr("Block entities"));
-    pending_ticks_document_.loadMemory({}, {}, tr("Pts"));
-    terrain_.reset();
-    statistics_.reset();
-    terrain_y_ = 0;
-    terrain_layer_ = 0;
-    voxel_scene_.reset();
-    setVoxelProgress(0);
-    setLoading(true);
-    emit chunkChanged();
-    emit dataChanged();
-    emit terrainChanged();
-    emit statisticsChanged();
-    emit statusChanged();
-
-    const quint64 generation = request_generation_;
-    const bl::chunk_pos minChunk(minChunkX, minChunkZ, dimension);
-    const bl::chunk_pos maxChunk(maxChunkX, maxChunkZ, dimension);
-    watcher_.setFuture(QtConcurrent::run([this, loader = loader_, minChunk, maxChunk, generation] {
-        const auto reportProgress = [this](int progress) {
-            QMetaObject::invokeMethod(
-                this, [this, progress] { setVoxelProgress(progress); }, Qt::QueuedConnection);
-        };
-        return loadAreaSnapshot(loader, minChunk, maxChunk, generation, reportProgress);
     }));
 }
 
@@ -449,9 +341,8 @@ QVariantList ChunkEditorController::terrainCells() const {
         for (int x = 0; x < 16; ++x) {
             const auto& cell = layer->cells[static_cast<size_t>(z * 16 + x)];
             const bool hasBlock = terrain_layer_ >= 0 && terrain_layer_ < cell.blocks.size();
-            const auto& block =
-                hasBlock ? cell.blocks[static_cast<size_t>(terrain_layer_)]
-                         : ChunkTerrainBlockSnapshot{QStringLiteral("minecraft:air"), {}, QColor(0, 0, 0, 0)};
+            const auto& block = hasBlock ? cell.blocks[static_cast<size_t>(terrain_layer_)]
+                                         : ChunkTerrainBlockSnapshot{QStringLiteral("minecraft:air"), {}, QColor(0, 0, 0, 0)};
             QVariantMap value;
             value.insert(QStringLiteral("x"), x);
             value.insert(QStringLiteral("y"), terrain_y_);
@@ -461,8 +352,7 @@ QVariantList ChunkEditorController::terrainCells() const {
             value.insert(QStringLiteral("blockPalette"), block.palette);
             value.insert(QStringLiteral("biomeId"), cell.biome);
             value.insert(QStringLiteral("biomeName"), cell.biomeName);
-            value.insert(QStringLiteral("biomeLabel"),
-                         QStringLiteral("%1 (%2)").arg(cell.biome).arg(cell.biomeName));
+            value.insert(QStringLiteral("biomeLabel"), QStringLiteral("%1 (%2)").arg(cell.biome).arg(cell.biomeName));
             value.insert(QStringLiteral("biomeColor"), cell.biomeColor);
             result.push_back(value);
         }
@@ -512,14 +402,10 @@ void ChunkEditorController::copyText(const QString& text) const {
     if (auto* clipboard = QGuiApplication::clipboard()) clipboard->setText(text);
 }
 
-bool ChunkEditorController::exportStatistic(int index, const QString& path) const {
-    if (!statistics_ || index < 0 || index >= static_cast<int>(statistics_->rows.size()) || path.isEmpty()) return false;
-    const QUrl url(path);
-    const QString localPath = url.isLocalFile() ? url.toLocalFile() : path;
-    QFile file(localPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) return false;
+bool ChunkEditorController::exportStatistic(int index, const QUrl& url) const {
+    if (!statistics_ || index < 0 || index >= static_cast<int>(statistics_->rows.size()) || url.isEmpty()) return false;
     const auto& data = statistics_->rows[static_cast<size_t>(index)].data;
-    return file.write(data) == data.size() && file.flush();
+    return io::DocumentIo::writeBytes(url, data).isEmpty();
 }
 
 bool ChunkEditorController::saveToCache() {
@@ -538,10 +424,8 @@ bool ChunkEditorController::saveToCache() {
         return payload;
     };
 
-    if (pending_ticks_document_.dirty())
-        raw->set_normal(bl::chunk_key::PendingTicks, documentPayload(pending_ticks_document_));
-    if (block_entities_document_.dirty())
-        raw->set_normal(bl::chunk_key::BlockEntity, documentPayload(block_entities_document_));
+    if (pending_ticks_document_.dirty()) raw->set_normal(bl::chunk_key::PendingTicks, documentPayload(pending_ticks_document_));
+    if (block_entities_document_.dirty()) raw->set_normal(bl::chunk_key::BlockEntity, documentPayload(block_entities_document_));
     if (entities_document_.dirty()) {
         std::vector<std::unique_ptr<bl::actor>> actor_storage;
         std::vector<bl::actor*> actors;
@@ -618,14 +502,14 @@ void ChunkEditorController::setVoxelProgress(int progress) {
     emit voxelProgressChanged();
 }
 
-VoxelSceneController::StructureExportTask ChunkEditorController::structureExportTask(
-    const bl::block_box& localBounds, bool exportEntities, bool useNewFormat) const {
+VoxelSceneController::StructureExportTask ChunkEditorController::structureExportTask(const bl::block_box& localBounds, bool exportEntities,
+                                                                                     bool useNewFormat) const {
     if (!loader_ || !loader_->isOpen() || !voxel_scene_) return {};
     const auto origin = voxel_scene_->origin;
     const auto bounds = localBounds.translated({qRound(origin.x()), qRound(origin.y()), qRound(origin.z())});
     return [loader = loader_, dimension = dimension_, bounds, exportEntities, useNewFormat] {
-        const auto raw = BlockRegionOperator::exportMcstructureData(*loader, dimension, bounds, false,
-                                                                   useNewFormat ? 2 : 1, exportEntities);
+        const auto raw =
+            BlockVolumeOperator::exportWorldMcstructureData(*loader, dimension, bounds, false, useNewFormat ? 2 : 1, exportEntities);
         return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
     };
 }

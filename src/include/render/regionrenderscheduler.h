@@ -12,9 +12,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "loader/regionbake.h"
+#include "loader/chunkregion.h"
 
 class AsyncLevelLoader;
+class ResourceManager;
 
 /// Owns region render tasks and schedules pending work according to the most
 /// recently reported viewport. This object is UI-thread owned; task completion
@@ -23,7 +24,7 @@ class RegionRenderScheduler : public QObject {
     Q_OBJECT
 
    public:
-    explicit RegionRenderScheduler(AsyncLevelLoader* loader, QObject* parent = nullptr);
+    explicit RegionRenderScheduler(AsyncLevelLoader* loader, ResourceManager* resources, QObject* parent = nullptr);
 
     void setViewport(const region_pos& minRegion, const region_pos& maxRegion);
     void request(const region_pos& pos, const MapFilter& filter, const TerrainTileRequest& tile_request = {});
@@ -34,14 +35,15 @@ class RegionRenderScheduler : public QObject {
     void pause();
     /// Resume dispatch for the retained viewport and any work requested later.
     void resume();
+    /// Drop queued work and ignore running results without waiting for them.
+    void reset();
     void clear();
     void waitForDone();
     int pendingCount() const;
     int activeCount() const;
 
    signals:
-    void regionFinished(region_pos pos, ChunkRegion* region, long long loadTime, long long renderTime, int tileBlocksPerTexel,
-                        int tileLayer, const QImage& color, const QImage& height, const QImage& material);
+    void regionFinished(RegionRenderResult result);
 
    private:
     void assertOwnerThread() const;
@@ -75,10 +77,10 @@ class RegionRenderScheduler : public QObject {
     void rebuildQueue();
     std::optional<PendingTask> takeBestPending();
     void dispatch();
-    void onTaskFinished(const region_pos& pos, ChunkRegion* region, long long loadTime, long long renderTime, int tileBlocksPerTexel,
-                        int tileLayer, const QImage& color, const QImage& height, const QImage& material);
+    void onTaskFinished(RegionRenderResult result);
 
     AsyncLevelLoader* loader_;
+    ResourceManager* resources_;
     QThreadPool pool_;
     std::unordered_map<region_pos, PendingTask> pending_;
     std::priority_queue<QueueEntry, std::vector<QueueEntry>, QueueCompare> queue_;
@@ -88,6 +90,7 @@ class RegionRenderScheduler : public QObject {
     bool viewport_valid_{false};
     std::atomic_bool accepting_{true};
     std::uint64_t next_version_{0};
+    std::uint64_t task_generation_{0};
     QThread* owner_thread_{nullptr};
 };
 

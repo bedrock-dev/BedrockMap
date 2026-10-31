@@ -47,9 +47,10 @@ Item {
 
     AppMenu {
         id: cellMenu
-        width: Math.min(Math.max(0, root.width - 12), 640,
-                        Math.max(190, positionItem.implicitWidth, blockItem.implicitWidth,
-                                 paletteItem.implicitWidth, biomeItem.implicitWidth) + leftPadding + rightPadding)
+        width: Math.min(Math.max(0, root.width - 12), 640, Math.max(190, positionItem.implicitWidth,
+                                                                    blockItem.implicitWidth, paletteItem.implicitWidth,
+                                                                    biomeItem.implicitWidth) + leftPadding
+                        + rightPadding)
         CellMenuItem {
             id: positionItem
             actionText: qsTr("Copy position")
@@ -160,8 +161,8 @@ Item {
 
             Column {
                 id: squares
-                readonly property real edge: Math.max(0, Math.min(viewport.width,
-                                                                 Math.floor((viewport.height - spacing) / 2)))
+                readonly property real edge: Math.max(0, Math.min(viewport.width, Math.floor((viewport.height
+                                                                                              - spacing) / 2)))
                 width: edge
                 anchors.centerIn: viewport
                 spacing: 6

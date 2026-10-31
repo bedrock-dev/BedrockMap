@@ -40,15 +40,23 @@ namespace {
         bool payload(std::uint8_t type, unsigned depth = 0) {
             if (depth > 64) return false;
             switch (type) {
-                case 1: return skip(1);
-                case 2: return skip(2);
-                case 3: case 5: return skip(4);
-                case 4: case 6: return skip(8);
+                case 1:
+                    return skip(1);
+                case 2:
+                    return skip(2);
+                case 3:
+                case 5:
+                    return skip(4);
+                case 4:
+                case 6:
+                    return skip(8);
                 case 8: {
                     std::string_view ignored;
                     return string(ignored);
                 }
-                case 7: case 11: case 12: {
+                case 7:
+                case 11:
+                case 12: {
                     std::uint32_t length;
                     const std::size_t width = type == 7 ? 1 : (type == 11 ? 4 : 8);
                     return count(length) && length <= data_.size() / width && skip(length * width);
@@ -71,7 +79,8 @@ namespace {
                     }
                     return false;
                 }
-                default: return false;
+                default:
+                    return false;
             }
         }
 

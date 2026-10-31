@@ -8,12 +8,10 @@ Menu {
     // Popup visibility and the generated submenu entry have separate lifetimes.
     property bool menuItemVisible: true
 
-    width: Math.max(190, contentItem ? contentItem.implicitWidth + leftPadding + rightPadding : 190)
-    height: contentItem ? Math.min(contentItem.implicitHeight + topPadding + bottomPadding, Screen.height - 48) : 40
-    topPadding: 6
-    bottomPadding: 6
-    leftPadding: 6
-    rightPadding: 6
+    width: Math.max(Theme.ui(190), contentItem ? contentItem.implicitWidth + leftPadding + rightPadding : Theme.ui(190))
+    height: contentItem ? Math.min(contentItem.implicitHeight + topPadding + bottomPadding, Screen.height - Theme.ui(
+                                       48)) : Theme.controlHeight
+    padding: Theme.ui(6)
     margins: 0
     overlap: 1
     leftInset: 0
@@ -39,8 +37,7 @@ Menu {
         clip: true
         interactive: Window.window ? contentHeight + root.topPadding + root.bottomPadding > root.height : false
 
-        ScrollIndicator.vertical: ScrollIndicator {
-        }
+        ScrollIndicator.vertical: ScrollIndicator {}
     }
 
     background: Rectangle {

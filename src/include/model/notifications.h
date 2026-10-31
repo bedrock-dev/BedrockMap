@@ -39,7 +39,7 @@ class NotificationCenter final : public QAbstractListModel {
         RepeatRole,
     };
 
-    explicit NotificationCenter(QObject* parent = nullptr);
+    explicit NotificationCenter(QObject* parent);
 
     [[nodiscard]] int count() const { return static_cast<int>(entries_.size()); }
     [[nodiscard]] int rowCount(const QModelIndex& parent = {}) const override;

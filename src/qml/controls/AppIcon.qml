@@ -7,7 +7,7 @@ Item {
     property string name
     property string fallback
     property color iconColor: Theme.text
-    property real iconSize: 18
+    property real iconSize: Theme.iconSize
 
     implicitWidth: iconSize
     implicitHeight: iconSize
@@ -17,7 +17,7 @@ Item {
         id: sourceImage
         width: root.iconSize
         height: root.iconSize
-        source: root.name.length > 0 ? "qrc:/icons/" + root.name + ".svg" : ""
+        source: root.name.length > 0 ? "qrc:/bedrockmap/icons/ui/" + root.name + ".svg" : ""
         sourceSize.width: Math.max(1, Math.round(root.iconSize * 2))
         sourceSize.height: Math.max(1, Math.round(root.iconSize * 2))
         fillMode: Image.PreserveAspectFit

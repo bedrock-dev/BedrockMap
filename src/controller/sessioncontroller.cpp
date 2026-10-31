@@ -1,14 +1,15 @@
 #include "controller/sessioncontroller.h"
 
-#include <QDir>
 #include <QFileInfo>
+#include <QTimer>
 #include <QUrl>
 #include <algorithm>
 
-#include "controller/nbtsession.h"
+#include "base/platform.h"
 #include "controller/mcstructuresession.h"
+#include "controller/nbtsession.h"
+#include "io/documentio.h"
 #include "model/worldlistmodel.h"
-#include "model/worldpath.h"
 
 WorkspaceSessionModel::WorkspaceSessionModel(QObject* parent) : QAbstractListModel(parent) {}
 
@@ -37,7 +38,7 @@ QVariant WorkspaceSessionModel::data(const QModelIndex& index, int role) const {
 }
 
 QHash<int, QByteArray> WorkspaceSessionModel::roleNames() const {
-    return {{PathRole, "path"},   {TitleRole, "title"}, {SessionIndexRole, "sessionIndex"},
+    return {{PathRole, "path"},       {TitleRole, "title"}, {SessionIndexRole, "sessionIndex"},
             {SessionRole, "session"}, {DirtyRole, "dirty"}, {KindRole, "kind"}};
 }
 
@@ -69,6 +70,8 @@ void WorkspaceSessionModel::removeSession(int index) {
     beginRemoveRows({}, index, index);
     sessions_.removeAt(index);
     endRemoveRows();
+    // Shifted rows keep their delegates, so refresh the row-dependent role.
+    if (index < sessions_.size()) emit dataChanged(this->index(index), this->index(sessions_.size() - 1), {SessionIndexRole});
     emit countChanged();
 }
 
@@ -100,37 +103,41 @@ WorkspaceSession* SessionController::firstDirtySession() const {
 }
 
 WorkspaceSession* SessionController::openWorld(const QString& path, const QString& title) {
-    const QString target = world_path::normalize(path);
-    if (target.isEmpty() || !QDir(target).exists()) {
+    const QString target = platform::normalizeLocalPath(path);
+    if (target.isEmpty()) {
         emit warningOccurred(tr("World path is not available."), {});
         return nullptr;
     }
 
-    const QString key = world_path::identityKey(target);
     for (int i = 0; i < open_sessions_.count(); ++i) {
         auto* session = open_sessions_.at(i);
-        if (session && session->kind() == QStringLiteral("world") && world_path::identityKey(session->path()) == key) {
+        if (session && session->kind() == QStringLiteral("world") && session->path() == target) {
             setActiveIndex(i);
             return session;
         }
     }
 
-    auto session = std::make_unique<WorldSession>(target, title, this);
+    auto session = std::make_unique<WorldSession>(target, title, resources_, this);
     auto* session_ptr = session.get();
     connect(session_ptr, &WorldSession::opened, this, [this, session_ptr] {
         if (world_model_) world_model_->recordRecentWorld(session_ptr->path());
     });
     connect(session_ptr, &WorldSession::stateChanged, this, [this, session_ptr] {
-        if (session_ptr->state() != static_cast<int>(OperationState::Failed)) return;
-        QString name = session_ptr->title();
-        if (name.isEmpty() || name == QStringLiteral("World workspace")) name = QFileInfo(session_ptr->path()).fileName();
-        const QString message =
-            session_ptr->errorCode() == QStringLiteral("database-open-failed")
-                ? tr("Could not open %1: the world database is locked by another program or unreadable.").arg(name)
-                : tr("Could not open %1 (%2).").arg(name, session_ptr->errorCode());
-        emit errorOccurred(message, session_ptr->path());
-        const int row = open_sessions_.indexOf(session_ptr);
-        if (row >= 0) removeSessionAt(row);
+        if (!session_ptr->failed()) return;
+        // Finish state notifications before removing the failed workspace.
+        QTimer::singleShot(0, session_ptr, [this, session_ptr] {
+            const int row = open_sessions_.indexOf(session_ptr);
+            if (row < 0 || !session_ptr->failed()) return;
+            QString name = session_ptr->title();
+            if (name.isEmpty() || name == QStringLiteral("World workspace")) name = QFileInfo(session_ptr->path()).fileName();
+            const QString message = session_ptr->errorCode() == QStringLiteral("world-write-denied")
+                                        ? tr("Could not open %1: the world directory is not writable.").arg(name)
+                                    : session_ptr->errorCode() == QStringLiteral("database-open-failed")
+                                        ? tr("Could not open %1: the world database is locked by another program or unreadable.").arg(name)
+                                        : tr("Could not open %1 (%2).").arg(name, session_ptr->errorCode());
+            emit errorOccurred(message, session_ptr->path());
+            removeSessionAt(row);
+        });
     });
 
     appendSession(std::move(session));
@@ -138,47 +145,44 @@ WorkspaceSession* SessionController::openWorld(const QString& path, const QStrin
     return session_ptr;
 }
 
-WorkspaceSession* SessionController::openMcstructureFile(const QString& path) {
-    const QString normalized = world_path::normalize(path);
-    const QString localPath = normalized.isEmpty() ? path : normalized;
-    const QString identity = world_path::identityKey(localPath);
+WorkspaceSession* SessionController::openMcstructureFile(const QUrl& url) {
+    if (url.isEmpty()) return nullptr;
+    const QString path = io::DocumentIo::identifier(url);
     for (int i = 0; i < open_sessions_.count(); ++i) {
         auto* session = open_sessions_.at(i);
-        if (session && session->kind() == QStringLiteral("mcstructure") &&
-            world_path::identityKey(session->path()) == identity) {
+        if (session && session->kind() == QStringLiteral("mcstructure") && session->path() == path) {
             setActiveIndex(i);
             return session;
         }
     }
-    auto session = std::make_unique<McstructureSession>(localPath, QFileInfo(localPath).fileName(), this);
+    auto session = std::make_unique<McstructureSession>(url, io::DocumentIo::displayName(url), this);
     auto* sessionPtr = session.get();
-    connect(sessionPtr->controller(), &McstructureController::loadFailed, this,
-            [this, localPath](const QString& error) { emit errorOccurred(error, localPath); });
+    connect(sessionPtr->controller(), &BlockVolumeController::loadFailed, this,
+            [this, path](const QString& error) { emit errorOccurred(error, path); });
     appendSession(std::move(session));
     sessionPtr->open();
     return sessionPtr;
 }
 
-WorkspaceSession* SessionController::openNbtFile(const QString& path) {
-    const QUrl inputUrl(path);
-    if (QFileInfo(inputUrl.isLocalFile() ? inputUrl.toLocalFile() : inputUrl.path()).suffix().compare(
-            QStringLiteral("mcstructure"), Qt::CaseInsensitive) == 0)
-        return openMcstructureFile(path);
-
-    const QUrl url(path);
-    const QString local_path = url.isLocalFile() ? url.toLocalFile() : path;
+WorkspaceSession* SessionController::openNbtFile(const QUrl& url) {
+    if (url.isEmpty()) return nullptr;
+    // Provider display names can carry an extension even when the URI itself
+    // only contains a document ID. Keep the original URI for file access.
+    const QString fileName = io::DocumentIo::displayName(url);
+    if (QFileInfo(fileName).suffix().compare(QStringLiteral("mcstructure"), Qt::CaseInsensitive) == 0) return openMcstructureFile(url);
+    const QString path = io::DocumentIo::identifier(url);
     for (int i = 0; i < open_sessions_.count(); ++i) {
         auto* session = open_sessions_.at(i);
-        if (session && session->kind() == QStringLiteral("nbt") && session->path() == local_path) {
+        if (session && session->kind() == QStringLiteral("nbt") && session->path() == path) {
             setActiveIndex(i);
             return session;
         }
     }
 
-    auto session = std::make_unique<NbtSession>(local_path, QFileInfo(local_path).completeBaseName(), this);
+    auto session = std::make_unique<NbtSession>(path, fileName, this);
     auto* session_ptr = session.get();
-    if (!session_ptr->loadFile(local_path)) {
-        emit errorOccurred(session_ptr->document()->lastError(), local_path);
+    if (!session_ptr->loadFile(url)) {
+        emit errorOccurred(session_ptr->document()->lastError(), path);
         return nullptr;
     }
     appendSession(std::move(session));

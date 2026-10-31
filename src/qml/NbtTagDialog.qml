@@ -145,9 +145,9 @@ Dialog {
                     font.family: "JetBrains Mono"
                     font.pixelSize: Theme.fontBody
                     color: Theme.text
-                    placeholderText: root.tagType === 9
-                                     || root.tagType === 10 ? qsTr("Container children are edited in the tree") :
-                                                              qsTr("Enter a value; arrays accept spaces or commas")
+                    placeholderText: root.tagType === 9 || root.tagType === 10 ? qsTr(
+                                                                                     "Container children are edited in the tree") :
+                                                                                 qsTr("Enter a value; arrays accept spaces or commas")
                     wrapMode: TextArea.Wrap
                     selectByMouse: true
                     onTextChanged: root.tagValue = text

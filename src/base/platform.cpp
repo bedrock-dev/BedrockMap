@@ -1,8 +1,17 @@
 #include "base/platform.h"
 
+#include <QDir>
+#include <QFileInfo>
+#include <QUrl>
+
 #if defined(Q_OS_ANDROID)
+#include <unistd.h>
+
 #include <QCoreApplication>
+#include <QFile>
+#include <QJniEnvironment>
 #include <QJniObject>
+#include <QScopeGuard>
 #endif
 
 #if defined(_WIN32)
@@ -175,6 +184,127 @@ namespace platform {
 #endif
     }  // namespace
 
+    bool isContentUri(const QUrl& url) { return url.scheme() == QStringLiteral("content"); }
+
+    QString openDocumentFile(QFile& file, QIODevice::OpenMode mode) {
+#ifdef Q_OS_ANDROID
+        const QUrl url(file.fileName());
+        if (isContentUri(url)) {
+            const QJniObject context(QNativeInterface::QAndroidApplication::context());
+            const auto resolver = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+            const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
+            const auto uri = QJniObject::callStaticObjectMethod("org/bedrockmap/DocumentMetadata", "grantedUri",
+                                                                "(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;",
+                                                                context.object(), source.object<jstring>());
+            QString access = QStringLiteral("r");
+            if (mode & QIODevice::WriteOnly) {
+                access = mode & QIODevice::ReadOnly ? QStringLiteral("rw") : QStringLiteral("w");
+                if (mode & QIODevice::Append)
+                    access += QLatin1Char('a');
+                else if (mode & QIODevice::Truncate)
+                    access += QLatin1Char('t');
+            }
+            const auto accessString = QJniObject::fromString(access);
+            QJniEnvironment env;
+            const auto exceptionMessage = [&env]() -> QString {
+                if (!env->ExceptionCheck()) return {};
+                const auto exception = env->ExceptionOccurred();
+                env->ExceptionClear();
+                return QJniObject::fromLocalRef(exception).callObjectMethod<jstring>("toString").toString();
+            };
+            // Qt 6.11 rebuilds document IDs before checking permissions, which
+            // changes e.g. literal parentheses to %28/%29 and loses the grant.
+            // ContentResolver must receive the original provider URI instead.
+            const auto openMethod = env->GetMethodID(resolver.objectClass(), "openFileDescriptor",
+                                                     "(Landroid/net/Uri;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;");
+            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
+            const auto descriptorObject = env->CallObjectMethod(resolver.object(), openMethod, uri.object(), accessString.object());
+            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
+            const auto descriptor = QJniObject::fromLocalRef(descriptorObject);
+            const auto missingDescriptor = [] {
+                return QCoreApplication::translate("platform", "The document provider returned no file descriptor.");
+            };
+            if (!descriptor.isValid()) return missingDescriptor();
+            const auto closeDescriptor = qScopeGuard([&descriptor] { descriptor.callMethod<void>("close"); });
+            const auto detachMethod = env->GetMethodID(descriptor.objectClass(), "detachFd", "()I");
+            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
+            const int fd = env->CallIntMethod(descriptor.object(), detachMethod);
+            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
+            if (fd < 0) return missingDescriptor();
+            if (file.open(fd, mode, QFileDevice::AutoCloseHandle)) return {};
+            const QString error = file.errorString();
+            ::close(fd);
+            return error;
+        }
+#endif
+        return file.open(mode) ? QString() : file.errorString();
+    }
+
+    QString normalizeLocalPath(const QString& input) {
+        if (input.isEmpty()) return {};
+        QString path = input;
+#ifdef Q_OS_WIN
+        const bool drivePath = input.size() >= 2 && input.at(0).isLetter() && input.at(1) == QLatin1Char(':');
+#else
+        const bool drivePath = false;
+#endif
+        if (!drivePath) {
+            const QUrl url(input);
+            if (!url.scheme().isEmpty()) {
+                if (!url.isValid() || !url.isLocalFile() || url.hasQuery() || url.hasFragment()) return {};
+                path = url.toLocalFile();
+            }
+        }
+        if (path.isEmpty()) return {};
+        const QFileInfo info(QDir::fromNativeSeparators(path));
+        const QString canonical = info.canonicalFilePath();
+        return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
+    }
+
+    QString fileDisplayName(const QString& input) {
+        if (input.isEmpty()) return {};
+        const QUrl url(input);
+        const QString path = url.isLocalFile() ? url.toLocalFile() : input;
+#ifdef Q_OS_ANDROID
+        if (isContentUri(url)) {
+            const auto context = QNativeInterface::QAndroidApplication::context();
+            const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
+            const auto result = QJniObject::callStaticObjectMethod("org/bedrockmap/DocumentMetadata", "displayName",
+                                                                   "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                                   context.object(), source.object<jstring>());
+            QJniEnvironment env;
+            if (!env.checkAndClearExceptions() && result.isValid()) {
+                const QString name = result.toString();
+                if (!name.isEmpty()) return name;
+            }
+        }
+#endif
+        const QString name = QFileInfo(path).fileName();
+        if (!name.isEmpty()) return name;
+        if (isContentUri(url)) {
+            const QString uriName = QFileInfo(url.fileName()).fileName();
+            if (!uriName.isEmpty()) return uriName;
+        }
+        return input;
+    }
+
+    QString resolveContentDirectory(const QUrl& url) {
+#ifdef Q_OS_ANDROID
+        if (!isContentUri(url) || !hasAllFilesPermission()) return {};
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
+        const auto result = QJniObject::callStaticObjectMethod("org/bedrockmap/SafTreeIo", "resolveTreePath",
+                                                               "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                               context.object(), source.object<jstring>());
+        QJniEnvironment env;
+        if (env.checkAndClearExceptions() || !result.isValid()) return {};
+        return result.toString();
+#else
+        Q_UNUSED(url);
+        return {};
+#endif
+    }
+
     void installCrashHandler() {
 #if defined(_WIN32) && defined(BEDROCKMAP_ENABLE_CRASH_HANDLER)
         if (g_installed) return;
@@ -208,22 +338,76 @@ namespace platform {
 
     double memoryUsageMiB() {
 #if defined(_WIN32)
-        PROCESS_MEMORY_COUNTERS_EX pmc;
-        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
-        return static_cast<double>(pmc.WorkingSetSize >> 20);
+        PROCESS_MEMORY_COUNTERS_EX pmc{};
+        if (!GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) return 0.0;
+        return static_cast<double>(pmc.WorkingSetSize) / (1024.0 * 1024.0);
+#elif defined(Q_OS_ANDROID)
+        QFile statm(QStringLiteral("/proc/self/statm"));
+        if (!statm.open(QIODevice::ReadOnly)) return 0.0;
+        const auto fields = statm.readAll().simplified().split(' ');
+        if (fields.size() < 2) return 0.0;
+        bool ok = false;
+        const auto residentPages = fields[1].toULongLong(&ok);
+        const long pageSize = sysconf(_SC_PAGESIZE);
+        if (!ok || pageSize <= 0) return 0.0;
+        return static_cast<double>(residentPages) * static_cast<double>(pageSize) / (1024.0 * 1024.0);
 #else
         return 0.0;
 #endif
     }
 
-    bool hasAllFilesAccess() {
+    bool hasAllFilesPermission() {
 #if defined(Q_OS_ANDROID)
         const auto context = QNativeInterface::QAndroidApplication::context();
         if (!context.isValid()) return false;
-        return QJniObject::callStaticMethod<jboolean>("org/bedrockmap/StoragePermission", "hasAccess",
-                                                       "(Landroid/content/Context;)Z", context.object());
+        return QJniObject::callStaticMethod<jboolean>("org/bedrockmap/StoragePermission", "hasAccess", "(Landroid/content/Context;)Z",
+                                                      context.object());
 #else
         return true;
 #endif
     }
+
+    void requestAllFilesPermission() {
+#if defined(Q_OS_ANDROID)
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        if (!context.isValid()) return;
+        QJniObject::callStaticMethod<void>("org/bedrockmap/StoragePermission", "request", "(Landroid/content/Context;)V", context.object());
+#endif
+    }
+    QString shizukuPermission() {
+#if defined(Q_OS_ANDROID)
+        const auto status = QJniObject::callStaticObjectMethod("org/bedrockmap/ShizukuPermission", "status", "()Ljava/lang/String;");
+        QJniEnvironment env;
+        if (!env.checkAndClearExceptions() && status.isValid()) return status.toString();
+#endif
+        return QStringLiteral("Unavailable");
+    }
+
+    void requestShizukuPermission() {
+#if defined(Q_OS_ANDROID)
+        QJniObject::callStaticMethod<void>("org/bedrockmap/ShizukuPermission", "request", "()V");
+        QJniEnvironment env;
+        env.checkAndClearExceptions();
+#endif
+    }
+
+    QString rootPermission() {
+#if defined(Q_OS_ANDROID)
+        const auto status = QJniObject::callStaticObjectMethod("org/bedrockmap/RootPermission", "status", "()Ljava/lang/String;");
+        QJniEnvironment env;
+        if (!env.checkAndClearExceptions() && status.isValid()) return status.toString();
+#endif
+        return QStringLiteral("Unavailable");
+    }
+
+    void requestRootPermission() {
+#if defined(Q_OS_ANDROID)
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        if (!context.isValid()) return;
+        QJniObject::callStaticMethod<void>("org/bedrockmap/RootPermission", "request", "(Landroid/content/Context;)V", context.object());
+        QJniEnvironment env;
+        env.checkAndClearExceptions();
+#endif
+    }
+
 }  // namespace platform

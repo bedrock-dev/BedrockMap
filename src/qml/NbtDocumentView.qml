@@ -10,14 +10,15 @@ Item {
     property bool compact: Theme.nbtCompact
     property string itemListTitle: qsTr("Records")
     property bool showItemList: true
+    property bool detailsHidden: false
     property string filterText
     property real itemListWidth: 190
     property int selectedRow: -1
     property var filteredItems: filterItems()
-    readonly property int compactToolbarHeight: Theme.touch ? Theme.touchTarget : Theme.controlHeight
+    readonly property int compactToolbarHeight: Theme.controlHeight
     // Record navigation depends on the available editor width, independently
     // of the shell mode and font scaling used by the toolbars.
-    readonly property bool singleColumn: width < 420
+    readonly property bool singleColumn: !detailsHidden && width < 420
     signal editRequested(int row)
     signal contextRequested(int row, real sceneX, real sceneY)
 
@@ -29,25 +30,28 @@ Item {
         property real rightPadding: 0
         property color textColor: Theme.text
         property alias font: recordText.font
-        implicitHeight: Math.max(16, recordText.implicitHeight)
-        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (recordIcon.visible ? 22 : 0)
+        implicitHeight: Math.max(Theme.iconSmallSize, recordText.implicitHeight)
+        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (recordIcon.visible ? Theme.iconSmallSize
+                                                                                                     + Theme.ui(6) : 0)
 
         Row {
             anchors.fill: parent
             anchors.leftMargin: recordLabel.leftPadding
             anchors.rightMargin: recordLabel.rightPadding
-            spacing: 6
+            spacing: Theme.ui(6)
 
             Image {
                 id: recordIcon
-                width: 16
-                height: 16
+                width: Theme.iconSmallSize
+                height: width
                 anchors.verticalCenter: parent.verticalCenter
                 visible: recordLabel.icon.length > 0
-                source: recordLabel.icon.length === 0 ? "" : recordLabel.icon.startsWith("qrc:/")
-                        ? recordLabel.icon : "qrc:/icons/" + recordLabel.icon + ".svg"
-                sourceSize.width: 32
-                sourceSize.height: 32
+                source: recordLabel.icon.length === 0 ? "" : recordLabel.icon.startsWith("qrc:/") ? recordLabel.icon :
+                                                                                                    "qrc:/bedrockmap/icons/ui/"
+                                                                                                    + recordLabel.icon
+                                                                                                    + ".svg"
+                sourceSize.width: width * 2
+                sourceSize.height: height * 2
                 fillMode: Image.PreserveAspectFit
             }
             Text {
@@ -107,8 +111,8 @@ Item {
         spacing: Theme.gapSmall
 
         RowLayout {
-            visible: root.singleColumn && root.showItemList && !!root.document
-                     && root.document.hasDocument && root.document.itemCount > 0
+            visible: root.singleColumn && root.showItemList && !!root.document && root.document.hasDocument
+                     && root.document.itemCount > 0
             Layout.fillWidth: true
             Layout.preferredHeight: root.compactToolbarHeight
             Layout.minimumHeight: root.compactToolbarHeight
@@ -175,11 +179,12 @@ Item {
 
             RowLayout {
                 anchors.fill: parent
-                spacing: Theme.gapSmall
+                spacing: Theme.gapSmall / 2
                 visible: root.document && root.document.itemCount > 0
 
                 AppCard {
                     visible: !root.singleColumn && root.showItemList
+                    Layout.fillWidth: root.detailsHidden
                     Layout.preferredWidth: root.itemListWidth
                     Layout.fillHeight: true
                     ColumnLayout {
@@ -198,11 +203,15 @@ Item {
                             Layout.fillHeight: true
                             clip: true
                             model: root.filteredItems
+                            boundsBehavior: Flickable.StopAtBounds
+                            ScrollBar.vertical: ScrollBar {
+                                policy: ScrollBar.AsNeeded
+                            }
                             delegate: Rectangle {
                                 required property int index
                                 required property var modelData
                                 width: ListView.view.width
-                                height: Theme.touch ? Theme.touchTarget : 30
+                                height: Theme.menuItemHeight
                                 radius: Theme.radiusSmall
                                 color: root.document && modelData.sourceIndex === root.document.currentIndex
                                        ? Theme.accentSoft : (itemMouse.pressed ? Theme.surfaceAlt : "transparent")
@@ -230,7 +239,7 @@ Item {
 
                 Rectangle {
                     id: splitter
-                    visible: !root.singleColumn && root.showItemList
+                    visible: !root.detailsHidden && !root.singleColumn && root.showItemList
                     Layout.preferredWidth: 6
                     Layout.fillHeight: true
                     color: "transparent"
@@ -257,6 +266,7 @@ Item {
                 }
 
                 AppCard {
+                    visible: !root.detailsHidden
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: root.compact ? 0 : Theme.radiusCard
@@ -269,7 +279,8 @@ Item {
                         GridLayout {
                             id: nodeToolbar
                             Layout.fillWidth: true
-                            columns: width >= 120 * Theme.metricScale + treeActions.implicitWidth + columnSpacing ? 2 : 1
+                            columns: width >= 120 * Theme.metricScale + treeActions.implicitWidth + columnSpacing ? 2 :
+                                                                                                                    1
                             columnSpacing: Theme.gapSmall
                             rowSpacing: Theme.gapSmall
 
@@ -281,7 +292,7 @@ Item {
                                 placeholderText: qsTr("Search nodes")
                                 text: root.document ? root.document.treeModel.searchText : ""
                                 onTextEdited: if (root.document)
-                                                   root.document.treeModel.searchText = text
+                                                  root.document.treeModel.searchText = text
                             }
                             RowLayout {
                                 id: treeActions

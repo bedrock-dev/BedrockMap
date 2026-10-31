@@ -7,10 +7,10 @@ Switch {
     property string tooltip
 
     hoverEnabled: true
-    implicitHeight: Theme.touch ? Theme.touchTarget : Theme.controlHeight
+    implicitHeight: Theme.controlHeight
     indicator: Rectangle {
-        implicitWidth: Theme.touch ? 48 : 40
-        implicitHeight: Theme.touch ? 28 : 22
+        implicitWidth: Theme.switchWidth
+        implicitHeight: Theme.switchHeight
         x: root.leftPadding
         y: parent.height / 2 - height / 2
         radius: height / 2
@@ -19,10 +19,10 @@ Switch {
         border.color: root.checked ? Theme.accent : Theme.border
         opacity: root.enabled ? 1.0 : 0.5
         Rectangle {
-            x: root.checked ? parent.width - width - 3 : 3
-            y: 3
-            width: Theme.touch ? 22 : 16
-            height: Theme.touch ? 22 : 16
+            x: root.checked ? parent.width - width - Theme.switchInset : Theme.switchInset
+            y: Theme.switchInset
+            width: Theme.switchThumbSize
+            height: width
             radius: height / 2
             color: root.checked ? Theme.accent : Theme.muted
             Behavior on x {

@@ -17,10 +17,10 @@ Rectangle {
     Column {
         anchors.centerIn: parent
         width: parent.width
-        spacing: 2
+        spacing: Theme.ui(2)
         AppIcon {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Theme.touch ? 16 : 18
+            width: Theme.iconSize
             height: width
             name: root.iconName
             fallback: root.icon
@@ -29,7 +29,7 @@ Rectangle {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width - 4
+            width: Math.max(0, parent.width - Theme.gapSmall)
             text: root.label
             color: root.selected || mouse.pressed ? Theme.accent : Theme.muted
             font.pixelSize: Theme.fontCaption

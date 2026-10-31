@@ -11,8 +11,11 @@ Item {
     required property string path
     required property var thumbnail
     required property bool xorEncrypted
+    required property bool appInternal
     property bool gridMode: false
     signal openRequested(string path, string title)
+    signal deleteRequested(string path, string title)
+    signal exportRequested(string path, string title)
 
     WorldCard {
         anchors.fill: parent
@@ -26,6 +29,9 @@ Item {
         sourceText: root.source
         pathText: root.path
         xorMarked: root.xorEncrypted
+        appInternal: root.appInternal
         onOpenRequested: (worldPath, worldTitle) => root.openRequested(worldPath, worldTitle)
+        onDeleteRequested: (worldPath, worldTitle) => root.deleteRequested(worldPath, worldTitle)
+        onExportRequested: (worldPath, worldTitle) => root.exportRequested(worldPath, worldTitle)
     }
 }

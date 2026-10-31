@@ -8,8 +8,8 @@
 #include <limits>
 
 #include "chunk.h"
-#include "mcstructure.h"
 #include "color.h"
+#include "mcstructure.h"
 
 namespace {
     const QColor AXIS_COLORS[] = {QColor(255, 60, 60), QColor(60, 255, 60), QColor(60, 60, 255)};
@@ -96,7 +96,7 @@ namespace {
     };
     const std::array<QVector3D, 6> FACE_NORMALS = {
         QVector3D(0.0f, 0.0f, 1.0f), QVector3D(0.0f, 0.0f, -1.0f), QVector3D(-1.0f, 0.0f, 0.0f),
-        QVector3D(1.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f), QVector3D(0.0f, -1.0f, 0.0f),
+        QVector3D(1.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f),  QVector3D(0.0f, -1.0f, 0.0f),
     };
 }  // namespace
 
@@ -146,8 +146,7 @@ namespace voxel_mesh {
         }
         const QVector3D ndc = clip.toVector3D() / clip.w();
         if (visible) *visible = clip.w() > 0.0f && ndc.z() >= -1.0f && ndc.z() <= 1.0f;
-        return {(ndc.x() + 1.0f) * 0.5f * view.viewport.width(),
-                (1.0f - ndc.y()) * 0.5f * view.viewport.height()};
+        return {(ndc.x() + 1.0f) * 0.5f * view.viewport.width(), (1.0f - ndc.y()) * 0.5f * view.viewport.height()};
     }
 
     int selectionHandleAxisIndex(VoxelSelectionHandle handle) {
@@ -167,9 +166,8 @@ namespace voxel_mesh {
         return bounds;
     }
 
-    VoxelSelectionDrag beginSelectionDrag(const bl::block_box& bounds, const QVector3D& modelSize,
-                                           const VoxelSelectionView& view, const QPointF& position,
-                                           bool moveMode, float pickRadius) {
+    VoxelSelectionDrag beginSelectionDrag(const bl::block_box& bounds, const QVector3D& modelSize, const VoxelSelectionView& view,
+                                          const QPointF& position, bool moveMode, float pickRadius) {
         VoxelSelectionDrag drag;
         if (!bounds.is_valid() || view.viewport.isEmpty()) return drag;
         float bestDistance = pickRadius * pickRadius;
@@ -191,10 +189,10 @@ namespace voxel_mesh {
         const int axis = selectionHandleAxisIndex(drag.handle);
         QVector3D step;
         step[axis] = view.voxelSize;
-        const QVector3D point = moveMode
-            ? QVector3D(bounds.min_pos.x + bounds.max_pos.x, bounds.min_pos.y + bounds.max_pos.y,
-                        bounds.min_pos.z + bounds.max_pos.z) * (view.voxelSize * 0.5f)
-            : selectionHandlePosition(bounds, drag.handle, view.voxelSize);
+        const QVector3D point = moveMode ? QVector3D(bounds.min_pos.x + bounds.max_pos.x, bounds.min_pos.y + bounds.max_pos.y,
+                                                     bounds.min_pos.z + bounds.max_pos.z) *
+                                               (view.voxelSize * 0.5f)
+                                         : selectionHandlePosition(bounds, drag.handle, view.voxelSize);
         const auto projectedStep = [&](float count) {
             return projectSelectionPoint(view, point + step * count) - projectSelectionPoint(view, point);
         };
@@ -209,8 +207,7 @@ namespace voxel_mesh {
         return drag;
     }
 
-    bl::block_box dragSelection(const VoxelSelectionDrag& drag, const QVector3D& modelSize,
-                                 const QPointF& position, bool locked) {
+    bl::block_box dragSelection(const VoxelSelectionDrag& drag, const QVector3D& modelSize, const QPointF& position, bool locked) {
         auto result = drag.bounds;
         const int axis = selectionHandleAxisIndex(drag.handle);
         if (axis < 0 || !result.is_valid()) return result;
@@ -227,8 +224,7 @@ namespace voxel_mesh {
         } else if (static_cast<int>(drag.handle) % 2 == 1) {
             *low[axis] = std::clamp(qRound(static_cast<float>(*low[axis]) + delta), 0, *high[axis] - 1);
         } else {
-            *high[axis] = std::clamp(qRound(static_cast<float>(*high[axis]) + delta), *low[axis] + 1,
-                                    static_cast<int>(modelSize[axis]));
+            *high[axis] = std::clamp(qRound(static_cast<float>(*high[axis]) + delta), *low[axis] + 1, static_cast<int>(modelSize[axis]));
         }
         return result;
     }
@@ -256,8 +252,26 @@ namespace voxel_mesh {
         return center;
     }
 
-    VoxelSelectionMesh buildSelectionMesh(const bl::block_box& bounds, const VoxelSelectionView& view,
-                                                const QColor& selectionColor, VoxelSelectionHandle active) {
+    std::vector<float> buildAxesMesh(const QVector3D& modelSize) {
+        std::vector<float> vertices;
+        vertices.reserve(6 * 7);
+        const QVector3D origin;
+        const std::array endpoints = {
+            QVector3D(modelSize.x(), 0.0f, 0.0f),
+            QVector3D(0.0f, modelSize.y(), 0.0f),
+            QVector3D(0.0f, 0.0f, modelSize.z()),
+        };
+        for (size_t axis = 0; axis < endpoints.size(); ++axis) {
+            QColor color = AXIS_COLORS[axis];
+            color.setAlpha(235);
+            appendColoredVertex(vertices, origin, color);
+            appendColoredVertex(vertices, endpoints[axis], color);
+        }
+        return vertices;
+    }
+
+    VoxelSelectionMesh buildSelectionMesh(const bl::block_box& bounds, const VoxelSelectionView& view, const QColor& selectionColor,
+                                          VoxelSelectionHandle active) {
         VoxelSelectionMesh result;
         auto& selection_vertices_ = result.vertices;
         if (!bounds.is_valid()) return result;
@@ -323,8 +337,8 @@ namespace voxel_mesh {
         return result;
     }
 
-    VoxelGrid createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                        const std::function<void(int)>& reportProgress, int* firstWorldY) {
+    VoxelGrid createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks, const std::function<void(int)>& reportProgress,
+                                        int* firstWorldY) {
         if (firstWorldY) *firstWorldY = 0;
         if (chunks.empty()) return {};
         constexpr int chunkWidth = 16;
@@ -347,8 +361,7 @@ namespace voxel_mesh {
         VoxelGrid grid(static_cast<size_t>(worldMaxY - worldMinY + 1));
         for (auto& layer : grid) {
             layer.resize(static_cast<size_t>(width * chunkWidth));
-            for (auto& row : layer)
-                row.resize(static_cast<size_t>(depth * chunkWidth), Voxel(QColor(0, 0, 0, 0), true));
+            for (auto& row : layer) row.resize(static_cast<size_t>(depth * chunkWidth), Voxel(QColor(0, 0, 0, 0), true));
         }
 
         int completed = 0;
@@ -398,15 +411,15 @@ namespace voxel_mesh {
                                                 static_cast<int>(grid[0][0].size()));
     }
 
-    bool hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz,
-                             const bl::block_box& bounds, VoxelMeshOcclusionMode mode) {
+    bool hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz, const bl::block_box& bounds,
+                             VoxelMeshOcclusionMode mode) {
         const auto& current = grid[layer][x][z];
         const int ny = layer + dy;
         const int nx = x + dx;
         const int nz = z + dz;
-        if (ny < bounds.min_pos.y || ny >= bounds.max_pos.y || nx < bounds.min_pos.x || nx >= bounds.max_pos.x ||
-            nz < bounds.min_pos.z || nz >= bounds.max_pos.z || ny < 0 || ny >= static_cast<int>(grid.size()) || nx < 0 ||
-            nx >= static_cast<int>(grid[ny].size()) || nz < 0 || nz >= static_cast<int>(grid[ny][nx].size())) {
+        if (ny < bounds.min_pos.y || ny >= bounds.max_pos.y || nx < bounds.min_pos.x || nx >= bounds.max_pos.x || nz < bounds.min_pos.z ||
+            nz >= bounds.max_pos.z || ny < 0 || ny >= static_cast<int>(grid.size()) || nx < 0 || nx >= static_cast<int>(grid[ny].size()) ||
+            nz < 0 || nz >= static_cast<int>(grid[ny][nx].size())) {
             return false;
         }
         const auto& neighbor = grid[ny][nx][nz];
@@ -439,17 +452,15 @@ namespace voxel_mesh {
             const bool first = occludes(side1);
             const bool second = occludes(side2);
             const bool cornered = occludes(diagonal);
-            const int level =
-                (first && second) ? 0 : 3 - (static_cast<int>(first) + static_cast<int>(second) + static_cast<int>(cornered));
+            const int level = (first && second) ? 0 : 3 - (static_cast<int>(first) + static_cast<int>(second) + static_cast<int>(cornered));
             result[i] = AO_BRIGHTNESS[level];
         }
         return result;
     }
 
     void addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                  const QVector3D& normal, const std::array<float, 4>& occlusion,
-                                  std::vector<float>& vertices, std::vector<std::uint32_t>& indices, float voxelSize,
-                                  float alphaScale) {
+                                  const QVector3D& normal, const std::array<float, 4>& occlusion, std::vector<float>& vertices,
+                                  std::vector<std::uint32_t>& indices, float voxelSize, float alphaScale) {
         const float worldX = x * voxelSize + 0.5f * voxelSize;
         const float worldY = layer * voxelSize + 0.5f * voxelSize;
         const float worldZ = z * voxelSize + 0.5f * voxelSize;
@@ -500,17 +511,15 @@ namespace voxel_mesh {
                     const Voxel& voxel = rowData[z];
                     if (voxel.color.alpha() == 0) continue;
                     for (int faceIndex = 0; faceIndex < 6; ++faceIndex) {
-                        if (hasNeighborInBounds(grid, layer, x, z, dyArr[faceIndex], dxArr[faceIndex], dzArr[faceIndex], bounds,
-                                                mode)) {
+                        if (hasNeighborInBounds(grid, layer, x, z, dyArr[faceIndex], dxArr[faceIndex], dzArr[faceIndex], bounds, mode)) {
                             continue;
                         }
-                        auto& targetVertices =
-                            (voxel.transparent && transparentVertices) ? *transparentVertices : vertices;
+                        auto& targetVertices = (voxel.transparent && transparentVertices) ? *transparentVertices : vertices;
                         auto& targetIndices = (voxel.transparent && transparentIndices) ? *transparentIndices : indices;
                         const auto occlusion =
                             faceOcclusionFactors(grid, bounds, layer, x, z, FACE_TEMPLATES[faceIndex], FACE_NORMALS[faceIndex], mode);
-                        addFaceVerticesToBuffers(layer, x, z, voxel, FACE_TEMPLATES[faceIndex], FACE_NORMALS[faceIndex],
-                                                 occlusion, targetVertices, targetIndices, voxelSize, alphaScale);
+                        addFaceVerticesToBuffers(layer, x, z, voxel, FACE_TEMPLATES[faceIndex], FACE_NORMALS[faceIndex], occlusion,
+                                                 targetVertices, targetIndices, voxelSize, alphaScale);
                     }
                 }
             }

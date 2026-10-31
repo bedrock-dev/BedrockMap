@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "loader/regionbake.h"
+#include "loader/chunkregion.h"
 #include "render/overlay.h"
 #include "render/rendertimings.h"
 #include "render/terraintiles.h"
@@ -32,24 +32,24 @@ class TerrainTileTask final : public QObject, public QRunnable {
     Q_OBJECT
 
    public:
+    /// Builds `blocks_per_texel`, then every coarser level through
+    /// `last_blocks_per_texel` (prefetch only).
     TerrainTileTask(std::shared_ptr<const ChunkRegion> region, region_pos pos, int blocks_per_texel, int layer, quint64 generation,
-                    bool cache_only, bool overview_only);
+                    bool cache_only, int last_blocks_per_texel = 0);
     void run() override;
 
    signals:
     void finished(quint64 generation, int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, qulonglong sourceToken,
-                  bool cache_only, const QImage& color, const QImage& height, const QImage& material,
-                  const QImage& prepared_color, const QImage& prepared_height, const QImage& prepared_material,
-                  const QImage& overview_color);
+                  bool cache_only, const QImage& color, const QImage& surface, bool hasTerrain);
 
    private:
     std::shared_ptr<const ChunkRegion> region_;
     region_pos pos_;
     int blocks_per_texel_;
+    int last_blocks_per_texel_;
     int layer_;
     quint64 generation_;
     bool cache_only_;
-    bool overview_only_;
 };
 
 struct TerrainTileKey {
@@ -94,11 +94,10 @@ class TerrainDataProvider final : public QObject {
     Q_PROPERTY(int cachedTiles READ cachedTiles NOTIFY metricsChanged)
     Q_PROPERTY(double pollTimeMs READ pollTimeMs NOTIFY metricsChanged)
     Q_PROPERTY(int residentRegions READ residentRegions NOTIFY metricsChanged)
-    /// Occupancy of the shared core: region tiles, empty markers, cached height
-    /// maps and the bakes the scheduler has queued or running.
+    /// Occupancy of the shared core: region tiles, empty markers and the bakes
+    /// the scheduler has queued or running.
     Q_PROPERTY(int regionCacheCount READ regionCacheCount NOTIFY metricsChanged)
     Q_PROPERTY(int emptyRegionCount READ emptyRegionCount NOTIFY metricsChanged)
-    Q_PROPERTY(int heightMapCacheCount READ heightMapCacheCount NOTIFY metricsChanged)
     Q_PROPERTY(int pendingBakes READ pendingBakes NOTIFY metricsChanged)
     Q_PROPERTY(int activeBakes READ activeBakes NOTIFY metricsChanged)
     /// Multi-line loader report: cache occupancy, thread pool, chunk edits and
@@ -107,7 +106,7 @@ class TerrainDataProvider final : public QObject {
     Q_PROPERTY(double memoryUsageMiB READ memoryUsageMiB NOTIFY metricsChanged)
 
    public:
-    explicit TerrainDataProvider(QObject* parent = nullptr);
+    explicit TerrainDataProvider(QObject* parent);
     ~TerrainDataProvider() override;
     [[nodiscard]] bool overviewEnabled() const;
     void setTimings(const std::shared_ptr<RenderTimings>& timings);
@@ -121,12 +120,16 @@ class TerrainDataProvider final : public QObject {
     /// Visible region window in chunk coordinates plus the layer to sample.
     /// Forwarded to the loader so the scheduler prioritises visible bakes.
     void setViewport(const TerrainViewportRequest& request);
-    /// Switch between detailed LOD delivery and aggregated overview delivery.
+    /// Switch between detailed LOD delivery and aggregated overview delivery, and
+    /// set the detailed atlas level. Changing either re-delivers every region.
     void setOverviewMode(bool overview_only, int detail_level);
-    /// Atlas resolution the tiles are sampled at; changing it re-delivers every
-    /// region, because the tile size changes.
-    void setBlocksPerTexel(int blocks_per_texel);
-    /// Layer to sample (RenderOption::Terrain / Biome). Changing it re-delivers,
+    /// Resend every tile of the current window, e.g. after the renderer
+    /// recreated its tile arrays. Snapshot caches are kept.
+    void redeliver();
+    /// Drop all cached tiles and refill the current window after source data
+    /// has been regenerated, such as after changing the map filter.
+    void reload();
+    /// Layer to sample (MapRenderOptions::Terrain / Biome). Changing it re-delivers,
     /// because the biome layer uses a different bake.
     void setLayer(int layer);
     /// Warm snapshots for the next one or two coarser LODs. Cache-only tasks do
@@ -154,7 +157,6 @@ class TerrainDataProvider final : public QObject {
     [[nodiscard]] int residentRegions() const { return static_cast<int>(delivered_.size()); }
     [[nodiscard]] int regionCacheCount() const;
     [[nodiscard]] int emptyRegionCount() const;
-    [[nodiscard]] int heightMapCacheCount() const;
     [[nodiscard]] int pendingBakes() const;
     [[nodiscard]] int activeBakes() const;
     [[nodiscard]] QStringList loaderDebug() const;
@@ -167,9 +169,8 @@ class TerrainDataProvider final : public QObject {
     /// `blocks_per_texel`, so the render thread only has to upload it. The level
     /// travels with the tile: a re-sample for a new zoom level is handed over
     /// while the renderer is still drawing the previous one.
-    void tileReady(int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color,
-                   const QImage& height, const QImage& material, const QImage& prepared_color, const QImage& prepared_height,
-                   const QImage& prepared_material, const QImage& overview_color);
+    void tileReady(int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color, const QImage& surface,
+                   bool hasTerrain);
     /// A catch-up pass finished: everything the loader had ready for the window
     /// has been handed over at `blocks_per_texel`. The renderer switches levels on
     /// its next frame, so it draws that frame from tiles it already holds instead
@@ -209,20 +210,14 @@ class TerrainDataProvider final : public QObject {
     void processRegion(const region_pos& pos, int& submitted);
     void syncLoaderTileRequest();
     void syncSnapshotCacheLimit();
-    void storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& height,
-                       const QImage& material, const QImage& preparedColor, const QImage& preparedHeight,
-                       const QImage& preparedMaterial, const QImage& overviewColor);
-    void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& height,
-                         const QImage& material, const QImage& preparedColor, const QImage& preparedHeight,
-                         const QImage& preparedMaterial, const QImage& overviewColor);
+    void storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
+    void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
     [[nodiscard]] bool enqueueTile(const region_pos& pos);
     void onRegionReady(const region_pos& pos);
-    void onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& height,
-                          const QImage& material);
+    void onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& surface,
+                          bool hasTerrain);
     void onTileFinished(quint64 generation, int regionX, int regionZ, int dimension, int blocksPerTexel, int layer, qulonglong sourceToken,
-                        bool cache_only, const QImage& color, const QImage& height, const QImage& material,
-                        const QImage& preparedColor, const QImage& preparedHeight, const QImage& preparedMaterial,
-                        const QImage& overviewColor);
+                        bool cache_only, const QImage& color, const QImage& surface, bool hasTerrain);
     void maybeCompleteCatchUp();
     [[nodiscard]] bool hasRelevantInFlight() const;
     [[nodiscard]] bool regionInWindow(const region_pos& pos) const;
@@ -242,12 +237,8 @@ class TerrainDataProvider final : public QObject {
     struct CachedTile {
         quint64 sourceRevision{0};
         QImage color;
-        QImage height;
-        QImage material;
-        QImage preparedColor;
-        QImage preparedHeight;
-        QImage preparedMaterial;
-        QImage overviewColor;
+        QImage surface;
+        bool hasTerrain{false};
     };
 
     AsyncLevelLoader* loader_{nullptr};
@@ -264,7 +255,6 @@ class TerrainDataProvider final : public QObject {
     quint64 snapshot_cache_limit_revision_{0};
     bool active_{false};
     bool overview_only_{false};
-    int requested_detail_level_{1};
     quint64 view_generation_{0};
     quint64 world_generation_{0};
     TerrainViewportRequest viewportRequest_;

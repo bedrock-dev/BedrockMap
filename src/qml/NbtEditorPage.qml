@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import BedrockMap 1.0
 import "controls"
 
@@ -9,79 +8,15 @@ Item {
     id: page
     property var document
     property bool compact: Theme.nbtCompact
+    readonly property bool showTitleBar: compact
     property string itemFilter: ""
-    property string pendingImportPath
+    readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.cardPadding
     signal closeRequested
 
-    function performImport(path) {
-        if (!document || !document.loadFile(path))
-            Notifications.error(document ? document.lastError : qsTr("No NBT document is open."))
-    }
-    function saveDocument() {
-        if (!document || !document.hasDocument || document.readOnly)
-            return
-        if (!document.save())
-            saveDialog.open()
-    }
-
-    FileDialog {
-        id: importDialog
-        title: qsTr("Import NBT file")
-        fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: {
-            const path = String(selectedFile)
-            if (document && document.hasDocument && !document.isEmpty()) {
-                page.pendingImportPath = path
-                importConfirmDialog.open()
-            } else {
-                page.performImport(path)
-            }
-        }
-    }
-    ConfirmDialog {
-        id: importConfirmDialog
-        title: qsTr("Replace NBT document")
-        message: qsTr("Importing will replace the current NBT document. Unsaved changes in this tab will be lost.")
-        confirmText: qsTr("Import")
-        danger: true
-        onConfirmed: {
-            const path = page.pendingImportPath
-            page.pendingImportPath = ""
-            page.performImport(path)
-        }
-        onCancelled: page.pendingImportPath = ""
-    }
-    ConfirmDialog {
-        id: clearConfirmDialog
-        title: qsTr("Clear all records")
-        message: qsTr("Remove all NBT records from this document? This cannot be undone.")
-        confirmText: qsTr("Clear")
-        danger: true
-        onConfirmed: if (!document.clearContents())
-                         Notifications.error(document.lastError)
-    }
-    FileDialog {
-        id: saveDialog
-        title: qsTr("Save NBT file")
-        fileMode: FileDialog.SaveFile
-        defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: {
-            if (!document.saveAs(selectedFile))
-                Notifications.error(document.lastError)
-        }
-    }
-    FileDialog {
-        id: exportDialog
-        title: qsTr("Export NBT file")
-        fileMode: FileDialog.SaveFile
-        defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: {
-            if (!document.exportFile(String(selectedFile)))
-                Notifications.error(document.lastError)
-        }
+    NbtDocumentActions {
+        id: documentActions
+        document: page.document
+        allowSave: true
     }
 
     Rectangle {
@@ -95,8 +30,9 @@ Item {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: (page.compact ? Theme.topbarHeight : 0)
-                                   + (document.hasDocument ? fileToolbar.implicitHeight + Theme.cardPadding * 2 + 1 : 0)
+            Layout.preferredHeight: (page.showTitleBar ? Theme.topbarHeight : 0) + (document.hasDocument ? fileToolbar.implicitHeight
+                                                                                                           + page.toolbarVerticalPadding
+                                                                                                           * 2 + 1 : 0)
             color: Theme.surface
 
             ColumnLayout {
@@ -104,7 +40,7 @@ Item {
                 spacing: 0
 
                 AppTitleBar {
-                    visible: page.compact
+                    visible: page.showTitleBar
                     Layout.fillWidth: true
                     Layout.preferredHeight: Theme.topbarHeight
                     title: document.documentTitle + (document.dirty ? " *" : "")
@@ -114,16 +50,16 @@ Item {
                             Layout.alignment: Qt.AlignVCenter
                             iconName: "save"
                             label: qsTr("Save NBT document")
-                            buttonSize: Theme.touch ? Theme.touchTarget : 30
+                            buttonSize: 30
                             enabled: document.hasDocument && !document.readOnly
-                            onClicked: page.saveDocument()
+                            onClicked: documentActions.saveDocument()
                         },
                         AppIconButton {
                             Layout.alignment: Qt.AlignVCenter
                             iconName: "exit"
                             label: qsTr("Close NBT document")
                             danger: true
-                            buttonSize: Theme.touch ? Theme.touchTarget : 30
+                            buttonSize: 30
                             onClicked: page.closeRequested()
                         }
                     ]
@@ -131,13 +67,18 @@ Item {
 
                 Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: document.hasDocument ? fileToolbar.implicitHeight + Theme.cardPadding * 2 : 0
+                    Layout.preferredHeight: document.hasDocument ? fileToolbar.implicitHeight
+                                                                   + page.toolbarVerticalPadding * 2 : 0
+
                     visible: document.hasDocument
 
                     NbtToolbar {
                         id: fileToolbar
                         anchors.fill: parent
-                        anchors.margins: Theme.cardPadding
+                        anchors.leftMargin: Theme.cardPadding
+                        anchors.rightMargin: Theme.cardPadding
+                        anchors.topMargin: page.toolbarVerticalPadding
+                        anchors.bottomMargin: page.toolbarVerticalPadding
                         document: page.document
                         compact: page.compact
                         allowSave: true
@@ -147,10 +88,11 @@ Item {
                         onSearchTextEdited: function (text) {
                             page.itemFilter = text
                         }
-                        onImportRequested: importDialog.open()
-                        onExportRequested: exportDialog.open()
-                        onClearRequested: clearConfirmDialog.open()
-                        onSaveRequested: page.saveDocument()
+                        onImportRequested: documentActions.openImport()
+                        onExportRequested: documentActions.openExport()
+                        onExportCurrentRequested: documentActions.openExportCurrent()
+                        onClearRequested: documentActions.openClear()
+                        onSaveRequested: documentActions.saveDocument()
                         onCloseRequested: page.closeRequested()
                     }
                 }
@@ -192,7 +134,7 @@ Item {
                     AppButton {
                         primary: true
                         text: qsTr("Import file")
-                        onClicked: importDialog.open()
+                        onClicked: documentActions.openImport()
                     }
                     AppButton {
                         text: qsTr("New document")
@@ -203,10 +145,7 @@ Item {
 
             NbtEditorSurface {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.cardPadding
-                anchors.rightMargin: Theme.cardPadding
-                anchors.topMargin: Theme.gapSmall
-                anchors.bottomMargin: Theme.gapSmall
+                anchors.margins: Theme.gapSmall
                 visible: document.hasDocument
                 document: page.document
                 compact: page.compact

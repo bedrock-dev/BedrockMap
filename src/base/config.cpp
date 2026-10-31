@@ -13,18 +13,17 @@
 #include <qnumeric.h>
 #include <qsettings.h>
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFont>
 #include <QFontDatabase>
 #include <QGuiApplication>
-#include <QGuiApplication>
-#include <QCoreApplication>
-#include <QStandardPaths>
 #include <QString>
 #include <algorithm>
 #include <string>
 
+#include "base/apppaths.h"
 #include "color.h"
 #include "loguru/loguru.hpp"
 
@@ -98,28 +97,6 @@ QString constant::VERSION_STRING() {
     return QString::fromUtf8(constant::SOFTWARE_NAME) + " " + constant::softwareVersion().toString() + "." + QString(GIT_COMMIT_HASH);
 }
 
-namespace app_paths {
-    namespace {
-        QString ensureDirectory(QString path) {
-            if (path.isEmpty()) path = QDir::currentPath() + QStringLiteral("/BedrockMap");
-            QDir().mkpath(path);
-            return path;
-        }
-    }  // namespace
-
-    QString configDirectory() { return ensureDirectory(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)); }
-    QString configFile() { return configDirectory() + QStringLiteral("/config.ini"); }
-    QString recentFile() { return configDirectory() + QStringLiteral("/recent.ini"); }
-    QString cacheDirectory() { return ensureDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)); }
-    QString logDirectory() { return ensureDirectory(cacheDirectory() + QStringLiteral("/logs")); }
-    QString importExportDirectory() {
-        auto documents = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        if (documents.isEmpty()) documents = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-        return ensureDirectory(QDir(documents).absoluteFilePath(QStringLiteral("BedrockMap")));
-    }
-    void initialize() { configDirectory(); }
-}  // namespace app_paths
-
 namespace {
     setting::Settings& mutableSettings() {
         static setting::Settings instance;
@@ -147,8 +124,8 @@ void constant::initColorTable() {
         QFile file(path);
         return file.open(QIODevice::ReadOnly) ? file.readAll().toStdString() : std::string{};
     };
-    const auto biomeJson = loadResource(QStringLiteral(":/res/colors/biome_color.json"));
-    const auto blockJson = loadResource(QStringLiteral(":/res/colors/block_color.json"));
+    const auto biomeJson = loadResource(QStringLiteral(":/bedrockmap/data/colors/biome_color.json"));
+    const auto blockJson = loadResource(QStringLiteral(":/bedrockmap/data/colors/block_color.json"));
     if (biomeJson.empty() || !bl::init_biome_color_palette_from_json(biomeJson))
         LOG_F(WARNING, "Can not load embedded biome color resource");
     if (blockJson.empty() || !bl::init_block_color_from_json(blockJson)) LOG_F(WARNING, "Can not load embedded block color resource");
@@ -185,9 +162,10 @@ void setting::load() {
     s.endGroup();
 
     s.beginGroup("Map");
+    loaded.showMapDebugButton = s.value("show_debug_button", loaded.showMapDebugButton).toBool();
     loaded.minimumScaleLevel = normalizeZoomScale(s.value("min_scale_level", loaded.minimumScaleLevel).toInt());
-    loaded.maximumScaleLevel = std::max(loaded.minimumScaleLevel,
-                                      normalizeZoomScale(s.value("max_scale_level", loaded.maximumScaleLevel).toInt()));
+    loaded.maximumScaleLevel =
+        std::max(loaded.minimumScaleLevel, normalizeZoomScale(s.value("max_scale_level", loaded.maximumScaleLevel).toInt()));
     loaded.panInertia = std::clamp(s.value("pan_inertia", loaded.panInertia).toFloat(), 0.0f, 1.0f);
     loaded.gridLineColor = s.value("grid_line_color", loaded.gridLineColor).toString();
     const QColor map_selection_color(s.value("selection_color", loaded.mapSelectionColor).toString());
@@ -199,7 +177,8 @@ void setting::load() {
     loaded.chunkEditorHighlightWidth = s.value("chunk_editor_highlight_width", loaded.chunkEditorHighlightWidth).toInt();
     loaded.voidMapColor = s.value("void_color", loaded.voidMapColor).toString();
     loaded.tileColorScheme = s.value("tile_color_scheme", loaded.tileColorScheme).toString() == QStringLiteral("light")
-                                 ? QStringLiteral("light") : QStringLiteral("dark");
+                                 ? QStringLiteral("light")
+                                 : QStringLiteral("dark");
     loaded.voxelSelectionColor = s.value("voxel_selection_color", loaded.voxelSelectionColor).toString();
     loaded.transparentWater = s.value("transparent_water", loaded.transparentWater).toBool();
     s.endGroup();
@@ -232,10 +211,8 @@ void setting::load() {
     // Existing Android installs may have the old desktop defaults persisted.
     // Migrate only those untouched defaults once; explicit user values remain.
     if (!s.value("android_ao_shadow_defaults_migrated", false).toBool()) {
-        if (!s.contains("gpu_ao_strength") || qAbs(stored_ao_strength - 0.15f) < 0.0001f)
-            loaded.gpuAoStrength = 0.0f;
-        if (!s.contains("gpu_shadow_strength") || qAbs(stored_shadow_strength - 0.7f) < 0.0001f)
-            loaded.gpuShadowStrength = 0.0f;
+        if (!s.contains("gpu_ao_strength") || qAbs(stored_ao_strength - 0.15f) < 0.0001f) loaded.gpuAoStrength = 0.0f;
+        if (!s.contains("gpu_shadow_strength") || qAbs(stored_shadow_strength - 0.7f) < 0.0001f) loaded.gpuShadowStrength = 0.0f;
         s.setValue("android_ao_shadow_defaults_migrated", true);
         s.sync();
     }
@@ -248,6 +225,7 @@ void setting::load() {
     loaded.gpuBiomeBlendBlocks = std::clamp(s.value("gpu_biome_blend_blocks", loaded.gpuBiomeBlendBlocks).toFloat(), 0.0f, 16.0f);
     loaded.gpuTileSnapshotCacheSizeMB =
         std::clamp(s.value("gpu_tile_snapshot_cache_mb", loaded.gpuTileSnapshotCacheSizeMB).toInt(), 8, 512);
+    loaded.gpuHighDetailMap = s.value("gpu_high_detail_map", loaded.gpuHighDetailMap).toBool();
     loaded.cpuShadowLevel = s.value("cpu_shadow_level", loaded.cpuShadowLevel).toInt();
     s.endGroup();
 
@@ -255,7 +233,6 @@ void setting::load() {
     loaded.regionCacheSize = s.value("region_cache_size", loaded.regionCacheSize).toInt();
     loaded.emptyRegionCacheSize = s.value("empty_cache_size", loaded.emptyRegionCacheSize).toInt();
     loaded.threadCount = s.value("max_thread_num", loaded.threadCount).toInt();
-    loaded.heightMapCacheSize = s.value("height_map_cache_size", loaded.heightMapCacheSize).toInt();
     s.endGroup();
 
     s.beginGroup("Misc");
@@ -320,10 +297,12 @@ void setting::save(const Settings& values) {
     s.setValue("gpu_shadow_step", values.gpuShadowStep);
     s.setValue("gpu_biome_blend_blocks", values.gpuBiomeBlendBlocks);
     s.setValue("gpu_tile_snapshot_cache_mb", values.gpuTileSnapshotCacheSizeMB);
+    s.setValue("gpu_high_detail_map", values.gpuHighDetailMap);
     s.setValue("cpu_shadow_level", values.cpuShadowLevel);
     s.endGroup();
 
     s.beginGroup("Map");
+    s.setValue("show_debug_button", values.showMapDebugButton);
     s.setValue("min_scale_level", values.minimumScaleLevel);
     s.setValue("max_scale_level", values.maximumScaleLevel);
     s.setValue("pan_inertia", values.panInertia);
@@ -344,7 +323,6 @@ void setting::save(const Settings& values) {
     s.setValue("region_cache_size", values.regionCacheSize);
     s.setValue("empty_cache_size", values.emptyRegionCacheSize);
     s.setValue("max_thread_num", values.threadCount);
-    s.setValue("height_map_cache_size", values.heightMapCacheSize);
     s.endGroup();
 
     s.beginGroup("Misc");
@@ -371,29 +349,38 @@ void setting::save(const Settings& values) {
 }
 
 void setting::setupUiFont() {
-    const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
-    if (id == -1) LOG_F(WARNING, "Can not load font %s", constant::MONOSPACE_FONT_RESOURCE);
-
-    const auto& values = current();
-    // Start from the platform's UI font so mobile keeps the system font even
-    // when the config was copied from a desktop installation.
-    QFont font = QGuiApplication::font();
-
 #if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
-    // Mobile owns the font family and rendering policy; only the point size is
-    // configurable here.
-    font.setPointSize(values.fontSize > 0 ? values.fontSize : constant::DEFAULT_FONT_POINT_SIZE);
-#else
-    font.setHintingPreference(QFont::PreferNoHinting);
-    font.setStyleStrategy(QFont::PreferAntialias);
-    font.setPointSize(values.fontSize > 0 ? values.fontSize : constant::DEFAULT_FONT_POINT_SIZE);
-#if defined(Q_OS_WIN)
-    const QString family = QString::fromUtf8(constant::DEFAULT_FONT_FAMILY);
-    if (QFontDatabase::hasFamily(family))
-        font.setFamily(family);
-    else
-        LOG_F(WARNING, "UI font %s is unavailable; using the system font", family.toStdString().c_str());
+    static const QString uiFamily = [] {
+        const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::UI_FONT_RESOURCE));
+        const QStringList families = QFontDatabase::applicationFontFamilies(id);
+        if (families.isEmpty()) {
+            LOG_F(ERROR, "Can not load UI font %s", constant::UI_FONT_RESOURCE);
+            return QString{};
+        }
+        LOG_F(INFO, "Bundled UI font: %s", families.first().toUtf8().constData());
+        return families.first();
+    }();
 #endif
+    static const int monospaceFontId = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
+    if (monospaceFontId == -1) LOG_F(WARNING, "Can not load font %s", constant::MONOSPACE_FONT_RESOURCE);
+
+    QFont font = QGuiApplication::font();
+    QString fallbackFamily = font.family();
+#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
+    if (!uiFamily.isEmpty()) {
+        font.setFamily(uiFamily);
+        fallbackFamily = uiFamily;
+    }
 #endif
+    // Monospace editor text keeps its Latin glyphs and falls back to the normal
+    // UI font for Han characters and unsupported punctuation.
+    if (!fallbackFamily.isEmpty()) {
+        const QStringList fallback{fallbackFamily};
+        for (const auto script : {QChar::Script_Han, QChar::Script_Common}) {
+            if (QFontDatabase::applicationFallbackFontFamilies(script) != fallback)
+                QFontDatabase::setApplicationFallbackFontFamilies(script, fallback);
+        }
+    }
+    font.setPointSize(current().fontSize > 0 ? current().fontSize : constant::DEFAULT_FONT_POINT_SIZE);
     QGuiApplication::setFont(font);
 }

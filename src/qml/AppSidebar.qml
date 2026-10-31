@@ -5,6 +5,7 @@ import "controls"
 
 Rectangle {
     id: root
+    required property Navigation navigation
     property int currentIndex: 0
     property bool darkMode: true
     property bool collapsed: false
@@ -15,12 +16,6 @@ Rectangle {
     color: Theme.surface
     border.color: Theme.border
     border.width: 1
-    Behavior on width {
-        NumberAnimation {
-            duration: 140
-            easing.type: Easing.OutCubic
-        }
-    }
 
     Column {
         id: topSection
@@ -44,7 +39,7 @@ Rectangle {
                     anchors.centerIn: parent
                     width: 24
                     height: 24
-                    source: "qrc:/BedrockMap.svg"
+                    source: "qrc:/bedrockmap/icons/app.svg"
                     smooth: true
                 }
             }
@@ -58,10 +53,9 @@ Rectangle {
                     font.pixelSize: Theme.fontTitle
                 }
                 Text {
-                    text: App && App.openSessions ? (App.openSessions.count === 1 ? qsTr("1 session open") :
-                                                                                                                  qsTr("%1 sessions open").arg(
-                                                                                                                      App.openSessions.count)) :
-                                                                        ""
+                    text: App && App.openSessions ? (App.openSessions.count === 1 ? qsTr("1 session open") : qsTr(
+                                                                                        "%1 sessions open").arg(
+                                                                                        App.openSessions.count)) : ""
                     color: Theme.muted
                     font.pixelSize: Theme.fontCaption
                 }
@@ -76,16 +70,16 @@ Rectangle {
         }
 
         AppListRow {
-            label: Navigation.pages[Navigation.pageWorlds].title
-            iconName: Navigation.pages[Navigation.pageWorlds].icon
-            selected: currentIndex === Navigation.pageWorlds
+            label: root.navigation.pages[root.navigation.pageWorlds].title
+            iconName: root.navigation.pages[root.navigation.pageWorlds].icon
+            selected: currentIndex === root.navigation.pageWorlds
             compact: root.collapsed
-            onClicked: navigate(Navigation.pageWorlds)
+            onClicked: navigate(root.navigation.pageWorlds)
         }
 
         Text {
             visible: !root.collapsed && App.openSessions.count > 0
-            text: Navigation.pages[Navigation.pageSessions].title
+            text: root.navigation.pages[root.navigation.pageSessions].title
             color: Theme.muted
             font.pixelSize: Theme.fontCaption
             leftPadding: 8
@@ -114,10 +108,10 @@ Rectangle {
             required property string kind
             readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
             width: openWorldList.width
-            height: Theme.touch ? Theme.touchTarget : (root.collapsed ? 36 : 40)
+            height: Theme.touch ? Theme.controlHeight : (root.collapsed ? 36 : 40)
             radius: Theme.radiusControl
-            color: active ? Theme.accentSoft : ((openWorldMouse.pressed || openWorldMouse.containsMouse) ? Theme.surfaceAlt :
-                                                                                                         "transparent")
+            color: active ? Theme.accentSoft : ((openWorldMouse.pressed || openWorldMouse.containsMouse)
+                                                ? Theme.surfaceAlt : "transparent")
             Row {
                 x: root.collapsed ? (parent.width - width) / 2 : 10
                 anchors.verticalCenter: parent.verticalCenter
@@ -191,25 +185,25 @@ Rectangle {
             color: Theme.border
         }
         AppListRow {
-            label: Navigation.pages[Navigation.pageTools].title
-            iconName: Navigation.pages[Navigation.pageTools].icon
-            selected: currentIndex === Navigation.pageTools
+            label: root.navigation.pages[root.navigation.pageTools].title
+            iconName: root.navigation.pages[root.navigation.pageTools].icon
+            selected: currentIndex === root.navigation.pageTools
             compact: root.collapsed
-            onClicked: navigate(Navigation.pageTools)
+            onClicked: navigate(root.navigation.pageTools)
         }
         AppListRow {
-            label: Navigation.pages[Navigation.pageLogs].title
-            iconName: Navigation.pages[Navigation.pageLogs].icon
-            selected: currentIndex === Navigation.pageLogs
+            label: root.navigation.pages[root.navigation.pageLogs].title
+            iconName: root.navigation.pages[root.navigation.pageLogs].icon
+            selected: currentIndex === root.navigation.pageLogs
             compact: root.collapsed
-            onClicked: navigate(Navigation.pageLogs)
+            onClicked: navigate(root.navigation.pageLogs)
         }
         AppListRow {
-            label: Navigation.pages[Navigation.pageSettings].title
-            iconName: Navigation.pages[Navigation.pageSettings].icon
-            selected: currentIndex === Navigation.pageSettings
+            label: root.navigation.pages[root.navigation.pageSettings].title
+            iconName: root.navigation.pages[root.navigation.pageSettings].icon
+            selected: currentIndex === root.navigation.pageSettings
             compact: root.collapsed
-            onClicked: navigate(Navigation.pageSettings)
+            onClicked: navigate(root.navigation.pageSettings)
         }
         AppListRow {
             iconName: darkMode ? "dark" : "light"

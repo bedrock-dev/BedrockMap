@@ -71,11 +71,11 @@ void IconAtlas::build(const std::vector<const QImage*>& images) {
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     for (const auto& placement : placements) {
         painter.drawImage(placement.rect.topLeft(), placement.image->convertToFormat(QImage::Format_RGBA8888));
-        entries_.insert(placement.image,
-                        IconAtlasEntry{
-                            QRectF(static_cast<qreal>(placement.rect.x()) / side, static_cast<qreal>(placement.rect.y()) / side,
-                                   static_cast<qreal>(placement.rect.width()) / side, static_cast<qreal>(placement.rect.height()) / side),
-                            QSizeF(placement.rect.size())});
+        entries_.insert(
+            placement.image,
+            IconAtlasEntry{QRectF(static_cast<qreal>(placement.rect.x()) / side, static_cast<qreal>(placement.rect.y()) / side,
+                                  static_cast<qreal>(placement.rect.width()) / side, static_cast<qreal>(placement.rect.height()) / side),
+                           QSizeF(placement.rect.size())});
     }
 }
 

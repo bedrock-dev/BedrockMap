@@ -1,85 +1,91 @@
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QIcon>
-#include <QLibraryInfo>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QUrl>
+#include <QQuickWindow>
+#include <QStyleHints>
+#include <memory>
+
 #include "base/config.h"
 #include "base/platform.h"
-#include "base/theme.h"
+#include "base/resourcemanager.h"
+#include "base/translator.h"
 #include "controller/appcontroller.h"
-#include "controller/chunkeditorcontroller.h"
-#include "controller/mcstructurecontroller.h"
-#include "controller/globaldatacontroller.h"
-#include "controller/nbtdocumentcontroller.h"
 #include "controller/settingsviewmodel.h"
+#include "fileopenhandler.h"
 #include "loguru/loguru.hpp"
-#include "mapoverlayquickitem.h"
 #include "model/logmodel.h"
-#include "model/nbttreemodel.h"
-#include "model/notifications.h"
-#include "model/worldlistmodel.h"
-#include "navigation.h"
-#include "render/resourcemanager.h"
-#include "terrainquickitem.h"
-#include "voxelquickitem.h"
 
-int main(int argc, char* argv[]) {
-    platform::installCrashHandler();
-    if (!qEnvironmentVariableIsSet("QSG_RHI_PROFILE")) qputenv("QSG_RHI_PROFILE", "1");
-    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
-    QGuiApplication app(argc, argv);
-    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/BedrockMap.svg")));
-    QCoreApplication::setOrganizationName(QStringLiteral("BedrockMap"));
-    QCoreApplication::setOrganizationDomain(QStringLiteral("bedrock-dev.github.io"));
-    QCoreApplication::setApplicationName(QString::fromUtf8(constant::SOFTWARE_NAME));
-    QCoreApplication::setApplicationVersion(constant::softwareVersion().toString().mid(1));
-    // Keep logging alive until all models, sessions and the QML engine exit.
-    LogModel logs(argc, argv);
-    LOG_F(INFO, "BedrockMap %s | Qt %s | Controls style %s", BEDROCKMAP_VERSION, qVersion(),
-          qgetenv("QT_QUICK_CONTROLS_STYLE").constData());
-    setting::init();
-    if (!qEnvironmentVariableIsSet("QSG_RHI_BACKEND")) {
+namespace {
+    // Unknown modes let the platform choose the effective color scheme.
+    void applyThemeHints(QStyleHints* hints, const QString& colorTheme) {
+        if (!hints) return;
+        if (colorTheme == QStringLiteral("dark")) {
+            hints->setColorScheme(Qt::ColorScheme::Dark);
+        } else if (colorTheme == QStringLiteral("light")) {
+            hints->setColorScheme(Qt::ColorScheme::Light);
+        } else {
+            hints->setColorScheme(Qt::ColorScheme::Unknown);
+        }
+    }
+
+    void setupGraphicsBackend() {
+        if (qEnvironmentVariableIsSet("QSG_RHI_BACKEND")) {
+            LOG_F(INFO, "Qt Quick render backend environment override: %s", qgetenv("QSG_RHI_BACKEND").constData());
+            return;
+        }
+
         QString backend = setting::current().renderBackend;
 #if defined(Q_OS_ANDROID)
         // "Automatic" selects the stable backend for this platform. Vulkan is
         // available as an explicit override because some Android drivers fail
         // to create the surface used by QQuickRhiItem.
-        if (backend == QStringLiteral("automatic") || backend == QStringLiteral("d3d11"))
-            backend = QStringLiteral("opengl");
+        if (backend == QStringLiteral("automatic") || backend == QStringLiteral("d3d11")) backend = QStringLiteral("opengl");
 #elif !defined(Q_OS_WIN)
         if (backend == QStringLiteral("d3d11")) backend = QStringLiteral("automatic");
 #endif
-        if (backend == QStringLiteral("opengl") || backend == QStringLiteral("vulkan")
-            || backend == QStringLiteral("d3d11")) {
+        if (backend == QStringLiteral("opengl") || backend == QStringLiteral("vulkan") || backend == QStringLiteral("d3d11")) {
             qputenv("QSG_RHI_BACKEND", backend.toLatin1());
         }
         LOG_F(INFO, "Qt Quick render backend setting: %s", backend.toStdString().c_str());
-    } else {
-        LOG_F(INFO, "Qt Quick render backend environment override: %s", qgetenv("QSG_RHI_BACKEND").constData());
     }
+}  // namespace
+
+int main(int argc, char* argv[]) {
+    platform::installCrashHandler();
+#if defined(BEDROCKMAP_ENABLE_RENDER_TIMINGS)
+    if (!qEnvironmentVariableIsSet("QSG_RHI_PROFILE")) qputenv("QSG_RHI_PROFILE", "1");
+#endif
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
+    QGuiApplication app(argc, argv);
+    FileOpenHandler fileOpenHandler(app);
+    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/bedrockmap/icons/app.svg")));
+    QCoreApplication::setOrganizationName(QStringLiteral("BedrockMap"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("bedrock-dev.github.io"));
+    QCoreApplication::setApplicationName(QString::fromUtf8(constant::SOFTWARE_NAME));
+    QCoreApplication::setApplicationVersion(constant::softwareVersion().toString().mid(1));
+    // Keep logging alive until all models, sessions and the QML engine exit.
+    auto logs = std::make_unique<LogModel>(argc, argv);
+    LOG_F(INFO, "BedrockMap %s | Qt %s | Controls style %s", BEDROCKMAP_VERSION, qVersion(),
+          qgetenv("QT_QUICK_CONTROLS_STYLE").constData());
+    setting::init();
+    setupGraphicsBackend();
     constant::initColorTable();
     // Initialize entity icons before any world scan can resolve actors.
-    initResources();
+    ResourceManager resources;
+    resources.initialize();
     setting::setupUiFont();
-    // This executable has its own resource bundle, so it must load the shared
-    // translation catalogs before the QML engine builds any user-visible text.
-    TranslatorMgr::init();
-    TranslatorMgr::setupTranslation(app, TranslatorMgr::resolveLanguage());
+    //  This executable has its own resource bundle, so it must load the shared
+    //  translation catalogs before the QML engine builds any user-visible text.
+    TranslatorManager translator;
+    translator.initialize();
+    translator.setupTranslation(app, translator.resolveLanguage());
 
-    WorldListModel worldModel;
-    // One message centre for the whole front end: pages, the worlds workspace
-    // and the core's own reporting all post into the same queue.
-    // Declared before AppController so it outlives the sessions that report to it.
-    NotificationCenter notifications;
-    AppController appController;
-    appController.setNotificationCenter(&notifications);
-    appController.setWorldListModel(&worldModel);
-    // Construct the settings facade after language resolution so it starts with
-    // the effective auto-detected language rather than the empty sentinel.
-    SettingsViewModel settingsModel;
-    Navigation navigation;
+    // Create application services after settings and language resolution.
+    // Transfer the early log model so AppController owns its full lifecycle.
+    AppController appController(std::move(logs), resources);
+    QObject::connect(&fileOpenHandler, &FileOpenHandler::fileOpenRequested, &appController, &AppController::openFile);
+    auto& settingsModel = *appController.settings();
     // Let Qt's platform palette follow the same explicit/system theme mode that
     // the QML Theme object uses. Changing back to "system" unsets the hint, so
     // the platform light/dark scheme becomes visible again.
@@ -90,52 +96,27 @@ int main(int argc, char* argv[]) {
     // The QML engine owns the window and every page instance, so it must be
     // destroyed before the models and controllers its bindings reference.
     QQmlApplicationEngine engine;
-    qmlRegisterType<TerrainQuickItem>("BedrockMap", 1, 0, "TerrainQuickItem");
-    qmlRegisterType<MapOverlayQuickItem>("BedrockMap", 1, 0, "MapOverlayQuickItem");
-    qmlRegisterUncreatableType<RegionImportController>("BedrockMap", 1, 0, "RegionImportController",
-                                                      QStringLiteral("Owned by the map controller"));
-    qmlRegisterUncreatableType<VoxelSceneController>("BedrockMap", 1, 0, "VoxelSceneController",
-                                                    QStringLiteral("Provided by a preview session"));
-    qmlRegisterUncreatableType<McstructureController>("BedrockMap", 1, 0, "McstructureController",
-                                                    QStringLiteral("Provided by McstructureSession"));
-    qmlRegisterType<VoxelQuickItem>("BedrockMap", 1, 0, "VoxelQuickItem");
-    qmlRegisterUncreatableType<ChunkEditorController>("BedrockMap", 1, 0, "ChunkEditorController",
-                                                      QStringLiteral("Provided by WorldSession"));
-    qmlRegisterType<NbtDocumentController>("BedrockMap", 1, 0, "NbtDocumentController");
-    qmlRegisterType<NbtTreeModel>("BedrockMap", 1, 0, "NbtTreeModel");
-    qmlRegisterUncreatableType<GlobalDataController>("BedrockMap", 1, 0, "GlobalDataController",
-                                                     QStringLiteral("Provided by WorldSession"));
-    qmlRegisterUncreatableType<GlobalNbtSection>("BedrockMap", 1, 0, "GlobalNbtSection",
-                                                 QStringLiteral("Created by GlobalDataController"));
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "App", &appController);
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "Settings", &settingsModel);
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "Worlds", &worldModel);
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "Notifications", &notifications);
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "Logs", &logs);
-    qmlRegisterSingletonInstance("BedrockMap", 1, 0, "Navigation", &navigation);
-    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/Theme.qml")), "BedrockMap", 1, 0, "Theme");
-    // The standalone QML target is also used outside Qt Creator, so make the
-    // module lookup explicit for both the developer Qt install and deployment.
-    engine.addImportPath(QStringLiteral(":/qt-project.org/imports"));
-    engine.addImportPath(QStringLiteral("qrc:/qt-project.org/imports"));
-    engine.addImportPath(QLibraryInfo::path(QLibraryInfo::QmlImportsPath));
+    // CMake also copies Qt modules next to the executable for local runs.
     engine.addImportPath(QCoreApplication::applicationDirPath() + QStringLiteral("/qml"));
 
     // Settings changes are previewed immediately. Installing a new translator
     // makes the QML engine re-evaluate every qsTr()/qsTranslate() binding.
-    QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &engine,
-                     [&app, &engine, &settingsModel] {
-                         const QString configured = settingsModel.language();
-                         const QString language =
-                             configured.isEmpty() || configured == QStringLiteral("system")
-                                 ? TranslatorMgr::systemLanguage()
-                                 : configured;
-                         TranslatorMgr::setupTranslation(app, language);
-                         engine.retranslate();
-                     });
-    QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &navigation, &Navigation::retranslate);
-    engine.load(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
+    QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &engine, [&app, &engine, &settingsModel, &translator] {
+        const QString configured = settingsModel.language();
+        const QString language = configured.isEmpty() || configured == QStringLiteral("system") ? translator.systemLanguage() : configured;
+        translator.setupTranslation(app, language);
+        engine.retranslate();
+    });
+    engine.loadFromModule("BedrockMap", "Main");
     if (engine.rootObjects().isEmpty()) return 1;
+#ifdef Q_OS_ANDROID
+    // Keep the native startup cover until Qt has submitted its first frame.
+    if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().constFirst())) {
+        QObject::connect(window, &QQuickWindow::frameSwapped, window,
+                         [] { QNativeInterface::QAndroidApplication::hideSplashScreen(); }, Qt::SingleShotConnection);
+    }
+#endif
+    fileOpenHandler.start();
 
     // Development hook: open a world straight away so the map can be inspected
     // (or driven by a script) without walking the world list first.

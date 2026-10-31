@@ -10,29 +10,13 @@
 #include "base/config.h"
 #include "base/platform.h"
 #include "loader/worldsource.h"
-#include "model/worldpath.h"
-
-namespace {
-    QString sourceAvailabilityName(WorldSourceAvailability availability) {
-        switch (availability) {
-            case WorldSourceAvailability::Available:
-                return QStringLiteral("Available");
-            case WorldSourceAvailability::NeedsAllFiles:
-                return QStringLiteral("NeedsAllFiles");
-            case WorldSourceAvailability::NeedsPrivilege:
-                return QStringLiteral("NeedsPrivilege");
-            case WorldSourceAvailability::Unavailable:
-                return QStringLiteral("Unavailable");
-        }
-        return {};
-    }
-}  // namespace
 
 SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_(setting::current()) {}
 
 void SettingsViewModel::emitAllChanged() {
     emit colorThemeChanged();
     emit collapseSidebarOnStartupChanged();
+    emit showMapDebugButtonChanged();
     emit languageChanged();
     emit renderBackendChanged();
     emit threadCountChanged();
@@ -52,6 +36,7 @@ void SettingsViewModel::emitAllChanged() {
     emit gpuBiomeBlendBlocksChanged();
     emit gpuShadowStepChanged();
     emit gpuTileSnapshotCacheSizeMBChanged();
+    emit gpuHighDetailMapChanged();
     emit cpuShadowLevelChanged();
     emit minimumScaleLevelChanged();
     emit maximumScaleLevelChanged();
@@ -75,7 +60,6 @@ void SettingsViewModel::emitAllChanged() {
     emit gpuGrassHeightBaseChanged();
     emit gpuGrassHeightRangeChanged();
     emit gpuGrassHeightColorChanged();
-    emit heightMapCacheSizeChanged();
     emit checkUpdateChanged();
     emit scanLeviPathChanged();
     emit customWorldPathsChanged();
@@ -121,15 +105,12 @@ void SettingsViewModel::reset() {
 }
 QVariantList SettingsViewModel::worldSources() const {
     QVariantList result;
-    for (const auto& source : makeWorldSources(values_.customWorldPaths, values_.scanLeviPath,
-                                               platform::hasAllFilesAccess())) {
-        for (const auto& path : source.roots) {
-            QVariantMap entry;
-            entry.insert(QStringLiteral("path"), path);
-            entry.insert(QStringLiteral("availability"), sourceAvailabilityName(source.availability));
-            entry.insert(QStringLiteral("removable"), source.kind == WorldSourceKind::UserFolder);
-            result.append(entry);
-        }
+    for (const auto& source : makeWorldSources(values_.customWorldPaths, values_.scanLeviPath)) {
+        QVariantMap entry;
+        entry.insert(QStringLiteral("path"), source.path);
+        entry.insert(QStringLiteral("label"), worldSourceLabel(source.kind));
+        entry.insert(QStringLiteral("removable"), source.kind == WorldSourceKind::External);
+        result.append(entry);
     }
     return result;
 }
@@ -164,8 +145,8 @@ void SettingsViewModel::setLanguage(const QString& v) {
 }
 void SettingsViewModel::setRenderBackend(const QString& v) {
     const QString normalized = v.trimmed().toLower();
-    if (normalized != QStringLiteral("automatic") && normalized != QStringLiteral("opengl") &&
-        normalized != QStringLiteral("vulkan") && normalized != QStringLiteral("d3d11")) {
+    if (normalized != QStringLiteral("automatic") && normalized != QStringLiteral("opengl") && normalized != QStringLiteral("vulkan") &&
+        normalized != QStringLiteral("d3d11")) {
         return;
     }
     if (values_.renderBackend == normalized) return;
@@ -235,6 +216,7 @@ void SettingsViewModel::setLeveldbXorKey(const QString& v) {
     }
 
 BM_SET_BOOL(setCollapseSidebarOnStartup, collapseSidebarOnStartup, collapseSidebarOnStartupChanged)
+BM_SET_BOOL(setShowMapDebugButton, showMapDebugButton, showMapDebugButtonChanged)
 BM_SET_INT(setFontSize, fontSize, fontSizeChanged, 6, 96)
 BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, gpuOrthographicViewChanged)
 BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, chunkOverviewEnabledChanged)
@@ -247,6 +229,7 @@ BM_SET_DOUBLE(setGpuBrightness, gpuBrightness, gpuBrightnessChanged, 0.0, 2.0)
 BM_SET_DOUBLE(setGpuBiomeBlendBlocks, gpuBiomeBlendBlocks, gpuBiomeBlendBlocksChanged, 0.0, 16.0)
 BM_SET_INT(setGpuShadowStep, gpuShadowStep, gpuShadowStepChanged, 4, 32)
 BM_SET_INT(setGpuTileSnapshotCacheSizeMB, gpuTileSnapshotCacheSizeMB, gpuTileSnapshotCacheSizeMBChanged, 8, 512)
+BM_SET_BOOL(setGpuHighDetailMap, gpuHighDetailMap, gpuHighDetailMapChanged)
 BM_SET_INT(setCpuShadowLevel, cpuShadowLevel, cpuShadowLevelChanged, 0, 255)
 BM_SET_DOUBLE(setPanInertia, panInertia, panInertiaChanged, 0.0, 1.0)
 void SettingsViewModel::setMapSelectionColor(const QString& value) {
@@ -275,7 +258,6 @@ BM_SET_BOOL(setGpuGrassHeightEnabled, gpuGrassHeightEnabled, gpuGrassHeightEnabl
 BM_SET_DOUBLE(setGpuGrassHeightBase, gpuGrassHeightBase, gpuGrassHeightBaseChanged, -128.0, 512.0)
 BM_SET_DOUBLE(setGpuGrassHeightRange, gpuGrassHeightRange, gpuGrassHeightRangeChanged, 1.0, 512.0)
 BM_SET_STRING(setGpuGrassHeightColor, gpuGrassHeightColor, gpuGrassHeightColorChanged)
-BM_SET_INT(setHeightMapCacheSize, heightMapCacheSize, heightMapCacheSizeChanged, 0, 10000000)
 BM_SET_BOOL(setCheckUpdate, checkUpdate, checkUpdateChanged)
 
 void SettingsViewModel::setScanLeviPath(bool v) {
@@ -286,11 +268,10 @@ void SettingsViewModel::setScanLeviPath(bool v) {
 }
 
 void SettingsViewModel::addCustomWorldPath(const QString& path) {
-    const QString normalized = world_path::normalize(path.trimmed());
+    const QString normalized = platform::normalizeLocalPath(path.trimmed());
     if (normalized.isEmpty()) return;
-    const QString key = world_path::identityKey(normalized);
     for (const auto& existing : values_.customWorldPaths) {
-        if (world_path::identityKey(world_path::normalize(existing)) == key) return;
+        if (platform::normalizeLocalPath(existing) == normalized) return;
     }
     values_.customWorldPaths.append(normalized);
     emit customWorldPathsChanged();
@@ -298,11 +279,10 @@ void SettingsViewModel::addCustomWorldPath(const QString& path) {
 }
 
 void SettingsViewModel::removeCustomWorldPath(const QString& path) {
-    const QString normalized = world_path::normalize(path.trimmed());
+    const QString normalized = platform::normalizeLocalPath(path.trimmed());
     if (normalized.isEmpty()) return;
-    const QString key = world_path::identityKey(normalized);
     for (int i = 0; i < values_.customWorldPaths.size(); ++i) {
-        if (world_path::identityKey(world_path::normalize(values_.customWorldPaths.at(i))) == key) {
+        if (platform::normalizeLocalPath(values_.customWorldPaths.at(i)) == normalized) {
             values_.customWorldPaths.removeAt(i);
             emit customWorldPathsChanged();
             emit worldSourcesChanged();

@@ -6,7 +6,7 @@
 
 `SessionController` 管理多个世界会话。每个 `WorldSession` 独立拥有 loader、地图状态、地形 provider 和编辑控制器。可见的 `WorldWorkspace` 把当前会话的 `MapController` 与 `TerrainDataProvider` 交给 `MapCanvas`。`TerrainQuickItem` 维护当前窗口的 GPU 资源；世界切换时会清理旧世界的待上传 tile 和驻留状态。
 
-`MapView`/`MapController` 是相机、维度、图层、选择与地图操作的状态源。`TerrainQuickItem` 从这些状态计算可见 region 与所需 LOD，向 provider 请求数据，不自行读 LevelDB。
+`MapViewState`/`MapController` 是相机、维度、图层、选择与地图操作的状态源。`TerrainQuickItem` 从这些状态计算可见 region 与所需 LOD，向 provider 请求数据，不自行读 LevelDB。
 
 ## 三个线程域
 

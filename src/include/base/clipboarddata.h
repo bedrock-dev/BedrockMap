@@ -10,6 +10,7 @@
 
 namespace clipboard_data {
     inline constexpr char MCSTRUCTURE_MIME_TYPE[] = "application/x-mcstructure";
+    inline constexpr char MCSTRUCTURE_TEXT_PREFIX[] = "BedrockMap/mcstructure:v1:";
     inline constexpr char CHUNK_REGION_MIME_TYPE[] = "application/x-bedrockmap-region";
     inline constexpr char CHUNK_REGION_TEXT_PREFIX[] = "BedrockMap/region:v1:";
 
@@ -38,6 +39,23 @@ namespace clipboard_data {
         mimeData.setData(QString::fromLatin1(mimeType), raw);
     }
 
+    inline QByteArray readMcstructure(const QMimeData* mimeData) {
+        if (!mimeData) return {};
+        const auto raw = mimeData->data(QString::fromLatin1(MCSTRUCTURE_MIME_TYPE));
+        if (!raw.isEmpty()) return raw;
+
+        const QString prefix = QString::fromLatin1(MCSTRUCTURE_TEXT_PREFIX);
+        const QString text = mimeData->text();
+        if (!text.startsWith(prefix)) return {};
+        const auto decoded = QByteArray::fromBase64Encoding(text.sliced(prefix.size()).toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
+        return decoded ? decoded.decoded : QByteArray{};
+    }
+
+    inline void writeMcstructure(QMimeData& mimeData, const QByteArray& raw) {
+        write(mimeData, MCSTRUCTURE_MIME_TYPE, raw);
+        mimeData.setText(QString::fromLatin1(MCSTRUCTURE_TEXT_PREFIX) + QString::fromLatin1(raw.toBase64()));
+    }
+
     inline QByteArray readRegion(const QMimeData* mimeData) {
         if (!mimeData) return {};
         const auto raw = mimeData->data(QString::fromLatin1(CHUNK_REGION_MIME_TYPE));
@@ -47,8 +65,7 @@ namespace clipboard_data {
         const QString prefix = QString::fromLatin1(CHUNK_REGION_TEXT_PREFIX);
         const QString text = mimeData->text();
         if (!text.startsWith(prefix)) return {};
-        const auto decoded = QByteArray::fromBase64Encoding(text.sliced(prefix.size()).toLatin1(),
-                                                           QByteArray::AbortOnBase64DecodingErrors);
+        const auto decoded = QByteArray::fromBase64Encoding(text.sliced(prefix.size()).toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
         return decoded ? decoded.decoded : QByteArray{};
     }
 

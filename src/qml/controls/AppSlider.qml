@@ -5,14 +5,14 @@ import QtQuick.Controls
 Slider {
     id: root
 
-    implicitHeight: Theme.touch ? Theme.touchTarget : Theme.controlHeight
+    implicitHeight: Theme.controlHeight
     background: Rectangle {
         x: root.leftPadding
         y: root.topPadding + root.availableHeight / 2 - height / 2
-        implicitWidth: 200
-        implicitHeight: 4
+        implicitWidth: Theme.ui(200)
+        implicitHeight: Theme.sliderTrackHeight
         width: root.availableWidth
-        height: 4
+        height: Theme.sliderTrackHeight
         radius: height / 2
         color: Theme.surfaceAlt
         Rectangle {
@@ -25,8 +25,8 @@ Slider {
     handle: Rectangle {
         x: root.leftPadding + root.visualPosition * (root.availableWidth - width)
         y: root.topPadding + root.availableHeight / 2 - height / 2
-        implicitWidth: Theme.touch ? 20 : 14
-        implicitHeight: Theme.touch ? 20 : 14
+        implicitWidth: Theme.sliderHandleSize
+        implicitHeight: Theme.sliderHandleSize
         radius: height / 2
         color: root.enabled ? Theme.accent : Theme.muted
         border.width: 1

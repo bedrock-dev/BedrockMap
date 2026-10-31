@@ -5,9 +5,9 @@ import QtQuick.Controls
 CheckBox {
     id: root
 
-    implicitHeight: Theme.controlHeight
+    implicitHeight: Math.max(Theme.controlHeight, implicitContentHeight + topPadding + bottomPadding)
     font.pixelSize: Theme.fontSubtitle
-    spacing: 8
+    spacing: Theme.controlSpacing
     contentItem: Text {
         leftPadding: root.indicator.width + root.spacing
         text: root.text
@@ -18,8 +18,8 @@ CheckBox {
     indicator: Rectangle {
         x: root.leftPadding
         y: parent.height / 2 - height / 2
-        width: Theme.touch ? 24 : 18
-        height: Theme.touch ? 24 : 18
+        width: Theme.checkBoxSize
+        height: width
         radius: Theme.radiusSmall
         color: root.checked ? Theme.accentSoft : Theme.surfaceAlt
         border.width: 1

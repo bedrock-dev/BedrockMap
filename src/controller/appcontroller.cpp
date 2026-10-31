@@ -1,191 +1,336 @@
 #include "controller/appcontroller.h"
 
 #include <QCoreApplication>
-#include <QCryptographicHash>
 #include <QDesktopServices>
-#include <QDir>
-#include <QFile>
 #include <QFileInfo>
-#include <QStandardPaths>
-#include <QTemporaryDir>
+#include <QImage>
+#include <QImageWriter>
+#include <QPointer>
+#include <QUrl>
 #include <QtConcurrent>
+#include <memory>
 #ifdef Q_OS_ANDROID
+#include <QGuiApplication>
 #include <QJniEnvironment>
 #include <QJniObject>
 #endif
 
-#include "base/config.h"
+#include "base/apppaths.h"
 #include "base/platform.h"
+#include "base/worldfilesource.h"
+#include "controller/nbtsession.h"
 #include "controller/workspacesession.h"
 #include "controller/worldsession.h"
+#include "io/documentio.h"
+#include "loader/leveloperator.h"
 #include "model/notifications.h"
 #include "model/worldlistmodel.h"
-#include "model/worldpath.h"
 
 namespace {
-    QString internalWorldsRoot() {
-        const QString root = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-        return root.isEmpty() ? QString{} : QDir(root).filePath(QStringLiteral("worlds"));
-    }
-
-    QString importTargetForSource(const QString& source) {
-        const QString root = internalWorldsRoot();
-        if (root.isEmpty()) return {};
-        const QString key =
-            QString::fromLatin1(QCryptographicHash::hash(world_path::identityKey(source).toUtf8(), QCryptographicHash::Sha256).toHex());
-        return QDir(root).filePath(key);
-    }
-
-    bool isCompleteWorld(const QString& path) {
-        const QDir dir(path);
-        return QFileInfo(dir.filePath(QStringLiteral("level.dat"))).isFile() && QFileInfo(dir.filePath(QStringLiteral("db"))).isDir();
-    }
-
+    QPointer<AppController> applicationController;
 #ifdef Q_OS_ANDROID
-    QString resolveContentTreePath(const QString& source) {
-        const auto context = QNativeInterface::QAndroidApplication::context();
-        const auto sourceString = QJniObject::fromString(source);
-        const auto result = QJniObject::callStaticObjectMethod("org/bedrockmap/WorldDirectoryImport", "resolveTreePath",
-                                                               "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                               context.object(), sourceString.object<jstring>());
-        QJniEnvironment env;
-        if (env.checkAndClearExceptions() || !result.isValid()) return {};
-        return result.toString();
+    void onPermissionStateChanged(JNIEnv*, jclass) {
+        auto* app = QCoreApplication::instance();
+        if (!app) return;
+        QMetaObject::invokeMethod(
+            app,
+            [] {
+                if (applicationController) applicationController->refreshPermissions();
+            },
+            Qt::QueuedConnection);
     }
+
 #endif
+
+    void initializePermissionListeners() {
+#ifdef Q_OS_ANDROID
+        QJniEnvironment env;
+        if (env.registerNativeMethods("org/bedrockmap/ShizukuPermission",
+                                      {{"onStateChanged", "()V", reinterpret_cast<void*>(onPermissionStateChanged)}})) {
+            const auto context = QNativeInterface::QAndroidApplication::context();
+            QJniObject::callStaticMethod<void>("org/bedrockmap/ShizukuPermission", "initialize", "(Landroid/content/Context;)V",
+                                               context.object());
+        }
+        env.checkAndClearExceptions();
+        env.registerNativeMethods("org/bedrockmap/RootPermission",
+                                  {{"onStateChanged", "()V", reinterpret_cast<void*>(onPermissionStateChanged)}});
+        env.checkAndClearExceptions();
+#endif
+    }
 }  // namespace
 
-AppController::AppController(QObject* parent) : QObject(parent), sessions_(this) {
+AppController::AppController(std::unique_ptr<LogModel> logs, ResourceManager& resources, QObject* parent)
+    : QObject(parent),
+      logs_(std::move(logs)),
+      resources_(&resources),
+      settings_(this),
+      worlds_(this),
+      notifications_(this),
+      sessions_(this) {
+    if (applicationController) qFatal("Only one AppController can exist");
+    if (!logs_) qFatal("AppController requires an initialized log model");
+    applicationController = this;
+    logs_->setParent(this);
+    sessions_.setResourceManager(resources_);
+    sessions_.setWorldListModel(&worlds_);
+    initializePermissionListeners();
     connect(&sessions_, &SessionController::activeSessionChanged, this, &AppController::activeSessionChanged);
     connect(&sessions_, &SessionController::activeIndexChanged, this, &AppController::workspaceIndexChanged);
     connect(&sessions_, &SessionController::closeRequested, this,
             [this](WorkspaceSession* session, int index) { emit sessionCloseRequested(session, index); });
     connect(&sessions_, &SessionController::sessionAboutToClose, this,
             [this](WorkspaceSession* session) { emit sessionAboutToClose(session); });
+    connect(&sessions_, &SessionController::sessionAdded, this, [this](WorkspaceSession* session, int) {
+        if (auto* nbt = qobject_cast<NbtSession*>(session)) {
+            connect(nbt->document(), &NbtDocumentController::saved, this, [this] { notifications_.info(tr("Save successful")); });
+        } else if (auto* world = qobject_cast<WorldSession*>(session)) {
+            connect(world, &WorldSession::saved, this, [this] { notifications_.info(tr("Save successful")); });
+            connect(world, &WorldSession::saveFailed, this, [this](const QString&) { notifications_.error(tr("Save failed")); });
+            connect(world->voxelView(), &BlockVolumeController::importFinished, this,
+                    [this] { notifications_.info(tr("Import successful")); });
+        }
+    });
     connect(&sessions_, &SessionController::sessionsChanged, this, [this] {
         if (sessions_.hasSessions()) return;
         setWorkspaceOpen(false);
         setCurrentPage(0);
     });
-    connect(&sessions_, &SessionController::warningOccurred, this, [this](const QString& message, const QString& detail) {
-        if (notifications_) notifications_->warning(message, {}, detail);
-    });
-    connect(&sessions_, &SessionController::errorOccurred, this, [this](const QString& message, const QString& detail) {
-        if (notifications_) notifications_->error(message, {}, detail);
-    });
+    connect(&sessions_, &SessionController::warningOccurred, this,
+            [this](const QString& message, const QString& detail) { notifications_.warning(message, {}, detail); });
+    connect(&sessions_, &SessionController::errorOccurred, this,
+            [this](const QString& message, const QString& detail) { notifications_.error(message, {}, detail); });
 }
 AppController::~AppController() {
-    // The importer owns only value captures and must finish before shutdown.
+    // File workers own only value captures and must finish before shutdown.
     import_watcher_.waitForFinished();
+    delete_watcher_.waitForFinished();
+    export_watcher_.waitForFinished();
 }
+
+AppController* AppController::instance() { return applicationController; }
+
 void AppController::setCurrentPage(int page) {
     // Application-level destinations only. World-internal data and tools live
     // inside the active workspace.
-    page = qBound(0, page, 4);
+    page = qBound(0, page, 6);
     if (current_page_ == page) return;
     current_page_ = page;
     emit currentPageChanged();
 }
+
 void AppController::navigateToPage(int page) {
     setCurrentPage(page);
     setWorkspaceOpen(false);
 }
+
+bool AppController::allFilesPermission() const { return platform::hasAllFilesPermission(); }
+
+void AppController::requestAllFilesPermission() { platform::requestAllFilesPermission(); }
+
+QString AppController::shizukuPermission() const { return platform::shizukuPermission(); }
+
+void AppController::requestShizukuPermission() { platform::requestShizukuPermission(); }
+
+QString AppController::rootPermission() const { return platform::rootPermission(); }
+
+void AppController::requestRootPermission() { platform::requestRootPermission(); }
+
+void AppController::refreshPermissions() { emit permissionsChanged(); }
 
 void AppController::selectWorkspace(int index) {
     if (!sessions_.sessions()->at(index)) return;
     sessions_.setActiveIndex(index);
     setWorkspaceOpen(true);
 }
-QString AppController::defaultWorldFolder() const {
+bool AppController::isWorldFolder(const QUrl& url) const {
+    if (!url.isLocalFile()) return false;
+    const QString target = platform::normalizeLocalPath(url.toLocalFile());
+    // A synchronous local check for desktop drag-and-drop. Opening the database,
+    // including privileged Android access, runs on the session's open worker.
+    return !target.isEmpty() && LevelOperator::isCompleteWorld(target);
+}
+
+void AppController::openWorldFolder(const QUrl& url) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (url.isEmpty()) return;
 #ifdef Q_OS_ANDROID
-    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-#else
-    // Same start folder as MainWindow::openLevel(): the first generic data
-    // location plus the MCBE worlds suffix.
-    const QStringList locations = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
-    if (locations.isEmpty()) return {};
-    return locations.first() + QString::fromUtf8(constant::MCBE_LEVEL_PATH);
-#endif
-}
-
-QUrl AppController::defaultWorldFolderUrl() const {
-    const QString path = defaultWorldFolder();
-    return path.isEmpty() ? QUrl{} : QUrl::fromLocalFile(path);
-}
-
-bool AppController::isWorldFolder(const QString& path) const {
-    const QString target = world_path::normalize(path);
-    if (target.isEmpty() || !QFileInfo(target).isDir()) return false;
-    const QDir dir(target);
-    return dir.exists(QStringLiteral("level.dat")) || dir.exists(QStringLiteral("levelname.txt"));
-}
-
-void AppController::openWorldFolder(const QString& path) {
-    if (path.isEmpty()) return;
-#ifdef Q_OS_ANDROID
-    const QUrl url(path);
-    if (url.scheme() == QStringLiteral("content")) {
+    if (platform::isContentUri(url)) {
         if (importing_world_) return;
-        const QString source = url.toString(QUrl::FullyEncoded);
-        const QString target = importTargetForSource(source);
-        if (platform::hasAllFilesAccess()) {
-            const QString resolved = resolveContentTreePath(source);
-            if (!resolved.isEmpty() && isCompleteWorld(resolved)) {
-                emit worldSourceDiscovered(resolved);
-                openWorld(resolved);
-                return;
-            }
-        }
-        // No native path is available; reopen the imported copy if one exists.
-        if (!target.isEmpty() && isCompleteWorld(target)) {
-            openWorld(target);
-            return;
-        }
-        emit safWorldCopyRequested(source);
+        const QString resolved = LevelOperator::resolveContentWorldFolder(url);
+        if (!resolved.isEmpty())
+            openWorld(resolved);
+        else
+            emit worldCopyRequested(url);
         return;
     }
 #endif
-    if (!isWorldFolder(path)) {
-        if (notifications_) notifications_->warning(tr("That folder is not a Bedrock world (no level.dat)."));
+    if (!url.isLocalFile()) {
+        notifications_.error(tr("Import failed"));
         return;
     }
-    openWorld(path);
+    openWorld(url.toLocalFile());
 }
 
 void AppController::openWorld(const QString& path, const QString& title) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (platform::requiresWorldCopy(path)) {
+        importWorldToInternal(QUrl::fromLocalFile(path), false);
+        return;
+    }
     if (auto* session = sessions_.openWorld(path, title)) {
         if (auto* world = qobject_cast<WorldSession*>(session)) world->ensureTerrainData();
         setWorkspaceOpen(true);
     }
 }
 
-void AppController::copySafWorld(const QString& path) {
+void AppController::copyWorldToInternal(const QUrl& url) { importWorldToInternal(url, false); }
+
+bool AppController::saveImage(const QUrl& destination, const QImage& image) {
+    if (destination.isEmpty() || image.isNull()) return false;
+    const QString error = io::DocumentIo::writeStream(destination, [&image](QIODevice& device) {
+        QImageWriter writer(&device, "PNG");
+        return writer.write(image) ? QString() : writer.errorString();
+    });
+    return error.isEmpty();
+}
+
+void AppController::openMcworldFile(const QUrl& url) { importWorldToInternal(url, true); }
+
+bool AppController::checkWorldFileOperationIdle() {
+    if (deleting_world_) {
+        notifications_.warning(tr("Wait for the current world deletion to finish."));
+        return false;
+    }
+    if (exporting_world_) {
+        notifications_.warning(tr("Wait for the current world export to finish."));
+        return false;
+    }
+    return true;
+}
+
+bool AppController::hasOpenSessionInWorld(const QString& path) {
+#ifdef Q_OS_WIN
+    constexpr auto caseSensitivity = Qt::CaseInsensitive;
+#else
+    constexpr auto caseSensitivity = Qt::CaseSensitive;
+#endif
+    for (int i = 0; i < sessions_.sessions()->count(); ++i) {
+        const auto* session = sessions_.sessions()->at(i);
+        const QString openPath = platform::normalizeLocalPath(session->path());
+        if (openPath.compare(path, caseSensitivity) == 0 || openPath.startsWith(path + QLatin1Char('/'), caseSensitivity)) return true;
+    }
+    return false;
+}
+
+void AppController::deleteWorld(const QString& path) {
+    if (!checkWorldFileOperationIdle()) return;
     if (importing_world_) {
-        if (notifications_) notifications_->warning(tr("Wait for the current world import to finish."));
+        notifications_.warning(tr("Wait for the current world import to finish."));
+        return;
+    }
+    const QString target = platform::normalizeLocalPath(path);
+    if (!LevelOperator::isInternalWorld(target)) {
+        notifications_.error(tr("Only worlds in the app's internal storage can be deleted."));
+        return;
+    }
+    if (hasOpenSessionInWorld(target)) {
+        notifications_.warning(tr("Close the world and any files inside it before deleting it."));
         return;
     }
 
-    const QUrl url(path);
-    if (url.scheme() != QStringLiteral("content")) {
-        if (notifications_) notifications_->warning(tr("Only SAF folders can be copied."));
-        return;
-    }
-    const QString source = url.toString(QUrl::FullyEncoded);
+    deleting_world_ = true;
+    emit deletingWorldChanged();
+    notifications_.info(tr("Deleting world..."));
+    delete_watcher_.disconnect(this);
+    connect(&delete_watcher_, &QFutureWatcher<QString>::finished, this, [this] {
+        const QString error = delete_watcher_.result();
+        deleting_world_ = false;
+        emit deletingWorldChanged();
+        // Refresh also prunes deleted directories from recent-world history.
+        // Refresh on failure too, because a partial deletion may invalidate it.
+        worlds_.refresh();
+        if (error.isEmpty())
+            notifications_.info(tr("World deleted."));
+        else
+            notifications_.error(tr("World deletion failed."), {}, error);
+    });
+    delete_watcher_.setFuture(QtConcurrent::run([target] { return LevelOperator::deleteInternalWorld(target); }));
+}
 
-    const QString parent = internalWorldsRoot();
-    const QString target = importTargetForSource(source);
-    if (parent.isEmpty() || target.isEmpty()) {
-        if (notifications_) notifications_->error(tr("World import failed."));
+void AppController::exportWorld(const QString& path, const QUrl& destination) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (importing_world_) {
+        notifications_.warning(tr("Wait for the current world import to finish."));
         return;
     }
-    if (isCompleteWorld(target)) {
+    const QString source = platform::normalizeLocalPath(path);
+    if (source.isEmpty() || destination.isEmpty()) {
+        notifications_.error(tr("Export failed"));
+        return;
+    }
+    QUrl target = destination;
+    if (target.isLocalFile()) {
+        QString targetPath = platform::normalizeLocalPath(target.toLocalFile());
+        if (targetPath.isEmpty()) {
+            notifications_.error(tr("Export failed"));
+            return;
+        }
+        if (QFileInfo(targetPath).suffix().isEmpty()) targetPath += QStringLiteral(".mcworld");
+        target = QUrl::fromLocalFile(targetPath);
+    }
+    if (hasOpenSessionInWorld(source)) {
+        notifications_.warning(tr("Close the world and any files inside it before exporting it."));
+        return;
+    }
+
+    exporting_world_ = true;
+    emit exportingWorldChanged();
+    notifications_.info(tr("Exporting world..."));
+    export_watcher_.disconnect(this);
+    connect(&export_watcher_, &QFutureWatcher<QString>::finished, this, [this] {
+        const QString error = export_watcher_.result();
+        exporting_world_ = false;
+        emit exportingWorldChanged();
+        if (error.isEmpty())
+            notifications_.info(tr("Export successful"));
+        else
+            notifications_.error(tr("Export failed"));
+    });
+    export_watcher_.setFuture(QtConcurrent::run([source, target] { return LevelOperator::exportMcworld(source, target); }));
+}
+
+void AppController::openFile(const QUrl& url) {
+    const QString fileName = io::DocumentIo::displayName(url);
+    if (QFileInfo(fileName).suffix().compare(QStringLiteral("mcworld"), Qt::CaseInsensitive) == 0)
+        openMcworldFile(url);
+    else
+        openNbtFile(url);
+}
+
+void AppController::importWorldToInternal(const QUrl& url, bool archive) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (importing_world_) {
+        notifications_.warning(tr("Wait for the current world import to finish."));
+        return;
+    }
+
+    if (url.isEmpty()) return;
+    const QString source = io::DocumentIo::identifier(url);
+    if (source.isEmpty()) return;
+
+    const QString target = LevelOperator::targetForSource(source);
+    if (target.isEmpty()) {
+        notifications_.error(tr("Import failed"));
+        return;
+    }
+    if (LevelOperator::isCompleteWorld(target)) {
         openWorld(target);
         return;
     }
 
     importing_world_ = true;
     emit importingWorldChanged();
-    if (notifications_) notifications_->info(tr("Copying the world to internal storage..."));
+    notifications_.info(archive ? tr("Extracting the world to internal storage...") : tr("Copying the world to internal storage..."));
 
     import_watcher_.disconnect(this);
     connect(&import_watcher_, &QFutureWatcher<QString>::finished, this, [this, target] {
@@ -193,57 +338,25 @@ void AppController::copySafWorld(const QString& path) {
         importing_world_ = false;
         emit importingWorldChanged();
         if (!error.isEmpty()) {
-            if (notifications_) notifications_->error(tr("World import failed."), {}, error);
+            notifications_.error(tr("Import failed"));
             return;
         }
-        if (notifications_) notifications_->info(tr("World copied. Changes are saved to the internal copy."));
+        notifications_.info(tr("Import successful"));
         openWorld(target);
     });
-
-    import_watcher_.setFuture(QtConcurrent::run([source, parent, target]() -> QString {
-        if (!QDir().mkpath(parent)) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
-        QTemporaryDir staging(QDir(parent).filePath(QStringLiteral(".import-XXXXXX")));
-        if (!staging.isValid()) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
-
-#ifdef Q_OS_ANDROID
-        const auto context = QNativeInterface::QAndroidApplication::context();
-        const auto sourceString = QJniObject::fromString(source);
-        const auto destinationString = QJniObject::fromString(staging.path());
-        const auto result =
-            QJniObject::callStaticObjectMethod("org/bedrockmap/WorldDirectoryImport", "copyWorld",
-                                               "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-                                               context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
-        QJniEnvironment env;
-        if (env.checkAndClearExceptions() || !result.isValid())
-            return QCoreApplication::translate("AppController", "Cannot access the selected Android folder.");
-        const QString error = result.toString();
-        if (!error.isEmpty()) return error;
-#else
-        return QCoreApplication::translate("AppController", "Content folders are only supported on Android.");
-#endif
-
-        if (!isCompleteWorld(staging.path())) {
-            return QCoreApplication::translate("AppController", "The selected directory must contain level.dat and db.");
-        }
-        const QFileInfo targetInfo(target);
-        if (targetInfo.isDir()) {
-            if (!QDir(target).removeRecursively())
-                return QCoreApplication::translate("AppController", "Cannot replace the previous imported world.");
-        } else if (targetInfo.exists() && !QFile::remove(target)) {
-            return QCoreApplication::translate("AppController", "Cannot replace the previous imported world.");
-        }
-        if (!QDir().rename(staging.path(), target)) return QCoreApplication::translate("AppController", "Cannot save the imported world.");
-        staging.setAutoRemove(false);
-        return {};
+    import_watcher_.setFuture(QtConcurrent::run([url, target, archive] {
+        return archive ? LevelOperator::extractToInternal(url, target) : LevelOperator::copyToInternal(url, target);
     }));
 }
 
-void AppController::openMcstructureFile(const QString& path) {
-    if (sessions_.openMcstructureFile(path)) setWorkspaceOpen(true);
+void AppController::openMcstructureFile(const QUrl& url) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (sessions_.openMcstructureFile(url)) setWorkspaceOpen(true);
 }
 
-void AppController::openNbtFile(const QString& path) {
-    if (sessions_.openNbtFile(path)) setWorkspaceOpen(true);
+void AppController::openNbtFile(const QUrl& url) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (sessions_.openNbtFile(url)) setWorkspaceOpen(true);
 }
 
 void AppController::newNbtDocument() {
@@ -262,11 +375,11 @@ void AppController::revealPath(const QString& path) {
     const QFileInfo info(path);
     const QString target = info.isDir() ? info.absoluteFilePath() : info.absolutePath();
     if (target.isEmpty() || !QFileInfo(target).isDir()) {
-        if (notifications_) notifications_->warning(tr("Could not open the containing folder."), {}, path);
+        notifications_.warning(tr("Could not open the containing folder."), {}, path);
         return;
     }
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(target)) && notifications_)
-        notifications_->warning(tr("Could not open the containing folder."), {}, target);
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(target)))
+        notifications_.warning(tr("Could not open the containing folder."), {}, target);
 }
 
 bool AppController::requestCloseFirstDirtySession() {
@@ -278,8 +391,8 @@ bool AppController::requestCloseFirstDirtySession() {
 
 void AppController::openConfigDirectory() {
     const QString path = app_paths::configDirectory();
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path)) && notifications_)
-        notifications_->warning(tr("Could not open the configuration folder."), {}, path);
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
+        notifications_.warning(tr("Could not open the configuration folder."), {}, path);
 }
 
 void AppController::setWorkspaceOpen(bool open) {

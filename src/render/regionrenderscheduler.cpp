@@ -6,8 +6,9 @@
 
 #include "loader/asynclevelloader.h"
 
-RegionRenderScheduler::RegionRenderScheduler(AsyncLevelLoader* loader, QObject* parent)
-    : QObject(parent), loader_(loader), owner_thread_(QThread::currentThread()) {
+RegionRenderScheduler::RegionRenderScheduler(AsyncLevelLoader* loader, ResourceManager* resources, QObject* parent)
+    : QObject(parent), loader_(loader), resources_(resources), owner_thread_(QThread::currentThread()) {
+    qRegisterMetaType<RegionRenderResult>();
     pool_.setMaxThreadCount(setting::current().threadCount);
 }
 
@@ -59,6 +60,16 @@ void RegionRenderScheduler::pause() {
 void RegionRenderScheduler::resume() {
     assertOwnerThread();
     if (accepting_.exchange(true, std::memory_order_acq_rel)) return;
+    dispatch();
+}
+
+void RegionRenderScheduler::reset() {
+    assertOwnerThread();
+    ++task_generation_;
+    pool_.clear();
+    pending_.clear();
+    queue_ = {};
+    active_.clear();
     dispatch();
 }
 
@@ -124,28 +135,26 @@ void RegionRenderScheduler::dispatch() {
         pending_.erase(pos);
         active_.insert(pos);
 
-        auto* task = new LoadRegionTask(loader_, pos, std::move(filter), tile_request);
+        auto* task = new LoadRegionTask(loader_, resources_, pos, std::move(filter), tile_request);
+        const auto generation = task_generation_;
         connect(
             task, &LoadRegionTask::finish, this,
-            [this, pos](int, int, int, ChunkRegion* region, long long loadTime, long long renderTime, bl::chunk**, int tileBlocksPerTexel,
-                        int tileLayer, const QImage& color, const QImage& height, const QImage& material) {
-                onTaskFinished(pos, region, loadTime, renderTime, tileBlocksPerTexel, tileLayer, color, height, material);
+            [this, generation](RegionRenderResult result) {
+                if (generation != task_generation_) return;
+                onTaskFinished(std::move(result));
             },
             Qt::QueuedConnection);
         pool_.start(task);
     }
 }
 
-void RegionRenderScheduler::onTaskFinished(const region_pos& pos, ChunkRegion* region, long long loadTime, long long renderTime,
-                                           int tileBlocksPerTexel, int tileLayer, const QImage& color, const QImage& height,
-                                           const QImage& material) {
+void RegionRenderScheduler::onTaskFinished(RegionRenderResult result) {
     assertOwnerThread();
-    active_.erase(pos);
+    active_.erase(result.pos);
     if (!accepting_.load(std::memory_order_acquire)) {
-        delete region;
         return;
     }
-    emit regionFinished(pos, region, loadTime, renderTime, tileBlocksPerTexel, tileLayer, color, height, material);
+    emit regionFinished(std::move(result));
     dispatch();
 }
 

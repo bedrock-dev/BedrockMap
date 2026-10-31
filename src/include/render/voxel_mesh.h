@@ -6,6 +6,7 @@
 #include <QPointF>
 #include <QSizeF>
 #include <QString>
+#include <QUrl>
 #include <QVector3D>
 #include <array>
 #include <cstdint>
@@ -18,7 +19,7 @@
 namespace bl {
     class chunk;
     class mcstructure;
-}
+}  // namespace bl
 
 struct Voxel {
     QColor color;
@@ -43,7 +44,7 @@ enum class VoxelSelectionHandle { None, MinX, MaxX, MinY, MaxY, MinZ, MaxZ };
 
 struct VoxelSelectionView {
     QMatrix4x4 matrix;  // OpenGL clip space, before the backend's clip correction.
-    QSizeF viewport;   // Logical pixels, independent of the render target's DPR.
+    QSizeF viewport;    // Logical pixels, independent of the render target's DPR.
     float voxelSize{1.0f};
 };
 
@@ -62,44 +63,42 @@ struct VoxelSelectionMesh {
 };
 
 namespace voxel_mesh {
-    [[nodiscard]] bool exportGlb(const VoxelMeshBuffers& mesh, const QString& filePath, QString* errorMessage = nullptr);
+    [[nodiscard]] bool exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, QString* errorMessage = nullptr);
     [[nodiscard]] VoxelGrid createVoxelDataFromMcstructure(const bl::mcstructure& structure);
-    [[nodiscard]] QPointF projectSelectionPoint(const VoxelSelectionView& view, const QVector3D& point,
-                                                 bool* visible = nullptr);
-    [[nodiscard]] QVector3D selectionHandlePosition(const bl::block_box& bounds, VoxelSelectionHandle handle,
-                                                    float voxelSize = 1.0f);
+    [[nodiscard]] QPointF projectSelectionPoint(const VoxelSelectionView& view, const QVector3D& point, bool* visible = nullptr);
+    [[nodiscard]] QVector3D selectionHandlePosition(const bl::block_box& bounds, VoxelSelectionHandle handle, float voxelSize = 1.0f);
     [[nodiscard]] int selectionHandleAxisIndex(VoxelSelectionHandle handle);
     [[nodiscard]] VoxelSelectionDrag beginSelectionDrag(const bl::block_box& bounds, const QVector3D& modelSize,
-                                                        const VoxelSelectionView& view, const QPointF& position,
-                                                        bool moveMode, float pickRadius = 10.8f);
-    [[nodiscard]] bl::block_box dragSelection(const VoxelSelectionDrag& drag, const QVector3D& modelSize,
-                                              const QPointF& position, bool locked = false);
+                                                        const VoxelSelectionView& view, const QPointF& position, bool moveMode,
+                                                        float pickRadius = 10.8f);
+    [[nodiscard]] bl::block_box dragSelection(const VoxelSelectionDrag& drag, const QVector3D& modelSize, const QPointF& position,
+                                              bool locked = false);
     [[nodiscard]] bl::block_box clampSelection(bl::block_box bounds, const QVector3D& modelSize, bool locked = false);
-    [[nodiscard]] VoxelSelectionMesh buildSelectionMesh(const bl::block_box& bounds, const VoxelSelectionView& view,
-                                                        const QColor& color, VoxelSelectionHandle active);
+    /// Colored X/Y/Z lines from the model origin, stored as pos3 + rgba4.
+    [[nodiscard]] std::vector<float> buildAxesMesh(const QVector3D& modelSize);
+    [[nodiscard]] VoxelSelectionMesh buildSelectionMesh(const bl::block_box& bounds, const VoxelSelectionView& view, const QColor& color,
+                                                        VoxelSelectionHandle active);
     // Combine chunks indexed by [X][Z] before meshing so face culling and AO
     // see adjacent chunks. Trim only empty outer Y layers; preserve internal gaps.
     [[nodiscard]] VoxelGrid createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                                      const std::function<void(int)>& reportProgress,
-                                                      int* firstWorldY = nullptr);
+                                                      const std::function<void(int)>& reportProgress, int* firstWorldY = nullptr);
     [[nodiscard]] std::optional<bl::block_box> fullBounds(const VoxelGrid& grid);
     [[nodiscard]] bool hasNeighborInBounds(const VoxelGrid& grid, int layer, int x, int z, int dy, int dx, int dz,
                                            const bl::block_box& bounds, VoxelMeshOcclusionMode mode);
-    [[nodiscard]] std::array<float, 4> faceOcclusionFactors(const VoxelGrid& grid, const bl::block_box& bounds, int layer, int x,
-                                                            int z, const std::vector<float>& faceVertices,
-                                                            const QVector3D& normal, VoxelMeshOcclusionMode mode);
+    [[nodiscard]] std::array<float, 4> faceOcclusionFactors(const VoxelGrid& grid, const bl::block_box& bounds, int layer, int x, int z,
+                                                            const std::vector<float>& faceVertices, const QVector3D& normal,
+                                                            VoxelMeshOcclusionMode mode);
     void addFaceVerticesToBuffers(int layer, int x, int z, const Voxel& voxel, const std::vector<float>& faceVertices,
-                                  const QVector3D& normal, const std::array<float, 4>& occlusion,
-                                  std::vector<float>& vertices, std::vector<std::uint32_t>& indices, float voxelSize,
-                                  float alphaScale = 1.0f);
+                                  const QVector3D& normal, const std::array<float, 4>& occlusion, std::vector<float>& vertices,
+                                  std::vector<std::uint32_t>& indices, float voxelSize, float alphaScale = 1.0f);
     void appendVisibleVoxelMesh(const VoxelGrid& grid, const bl::block_box& bounds, std::vector<float>& vertices,
                                 std::vector<std::uint32_t>& indices, std::vector<float>* transparentVertices = nullptr,
                                 std::vector<std::uint32_t>* transparentIndices = nullptr,
-                                VoxelMeshOcclusionMode mode = VoxelMeshOcclusionMode::RenderView,
-                                float alphaScale = 1.0f, float voxelSize = 1.0f);
+                                VoxelMeshOcclusionMode mode = VoxelMeshOcclusionMode::RenderView, float alphaScale = 1.0f,
+                                float voxelSize = 1.0f);
     [[nodiscard]] VoxelMeshBuffers build(const VoxelGrid& grid, const bl::block_box& bounds,
-                                         VoxelMeshOcclusionMode mode = VoxelMeshOcclusionMode::RenderView,
-                                         float alphaScale = 1.0f, float voxelSize = 1.0f);
+                                         VoxelMeshOcclusionMode mode = VoxelMeshOcclusionMode::RenderView, float alphaScale = 1.0f,
+                                         float voxelSize = 1.0f);
 }  // namespace voxel_mesh
 
 #endif  // BEDROCKMAP_VOXEL_MESH_H

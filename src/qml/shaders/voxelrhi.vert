@@ -8,6 +8,7 @@ layout(location = 1) out vec3 vNormal;
 
 layout(std140, binding = 0) uniform buf {
     mat4 uMvp;
+    vec4 uTone;
 };
 
 void main() {

@@ -22,15 +22,17 @@ Control {
         anchors.fill: parent
         color: Theme.background
     }
-    FileDialog {
+    FileUrlDialog {
         id: exportDialog
         title: qsTr("Export logs")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "log"
         nameFilters: [qsTr("Log files (*.log *.txt)")]
         onAccepted: {
-            if (!Logs.save(selectedFile))
-                Notifications.error(Logs.error)
+            if (!App.logs.save(selectedUrl))
+                App.notifications.error(qsTr("Export failed"))
+            else
+                App.notifications.info(qsTr("Export successful"))
         }
     }
     AppMenu {
@@ -39,11 +41,11 @@ Control {
         AppMenuItem {
             text: qsTr("Copy")
             enabled: copyMenu.selection.length > 0
-            onTriggered: Logs.copyText(copyMenu.selection)
+            onTriggered: App.logs.copyText(copyMenu.selection)
         }
         AppMenuItem {
             text: qsTr("Copy displayed logs")
-            onTriggered: Logs.copyAll()
+            onTriggered: App.logs.copyAll()
         }
     }
 
@@ -62,50 +64,42 @@ Control {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 60
                     placeholderText: qsTr("Search logs")
-                    text: Logs.filter
+                    text: App.logs.filter
                     onTextEdited: searchDelay.restart()
                     Timer {
                         id: searchDelay
                         interval: 200
-                        onTriggered: Logs.filter = search.text
+                        onTriggered: App.logs.filter = search.text
                     }
                 }
                 AppComboBox {
                     Layout.preferredWidth: 130
                     model: [qsTr("All levels"), qsTr("Info and above"), qsTr("Warnings and above"), qsTr("Errors")]
-                    currentIndex: Logs.minimumLevel
-                    onActivated: Logs.minimumLevel = currentIndex
+                    currentIndex: App.logs.minimumLevel
+                    onActivated: App.logs.minimumLevel = currentIndex
                 }
             }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
                 AppCheckBox {
-                    id: follow
-                    text: qsTr("Auto-scroll")
-                    checked: true
-                    onToggled: if (checked)
-                                   logView.scrollToEnd()
+                    text: qsTr("Show prefix")
+                    checked: App.logs.showPrefix
+                    onToggled: App.logs.showPrefix = checked
                 }
                 Item {
                     Layout.fillWidth: true
                 }
                 AppButton {
-                    text: qsTr("Copy")
-                    enabled: Logs.count > 0
-                    onClicked: Logs.copyAll()
-                    tooltip: qsTr("Copy displayed logs")
-                }
-                AppButton {
                     text: qsTr("Export")
-                    enabled: Logs.logFile.length > 0 || Logs.storedCount > 0
+                    enabled: App.logs.logFile.length > 0 || App.logs.storedCount > 0
                     onClicked: exportDialog.open()
                     tooltip: qsTr("Export the complete log file")
                 }
                 AppButton {
                     text: qsTr("Clear")
-                    enabled: Logs.storedCount > 0
-                    onClicked: Logs.clear()
+                    enabled: App.logs.storedCount > 0
+                    onClicked: App.logs.clear()
                     tooltip: qsTr("Clear the view; keep the log file")
                 }
             }
@@ -120,13 +114,14 @@ Control {
             Layout.fillHeight: true
             Flickable {
                 id: logView
+                property bool followTail: true
                 anchors.fill: parent
                 clip: true
                 contentWidth: width
                 contentHeight: message.height + 20
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
-                onMovementStarted: follow.checked = false
+                onMovementStarted: followTail = false
                 Component.onCompleted: scrollToEnd()
 
                 function scrollToEnd() {
@@ -141,26 +136,19 @@ Control {
                     y: 10
                     width: logView.width - 24
                     height: implicitHeight
-                    text: Logs.displayHtml
+                    text: App.logs.displayHtml
                     textFormat: TextEdit.RichText
                     readOnly: true
-                    selectByMouse: true
+                    selectByMouse: !Theme.touch
                     wrapMode: TextEdit.WrapAnywhere
-                    font.family: "JetBrains Mono"
                     font.pixelSize: 11
                     color: Theme.text
                     selectedTextColor: Theme.onAccent
                     selectionColor: Theme.accent
                     TapHandler {
+                        enabled: !Theme.touch
                         acceptedButtons: Qt.RightButton
                         onTapped: {
-                            copyMenu.selection = message.selectedText
-                            copyMenu.popup()
-                        }
-                    }
-                    TapHandler {
-                        acceptedButtons: Qt.LeftButton
-                        onLongPressed: {
                             copyMenu.selection = message.selectedText
                             copyMenu.popup()
                         }
@@ -169,8 +157,8 @@ Control {
             }
             Text {
                 anchors.centerIn: parent
-                visible: Logs.count === 0
-                text: Logs.storedCount > 0 ? qsTr("No matching logs") : qsTr("No logs")
+                visible: App.logs.count === 0
+                text: App.logs.storedCount > 0 ? qsTr("No matching logs") : qsTr("No logs")
                 color: Theme.muted
                 font.pixelSize: Theme.fontBody
             }
@@ -186,20 +174,20 @@ Control {
             spacing: 4
             Label {
                 Layout.fillWidth: true
-                text: qsTr("%1 displayed / %2 retained | %3 older entries omitted").arg(Logs.count).arg(
-                          Logs.storedCount).arg(Logs.omittedCount)
+                text: qsTr("%1 displayed / %2 retained | %3 older entries omitted").arg(App.logs.count).arg(
+                          App.logs.storedCount).arg(App.logs.omittedCount)
                 color: Theme.muted
                 font.pixelSize: Theme.fontCaption
                 wrapMode: Text.WordWrap
             }
             Label {
                 Layout.fillWidth: true
-                text: Logs.logFile
+                text: App.logs.logFile
                 color: Theme.muted
                 font.pixelSize: Theme.fontCaption
                 elide: Text.ElideMiddle
                 AppToolTip {
-                    text: Logs.logFile
+                    text: App.logs.logFile
                     shown: pathHover.hovered
                 }
                 HoverHandler {
@@ -209,9 +197,13 @@ Control {
         }
     }
     Connections {
-        target: Logs
+        target: App.logs
         function onCountChanged() {
-            if (follow.checked)
+            if (logView.followTail)
+                logView.scrollToEnd()
+        }
+        function onShowPrefixChanged() {
+            if (logView.followTail)
                 logView.scrollToEnd()
         }
     }

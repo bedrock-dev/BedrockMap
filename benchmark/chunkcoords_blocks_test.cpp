@@ -1,6 +1,6 @@
 #include "loader/chunkcoordsblocks.h"
 #include "loader/chunkcoords.h"
-#include "model/mapview.h"
+#include "model/mapviewstate.h"
 #include "bedrock_level.h"
 #include "color.h"
 #include "leveldb/db.h"
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
         }
     }
     {
-        MapView view;
+        MapViewState view;
         view.setViewportSize(QSize(1000, 600));
         view.applyTerrainZoomLimits(false);
         view.setScale(0.001, QPointF(500, 300));

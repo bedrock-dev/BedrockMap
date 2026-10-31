@@ -72,7 +72,6 @@ Item {
                 anchors.centerIn: parent
                 text: modelData.text
                 color: "#ffffff"
-                font.family: "JetBrains Mono"
                 font.pointSize: 8
             }
         }

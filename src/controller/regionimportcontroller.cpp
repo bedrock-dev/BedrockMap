@@ -1,7 +1,5 @@
 #include "controller/regionimportcontroller.h"
 
-#include <QFile>
-#include <QFileInfo>
 #include <QtConcurrent>
 #include <algorithm>
 #include <cmath>
@@ -10,11 +8,13 @@
 #include <map>
 #include <vector>
 
+#include "io/documentio.h"
+
 namespace {
     // raw_chunk::move_to uses signed block coordinates and a signed block offset.
     constexpr int min_chunk = std::numeric_limits<int>::min() / 16;
     constexpr int max_chunk = (std::numeric_limits<int>::max() - 15) / 16;
-}
+}  // namespace
 
 RegionImportController::RegionImportController(QObject* parent) : QObject(parent) {
     connect(&watcher_, &QFutureWatcher<LoadResult>::finished, this, &RegionImportController::finishLoad);
@@ -24,20 +24,16 @@ RegionImportController::~RegionImportController() { waitForLoad(); }
 
 bool RegionImportController::loadFile(const QUrl& url, const QPoint& target, int dimension) {
     if (loading_ || active()) return false;
-    const QString path = url.isLocalFile() ? url.toLocalFile() : url.toString();
-    if (path.isEmpty()) return false;
-    beginLoad(QFileInfo(path).fileName(), target, dimension);
-    watcher_.setFuture(QtConcurrent::run([path] {
+    if (url.isEmpty()) return false;
+    beginLoad(io::DocumentIo::displayName(url), target, dimension);
+    watcher_.setFuture(QtConcurrent::run([url] {
         try {
-            QFile file(path);
-            if (!file.open(QIODevice::ReadOnly))
-                return LoadResult{{}, {}, RegionImportController::tr("The region file could not be opened.")};
-            const QByteArray bytes = file.readAll();
-            if (file.error() != QFileDevice::NoError)
-                return LoadResult{{}, {}, RegionImportController::tr("The region file could not be read.")};
-            return decodeRegion(bytes);
+            const auto read = io::DocumentIo::readAll(url);
+            if (!read.ok()) return LoadResult{{}, {}, RegionImportController::tr("The region file could not be read: %1").arg(read.error)};
+            return decodeRegion(read.data);
         } catch (const std::exception& error) {
-            return LoadResult{{}, {}, RegionImportController::tr("The region file could not be loaded: %1").arg(QString::fromUtf8(error.what()))};
+            return LoadResult{
+                {}, {}, RegionImportController::tr("The region file could not be loaded: %1").arg(QString::fromUtf8(error.what()))};
         } catch (...) {
             return LoadResult{{}, {}, RegionImportController::tr("The region file could not be loaded.")};
         }
@@ -73,9 +69,9 @@ RegionImportController::LoadResult RegionImportController::decodeRegion(const QB
         const int source_dimension = source->chunks().front().pos().dim;
         for (const auto& chunk : source->chunks()) {
             const auto pos = chunk.pos();
-            if (pos.dim != source_dimension || pos.x < min_chunk || pos.x > max_chunk ||
-                pos.z < min_chunk || pos.z > max_chunk)
-                return LoadResult{{}, {}, RegionImportController::tr("The region contains invalid chunk coordinates or multiple dimensions.")};
+            if (pos.dim != source_dimension || pos.x < min_chunk || pos.x > max_chunk || pos.z < min_chunk || pos.z > max_chunk)
+                return LoadResult{
+                    {}, {}, RegionImportController::tr("The region contains invalid chunk coordinates or multiple dimensions.")};
             rows[pos.z].push_back(pos.x);
         }
         QRegion region;
@@ -85,8 +81,7 @@ RegionImportController::LoadResult RegionImportController::decodeRegion(const QB
             int end = begin;
             for (size_t i = 1; i < columns.size(); ++i) {
                 const int x = columns[i];
-                if (x == end)
-                    return LoadResult{{}, {}, RegionImportController::tr("The region contains duplicate chunks.")};
+                if (x == end) return LoadResult{{}, {}, RegionImportController::tr("The region contains duplicate chunks.")};
                 if (x == end + 1) {
                     end = x;
                 } else {
@@ -148,8 +143,8 @@ bool RegionImportController::beginDrag(const QPointF& chunkPosition) {
     if (!active() || !std::isfinite(chunkPosition.x()) || !std::isfinite(chunkPosition.y())) return false;
     const QPointF local = chunkPosition - QPointF(offset());
     const QRect bounds = source_region_.boundingRect();
-    if (local.x() < bounds.left() || local.x() >= qreal(bounds.right()) + 1 ||
-        local.y() < bounds.top() || local.y() >= qreal(bounds.bottom()) + 1 ||
+    if (local.x() < bounds.left() || local.x() >= qreal(bounds.right()) + 1 || local.y() < bounds.top() ||
+        local.y() >= qreal(bounds.bottom()) + 1 ||
         !source_region_.contains(QPoint(static_cast<int>(std::floor(local.x())), static_cast<int>(std::floor(local.y())))))
         return false;
     dragging_ = true;
@@ -162,9 +157,7 @@ void RegionImportController::updateDrag(const QPointF& chunkPosition) {
     if (!dragging_ || !std::isfinite(chunkPosition.x()) || !std::isfinite(chunkPosition.y())) return;
     const QPointF delta = chunkPosition - drag_start_;
     // Clamp before converting to int, including gestures at the overview zoom floor.
-    const auto coordinate = [](qreal value) {
-        return static_cast<int>(std::round(std::clamp(value, qreal(min_chunk), qreal(max_chunk))));
-    };
+    const auto coordinate = [](qreal value) { return static_cast<int>(std::round(std::clamp(value, qreal(min_chunk), qreal(max_chunk)))); };
     setTarget({coordinate(drag_target_.x() + delta.x()), coordinate(drag_target_.y() + delta.y())});
 }
 

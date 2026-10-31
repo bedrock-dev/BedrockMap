@@ -2,12 +2,13 @@
 #define BEDROCKMAP_WORLDLISTMODEL_H
 
 #include <QAbstractListModel>
+#include <QSortFilterProxyModel>
 #include <QString>
 #include <QStringList>
 
 #include "loader/recentworldstore.h"
 #include "loader/worldscanservice.h"
-#include "model/worldmetadata.h"
+#include "loader/worldsource.h"
 
 class WorldMetadataListModel : public QAbstractListModel {
    public:
@@ -19,10 +20,9 @@ class WorldMetadataListModel : public QAbstractListModel {
         SizeRole,
         ModifiedRole,
         SourceRole,
-        PreviewRole,
         ThumbnailRole,
-        NeteaseRole,
         XorEncryptedRole,
+        AppInternalRole,
     };
 
     explicit WorldMetadataListModel(QObject* parent = nullptr);
@@ -45,34 +45,30 @@ class WorldListModel final : public WorldMetadataListModel {
     Q_OBJECT
     Q_PROPERTY(QAbstractItemModel* recentWorlds READ recentWorlds CONSTANT)
     Q_PROPERTY(QAbstractItemModel* allWorlds READ allWorlds CONSTANT)
-    Q_PROPERTY(QAbstractItemModel* releaseWorlds READ releaseWorlds CONSTANT)
-    Q_PROPERTY(QAbstractItemModel* previewWorlds READ previewWorlds CONSTANT)
-    Q_PROPERTY(QAbstractItemModel* neteaseWorlds READ neteaseWorlds CONSTANT)
+    Q_PROPERTY(QStringList sourceOptions READ sourceOptions NOTIFY sourceOptionsChanged)
+    Q_PROPERTY(QString sourceFilter READ sourceFilter WRITE setSourceFilter NOTIFY sourceFilterChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
-    Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
 
    public:
-    explicit WorldListModel(QObject* parent = nullptr);
+    explicit WorldListModel(QObject* parent);
 
     [[nodiscard]] QAbstractItemModel* recentWorlds() { return &recent_model_; }
-    [[nodiscard]] QAbstractItemModel* allWorlds() { return this; }
-    [[nodiscard]] QAbstractItemModel* releaseWorlds() { return &release_model_; }
-    [[nodiscard]] QAbstractItemModel* previewWorlds() { return &preview_model_; }
-    [[nodiscard]] QAbstractItemModel* neteaseWorlds() { return &netease_model_; }
+    [[nodiscard]] QAbstractItemModel* allWorlds() { return &filtered_model_; }
+    [[nodiscard]] QStringList sourceOptions() const { return source_options_; }
+    [[nodiscard]] QString sourceFilter() const { return source_filter_; }
+    void setSourceFilter(const QString& source);
     [[nodiscard]] bool loading() const { return scan_service_.isLoading(); }
-    [[nodiscard]] int progress() const { return scan_service_.progress(); }
     [[nodiscard]] QString error() const { return scan_service_.error(); }
 
     Q_INVOKABLE void refresh();
-    void reloadRecentWorlds();
     void recordRecentWorld(const QString& path);
-    [[nodiscard]] QStringList recentPaths() const;
 
    signals:
     void loadingChanged();
-    void progressChanged();
     void errorChanged();
+    void sourceOptionsChanged();
+    void sourceFilterChanged();
 
    private:
     void updateWorldLists();
@@ -80,9 +76,9 @@ class WorldListModel final : public WorldMetadataListModel {
     RecentWorldStore recent_store_;
     WorldScanService scan_service_;
     WorldMetadataListModel recent_model_;
-    WorldMetadataListModel release_model_;
-    WorldMetadataListModel preview_model_;
-    WorldMetadataListModel netease_model_;
+    QSortFilterProxyModel filtered_model_;
+    QStringList source_options_;
+    QString source_filter_;
 };
 
 #endif  // BEDROCKMAP_WORLDLISTMODEL_H

@@ -20,8 +20,8 @@ class ChunkStorage {
         LevelDatWrite,
     };
 
-    bool open(const std::string& path, const std::string& xor_key) {
-        level_.set_xor_key(xor_key);
+    bool open(const std::string& path, const std::string& xor_key, std::shared_ptr<leveldb::Env> env = {}) {
+        level_.set_xor_key(xor_key, std::move(env));
         return level_.open(path);
     }
     void close() { level_.close(); }

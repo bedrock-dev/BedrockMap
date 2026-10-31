@@ -36,8 +36,8 @@ namespace constant {
     static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     inline constexpr int GRID_WIDTH = 32;
     inline constexpr int DEFAULT_FONT_POINT_SIZE = 14;
-    inline constexpr const char* DEFAULT_FONT_FAMILY = "\u5fae\u8f6f\u96c5\u9ed1";  // Microsoft YaHei
-    inline constexpr const char* MONOSPACE_FONT_RESOURCE = ":/res/fonts/JetBrainsMono-Regular.ttf";
+    inline constexpr const char* UI_FONT_RESOURCE = ":/bedrockmap/fonts/NotoSansSC.ttf";
+    inline constexpr const char* MONOSPACE_FONT_RESOURCE = ":/bedrockmap/fonts/JetBrainsMono-Regular.ttf";
 
     // Floor zoom for the whole-world overview mode, derived from region size.
     inline constexpr double MINIMUM_ZOOM_SCALE = 4.0 / COORDS_REGION_SIZE;
@@ -48,23 +48,10 @@ namespace constant {
     enum class SunDir { NW = 0, NE = 1, SW = 2, SE = 3 };
     inline constexpr SunDir SUN_DIRECTION = SunDir::NW;
 
-    inline constexpr const char* MCBE_LEVEL_PATH =
-        "/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/minecraftWorlds";
-
     region_pos c2r(const bl::chunk_pos& ch);
     void initColorTable();
     QString VERSION_STRING();
 }  // namespace constant
-
-namespace app_paths {
-    QString configDirectory();
-    QString configFile();
-    QString recentFile();
-    QString cacheDirectory();
-    QString logDirectory();
-    QString importExportDirectory();
-    void initialize();
-}  // namespace app_paths
 
 // Runtime settings loaded from and saved to config.ini.
 namespace setting {
@@ -79,11 +66,11 @@ namespace setting {
         // Rendering
         // Qt Quick RHI backend: automatic, opengl, vulkan or d3d11.
         QString renderBackend{"automatic"};
-        bool gpuOrthographicView{false};   // Orthographic heightfield camera.
+        bool gpuOrthographicView{false};  // Orthographic heightfield camera.
 #ifdef Q_OS_ANDROID
-        float gpuAoStrength{0.0f};         // Mobile defaults to AO off.
+        float gpuAoStrength{0.0f};  // Mobile defaults to AO off.
 #else
-        float gpuAoStrength{0.15f};        // Ambient occlusion strength.
+        float gpuAoStrength{0.15f};  // Ambient occlusion strength.
 #endif
         float gpuBevelStrength{1.0f};      // Bevel depth.
         float gpuBevelWidth{1.0f};         // Bevel width multiplier.
@@ -94,21 +81,29 @@ namespace setting {
         QString gpuGrassHeightColor{"#dd2222"};
         float gpuGrassHeightRange{320.0f};
 #ifdef Q_OS_ANDROID
-        float gpuShadowStrength{0.0f};    // Mobile defaults to shadows off.
+        float gpuShadowStrength{0.0f};  // Mobile defaults to shadows off.
 #else
-        float gpuShadowStrength{0.7f};    // Composes with cpuShadowLevel.
+        float gpuShadowStrength{0.7f};  // Composes with cpuShadowLevel.
 #endif
         int gpuShadowStep{8};             // Shader step is 2.0 / this value.
         float gpuBiomeBlendBlocks{8.0f};  // Biome tint interpolation width in blocks.
         int gpuTileSnapshotCacheSizeMB{32};
+        /// Keep full-resolution map tiles further out when zooming, at the cost
+        /// of more GPU memory and tile building. See TerrainQuickItem::blocksPerTexelFor().
+        bool gpuHighDetailMap{false};
 
         // Terrain shading
         int cpuShadowLevel{128};
 
         // Map
+#ifndef NDEBUG
+        bool showMapDebugButton{true};
+#else
+        bool showMapDebugButton{false};
+#endif
         int minimumScaleLevel{2};  // Coarsest terrain zoom before the coordinate overview.
         int maximumScaleLevel{1024};
-        float panInertia{0.35f};
+        float panInertia{0.0f};
         QString gridLineColor{"#bbbbbb"};
         QString mapSelectionColor{"#50dafffb"};  // Map selection RGBA, stored as #AARRGGBB; outline alpha is always 255.
         int actorRenderStyle{0};
@@ -125,12 +120,11 @@ namespace setting {
         int threadCount{8};
         int regionCacheSize{16384};       // Populated 8x8-chunk region entries.
         int emptyRegionCacheSize{65536};  // Empty-region markers.
-        int heightMapCacheSize{500000};
 
         // Misc
         bool loadGlobalData{true};
         bool preloadAllChunkCoords{true};
-        bool chunkOverviewEnabled{true};  // Requires coordinate preload; sampled when opening a world.
+        bool chunkOverviewEnabled{true};    // Requires coordinate preload; sampled when opening a world.
         int leveldbXorMode{2};              // 0 = disabled, 1 = enabled, 2 = auto-detect.
         QString leveldbXorKey{"88329851"};  // Repeating-key XOR used by NetEase LevelDB files.
         int maxGlobalDataLoadCount{4096};
@@ -156,7 +150,8 @@ namespace setting {
         return scale;
     }
 
-    /// Registers the bundled monospace font and applies the configured UI font.
+    /// Uses the bundled UI font on mobile and the system UI font on desktop.
+    /// Registers the editor font on all platforms and applies the configured size.
     /// Safe to call more than once.
     void setupUiFont();
 

@@ -7,7 +7,11 @@ Item {
 
     Flickable {
         anchors.fill: parent
-        contentHeight: body.height + Theme.gapSection
+        contentWidth: width
+        contentHeight: body.y + body.height + Theme.gapSection
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: contentHeight > height
         clip: true
 
         Column {
@@ -20,7 +24,7 @@ Item {
             Text {
                 width: parent.width
                 text: App.openSessions.count === 1 ? qsTr("1 session open") : qsTr("%1 sessions open").arg(
-                                                                   App.openSessions.count)
+                                                         App.openSessions.count)
                 color: Theme.muted
                 font.pixelSize: Theme.fontBody
             }
@@ -33,15 +37,15 @@ Item {
                     required property string path
                     required property bool dirty
                     required property string kind
-                    readonly property bool active: App.workspaceOpen && sessionIndex
-                                                   === App.workspaceIndex
+                    readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
 
                     width: body.width
-                    height: Theme.compact ? 52 : 64
+                    height: Theme.sessionRowHeight
                     radius: Theme.radiusCard
-                    color: active ? Theme.accentSoft : ((rowMouse.pressed || rowMouse.containsMouse) ? Theme.surfaceAlt : (
-                                                                                            Theme.compact ? "transparent" :
-                                                                                                            Theme.surface))
+                    color: active ? Theme.accentSoft : ((rowMouse.pressed || rowMouse.containsMouse) ? Theme.surfaceAlt :
+                                                                                                       (Theme.compact
+                                                                                                        ? "transparent" :
+                                                                                                          Theme.surface))
                     border.width: active ? 1 : (Theme.compact ? 0 : 1)
                     border.color: active ? Theme.accent : Theme.border
 
@@ -51,23 +55,25 @@ Item {
                         spacing: Theme.gapMedium
 
                         Rectangle {
-                            width: 34
-                            height: 34
+                            width: Theme.ui(34)
+                            height: width
                             radius: Theme.radiusControl
                             color: active ? Theme.accent : Theme.accentSoft
                             anchors.verticalCenter: parent.verticalCenter
                             AppIcon {
                                 anchors.centerIn: parent
-                                width: 18
-                                height: 18
-                                name: kind === "mcstructure" ? "structure" : kind === "nbt" ? "nbt_editor" : "opened_world_list"
+                                width: Theme.iconSize
+                                height: width
+                                name: kind === "mcstructure" ? "structure" : kind === "nbt" ? "nbt_editor" :
+                                                                                              "opened_world_list"
                                 iconSize: width
                                 iconColor: active ? Theme.onAccent : Theme.accent
                             }
                         }
 
                         Column {
-                            width: parent.width - 84
+                            width: Math.max(0, parent.width - Theme.ui(34) - parent.spacing - closeButton.controlSize
+                                            - Theme.gapSmall)
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
                             Text {
@@ -91,27 +97,21 @@ Item {
                     MouseArea {
                         id: rowMouse
                         anchors.fill: parent
-                        anchors.rightMargin: 34
+                        anchors.rightMargin: closeButton.width + closeButton.anchors.rightMargin
                         hoverEnabled: true
                         onClicked: App.selectWorkspace(sessionIndex)
                     }
 
-                    AppIcon {
+                    AppIconButton {
+                        id: closeButton
                         anchors.right: parent.right
-                        anchors.rightMargin: 10
+                        anchors.rightMargin: Theme.gapSmall
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 16
-                        height: 16
-                        name: "close"
-                        iconSize: width
-                        iconColor: (closeMouse.pressed || closeMouse.containsMouse) ? Theme.danger : Theme.muted
-                        MouseArea {
-                            id: closeMouse
-                            anchors.fill: parent
-                            anchors.margins: -6
-                            hoverEnabled: true
-                            onClicked: App.closeSession(sessionIndex)
-                        }
+                        iconName: "close"
+                        label: qsTr("Close session")
+                        buttonSize: 28
+                        danger: true
+                        onClicked: App.closeSession(sessionIndex)
                     }
                 }
             }

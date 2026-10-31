@@ -17,8 +17,7 @@ Item {
     Loader {
         id: loader
         anchors.fill: parent
-        sourceComponent: page.activeSession && page.activeSession.ready
-                         ? workspaceComponent : loadingComponent
+        sourceComponent: page.activeSession && page.activeSession.ready ? workspaceComponent : loadingComponent
     }
 
     Component {

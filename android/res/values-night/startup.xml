@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="startup_background">#111419</color>
+
+    <style name="BedrockMapThemeBase" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@drawable/startup_screen</item>
+        <item name="android:statusBarColor">@color/startup_background</item>
+        <item name="android:navigationBarColor">@color/startup_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

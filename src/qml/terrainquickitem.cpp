@@ -15,7 +15,9 @@
 #include <QSet>
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <utility>
@@ -23,8 +25,7 @@
 #include "base/config.h"
 #include "controller/mapcontroller.h"
 #include "loguru/loguru.hpp"
-#include "model/mapviewoptions.h"
-#include "render/gpu_render_options.h"
+#include "render/gpurenderoptions.h"
 #include "render/terraindataprovider.h"
 #include "render/terraintiles.h"
 #include "terrainmaterial.h"
@@ -37,6 +38,26 @@ namespace {
     int floorDiv(int value, int divisor) {
         const int quotient = value / divisor;
         return (value % divisor < 0) ? quotient - 1 : quotient;
+    }
+
+    /// Smallest on-screen texel size, in item pixels, at which the tiles of a
+    /// `width` x `height` view plus the protected guard band fit in `layers`
+    /// tile-array slices. Each slice covers region_blocks texels per side.
+    double texelPixelsForLayerBudget(double width, double height, int layers) {
+        // Floor/ceil rounding plus the two-tile guard band on each side.
+        constexpr double margin = 6.0;
+        // Keep headroom for fallback levels and packed boundary groups.
+        const double budget = 0.9 * layers;
+        const double a = width / terrain_render_config::region_blocks;
+        const double b = height / terrain_render_config::region_blocks;
+        const double c = margin * margin - budget;
+        if (a <= 0.0 || b <= 0.0) return 0.0;
+        if (c >= 0.0) return std::numeric_limits<double>::max();
+        // Solve (a * u + margin) * (b * u + margin) = budget for u = 1 / texel size.
+        const double qa = a * b;
+        const double qb = margin * (a + b);
+        const double u = (-qb + std::sqrt(qb * qb - 4.0 * qa * c)) / (2.0 * qa);
+        return 1.0 / u;
     }
 
     /// Shrink a region window symmetrically until it fits the level's atlas.
@@ -61,20 +82,6 @@ namespace {
         }
     }
 
-    /// A baked region may be visually empty even when the loader reports Ready.
-    /// Its height tile then contains only void codes, so it must remain in the
-    /// empty set instead of replacing the dark placeholder with a gray tile.
-    bool heightTileHasTerrain(const QImage& image) {
-        if (image.isNull()) return false;
-        for (int y = 0; y < image.height(); ++y) {
-            const uchar* row = image.constScanLine(y);
-            for (int x = 0; x < image.width() * 4; ++x) {
-                if (row[x] != 0) return true;
-            }
-        }
-        return false;
-    }
-
 }  // namespace
 
 TerrainQuickItem::TerrainQuickItem(QQuickItem* parent) : QQuickItem(parent) {
@@ -87,18 +94,20 @@ TerrainQuickItem::TerrainQuickItem(QQuickItem* parent) : QQuickItem(parent) {
     lod_settle_timer_.setInterval(120);
     connect(&lod_settle_timer_, &QTimer::timeout, this, [this] {
         if (!provider_) return;
-        const int current = requested_level_.load(std::memory_order_acquire);
+        const int current = requested_blocks_per_texel_.load(std::memory_order_acquire);
         const int wanted = blocksPerTexelFor();
         if (wanted == current) {
-            lod_candidate_level_ = wanted;
+            candidate_blocks_per_texel_ = wanted;
             return;
         }
-        if (wanted != lod_candidate_level_) {
-            lod_candidate_level_ = wanted;
+        if (wanted != candidate_blocks_per_texel_) {
+            candidate_blocks_per_texel_ = wanted;
             lod_settle_timer_.start();
             return;
         }
         commitLodRequest(wanted);
+        // Publish the new level's window and region budget to the provider.
+        syncViewState();
     });
     metrics_timer_.setInterval(250);
     connect(&metrics_timer_, &QTimer::timeout, this, &TerrainQuickItem::refreshMetrics);
@@ -282,7 +291,7 @@ void TerrainQuickItem::setCheckerAlternateColor(const QColor& color) {
 }
 
 void TerrainQuickItem::refreshMetrics() {
-    refreshRenderSettings();
+    if (refreshRenderSettings() && isComponentComplete()) publishFrameState();
     timing_text_ = timings_->toString();
     frames_per_second_ = timings_->framesPerSecond();
     {
@@ -323,13 +332,7 @@ void TerrainQuickItem::setController(MapController* controller) {
         syncViewState();
     }
     emit controllerChanged();
-    update();
-    if (auto* currentWindow = window()) {
-        currentWindow->update();
-        QTimer::singleShot(0, this, [this] {
-            if (auto* queuedWindow = window()) queuedWindow->update();
-        });
-    }
+    requestWindowRepaint();
 }
 
 void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
@@ -343,13 +346,7 @@ void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
     // Tile hand-offs are keyed by region and dimension, which two worlds can
     // share. They must never survive a session switch or a queued tile from the
     // old world could be uploaded into the new world's atlas.
-    {
-        const QMutexLocker lock(&tiles_mutex_);
-        array_ready_tiles_.clear();
-        sampled_overview_ = {};
-        sampled_overview_chunks_ = {};
-        sampled_overview_dimension_ = -1;
-    }
+    tile_delivery_.clear();
     render_reset_generation_.fetch_add(1, std::memory_order_acq_rel);
     timings_->reset();
     if (has_data_) {
@@ -358,18 +355,13 @@ void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
     }
     provider_ = provider;
     if (provider_) provider_->setTimings(metricsEnabled() ? timings_ : std::shared_ptr<RenderTimings>{});
-    requested_level_.store(1, std::memory_order_release);
-    lod_candidate_level_ = 1;
+    requested_blocks_per_texel_.store(1, std::memory_order_release);
+    candidate_blocks_per_texel_ = 1;
     lod_settle_timer_.stop();
     if (provider_) {
         connect(provider_, &TerrainDataProvider::overviewReady, this, [this](const QImage& image, const QRect& chunks, int dimension) {
             if (!image.isNull() && dimension != camera_.dimension) return;
-            {
-                const QMutexLocker lock(&tiles_mutex_);
-                sampled_overview_ = image;
-                sampled_overview_chunks_ = chunks;
-                sampled_overview_dimension_ = dimension;
-            }
+            tile_delivery_.setOverview(image, chunks, dimension);
             if (!image.isNull() && !has_data_) {
                 has_data_ = true;
                 emit hasDataChanged();
@@ -377,23 +369,19 @@ void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
             update();
         });
         connect(provider_, &TerrainDataProvider::tileReady, this,
-                [this](int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color, const QImage& height,
-                       const QImage& material, const QImage& preparedColor, const QImage& preparedHeight, const QImage& preparedMaterial,
-                       const QImage& overviewColor) {
+                [this](int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color, const QImage& surface,
+                       bool hasTerrain) {
                     // This runs on the GUI thread, where the provider drives the
                     // shared scheduler. Only the finished tiles cross over to the
-                    // scene-graph render thread, which just uploads them.
-                    const bool hasTerrain = heightTileHasTerrain(height);
+                    // scene-graph render thread, which just uploads them. A baked
+                    // region whose surface is all void stays in the empty set.
                     if (hasTerrain && !has_data_) {
                         has_data_ = true;
                         emit hasDataChanged();
                     }
-                    const bool overview_mode = !detailedTileMode();
-                    const bool wanted_tile = overview_mode ? blocks_per_texel == terrain_render_config::overview_blocks_per_texel
-                                                           : blocks_per_texel == provider_->blocksPerTexel();
-                    if (wanted_tile)
-                        queueArrayRegionPiece(regionX, regionZ, dimension, blocks_per_texel, layer, color, height, material, preparedColor,
-                                              preparedHeight, preparedMaterial, overviewColor, !hasTerrain, !overview_mode);
+                    // Overview mode draws the aggregated overview image, not tiles.
+                    if (detailedTileMode() && blocks_per_texel == provider_->blocksPerTexel())
+                        queueArrayRegionPiece(regionX, regionZ, dimension, blocks_per_texel, layer, color, surface, !hasTerrain);
                     // QQuickItem::update() already coalesces to one scene-graph
                     // frame. A whole-window update plus a zero-delay timer per
                     // tile turns a region refill into an event storm.
@@ -407,20 +395,13 @@ void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
         });
         connect(provider_, &TerrainDataProvider::regionEmpty, this,
                 [this](int regionX, int regionZ, int dimension, int blocksPerTexel, int layer) {
-                    queueArrayRegionPiece(regionX, regionZ, dimension, blocksPerTexel, layer, QImage(), QImage(), QImage(), QImage(),
-                                          QImage(), QImage(), QImage(), true, true);
+                    queueArrayRegionPiece(regionX, regionZ, dimension, blocksPerTexel, layer, QImage(), QImage(), true);
                     update();
                 });
         syncViewState();
     }
     emit providerChanged();
-    update();
-    if (auto* currentWindow = window()) {
-        currentWindow->update();
-        QTimer::singleShot(0, this, [this] {
-            if (auto* queuedWindow = window()) queuedWindow->update();
-        });
-    }
+    requestWindowRepaint();
 }
 
 void TerrainQuickItem::syncViewState() {
@@ -430,15 +411,18 @@ void TerrainQuickItem::syncViewState() {
     const MapCameraState camera = controller_->cameraState();
     if (camera_ != camera) camera_ = camera;
     if (!provider_) return;
-    provider_->setOverviewMode(!detailedTileMode(), requested_level_.load(std::memory_order_acquire));
+    // Settle the level first so the provider sees the final mode, level and
+    // window in one pass.
     scheduleLodRequest();
+    provider_->setOverviewMode(!detailedTileMode(), requested_blocks_per_texel_.load(std::memory_order_acquire));
     // Cover the viewport plus the shading margin, rather than a fixed tile radius:
     // the window has to follow the view, or a zoomed-out map stays mostly
     // placeholder. The level of detail picked for the frame keeps the visible
     // span inside the atlas; the budget keeps the resident set bounded.
     const qreal px_per_block = std::max<qreal>(0.0001, camera_.pixelsPerChunk / 16.0);
-    const int requestLevel = requested_level_.load(std::memory_order_acquire);
-    const double margin = std::max<double>(shadowReachBlocks(), std::max(requestLevel, 16));
+    const int requestBlocksPerTexel = requested_blocks_per_texel_.load(std::memory_order_acquire);
+    const double margin =
+        std::max<double>(render_settings_ ? shadowReachBlocks(render_settings_->gpu) : 0, std::max(requestBlocksPerTexel, 16));
     const int half_x = static_cast<int>(std::ceil(width() / (2.0 * px_per_block) + margin));
     const int half_z = static_cast<int>(std::ceil(height() / (2.0 * px_per_block) + margin));
     const int center_block_x = static_cast<int>(std::floor(camera_.center.x() * 16.0));
@@ -453,19 +437,12 @@ void TerrainQuickItem::syncViewState() {
     // the window may span proportionally more regions before it is clipped. At
     // one texel per block this is exactly max_requested_regions.
     if (detailedTileMode())
-        clampToRegionBudget(region_x0, region_x1, region_z0, region_z1,
-                            static_cast<qint64>(terrain_render_config::max_requested_regions) * requestLevel * requestLevel);
+        clampToRegionBudget(
+            region_x0, region_x1, region_z0, region_z1,
+            static_cast<qint64>(terrain_render_config::max_requested_regions) * requestBlocksPerTexel * requestBlocksPerTexel);
     if (region_x1 < region_x0 || region_z1 < region_z0) return;
     const QRect regionWindow(region_x0, region_z0, region_x1 - region_x0 + 1, region_z1 - region_z0 + 1);
-    const TerrainViewportRequest request{regionWindow, camera_.dimension, camera_.layer};
-    // The layer can change without the window moving, so publish it on both paths.
-    if (request_ == request) {
-        publishViewport();
-        publishFrameState();
-        return;
-    }
-    request_ = request;
-
+    request_ = TerrainViewportRequest{regionWindow, camera_.dimension, camera_.layer};
     // Publish the window to the provider: that call is also what makes the
     // shared scheduler bake, prune and prioritise for this viewport.
     publishViewport();
@@ -488,18 +465,27 @@ void TerrainQuickItem::publishFrameState() {
     auto next = std::make_shared<TerrainFrameState>();
     next->camera = camera_;
     next->request = request_;
-    next->requestedLevel = requested_level_.load(std::memory_order_acquire);
+    next->settings = render_settings_;
+    next->requestedBlocksPerTexel = requested_blocks_per_texel_.load(std::memory_order_acquire);
     next->overviewOnly = !detailedTileMode();
     next->transparentVoid = controller_ && controller_->transparentVoid();
-    next->revision = ++frame_state_revision_;
-    const QMutexLocker lock(&frame_state_mutex_);
-    frame_state_ = std::move(next);
+    frame_state_channel_.publish(std::move(next));
 }
 
 int TerrainQuickItem::blocksPerTexelFor() const {
     const qreal pxPerBlock = std::max<qreal>(0.0001, camera_.pixelsPerChunk / 16.0);
+    double minimumTexelPixels = terrain_render_config::balanced_texel_pixels;
+    if (render_settings_ && render_settings_->highDetailMap) {
+        // Finer tiers are limited by the slices the render thread actually
+        // created, so a large viewport degrades to a coarser level instead of
+        // exhausting the tile array.
+        int layers = render_settings_->tileLayers;
+        if (const int created = created_tile_layers_.load(std::memory_order_acquire); created > 0) layers = std::min(layers, created);
+        minimumTexelPixels = std::clamp(texelPixelsForLayerBudget(width(), height(), layers),
+                                        terrain_render_config::high_detail_texel_pixels, terrain_render_config::balanced_texel_pixels);
+    }
     int level = 1;
-    while (level < terrain_render_config::max_blocks_per_texel && level * pxPerBlock < 1.0) level *= 2;
+    while (level < terrain_render_config::max_blocks_per_texel && level * pxPerBlock < minimumTexelPixels) level *= 2;
     return level;
 }
 
@@ -509,10 +495,10 @@ bool TerrainQuickItem::detailedTileMode() const {
 
 void TerrainQuickItem::scheduleLodRequest() {
     if (!provider_) return;
-    const int current = requested_level_.load(std::memory_order_acquire);
+    const int current = requested_blocks_per_texel_.load(std::memory_order_acquire);
     const int wanted = blocksPerTexelFor();
     if (wanted == current) {
-        lod_candidate_level_ = wanted;
+        candidate_blocks_per_texel_ = wanted;
         lod_settle_timer_.stop();
         return;
     }
@@ -521,59 +507,69 @@ void TerrainQuickItem::scheduleLodRequest() {
     // Finer levels still wait for a stable target before rebuilding.
     if (wanted > current) {
         lod_settle_timer_.stop();
-        lod_candidate_level_ = wanted;
+        candidate_blocks_per_texel_ = wanted;
         commitLodRequest(wanted);
         return;
     }
-    if (wanted != lod_candidate_level_ || !lod_settle_timer_.isActive()) {
-        lod_candidate_level_ = wanted;
+    if (wanted != candidate_blocks_per_texel_ || !lod_settle_timer_.isActive()) {
+        candidate_blocks_per_texel_ = wanted;
         lod_settle_timer_.start();
     }
 }
 
 void TerrainQuickItem::commitLodRequest(int level) {
-    if (!provider_) return;
-    requested_level_.store(level, std::memory_order_release);
-    // Publish the new level's region budget before the provider resets its scan.
-    syncViewState();
-    provider_->setBlocksPerTexel(level);
+    // syncViewState() hands the level to the provider through setOverviewMode(),
+    // which resets delivery once for the new level.
+    requested_blocks_per_texel_.store(level, std::memory_order_release);
     update();
 }
 
-int TerrainQuickItem::shadowReachBlocks() const {
-    // Shadow reach in blocks for the current shader settings.
-    const auto settings = renderSettings();
-    return settings && settings->gpu.shadow_enabled && settings->gpu.shadow_strength > 0.0f ? settings->gpu.shadow_steps : 0;
+int TerrainQuickItem::shadowReachBlocks(const GpuRenderOptions& gpu) {
+    return gpu.shadow_enabled && gpu.shadow_strength > 0.0f ? gpu.shadow_steps : 0;
 }
 
-void TerrainQuickItem::refreshRenderSettings() {
+bool TerrainQuickItem::refreshRenderSettings() {
     const quint64 revision = setting::revision();
-    if (render_settings_ && render_settings_revision_ == revision) return;
+    if (render_settings_ && render_settings_revision_ == revision) return false;
     auto next = std::make_shared<TerrainRenderSettingsSnapshot>();
     next->gpu = gpuRenderOptionsFromSettings();
     next->cpuShadowLevel = setting::current().cpuShadowLevel;
-    {
-        const QMutexLocker lock(&render_settings_mutex_);
-        render_settings_ = std::move(next);
-        render_settings_revision_ = revision;
+    next->highDetailMap = setting::current().gpuHighDetailMap;
+    next->tileLayers =
+        next->highDetailMap ? terrain_render_config::high_detail_tile_array_layers : terrain_render_config::tile_array_layers;
+    // A different slice count makes the render thread recreate the tile
+    // arrays, which drops every resident tile, so the provider must resend.
+    const bool layersChanged = render_settings_ && render_settings_->tileLayers != next->tileLayers;
+    render_settings_ = std::move(next);
+    render_settings_revision_ = revision;
+    if (layersChanged) {
+        // Same hand-off as a provider switch: drop queued tiles and reset the
+        // render thread before the provider resends. updatePaintNode() runs
+        // while this thread is blocked, so it applies the reset before taking
+        // any tile delivered after this point.
+        tile_delivery_.clear();
+        render_reset_generation_.fetch_add(1, std::memory_order_acq_rel);
+        if (provider_) provider_->redeliver();
     }
     update();
+    return true;
 }
 
-std::shared_ptr<const TerrainRenderSettingsSnapshot> TerrainQuickItem::renderSettings() const {
-    const QMutexLocker lock(&render_settings_mutex_);
-    return render_settings_;
+void TerrainQuickItem::requestWindowRepaint() {
+    update();
+    if (auto* currentWindow = window()) {
+        currentWindow->update();
+        // A new scene graph may not exist until the next event-loop pass, so
+        // repeat the request once the window has had a chance to create it.
+        QTimer::singleShot(0, this, [this] {
+            if (auto* queuedWindow = window()) queuedWindow->update();
+        });
+    }
 }
 
 void TerrainQuickItem::itemChange(ItemChange change, const ItemChangeData& value) {
     QQuickItem::itemChange(change, value);
-    if (change == ItemSceneChange && window()) {
-        update();
-        window()->update();
-        QTimer::singleShot(0, this, [this] {
-            if (auto* currentWindow = window()) currentWindow->update();
-        });
-    }
+    if (change == ItemSceneChange && window()) requestWindowRepaint();
 }
 
 void TerrainQuickItem::geometryChange(const QRectF& newGeometry, const QRectF& oldGeometry) {
@@ -585,17 +581,10 @@ void TerrainQuickItem::geometryChange(const QRectF& newGeometry, const QRectF& o
 }
 
 void TerrainQuickItem::queueArrayRegionPiece(int regionX, int regionZ, int dimension, int blocksPerTexel, int layer, const QImage& color,
-                                             const QImage& height, const QImage& material, const QImage& preparedColor,
-                                             const QImage& preparedHeight, const QImage& preparedMaterial, const QImage& overviewColor,
-                                             bool empty, bool makeDetail) {
+                                             const QImage& surface, bool empty) {
     const int bp = std::max(1, blocksPerTexel);
     const int regionIndexX = floorDiv(regionX, constant::RW);
     const int regionIndexZ = floorDiv(regionZ, constant::RW);
-    Q_UNUSED(preparedColor);
-    Q_UNUSED(preparedHeight);
-    Q_UNUSED(preparedMaterial);
-    Q_UNUSED(overviewColor);
-    if (!makeDetail) return;
     // Coarse snapshots occupy only 128 / bp pixels. Pack bp x bp canonical
     // regions into one layer instead of magnifying every region to 128 pixels.
     const int pixels = terrain_render_config::region_blocks / bp;
@@ -614,154 +603,103 @@ void TerrainQuickItem::queueArrayRegionPiece(int regionX, int regionZ, int dimen
     const int groupZ = floorDiv(regionIndexZ, bp);
     const TerrainWorldTileKey key{bp, groupX, groupZ, dimension, layer};
     const QPoint destination((regionIndexX - groupX * bp) * pixels, (regionIndexZ - groupZ * bp) * pixels);
-    {
-        const QMutexLocker lock(&tiles_mutex_);
-        array_ready_tiles_.append({key, piece(color), piece(height), piece(material), destination, empty});
-    }
+    tile_delivery_.pushTile({key, piece(color), piece(surface), destination, empty});
     update();
 }
 
-QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCameraState& camera, int requestedLevel, bool overviewOnly,
-                                               bool transparentVoid) {
+QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCameraState& camera, int requestedBlocksPerTexel,
+                                                bool overviewOnly, bool transparentVoid,
+                                                const std::shared_ptr<const TerrainRenderSettingsSnapshot>& render_settings) {
     constexpr int tilePixels = 128;
     constexpr int gridSide = 256;
-    constexpr int layerCount = terrain_render_config::tile_array_layers;
+    // The detail setting picks the slice count; the device may support fewer.
+    int layerCount = render_settings ? render_settings->tileLayers : terrain_render_config::tile_array_layers;
+    if (auto* currentWindow = window()) {
+        auto* rhi = static_cast<QRhi*>(currentWindow->rendererInterface()->getResource(currentWindow, QSGRendererInterface::RhiResource));
+        if (rhi) layerCount = std::min(layerCount, rhi->resourceLimit(QRhi::TextureArraySizeMax));
+    }
+    layerCount = std::max(layerCount, 1);
     auto* root = oldNode ? oldNode : new QSGNode;
     const quint64 resetGeneration = render_reset_generation_.load(std::memory_order_acquire);
-    const bool rendererReset = resetGeneration != applied_render_reset_generation_;
-    if (rendererReset) {
-        array_overview_chunks_ = {};
-        array_overview_cache_key_ = 0;
+    // A new slice count needs new tile arrays; the provider resends every tile.
+    const bool layersChanged = array_gpu_.color && layerCount != array_tile_pool_.layerCount;
+    const bool rendererReset = resetGeneration != applied_render_reset_generation_ || layersChanged;
+    if (rendererReset || !oldNode) {
         applied_render_reset_generation_ = resetGeneration;
         // A null oldNode means Qt already destroyed the previous scene graph.
         // Cached node pointers then dangle and must only be reset, never freed.
-        if (oldNode && array_node_) {
-            root->removeChildNode(array_node_);
-            delete array_node_;
-            array_node_ = nullptr;
+        if (rendererReset && oldNode && array_gpu_.node) {
+            root->removeChildNode(array_gpu_.node);
+            delete array_gpu_.node;
+            array_gpu_.node = nullptr;
         }
-        array_material_ = nullptr;
-        array_color_texture_ = nullptr;
-        array_height_texture_ = nullptr;
-        array_material_texture_ = nullptr;
-        array_page_table_texture_ = nullptr;
-        array_overview_texture_ = nullptr;
-        array_tile_layers_.clear();
-        array_layer_last_used_.clear();
-        array_retiring_layers_.clear();
-        array_uploaded_tiles_.clear();
-        array_terrain_tiles_.clear();
-        array_free_layers_.clear();
-        array_active_dimension_ = -1;
-        array_active_layer_ = -1;
-        array_page_table_signature_ = 0;
-        array_page_table_layer_signatures_.fill(0);
-        array_has_last_uniforms_ = false;
-        array_geometry_size_ = QSizeF();
-    }
-    if (!oldNode) {
-        array_overview_chunks_ = {};
-        array_overview_cache_key_ = 0;
-        array_node_ = nullptr;
-        array_material_ = nullptr;
-        array_color_texture_ = nullptr;
-        array_page_table_texture_ = nullptr;
-        array_overview_texture_ = nullptr;
-        array_geometry_size_ = QSizeF();
-        array_has_last_uniforms_ = false;
-        array_page_table_signature_ = 0;
-        array_page_table_layer_signatures_.fill(0);
-        array_tile_layers_.clear();
-        array_layer_last_used_.clear();
-        array_retiring_layers_.clear();
-        array_uploaded_tiles_.clear();
-        array_terrain_tiles_.clear();
-        array_free_layers_.clear();
-        for (int i = 0; i < layerCount; ++i) array_free_layers_.push_back(i);
-        array_has_last_uniforms_ = false;
+        array_gpu_.resetPointers();
+        array_tile_pool_.resetForRendererLoss(layerCount);
     }
     if (camera.pixelsPerChunk <= 0 || width() <= 0 || height() <= 0) return root;
 
-    const int nextLevel = std::max(1, requestedLevel);
-    if (camera.dimension != array_active_dimension_ || camera.layer != array_active_layer_) {
-        array_overview_chunks_ = {};
-        array_overview_cache_key_ = 0;
-        array_tile_layers_.clear();
-        array_layer_last_used_.clear();
-        array_retiring_layers_.clear();
-        array_uploaded_tiles_.clear();
-        array_terrain_tiles_.clear();
-        array_free_layers_.clear();
-        for (int i = 0; i < layerCount; ++i) array_free_layers_.push_back(i);
-        array_active_dimension_ = camera.dimension;
-        array_active_layer_ = camera.layer;
+    const int nextBlocksPerTexel = std::max(1, requestedBlocksPerTexel);
+    if (camera.dimension != array_tile_pool_.activeDimension || camera.layer != array_tile_pool_.activeLayer) {
+        array_tile_pool_.resetForViewChange(camera.dimension, camera.layer, layerCount);
     }
-    array_active_lod_ = nextLevel;
+    array_tile_pool_.activeLod = nextBlocksPerTexel;
 
-    if (!array_color_texture_) {
-        if (array_free_layers_.isEmpty()) {
-            for (int i = 0; i < layerCount; ++i) array_free_layers_.push_back(i);
+    if (!array_gpu_.color) {
+        if (array_tile_pool_.freeLayers.isEmpty()) {
+            for (int i = 0; i < layerCount; ++i) array_tile_pool_.freeLayers.push_back(i);
         }
-        array_color_texture_ = new TerrainAtlasTexture(QSize(tilePixels, tilePixels), layerCount);
-        array_color_texture_->setFiltering(QSGTexture::Nearest);
-        array_color_texture_->setTimings(timings_);
-        array_height_texture_ = new TerrainAtlasTexture(QSize(tilePixels, tilePixels), layerCount);
-        array_height_texture_->setFiltering(QSGTexture::Nearest);
-        array_height_texture_->setTimings(timings_);
-        array_material_texture_ = new TerrainAtlasTexture(QSize(tilePixels, tilePixels), layerCount);
-        array_material_texture_->setFiltering(QSGTexture::Nearest);
-        array_material_texture_->setTimings(timings_);
-        for (auto& image : array_page_table_images_) {
-            image = QImage(gridSide, gridSide, QImage::Format_RGBA8888);
-            image.fill(0);
-        }
-        array_page_table_texture_ = new TerrainAtlasTexture(QSize(gridSide, gridSide), static_cast<int>(array_page_table_images_.size()));
-        array_page_table_texture_->setFiltering(QSGTexture::Nearest);
-        array_page_table_texture_->setTimings(timings_);
-        QVector<TerrainAtlasUpload> initial;
-        for (int lod = 0; lod < static_cast<int>(array_page_table_images_.size()); ++lod)
-            initial.append({array_page_table_images_[lod], QPoint(0, 0), lod});
-        array_page_table_texture_->queueUploads(std::move(initial));
-        array_overview_texture_ =
+        array_tile_pool_.layerCount = layerCount;
+        created_tile_layers_.store(layerCount, std::memory_order_release);
+        array_gpu_.color = new TerrainAtlasTexture(QSize(tilePixels, tilePixels), layerCount);
+        array_gpu_.color->setFiltering(QSGTexture::Nearest);
+        array_gpu_.color->setTimings(timings_);
+        array_gpu_.surface = new TerrainAtlasTexture(QSize(tilePixels, tilePixels), layerCount);
+        array_gpu_.surface->setFiltering(QSGTexture::Nearest);
+        array_gpu_.surface->setTimings(timings_);
+        // The page-table rebuild below uploads every slice on this first frame,
+        // because the renderer reset cleared the uploaded copies.
+        for (auto& image : array_tile_pool_.pageTableImages) image = QImage(gridSide, gridSide, QImage::Format_RGBA8888);
+        array_gpu_.pageTable = new TerrainAtlasTexture(QSize(gridSide, gridSide), terrain_render_config::page_table_levels);
+        array_gpu_.pageTable->setFiltering(QSGTexture::Nearest);
+        array_gpu_.pageTable->setTimings(timings_);
+        array_gpu_.overview =
             new TerrainAtlasTexture(QSize(terrain_render_config::overview_texture_pixels, terrain_render_config::overview_texture_pixels));
-        array_overview_texture_->setFiltering(QSGTexture::Nearest);
-        array_overview_texture_->setTimings(timings_);
-        if (cpu_biome_palette_.isNull()) cpu_biome_palette_ = TerrainTiles::biomePaletteImage();
-        auto* paletteTexture = new TerrainAtlasTexture(cpu_biome_palette_);
+        array_gpu_.overview->setFiltering(QSGTexture::Nearest);
+        array_gpu_.overview->setTimings(timings_);
+        if (array_gpu_.biomePalette.isNull()) array_gpu_.biomePalette = TerrainTiles::biomePaletteImage();
+        auto* paletteTexture = new TerrainAtlasTexture(array_gpu_.biomePalette);
         paletteTexture->setFiltering(QSGTexture::Nearest);
         paletteTexture->setTimings(timings_);
-        array_material_ = new TerrainArrayMaterial(array_color_texture_, array_height_texture_, array_material_texture_,
-                                                   array_page_table_texture_, array_overview_texture_, paletteTexture);
-        array_node_ = new QSGGeometryNode;
+        array_gpu_.material =
+            new TerrainArrayMaterial(array_gpu_.color, array_gpu_.surface, array_gpu_.pageTable, array_gpu_.overview, paletteTexture);
+        array_gpu_.node = new QSGGeometryNode;
         auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4);
         geometry->setDrawingMode(QSGGeometry::DrawTriangleStrip);
         geometry->setVertexDataPattern(QSGGeometry::StaticPattern);
-        array_node_->setGeometry(geometry);
-        array_node_->setFlag(QSGNode::OwnsGeometry, true);
-        array_node_->setMaterial(array_material_);
-        array_node_->setFlag(QSGNode::OwnsMaterial, true);
-        root->appendChildNode(array_node_);
+        array_gpu_.node->setGeometry(geometry);
+        array_gpu_.node->setFlag(QSGNode::OwnsGeometry, true);
+        array_gpu_.node->setMaterial(array_gpu_.material);
+        array_gpu_.node->setFlag(QSGNode::OwnsMaterial, true);
+        root->appendChildNode(array_gpu_.node);
     }
 
-    ++array_frame_counter_;
-    for (auto it = array_retiring_layers_.begin(); it != array_retiring_layers_.end();) {
-        if (array_frame_counter_ >= it.value() + 2) {
-            array_free_layers_.push_back(it.key());
-            it = array_retiring_layers_.erase(it);
+    ++array_tile_pool_.frameCounter;
+    for (auto it = array_tile_pool_.retiringLayers.begin(); it != array_tile_pool_.retiringLayers.end();) {
+        if (array_tile_pool_.frameCounter >= it.value() + 2) {
+            array_tile_pool_.freeLayers.push_back(it.key());
+            it = array_tile_pool_.retiringLayers.erase(it);
         } else {
             ++it;
         }
     }
 
-    {
-        const QMutexLocker lock(&tiles_mutex_);
-        if (sampled_overview_.isNull()) array_overview_chunks_ = {};
-        if (sampled_overview_dimension_ == camera.dimension && !sampled_overview_.isNull() &&
-            sampled_overview_.cacheKey() != array_overview_cache_key_) {
-            array_overview_texture_->queueUploads({TerrainAtlasUpload{sampled_overview_, QPoint(0, 0), 0}});
-            array_overview_chunks_ = sampled_overview_chunks_;
-            array_overview_cache_key_ = sampled_overview_.cacheKey();
-        }
+    const auto overview = tile_delivery_.overviewSnapshot();
+    if (overview.image.isNull()) array_tile_pool_.overviewChunks = {};
+    if (overview.dimension == camera.dimension && !overview.image.isNull() &&
+        overview.image.cacheKey() != array_tile_pool_.overviewCacheKey) {
+        array_gpu_.overview->queueUploads({TerrainAtlasUpload{overview.image, QPoint(0, 0), 0}});
+        array_tile_pool_.overviewChunks = overview.chunks;
+        array_tile_pool_.overviewCacheKey = overview.image.cacheKey();
     }
     const qreal pxPerBlock = std::max<qreal>(0.0001, camera.pixelsPerChunk / 16.0);
     const qreal spanX = width() / pxPerBlock;
@@ -781,11 +719,7 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
                key.z <= floorDiv(visibleZ1, key.lod);
     };
 
-    QVector<TerrainWorldTileReady> readyTiles;
-    {
-        const QMutexLocker lock(&tiles_mutex_);
-        readyTiles.swap(array_ready_tiles_);
-    }
+    QVector<TerrainWorldTileReady> readyTiles = tile_delivery_.takeTiles();
     // Cache hits can arrive before the render thread resets its atlas for a
     // layer or provider change. Keep those deliveries; the provider has already
     // marked them as delivered and will not resend them until the view changes.
@@ -801,147 +735,159 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
         readyTiles.resize(detailUploadBudget);
     }
     if (!deferredDetail.isEmpty()) {
-        const QMutexLocker lock(&tiles_mutex_);
-        QVector<TerrainWorldTileReady> combinedDetail = std::move(deferredDetail);
-        combinedDetail += array_ready_tiles_;
-        array_ready_tiles_ = std::move(combinedDetail);
+        tile_delivery_.restoreTiles(std::move(deferredDetail));
         update();
     }
     QVector<TerrainAtlasUpload> tileUploads;
-    QVector<TerrainAtlasUpload> heightUploads;
-    QVector<TerrainAtlasUpload> materialUploads;
+    QVector<TerrainAtlasUpload> surfaceUploads;
     QVector<TerrainWorldTileReady> layerDeferred;
+    bool layersExhausted = false;
     const auto takeLayer = [&]() -> int {
-        if (!array_free_layers_.isEmpty()) return array_free_layers_.takeLast();
-        auto victim = array_tile_layers_.end();
+        if (!array_tile_pool_.freeLayers.isEmpty()) return array_tile_pool_.freeLayers.takeLast();
+        auto victim = array_tile_pool_.tileLayers.end();
         quint64 oldest = std::numeric_limits<quint64>::max();
-        for (auto it = array_tile_layers_.begin(); it != array_tile_layers_.end(); ++it) {
-            if (it.key().dimension != array_active_dimension_ || it.key().layer != array_active_layer_ ||
-                (isProtected(it.key()) && it.key().lod == nextLevel) || array_retiring_layers_.contains(it.value()))
+        for (auto it = array_tile_pool_.tileLayers.begin(); it != array_tile_pool_.tileLayers.end(); ++it) {
+            // Residency is reset on every dimension or layer change, so every
+            // key belongs to the active view.
+            if (it.value() < 0 || (isProtected(it.key()) && it.key().lod == nextBlocksPerTexel) ||
+                array_tile_pool_.retiringLayers.contains(it.value()))
                 continue;
-            const quint64 lastUsed = array_layer_last_used_.value(it.value(), 0);
+            const quint64 lastUsed = array_tile_pool_.layerLastUsed.value(it.value(), 0);
             if (lastUsed < oldest) {
                 oldest = lastUsed;
                 victim = it;
             }
         }
-        if (victim == array_tile_layers_.end()) return -1;
+        if (victim == array_tile_pool_.tileLayers.end()) {
+            layersExhausted = true;
+            return -1;
+        }
         const int retiredLayer = victim.value();
-        array_uploaded_tiles_.remove(victim.key());
-        array_terrain_tiles_.remove(victim.key());
-        array_tile_layers_.erase(victim);
-        if (retiredLayer < 0) return -1;
-        array_layer_last_used_.remove(retiredLayer);
-        array_retiring_layers_.insert(retiredLayer, array_frame_counter_);
+        array_tile_pool_.pageTableDirty = true;
+        array_tile_pool_.uploadedTiles.remove(victim.key());
+        array_tile_pool_.terrainTiles.remove(victim.key());
+        array_tile_pool_.tileLayers.erase(victim);
+        array_tile_pool_.layerLastUsed.remove(retiredLayer);
+        array_tile_pool_.retiringLayers.insert(retiredLayer, array_tile_pool_.frameCounter);
         return -1;
     };
     for (auto& tile : readyTiles) {
-        if (tile.key.dimension != array_active_dimension_ || tile.key.layer != array_active_layer_) continue;
-        if (tile.empty && tile.key.lod > 1 && !array_tile_layers_.contains(tile.key)) continue;
+        if (tile.empty && tile.key.lod > 1 && !array_tile_pool_.tileLayers.contains(tile.key)) continue;
         if (tile.empty && tile.key.lod == 1) {
-            auto existing = array_tile_layers_.find(tile.key);
-            if (existing != array_tile_layers_.end() && existing.value() >= 0) {
-                array_retiring_layers_.insert(existing.value(), array_frame_counter_);
-                array_layer_last_used_.remove(existing.value());
+            array_tile_pool_.pageTableDirty = true;
+            auto existing = array_tile_pool_.tileLayers.find(tile.key);
+            if (existing != array_tile_pool_.tileLayers.end() && existing.value() >= 0) {
+                array_tile_pool_.retiringLayers.insert(existing.value(), array_tile_pool_.frameCounter);
+                array_tile_pool_.layerLastUsed.remove(existing.value());
             }
-            array_tile_layers_[tile.key] = -1;
-            array_uploaded_tiles_.insert(tile.key);
-            array_terrain_tiles_.remove(tile.key);
+            array_tile_pool_.tileLayers[tile.key] = -1;
+            array_tile_pool_.uploadedTiles.insert(tile.key);
+            array_tile_pool_.terrainTiles.remove(tile.key);
             continue;
         }
-        auto assigned = array_tile_layers_.constFind(tile.key);
-        if (assigned != array_tile_layers_.cend() && assigned.value() < 0) {
-            array_tile_layers_.erase(array_tile_layers_.find(tile.key));
-            assigned = array_tile_layers_.cend();
+        auto assigned = array_tile_pool_.tileLayers.constFind(tile.key);
+        if (assigned != array_tile_pool_.tileLayers.cend() && assigned.value() < 0) {
+            array_tile_pool_.tileLayers.erase(array_tile_pool_.tileLayers.find(tile.key));
+            assigned = array_tile_pool_.tileLayers.cend();
         }
         bool first = false;
-        if (assigned == array_tile_layers_.cend()) {
+        if (assigned == array_tile_pool_.tileLayers.cend()) {
             const int layer = takeLayer();
             if (layer < 0) {
                 layerDeferred.append(std::move(tile));
                 continue;
             }
-            array_tile_layers_.insert(tile.key, layer);
-            assigned = array_tile_layers_.constFind(tile.key);
+            array_tile_pool_.tileLayers.insert(tile.key, layer);
+            assigned = array_tile_pool_.tileLayers.constFind(tile.key);
             first = true;
         }
-        array_layer_last_used_[assigned.value()] = array_frame_counter_;
-        if (first) {
-            QImage clear(tilePixels, tilePixels, QImage::Format_RGBA8888);
-            clear.fill(0);
-            tileUploads.append({clear, QPoint(0, 0), assigned.value()});
-            heightUploads.append({clear, QPoint(0, 0), assigned.value()});
-            materialUploads.append({clear, QPoint(0, 0), assigned.value()});
+        array_tile_pool_.layerLastUsed[assigned.value()] = array_tile_pool_.frameCounter;
+        // A packed coarse layer must be cleared so unfilled sub-regions do not
+        // show the previous owner; a full-layer piece overwrites it anyway.
+        if (first && tile.color.size() != QSize(tilePixels, tilePixels)) {
+            if (array_tile_pool_.clearLayerImage.isNull()) {
+                array_tile_pool_.clearLayerImage = QImage(tilePixels, tilePixels, QImage::Format_RGBA8888);
+                array_tile_pool_.clearLayerImage.fill(0);
+            }
+            tileUploads.append({array_tile_pool_.clearLayerImage, QPoint(0, 0), assigned.value()});
+            surfaceUploads.append({array_tile_pool_.clearLayerImage, QPoint(0, 0), assigned.value()});
         }
-        if (!tile.empty) array_terrain_tiles_.insert(tile.key);
+        array_tile_pool_.pageTableDirty = true;
+        if (!tile.empty) array_tile_pool_.terrainTiles.insert(tile.key);
         tileUploads.append({std::move(tile.color), tile.destination, assigned.value()});
-        heightUploads.append({std::move(tile.height), tile.destination, assigned.value()});
-        materialUploads.append({std::move(tile.material), tile.destination, assigned.value()});
-        array_uploaded_tiles_.insert(tile.key);
+        surfaceUploads.append({std::move(tile.surface), tile.destination, assigned.value()});
+        array_tile_pool_.uploadedTiles.insert(tile.key);
     }
     if (!layerDeferred.isEmpty()) {
-        const QMutexLocker lock(&tiles_mutex_);
-        QVector<TerrainWorldTileReady> combined = std::move(layerDeferred);
-        combined += array_ready_tiles_;
-        array_ready_tiles_ = std::move(combined);
-        update();
+        tile_delivery_.restoreTiles(std::move(layerDeferred));
+        // With every layer pinned by the visible window, retrying each frame
+        // cannot free one; wait for a camera or retirement change instead.
+        if (!layersExhausted || !array_tile_pool_.retiringLayers.isEmpty()) {
+            update();
+        } else if (!array_tile_pool_.layersExhaustedLogged) {
+            LOG_F(WARNING, "Terrain tile array exhausted: %d layers are all visible at %d blocks per texel", layerCount,
+                  nextBlocksPerTexel);
+            array_tile_pool_.layersExhaustedLogged = true;
+        }
+    } else {
+        array_tile_pool_.layersExhaustedLogged = false;
     }
     const int uploadedTileCount = static_cast<int>(tileUploads.size());
-    if (!tileUploads.isEmpty()) array_color_texture_->queueUploads(std::move(tileUploads));
-    if (!heightUploads.isEmpty()) array_height_texture_->queueUploads(std::move(heightUploads));
-    if (!materialUploads.isEmpty()) array_material_texture_->queueUploads(std::move(materialUploads));
+    if (!tileUploads.isEmpty()) array_gpu_.color->queueUploads(std::move(tileUploads));
+    if (!surfaceUploads.isEmpty()) array_gpu_.surface->queueUploads(std::move(surfaceUploads));
 
-    for (auto& image : array_page_table_images_) image.fill(0);
-    quint64 signature = 1469598103934665603ull;
-    std::array<quint64, 8> layerSignatures{};
-    layerSignatures.fill(1469598103934665603ull);
-    for (auto it = array_tile_layers_.cbegin(); it != array_tile_layers_.cend(); ++it) {
-        if (it.key().dimension != array_active_dimension_ || it.key().layer != array_active_layer_ ||
-            !array_uploaded_tiles_.contains(it.key()) || !isProtected(it.key()))
-            continue;
-        int lodIndex = 0;
-        for (int level = it.key().lod; level > 1; level >>= 1) ++lodIndex;
-        const int x = ((it.key().x % gridSide) + gridSide) % gridSide;
-        const int z = ((it.key().z % gridSide) + gridSide) % gridSide;
-        uchar* row = array_page_table_images_[lodIndex].scanLine(z);
-        row[x * 4] = static_cast<uchar>(it.value() & 0xFF);
-        row[x * 4 + 1] = static_cast<uchar>((it.value() >> 8) & 0xFF);
-        const uint32_t hashValue = [&] {
-            uint32_t h = static_cast<uint16_t>(it.key().x) * 40503u;
-            h ^= static_cast<uint16_t>(it.key().z) * 60307u;
-            h ^= h >> 8;
-            h &= 0x3FFFu;
-            return h == 0 ? 1u : h;
-        }();
-        const bool hasTerrain = array_terrain_tiles_.contains(it.key());
-        row[x * 4 + 2] = static_cast<uchar>(0x80u | (hasTerrain ? 0u : 0x40u) | ((hashValue >> 8) & 0x3Fu));
-        row[x * 4 + 3] = static_cast<uchar>(hashValue & 0xFFu);
-        array_layer_last_used_[it.value()] = array_frame_counter_;
-        const quint64 entryHash =
-            (static_cast<quint64>(it.value()) << 32) ^ static_cast<quint64>((x << 16) | (z & 0xFFFF) | (hashValue << 8));
-        layerSignatures[lodIndex] = (layerSignatures[lodIndex] ^ entryHash) * 1099511628211ull;
-        signature = (signature ^ entryHash) * 1099511628211ull;
-    }
-    if (signature != array_page_table_signature_ || layerSignatures != array_page_table_layer_signatures_) {
-        QVector<TerrainAtlasUpload> uploads;
-        for (int lod = 0; lod < 8; ++lod) {
-            if (layerSignatures[lod] == array_page_table_layer_signatures_[lod]) continue;
-            uploads.append({array_page_table_images_[lod], QPoint(0, 0), lod});
+    // The page table depends only on residency and the visible window, so it is
+    // rebuilt when either changes rather than on every frame.
+    const QRect visibleWindow(QPoint(visibleX0, visibleZ0), QPoint(visibleX1, visibleZ1));
+    if (array_tile_pool_.pageTableDirty || visibleWindow != array_tile_pool_.pageTableWindow) {
+        array_tile_pool_.pageTableDirty = false;
+        array_tile_pool_.pageTableWindow = visibleWindow;
+        for (auto& image : array_tile_pool_.pageTableImages) image.fill(0);
+        // Residency is reset on every dimension or layer change, so every key
+        // belongs to the active view.
+        for (auto it = array_tile_pool_.tileLayers.cbegin(); it != array_tile_pool_.tileLayers.cend(); ++it) {
+            if (!array_tile_pool_.uploadedTiles.contains(it.key()) || !isProtected(it.key())) continue;
+            const int lodIndex = std::countr_zero(static_cast<unsigned>(it.key().lod));
+            const int x = ((it.key().x % gridSide) + gridSide) % gridSide;
+            const int z = ((it.key().z % gridSide) + gridSide) % gridSide;
+            uchar* row = array_tile_pool_.pageTableImages[lodIndex].scanLine(z);
+            row[x * 4] = static_cast<uchar>(it.value() & 0xFF);
+            row[x * 4 + 1] = static_cast<uchar>((it.value() >> 8) & 0xFF);
+            const uint32_t hashValue = [&] {
+                uint32_t h = static_cast<uint16_t>(it.key().x) * 40503u;
+                h ^= static_cast<uint16_t>(it.key().z) * 60307u;
+                h ^= h >> 8;
+                h &= 0x3FFFu;
+                return h == 0 ? 1u : h;
+            }();
+            const bool hasTerrain = array_tile_pool_.terrainTiles.contains(it.key());
+            row[x * 4 + 2] = static_cast<uchar>(0x80u | (hasTerrain ? 0u : 0x40u) | ((hashValue >> 8) & 0x3Fu));
+            row[x * 4 + 3] = static_cast<uchar>(hashValue & 0xFFu);
+            // Visible entries count as used for LRU eviction.
+            array_tile_pool_.layerLastUsed[it.value()] = array_tile_pool_.frameCounter;
         }
-        if (!uploads.isEmpty()) array_page_table_texture_->queueUploads(std::move(uploads));
-        array_page_table_signature_ = signature;
-        array_page_table_layer_signatures_ = layerSignatures;
+        // Compare whole slices instead of hashing entries: the result does not
+        // depend on hash iteration order and cannot miss a change by collision.
+        QVector<TerrainAtlasUpload> uploads;
+        for (int lod = 0; lod < terrain_render_config::page_table_levels; ++lod) {
+            const QImage& image = array_tile_pool_.pageTableImages[lod];
+            QImage& uploaded = array_tile_pool_.uploadedPageTables[lod];
+            if (!uploaded.isNull() && std::memcmp(uploaded.constBits(), image.constBits(), image.sizeInBytes()) == 0) continue;
+            uploaded = image.copy();
+            uploads.append({uploaded, QPoint(0, 0), lod});
+        }
+        if (!uploads.isEmpty()) array_gpu_.pageTable->queueUploads(std::move(uploads));
     }
 
-    if (!array_geometry_size_.isValid() || array_geometry_size_ != QSizeF(width(), height())) {
-        auto* vertices = static_cast<QSGGeometry::TexturedPoint2D*>(array_node_->geometry()->vertexData());
+    if (!array_tile_pool_.geometrySize.isValid() || array_tile_pool_.geometrySize != QSizeF(width(), height())) {
+        auto* vertices = static_cast<QSGGeometry::TexturedPoint2D*>(array_gpu_.node->geometry()->vertexData());
         vertices[0].set(0.0f, 0.0f, 0.0f, 0.0f);
         vertices[1].set(static_cast<float>(width()), 0.0f, 1.0f, 0.0f);
         vertices[2].set(0.0f, static_cast<float>(height()), 0.0f, 1.0f);
         vertices[3].set(static_cast<float>(width()), static_cast<float>(height()), 1.0f, 1.0f);
-        array_node_->geometry()->markVertexDataDirty();
-        array_node_->markDirty(QSGNode::DirtyGeometry);
-        array_geometry_size_ = QSizeF(width(), height());
+        array_gpu_.node->geometry()->markVertexDataDirty();
+        array_gpu_.node->markDirty(QSGNode::DirtyGeometry);
+        array_tile_pool_.geometrySize = QSizeF(width(), height());
     }
     TerrainArrayUniformBody body;
     body.void_options[0] = transparentVoid ? 1.0f : 0.0f;
@@ -949,24 +895,21 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
     body.checker_alternate = {float(checker_alternate_color_.redF()), float(checker_alternate_color_.greenF()),
                               float(checker_alternate_color_.blueF()), 1.0f};
     body.view = {static_cast<float>(worldX), static_cast<float>(worldZ), static_cast<float>(spanX), static_cast<float>(spanZ)};
-    int lodIndex = 0;
-    for (int level = array_active_lod_; level > 1; level >>= 1) ++lodIndex;
+    const int lodIndex = std::countr_zero(static_cast<unsigned>(array_tile_pool_.activeLod));
     body.params = {static_cast<float>(tileWorld), static_cast<float>(gridSide), static_cast<float>(lodIndex),
-                   static_cast<float>(std::max(1, array_active_lod_))};
+                   static_cast<float>(std::max(1, array_tile_pool_.activeLod))};
     body.tint[3] = overviewOnly ? 1.0f : 0.0f;
-    body.overview = {float(array_overview_chunks_.x() * 16), float(array_overview_chunks_.y() * 16),
-                     float(array_overview_chunks_.width() * 16), float(array_overview_chunks_.height() * 16)};
-    if (const auto settings = renderSettings()) {
+    body.overview = {float(array_tile_pool_.overviewChunks.x() * 16), float(array_tile_pool_.overviewChunks.y() * 16),
+                     float(array_tile_pool_.overviewChunks.width() * 16), float(array_tile_pool_.overviewChunks.height() * 16)};
+    if (const auto& settings = render_settings) {
         const auto& gpu = settings->gpu;
         int sunX = -1;
         int sunZ = -1;
         gpuSunStep(sunX, sunZ);
-        const int shadowReach = gpu.shadow_enabled && gpu.shadow_strength > 0.0f ? gpu.shadow_steps : 0;
+        const int shadowReach = shadowReachBlocks(gpu);
         const qreal devicePxPerBlock = pxPerBlock * (window() ? window()->effectiveDevicePixelRatio() : 1.0);
-        const qreal texelPixels = devicePxPerBlock * std::max(1, array_active_lod_);
-        const float baseEdgeWidth = static_cast<float>(
-            std::clamp(std::max<qreal>(static_cast<qreal>(0.25), 1.0 / std::max<qreal>(texelPixels, static_cast<qreal>(0.01))),
-                       static_cast<qreal>(0.25), static_cast<qreal>(0.5)));
+        const qreal texelPixels = devicePxPerBlock * std::max(1, array_tile_pool_.activeLod);
+        const float baseEdgeWidth = static_cast<float>(std::clamp<qreal>(1.0 / std::max<qreal>(texelPixels, 0.01), 0.25, 0.5));
         body.shade = {static_cast<float>(sunX), static_cast<float>(sunZ), static_cast<float>(shadowReach), gpu.shadow_step};
         body.shadow = {static_cast<float>(1.0 - std::clamp(settings->cpuShadowLevel, 0, 255) / 255.0 * 0.75), gpu.shadow_strength,
                        std::clamp(baseEdgeWidth * gpu.bevel_width, 0.0625f, 0.75f), gpu.biome_blend_blocks};
@@ -976,32 +919,33 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
         body.grass = {gpu.grass_height_base, gpu.grass_height_range, gpu.grass_height_enabled ? 1.0f : 0.0f, gpu.biome_blend_blocks};
         body.grass_color = {gpu.grass_height_color[0], gpu.grass_height_color[1], gpu.grass_height_color[2], 0.0f};
     }
-    if (!array_has_last_uniforms_ || std::memcmp(&array_last_uniforms_, &body, sizeof(body)) != 0) {
-        array_last_uniforms_ = body;
-        array_has_last_uniforms_ = true;
-        array_material_->setUniforms(body);
-        array_node_->markDirty(QSGNode::DirtyMaterial);
+    if (!array_tile_pool_.hasLastUniforms || std::memcmp(&array_tile_pool_.lastUniforms, &body, sizeof(body)) != 0) {
+        array_tile_pool_.lastUniforms = body;
+        array_tile_pool_.hasLastUniforms = true;
+        array_gpu_.material->setUniforms(body);
+        array_gpu_.node->markDirty(QSGNode::DirtyMaterial);
     }
-    if (array_color_texture_->hasPendingUploads() || array_height_texture_->hasPendingUploads() ||
-        array_material_texture_->hasPendingUploads() || array_page_table_texture_->hasPendingUploads() ||
-        array_overview_texture_->hasPendingUploads())
+    if (array_gpu_.color->hasPendingUploads() || array_gpu_.surface->hasPendingUploads() || array_gpu_.pageTable->hasPendingUploads() ||
+        array_gpu_.overview->hasPendingUploads())
         update();
-    TerrainFrameMetrics metrics;
-    metrics.blocksPerTexel = array_active_lod_;
-    metrics.atlasSlotsPerSide = gridSide;
-    metrics.uploadedTiles = uploadedTileCount;
-    for (auto it = array_tile_layers_.cbegin(); it != array_tile_layers_.cend(); ++it) {
-        if (it.key().dimension != array_active_dimension_ || it.key().layer != array_active_layer_) continue;
-        if (array_terrain_tiles_.contains(it.key()))
-            ++metrics.terrainSlots;
-        else if (array_uploaded_tiles_.contains(it.key()))
-            ++metrics.emptySlots;
-    }
-    metrics.loadingSlots = std::max(0, static_cast<int>(array_tile_layers_.size()) - metrics.terrainSlots - metrics.emptySlots);
-    publishMetrics(metrics);
     if (metricsEnabled()) {
+        TerrainFrameMetrics metrics;
+        metrics.blocksPerTexel = array_tile_pool_.activeLod;
+        metrics.atlasSlotsPerSide = gridSide;
+        metrics.uploadedTiles = uploadedTileCount;
+        // Residency is reset on every dimension or layer change, so every key
+        // belongs to the active view.
+        for (auto it = array_tile_pool_.tileLayers.cbegin(); it != array_tile_pool_.tileLayers.cend(); ++it) {
+            if (array_tile_pool_.terrainTiles.contains(it.key()))
+                ++metrics.terrainSlots;
+            else if (array_tile_pool_.uploadedTiles.contains(it.key()))
+                ++metrics.emptySlots;
+        }
+        metrics.loadingSlots =
+            std::max(0, static_cast<int>(array_tile_pool_.tileLayers.size()) - metrics.terrainSlots - metrics.emptySlots);
+        publishMetrics(metrics);
         frame_uploaded_tiles_.fetch_add(metrics.uploadedTiles, std::memory_order_relaxed);
-        frame_upload_lod_.store(array_active_lod_, std::memory_order_relaxed);
+        frame_upload_lod_.store(array_tile_pool_.activeLod, std::memory_order_relaxed);
     }
     render_state_->publish(camera.center.x(), camera.center.y(), camera.pixelsPerChunk, camera.dimension);
     return root;
@@ -1010,15 +954,12 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
 QSGNode* TerrainQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     const RenderTimingScope timing(metricsEnabled() ? timings_.get() : nullptr, QStringLiteral("Map update"));
     auto* root = oldNode ? oldNode : new QSGNode;
-    std::shared_ptr<const TerrainFrameState> frameState;
-    {
-        const QMutexLocker lock(&frame_state_mutex_);
-        frameState = frame_state_;
-    }
+    const auto frameState = frame_state_channel_.take();
     if (!frameState) return root;
     const MapCameraState& viewCamera = frameState->camera;
-    const int viewRequestedLevel = frameState->requestedLevel;
+    const int viewRequestedBlocksPerTexel = frameState->requestedBlocksPerTexel;
     const bool overviewOnly = frameState->overviewOnly;
-    const int effectiveLevel = overviewOnly ? terrain_render_config::overview_blocks_per_texel : viewRequestedLevel;
-    return updateArrayPaintNode(oldNode, viewCamera, effectiveLevel, overviewOnly, frameState->transparentVoid);
+    const int effectiveBlocksPerTexel = overviewOnly ? terrain_render_config::overview_blocks_per_texel : viewRequestedBlocksPerTexel;
+    return updateArrayPaintNode(oldNode, viewCamera, effectiveBlocksPerTexel, overviewOnly, frameState->transparentVoid,
+                                frameState->settings);
 }

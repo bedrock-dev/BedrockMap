@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "loguru/loguru.hpp"
+
 namespace {
     /// Housekeeping cadence: fine enough that a card leaves close to its
     /// deadline, coarse enough to stay off the CPU.
@@ -74,6 +76,14 @@ void NotificationCenter::refreshRows() {
 
 void NotificationCenter::post(NotificationLevel level, const QString& text, const QString& source, const QString& detail) {
     if (text.isEmpty()) return;
+    const QByteArray textUtf8 = text.toUtf8();
+    const QByteArray sourceUtf8 = source.toUtf8();
+    const QByteArray detailUtf8 = detail.toUtf8();
+    if (level == NotificationLevel::Error)
+        LOG_F(ERROR, "Notification: text=%s | source=%s | detail=%s", textUtf8.constData(), sourceUtf8.constData(), detailUtf8.constData());
+    else if (level == NotificationLevel::Warning)
+        LOG_F(WARNING, "Notification: text=%s | source=%s | detail=%s", textUtf8.constData(), sourceUtf8.constData(),
+              detailUtf8.constData());
     if (!entries_.isEmpty()) {
         auto& newest = entries_.last();
         if (newest.level == level && newest.text == text && newest.source == source) {

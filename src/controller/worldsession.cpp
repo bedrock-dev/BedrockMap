@@ -1,36 +1,49 @@
 #include "controller/worldsession.h"
 
-#include <QDir>
 #include <QtConcurrent>
 
 #include "base/config.h"
+#include "base/platform.h"
+#include "base/worldenv.h"
+#include "controller/worldvolumesource.h"
 #include "loader/asynclevelloader.h"
 #include "loader/leveldbxor.h"
-#include "model/worldpath.h"
 #include "nbt.h"
 
-WorldSession::WorldSession(QString path, QString title, QObject* parent)
-    : WorkspaceSession(QStringLiteral("world"), world_path::normalize(path),
+WorldSession::WorldSession(QString path, QString title, ResourceManager* resources, QObject* parent)
+    : WorkspaceSession(QStringLiteral("world"), platform::normalizeLocalPath(path),
                        title.isEmpty() ? QStringLiteral("World workspace") : std::move(title), parent),
-      map_session_(this),
-      map_controller_(&map_session_, this),
+      map_view_state_(this),
+      map_controller_(&map_view_state_, this),
       chunk_editor_(this),
-      voxel_view_(this) {
-    connect(&open_watcher_, &QFutureWatcher<bool>::finished, this, &WorldSession::onOpenFinished);
+      voxel_view_(std::make_unique<WorldVolumeSource>(), this),
+      resources_(resources) {
+    connect(&open_watcher_, &QFutureWatcher<OpenResult>::finished, this, &WorldSession::onOpenFinished);
     connect(&save_watcher_, &QFutureWatcher<bool>::finished, this, &WorldSession::onSaveFinished);
     connect(&global_data_, &GlobalDataController::dirtyChanged, this, &WorldSession::refreshDirty);
     connect(&chunk_editor_, &ChunkEditorController::dirtyChanged, this, &WorldSession::refreshDirty);
     connect(this, &WorkspaceSession::savingChanged, this, &WorldSession::canSaveChanged);
-    connect(this, &WorkspaceSession::savingChanged, this,
-            [this] { map_controller_.setEditingBlocked(closing_ || saving()); });
+    connect(this, &WorkspaceSession::savingChanged, this, [this] { map_controller_.setEditingBlocked(closing_ || saving()); });
     connect(&map_controller_, &MapController::mapDataChanged, this, [this](const QRegion& region, int dimension) {
         if (terrain_data_) terrain_data_->invalidateRegions(region, dimension);
     });
+    connect(&map_controller_, &MapController::mapFilterChanged, this, [this] {
+        if (terrain_data_) terrain_data_->reload();
+    });
+    connect(&voxel_view_, &BlockVolumeController::regionsChanged, &map_controller_, &MapController::refreshRegions);
+    const auto refreshVoxelEditingState = [this] {
+        map_controller_.setEditingBlocked(closing_ || saving() || voxel_view_.deleting() || voxel_view_.importing() ||
+                                          voxel_view_.importPreviewActive() || voxel_view_.copying());
+        emit canSaveChanged();
+    };
+    connect(&voxel_view_, &VoxelSceneController::deletingChanged, this, refreshVoxelEditingState);
+    connect(&voxel_view_, &BlockVolumeController::importingChanged, this, refreshVoxelEditingState);
+    connect(&voxel_view_, &BlockVolumeController::importPreviewChanged, this, refreshVoxelEditingState);
+    connect(&voxel_view_, &BlockVolumeController::copyingChanged, this, refreshVoxelEditingState);
+    connect(&voxel_view_, &VoxelSceneController::loadingChanged, this, &WorldSession::canSaveChanged);
 }
 
-WorldSession::~WorldSession() {
-    close();
-}
+WorldSession::~WorldSession() { close(); }
 
 void WorldSession::setWorkspaceSection(int section) {
     if (section < 0 || workspace_section_ == section) return;
@@ -55,18 +68,18 @@ void WorldSession::ensureTerrainData() {
 
 void WorldSession::open() {
     if (closing_) return;
-    if (state_ == OperationState::Running || state_ == OperationState::Succeeded) return;
-    if (path().isEmpty() || !QDir(path()).exists()) {
+    if (state_ == State::Running || state_ == State::Succeeded) return;
+    if (path().isEmpty()) {
         setErrorCode(QStringLiteral("path-unavailable"));
-        setState(OperationState::Failed);
+        setState(State::Failed);
         return;
     }
     setErrorCode({});
     setProgress(0);
     setIndexProgress(0, 0);
     setIndexLoading(setting::current().preloadAllChunkCoords);
-    setState(OperationState::Running);
-    opening_loader_ = std::make_unique<AsyncLevelLoader>();
+    setState(State::Running);
+    opening_loader_ = std::make_unique<AsyncLevelLoader>(resources_);
     opening_loader_->setPreloadAllChunkCoords(setting::current().preloadAllChunkCoords);
     opening_loader_->setChunkOverviewEnabled(setting::current().chunkOverviewEnabled);
     connect(opening_loader_.get(), &AsyncLevelLoader::chunkCoordsPreloadProgress, this,
@@ -78,8 +91,15 @@ void WorldSession::open() {
     });
     auto* loader = opening_loader_.get();
     const auto native_path = path().toStdString();
-    const auto xor_key = leveldb_xor::keyForLevel(native_path);
-    open_watcher_.setFuture(QtConcurrent::run([loader, native_path, xor_key] { return loader->open(native_path, xor_key); }));
+    const auto mode = setting::current().leveldbXorMode;
+    const auto configured_key = setting::current().leveldbXorKey.toStdString();
+    open_watcher_.setFuture(QtConcurrent::run([loader, native_path, mode, configured_key] {
+        auto env = std::make_shared<platform::WorldEnv>();
+        const bool useConfiguredKey = mode != 0 && (mode == 1 || leveldb_xor::isEncrypted(QString::fromStdString(native_path)));
+        const auto key = useConfiguredKey ? configured_key : std::string{};
+        if (loader->open(native_path, key, env)) return OpenResult::Opened;
+        return env->writeAccessDenied() ? OpenResult::WriteAccessDenied : OpenResult::Failed;
+    }));
 }
 
 void WorldSession::close() {
@@ -89,7 +109,7 @@ void WorldSession::close() {
     setActive(false);
     // Unload QML pages before clearing any controller's data. Watcher results
     // queued before close must never publish into this session again.
-    if (state_ != OperationState::Idle) setState(OperationState::Cancelled);
+    if (state_ != State::Idle) setState(State::Cancelled);
     if (open_watcher_.isRunning()) open_watcher_.waitForFinished();
     if (save_watcher_.isRunning()) save_watcher_.waitForFinished();
     map_controller_.waitForOperation();
@@ -111,10 +131,11 @@ void WorldSession::close() {
 
 void WorldSession::onOpenFinished() {
     if (closing_) return;
-    if (!open_watcher_.result()) {
+    if (open_watcher_.result() != OpenResult::Opened) {
         opening_loader_.reset();
-        setErrorCode(QStringLiteral("database-open-failed"));
-        setState(OperationState::Failed);
+        setErrorCode(open_watcher_.result() == OpenResult::WriteAccessDenied ? QStringLiteral("world-write-denied")
+                                                                             : QStringLiteral("database-open-failed"));
+        setState(State::Failed);
         return;
     }
     loader_ = std::move(opening_loader_);
@@ -134,19 +155,27 @@ void WorldSession::onOpenFinished() {
         setIndexLoading(false);
     }
     setProgress(100);
-    setState(OperationState::Succeeded);
+    setState(State::Succeeded);
     emit opened();
 }
 
 bool WorldSession::commit() {
-    if (closing_ || saving() || !loader_ || !loader_->isOpen() || map_controller_.operationRunning()) return false;
+    if (closing_ || saving() || !loader_ || !loader_->isOpen() || map_controller_.operationRunning() || voxel_view_.loading() ||
+        voxel_view_.deleting() || voxel_view_.importing() || voxel_view_.importPreviewActive() || voxel_view_.copying())
+        return false;
 
     if (chunk_editor_.dirty()) {
         emit saveFailed(tr("Save chunk editor changes before saving the world."));
         refreshDirty();
         return true;
     }
-    pending_global_modifies_ = global_data_.collectLevelDbChanges();
+    QString global_error;
+    pending_global_modifies_ = global_data_.collectLevelDbChanges(&global_error);
+    if (!global_error.isEmpty()) {
+        emit saveFailed(global_error);
+        refreshDirty();
+        return true;
+    }
     pending_level_dat_ = global_data_.levelDatSnapshot();
     if (!loader_->isDirty() && pending_global_modifies_.empty() && !pending_level_dat_) {
         refreshDirty();
@@ -188,7 +217,7 @@ void WorldSession::refreshDirty() {
     setDirty(dirty);
 }
 
-void WorldSession::setState(OperationState state) {
+void WorldSession::setState(State state) {
     if (state_ == state) return;
     state_ = state;
     emit stateChanged();

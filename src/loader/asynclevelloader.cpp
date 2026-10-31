@@ -1,6 +1,5 @@
 #include "loader/asynclevelloader.h"
 
-#include <qcontainerfwd.h>
 #include <qglobal.h>
 #include <qimage.h>
 #include <qobject.h>
@@ -18,36 +17,34 @@
 #include "base/config.h"
 #include "bedrock_key.h"
 #include "chunk.h"
-#include "data_3d.h"
 #include "loader/chunkregion.h"
-#include "loader/regionbake.h"
 #include "loguru/loguru.hpp"
 
-AsyncLevelLoader::AsyncLevelLoader()
-    : region_scheduler_(this), edit_service_(storage_, cache_manager_, chunk_coords_service_, loaded_, preload_all_chunk_coords_) {
+AsyncLevelLoader::AsyncLevelLoader(ResourceManager* resources)
+    : region_scheduler_(this, resources),
+      edit_service_(storage_, cache_manager_, chunk_coords_service_, loaded_, preload_all_chunk_coords_) {
     connect(&chunk_coords_service_, &ChunkCoordsService::preloadProgress, this, &AsyncLevelLoader::chunkCoordsPreloadProgress,
             Qt::QueuedConnection);
     connect(&chunk_coords_service_, &ChunkCoordsService::preloadFinished, this, &AsyncLevelLoader::chunkCoordsPreloadFinished,
             Qt::QueuedConnection);
     connect(
         &region_scheduler_, &RegionRenderScheduler::regionFinished, this,
-        [this](region_pos pos, ChunkRegion* region, long long loadTime, long long renderTime, int tileBlocksPerTexel, int tileLayer,
-               const QImage& color, const QImage& height, const QImage& material) {
-            std::shared_ptr<ChunkRegion> regionOwner(region);
-            if (!region || !region->valid) {
-                cache_manager_.insertEmpty(pos);
+        [this](RegionRenderResult result) {
+            auto regionOwner = std::move(result.region);
+            if (!regionOwner || !regionOwner->valid) {
+                cache_manager_.insertEmpty(result.pos);
                 regionOwner.reset();
             } else {
-                region_load_timer_.push(loadTime);
-                region_render_timer_.push(renderTime);
+                region_load_timer_.push(result.load_time);
+                region_render_timer_.push(result.render_time);
                 regionOwner->revision = ++next_region_revision_;
-                cache_manager_.insertRegion(pos, std::move(regionOwner));
+                cache_manager_.insertRegion(result.pos, std::move(regionOwner));
             }
-            if (!color.isNull() && !height.isNull() && !material.isNull()) {
-                emit regionSnapshotReady(pos, tileBlocksPerTexel, tileLayer, color, height, material);
+            if (!result.tile.color.isNull() && !result.tile.surface.isNull()) {
+                emit regionSnapshotReady(result.pos, result.tile.blocks_per_texel, result.tile.layer, result.tile.color,
+                                         result.tile.surface, result.tile.has_terrain);
             }
-            emit regionTileReady(pos);
-            requestRefresh();
+            emit regionTileReady(result.pos);
         },
         Qt::DirectConnection);
 }
@@ -75,14 +72,12 @@ ChunkRegion* AsyncLevelLoader::peekRegion(const region_pos& p, bool& empty) {
     return cache_manager_.peekRegion(p, empty);
 }
 
-bool AsyncLevelLoader::open(const std::string& path, const std::string& xor_key) {
-    this->loaded_ = this->storage_.open(path, xor_key);
+bool AsyncLevelLoader::open(const std::string& path, const std::string& xor_key, std::shared_ptr<leveldb::Env> env) {
+    this->loaded_ = this->storage_.open(path, xor_key, std::move(env));
     if (this->loaded_) {
         if (this->preload_all_chunk_coords_) {
             LOG_F(INFO, "Start loading all chunk cooords");
-            chunk_coords_service_.start(
-                storage_.level(), [this]() { QMetaObject::invokeMethod(this, [this]() { requestRefresh(); }, Qt::QueuedConnection); },
-                chunk_overview_enabled_);
+            chunk_coords_service_.start(storage_.level(), {}, chunk_overview_enabled_);
         }
     }
     return this->loaded_;
@@ -134,6 +129,14 @@ void AsyncLevelLoader::setRenderViewport(const region_pos& minRegion, const regi
     region_scheduler_.setViewport(minRegion, maxRegion);
 }
 
+void AsyncLevelLoader::setFilter(const MapFilter& filter) { map_filter_ = filter; }
+
+void AsyncLevelLoader::reloadFilteredRegions() {
+    if (!loaded_.load(std::memory_order_acquire)) return;
+    cache_manager_.clear();
+    region_scheduler_.reset();
+}
+
 void AsyncLevelLoader::setRenderActive(bool active) {
     if (render_active_ == active) return;
     render_active_ = active;
@@ -164,12 +167,6 @@ bool AsyncLevelLoader::setRawChunkBiome(const bl::chunk_pos& p, bl::biome biome)
     return true;
 }
 
-void AsyncLevelLoader::requestRefresh() {
-    // Drop late notifications once the level is being closed.
-    if (!loaded_.load(std::memory_order_acquire)) return;
-    emit regionReady();
-}
-
 void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos>& chunks) {
     // Collapse the edited chunks onto the 8x8-chunk region tiles covering them.
     std::set<bl::chunk_pos> regions;
@@ -177,10 +174,8 @@ void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos>& c
     if (regions.empty()) return;
 
     // The index already reflects the edit; invalidate cached region tiles.
-    const auto drop = [this, regions, chunks]() {
+    const auto drop = [this, regions]() {
         for (const auto& r : regions) cache_manager_.removeRegion(r);
-        // Edited terrain changes the surface heights the shadow pass reads.
-        for (const auto& c : chunks) cache_manager_.removeHeightMap(c);
     };
     if (QThread::currentThread() == thread()) {
         drop();
@@ -223,38 +218,6 @@ void AsyncLevelLoader::clearAllCache() {
     LOG_F(INFO, "Clear cache");
     cache_manager_.clear();
 }
-
-std::optional<std::array<int16_t, 256>> AsyncLevelLoader::getHeightMap(const bl::chunk_pos& pos) {
-    // Wait for workers before closing LevelDB; reject reads after the barrier.
-    if (!loaded_.load(std::memory_order_acquire)) return std::nullopt;
-    if (auto cached = cache_manager_.heightMap(pos)) return cached;
-
-    if (!loaded_.load(std::memory_order_acquire)) return std::nullopt;
-
-    // Cache miss — load from LevelDB (Data3D preferred, legacy Data2D fallback)
-    std::string raw;
-    bl::biome3d b3d;
-    for (auto kt : {bl::chunk_key::Data3D, bl::chunk_key::Data2D, bl::chunk_key::Data2DLegacy}) {
-        bl::chunk_key key{kt, pos};
-        if (storage_.level().load_raw(key.to_raw(), raw) && !raw.empty()) {
-            b3d.set_chunk_pos(pos);
-            bool ok = (kt == bl::chunk_key::Data3D) ? b3d.load_from_d3d(raw.data(), raw.size()) : b3d.load_from_d2d(raw.data(), raw.size());
-            if (ok) {
-                std::array<int16_t, 256> hm{};
-                std::copy(b3d.height_map().begin(), b3d.height_map().end(), hm.begin());
-                // Data3D heights are relative to the dimension's minimum Y; preserve -128 as void.
-                const int miny = kt == bl::chunk_key::Data3D ? bl::dimension_min_y(pos.dim) : 0;
-                for (auto& h : hm)
-                    if (h != -128) h += miny;
-                cache_manager_.putHeightMap(pos, hm);
-                return hm;
-            }
-        }
-    }
-    return std::nullopt;
-}
-
-void AsyncLevelLoader::putHeightMap(const bl::chunk_pos& pos, const std::array<int16_t, 256>& hm) { cache_manager_.putHeightMap(pos, hm); }
 
 void AsyncLevelLoader::loadGlobalData(GlobalNBTLoadResult& result, std::atomic_bool& stop) {
     std::string value;
@@ -344,8 +307,6 @@ AsyncLevelLoader::RegionState AsyncLevelLoader::regionState(const region_pos& rp
     return RegionState::Ready;
 }
 
-int AsyncLevelLoader::pendingRegionTasks() const { return region_scheduler_.pendingCount() + region_scheduler_.activeCount(); }
-
 bool AsyncLevelLoader::isChunkAbsent(const bl::chunk_pos& pos) const {
     // Only the completed scan makes the index safe for worker reads.
     if (!chunk_coords_service_.ready()) return false;
@@ -360,12 +321,7 @@ bool AsyncLevelLoader::isRegionAbsent(const region_pos& p) const {
     return !chunk_coords_service_.index().containsAnyChunk(p.x, p.z, p.dim, constant::RW);
 }
 
-std::optional<ChunkCoordsBoundingBox> AsyncLevelLoader::chunkCoordsBoundingBox(int dim) const {
-    if (!this->loaded_ || !chunkCoordsReady()) return std::nullopt;
-    return chunk_coords_service_.boundingBox(dim);
-}
-
-std::unordered_map<QImage*, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos& rp) {
+std::unordered_map<const QImage*, std::vector<bl::vec3>> AsyncLevelLoader::getActorList(const region_pos& rp) {
     if (!this->loaded_) return {};
     bool null_region{false};
     auto* region = this->tryGetRegion(rp, null_region);
@@ -373,7 +329,7 @@ std::unordered_map<QImage*, std::vector<bl::vec3>> AsyncLevelLoader::getActorLis
     return region->actors_;
 }
 
-std::map<bl::chunk_pos, std::map<QImage*, ChunkRegion::ActorCount>> AsyncLevelLoader::getActorCountList(const region_pos& rp) {
+std::map<bl::chunk_pos, std::map<const QImage*, ChunkRegion::ActorCount>> AsyncLevelLoader::getActorCountList(const region_pos& rp) {
     if (!this->loaded_) return {};
     bool null_region{false};
     auto* region = this->tryGetRegion(rp, null_region);

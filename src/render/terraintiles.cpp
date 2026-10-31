@@ -15,16 +15,16 @@ namespace {
 }  // namespace
 
 int TerrainTiles::texelsPerRegion(int blocks_per_texel) {
-    return TerrainAtlasLayout::tileSize(terrain_render_config::region_blocks, blocks_per_texel);
+    return std::max(1, terrain_render_config::region_blocks / std::max(1, blocks_per_texel));
 }
 
 TerrainTileSnapshot TerrainTiles::buildSnapshot(const ChunkRegion& region, const region_pos& pos, int blocks_per_texel, int layer) {
-    return TerrainTileSnapshot{pos,
-                               std::max(1, blocks_per_texel),
-                               layer,
-                               colorTile(region, blocks_per_texel, layer != 0),
-                               heightTile(region, blocks_per_texel),
-                               materialTile(region, blocks_per_texel, pos.x, pos.z, pos.dim, layer)};
+    bool has_terrain = false;
+    // The biome layer draws categorical biome colours that must not be tinted
+    // again by the shader.
+    QImage surface = surfaceTile(region, blocks_per_texel, layer == 0, &has_terrain);
+    return TerrainTileSnapshot{pos,        std::max(1, blocks_per_texel), layer, colorTile(region, blocks_per_texel, layer != 0), surface,
+                               has_terrain};
 }
 
 QImage TerrainTiles::colorTile(const ChunkRegion& region, int blocks_per_texel, bool biome_layer) {
@@ -56,9 +56,10 @@ QImage TerrainTiles::colorTile(const ChunkRegion& region, int blocks_per_texel, 
     return tile;
 }
 
-QImage TerrainTiles::heightTile(const ChunkRegion& region, int blocks_per_texel) {
+QImage TerrainTiles::surfaceTile(const ChunkRegion& region, int blocks_per_texel, bool material_tint, bool* has_terrain) {
     const int texels = texelsPerRegion(blocks_per_texel);
     const int bp = std::max(1, blocks_per_texel);
+    bool any_terrain = false;
     QImage tile(texels, texels, QImage::Format_RGBA8888);
     for (int z = 0; z < texels; ++z) {
         auto* row = tile.scanLine(z);
@@ -66,38 +67,22 @@ QImage TerrainTiles::heightTile(const ChunkRegion& region, int blocks_per_texel)
         for (int x = 0; x < texels; ++x) {
             const int block_x = std::min(x * bp, terrain_render_config::region_blocks - 1);
             const auto& info = region.tips_info_[block_x][block_z];
-            const int solid = terrain_height_codec::encodeHeight(info.solid_height);
             const int top = terrain_height_codec::encodeHeight(info.height);
-            row[x * 4] = static_cast<uchar>(terrain_height_codec::lowByte(solid));
-            row[x * 4 + 1] = static_cast<uchar>(terrain_height_codec::highByte(solid));
-            row[x * 4 + 2] = static_cast<uchar>(terrain_height_codec::lowByte(top));
-            row[x * 4 + 3] = static_cast<uchar>(terrain_height_codec::highByte(top));
+            const int solid = top == terrain_height_codec::void_code ? terrain_height_codec::void_marker
+                                                                     : terrain_height_codec::encodeHeight(info.solid_height);
+            any_terrain = any_terrain || top != terrain_height_codec::void_code;
+            unsigned char flags = material_tint ? terrain_material_flags::forTips(info) : 0;
+            if (!region.chunk_bit_map_.test((block_x / 16) * constant::RW + block_z / 16)) flags |= terrain_material_flags::missing_chunk;
+            const std::uint32_t packed = static_cast<std::uint32_t>(solid) | (static_cast<std::uint32_t>(top) << 10) |
+                                         (static_cast<std::uint32_t>(static_cast<unsigned char>(info.biome)) << 20) |
+                                         (static_cast<std::uint32_t>(flags) << 28);
+            row[x * 4] = static_cast<uchar>(packed & 0xFFu);
+            row[x * 4 + 1] = static_cast<uchar>((packed >> 8) & 0xFFu);
+            row[x * 4 + 2] = static_cast<uchar>((packed >> 16) & 0xFFu);
+            row[x * 4 + 3] = static_cast<uchar>((packed >> 24) & 0xFFu);
         }
     }
-    return tile;
-}
-
-QImage TerrainTiles::materialTile(const ChunkRegion& region, int blocks_per_texel, int regionX, int regionZ, int dimension, int layer) {
-    const int texels = texelsPerRegion(blocks_per_texel);
-    const int bp = std::max(1, blocks_per_texel);
-    const std::uint16_t regionHash =
-        terrain_material_flags::regionHash(regionX / constant::RW, regionZ / constant::RW, dimension, layer, bp);
-    QImage tile(texels, texels, QImage::Format_RGBA8888);
-    for (int z = 0; z < texels; ++z) {
-        auto* row = tile.scanLine(z);
-        const int block_z = std::min(z * bp, terrain_render_config::region_blocks - 1);
-        for (int x = 0; x < texels; ++x) {
-            const int block_x = std::min(x * bp, terrain_render_config::region_blocks - 1);
-            const auto& info = region.tips_info_[block_x][block_z];
-            row[x * 4] = static_cast<uchar>(static_cast<unsigned char>(info.biome));
-            row[x * 4 + 1] = static_cast<uchar>(terrain_material_flags::forTips(info));
-            if (!region.chunk_bit_map_.test((block_x / 16) * constant::RW + block_z / 16))
-                row[x * 4 + 1] |= terrain_material_flags::missing_chunk;
-            // B/A are slot metadata, sampled only at the tile origin.
-            row[x * 4 + 2] = static_cast<uchar>(x == 0 && z == 0 ? regionHash >> 8 : 0);
-            row[x * 4 + 3] = static_cast<uchar>(x == 0 && z == 0 ? regionHash & 0xFFu : 0);
-        }
-    }
+    if (has_terrain) *has_terrain = any_terrain;
     return tile;
 }
 

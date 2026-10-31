@@ -29,11 +29,11 @@ if (Test-Path $release_dir) {
 }
 New-Item -Path "." -Name $release_dir -ItemType Directory 
 
-Copy-Item -Path "$build_dir\BedrockMapQml.exe" -Destination $release_dir
+Copy-Item -Path "$build_dir\BedrockMap.exe" -Destination $release_dir
 
 # Deploy Qt runtime files for the standalone package.
 Push-Location $release_dir
-& $windeployqt --release --qmldir "$PSScriptRoot\..\src\qml" BedrockMapQml.exe
+& $windeployqt --release --qmldir "$PSScriptRoot\..\src\qml" BedrockMap.exe
 Pop-Location
 
 # windeployqt may copy runtime DLLs from the Qt installation. Replace them

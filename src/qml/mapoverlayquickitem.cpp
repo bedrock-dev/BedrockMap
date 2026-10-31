@@ -14,22 +14,22 @@
 #include <vector>
 
 #include "base/config.h"
+#include "base/resourcemanager.h"
+#include "controller/appcontroller.h"
 #include "controller/globaldatacontroller.h"
 #include "controller/mapcontroller.h"
 #include "iconatlas.h"
 #include "maprenderstate.h"
-#include "render/resourcemanager.h"
 #include "render/terraindataprovider.h"
 #include "terrainquickitem.h"
 
 namespace {
     constexpr qreal minimum_entity_scale = 4.0;
 
-    const IconAtlas& markerIconAtlas() {
-        static const IconAtlas atlas = [] {
+    const IconAtlas& markerIconAtlas(const ResourceManager& resources) {
+        static const IconAtlas atlas = [&resources] {
             IconAtlas result;
-            const auto images = MarkerIcons();
-            result.build(std::vector<const QImage*>(images.cbegin(), images.cend()));
+            result.build(resources.markerIcons());
             return result;
         }();
         return atlas;
@@ -54,7 +54,7 @@ namespace {
 
 MapOverlayQuickItem::MapOverlayQuickItem(QQuickItem* parent) : QQuickItem(parent) {
     setFlag(ItemHasContents, true);
-    markerIconAtlas();
+    if (auto* app = AppController::instance()) markerIconAtlas(app->resources());
     entity_refresh_timer_.setSingleShot(true);
     entity_refresh_timer_.setInterval(33);
     connect(&entity_refresh_timer_, &QTimer::timeout, this, &MapOverlayQuickItem::refreshEntities);
@@ -386,8 +386,8 @@ void MapOverlayQuickItem::refreshEntities() {
     const int min_z = static_cast<int>(std::floor(center_z - half_height));
     const int max_z = static_cast<int>(std::ceil(center_z + half_height));
 
-    auto next = std::make_shared<QVector<ActorSprite>>(
-        provider_->actorSprites(min_x, min_z, max_x, max_z, camera.dimension, actor_render_style_));
+    auto next =
+        std::make_shared<QVector<ActorSprite>>(provider_->actorSprites(min_x, min_z, max_x, max_z, camera.dimension, actor_render_style_));
     {
         const QMutexLocker lock(&entities_mutex_);
         entity_sprites_ = std::move(next);
@@ -417,8 +417,7 @@ void MapOverlayQuickItem::syncSelectionState() {
             // Simplify the union so partial shared edges and holes retain the
             // exact same boundary used by placement hit-testing.
             for (const auto& polygon : outline.simplified().toSubpathPolygons()) {
-                for (qsizetype i = 1; i < polygon.size(); ++i)
-                    next->importEdges.append(QLineF(polygon[i - 1], polygon[i]));
+                for (qsizetype i = 1; i < polygon.size(); ++i) next->importEdges.append(QLineF(polygon[i - 1], polygon[i]));
             }
         } else {
             next->rects = controller_->selectionRects();
@@ -581,9 +580,7 @@ void MapOverlayQuickItem::updateGridNode(QSGNode* root) {
     int vertex = 0;
     const QColor color = grid_color_.isValid() ? grid_color_ : QColor(QStringLiteral("#bbbbbb"));
     const auto alpha = static_cast<uchar>(color.alpha());
-    const auto premultiply = [alpha](int channel) {
-        return static_cast<uchar>((channel * alpha + 127) / 255);
-    };
+    const auto premultiply = [alpha](int channel) { return static_cast<uchar>((channel * alpha + 127) / 255); };
     const auto red = premultiply(color.red());
     const auto green = premultiply(color.green());
     const auto blue = premultiply(color.blue());
@@ -774,8 +771,8 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
 
         const bool importing = selection && selection->importing;
         const int capacity = (static_cast<int>(selection_rects.size()) * (importing ? 1 : 5) +
-                              (importing ? static_cast<int>(selection->importEdges.size()) : 0) +
-                              (drag_rect.isValid() ? 5 : 0)) * 6;
+                              (importing ? static_cast<int>(selection->importEdges.size()) : 0) + (drag_rect.isValid() ? 5 : 0)) *
+                             6;
         auto* geometry = selection_node_->geometry();
         if (selection_vertex_capacity_ < capacity) {
             geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), capacity);
@@ -836,8 +833,7 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
                 const qreal x2 = view_center_x + (edge.x2() - center_x_) * scale_;
                 const qreal y2 = view_center_z + (edge.y2() - center_z_) * scale_;
                 const qreal half = border_width / 2;
-                addQuad(std::min(x1, x2) - half, std::min(y1, y2) - half,
-                        std::max(x1, x2) + half, std::max(y1, y2) + half, border);
+                addQuad(std::min(x1, x2) - half, std::min(y1, y2) - half, std::max(x1, x2) + half, std::max(y1, y2) + half, border);
             }
         }
         if (drag_rect.isValid()) {
@@ -863,7 +859,9 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
         return root;
     }
 
-    const IconAtlas& atlas = markerIconAtlas();
+    auto* app = AppController::instance();
+    if (!app) return root;
+    const IconAtlas& atlas = markerIconAtlas(app->resources());
     if (atlas.isEmpty()) return root;
     if (!sprite_node_) {
         auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0);

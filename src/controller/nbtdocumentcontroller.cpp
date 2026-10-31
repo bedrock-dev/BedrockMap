@@ -1,24 +1,23 @@
 #include "controller/nbtdocumentcontroller.h"
 
-#include <QFile>
-#include <QFileInfo>
+#include <QCoreApplication>
 #include <QSet>
 #include <QUrl>
 #include <utility>
 
+#include "io/documentio.h"
 #include "model/nbttreemodel.h"
 #include "nbt.h"
 
-namespace {
-    QString localFilePath(const QString& path) {
-        const QUrl url(path);
-        return url.isLocalFile() ? url.toLocalFile() : path;
-    }
-}  // namespace
-
 NbtDocumentController::NbtDocumentController(QObject* parent) : QObject(parent), tree_model_(new NbtTreeModel(this)) {
     connect(tree_model_, &NbtTreeModel::documentChanged, this, [this] {
-        if (!loading_ && !read_only_) markDirty();
+        if (loading_ || read_only_) return;
+        if (mode_ == Mode::Memory && current_index_ >= 0 && current_index_ < static_cast<int>(items_.size())) {
+            auto& item = items_[static_cast<size_t>(current_index_)];
+            item.modified = true;
+            ++item.revision;
+        }
+        markDirty();
     });
 }
 
@@ -46,8 +45,10 @@ QStringList NbtDocumentController::itemIcons() const {
 
 QString NbtDocumentController::documentTitle() const {
     if (!document_title_.isEmpty()) return document_title_;
-    return file_path_.isEmpty() ? QStringLiteral("Untitled") : QFileInfo(file_path_).fileName();
+    return file_url_.isEmpty() ? QStringLiteral("Untitled") : io::DocumentIo::displayName(file_url_);
 }
+
+QString NbtDocumentController::filePath() const { return file_url_.isEmpty() ? QString{} : io::DocumentIo::identifier(file_url_); }
 
 void NbtDocumentController::setError(const QString& message) {
     if (last_error_ == message) return;
@@ -56,8 +57,19 @@ void NbtDocumentController::setError(const QString& message) {
 }
 
 void NbtDocumentController::markDirty() {
-    if (dirty_) return;
-    dirty_ = true;
+    bool dirty = true;
+    if (mode_ == Mode::Memory) {
+        dirty = false;
+        QSet<QString> removed_keys(original_raw_keys_.begin(), original_raw_keys_.end());
+        for (const auto& item : items_) {
+            if (!item.root) continue;
+            dirty = dirty || item.modified || !item.persisted || item.raw_key.isEmpty();
+            removed_keys.remove(item.raw_key);
+        }
+        dirty = dirty || !removed_keys.isEmpty();
+    }
+    if (dirty_ == dirty) return;
+    dirty_ = dirty;
     emit dirtyChanged();
 }
 
@@ -70,17 +82,19 @@ void NbtDocumentController::clearItems() {
 }
 
 void NbtDocumentController::replaceItems(std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& rawKeys, Mode mode,
-                                         const QString& path, const QString& title, const NbtItemPresenter& presenter) {
+                                         const QUrl& url, const QString& title, const NbtItemPresenter& presenter) {
     const QString old_title = documentTitle();
     loading_ = true;
     // Views may read the old rows during modelAboutToBeReset. Their tags must
     // remain alive until the old model has been detached.
     tree_model_->setRoot(nullptr);
     items_.clear();
+    storage_.presenter = presenter;
     items_.reserve(roots.size());
     original_raw_keys_.clear();
     for (size_t i = 0; i < roots.size(); ++i) {
         Item item;
+        item.id = ++next_item_id_;
         item.root = std::move(roots[i]);
         item.raw_key = i < static_cast<size_t>(rawKeys.size()) && !rawKeys[static_cast<qsizetype>(i)].isEmpty()
                            ? rawKeys[static_cast<qsizetype>(i)]
@@ -96,9 +110,9 @@ void NbtDocumentController::replaceItems(std::vector<std::unique_ptr<bl::nbt::co
     }
     current_index_ = items_.empty() ? -1 : 0;
     const bool mode_changed = mode_ != mode;
-    const bool path_changed = file_path_ != path;
+    const bool path_changed = file_url_ != url;
     mode_ = mode;
-    file_path_ = path;
+    file_url_ = url;
     document_title_ = title;
     tree_model_->setRoot(current_index_ >= 0 ? items_[current_index_].root.get() : nullptr);
     dirty_ = false;
@@ -111,19 +125,17 @@ void NbtDocumentController::replaceItems(std::vector<std::unique_ptr<bl::nbt::co
     emit dirtyChanged();
 }
 
-bool NbtDocumentController::loadFile(const QString& path) {
-    const QString local_path = localFilePath(path);
-    QFile file(local_path);
-    if (!file.open(QIODevice::ReadOnly)) {
-        setError(QStringLiteral("Cannot open NBT file: %1").arg(file.errorString()));
+bool NbtDocumentController::loadFile(const QUrl& url) {
+    const auto read = io::DocumentIo::readAll(url);
+    if (!read.ok()) {
+        setError(QStringLiteral("Cannot open NBT file: %1").arg(read.error));
         return false;
     }
-    const QByteArray bytes = file.readAll();
-    if (bytes.isEmpty()) {
+    if (read.data.isEmpty()) {
         setError(QStringLiteral("The NBT file is empty."));
         return false;
     }
-    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(bytes.constData()), static_cast<size_t>(bytes.size()));
+    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
     if (parsed.empty()) {
         setError(QStringLiteral("No NBT roots were found in the file."));
         return false;
@@ -131,7 +143,9 @@ bool NbtDocumentController::loadFile(const QString& path) {
     std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots;
     roots.reserve(parsed.size());
     for (auto* root : parsed) roots.emplace_back(root);
-    replaceItems(std::move(roots), {}, Mode::File, local_path);
+    // Cache provider metadata while the file grant is available. QML title
+    // bindings must not query the provider on every evaluation.
+    replaceItems(std::move(roots), {}, Mode::File, url, io::DocumentIo::displayName(url));
     setError({});
     return true;
 }
@@ -144,8 +158,7 @@ void NbtDocumentController::loadMemory(std::vector<std::unique_ptr<bl::nbt::comp
 
 std::unique_ptr<bl::nbt::compound_tag> NbtDocumentController::itemCopy(int index) const {
     if (index < 0 || index >= static_cast<int>(items_.size()) || !items_[static_cast<size_t>(index)].root) return nullptr;
-    return std::unique_ptr<bl::nbt::compound_tag>(
-        static_cast<bl::nbt::compound_tag*>(items_[static_cast<size_t>(index)].root->copy()));
+    return std::unique_ptr<bl::nbt::compound_tag>(static_cast<bl::nbt::compound_tag*>(items_[static_cast<size_t>(index)].root->copy()));
 }
 
 bool NbtDocumentController::isEmpty() const {
@@ -155,27 +168,90 @@ bool NbtDocumentController::isEmpty() const {
     return true;
 }
 
-std::unordered_map<std::string, std::string> NbtDocumentController::levelDbChanges() const {
-    std::unordered_map<std::string, std::string> result;
-    if (mode_ != Mode::Memory || !dirty_) return result;
+void NbtDocumentController::setStoragePolicy(NbtStoragePolicy policy) { storage_ = std::move(policy); }
+
+void NbtDocumentController::setKeyResolver(NbtKeyResolver resolver) { storage_.keyResolver = std::move(resolver); }
+
+NbtLevelDbPlan NbtDocumentController::prepareLevelDbChanges() {
+    NbtLevelDbPlan plan;
+    if (mode_ != Mode::Memory) return plan;
+
+    plan.prepared = true;
+    plan.records.reserve(items_.size());
+    if (!dirty_) {
+        for (const auto& item : items_) plan.records.push_back({item.id, item.revision, item.raw_key});
+        return plan;
+    }
 
     QSet<QString> current_keys;
-    for (const auto& item : items_) {
-        if (!item.root || item.raw_key.isEmpty()) continue;
-        current_keys.insert(item.raw_key);
-        result[item.raw_key.toStdString()] = item.root->serialize();
+    for (size_t index = 0; index < items_.size(); ++index) {
+        const auto& item = items_[index];
+        if (!item.root) {
+            plan.records.push_back({item.id, item.revision, {}});
+            continue;
+        }
+        QString key = item.raw_key;
+        if (!item.persisted || key.isEmpty()) {
+            if (!storage_.keyResolver) {
+                plan.error = QCoreApplication::translate("NbtDocumentController",
+                                                         "No LevelDB key rule is configured for record %1.")
+                                 .arg(index);
+                setError(plan.error);
+                return plan;
+            }
+            key = storage_.keyResolver(item.root.get(), static_cast<int>(index), key).trimmed();
+            if (key.isEmpty()) {
+                plan.error = QCoreApplication::translate("NbtDocumentController",
+                                                         "Cannot generate a LevelDB key for record %1.")
+                                 .arg(item.label.isEmpty() ? QString::number(index) : item.label);
+                setError(plan.error);
+                return plan;
+            }
+        }
+        if (current_keys.contains(key)) {
+            plan.error = QCoreApplication::translate("NbtDocumentController", "Duplicate LevelDB key: %1.").arg(key);
+            setError(plan.error);
+            return plan;
+        }
+        current_keys.insert(key);
+        plan.records.push_back({item.id, item.revision, key});
+        if (item.modified || !item.persisted || item.raw_key.isEmpty()) {
+            plan.changes[key.toStdString()] = item.root->serialize();
+        }
     }
     for (const auto& key : original_raw_keys_) {
-        if (!current_keys.contains(key)) result[key.toStdString()] = {};
+        if (!key.isEmpty() && !current_keys.contains(key)) plan.changes[key.toStdString()] = {};
     }
-    return result;
+    setError({});
+    return plan;
 }
 
-void NbtDocumentController::markPersisted() {
+void NbtDocumentController::markPersisted(const NbtLevelDbPlan& plan) {
+    if (mode_ == Mode::Memory && plan.prepared) {
+        // Acknowledge the saved snapshot by stable identity. Later edits and
+        // records added or removed during the write must remain pending.
+        std::unordered_map<quint64, const NbtLevelDbPlan::Record*> saved_records;
+        original_raw_keys_.clear();
+        for (const auto& record : plan.records) {
+            saved_records.emplace(record.id, &record);
+            if (!record.key.isEmpty()) original_raw_keys_.append(record.key);
+        }
+        for (auto& item : items_) {
+            const auto saved = saved_records.find(item.id);
+            if (saved == saved_records.end() || saved->second->key.isEmpty()) continue;
+            item.raw_key = saved->second->key;
+            item.persisted = true;
+            item.modified = item.revision != saved->second->revision;
+        }
+        markDirty();
+        return;
+    }
     if (!dirty_) return;
     dirty_ = false;
     original_raw_keys_.clear();
-    for (const auto& item : items_) {
+    for (auto& item : items_) {
+        item.persisted = true;
+        item.modified = false;
         if (!item.raw_key.isEmpty()) original_raw_keys_.append(item.raw_key);
     }
     emit dirtyChanged();
@@ -186,50 +262,45 @@ bool NbtDocumentController::save() {
         setError(QStringLiteral("In-memory NBT documents are committed by their owner."));
         return false;
     }
-    if (file_path_.isEmpty()) {
+    if (file_url_.isEmpty()) {
         setError(QStringLiteral("Choose a destination with Save As."));
         return false;
     }
-    return saveAs(file_path_);
+    return saveAs(file_url_);
 }
 
-bool NbtDocumentController::saveAs(const QString& path) {
+bool NbtDocumentController::saveAs(const QUrl& url) {
     if (mode_ == Mode::Memory) {
         setError(QStringLiteral("In-memory NBT documents are committed by their owner."));
         return false;
     }
-    const QString local_path = localFilePath(path);
     QByteArray output;
     for (const auto& item : items_) {
         if (!item.root) continue;
         const std::string data = item.root->serialize();
         output.append(data.data(), static_cast<qsizetype>(data.size()));
     }
-    QFile file(local_path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        setError(QStringLiteral("Cannot write NBT file: %1").arg(file.errorString()));
-        return false;
-    }
-    if (file.write(output) != output.size()) {
-        setError(QStringLiteral("The NBT file could not be written completely."));
+    const QString error = io::DocumentIo::writeBytes(url, output);
+    if (!error.isEmpty()) {
+        setError(QStringLiteral("Cannot write NBT file: %1").arg(error));
         return false;
     }
     const QString old_title = documentTitle();
-    const bool path_changed = file_path_ != local_path;
-    file_path_ = local_path;
-    // "Untitled" (and other creation-time labels) must not outlive the first
-    // successful save; documentTitle() then derives the name from the file.
-    document_title_.clear();
+    const bool path_changed = file_url_ != url;
+    file_url_ = url;
+    // Replace creation-time labels after Save As, and retain the cached title
+    // when saving the same provider document again.
+    if (path_changed || document_title_.isEmpty()) document_title_ = io::DocumentIo::displayName(url);
     dirty_ = false;
     setError({});
     if (path_changed) emit filePathChanged();
     if (documentTitle() != old_title) emit documentTitleChanged();
     emit dirtyChanged();
+    emit saved();
     return true;
 }
 
-bool NbtDocumentController::exportFile(const QString& path) {
-    const QString local_path = localFilePath(path);
+bool NbtDocumentController::exportFile(const QUrl& url) {
     QByteArray output;
     for (const auto& item : items_) {
         if (!item.root) continue;
@@ -240,63 +311,168 @@ bool NbtDocumentController::exportFile(const QString& path) {
         setError(QStringLiteral("There is no NBT data to export."));
         return false;
     }
-    QFile file(local_path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        setError(QStringLiteral("Cannot write NBT file: %1").arg(file.errorString()));
-        return false;
-    }
-    if (file.write(output) != output.size()) {
-        setError(QStringLiteral("The NBT file could not be written completely."));
+    if (const QString error = io::DocumentIo::writeBytes(url, output); !error.isEmpty()) {
+        setError(QStringLiteral("Cannot write NBT file: %1").arg(error));
         return false;
     }
     setError({});
     return true;
 }
 
-bool NbtDocumentController::importFile(const QString& path) {
-    if (mode_ == Mode::File) return loadFile(path);
-
-    const QString local_path = localFilePath(path);
-    QFile file(local_path);
-    if (!file.open(QIODevice::ReadOnly)) {
-        setError(QStringLiteral("Cannot open NBT file: %1").arg(file.errorString()));
+bool NbtDocumentController::exportCurrent(const QUrl& url) {
+    if (current_index_ < 0 || current_index_ >= static_cast<int>(items_.size()) ||
+        !items_[static_cast<size_t>(current_index_)].root) {
+        setError(QStringLiteral("There is no current NBT record to export."));
         return false;
     }
-    const QByteArray bytes = file.readAll();
-    if (bytes.isEmpty()) {
+    const std::string data = items_[static_cast<size_t>(current_index_)].root->serialize();
+    const QString error = io::DocumentIo::writeBytes(url, QByteArray(data.data(), static_cast<qsizetype>(data.size())));
+    if (!error.isEmpty()) {
+        setError(QStringLiteral("Cannot write NBT file: %1").arg(error));
+        return false;
+    }
+    setError({});
+    return true;
+}
+
+bool NbtDocumentController::importFile(const QUrl& url) {
+    const auto read = io::DocumentIo::readAll(url);
+    if (!read.ok()) {
+        setError(QStringLiteral("Cannot open NBT file: %1").arg(read.error));
+        return false;
+    }
+    if (read.data.isEmpty()) {
         setError(QStringLiteral("The NBT file is empty."));
         return false;
     }
-    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(bytes.constData()), static_cast<size_t>(bytes.size()));
+    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
     if (parsed.empty()) {
         setError(QStringLiteral("No NBT roots were found in the file."));
         return false;
     }
 
-    QStringList old_raw_keys;
-    old_raw_keys.reserve(static_cast<qsizetype>(items_.size()));
-    for (const auto& item : items_) old_raw_keys.append(item.raw_key);
-    const QStringList old_original_keys = original_raw_keys_;
-    const QString title = documentTitle();
-
     std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots;
     roots.reserve(parsed.size());
     for (auto* root : parsed) roots.emplace_back(root);
-    QStringList raw_keys;
-    raw_keys.reserve(static_cast<qsizetype>(roots.size()));
-    for (qsizetype i = 0; i < static_cast<qsizetype>(roots.size()); ++i)
-        raw_keys.append(i < old_raw_keys.size() ? old_raw_keys[i] : QString());
 
-    replaceItems(std::move(roots), raw_keys, Mode::Memory, {}, title);
+    if (storage_.singleRecord) {
+        if (!items_.empty()) {
+            setError(QCoreApplication::translate("NbtDocumentController",
+                                                 "A single-record section already contains a record. Clear it before importing."));
+            return false;
+        }
+        if (roots.size() != 1) {
+            setError(QCoreApplication::translate("NbtDocumentController",
+                                                 "A single-record section requires exactly one NBT root."));
+            return false;
+        }
+        Item item;
+        item.id = ++next_item_id_;
+        item.modified = mode_ == Mode::Memory;
+        item.root = std::move(roots.front());
+        item.raw_key = items_.size() == 1 ? items_.front().raw_key : QString{};
+        if (item.raw_key.isEmpty()) item.raw_key = storage_.fixedKey;
+        if (item.raw_key.isEmpty()) item.raw_key = QString::fromStdString(item.root->key());
+        item.persisted = !item.raw_key.isEmpty();
+        item.label = QStringLiteral("0");
+        if (storage_.presenter && item.root) {
+            const NbtItemPresentation presentation = storage_.presenter(item.root.get(), 0, item.raw_key);
+            if (!presentation.label.isEmpty()) item.label = presentation.label;
+            item.icon = presentation.icon;
+        }
+        tree_model_->setRoot(nullptr);
+        items_.clear();
+        items_.push_back(std::move(item));
+        current_index_ = 0;
+        tree_model_->setRoot(items_.front().root.get());
+        emit itemsChanged();
+        emit currentIndexChanged();
+        markDirty();
+        setError({});
+        return true;
+    }
 
-    QSet<QString> original;
-    for (const auto& key : old_original_keys) {
-        if (!key.isEmpty()) original.insert(key);
+    if (mode_ == Mode::File && file_url_.isEmpty() && items_.size() == 1 && items_.front().root &&
+        items_.front().root->value.empty()) {
+        tree_model_->setRoot(nullptr);
+        items_.clear();
     }
-    for (const auto& key : raw_keys) {
-        if (!key.isEmpty()) original.insert(key);
+    const bool adopt_file = mode_ == Mode::File && items_.empty() && file_url_.isEmpty();
+    const int first_new = static_cast<int>(items_.size());
+    loading_ = true;
+    items_.reserve(items_.size() + roots.size());
+    for (auto& root : roots) {
+        Item item;
+        item.id = ++next_item_id_;
+        item.root = std::move(root);
+        item.raw_key = QString::fromStdString(item.root->key());
+        item.persisted = false;
+        item.label = QString::number(items_.size());
+        if (storage_.presenter && item.root) {
+            const NbtItemPresentation presentation =
+                storage_.presenter(item.root.get(), static_cast<int>(items_.size()), item.raw_key);
+            if (!presentation.label.isEmpty()) item.label = presentation.label;
+            item.icon = presentation.icon;
+        }
+        items_.push_back(std::move(item));
     }
-    original_raw_keys_ = original.values();
+    current_index_ = first_new;
+    tree_model_->setRoot(items_[static_cast<size_t>(current_index_)].root.get());
+    loading_ = false;
+    const QString old_title = documentTitle();
+    if (adopt_file) {
+        file_url_ = url;
+        document_title_ = io::DocumentIo::displayName(url);
+    }
+    emit itemsChanged();
+    emit currentIndexChanged();
+    if (adopt_file) emit filePathChanged();
+    if (documentTitle() != old_title) emit documentTitleChanged();
+    markDirty();
+    setError({});
+    return true;
+}
+
+bool NbtDocumentController::replaceFile(const QUrl& url) {
+    if (!storage_.singleRecord) return false;
+    const auto read = io::DocumentIo::readAll(url);
+    if (!read.ok()) {
+        setError(QStringLiteral("Cannot open NBT file: %1").arg(read.error));
+        return false;
+    }
+    if (read.data.isEmpty()) {
+        setError(QStringLiteral("The NBT file is empty."));
+        return false;
+    }
+    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
+    if (parsed.size() != 1) {
+        for (auto* root : parsed) delete root;
+        setError(QCoreApplication::translate("NbtDocumentController",
+                                             "A single-record section requires exactly one NBT root."));
+        return false;
+    }
+
+    Item item;
+    item.id = ++next_item_id_;
+    item.modified = mode_ == Mode::Memory;
+    item.root.reset(parsed.front());
+    item.raw_key = items_.size() == 1 ? items_.front().raw_key : QString{};
+    if (item.raw_key.isEmpty()) item.raw_key = storage_.fixedKey;
+    if (item.raw_key.isEmpty()) item.raw_key = QString::fromStdString(item.root->key());
+    item.persisted = !item.raw_key.isEmpty();
+    item.label = QStringLiteral("0");
+    if (storage_.presenter && item.root) {
+        const NbtItemPresentation presentation = storage_.presenter(item.root.get(), 0, item.raw_key);
+        if (!presentation.label.isEmpty()) item.label = presentation.label;
+        item.icon = presentation.icon;
+    }
+    tree_model_->setRoot(nullptr);
+    items_.clear();
+    items_.push_back(std::move(item));
+    current_index_ = 0;
+    tree_model_->setRoot(items_.front().root.get());
+    emit itemsChanged();
+    emit currentIndexChanged();
     markDirty();
     setError({});
     return true;
@@ -322,7 +498,9 @@ void NbtDocumentController::selectItem(int index) {
 
 int NbtDocumentController::addItem() {
     Item item;
+    item.id = ++next_item_id_;
     item.root = std::make_unique<bl::nbt::compound_tag>("root");
+    item.persisted = false;
     item.label = QString::number(items_.size());
     items_.push_back(std::move(item));
     current_index_ = static_cast<int>(items_.size()) - 1;
@@ -337,12 +515,14 @@ int NbtDocumentController::addItem() {
 
 bool NbtDocumentController::removeItem(int index) {
     if (index < 0 || index >= static_cast<int>(items_.size()) || items_.size() <= 1) return false;
+    loading_ = true;
+    // Detach borrowed tags while the old roots are still alive.
+    tree_model_->setRoot(nullptr);
     items_.erase(items_.begin() + index);
     if (current_index_ >= static_cast<int>(items_.size()))
         current_index_ = static_cast<int>(items_.size()) - 1;
     else if (current_index_ > index)
         --current_index_;
-    loading_ = true;
     tree_model_->setRoot(current_index_ >= 0 ? items_[current_index_].root.get() : nullptr);
     loading_ = false;
     markDirty();
