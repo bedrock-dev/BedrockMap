@@ -11,8 +11,8 @@ endif()
 
 # Project
 # Qt Quick application and its data layer.
-project(BedrockMap VERSION 1.2.0 LANGUAGES CXX)
-set(BEDROCKMAP_VERSION_SUFFIX "" CACHE STRING "Optional BedrockMap version suffix, e.g. -beta1")
+project(BedrockMap VERSION 1.5.0 LANGUAGES CXX)
+set(BEDROCKMAP_VERSION_SUFFIX "-beta1" CACHE STRING "Optional BedrockMap version suffix, e.g. -beta1")
 set(BEDROCKMAP_VERSION "${PROJECT_VERSION}${BEDROCKMAP_VERSION_SUFFIX}")
 
 # Qt AUTOGEN handles resources and moc for the data layer and Qt Quick application.
@@ -339,7 +339,7 @@ if(ANDROID)
     set_property(TARGET BedrockMap PROPERTY QT_ANDROID_PACKAGE_NAME "io.github.hhhxiao.bedrockmap")
     set_property(TARGET BedrockMap PROPERTY QT_ANDROID_APP_NAME "BedrockMap")
     set_property(TARGET BedrockMap PROPERTY QT_ANDROID_VERSION_CODE "2")
-    set_property(TARGET BedrockMap PROPERTY QT_ANDROID_VERSION_NAME "1.2.0")
+    set_property(TARGET BedrockMap PROPERTY QT_ANDROID_VERSION_NAME "${BEDROCKMAP_VERSION}")
     if(BEDROCKMAP_ANDROID_COMPRESS_LIBS)
         set_property(TARGET BedrockMap PROPERTY QT_ANDROID_LEGACY_PACKAGING TRUE)
     endif()

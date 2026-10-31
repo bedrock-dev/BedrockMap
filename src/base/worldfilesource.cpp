@@ -129,7 +129,7 @@ namespace platform {
 #ifdef Q_OS_ANDROID
         const auto name = QJniObject::fromString(path);
         const auto files = QJniObject::callStaticObjectMethod(
-            "org/bedrockmap/WorldFileAccess", "connect", "(Ljava/lang/String;)Lorg/bedrockmap/WorldFileAccess;", name.object<jstring>());
+            "io/github/hhhxiao/bedrockmap/WorldFileAccess", "connect", "(Ljava/lang/String;)Lio/github/hhhxiao/bedrockmap/WorldFileAccess;", name.object<jstring>());
         QJniEnvironment jni;
         if (!jni.checkAndClearExceptions() && files.isValid()) return std::make_unique<PrivilegedWorldFileSource>(files);
 #endif

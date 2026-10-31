@@ -28,6 +28,18 @@ dependencies {
     implementation 'com.github.topjohnwu.libsu:service:6.0.0'
 }
 
+// Use the same local key for every build type.
+def signingStorePath = System.getenv('BEDROCKMAP_KEYSTORE_PATH')
+def signingCredentialsPath = System.getenv('BEDROCKMAP_KEYSTORE_CREDENTIALS')
+if (!signingStorePath || !signingCredentialsPath) {
+    throw new GradleException('Set BEDROCKMAP_KEYSTORE_PATH and BEDROCKMAP_KEYSTORE_CREDENTIALS.')
+}
+def signingValues = new Properties()
+file(signingCredentialsPath).withReader('UTF-8') { signingValues.load(it) }
+if (!signingValues.getProperty('storePassword') || !signingValues.getProperty('keyPassword')) {
+    throw new GradleException('Keystore credentials are incomplete.')
+}
+
 android {
     buildFeatures { aidl = true }
     namespace = androidPackageName
@@ -37,6 +49,16 @@ android {
     if (project.hasProperty('bedrockmapNdkPath')) {
         ndkPath = project.property('bedrockmapNdkPath')
     }
+
+    signingConfigs {
+        bedrockmap {
+            storeFile = file(signingStorePath)
+            storePassword = signingValues.getProperty('storePassword')
+            keyAlias = System.getenv('BEDROCKMAP_KEYSTORE_ALIAS') ?: 'bedrockmap'
+            keyPassword = signingValues.getProperty('keyPassword')
+        }
+    }
+    buildTypes.configureEach { signingConfig = signingConfigs.bedrockmap }
 
     sourceSets {
         main {
@@ -62,9 +84,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    // Release packages are produced and validated by the build itself. Lint is
-    // not required for local packaging, and its standalone dependency download
-    // otherwise blocks APK creation on restricted or proxied networks.
+    // Avoid lint-only dependency downloads during packaging.
     lint {
         checkReleaseBuilds = false
         abortOnError = false
@@ -89,8 +109,7 @@ android {
     }
 }
 
-// AGP creates lintVitalAnalyzeRelease independently of the lint DSL above.
-// Disabling the task also avoids resolving the lint toolchain while packaging.
+// AGP also creates lintVital tasks outside the lint setting.
 tasks.configureEach {
     if (name.startsWith('lintVital')) {
         enabled = false

@@ -14,7 +14,7 @@ namespace io {
         const auto context = QNativeInterface::QAndroidApplication::context();
         if (!context.isValid()) return false;
         const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
-        const jboolean isTree = QJniObject::callStaticMethod<jboolean>("org/bedrockmap/DocumentMetadata", "isTreeUri",
+        const jboolean isTree = QJniObject::callStaticMethod<jboolean>("io/github/hhhxiao/bedrockmap/DocumentMetadata", "isTreeUri",
                                                                        "(Landroid/content/Context;Ljava/lang/String;)Z", context.object(),
                                                                        source.object<jstring>());
         QJniEnvironment env;
@@ -48,7 +48,7 @@ namespace io {
         const auto sourceString = QJniObject::fromString(source.toString(QUrl::FullyEncoded));
         const auto destinationString = QJniObject::fromString(destination.toLocalFile());
         const auto result = QJniObject::callStaticObjectMethod(
-            "org/bedrockmap/SafTreeIo", "copyTree", "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+            "io/github/hhhxiao/bedrockmap/SafTreeIo", "copyTree", "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
             context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
         QJniEnvironment env;
         if (env.checkAndClearExceptions() || !result.isValid()) return QStringLiteral("Cannot access the selected Android folder.");

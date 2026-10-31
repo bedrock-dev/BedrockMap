@@ -45,14 +45,14 @@ namespace {
     void initializePermissionListeners() {
 #ifdef Q_OS_ANDROID
         QJniEnvironment env;
-        if (env.registerNativeMethods("org/bedrockmap/ShizukuPermission",
+        if (env.registerNativeMethods("io/github/hhhxiao/bedrockmap/ShizukuPermission",
                                       {{"onStateChanged", "()V", reinterpret_cast<void*>(onPermissionStateChanged)}})) {
             const auto context = QNativeInterface::QAndroidApplication::context();
-            QJniObject::callStaticMethod<void>("org/bedrockmap/ShizukuPermission", "initialize", "(Landroid/content/Context;)V",
+            QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/ShizukuPermission", "initialize", "(Landroid/content/Context;)V",
                                                context.object());
         }
         env.checkAndClearExceptions();
-        env.registerNativeMethods("org/bedrockmap/RootPermission",
+        env.registerNativeMethods("io/github/hhhxiao/bedrockmap/RootPermission",
                                   {{"onStateChanged", "()V", reinterpret_cast<void*>(onPermissionStateChanged)}});
         env.checkAndClearExceptions();
 #endif

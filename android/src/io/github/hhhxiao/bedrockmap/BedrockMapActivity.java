@@ -1,4 +1,4 @@
-package org.bedrockmap;
+package io.github.hhhxiao.bedrockmap;
 
 import android.content.ClipData;
 import android.content.Intent;

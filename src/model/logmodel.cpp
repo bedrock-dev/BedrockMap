@@ -82,9 +82,9 @@ LogModel::LogModel(int& argc, char** argv, QObject* parent) : QAbstractListModel
     timer_.start(100);
 #ifdef Q_OS_ANDROID
     QJniEnvironment env;
-    if (env.registerNativeMethods("org/bedrockmap/AppLog", {{"onMessage", "(ILjava/lang/String;Ljava/lang/String;)V",
+    if (env.registerNativeMethods("io/github/hhhxiao/bedrockmap/AppLog", {{"onMessage", "(ILjava/lang/String;Ljava/lang/String;)V",
                                                              reinterpret_cast<void*>(onAndroidLogMessage)}})) {
-        QJniObject::callStaticMethod<void>("org/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(true));
+        QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(true));
     }
     env.checkAndClearExceptions();
 #endif
@@ -92,7 +92,7 @@ LogModel::LogModel(int& argc, char** argv, QObject* parent) : QAbstractListModel
 
 LogModel::~LogModel() {
 #ifdef Q_OS_ANDROID
-    QJniObject::callStaticMethod<void>("org/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(false));
+    QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(false));
     QJniEnvironment env;
     env.checkAndClearExceptions();
 #endif

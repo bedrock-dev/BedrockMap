@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.qtproject.example"
+    package="io.github.hhhxiao.bedrockmap"
     android:installLocation="auto"
     android:versionCode="-- %%INSERT_VERSION_CODE%% --"
     android:versionName="-- %%INSERT_VERSION_NAME%% --">
@@ -27,7 +27,7 @@
         android:fullBackupOnly="false"
         android:requestLegacyExternalStorage="true">
         <activity
-            android:name="org.bedrockmap.BedrockMapActivity"
+            android:name="io.github.hhhxiao.bedrockmap.BedrockMapActivity"
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
             android:label="-- %%INSERT_APP_NAME%% --"
             android:launchMode="singleTask"
@@ -126,7 +126,7 @@
                 android:value="true" />
         </activity>
 
-        <service android:name="org.bedrockmap.RootFileService" android:exported="false" />
+        <service android:name="io.github.hhhxiao.bedrockmap.RootFileService" android:exported="false" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"

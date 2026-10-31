@@ -1,4 +1,4 @@
-package org.bedrockmap;
+package io.github.hhhxiao.bedrockmap;
 
 import android.content.pm.PackageManager;
 import android.content.ComponentName;

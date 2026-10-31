@@ -1,4 +1,4 @@
-package org.bedrockmap;
+package io.github.hhhxiao.bedrockmap;
 
 import android.content.Intent;
 import android.os.IBinder;
