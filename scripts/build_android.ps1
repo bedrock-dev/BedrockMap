@@ -194,7 +194,14 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "APK signature verification failed ($LASTEXITCODE)." }
     $apk = Join-Path $deploymentDir 'BedrockMap.apk'
     Copy-Item -LiteralPath $signedApk -Destination $apk -Force
+    # Copy the verified APK to dist using the configured application version.
+    $deploymentSettings = Get-Content -LiteralPath (Join-Path $BuildDir 'android-BedrockMap-deployment-settings.json') -Raw | ConvertFrom-Json
+    $versionName = $deploymentSettings.'android-version-name'
+    if ([string]::IsNullOrWhiteSpace($versionName)) { throw 'Android version name is missing.' }
+    $distApk = Join-Path $sourceDir "dist\BedrockMap-$versionName-arm64-v8a.apk"
+    Copy-Item -LiteralPath $apk -Destination $distApk -Force
     Write-Host "APK: $apk"
+    Write-Host "Distribution APK: $distApk"
     Write-Host ('APK size: {0:N2} MiB ({1:N0} bytes)' -f ((Get-Item -LiteralPath $apk).Length / 1MB), (Get-Item -LiteralPath $apk).Length)
 } finally {
     foreach ($entry in $previousEnvironment.GetEnumerator()) {

@@ -26,7 +26,8 @@ BedrockMap is a Qt Quick application. The former Qt Widgets frontend has been re
 - Only load visible terrain regions and respect the configured thread and cache limits.
 - Use `tr()`, `qsTr()` or `QCoreApplication::translate()` for user-visible text, and update `translations/zh_CN.ts` and `translations/en.ts` with `lupdate`.
 - Prefer editing an existing file over introducing a wrapper with no clear responsibility.
-- Do not add or modify tests unless the user explicitly requests tests. Use builds and focused manual checks for routine verification.
+- Do not add or modify tests unless the user explicitly requests tests.
+- For changes exceeding 20 lines, compile with `./scripts/build.ps1` before handing off. Do not launch the application for manual testing unless the user explicitly requests it.
 
 ## Working in this repository
 

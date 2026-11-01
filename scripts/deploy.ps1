@@ -55,7 +55,8 @@ if (-not $versionTag) {
     $versionTag = "unknown"
     Write-Warning "No git tag found; archive will be named with 'unknown'"
 }
-$archiveName = "BedrockMap-$versionTag.zip"
+$archiveName = Join-Path (Split-Path -Parent $PSScriptRoot) "dist\BedrockMap-$versionTag.zip"
 
 Compress-Archive -Path $release_dir -DestinationPath $archiveName -Force
+Write-Host "Archive: $archiveName"
 Remove-Item -Path $release_dir -Recurse -Force
