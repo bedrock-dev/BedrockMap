@@ -1,5 +1,5 @@
 param(
-    [string]$QtRoot = 'C:\noinstall\Qt\6.11.2',
+    [string]$QtRoot = 'C:\noinstall\Qt\6.11.1',
     [string]$SdkRoot = '',
     [string]$NdkRoot = 'C:\noinstall\android-ndk-r30',
     [string]$JavaRoot = $env:JAVA_HOME,
@@ -108,6 +108,8 @@ if (-not $NativeOnly) {
     $buildEnvironment.BEDROCKMAP_KEYSTORE_PATH = [IO.Path]::GetFullPath($KeystorePath)
     $buildEnvironment.BEDROCKMAP_KEYSTORE_CREDENTIALS = [IO.Path]::GetFullPath($KeystoreCredentials)
     $buildEnvironment.BEDROCKMAP_KEYSTORE_ALIAS = $KeystoreAlias
+    $buildEnvironment.ORG_GRADLE_PROJECT_bedrockmapNdkPath = $NdkRoot
+    $buildEnvironment.GRADLE_OPTS = "$env:GRADLE_OPTS -Dorg.gradle.daemon=false".Trim()
     $buildTools = Get-ChildItem -LiteralPath (Join-Path $SdkRoot 'build-tools') -Directory |
         Sort-Object { [version]($_.Name.Split('-')[0]) } -Descending | Select-Object -First 1
     if (-not $buildTools) { throw 'Install Android SDK Build-Tools.' }
@@ -165,12 +167,12 @@ try {
         return
     }
 
-    # Deploy Qt, then trim libraries before packaging.
+    # Initialize and build Qt's Gradle project, then trim and repackage it.
     $deployedNativeDir = Join-Path $deploymentDir 'libs\arm64-v8a'
     [void][IO.Directory]::CreateDirectory($deployedNativeDir)
     Copy-Item -LiteralPath $nativeSo -Destination $deployedNativeDir -Force
     & $androidDeployQt --input (Join-Path $BuildDir 'android-BedrockMap-deployment-settings.json') `
-        --output $deploymentDir --android-platform "android-$CompileSdk" --jdk $JavaRoot --release --aux-mode
+        --output $deploymentDir --android-platform "android-$CompileSdk" --jdk $JavaRoot --release
     if ($LASTEXITCODE -ne 0) { throw "Android deployment failed ($LASTEXITCODE)." }
     Optimize-AndroidDeployment
 

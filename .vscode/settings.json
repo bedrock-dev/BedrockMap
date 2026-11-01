@@ -1,7 +1,7 @@
 {
     "cmake.generator": "Ninja",
     "cmake.configureEnvironment": {
-        "QT_ROOT": "C:\\noinstall\\Qt\\6.11.2\\mingw_64"
+        "QT_ROOT": "C:\\noinstall\\Qt\\6.11.1\\mingw_64"
     },
     // This project builds with GCC (msys64 UCRT64), but clangd learns the toolchain from
     // compile_commands.json only. GCC's system include paths live inside the driver rather
