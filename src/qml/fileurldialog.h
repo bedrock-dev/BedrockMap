@@ -18,6 +18,9 @@ class FileUrlDialog : public QQuickFileDialog {
 
    protected:
     void onCreate(QPlatformDialogHelper* dialog) override;
+#ifdef Q_OS_WASM
+    void onShow(QPlatformDialogHelper* dialog) override;
+#endif
     void accept() override;
 
    private:

@@ -36,7 +36,7 @@ namespace constant {
     static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     inline constexpr int GRID_WIDTH = 32;
     inline constexpr int DEFAULT_FONT_POINT_SIZE = 14;
-    inline constexpr const char* UI_FONT_RESOURCE = ":/bedrockmap/fonts/NotoSansSC.ttf";
+    inline constexpr const char* UI_FONT_RESOURCE = ":/bedrockmap/fonts/NotoSansSC-Regular.otf";
     inline constexpr const char* MONOSPACE_FONT_RESOURCE = ":/bedrockmap/fonts/JetBrainsMono-Regular.ttf";
 
     // Floor zoom for the whole-world overview mode, derived from region size.
@@ -155,7 +155,7 @@ namespace setting {
         return value <= 2 ? 2 : value <= 4 ? 4 : 8;
     }
 
-    /// Uses the bundled UI font on mobile and the system UI font on desktop.
+    /// Uses the bundled UI font on Android/WASM and the system UI font on desktop.
     /// Registers the editor font on all platforms and applies the configured size.
     /// Safe to call more than once.
     void setupUiFont();

@@ -3,7 +3,7 @@
 
 #include <QtQuickDialogs2/private/qquickfolderdialog_p.h>
 
-/// Retains tree URIs selected by Android's native directory picker.
+/// Retains Android tree URIs and stages browser directory uploads.
 class FolderUrlDialog : public QQuickFolderDialog {
     Q_OBJECT
     QML_ELEMENT
@@ -12,6 +12,10 @@ class FolderUrlDialog : public QQuickFolderDialog {
    public:
     explicit FolderUrlDialog(QObject* parent = nullptr);
     [[nodiscard]] QUrl selectedUrl() const;
+
+   public slots:
+    void open();
+    void done(int result) override;
 
    signals:
     void selectedUrlChanged();
@@ -23,6 +27,7 @@ class FolderUrlDialog : public QQuickFolderDialog {
    private:
     void captureSelection(QPlatformFileDialogHelper* dialog);
     QUrl selected_url_;
+    bool browser_pending_{false};
 };
 
 #endif  // BEDROCKMAP_FOLDERURLDIALOG_H

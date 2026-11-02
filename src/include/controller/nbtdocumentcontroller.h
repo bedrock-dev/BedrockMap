@@ -59,6 +59,7 @@ class NbtDocumentController : public QObject {
     Q_PROPERTY(int mode READ modeValue NOTIFY modeChanged)
     Q_PROPERTY(bool fileBacked READ fileBacked NOTIFY modeChanged)
     Q_PROPERTY(QString filePath READ filePath NOTIFY filePathChanged)
+    Q_PROPERTY(bool requiresSaveAs READ requiresSaveAs NOTIFY filePathChanged)
     Q_PROPERTY(QString documentTitle READ documentTitle NOTIFY documentTitleChanged)
     Q_PROPERTY(bool dirty READ dirty NOTIFY dirtyChanged)
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly NOTIFY readOnlyChanged)
@@ -84,6 +85,7 @@ class NbtDocumentController : public QObject {
     [[nodiscard]] int modeValue() const { return static_cast<int>(mode_); }
     [[nodiscard]] bool fileBacked() const { return mode_ == Mode::File; }
     [[nodiscard]] QString filePath() const;
+    [[nodiscard]] bool requiresSaveAs() const;
     [[nodiscard]] QString documentTitle() const;
     [[nodiscard]] bool dirty() const { return dirty_; }
     [[nodiscard]] bool readOnly() const { return read_only_; }

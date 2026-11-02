@@ -373,7 +373,7 @@ Window {
                         if (!session)
                             return
                         if (session.kind === "nbt") {
-                            if (session.path.length === 0) {
+                            if (session.document && session.document.requiresSaveAs) {
                                 nbtCloseSaveDialog.open()
                                 return
                             }

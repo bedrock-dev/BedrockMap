@@ -42,6 +42,7 @@ namespace io {
         [[nodiscard]] virtual QString readStream(const QUrl& url, const StreamReader& reader) const = 0;
         [[nodiscard]] virtual QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {}) const = 0;
         [[nodiscard]] virtual QString displayName(const QUrl& url) const = 0;
+        [[nodiscard]] virtual bool requiresSaveAs(const QUrl&) const { return false; }
         [[nodiscard]] virtual QString copyTree(const QUrl& source, const QUrl& destination) const;
         [[nodiscard]] virtual QString resolveNativeDirectory(const QUrl& source) const;
     };

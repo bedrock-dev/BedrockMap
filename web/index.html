@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BedrockMap</title>
+    <style>
+        html, body { margin: 0; height: 100%; overflow: hidden; }
+        #screen { width: 100%; height: 100%; }
+        #qtspinner { padding: 1rem; font-family: sans-serif; }
+    </style>
+    <script src="BedrockMap.js" defer></script>
+    <script src="qtloader.js" defer></script>
+</head>
+<body>
+    <div id="qtspinner">
+        <h1>BedrockMap</h1>
+        <p id="qtstatus">Loading...</p>
+    </div>
+    <div id="screen" hidden></div>
+    <script>
+        window.addEventListener('load', async () => {
+            const spinner = document.getElementById('qtspinner');
+            const screen = document.getElementById('screen');
+            const status = document.getElementById('qtstatus');
+            const showStatus = message => {
+                status.textContent = message;
+                spinner.hidden = false;
+                screen.hidden = true;
+            };
+            try {
+                const reloadKey = 'BedrockMap-isolation-reload:' + location.pathname;
+                if (!window.crossOriginIsolated) {
+                    if (!window.isSecureContext || !('serviceWorker' in navigator)) {
+                        throw new Error('This build requires HTTPS or localhost with Service Worker support.');
+                    }
+                    // Retry navigation once so a failed isolation policy cannot cause a reload loop.
+                    if (sessionStorage.getItem(reloadKey)) {
+                        sessionStorage.removeItem(reloadKey);
+                        throw new Error('Cross-origin isolation could not be enabled in this browser.');
+                    }
+                    status.textContent = 'Preparing browser isolation...';
+                    const workerUrl = new URL('./coi-serviceworker.js', location.href);
+                    await navigator.serviceWorker.register(workerUrl, { updateViaCache: 'none' });
+                    await navigator.serviceWorker.ready;
+                    if (navigator.serviceWorker.controller?.scriptURL !== workerUrl.href) {
+                        await new Promise(resolve => {
+                            const onControllerChange = () => {
+                                if (navigator.serviceWorker.controller?.scriptURL === workerUrl.href) {
+                                    navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+                                    resolve();
+                                }
+                            };
+                            navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+                            onControllerChange();
+                        });
+                    }
+                    sessionStorage.setItem(reloadKey, '1');
+                    location.reload();
+                    return;
+                }
+                sessionStorage.removeItem(reloadKey);
+                await qtLoad({
+                    qt: {
+                        entryFunction: window.BedrockMap_entry,
+                        containerElements: [screen],
+                        localFonts: { familiesCollection: 'NoFontFamilies' },
+                        onLoaded: () => {
+                            spinner.hidden = true;
+                            screen.hidden = false;
+                        },
+                        onExit: result => showStatus('Application exited'
+                            + (result.code !== undefined ? ' (' + result.code + ')' : '')
+                            + (result.text ? ': ' + result.text : ''))
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                showStatus('Could not start BedrockMap: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

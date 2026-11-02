@@ -449,6 +449,39 @@
     </message>
 </context>
 <context>
+    <name>BrowserVfsBackend</name>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>Could not read selected files: %1</source>
+        <translation>Could not read selected files: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>The file is too large.</source>
+        <translation>The file is too large.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>No file reader was provided.</source>
+        <translation>No file reader was provided.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>The file reader failed.</source>
+        <translation>The file reader failed.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>No file writer was provided.</source>
+        <translation>No file writer was provided.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/browservfs.cpp"/>
+        <source>The file writer failed.</source>
+        <translation>The file writer failed.</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>

@@ -34,7 +34,7 @@ Item {
     function saveDocument() {
         if (!root.document || !root.document.hasDocument || root.document.readOnly || !root.allowSave)
             return
-        if (root.document.filePath.length === 0) {
+        if (root.document.requiresSaveAs) {
             saveDialog.open()
             return
         }

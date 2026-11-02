@@ -70,9 +70,9 @@ file(GLOB_RECURSE BEDROCKMAP_RESOURCE_FILES CONFIGURE_DEPENDS
 list(APPEND BEDROCKMAP_RESOURCE_FILES
     "${PROJECT_SOURCE_DIR}/res/fonts/JetBrainsMono-Regular.ttf"
 )
-if(ANDROID OR IOS)
+if(ANDROID OR EMSCRIPTEN)
     list(APPEND BEDROCKMAP_RESOURCE_FILES
-        "${PROJECT_SOURCE_DIR}/res/fonts/NotoSansSC.ttf"
+        "${PROJECT_SOURCE_DIR}/res/fonts/NotoSansSC-Regular.otf"
         "${PROJECT_SOURCE_DIR}/res/fonts/NotoSansSC-OFL.txt"
     )
 endif()
@@ -161,8 +161,19 @@ file(GLOB_RECURSE BEDROCKMAP_QML_SOURCES CONFIGURE_DEPENDS
 
 qt_add_executable(BedrockMap)
 
+if(EMSCRIPTEN)
+    # The browser entry page is maintained in web/, rather than Qt's default shell.
+    set_target_properties(BedrockMap PROPERTIES NO_WASM_DEFAULT_FILES TRUE)
+    configure_file(web/index.html "${CMAKE_CURRENT_BINARY_DIR}/index.html" COPYONLY)
+    configure_file(web/coi-serviceworker.js "${CMAKE_CURRENT_BINARY_DIR}/coi-serviceworker.js" COPYONLY)
+    configure_file("${Qt6_DIR}/../../../plugins/platforms/qtloader.js"
+        "${CMAKE_CURRENT_BINARY_DIR}/qtloader.js" COPYONLY)
+    # Qt's native browser file engine suspends while awaiting File System Access.
+    target_link_options(BedrockMap PRIVATE -sASYNCIFY=1 -sASYNCIFY_STACK_SIZE=1048576)
+endif()
+
 set(BEDROCKMAP_ASSET_COMPRESSION_OPTIONS)
-if(ANDROID)
+if(ANDROID OR EMSCRIPTEN)
     # Preserve the complete font and compress resource data even when the
     # default rcc savings threshold would leave a large font uncompressed.
     set(BEDROCKMAP_ASSET_COMPRESSION_OPTIONS --compress-algo zlib --compress 9 --threshold 0)
@@ -324,7 +335,7 @@ endif()
 # launched outside Qt Creator.
 get_filename_component(QT_BUILD_ROOT "${Qt6_DIR}/../../.." ABSOLUTE)
 set(QT_QML_IMPORT_ROOT "${QT_BUILD_ROOT}/qml")
-if(NOT ANDROID)
+if(NOT ANDROID AND NOT EMSCRIPTEN)
     add_custom_command(TARGET BedrockMap POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${QT_QML_IMPORT_ROOT}/QtQml"

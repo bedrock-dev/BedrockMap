@@ -1,4 +1,5 @@
 #include "io/vfs.h"
+#include "io/browservfs.h"
 
 #include <QDir>
 #include <QFile>
@@ -23,29 +24,26 @@ namespace io {
         class VfsRouter final : public Vfs {
            public:
             OpenReadResult openRead(const QUrl& url) const override {
-                if (local_.supports(url)) return local_.openRead(url);
-                return saf_tree_.supports(url) ? saf_tree_.openRead(url) : content_.openRead(url);
+                return backend(url).openRead(url);
             }
 
             ReadResult readAll(const QUrl& url, qint64 max_bytes) const override {
-                if (local_.supports(url)) return local_.readAll(url, max_bytes);
-                return saf_tree_.supports(url) ? saf_tree_.readAll(url, max_bytes) : content_.readAll(url, max_bytes);
+                return backend(url).readAll(url, max_bytes);
             }
 
             QString readStream(const QUrl& url, const StreamReader& reader) const override {
-                if (local_.supports(url)) return local_.readStream(url, reader);
-                return saf_tree_.supports(url) ? saf_tree_.readStream(url, reader) : content_.readStream(url, reader);
+                return backend(url).readStream(url, reader);
             }
 
             QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options) const override {
-                if (local_.supports(url)) return local_.writeStream(url, writer, options);
-                return saf_tree_.supports(url) ? saf_tree_.writeStream(url, writer, options) : content_.writeStream(url, writer, options);
+                return backend(url).writeStream(url, writer, options);
             }
 
             QString displayName(const QUrl& url) const override {
-                if (local_.supports(url)) return local_.displayName(url);
-                return saf_tree_.supports(url) ? saf_tree_.displayName(url) : content_.displayName(url);
+                return backend(url).displayName(url);
             }
+
+            bool requiresSaveAs(const QUrl& url) const override { return backend(url).requiresSaveAs(url); }
 
             QString copyTree(const QUrl& source, const QUrl& destination) const override {
                 return saf_tree_.supports(source) ? saf_tree_.copyTree(source, destination) : Vfs::copyTree(source, destination);
@@ -57,6 +55,17 @@ namespace io {
             }
 
            private:
+            const Vfs& backend(const QUrl& url) const {
+#ifdef Q_OS_WASM
+                if (browser_.supports(url)) return browser_;
+#endif
+                if (local_.supports(url)) return local_;
+                return saf_tree_.supports(url) ? static_cast<const Vfs&>(saf_tree_) : content_;
+            }
+
+#ifdef Q_OS_WASM
+            BrowserVfsBackend browser_;
+#endif
             LocalVfsBackend local_;
             ContentDocumentVfsBackend content_;
             SafTreeVfsBackend saf_tree_;

@@ -15,6 +15,7 @@ namespace io {
         [[nodiscard]] static QString writeBytes(const QUrl& url, const QByteArray& bytes, const WriteOptions& options = {});
         [[nodiscard]] static QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {});
         [[nodiscard]] static QString displayName(const QUrl& url);
+        [[nodiscard]] static bool requiresSaveAs(const QUrl& url);
         [[nodiscard]] static QString identifier(const QUrl& url);
         [[nodiscard]] static QString copyTree(const QUrl& source, const QUrl& destination);
         [[nodiscard]] static QString resolveNativeDirectory(const QUrl& source);

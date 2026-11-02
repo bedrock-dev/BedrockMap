@@ -269,6 +269,8 @@ bool NbtDocumentController::save() {
     return saveAs(file_url_);
 }
 
+bool NbtDocumentController::requiresSaveAs() const { return io::DocumentIo::requiresSaveAs(file_url_); }
+
 bool NbtDocumentController::saveAs(const QUrl& url) {
     if (mode_ == Mode::Memory) {
         setError(QStringLiteral("In-memory NBT documents are committed by their owner."));

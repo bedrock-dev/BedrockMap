@@ -351,7 +351,7 @@ void setting::save(const Settings& values) {
 }
 
 void setting::setupUiFont() {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
     static const QString uiFamily = [] {
         const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::UI_FONT_RESOURCE));
         const QStringList families = QFontDatabase::applicationFontFamilies(id);
@@ -368,7 +368,7 @@ void setting::setupUiFont() {
 
     QFont font = QGuiApplication::font();
     QString fallbackFamily = font.family();
-#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
     if (!uiFamily.isEmpty()) {
         font.setFamily(uiFamily);
         fallbackFamily = uiFamily;

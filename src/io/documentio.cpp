@@ -21,6 +21,8 @@ namespace io {
 
     QString DocumentIo::displayName(const QUrl& url) { return fileSystem().displayName(url); }
 
+    bool DocumentIo::requiresSaveAs(const QUrl& url) { return url.isEmpty() || fileSystem().requiresSaveAs(url); }
+
     QString DocumentIo::identifier(const QUrl& url) {
         if (url.isEmpty()) return {};
         const QString text = url.toString(QUrl::FullyEncoded);
