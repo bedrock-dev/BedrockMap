@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./imgs/sample.png" alt="BedrockMap Screenshot" width="720">
+  <img src="./imgs/sample_pc.png" alt="BedrockMap desktop map and NBT editor" width="70%">&emsp;<img src="./imgs/sample_mobile.png" alt="BedrockMap mobile 3D voxel viewer" width="24%">
 </p>
 
 # BedrockMap
@@ -11,7 +11,11 @@
 
 **English** | [简体中文](./README.zh-CN.md)
 
-**BedrockMap** is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt 6, Qt Quick, and C++20. It provides tools for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across dimensions.
+**BedrockMap** is an open-source, **high-performance, cross-platform map editor for Minecraft Bedrock Edition**, spanning desktop, mobile, and the web. Built with **C++20**, Qt 6, and Qt Quick, it provides tools for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across dimensions.
+
+Supports **all Minecraft Bedrock Edition versions from 1.2 onward**.
+
+> **[Try the web demo](https://bedrock-dev.github.io/bm/web/)** — No installation required. The initial download is large, so loading may take a while. Please be patient.
 
 ## Features
 
@@ -28,15 +32,21 @@
 
 Grab the latest release from the [Releases page](https://github.com/bedrock-dev/BedrockMap/releases).
 
-## System Requirements
+## Platforms
 
-- **OS** — Windows 10 or newer; Android builds are also supported
+| Platform | Availability |
+| --- | --- |
+| Desktop | Windows 10 or newer |
+| Mobile | Android 9 or newer (arm64-v8a) |
+| Web | Experimental WebAssembly demo in Chrome, Edge, or another Chromium browser with File System Access API support |
 
 ## Quick Start
 
 Open a world from the world list, or drag and drop a world folder or `.mcstructure` file onto the application. The map supports panning, zooming, selection, and a context menu.
 
 ## Build
+
+Building requires Qt 6 and a compiler with C++20 support. The commands below build and run the Windows desktop app.
 
 ```powershell
 # Clone with submodules
@@ -49,13 +59,9 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 .\scripts\run.ps1
 ```
 
-## Supported MCBE Versions
-
-Worlds from Minecraft Bedrock 1.2 (and possibly earlier) are supported, up to the 1.21 series (the chunk format varies by version).
-
 ## Contributing
 
-Bug reports and feature requests are welcome via [Issues](https://github.com/bedrock-dev/BedrockMap/issues). See [TODO.md](./TODO.md) for planned features and known issues.
+Bug reports and feature requests are welcome via [Issues](https://github.com/bedrock-dev/BedrockMap/issues).
 
 ## License
 

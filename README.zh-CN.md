@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./imgs/sample.png" alt="BedrockMap 截图" width="720">
+  <img src="./imgs/sample_pc.png" alt="BedrockMap 桌面端地图与 NBT 编辑器" width="70%">&emsp;<img src="./imgs/sample_mobile.png" alt="BedrockMap 移动端 3D 体素查看器" width="24%">
 </p>
 
 # BedrockMap
@@ -11,7 +11,11 @@
 
 [English](./README.md) | **简体中文**
 
-**BedrockMap** 是一款基于 Qt 6、Qt Quick 和 C++20 构建的开源《我的世界》基岩版地图编辑器，可浏览、检查和编辑基岩版世界存档（LevelDB 格式）。
+**BedrockMap** 是一款覆盖桌面、移动端与浏览器的开源**高性能、跨平台《我的世界》基岩版地图编辑器**，基于 **C++20**、Qt 6 和 Qt Quick 构建，可跨维度浏览、检查和编辑基岩版世界存档（LevelDB 格式）。
+
+支持 **Minecraft 基岩版 1.2 起的所有版本**。
+
+> **[在线体验网页 Demo](https://bedrock-dev.github.io/bm/web/)** — 无需安装。首次需要下载较大的文件，加载速度较慢，请耐心等待。
 
 ## 功能特性
 
@@ -28,15 +32,21 @@
 
 从 [Release 页面](https://github.com/bedrock-dev/BedrockMap/releases) 下载最新版本。
 
-## 系统要求
+## 支持平台
 
-- **操作系统** — Windows 10 及更新版本；也支持构建 Android 版本
+| 平台 | 支持情况 |
+| --- | --- |
+| 桌面端 | Windows 10 及更新版本 |
+| 移动端 | Android 9 及更新版本（arm64-v8a） |
+| 浏览器 | 在 Chrome、Edge 或其他支持 File System Access API 的 Chromium 浏览器中运行实验性 WebAssembly 演示 |
 
 ## 快速上手
 
 在世界列表中打开存档，也可以将世界文件夹或 `.mcstructure` 文件拖入应用。地图支持平移、缩放、选择和右键菜单。
 
 ## 构建
+
+构建需要 Qt 6 和支持 C++20 的编译器。以下命令用于构建和运行 Windows 桌面端。
 
 ```powershell
 # 使用子模块克隆
@@ -49,13 +59,9 @@ git clone --recursive https://github.com/bedrock-dev/BedrockMap.git
 .\scripts\run.ps1
 ```
 
-## 支持的 MCBE 版本
-
-支持 Minecraft 基岩版 1.2（可能更早）及以后的世界，直到 1.21 系列（不同版本的区块格式可能不同）。
-
 ## 参与贡献
 
-欢迎通过 [Issues](https://github.com/bedrock-dev/BedrockMap/issues) 提交 Bug 报告和功能建议。规划中的功能和已知问题见 [TODO.md](./TODO.md)。
+欢迎通过 [Issues](https://github.com/bedrock-dev/BedrockMap/issues) 提交 Bug 报告和功能建议。
 
 ## 许可证
 
