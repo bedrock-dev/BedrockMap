@@ -78,8 +78,8 @@ if(ANDROID OR EMSCRIPTEN)
 endif()
 
 set(COLOR_FILES
-    "${BEDROCK_LEVEL_ROOT}/data/colors/block_color.json"
-    "${BEDROCK_LEVEL_ROOT}/data/colors/biome_color.json"
+    "${BEDROCK_LEVEL_ROOT}/data/block_color.json"
+    "${BEDROCK_LEVEL_ROOT}/data/biome_color.json"
 )
 
 set(TS_FILES
@@ -196,7 +196,7 @@ qt_add_resources(BedrockMap app_icon
 
 qt_add_resources(BedrockMap color_tables
     PREFIX "${BEDROCKMAP_RESOURCE_PREFIX}/data/colors"
-    BASE "${BEDROCK_LEVEL_ROOT}/data/colors"
+    BASE "${BEDROCK_LEVEL_ROOT}/data"
     FILES ${COLOR_FILES}
 )
 

@@ -10,7 +10,7 @@ target_link_libraries(BedrockMapBenchmark PRIVATE
 
 qt_add_resources(BedrockMapBenchmark benchmark_colors
     PREFIX "${BEDROCKMAP_RESOURCE_PREFIX}/data/colors"
-    BASE "${BEDROCK_LEVEL_ROOT}/data/colors"
+    BASE "${BEDROCK_LEVEL_ROOT}/data"
     FILES ${COLOR_FILES}
 )
 

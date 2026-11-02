@@ -13,7 +13,7 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-JSON_PATH = PROJECT_ROOT / "bedrock-level" / "data" / "colors" / "biome_color.json"
+JSON_PATH = PROJECT_ROOT / "bedrock-level" / "data" / "biome_color.json"
 OUT_PATH = SCRIPT_DIR / "biome_color_chart.png"
 
 # Layout — two-column table:  #id | name | [rgb] [grass] [leaves] [water]
