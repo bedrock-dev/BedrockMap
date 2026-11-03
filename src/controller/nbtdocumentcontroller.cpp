@@ -135,14 +135,19 @@ bool NbtDocumentController::loadFile(const QUrl& url) {
         setError(QStringLiteral("The NBT file is empty."));
         return false;
     }
-    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
-    if (parsed.empty()) {
+    auto parsed = bl::nbt::parse_all(std::span<const byte_t>(
+        reinterpret_cast<const byte_t*>(read.data.constData()), static_cast<size_t>(read.data.size())));
+    if (!parsed) {
+        setError(QStringLiteral("Cannot parse NBT file: %1").arg(bl::nbt::parse_error_to_string(parsed.error_code)));
+        return false;
+    }
+    if (parsed.roots.empty()) {
         setError(QStringLiteral("No NBT roots were found in the file."));
         return false;
     }
     std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots;
-    roots.reserve(parsed.size());
-    for (auto* root : parsed) roots.emplace_back(root);
+    roots.reserve(parsed.roots.size());
+    for (auto* root : parsed.roots) roots.emplace_back(root);
     // Cache provider metadata while the file grant is available. QML title
     // bindings must not query the provider on every evaluation.
     replaceItems(std::move(roots), {}, Mode::File, url, io::DocumentIo::displayName(url));
@@ -347,15 +352,20 @@ bool NbtDocumentController::importFile(const QUrl& url) {
         setError(QStringLiteral("The NBT file is empty."));
         return false;
     }
-    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
-    if (parsed.empty()) {
+    auto parsed = bl::nbt::parse_all(std::span<const byte_t>(
+        reinterpret_cast<const byte_t*>(read.data.constData()), static_cast<size_t>(read.data.size())));
+    if (!parsed) {
+        setError(QStringLiteral("Cannot parse NBT file: %1").arg(bl::nbt::parse_error_to_string(parsed.error_code)));
+        return false;
+    }
+    if (parsed.roots.empty()) {
         setError(QStringLiteral("No NBT roots were found in the file."));
         return false;
     }
 
     std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots;
-    roots.reserve(parsed.size());
-    for (auto* root : parsed) roots.emplace_back(root);
+    roots.reserve(parsed.roots.size());
+    for (auto* root : parsed.roots) roots.emplace_back(root);
 
     if (storage_.singleRecord) {
         if (!items_.empty()) {
@@ -446,9 +456,14 @@ bool NbtDocumentController::replaceFile(const QUrl& url) {
         setError(QStringLiteral("The NBT file is empty."));
         return false;
     }
-    auto parsed = bl::nbt::parse_all(reinterpret_cast<const char*>(read.data.constData()), static_cast<size_t>(read.data.size()));
-    if (parsed.size() != 1) {
-        for (auto* root : parsed) delete root;
+    auto parsed = bl::nbt::parse_all(std::span<const byte_t>(
+        reinterpret_cast<const byte_t*>(read.data.constData()), static_cast<size_t>(read.data.size())));
+    if (!parsed) {
+        setError(QStringLiteral("Cannot parse NBT file: %1").arg(bl::nbt::parse_error_to_string(parsed.error_code)));
+        return false;
+    }
+    if (parsed.roots.size() != 1) {
+        for (auto* root : parsed.roots) delete root;
         setError(QCoreApplication::translate("NbtDocumentController",
                                              "A single-record section requires exactly one NBT root."));
         return false;
@@ -457,7 +472,7 @@ bool NbtDocumentController::replaceFile(const QUrl& url) {
     Item item;
     item.id = ++next_item_id_;
     item.modified = mode_ == Mode::Memory;
-    item.root.reset(parsed.front());
+    item.root.reset(parsed.roots.front());
     item.raw_key = items_.size() == 1 ? items_.front().raw_key : QString{};
     if (item.raw_key.isEmpty()) item.raw_key = storage_.fixedKey;
     if (item.raw_key.isEmpty()) item.raw_key = QString::fromStdString(item.root->key());

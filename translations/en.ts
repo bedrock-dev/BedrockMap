@@ -433,8 +433,8 @@
     </message>
     <message>
         <location filename="../src/controller/mcstructurevolumesource.cpp"/>
-        <source>Could not read the structure NBT.</source>
-        <translation>Could not read the structure NBT.</translation>
+        <source>Could not read the structure NBT: %1</source>
+        <translation>Could not read the structure NBT: %1</translation>
     </message>
     <message>
         <location filename="../src/controller/mcstructurevolumesource.cpp"/>

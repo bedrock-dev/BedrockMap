@@ -108,10 +108,12 @@ namespace {
                 const auto size = static_cast<size_t>(raw.size());
                 result.structure = std::make_shared<bl::mcstructure>(bl::parse_mcstructure(bytes, size));
                 if (result.structure->size_x() > 0 && result.structure->size_y() > 0 && result.structure->size_z() > 0) {
-                    int read = 0;
-                    result.root.reset(bl::nbt::parse_one(bytes, size, read));
-                    if (!result.root) {
-                        result.error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure NBT.");
+                    auto parsed = bl::nbt::parse_one(std::span<const byte_t>(bytes, size));
+                    result.root.reset(parsed.root);
+                    if (!parsed || !result.root) {
+                        result.error = QCoreApplication::translate("BlockVolumeController",
+                                                                     "Could not read the structure NBT: %1")
+                                           .arg(bl::nbt::parse_error_to_string(parsed.error_code));
                         return result;
                     }
                     return result;

@@ -39,7 +39,12 @@ namespace {
             target.push_back(std::move(root));
             return;
         }
-        for (auto* root : bl::nbt::parse_all(data.data(), data.size())) {
+        auto parsed = bl::nbt::parse_all(std::span<const byte_t>(data.data(), data.size()));
+        if (!parsed) {
+            LOG_F(ERROR, "Cannot parse chunk record: %s", bl::nbt::parse_error_to_string(parsed.error_code));
+            return;
+        }
+        for (auto* root : parsed.roots) {
             if (root) target.emplace_back(root);
         }
     }
