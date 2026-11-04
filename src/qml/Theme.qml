@@ -130,6 +130,7 @@ QtObject {
     readonly property color mapCheckerBase: App.settings.tileColorScheme === "light" ? "#ffffff" : "#141414"
     readonly property color mapCheckerAlternate: App.settings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
     readonly property color overlay: palette.overlay
+    readonly property color overlayTranslucent: dark ? "#b8212121" : "#c8ffffff"
     readonly property color overlayBorder: palette.overlayBorder
     readonly property color overlayText: palette.overlayText
     readonly property color overlayMuted: palette.overlayMuted

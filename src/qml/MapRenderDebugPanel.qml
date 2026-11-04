@@ -14,6 +14,11 @@ Item {
                                          pointSize: 8
                                      })
     readonly property font panelFont: debugFont
+    readonly property real summaryContentWidth: Math.max(timingHeading.implicitWidth, rendererInfo.implicitWidth,
+                                                         timingZoom.implicitWidth, atlasState.implicitWidth,
+                                                         uploadState.implicitWidth, viewportState.implicitWidth)
+    readonly property real preferredPanelWidth: Math.min(560, Math.max(debugActions.implicitWidth + 8,
+                                                                       summaryContentWidth + 16))
 
     function snapshot() {
         return timingHeading.text + "\n" + rendererInfo.text + "\n" + timingZoom.text + "\n" + atlasState.text + "\n" + uploadState.text
@@ -40,13 +45,13 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 72
         anchors.rightMargin: 18
-        implicitWidth: 560
+        implicitWidth: root.preferredPanelWidth
         implicitHeight: renderColumn.implicitHeight + 16
         width: Math.max(0, Math.min(implicitWidth, parent.width - 36))
         height: Math.max(0, Math.min(implicitHeight, parent.height - 90))
         radius: Theme.radiusSmall
-        color: Theme.overlay
-        border.color: Theme.overlayBorder
+        color: Theme.overlayTranslucent
+        border.width: 0
         z: 5
 
         TapHandler {
@@ -57,9 +62,42 @@ Item {
             }
         }
 
+        Row {
+            id: debugActions
+            z: 2
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 4
+            spacing: 2
+
+            Button {
+                text: "Reset"
+                flat: true
+                font: root.panelFont
+                leftPadding: 4
+                rightPadding: 4
+                topPadding: 0
+                bottomPadding: 0
+                implicitHeight: 16
+                onClicked: root.terrainLayer.resetTimings()
+            }
+            Button {
+                text: "Copy"
+                flat: true
+                font: root.panelFont
+                leftPadding: 4
+                rightPadding: 4
+                topPadding: 0
+                bottomPadding: 0
+                implicitHeight: 16
+                onClicked: root.terrainLayer.copyDebugText(root.snapshot())
+            }
+        }
+
         Flickable {
             anchors.fill: parent
             anchors.margins: 8
+            anchors.topMargin: 24
             contentWidth: Math.max(width, timingTree.implicitWidth)
             contentHeight: renderColumn.implicitHeight
             clip: true
@@ -69,37 +107,18 @@ Item {
                 width: Math.max(renderPanel.width - 16, timingTree.implicitWidth)
                 spacing: 1
 
-                RowLayout {
-                    width: renderPanel.width - 16
-                    spacing: 2
-
-                    Text {
-                        id: timingHeading
-                        Layout.fillWidth: true
-                        text: "RENDERER DEBUG  |  %1 FPS".arg(root.terrainLayer.framesPerSecond.toFixed(1))
-                        color: Theme.overlayText
-                        font.pointSize: root.panelFont.pointSize
-                        wrapMode: Text.Wrap
-                    }
-                    Button {
-                        text: "Reset"
-                        flat: true
-                        font.pixelSize: Theme.fontCaption
-                        padding: 2
-                        onClicked: root.terrainLayer.resetTimings()
-                    }
-                    Button {
-                        text: "Copy"
-                        flat: true
-                        font.pixelSize: Theme.fontCaption
-                        padding: 2
-                        onClicked: root.terrainLayer.copyDebugText(root.snapshot())
-                    }
+                Text {
+                    id: timingHeading
+                    width: Math.max(0, renderPanel.width - 16)
+                    text: "RENDERER DEBUG  |  %1 FPS".arg(root.terrainLayer.framesPerSecond.toFixed(1))
+                    color: Theme.overlayText
+                    font.pointSize: root.panelFont.pointSize
+                    wrapMode: Text.Wrap
                 }
 
                 Text {
                     id: rendererInfo
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: root.terrainLayer.graphicsInfo
@@ -107,7 +126,7 @@ Item {
                 }
                 Text {
                     id: timingZoom
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     color: Theme.overlayText
                     font: root.panelFont
                     wrapMode: Text.Wrap
@@ -120,7 +139,7 @@ Item {
                 }
                 Text {
                     id: atlasState
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     color: Theme.overlayText
                     font: root.panelFont
                     wrapMode: Text.Wrap
@@ -131,20 +150,20 @@ Item {
                 }
                 Text {
                     id: uploadState
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: "Uploads: %1 terrain tiles".arg(root.terrainLayer.uploadedTiles)
                 }
                 Text {
                     id: viewportState
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: "Viewport: %1 × %2 px".arg(Math.round(root.width)).arg(Math.round(root.height))
                 }
                 Rectangle {
-                    width: parent.width
+                    width: Math.max(0, renderPanel.width - 16)
                     height: 1
                     color: Theme.overlayBorder
                 }
@@ -171,8 +190,8 @@ Item {
         width: implicitWidth
         height: implicitHeight
         radius: Theme.radiusSmall
-        color: Theme.overlay
-        border.color: Theme.overlayBorder
+        color: Theme.overlayTranslucent
+        border.width: 0
         z: 5
 
         TapHandler {

@@ -27,6 +27,10 @@ Item {
     property bool selectionToolActive: false
     property real inputRightInset: 0
     property string operationText: ""
+    property bool hoverBlockActive: false
+    property var hoverBlockInfo: ({})
+    property point lastHoverPosition: Qt.point(0, 0)
+    property bool hasLastHoverPosition: false
     property real panInertia: App.settings ? App.settings.panInertia : 0
     property point panVelocity: Qt.point(0, 0)
     property real lastPanSampleMs: 0
@@ -134,6 +138,19 @@ Item {
             canvas.operationText = ""
             App.notifications.error(qsTr("Map operation failed"))
         }
+        function onDimensionChanged() {
+            canvas.refreshHoverBlock(true)
+        }
+        function onCameraMoved() {
+            canvas.refreshHoverBlock(false)
+        }
+        function onMapDataChanged(region, dimension) {
+            if (canvas.hoverBlockActive && canvas.hoverBlockInfo.dimension === dimension)
+                canvas.refreshHoverBlock(true)
+        }
+        function onWorldStateChanged() {
+            canvas.refreshHoverBlock(true)
+        }
     }
 
     Connections {
@@ -191,6 +208,35 @@ Item {
         panVelocity = Qt.point(0, 0)
         lastPanSampleMs = 0
         lastPanMotionMs = 0
+    }
+    function updateHoverBlock(position, force) {
+        if (!controller || inputBlocked) {
+            clearHoverBlock()
+            return
+        }
+
+        lastHoverPosition = position
+        hasLastHoverPosition = true
+        const info = controller.blockInfoAt(position)
+        const blockX = Number(info.blockX)
+        const blockZ = Number(info.blockZ)
+        const dimension = Number(info.dimension)
+        if (!Number.isFinite(blockX) || !Number.isFinite(blockZ) || !Number.isFinite(dimension))
+            return
+        if (!force && hoverBlockActive && hoverBlockInfo.blockX === blockX && hoverBlockInfo.blockZ === blockZ
+                && hoverBlockInfo.dimension === dimension)
+            return
+        hoverBlockInfo = info
+        hoverBlockActive = true
+    }
+    function refreshHoverBlock(force) {
+        if (hasLastHoverPosition)
+            updateHoverBlock(lastHoverPosition, force)
+    }
+    function clearHoverBlock() {
+        hoverBlockActive = false
+        hasLastHoverPosition = false
+        hoverBlockInfo = ({})
     }
     function beginPanGesture() {
         stopPanInertia()
@@ -307,6 +353,7 @@ Item {
                                controller.setViewportSize(Qt.size(width, height))
     onControllerChanged: {
         stopPanInertia()
+        clearHoverBlock()
         if (mapTouchInput)
             mapTouchInput.cancelGesture()
         if (controller)
@@ -314,15 +361,19 @@ Item {
     }
     onInputRightInsetChanged: {
         stopPanInertia()
+        refreshHoverBlock(true)
         if (mapTouchInput)
             mapTouchInput.cancelGesture()
     }
     onVisibleChanged: if (!visible) {
                           stopPanInertia()
+                          clearHoverBlock()
                           mapTouchInput.cancelGesture()
                           if (controller)
                               controller.endImportDrag()
                       }
+    onInputBlockedChanged: if (inputBlocked)
+                               clearHoverBlock()
     onSelectionToolActiveChanged: {
         if (mapTouchInput)
             mapTouchInput.cancelGesture()
@@ -430,6 +481,20 @@ Item {
         anchors.left: parent.left
         width: Math.max(0, canvas.width - canvas.inputRightInset)
         z: 4
+
+        HoverHandler {
+            id: mapHover
+            enabled: !canvas.inputBlocked && !canvas.importActive
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onHoveredChanged: {
+                if (hovered)
+                    canvas.updateHoverBlock(point.position, true)
+                else
+                    canvas.clearHoverBlock()
+            }
+            onPointChanged: if (hovered)
+                                canvas.updateHoverBlock(point.position, false)
+        }
 
         TapHandler {
             enabled: !canvas.inputBlocked && mapTouchInput.pointCount === 0
@@ -626,6 +691,53 @@ Item {
                         canvas.controller.zoomAdjacent(steps > 0 ? 1 : -1, anchor)
                 }
                 event.accepted = true
+            }
+        }
+    }
+
+    Rectangle {
+        id: mapStatusOverlay
+        visible: !!canvas.controller
+        z: 6
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: Theme.gapLarge + canvas.inputRightInset
+        anchors.bottomMargin: Theme.gapLarge + importPlacementOverlay.reservedHeight
+        width: statusColumn.implicitWidth + Theme.ui(16)
+        height: statusColumn.implicitHeight + Theme.ui(12)
+        radius: Theme.radiusSmall
+        color: Theme.overlayTranslucent
+        border.width: 0
+
+        Column {
+            id: statusColumn
+            anchors.centerIn: parent
+            spacing: Theme.ui(1)
+
+            Text {
+                text: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(canvas.controller.dimension).arg(
+                                                    canvas.hoverBlockInfo.blockX).arg(canvas.hoverBlockInfo.blockZ).arg(
+                                                    canvas.hoverBlockInfo.chunkX).arg(canvas.hoverBlockInfo.chunkZ) :
+                                                "Dim: %1 Pos:--,--/--,--".arg(canvas.controller.dimension)
+                color: Theme.overlayText
+                font: canvas.debugFont
+            }
+            Row {
+                Text {
+                    text: "Sel:%1 ".arg(canvas.controller.selectionChunkCount)
+                    color: Theme.overlayText
+                    font: canvas.debugFont
+                }
+                Text {
+                    text: "Modify:%1 ".arg(canvas.controller.modifiedChunkCount)
+                    color: canvas.controller.modifiedChunkCount > 0 ? Theme.danger : Theme.overlayText
+                    font: canvas.debugFont
+                }
+                Text {
+                    text: "Del:%1".arg(canvas.controller.deletedChunkCount)
+                    color: canvas.controller.deletedChunkCount > 0 ? Theme.danger : Theme.overlayText
+                    font: canvas.debugFont
+                }
             }
         }
     }

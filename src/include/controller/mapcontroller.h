@@ -32,6 +32,8 @@ class MapController final : public QObject {
     Q_PROPERTY(int selectionMode READ selectionMode WRITE setSelectionMode NOTIFY selectionModeChanged)
     Q_PROPERTY(int selectionChunkCount READ selectionChunkCount NOTIFY selectionChanged)
     Q_PROPERTY(int selectionRectCount READ selectionRectCount NOTIFY selectionChanged)
+    Q_PROPERTY(int modifiedChunkCount READ modifiedChunkCount NOTIFY modificationStateChanged)
+    Q_PROPERTY(int deletedChunkCount READ deletedChunkCount NOTIFY modificationStateChanged)
     Q_PROPERTY(bool operationRunning READ operationRunning NOTIFY operationChanged)
     Q_PROPERTY(bool worldLoaded READ worldLoaded NOTIFY worldStateChanged)
     Q_PROPERTY(RegionImportController* regionImport READ regionImport CONSTANT)
@@ -49,6 +51,8 @@ class MapController final : public QObject {
     [[nodiscard]] int selectionMode() const;
     [[nodiscard]] int selectionChunkCount() const;
     [[nodiscard]] int selectionRectCount() const;
+    [[nodiscard]] int modifiedChunkCount() const;
+    [[nodiscard]] int deletedChunkCount() const;
     [[nodiscard]] bool selectionDragging() const;
     [[nodiscard]] QVector<QRect> selectionRects() const;
     [[nodiscard]] QRect selectionDragRect() const;
@@ -109,6 +113,7 @@ class MapController final : public QObject {
     void stateChanged();
     void selectionChanged();
     void selectionModeChanged();
+    void modificationStateChanged();
     void operationChanged();
     void operationFinished();
     void operationFailed(const QString& message);

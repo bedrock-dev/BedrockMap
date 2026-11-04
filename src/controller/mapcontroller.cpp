@@ -113,6 +113,16 @@ int MapController::selectionRectCount() const {
     return map_state ? static_cast<int>(map_state->selection().rectCount()) : 0;
 }
 
+int MapController::modifiedChunkCount() const {
+    if (!loader_) return 0;
+    return loader_->chunkModifyCounts().second;
+}
+
+int MapController::deletedChunkCount() const {
+    if (!loader_) return 0;
+    return loader_->chunkModifyCounts().first;
+}
+
 bool MapController::selectionDragging() const {
     const auto* map_state = mapViewState();
     return map_state && map_state->selection().isDragging();
@@ -144,8 +154,13 @@ QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
     if (!map_state) return result;
     const QPoint block = map_state->blockPosAt(view_position, map_state->viewportSize());
     const int dimension = map_state->dim();
+    const auto chunk_x = static_cast<int>(std::floor(block.x() / 16.0));
+    const auto chunk_z = static_cast<int>(std::floor(block.y() / 16.0));
     result.insert(QStringLiteral("blockX"), block.x());
     result.insert(QStringLiteral("blockZ"), block.y());
+    result.insert(QStringLiteral("chunkX"), chunk_x);
+    result.insert(QStringLiteral("chunkZ"), chunk_z);
+    result.insert(QStringLiteral("dimension"), dimension);
     if (!loader_ || !loader_->isOpen()) return result;
 
     const bl::block_pos pos(block.x(), 0, block.y());
@@ -203,7 +218,9 @@ void MapController::setLevelLoader(AsyncLevelLoader* loader) {
     loader_ = loader;
     if (loader_) {
         connect(loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this, &MapController::worldStateChanged);
+        connect(loader_, &AsyncLevelLoader::dirtyChanged, this, &MapController::modificationStateChanged);
     }
+    emit modificationStateChanged();
     emit transparentVoidChanged();
     emit worldStateChanged();
 }
