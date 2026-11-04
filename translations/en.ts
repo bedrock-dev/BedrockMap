@@ -1038,9 +1038,10 @@
     <message>
         <location filename="../src/qml/Main.qml"/>
         <source>Open world</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Open world</translation>
     </message>
     <message>
+        <location filename="../src/qml/Main.qml"/>
         <location filename="../src/qml/Main.qml"/>
         <location filename="../src/qml/Main.qml"/>
         <source>Save failed</source>
@@ -1111,7 +1112,7 @@
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Export selected chunks</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Export selected chunks</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
@@ -1142,17 +1143,17 @@
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Deleting selected chunks…</source>
-        <translation type="unfinished"></translation>
+        <translation>Deleting selected chunks…</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Clearing selected chunks…</source>
-        <translation type="unfinished"></translation>
+        <translation>Clearing selected chunks…</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Copying selected chunks…</source>
-        <translation type="unfinished"></translation>
+        <translation>Copying selected chunks…</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
@@ -1503,6 +1504,12 @@
         <location filename="../src/qml/navigation.cpp"/>
         <source>Tools</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Shortcuts</source>
+        <translation>Shortcuts</translation>
     </message>
     <message>
         <location filename="../src/qml/navigation.cpp"/>
@@ -2662,6 +2669,254 @@
     </message>
 </context>
 <context>
+    <name>ShortcutsPage</name>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open world</source>
+        <translation>Open world</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open file</source>
+        <translation>Open file</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>New NBT document</source>
+        <translation>New NBT document</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Save active document</source>
+        <translation>Save active document</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Close active session</source>
+        <translation>Close active session</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Exit BedrockMap</source>
+        <translation>Exit BedrockMap</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open settings</source>
+        <translation>Open settings</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle grid</source>
+        <translation>Toggle grid</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle coordinates</source>
+        <translation>Toggle coordinates</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Overworld</source>
+        <translation>Overworld</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Nether</source>
+        <translation>Nether</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>The End</source>
+        <translation>The End</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Terrain layer</source>
+        <translation>Terrain layer</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Biome layer</source>
+        <translation>Biome layer</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle slime chunks</source>
+        <translation>Toggle slime chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle entities</source>
+        <translation>Toggle entities</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle villages</source>
+        <translation>Toggle villages</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle HSA</source>
+        <translation>Toggle HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle transparent void</source>
+        <translation>Toggle transparent void</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle map filters</source>
+        <translation>Toggle map filters</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle debug panels</source>
+        <translation>Toggle debug panels</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Replace selection mode</source>
+        <translation>Replace selection mode</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Add selection mode</source>
+        <translation>Add selection mode</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Subtract selection mode</source>
+        <translation>Subtract selection mode</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Clear selection</source>
+        <translation>Clear selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Copy selected chunks</source>
+        <translation>Copy selected chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Paste chunks</source>
+        <translation>Paste chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Export selected chunks</source>
+        <translation>Export selected chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Import chunks</source>
+        <translation>Import chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Delete selected chunks</source>
+        <translation>Delete selected chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Clear selected chunks</source>
+        <translation>Clear selected chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Edit selection biome</source>
+        <translation>Edit selection biome</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Save map screenshot</source>
+        <translation>Save map screenshot</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open 3D view</source>
+        <translation>Open 3D view</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Go to coordinates</source>
+        <translation>Go to coordinates</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Reset camera</source>
+        <translation>Reset camera</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Face front</source>
+        <translation>Face front</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle orthographic projection</source>
+        <translation>Toggle orthographic projection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle axes</source>
+        <translation>Toggle axes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle rotation lock</source>
+        <translation>Toggle rotation lock</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle selection</source>
+        <translation>Toggle selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle selection move mode</source>
+        <translation>Toggle selection move mode</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Rotate view with arrow keys</source>
+        <translation>Rotate view with arrow keys</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Keyboard shortcuts</source>
+        <translation>Keyboard shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Available shortcuts for the current Qt Quick interface.</source>
+        <translation>Available shortcuts for the current Qt Quick interface.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Global</source>
+        <translation>Global</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Map view</source>
+        <translation>Map view</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Selection and chunks</source>
+        <translation>Selection and chunks</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>3D view</source>
+        <translation>3D view</translation>
+    </message>
+</context>
+<context>
     <name>StartupNoticeDialog</name>
     <message>
         <location filename="../src/qml/StartupNoticeDialog.qml"/>
@@ -3173,7 +3428,7 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldListPage.qml"/>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Open file</source>
-        <translation type="unfinished"></translation>
+        <translation>Open file</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -3193,7 +3448,7 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Open world</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Open world</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -3423,17 +3678,17 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Overworld</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Overworld</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Nether</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nether</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>The End</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">The End</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -3508,7 +3763,7 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3D view</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -3538,11 +3793,6 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Saving…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Wait for the current map operation to finish before saving.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -39,6 +39,7 @@ Window {
     readonly property real safeLeft: appBackground.safeLeft
     readonly property real safeRight: appBackground.safeRight
     property var pendingCloseSession: null
+    property var pendingShortcutSaveSession: null
     property bool closingAfterDirty: false
     onWidthChanged: Theme.windowWidth = width
     Component.onCompleted: {
@@ -65,8 +66,9 @@ Window {
         if (childTitleBarVisible && workspaceSectionMenu)
             workspaceSectionMenu.close()
     }
-    readonly property bool canNavigateBack: (!workspaceOpen && currentPage === window.navigation.pagePermissions) || (
-                                                compactLayout && (workspaceOpen || currentPage
+    readonly property bool canNavigateBack: (!workspaceOpen && (currentPage === window.navigation.pageShortcuts
+                                                                || currentPage === window.navigation.pagePermissions))
+                                            || (compactLayout && (workspaceOpen || currentPage
                                                                   === window.navigation.pageLogs))
     readonly property string shellTitle: {
         if (workspaceOpen) {
@@ -111,6 +113,39 @@ Window {
         enabled: window.canNavigateBack
         onActivated: window.navigateBack()
     }
+    Shortcut {
+        sequence: "Ctrl+O"
+        enabled: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds && !App.importingWorld
+        onActivated: window.openWorldDialog()
+    }
+    Shortcut {
+        sequence: "Ctrl+Shift+O"
+        enabled: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds && !!worldsPageLazy.item
+        onActivated: window.openFileDialog()
+    }
+    Shortcut {
+        sequence: "Ctrl+N"
+        onActivated: window.newNbtDocument()
+    }
+    Shortcut {
+        sequence: "Ctrl+S"
+        enabled: window.workspaceOpen && !!window.activeSession && !window.activeSession.saving
+        onActivated: window.saveActiveSession()
+    }
+    Shortcut {
+        sequence: "Ctrl+W"
+        enabled: window.workspaceOpen
+        onActivated: window.closeActiveSession()
+    }
+    Shortcut {
+        sequence: "Ctrl+Q"
+        onActivated: window.quitApplication()
+    }
+    Shortcut {
+        sequence: "Ctrl+,"
+        enabled: !window.workspaceOpen
+        onActivated: window.openSettingsPage()
+    }
 
     Rectangle {
         id: appBackground
@@ -132,7 +167,8 @@ Window {
             App.navigateToPage(window.navigation.pageSessions)
             return
         }
-        if (currentPage === window.navigation.pageLogs || currentPage === window.navigation.pagePermissions)
+        if (currentPage === window.navigation.pageShortcuts || currentPage === window.navigation.pageLogs
+                || currentPage === window.navigation.pagePermissions)
             App.navigateToPage(window.navigation.pageTools)
     }
     /// Worlds page: the folder picker lives here so the header button, the empty
@@ -140,14 +176,55 @@ Window {
     /// validates, reuses an open session and records the world in the recents;
     /// anything the user has to be told goes to the application-wide message
     /// stack, which is visible from every page (including an open world).
-    function chooseWorldFolder() {
+    function openWorldDialog() {
         if (!App.importingWorld)
             folderDialog.open()
+    }
+    function openFileDialog() {
+        if (!window.workspaceOpen && window.currentPage === window.navigation.pageWorlds && worldsPageLazy.item)
+            worldsPageLazy.item.openFile()
+    }
+    function newNbtDocument() {
+        App.newNbtDocument()
+    }
+    function closeSession(index) {
+        App.closeSession(index)
+    }
+    function closeActiveSession() {
+        if (window.workspaceOpen)
+            closeSession(window.workspaceIndex)
+    }
+    function quitApplication() {
+        window.close()
+    }
+    function openSettingsPage() {
+        if (!window.workspaceOpen)
+            navigateToPage(window.navigation.pageSettings)
+    }
+    function navigateToPage(index) {
+        App.navigateToPage(index)
     }
     function openWorldFolder(url) {
         if (!url || url.toString().length === 0)
             return
         App.openWorldFolder(url)
+    }
+    function saveActiveSession() {
+        const session = window.activeSession
+        if (!session)
+            return
+        if (session.kind === "nbt" && session.document && session.document.requiresSaveAs) {
+            window.pendingShortcutSaveSession = session
+            nbtSaveAsDialog.closeAfterSave = false
+            nbtSaveAsDialog.open()
+            return
+        }
+        if (session.commit())
+            return
+        if (session.kind === "world")
+            App.notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
+        else
+            App.notifications.error(qsTr("Save failed"))
     }
     function cancelPendingClose() {
         if (!window.pendingCloseSession)
@@ -191,20 +268,29 @@ Window {
         onAccepted: window.openWorldFolder(selectedUrl)
     }
     FileUrlDialog {
-        id: nbtCloseSaveDialog
+        id: nbtSaveAsDialog
+        property bool closeAfterSave: true
         title: qsTr("Save NBT file")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "nbt"
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: {
-            const session = window.pendingCloseSession
+            const session = closeAfterSave ? window.pendingCloseSession : window.pendingShortcutSaveSession
             if (!session || !session.document)
                 return
-            if (session.document.saveAs(selectedUrl))
+            if (!session.document.saveAs(selectedUrl)) {
+                if (!closeAfterSave)
+                    window.pendingShortcutSaveSession = null
+                App.notifications.error(qsTr("Save failed"))
+                return
+            }
+            if (closeAfterSave)
                 window.completePendingSessionClose()
             else
-                App.notifications.error(qsTr("Save failed"))
+                window.pendingShortcutSaveSession = null
         }
+        onRejected: if (!closeAfterSave)
+                        window.pendingShortcutSaveSession = null
     }
 
     AppMenu {
@@ -374,7 +460,8 @@ Window {
                             return
                         if (session.kind === "nbt") {
                             if (session.document && session.document.requiresSaveAs) {
-                                nbtCloseSaveDialog.open()
+                                nbtSaveAsDialog.closeAfterSave = true
+                                nbtSaveAsDialog.open()
                                 return
                             }
                             if (session.commit())
@@ -473,7 +560,8 @@ Window {
         onToggleCollapsed: window.sidebarCollapsed = !window.sidebarCollapsed
         // Preview the explicit opposite mode; Save settings persists it.
         onToggleTheme: App.settings.colorTheme = Theme.dark ? "light" : "dark"
-        onNavigate: index => App.navigateToPage(index)
+        onNavigate: index => window.navigateToPage(index)
+        onCloseSessionRequested: index => window.closeSession(index)
     }
 
     Item {
@@ -566,11 +654,7 @@ Window {
                             buttonSize: 34
                             enabled: !!window.activeSession && window.activeSession.kind === "world"
                                      && window.activeSession.canSave
-                            onClicked: {
-                                if (window.activeSession && !window.activeSession.commit())
-                                    App.notifications.warning(qsTr(
-                                                                  "Wait for the current map operation to finish before saving."))
-                            }
+                            onClicked: window.saveActiveSession()
                         },
                         AppIconButton {
                             visible: window.workspaceOpen && window.compactLayout && window.activeSession
@@ -579,7 +663,7 @@ Window {
                             label: qsTr("Close world")
                             danger: true
                             buttonSize: 34
-                            onClicked: App.closeSession(window.workspaceIndex)
+                            onClicked: window.closeActiveSession()
                         }
                     ]
                 }
@@ -610,6 +694,7 @@ Window {
             // Pages stay loaded after their first visit, so switching sections
             // no longer discards table modes, filters or the map scene graph.
             LazyPage {
+                id: worldsPageLazy
                 pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds
                 sourceComponent: worldsPage
             }
@@ -620,6 +705,11 @@ Window {
             LazyPage {
                 pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageTools
                 sourceComponent: toolsPage
+            }
+            LazyPage {
+                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageShortcuts
+                            && Qt.platform.os !== "android"
+                sourceComponent: shortcutsPage
             }
             LazyPage {
                 pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageSettings
@@ -654,7 +744,7 @@ Window {
         anchors.bottom: parent.bottom
         currentIndex: window.workspaceOpen ? -1 : window.currentPage === window.navigation.pagePermissions
                                              ? window.navigation.pageTools : window.currentPage
-        onNavigate: index => App.navigateToPage(index)
+        onNavigate: index => window.navigateToPage(index)
     }
 
     // Open dropped world folders, world archives and standalone structure files.
@@ -712,7 +802,8 @@ Window {
         id: worldsPage
         WorldListPage {
             onOpenWorld: (path, title) => window.openWorld(path, title)
-            onAddRequested: window.chooseWorldFolder()
+            onAddRequested: window.openWorldDialog()
+            onNewNbtRequested: window.newNbtDocument()
         }
     }
     Component {
@@ -726,12 +817,17 @@ Window {
         }
     }
     Component {
+        id: shortcutsPage
+        ShortcutsPage {}
+    }
+    Component {
         id: sessionHostPage
         SessionHost {
             activeSession: window.activeSession
             currentIndex: window.workspaceIndex
-            onCloseRequested: index => App.closeSession(index)
+            onCloseRequested: index => window.closeSession(index)
             onBackRequested: window.navigateBack()
+            onSaveRequested: window.saveActiveSession()
         }
     }
     Component {

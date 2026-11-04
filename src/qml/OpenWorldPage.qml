@@ -9,6 +9,7 @@ Item {
     readonly property bool internalPageOpen: !!worldWorkspace && worldWorkspace.childPageOpen === true
     readonly property string internalPageTitle: internalPageOpen ? worldWorkspace.childPageTitle : ""
     signal closeRequested(int index)
+    signal saveRequested
 
     function goBack() {
         return internalPageOpen && worldWorkspace.goBack()
@@ -110,6 +111,7 @@ Item {
         WorldWorkspace {
             session: page.activeSession
             onCloseRequested: page.closeRequested(page.currentIndex)
+            onSaveRequested: page.saveRequested()
         }
     }
 }

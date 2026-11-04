@@ -7,6 +7,8 @@ Item {
     property var document
     property bool allowSave: true
     property bool allowReplace: false
+    property bool externalSave: false
+    signal saveRequested
 
     function report(error) {
         App.notifications.error(error || (root.document ? root.document.lastError : qsTr("No NBT document is open.")))
@@ -34,11 +36,16 @@ Item {
     function saveDocument() {
         if (!root.document || !root.document.hasDocument || root.document.readOnly || !root.allowSave)
             return
+        if (root.externalSave) {
+            root.saveRequested()
+            return
+        }
         if (root.document.requiresSaveAs) {
             saveDialog.open()
             return
         }
-        if (!root.document.save()) App.notifications.error(qsTr("Save failed"))
+        if (!root.document.save())
+            App.notifications.error(qsTr("Save failed"))
     }
 
     FileUrlDialog {
@@ -47,9 +54,9 @@ Item {
         fileMode: FileDialog.OpenFile
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.importFile(selectedUrl))
-                         App.notifications.error(qsTr("Import failed"))
-                     else
-                         App.notifications.info(qsTr("Import successful"))
+                        App.notifications.error(qsTr("Import failed"))
+                    else
+                        App.notifications.info(qsTr("Import successful"))
     }
     FileUrlDialog {
         id: replaceDialog
@@ -57,9 +64,9 @@ Item {
         fileMode: FileDialog.OpenFile
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.replaceFile(selectedUrl))
-                         App.notifications.error(qsTr("Import failed"))
-                     else
-                         App.notifications.info(qsTr("Import successful"))
+                        App.notifications.error(qsTr("Import failed"))
+                    else
+                        App.notifications.info(qsTr("Import successful"))
     }
     FileUrlDialog {
         id: saveDialog
@@ -68,7 +75,7 @@ Item {
         defaultSuffix: "nbt"
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.saveAs(selectedUrl))
-                         App.notifications.error(qsTr("Save failed"))
+                        App.notifications.error(qsTr("Save failed"))
     }
     FileUrlDialog {
         id: exportDialog
@@ -77,9 +84,9 @@ Item {
         defaultSuffix: "nbt"
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.exportFile(selectedUrl))
-                         App.notifications.error(qsTr("Export failed"))
-                     else
-                         App.notifications.info(qsTr("Export successful"))
+                        App.notifications.error(qsTr("Export failed"))
+                    else
+                        App.notifications.info(qsTr("Export successful"))
     }
     FileUrlDialog {
         id: exportCurrentDialog
@@ -88,9 +95,9 @@ Item {
         defaultSuffix: "nbt"
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.exportCurrent(selectedUrl))
-                         App.notifications.error(qsTr("Export failed"))
-                     else
-                         App.notifications.info(qsTr("Export successful"))
+                        App.notifications.error(qsTr("Export failed"))
+                    else
+                        App.notifications.info(qsTr("Export successful"))
     }
     ConfirmDialog {
         id: clearDialog

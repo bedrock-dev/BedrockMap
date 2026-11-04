@@ -10,6 +10,7 @@ Rectangle {
     property bool darkMode: true
     property bool collapsed: false
     signal navigate(int index)
+    signal closeSessionRequested(int index)
     signal toggleTheme
     signal toggleCollapsed
 
@@ -161,7 +162,7 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: -5
                     hoverEnabled: true
-                    onClicked: App.closeSession(sessionIndex)
+                    onClicked: root.closeSessionRequested(sessionIndex)
                 }
             }
             AppToolTip {
@@ -190,6 +191,14 @@ Rectangle {
             selected: currentIndex === root.navigation.pageTools
             compact: root.collapsed
             onClicked: navigate(root.navigation.pageTools)
+        }
+        AppListRow {
+            visible: Qt.platform.os !== "android"
+            label: root.navigation.pages[root.navigation.pageShortcuts].title
+            iconName: root.navigation.pages[root.navigation.pageShortcuts].icon
+            selected: currentIndex === root.navigation.pageShortcuts
+            compact: root.collapsed
+            onClicked: navigate(root.navigation.pageShortcuts)
         }
         AppListRow {
             label: root.navigation.pages[root.navigation.pageLogs].title

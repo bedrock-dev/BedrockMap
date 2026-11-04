@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQuick.Window
 import "controls"
 
 Item {
@@ -18,6 +19,9 @@ Item {
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
     readonly property bool importing: !!controller && controller.importing
     readonly property bool copying: !!controller && controller.copying
+    readonly property bool textInputFocused: !!Window.activeFocusItem && Window.activeFocusItem.text !== undefined
+    readonly property bool viewShortcutsEnabled: root.visible && root.hasModel && !!root.controller && !root.controller.loading &&
+                                                 !root.importPreviewActive && !root.textInputFocused
 
     function chooseStructureExport() {
         if (!controller || controller.loading || controller.exporting || !hasModel || structureExportDialog.visible
@@ -75,6 +79,45 @@ Item {
             return
         controller.pasteStructure()
     }
+    function resetCameraView() {
+        viewport.camera.resetView()
+    }
+    function focusFrontFace() {
+        viewport.camera.focusFrontFace()
+    }
+    function rotateView(yaw, pitch) {
+        viewport.camera.rotateView(yaw, pitch)
+    }
+    function setOrthoMode(enabled) {
+        viewport.camera.orthoMode = enabled
+    }
+    function toggleOrthoMode() {
+        setOrthoMode(!viewport.camera.orthoMode)
+    }
+    function setAxesVisible(visible) {
+        viewport.showAxes = visible
+    }
+    function toggleAxes() {
+        setAxesVisible(!viewport.showAxes)
+    }
+    function setRotationLocked(locked) {
+        viewport.camera.rotationLocked = locked
+    }
+    function toggleRotationLocked() {
+        setRotationLocked(!viewport.camera.rotationLocked)
+    }
+    function setSelectionEnabled(enabled) {
+        viewport.camera.selectionEnabled = enabled
+    }
+    function toggleSelection() {
+        setSelectionEnabled(!viewport.camera.selectionEnabled)
+    }
+    function setSelectionMoveMode(enabled) {
+        viewport.camera.selectionMoveMode = enabled
+    }
+    function toggleSelectionMoveMode() {
+        setSelectionMoveMode(!viewport.camera.selectionMoveMode)
+    }
 
     Connections {
         target: root.exportTarget
@@ -106,6 +149,62 @@ Item {
         function onDeleteFailed(message) {
             App.notifications.error(qsTr("Delete failed"), "", message)
         }
+    }
+
+    Shortcut {
+        sequence: "R"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.resetCameraView()
+    }
+    Shortcut {
+        sequence: "F"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.focusFrontFace()
+    }
+    Shortcut {
+        sequence: "O"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.toggleOrthoMode()
+    }
+    Shortcut {
+        sequence: "A"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.toggleAxes()
+    }
+    Shortcut {
+        sequence: "L"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.toggleRotationLocked()
+    }
+    Shortcut {
+        sequence: "S"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.toggleSelection()
+    }
+    Shortcut {
+        sequence: "M"
+        enabled: root.viewShortcutsEnabled && viewport.camera.selectionEnabled
+        onActivated: root.toggleSelectionMoveMode()
+    }
+    Shortcut {
+        sequence: "Left"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.rotateView(-90, 0)
+    }
+    Shortcut {
+        sequence: "Right"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.rotateView(90, 0)
+    }
+    Shortcut {
+        sequence: "Up"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.rotateView(0, -90)
+    }
+    Shortcut {
+        sequence: "Down"
+        enabled: root.viewShortcutsEnabled
+        onActivated: root.rotateView(0, 90)
     }
 
     FileUrlDialog {
@@ -315,14 +414,14 @@ Item {
                                 text: qsTr("Enable selection")
                                 enabled: !root.importPreviewActive
                                 checked: viewport.camera.selectionEnabled
-                                onToggled: viewport.camera.selectionEnabled = checked
+                                onToggled: root.setSelectionEnabled(checked)
                             }
                             PreviewCheckBox {
                                 objectName: "voxelSelectionMoveToggle"
                                 text: qsTr("Move selection")
                                 enabled: viewport.camera.selectionEnabled && !root.importPreviewActive
                                 checked: viewport.camera.selectionMoveMode
-                                onToggled: viewport.camera.selectionMoveMode = checked
+                                onToggled: root.setSelectionMoveMode(checked)
                             }
                         }
 
@@ -406,19 +505,19 @@ Item {
                                     objectName: "voxelOrthoToggle"
                                     text: qsTr("Orthographic projection")
                                     checked: viewport.camera.orthoMode
-                                    onToggled: viewport.camera.orthoMode = checked
+                                    onToggled: root.setOrthoMode(checked)
                                 }
                                 PreviewCheckBox {
                                     objectName: "voxelRotationLockToggle"
                                     text: qsTr("Lock rotation")
                                     checked: viewport.camera.rotationLocked
-                                    onToggled: viewport.camera.rotationLocked = checked
+                                    onToggled: root.setRotationLocked(checked)
                                 }
                                 PreviewCheckBox {
                                     objectName: "voxelShowAxesToggle"
                                     text: qsTr("Show axes")
                                     checked: viewport.showAxes
-                                    onToggled: viewport.showAxes = checked
+                                    onToggled: root.setAxesVisible(checked)
                                 }
                             }
 
@@ -434,7 +533,7 @@ Item {
                                     objectName: "voxelRotateUp"
                                     iconName: "caret_up"
                                     label: qsTr("Rotate up")
-                                    onClicked: viewport.camera.rotateView(0, -90)
+                                    onClicked: root.rotateView(0, -90)
                                 }
                                 Item {}
 
@@ -442,19 +541,19 @@ Item {
                                     objectName: "voxelRotateLeft"
                                     iconName: "caret_left"
                                     label: qsTr("Rotate left")
-                                    onClicked: viewport.camera.rotateView(-90, 0)
+                                    onClicked: root.rotateView(-90, 0)
                                 }
                                 ViewButton {
                                     objectName: "voxelFaceFront"
                                     iconName: "front"
                                     label: qsTr("Face front")
-                                    onClicked: viewport.camera.focusFrontFace()
+                                    onClicked: root.focusFrontFace()
                                 }
                                 ViewButton {
                                     objectName: "voxelRotateRight"
                                     iconName: "caret_right"
                                     label: qsTr("Rotate right")
-                                    onClicked: viewport.camera.rotateView(90, 0)
+                                    onClicked: root.rotateView(90, 0)
                                 }
 
                                 Item {}
@@ -462,7 +561,7 @@ Item {
                                     objectName: "voxelRotateDown"
                                     iconName: "caret_down"
                                     label: qsTr("Rotate down")
-                                    onClicked: viewport.camera.rotateView(0, 90)
+                                    onClicked: root.rotateView(0, 90)
                                 }
                                 Item {}
                             }

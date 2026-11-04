@@ -1043,6 +1043,7 @@
     <message>
         <location filename="../src/qml/Main.qml"/>
         <location filename="../src/qml/Main.qml"/>
+        <location filename="../src/qml/Main.qml"/>
         <source>Save failed</source>
         <translation>保存失败</translation>
     </message>
@@ -1503,6 +1504,12 @@
         <location filename="../src/qml/navigation.cpp"/>
         <source>Tools</source>
         <translation type="unfinished">工具</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/navigation.cpp"/>
+        <location filename="../src/qml/navigation.cpp"/>
+        <source>Shortcuts</source>
+        <translation>快捷键</translation>
     </message>
     <message>
         <location filename="../src/qml/navigation.cpp"/>
@@ -2662,6 +2669,254 @@
     </message>
 </context>
 <context>
+    <name>ShortcutsPage</name>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open world</source>
+        <translation>打开世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open file</source>
+        <translation>打开文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>New NBT document</source>
+        <translation>新建 NBT 文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Save active document</source>
+        <translation>保存当前文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Close active session</source>
+        <translation>关闭当前会话</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Exit BedrockMap</source>
+        <translation>退出 BedrockMap</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open settings</source>
+        <translation>打开设置</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle grid</source>
+        <translation>切换网格</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle coordinates</source>
+        <translation>切换坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Overworld</source>
+        <translation>主世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Nether</source>
+        <translation>下界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>The End</source>
+        <translation>末地</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Terrain layer</source>
+        <translation>地形图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Biome layer</source>
+        <translation>生物群系图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle slime chunks</source>
+        <translation>切换史莱姆区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle entities</source>
+        <translation>切换实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle villages</source>
+        <translation>切换村庄</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle HSA</source>
+        <translation>切换 HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle transparent void</source>
+        <translation>切换透明虚空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle map filters</source>
+        <translation>切换地图过滤器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle debug panels</source>
+        <translation>切换调试面板</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Replace selection mode</source>
+        <translation>替换选择模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Add selection mode</source>
+        <translation>添加选择模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Subtract selection mode</source>
+        <translation>减去选择模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Clear selection</source>
+        <translation>清除选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Copy selected chunks</source>
+        <translation>复制所选区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Paste chunks</source>
+        <translation>粘贴区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Export selected chunks</source>
+        <translation>导出所选区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Import chunks</source>
+        <translation>导入区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Delete selected chunks</source>
+        <translation>删除所选区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Clear selected chunks</source>
+        <translation>清空所选区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Edit selection biome</source>
+        <translation>编辑选区的生物群系</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Save map screenshot</source>
+        <translation>保存地图截图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Open 3D view</source>
+        <translation>打开 3D 视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Go to coordinates</source>
+        <translation>跳转到坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Reset camera</source>
+        <translation>重置相机</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Face front</source>
+        <translation>正面对准</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle orthographic projection</source>
+        <translation>切换正交投影</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle axes</source>
+        <translation>切换坐标轴</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle rotation lock</source>
+        <translation>切换旋转锁定</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle selection</source>
+        <translation>切换选择</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Toggle selection move mode</source>
+        <translation>切换选区移动模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Rotate view with arrow keys</source>
+        <translation>使用方向键旋转视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Keyboard shortcuts</source>
+        <translation>键盘快捷键</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Available shortcuts for the current Qt Quick interface.</source>
+        <translation>当前 Qt Quick 界面可用的快捷键。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Global</source>
+        <translation>全局</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Map view</source>
+        <translation>地图视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Selection and chunks</source>
+        <translation>选区与区块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>3D view</source>
+        <translation>3D 视图</translation>
+    </message>
+</context>
+<context>
     <name>StartupNoticeDialog</name>
     <message>
         <location filename="../src/qml/StartupNoticeDialog.qml"/>
@@ -3508,7 +3763,7 @@ Current version: %2</source>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3D 视图</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -3539,11 +3794,6 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Saving…</source>
         <translation>正在保存……</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Wait for the current map operation to finish before saving.</source>
-        <translation>请等待当前地图操作完成后再保存。</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

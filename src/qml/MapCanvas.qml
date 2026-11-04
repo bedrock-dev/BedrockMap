@@ -94,15 +94,11 @@ Item {
         inputBlocked: canvas.inputBlocked
         importActive: canvas.importActive
 
-        onUnselectRequested: if (canvas.controller)
-                                 canvas.controller.clearSelection()
-        onDeleteSelectionRequested: if (canvas.controller && canvas.controller.deleteSelectionAsync())
-                                        canvas.operationText = qsTr("Deleting selected chunks…")
-        onCreateVoidRequested: if (canvas.controller && canvas.controller.createVoidSelectionAsync())
-                                   canvas.operationText = qsTr("Clearing selected chunks…")
+        onUnselectRequested: canvas.clearMapSelection()
+        onDeleteSelectionRequested: canvas.deleteSelectedChunks()
+        onCreateVoidRequested: canvas.clearSelectedChunks()
         onSetBiomeRequested: canvas.openBiomePicker()
-        onCopySelectionRequested: if (canvas.controller && canvas.controller.copySelectionAsync())
-                                      canvas.operationText = qsTr("Copying selected chunks…")
+        onCopySelectionRequested: canvas.copySelectedChunks()
         onExportSelectionRequested: canvas.openChunkRegionExport()
         onPasteRequested: {
             const position = canvas.requestedChunkPosition()
@@ -292,8 +288,45 @@ Item {
     function openBiomePicker() {
         if (!controller)
             return
-        const biomeId = mapContextMenu.blockInfo.biomeId
+        const biomeId = hoverBlockActive ? hoverBlockInfo.biomeId : mapContextMenu.blockInfo.biomeId
         biomeDialog.openFor(controller.biomeOptions(), biomeId)
+    }
+    function copySelectedChunks() {
+        if (!controller || !controller.hasSelection || controller.operationRunning)
+            return
+        if (controller.copySelectionAsync())
+            operationText = qsTr("Copying selected chunks…")
+    }
+    function clearMapSelection() {
+        if (controller)
+            controller.clearSelection()
+    }
+    function deleteSelectedChunks() {
+        if (!controller || !controller.hasSelection || controller.operationRunning)
+            return
+        if (controller.deleteSelectionAsync())
+            operationText = qsTr("Deleting selected chunks…")
+    }
+    function clearSelectedChunks() {
+        if (!controller || !controller.hasSelection || controller.operationRunning)
+            return
+        if (controller.createVoidSelectionAsync())
+            operationText = qsTr("Clearing selected chunks…")
+    }
+    function pasteAtRequestedPosition() {
+        const position = requestedChunkPosition()
+        if (position && controller)
+            controller.beginPasteAsync(position.chunkX, position.chunkZ)
+    }
+    function openChunkImportDialog() {
+        const position = requestedChunkPosition()
+        if (!position)
+            return
+        importDialog.targetX = position.chunkX
+        importDialog.targetZ = position.chunkZ
+        importDialog.dimension = position.dimension
+        importDialog.owner = controller
+        importDialog.open()
     }
     function openChunkRegionExport() {
         exportDialog.selectedFile = exportDialog.currentFolder + "/chunkregion.bchks"
@@ -335,14 +368,15 @@ Item {
             voxelViewRequested(position.chunkX, position.chunkZ, position.dimension)
     }
     function requestedChunkPosition() {
-        const blockX = Number(mapContextMenu.blockInfo.blockX)
-        const blockZ = Number(mapContextMenu.blockInfo.blockZ)
+        const source = hoverBlockActive ? hoverBlockInfo : mapContextMenu.blockInfo
+        const blockX = Number(source.blockX)
+        const blockZ = Number(source.blockZ)
         if (!Number.isFinite(blockX) || !Number.isFinite(blockZ))
             return null
         return {
             chunkX: Math.floor(blockX / 16),
             chunkZ: Math.floor(blockZ / 16),
-            dimension: mapContextMenu.dimension
+            dimension: Number.isFinite(Number(source.dimension)) ? Number(source.dimension) : mapContextMenu.dimension
         }
     }
     onWidthChanged: if (controller)

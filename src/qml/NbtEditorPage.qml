@@ -12,11 +12,14 @@ Item {
     property string itemFilter: ""
     readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.cardPadding
     signal closeRequested
+    signal saveRequested
 
     NbtDocumentActions {
         id: documentActions
         document: page.document
         allowSave: true
+        externalSave: true
+        onSaveRequested: page.saveRequested()
     }
 
     Rectangle {
@@ -52,7 +55,7 @@ Item {
                             label: qsTr("Save NBT document")
                             buttonSize: 30
                             enabled: document.hasDocument && !document.readOnly
-                            onClicked: documentActions.saveDocument()
+                            onClicked: page.saveRequested()
                         },
                         AppIconButton {
                             Layout.alignment: Qt.AlignVCenter
@@ -92,7 +95,7 @@ Item {
                         onExportRequested: documentActions.openExport()
                         onExportCurrentRequested: documentActions.openExportCurrent()
                         onClearRequested: documentActions.openClear()
-                        onSaveRequested: documentActions.saveDocument()
+                        onSaveRequested: page.saveRequested()
                         onCloseRequested: page.closeRequested()
                     }
                 }

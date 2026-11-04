@@ -801,6 +801,8 @@ void VoxelQuickItem::resetView() {
     pitch_ = 45.0f;
     zoom_ = 1.0f;
     pan_ = {};
+    update();
+    emit viewOptionsChanged();
 }
 
 void VoxelQuickItem::beginRotate(const QPointF& position) {

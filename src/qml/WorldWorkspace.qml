@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 import "controls"
 
 Item {
@@ -18,11 +19,141 @@ Item {
     property bool chunkEditorOpen: false
     property bool voxelViewOpen: false
     readonly property bool childPageOpen: chunkEditorOpen || voxelViewOpen
+    readonly property bool textInputFocused: !!Window.activeFocusItem && Window.activeFocusItem.text !== undefined
+    readonly property bool mapShortcutsEnabled: section === 0 && !childPageOpen && !!mapController &&
+                                                !mapController.operationRunning && !(mapController.regionImport && (
+                                                                                         mapController.regionImport.active
+                                                                                         || mapController.regionImport.loading))
+                                                && !textInputFocused
     readonly property string childPageTitle: chunkEditorOpen ? chunkEditorPanel.headerTitle : (voxelViewOpen
                                                                                                ? voxelOverviewPanel.headerTitle :
                                                                                                  "")
     property real sidePanelWidth: 0
     signal closeRequested
+    signal saveRequested
+
+    component MapShortcut: Shortcut {
+        property bool needsSelection: false
+        enabled: workspace.mapShortcutsEnabled && (!needsSelection || workspace.mapController.hasSelection)
+    }
+
+    MapShortcut {
+        sequence: "Alt+G"
+        onActivated: workspace.toggleGrid()
+    }
+    MapShortcut {
+        sequence: "Alt+C"
+        onActivated: workspace.toggleCoordinates()
+    }
+    MapShortcut {
+        sequence: "Alt+1"
+        onActivated: workspace.setMapDimension(0)
+    }
+    MapShortcut {
+        sequence: "Alt+2"
+        onActivated: workspace.setMapDimension(1)
+    }
+    MapShortcut {
+        sequence: "Alt+3"
+        onActivated: workspace.setMapDimension(2)
+    }
+    MapShortcut {
+        sequence: "Alt+T"
+        onActivated: workspace.setMapLayer(0)
+    }
+    MapShortcut {
+        sequence: "Alt+B"
+        onActivated: workspace.setMapLayer(1)
+    }
+    MapShortcut {
+        sequence: "Alt+S"
+        onActivated: workspace.toggleSlimeChunks()
+    }
+    MapShortcut {
+        sequence: "Alt+A"
+        onActivated: workspace.toggleEntities()
+    }
+    MapShortcut {
+        sequence: "Alt+V"
+        onActivated: workspace.toggleVillages()
+    }
+    MapShortcut {
+        sequence: "Alt+H"
+        onActivated: workspace.toggleHsa()
+    }
+    MapShortcut {
+        sequence: "Alt+0"
+        onActivated: workspace.toggleTransparentVoid()
+    }
+    MapShortcut {
+        sequence: "Alt+F"
+        onActivated: workspace.toggleMapFilterPanel()
+    }
+    MapShortcut {
+        sequence: "Alt+D"
+        onActivated: workspace.toggleDebugPanels()
+    }
+    MapShortcut {
+        sequence: "Shift+R"
+        onActivated: workspace.setMapSelectionMode(0)
+    }
+    MapShortcut {
+        sequence: "Shift+A"
+        onActivated: workspace.setMapSelectionMode(1)
+    }
+    MapShortcut {
+        sequence: "Shift+S"
+        onActivated: workspace.setMapSelectionMode(2)
+    }
+    MapShortcut {
+        sequence: "Shift+C"
+        onActivated: canvas.clearMapSelection()
+    }
+    MapShortcut {
+        sequence: "Ctrl+C"
+        needsSelection: true
+        onActivated: canvas.copySelectedChunks()
+    }
+    MapShortcut {
+        sequence: "Ctrl+V"
+        onActivated: canvas.pasteAtRequestedPosition()
+    }
+    MapShortcut {
+        sequence: "Ctrl+E"
+        needsSelection: true
+        onActivated: canvas.openChunkRegionExport()
+    }
+    MapShortcut {
+        sequence: "Ctrl+I"
+        onActivated: canvas.openChunkImportDialog()
+    }
+    MapShortcut {
+        sequence: "Ctrl+D"
+        needsSelection: true
+        onActivated: canvas.deleteSelectedChunks()
+    }
+    MapShortcut {
+        sequence: "Ctrl+K"
+        needsSelection: true
+        onActivated: canvas.clearSelectedChunks()
+    }
+    MapShortcut {
+        sequence: "Ctrl+B"
+        needsSelection: true
+        onActivated: canvas.openBiomePicker()
+    }
+    MapShortcut {
+        sequence: "Ctrl+T"
+        onActivated: canvas.openScreenshotDialog()
+    }
+    MapShortcut {
+        sequence: "Ctrl+H"
+        onActivated: workspace.toggleVoxelView()
+    }
+    MapShortcut {
+        sequence: "Ctrl+G"
+        onActivated: workspace.focusGotoFields()
+    }
 
     Connections {
         target: workspace.session
@@ -33,6 +164,82 @@ Item {
         }
     }
 
+    function setMapToggle(toggle, enabled) {
+        if (toggle && toggle.active !== enabled)
+            toggle.active = enabled
+    }
+    function setMapDimension(index) {
+        if (mapController)
+            mapController.setDimension(index)
+    }
+    function setMapLayer(index) {
+        if (mapController)
+            mapController.setLayer(index)
+    }
+    function setMapSelectionMode(index) {
+        if (mapController)
+            mapController.setSelectionMode(index)
+    }
+    function setGridEnabled(enabled) {
+        setMapToggle(gridToggle, enabled)
+    }
+    function toggleGrid() {
+        setGridEnabled(!gridToggle.active)
+    }
+    function setCoordinatesEnabled(enabled) {
+        setMapToggle(coordsToggle, enabled)
+    }
+    function toggleCoordinates() {
+        setCoordinatesEnabled(!coordsToggle.active)
+    }
+    function setSlimeChunksEnabled(enabled) {
+        setMapToggle(slimeToggle, enabled)
+    }
+    function toggleSlimeChunks() {
+        setSlimeChunksEnabled(!slimeToggle.active)
+    }
+    function setEntitiesEnabled(enabled) {
+        setMapToggle(entitiesToggle, enabled)
+    }
+    function toggleEntities() {
+        setEntitiesEnabled(!entitiesToggle.active)
+    }
+    function setVillagesEnabled(enabled) {
+        setMapToggle(villagesToggle, enabled)
+    }
+    function toggleVillages() {
+        setVillagesEnabled(!villagesToggle.active)
+    }
+    function setHsaEnabled(enabled) {
+        setMapToggle(hsaToggle, enabled)
+    }
+    function toggleHsa() {
+        setHsaEnabled(!hsaToggle.active)
+    }
+    function setTransparentVoidEnabled(enabled) {
+        if (mapController && mapController.transparentVoid !== enabled)
+            mapController.setTransparentVoid(enabled)
+    }
+    function toggleTransparentVoid() {
+        if (mapController)
+            setTransparentVoidEnabled(!mapController.transparentVoid)
+    }
+    function toggleLayerPanel() {
+        layerPanelOpen = !layerPanelOpen
+    }
+    function toggleMapFilterPanel() {
+        mapFilterPanelOpen = !mapFilterPanelOpen
+    }
+    function toggleDebugPanels() {
+        debugVisible = !debugVisible
+    }
+    function toggleSelectionTool() {
+        canvas.selectionToolActive = !canvas.selectionToolActive
+    }
+    function focusGotoFields() {
+        xField.forceActiveFocus()
+        xField.selectAll()
+    }
     function jumpToCoordinates() {
         if (!mapController || xField.text.length === 0 || zField.text.length === 0)
             return
@@ -69,11 +276,7 @@ Item {
             voxelViewOpen = false
             return
         }
-        if (session && session.voxelView && session.voxelView.voxelRevision > 0) {
-            canvas.selectionToolActive = false
-            chunkEditorOpen = false
-            voxelViewOpen = true
-        }
+        openVoxelView()
     }
     function clampSidePanelWidth(value) {
         const available = Math.max(1, sectionHost.width)
@@ -296,20 +499,21 @@ Item {
                                 label: qsTr("Grid")
                                 active: true
                                 compact: true
+                                onToggled: workspace.setGridEnabled(active)
                             }
                             AppToggle {
                                 id: coordsToggle
                                 label: qsTr("Coords")
                                 active: false
                                 compact: true
+                                onToggled: workspace.setCoordinatesEnabled(active)
                             }
                             AppToggle {
                                 id: transparentVoidToggle
                                 label: qsTr("Transparent void")
                                 compact: true
                                 enabled: !!workspace.mapController
-                                onToggled: if (workspace.mapController)
-                                               workspace.mapController.setTransparentVoid(active)
+                                onToggled: workspace.setTransparentVoidEnabled(active)
                                 Binding {
                                     target: transparentVoidToggle
                                     property: "active"
@@ -329,8 +533,7 @@ Item {
                             options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
                             currentIndex: workspace.mapController ? workspace.mapController.dimension : 0
                             onActivated: index => {
-                                if (workspace.mapController)
-                                    workspace.mapController.setDimension(index)
+                                workspace.setMapDimension(index)
                             }
                         }
                         Text {
@@ -345,8 +548,7 @@ Item {
                             options: [qsTr("Terrain"), qsTr("Biomes")]
                             currentIndex: workspace.mapController ? workspace.mapController.layer : 0
                             onActivated: index => {
-                                if (workspace.mapController)
-                                    workspace.mapController.setLayer(index)
+                                workspace.setMapLayer(index)
                             }
                         }
                         Text {
@@ -362,22 +564,26 @@ Item {
                                 label: qsTr("Slime")
                                 active: false
                                 compact: true
+                                onToggled: workspace.setSlimeChunksEnabled(active)
                             }
                             AppToggle {
                                 id: entitiesToggle
                                 label: qsTr("Entities")
                                 active: false
                                 compact: true
+                                onToggled: workspace.setEntitiesEnabled(active)
                             }
                             AppToggle {
                                 id: villagesToggle
                                 label: qsTr("Villages")
                                 compact: true
+                                onToggled: workspace.setVillagesEnabled(active)
                             }
                             AppToggle {
                                 id: hsaToggle
                                 label: qsTr("HSA")
                                 compact: true
+                                onToggled: workspace.setHsaEnabled(active)
                             }
                         }
                         Text {
@@ -392,8 +598,7 @@ Item {
                             options: [qsTr("Replace"), qsTr("Add"), qsTr("Subtract")]
                             currentIndex: workspace.mapController ? workspace.mapController.selectionMode : 0
                             onActivated: index => {
-                                if (workspace.mapController)
-                                    workspace.mapController.setSelectionMode(index)
+                                workspace.setMapSelectionMode(index)
                             }
                         }
                     }
@@ -478,7 +683,7 @@ Item {
                         label: qsTr("Layers")
                         selected: workspace.layerPanelOpen
                         buttonSize: 34
-                        onClicked: workspace.layerPanelOpen = !workspace.layerPanelOpen
+                        onClicked: workspace.toggleLayerPanel()
                     }
 
                     AppIconButton {
@@ -487,7 +692,7 @@ Item {
                         label: qsTr("Map filters")
                         selected: workspace.mapFilterPanelOpen
                         buttonSize: 34
-                        onClicked: workspace.mapFilterPanelOpen = !workspace.mapFilterPanelOpen
+                        onClicked: workspace.toggleMapFilterPanel()
                     }
 
                     AppIconButton {
@@ -500,7 +705,7 @@ Item {
                                                             qsTr("Selection mode")
                         selected: canvas.selectionToolActive
                         buttonSize: 34
-                        onClicked: canvas.selectionToolActive = !canvas.selectionToolActive
+                        onClicked: workspace.toggleSelectionTool()
                     }
                 }
             }
@@ -613,10 +818,7 @@ Item {
                 buttonSize: 34
                 visible: !!workspace.session
                 enabled: workspace.session && workspace.session.canSave
-                onClicked: {
-                    if (!workspace.session.commit())
-                        App.notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
-                }
+                onClicked: workspace.saveRequested()
             }
             AppIconButton {
                 x: (parent.width - width) / 2
@@ -632,8 +834,8 @@ Item {
     AppCard {
         id: workspaceToolbar
         z: 7
-        visible: App.settings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen
-                 && !workspace.voxelViewOpen
+        visible: App.settings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen &&
+                 !workspace.voxelViewOpen
         readonly property real toolbarPadding: Theme.toolbarPadding
         width: workspaceToolbarRow.width + toolbarPadding * 2
         height: workspaceToolbarRow.height + toolbarPadding * 2
@@ -651,7 +853,7 @@ Item {
                 label: qsTr("Debug panels")
                 selected: workspace.debugVisible
                 buttonSize: 34
-                onClicked: workspace.debugVisible = !workspace.debugVisible
+                onClicked: workspace.toggleDebugPanels()
             }
         }
     }

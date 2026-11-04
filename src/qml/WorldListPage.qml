@@ -8,6 +8,7 @@ Item {
     id: page
     signal openWorld(string path, string title)
     signal addRequested
+    signal newNbtRequested
     property bool tableMode: false
     readonly property bool listOnly: !Theme.showWorldCards
     readonly property bool effectiveTableMode: listOnly || tableMode
@@ -25,6 +26,10 @@ Item {
         deleteWorldDialog.worldPath = path
         deleteWorldDialog.worldTitle = title
         deleteWorldDialog.open()
+    }
+
+    function openFile() {
+        openFileDialog.open()
     }
 
     function chooseWorldExport(path, title) {
@@ -226,7 +231,7 @@ Item {
                     iconName: "open"
                     label: qsTr("Open file")
                     detail: Theme.compact ? "" : qsTr("Open NBT, mcstructure, or mcworld files")
-                    onClicked: openFileDialog.open()
+                    onClicked: page.openFile()
                 }
                 AppListRow {
                     width: welcomeActions.actionWidth
@@ -235,7 +240,7 @@ Item {
                     iconName: "nbt_editor"
                     label: qsTr("New NBT document")
                     detail: Theme.compact ? "" : qsTr("Create an empty NBT document")
-                    onClicked: App.newNbtDocument()
+                    onClicked: page.newNbtRequested()
                 }
             }
 

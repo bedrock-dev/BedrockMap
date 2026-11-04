@@ -85,6 +85,7 @@ class VoxelQuickItem : public QQuickRhiItem {
     Q_INVOKABLE void dragSelection(const QPointF& position);
     Q_INVOKABLE void endSelectionDrag();
     Q_INVOKABLE void rotateView(float yawDegrees, float pitchDegrees);
+    Q_INVOKABLE void resetView();
     Q_INVOKABLE void focusFrontFace();
     Q_INVOKABLE void beginRotate(const QPointF& position);
     Q_INVOKABLE void beginPan(const QPointF& position);
@@ -108,7 +109,6 @@ class VoxelQuickItem : public QQuickRhiItem {
    private:
     void syncScene();
     void syncOverlay();
-    void resetView();
 
     QPointer<VoxelSceneController> controller_;
     QMetaObject::Connection scene_connection_;

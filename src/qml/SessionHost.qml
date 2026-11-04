@@ -23,6 +23,7 @@ Item {
     readonly property string internalPageTitle: internalPageOpen ? worldPage.internalPageTitle : ""
     signal closeRequested(int index)
     signal backRequested
+    signal saveRequested
 
     Connections {
         target: App
@@ -100,6 +101,7 @@ Item {
             currentIndex: host.currentIndex
             activeSession: host.worldSession
             onCloseRequested: index => host.closeRequested(index)
+            onSaveRequested: host.saveRequested()
         }
     }
 
@@ -108,6 +110,7 @@ Item {
         NbtEditorPage {
             document: host.nbtSession ? host.nbtSession.document : null
             onCloseRequested: host.closeRequested(host.currentIndex)
+            onSaveRequested: host.saveRequested()
         }
     }
 }
