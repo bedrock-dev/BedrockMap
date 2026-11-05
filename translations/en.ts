@@ -337,22 +337,22 @@
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
-        <source>1 session open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>%1 sessions open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
         <source>Dark mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>Light mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>1 session open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>%1 sessions open</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1074,8 +1074,8 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Save successful</source>
-        <translation>Save successful</translation>
+        <source>Settings saved. Rendering and world settings take effect after restart.</source>
+        <translation>Settings saved. Rendering and world settings take effect after restart.</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -3815,6 +3815,14 @@ Current version: %2</translation>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>The document provider returned no file descriptor.</translation>
+    </message>
+</context>
+<context>
+    <name>setting</name>
+    <message>
+        <location filename="../src/base/config.cpp"/>
+        <source>Could not save settings to %1.</source>
+        <translation>Could not save settings to %1.</translation>
     </message>
 </context>
 </TS>

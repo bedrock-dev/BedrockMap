@@ -277,7 +277,6 @@ class TerrainQuickItem : public QQuickItem {
     Q_PROPERTY(int atlasSlotsPerSide READ atlasSlotsPerSide NOTIFY metricsChanged)
 
    public:
-    Q_INVOKABLE void applySettings();
     explicit TerrainQuickItem(QQuickItem* parent = nullptr);
     [[nodiscard]] QString timingText() const { return timing_text_; }
     [[nodiscard]] QString graphicsInfo() const { return timings_->graphicsInfo(); }
@@ -350,7 +349,7 @@ class TerrainQuickItem : public QQuickItem {
     /// Coalesce camera-driven LOD changes until the target has stayed stable.
     void scheduleLodRequest();
     void commitLodRequest(int level);
-    bool refreshRenderSettings();
+    void initializeRenderSettings();
     void refreshMetrics();
     void publishMetrics(const TerrainFrameMetrics& metrics);
 
@@ -366,7 +365,6 @@ class TerrainQuickItem : public QQuickItem {
     ArrayTilePool array_tile_pool_;
     TileDeliveryQueue tile_delivery_;
     std::shared_ptr<const TerrainRenderSettingsSnapshot> render_settings_;
-    quint64 render_settings_revision_{0};
     /// Blocks per texel the provider has been asked to re-sample the window at.
     /// Publication uses the latest layout-level refill snapshot; edge slots may fill later.
     std::atomic<int> requested_blocks_per_texel_{1};

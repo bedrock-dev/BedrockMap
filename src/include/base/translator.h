@@ -15,12 +15,11 @@ class TranslatorManager final {
     TranslatorManager(const TranslatorManager&) = delete;
     TranslatorManager& operator=(const TranslatorManager&) = delete;
 
-    void initialize();
+    void initialize(QCoreApplication& application);
     void setupTranslation(QCoreApplication& application, const QString& language);
 
     /// Resolve the configured UI language. An empty (or "system") setting falls
-    /// back to the system locale and publishes the detected value through
-    /// setting::apply().
+    /// back to the system locale and records it in the startup snapshot.
     [[nodiscard]] QString resolveLanguage() const;
 
     /// System locale fallback without touching the stored settings.

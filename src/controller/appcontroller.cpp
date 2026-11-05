@@ -66,6 +66,7 @@ AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context
       logs_(std::move(logs)),
       context_(context),
       settings_(this),
+      runtime_settings_(this),
       worlds_(this),
       notifications_(this),
       update_checker_(this),

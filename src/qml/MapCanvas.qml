@@ -31,7 +31,7 @@ Item {
     property var hoverBlockInfo: ({})
     property point lastHoverPosition: Qt.point(0, 0)
     property bool hasLastHoverPosition: false
-    property real panInertia: App.settings ? App.settings.panInertia : 0
+    property real panInertia: App.runtimeSettings ? App.runtimeSettings.panInertia : 0
     property point panVelocity: Qt.point(0, 0)
     property real lastPanSampleMs: 0
     property real lastPanMotionMs: 0
@@ -440,13 +440,6 @@ Item {
         checkerAlternateColor: Theme.mapCheckerAlternate
     }
 
-    Connections {
-        target: App.settings
-        function onSaved() {
-            terrainLayer.applySettings()
-        }
-    }
-
     // Keeps publishing the camera actually applied by the terrain node so the
     // coordinate labels stay in step with a held LOD frame.
     MapOverlayQuickItem {
@@ -461,10 +454,10 @@ Item {
         slimeChunksVisible: canvas.showSlimeChunks
         villagesVisible: canvas.showVillages
         hsaVisible: canvas.showHsa
-        actorRenderStyle: App.settings ? App.settings.actorRenderStyle : 0
+        actorRenderStyle: App.runtimeSettings ? App.runtimeSettings.actorRenderStyle : 0
         gridVisible: canvas.showGrid
-        gridColor: App.settings ? App.settings.gridLineColor : "#bbbbbb"
-        selectionColor: App.settings ? App.settings.mapSelectionColor : "#50dafffb"
+        gridColor: App.runtimeSettings ? App.runtimeSettings.gridLineColor : "#bbbbbb"
+        selectionColor: App.runtimeSettings ? App.runtimeSettings.mapSelectionColor : "#50dafffb"
     }
 
     MapCoordinateLabels {

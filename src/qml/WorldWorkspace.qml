@@ -351,7 +351,7 @@ Item {
                 showSlimeChunks: slimeToggle.active
                 showVillages: villagesToggle.active
                 showHsa: hsaToggle.active
-                showRenderDebug: workspace.debugVisible && App.settings.showMapDebugButton
+                showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
                 onChunkEditorRequested: function (chunkX, chunkZ, dimension) {
                     if (workspace.session && workspace.session.chunkEditor)
                         workspace.session.chunkEditor.openChunk(chunkX, chunkZ, dimension)
@@ -834,7 +834,7 @@ Item {
     AppCard {
         id: workspaceToolbar
         z: 7
-        visible: App.settings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen &&
+        visible: App.runtimeSettings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen &&
                  !workspace.voxelViewOpen
         readonly property real toolbarPadding: Theme.toolbarPadding
         width: workspaceToolbarRow.width + toolbarPadding * 2

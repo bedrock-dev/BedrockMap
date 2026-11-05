@@ -6,18 +6,20 @@
 #include "base/config.h"
 #include "loguru/loguru.hpp"
 
-void TranslatorManager::initialize() {
-    if (!translations_.isEmpty()) return;
-    for (const auto& language : {QStringLiteral("zh_CN"), QStringLiteral("en")}) {
-        auto translator = std::make_shared<QTranslator>();
-        const QString path = QStringLiteral(":/bedrockmap/i18n/") + language + QStringLiteral(".qm");
-        if (translator->load(path)) {
-            LOG_F(INFO, "Load translation resource %s succeed", path.toStdString().c_str());
-            translations_[language] = std::move(translator);
-        } else {
-            LOG_F(WARNING, "Load translation resource %s failed", path.toStdString().c_str());
+void TranslatorManager::initialize(QCoreApplication& application) {
+    if (translations_.isEmpty()) {
+        for (const auto& language : {QStringLiteral("zh_CN"), QStringLiteral("en")}) {
+            auto translator = std::make_shared<QTranslator>();
+            const QString path = QStringLiteral(":/bedrockmap/i18n/") + language + QStringLiteral(".qm");
+            if (translator->load(path)) {
+                LOG_F(INFO, "Load translation resource %s succeed", path.toStdString().c_str());
+                translations_[language] = std::move(translator);
+            } else {
+                LOG_F(WARNING, "Load translation resource %s failed", path.toStdString().c_str());
+            }
         }
     }
+    setupTranslation(application, resolveLanguage());
 }
 
 QString TranslatorManager::systemLanguage() const {
@@ -25,11 +27,11 @@ QString TranslatorManager::systemLanguage() const {
 }
 
 QString TranslatorManager::resolveLanguage() const {
-    auto settings = setting::current();
-    if (!settings.language.isEmpty() && settings.language != QStringLiteral("system")) return settings.language;
-    settings.language = systemLanguage();
-    setting::apply(settings);
-    return settings.language;
+    const QString configured = setting::current().language;
+    if (!configured.isEmpty() && configured != QStringLiteral("system")) return configured;
+    const QString detected = systemLanguage();
+    setting::setResolvedLanguage(detected);
+    return detected;
 }
 
 void TranslatorManager::setupTranslation(QCoreApplication& application, const QString& language) {

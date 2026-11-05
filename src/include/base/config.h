@@ -140,9 +140,13 @@ namespace setting {
     };
 
     void init();
+    /// Replace the active process snapshot from disk. Normally called once.
     void load();
-    void save();
-    void save(const Settings& settings);
+    /// Read settings from disk without changing the active process snapshot.
+    [[nodiscard]] Settings read();
+    /// Persist settings without changing the active process snapshot.
+    [[nodiscard]] QString save();
+    [[nodiscard]] QString save(const Settings& settings);
 
     /// Round down to a supported power of two, clamped to [2, 4096].
     constexpr int normalizeZoomScale(int value) {
@@ -155,18 +159,9 @@ namespace setting {
         return value <= 2 ? 2 : value <= 4 ? 4 : 8;
     }
 
-    /// Uses the bundled UI font on Android/WASM and the system UI font on desktop.
-    /// Registers the editor font on all platforms and applies the configured size.
-    /// Safe to call more than once.
-    void setupUiFont();
-
+    /// Process-lifetime settings snapshot used by runtime consumers.
     [[nodiscard]] const Settings& current();
-    void apply(const Settings& settings);
-
-    /// Bumped whenever the runtime settings change, so long-lived consumers
-    /// (renderers cache their tunables) can notice a save without polling the
-    /// whole struct.
-    [[nodiscard]] quint64 revision();
+    void setResolvedLanguage(const QString& language);
 }  // namespace setting
 
 #endif  // BEDROCKMAP_CONFIG_H

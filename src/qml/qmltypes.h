@@ -11,6 +11,7 @@
 #include "controller/mapitemcontroller.h"
 #include "controller/nbtdocumentcontroller.h"
 #include "controller/regionimportcontroller.h"
+#include "controller/runtimesettings.h"
 #include "controller/sessioncontroller.h"
 #include "controller/settingsviewmodel.h"
 #include "controller/voxelscenecontroller.h"
@@ -117,6 +118,12 @@ struct SettingsQml {
     Q_GADGET
     QML_FOREIGN(SettingsViewModel)
     QML_ANONYMOUS
+};
+
+struct RuntimeSettingsQml {
+    Q_GADGET
+    QML_FOREIGN(RuntimeSettings)
+    QML_UNCREATABLE("Provided by AppController")
 };
 
 struct WorldsQml {

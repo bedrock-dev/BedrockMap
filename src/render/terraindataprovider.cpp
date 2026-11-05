@@ -62,6 +62,8 @@ void TerrainTileTask::run() {
 
 TerrainDataProvider::TerrainDataProvider(QObject* parent) : QObject(parent) {
     overview_pool_.setMaxThreadCount(1);
+    const int cache_megabytes = std::clamp(setting::current().gpuTileSnapshotCacheSizeMB, 8, 512);
+    snapshot_cache_.setMaxCost(static_cast<qsizetype>(cache_megabytes) * 1024 * 1024);
     connect(&overview_watcher_, &QFutureWatcher<QImage>::finished, this, [this] {
         if (overview_watcher_.isRunning()) return;
         const QRect chunks(viewportRequest_.regions.x() * constant::RW, viewportRequest_.regions.y() * constant::RW,
@@ -79,7 +81,6 @@ TerrainDataProvider::TerrainDataProvider(QObject* parent) : QObject(parent) {
     connect(&poll_timer_, &QTimer::timeout, this, &TerrainDataProvider::poll);
     prefetch_timer_.setInterval(16);
     connect(&prefetch_timer_, &QTimer::timeout, this, &TerrainDataProvider::processPrefetchChunk);
-    syncSnapshotCacheLimit();
     // Sampling is much lighter than a region bake and should not compete with
     // the loader's LevelDB workers or saturate the machine while zooming out.
     tile_pool_.setMaxThreadCount(std::clamp(QThread::idealThreadCount() / 4, 1, 3));
@@ -249,7 +250,6 @@ void TerrainDataProvider::resetDelivery() {
 }
 
 void TerrainDataProvider::setViewport(const TerrainViewportRequest& request) {
-    syncSnapshotCacheLimit();
     const TerrainViewportRequest old = viewportRequest_;
     if (old == request) {
         if (catch_up_) schedulePoll();
@@ -387,7 +387,6 @@ void TerrainDataProvider::processPrefetchChunk() {
         prefetch_timer_.stop();
         return;
     }
-    syncSnapshotCacheLimit();
     constexpr int max_visits_per_chunk = 32;
     const int layer = viewportRequest_.layer;
     int visits = 0;
@@ -625,15 +624,6 @@ void TerrainDataProvider::syncLoaderTileRequest() {
     }
 }
 
-void TerrainDataProvider::syncSnapshotCacheLimit() {
-    const quint64 revision = setting::revision();
-    if (snapshot_cache_limit_initialized_ && snapshot_cache_limit_revision_ == revision) return;
-    const int megabytes = std::clamp(setting::current().gpuTileSnapshotCacheSizeMB, 8, 512);
-    snapshot_cache_.setMaxCost(static_cast<qsizetype>(megabytes) * 1024 * 1024);
-    snapshot_cache_limit_revision_ = revision;
-    snapshot_cache_limit_initialized_ = true;
-}
-
 void TerrainDataProvider::storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface,
                                         bool hasTerrain) {
     if (!sourceRevision || color.isNull() || surface.isNull()) return;
@@ -802,7 +792,6 @@ void TerrainDataProvider::processRegion(const region_pos& pos, int& submitted) {
 
 void TerrainDataProvider::poll() {
     poll_timer_.stop();
-    syncSnapshotCacheLimit();
     if (!active_ || !loader_ || !loader_->isOpen() || !viewportRequest_.regions.isValid()) return;
     if (overview_only_) {
         buildOverview();

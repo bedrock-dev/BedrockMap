@@ -7,68 +7,65 @@
 
 #include "base/config.h"
 
-/// Settings facade for the Qt Quick application.
+/// Editable settings draft for the Qt Quick application. Persisted values only
+/// become active after the application restarts.
 class SettingsViewModel final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString colorTheme READ colorTheme WRITE setColorTheme NOTIFY colorThemeChanged)
-    Q_PROPERTY(bool collapseSidebarOnStartup READ collapseSidebarOnStartup WRITE setCollapseSidebarOnStartup NOTIFY
-                   collapseSidebarOnStartupChanged)
-    Q_PROPERTY(bool showMapDebugButton READ showMapDebugButton WRITE setShowMapDebugButton NOTIFY showMapDebugButtonChanged)
+    Q_PROPERTY(bool collapseSidebarOnStartup READ collapseSidebarOnStartup WRITE setCollapseSidebarOnStartup NOTIFY settingsChanged)
+    Q_PROPERTY(bool showMapDebugButton READ showMapDebugButton WRITE setShowMapDebugButton NOTIFY settingsChanged)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
-    Q_PROPERTY(QString renderBackend READ renderBackend WRITE setRenderBackend NOTIFY renderBackendChanged)
-    Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY threadCountChanged)
-    Q_PROPERTY(bool preloadAllChunkCoords READ preloadAllChunkCoords WRITE setPreloadAllChunkCoords NOTIFY preloadAllChunkCoordsChanged)
-    Q_PROPERTY(bool chunkOverviewEnabled READ chunkOverviewEnabled WRITE setChunkOverviewEnabled NOTIFY chunkOverviewEnabledChanged)
-    Q_PROPERTY(int leveldbXorMode READ leveldbXorMode WRITE setLeveldbXorMode NOTIFY leveldbXorModeChanged)
-    Q_PROPERTY(QString leveldbXorKey READ leveldbXorKey WRITE setLeveldbXorKey NOTIFY leveldbXorKeyChanged)
+    Q_PROPERTY(QString renderBackend READ renderBackend WRITE setRenderBackend NOTIFY settingsChanged)
+    Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY settingsChanged)
+    Q_PROPERTY(bool preloadAllChunkCoords READ preloadAllChunkCoords WRITE setPreloadAllChunkCoords NOTIFY settingsChanged)
+    Q_PROPERTY(bool chunkOverviewEnabled READ chunkOverviewEnabled WRITE setChunkOverviewEnabled NOTIFY settingsChanged)
+    Q_PROPERTY(int leveldbXorMode READ leveldbXorMode WRITE setLeveldbXorMode NOTIFY settingsChanged)
+    Q_PROPERTY(QString leveldbXorKey READ leveldbXorKey WRITE setLeveldbXorKey NOTIFY settingsChanged)
     Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
     /// Point size the platform falls back to while fontSize leaves the size open
     /// (-1); the UI shows the resulting effective size instead of the sentinel.
     Q_PROPERTY(int defaultFontSize READ defaultFontSize CONSTANT)
     /// Accent override for the whole UI; an empty string keeps the theme default.
     Q_PROPERTY(QString accentColor READ accentColor WRITE setAccentColor NOTIFY accentColorChanged)
-    Q_PROPERTY(bool gpuOrthographicView READ gpuOrthographicView WRITE setGpuOrthographicView NOTIFY gpuOrthographicViewChanged)
-    Q_PROPERTY(double gpuShadowStrength READ gpuShadowStrength WRITE setGpuShadowStrength NOTIFY gpuShadowStrengthChanged)
-    Q_PROPERTY(double gpuAoStrength READ gpuAoStrength WRITE setGpuAoStrength NOTIFY gpuAoStrengthChanged)
-    Q_PROPERTY(int gpuAoSteps READ gpuAoSteps WRITE setGpuAoSteps NOTIFY gpuAoStepsChanged)
-    Q_PROPERTY(double gpuBevelStrength READ gpuBevelStrength WRITE setGpuBevelStrength NOTIFY gpuBevelStrengthChanged)
-    Q_PROPERTY(double gpuBevelWidth READ gpuBevelWidth WRITE setGpuBevelWidth NOTIFY gpuBevelWidthChanged)
-    Q_PROPERTY(double gpuSaturation READ gpuSaturation WRITE setGpuSaturation NOTIFY gpuSaturationChanged)
-    Q_PROPERTY(double gpuBrightness READ gpuBrightness WRITE setGpuBrightness NOTIFY gpuBrightnessChanged)
-    Q_PROPERTY(double gpuBiomeBlendBlocks READ gpuBiomeBlendBlocks WRITE setGpuBiomeBlendBlocks NOTIFY gpuBiomeBlendBlocksChanged)
-    Q_PROPERTY(int gpuShadowStep READ gpuShadowStep WRITE setGpuShadowStep NOTIFY gpuShadowStepChanged)
-    Q_PROPERTY(int gpuTileSnapshotCacheSizeMB READ gpuTileSnapshotCacheSizeMB WRITE setGpuTileSnapshotCacheSizeMB NOTIFY
-                   gpuTileSnapshotCacheSizeMBChanged)
-    Q_PROPERTY(bool gpuHighDetailMap READ gpuHighDetailMap WRITE setGpuHighDetailMap NOTIFY gpuHighDetailMapChanged)
-    Q_PROPERTY(int cpuShadowLevel READ cpuShadowLevel WRITE setCpuShadowLevel NOTIFY cpuShadowLevelChanged)
-    Q_PROPERTY(int minimumScaleLevel READ minimumScaleLevel WRITE setMinimumScaleLevel NOTIFY minimumScaleLevelChanged)
-    Q_PROPERTY(int maximumScaleLevel READ maximumScaleLevel WRITE setMaximumScaleLevel NOTIFY maximumScaleLevelChanged)
-    Q_PROPERTY(double panInertia READ panInertia WRITE setPanInertia NOTIFY panInertiaChanged)
-    Q_PROPERTY(QString gridLineColor READ gridLineColor WRITE setGridLineColor NOTIFY gridLineColorChanged)
-    Q_PROPERTY(QString mapSelectionColor READ mapSelectionColor WRITE setMapSelectionColor NOTIFY mapSelectionColorChanged)
-    Q_PROPERTY(QString voidMapColor READ voidMapColor WRITE setVoidMapColor NOTIFY voidMapColorChanged)
-    Q_PROPERTY(QString tileColorScheme READ tileColorScheme WRITE setTileColorScheme NOTIFY tileColorSchemeChanged)
-    Q_PROPERTY(int actorRenderStyle READ actorRenderStyle WRITE setActorRenderStyle NOTIFY actorRenderStyleChanged)
-    Q_PROPERTY(int actorBorderWidth READ actorBorderWidth WRITE setActorBorderWidth NOTIFY actorBorderWidthChanged)
-    Q_PROPERTY(QString actorBorderColor READ actorBorderColor WRITE setActorBorderColor NOTIFY actorBorderColorChanged)
-    Q_PROPERTY(QString chunkEditorHighlightColor READ chunkEditorHighlightColor WRITE setChunkEditorHighlightColor NOTIFY
-                   chunkEditorHighlightColorChanged)
-    Q_PROPERTY(int chunkEditorHighlightWidth READ chunkEditorHighlightWidth WRITE setChunkEditorHighlightWidth NOTIFY
-                   chunkEditorHighlightWidthChanged)
-    Q_PROPERTY(QString voxelSelectionColor READ voxelSelectionColor WRITE setVoxelSelectionColor NOTIFY voxelSelectionColorChanged)
-    Q_PROPERTY(int regionCacheSize READ regionCacheSize WRITE setRegionCacheSize NOTIFY regionCacheSizeChanged)
-    Q_PROPERTY(int emptyRegionCacheSize READ emptyRegionCacheSize WRITE setEmptyRegionCacheSize NOTIFY emptyRegionCacheSizeChanged)
-    Q_PROPERTY(bool loadGlobalData READ loadGlobalData WRITE setLoadGlobalData NOTIFY loadGlobalDataChanged)
-    Q_PROPERTY(int maxGlobalDataLoadCount READ maxGlobalDataLoadCount WRITE setMaxGlobalDataLoadCount NOTIFY maxGlobalDataLoadCountChanged)
-    Q_PROPERTY(bool transparentWater READ transparentWater WRITE setTransparentWater NOTIFY transparentWaterChanged)
-    Q_PROPERTY(bool gpuGrassHeightEnabled READ gpuGrassHeightEnabled WRITE setGpuGrassHeightEnabled NOTIFY gpuGrassHeightEnabledChanged)
-    Q_PROPERTY(double gpuGrassHeightBase READ gpuGrassHeightBase WRITE setGpuGrassHeightBase NOTIFY gpuGrassHeightBaseChanged)
-    Q_PROPERTY(double gpuGrassHeightRange READ gpuGrassHeightRange WRITE setGpuGrassHeightRange NOTIFY gpuGrassHeightRangeChanged)
-    Q_PROPERTY(QString gpuGrassHeightColor READ gpuGrassHeightColor WRITE setGpuGrassHeightColor NOTIFY gpuGrassHeightColorChanged)
-    Q_PROPERTY(bool checkUpdate READ checkUpdate WRITE setCheckUpdate NOTIFY checkUpdateChanged)
-    Q_PROPERTY(bool scanLeviPath READ scanLeviPath WRITE setScanLeviPath NOTIFY scanLeviPathChanged)
-    Q_PROPERTY(QStringList customWorldPaths READ customWorldPaths NOTIFY customWorldPathsChanged)
-    Q_PROPERTY(QVariantList worldSources READ worldSources NOTIFY worldSourcesChanged)
+    Q_PROPERTY(bool gpuOrthographicView READ gpuOrthographicView WRITE setGpuOrthographicView NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuShadowStrength READ gpuShadowStrength WRITE setGpuShadowStrength NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuAoStrength READ gpuAoStrength WRITE setGpuAoStrength NOTIFY settingsChanged)
+    Q_PROPERTY(int gpuAoSteps READ gpuAoSteps WRITE setGpuAoSteps NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuBevelStrength READ gpuBevelStrength WRITE setGpuBevelStrength NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuBevelWidth READ gpuBevelWidth WRITE setGpuBevelWidth NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuSaturation READ gpuSaturation WRITE setGpuSaturation NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuBrightness READ gpuBrightness WRITE setGpuBrightness NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuBiomeBlendBlocks READ gpuBiomeBlendBlocks WRITE setGpuBiomeBlendBlocks NOTIFY settingsChanged)
+    Q_PROPERTY(int gpuShadowStep READ gpuShadowStep WRITE setGpuShadowStep NOTIFY settingsChanged)
+    Q_PROPERTY(int gpuTileSnapshotCacheSizeMB READ gpuTileSnapshotCacheSizeMB WRITE setGpuTileSnapshotCacheSizeMB NOTIFY settingsChanged)
+    Q_PROPERTY(bool gpuHighDetailMap READ gpuHighDetailMap WRITE setGpuHighDetailMap NOTIFY settingsChanged)
+    Q_PROPERTY(int cpuShadowLevel READ cpuShadowLevel WRITE setCpuShadowLevel NOTIFY settingsChanged)
+    Q_PROPERTY(int minimumScaleLevel READ minimumScaleLevel WRITE setMinimumScaleLevel NOTIFY settingsChanged)
+    Q_PROPERTY(int maximumScaleLevel READ maximumScaleLevel WRITE setMaximumScaleLevel NOTIFY settingsChanged)
+    Q_PROPERTY(double panInertia READ panInertia WRITE setPanInertia NOTIFY settingsChanged)
+    Q_PROPERTY(QString gridLineColor READ gridLineColor WRITE setGridLineColor NOTIFY settingsChanged)
+    Q_PROPERTY(QString mapSelectionColor READ mapSelectionColor WRITE setMapSelectionColor NOTIFY settingsChanged)
+    Q_PROPERTY(QString voidMapColor READ voidMapColor WRITE setVoidMapColor NOTIFY settingsChanged)
+    Q_PROPERTY(QString tileColorScheme READ tileColorScheme WRITE setTileColorScheme NOTIFY settingsChanged)
+    Q_PROPERTY(int actorRenderStyle READ actorRenderStyle WRITE setActorRenderStyle NOTIFY settingsChanged)
+    Q_PROPERTY(int actorBorderWidth READ actorBorderWidth WRITE setActorBorderWidth NOTIFY settingsChanged)
+    Q_PROPERTY(QString actorBorderColor READ actorBorderColor WRITE setActorBorderColor NOTIFY settingsChanged)
+    Q_PROPERTY(QString chunkEditorHighlightColor READ chunkEditorHighlightColor WRITE setChunkEditorHighlightColor NOTIFY settingsChanged)
+    Q_PROPERTY(int chunkEditorHighlightWidth READ chunkEditorHighlightWidth WRITE setChunkEditorHighlightWidth NOTIFY settingsChanged)
+    Q_PROPERTY(QString voxelSelectionColor READ voxelSelectionColor WRITE setVoxelSelectionColor NOTIFY settingsChanged)
+    Q_PROPERTY(int regionCacheSize READ regionCacheSize WRITE setRegionCacheSize NOTIFY settingsChanged)
+    Q_PROPERTY(int emptyRegionCacheSize READ emptyRegionCacheSize WRITE setEmptyRegionCacheSize NOTIFY settingsChanged)
+    Q_PROPERTY(bool loadGlobalData READ loadGlobalData WRITE setLoadGlobalData NOTIFY settingsChanged)
+    Q_PROPERTY(int maxGlobalDataLoadCount READ maxGlobalDataLoadCount WRITE setMaxGlobalDataLoadCount NOTIFY settingsChanged)
+    Q_PROPERTY(bool transparentWater READ transparentWater WRITE setTransparentWater NOTIFY settingsChanged)
+    Q_PROPERTY(bool gpuGrassHeightEnabled READ gpuGrassHeightEnabled WRITE setGpuGrassHeightEnabled NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuGrassHeightBase READ gpuGrassHeightBase WRITE setGpuGrassHeightBase NOTIFY settingsChanged)
+    Q_PROPERTY(double gpuGrassHeightRange READ gpuGrassHeightRange WRITE setGpuGrassHeightRange NOTIFY settingsChanged)
+    Q_PROPERTY(QString gpuGrassHeightColor READ gpuGrassHeightColor WRITE setGpuGrassHeightColor NOTIFY settingsChanged)
+    Q_PROPERTY(bool checkUpdate READ checkUpdate WRITE setCheckUpdate NOTIFY settingsChanged)
+    Q_PROPERTY(bool scanLeviPath READ scanLeviPath WRITE setScanLeviPath NOTIFY settingsChanged)
+    Q_PROPERTY(QStringList customWorldPaths READ customWorldPaths NOTIFY settingsChanged)
+    Q_PROPERTY(QVariantList worldSources READ worldSources NOTIFY settingsChanged)
 
    public:
     explicit SettingsViewModel(QObject* parent);
@@ -126,19 +123,11 @@ class SettingsViewModel final : public QObject {
     QStringList customWorldPaths() const { return values_.customWorldPaths; }
     QVariantList worldSources() const;
 
-    Q_INVOKABLE void reload();
     Q_INVOKABLE bool save();
     /// Persists only the custom world folder list, leaving unrelated pending
     /// settings untouched.
     Q_INVOKABLE bool saveWorldSources();
-    /// Refreshes the platform-dependent scan source list.
-    Q_INVOKABLE void refreshWorldSources();
     Q_INVOKABLE void reset();
-    /// Push the configured UI font onto the application, so a QML frontend
-    /// picks it up without restarting.
-    Q_INVOKABLE void applyFont();
-    [[nodiscard]] const setting::Settings& settings() const { return values_; }
-    void setSettings(const setting::Settings& values);
     void setColorTheme(const QString& value);
     void setCollapseSidebarOnStartup(bool value);
     void setShowMapDebugButton(bool value);
@@ -194,57 +183,11 @@ class SettingsViewModel final : public QObject {
 
    signals:
     void colorThemeChanged();
-    void collapseSidebarOnStartupChanged();
-    void showMapDebugButtonChanged();
     void languageChanged();
-    void renderBackendChanged();
-    void threadCountChanged();
-    void preloadAllChunkCoordsChanged();
-    void chunkOverviewEnabledChanged();
-    void leveldbXorModeChanged();
-    void leveldbXorKeyChanged();
     void fontSizeChanged();
     void accentColorChanged();
-    void gpuOrthographicViewChanged();
-    void gpuShadowStrengthChanged();
-    void gpuAoStrengthChanged();
-    void gpuAoStepsChanged();
-    void gpuBevelStrengthChanged();
-    void gpuBevelWidthChanged();
-    void gpuSaturationChanged();
-    void gpuBrightnessChanged();
-    void gpuBiomeBlendBlocksChanged();
-    void gpuShadowStepChanged();
-    void gpuTileSnapshotCacheSizeMBChanged();
-    void gpuHighDetailMapChanged();
-    void cpuShadowLevelChanged();
-    void minimumScaleLevelChanged();
-    void maximumScaleLevelChanged();
-    void panInertiaChanged();
-    void gridLineColorChanged();
-    void mapSelectionColorChanged();
-    void voidMapColorChanged();
-    void tileColorSchemeChanged();
-    void actorRenderStyleChanged();
-    void actorBorderWidthChanged();
-    void actorBorderColorChanged();
-    void chunkEditorHighlightColorChanged();
-    void chunkEditorHighlightWidthChanged();
-    void voxelSelectionColorChanged();
-    void regionCacheSizeChanged();
-    void emptyRegionCacheSizeChanged();
-    void loadGlobalDataChanged();
-    void maxGlobalDataLoadCountChanged();
-    void transparentWaterChanged();
-    void gpuGrassHeightEnabledChanged();
-    void gpuGrassHeightBaseChanged();
-    void gpuGrassHeightRangeChanged();
-    void gpuGrassHeightColorChanged();
-    void checkUpdateChanged();
-    void scanLeviPathChanged();
-    void customWorldPathsChanged();
-    void worldSourcesChanged();
-    void saved();
+    void settingsChanged();
+    void settingsSaved();
     void errorChanged(const QString& message);
 
    private:

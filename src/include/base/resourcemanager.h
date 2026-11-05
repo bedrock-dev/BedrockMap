@@ -7,6 +7,10 @@
 #include <memory>
 #include <vector>
 
+namespace setting {
+    struct Settings;
+}
+
 /// Owns the application's shared image resources.
 class ResourceManager final {
    public:
@@ -25,6 +29,21 @@ class ResourceManager final {
    private:
     std::map<QString, std::unique_ptr<QImage>> actor_images_;
     std::unique_ptr<QImage> fallback_image_;
+};
+
+/// Registers bundled fonts and applies the active UI font size.
+class FontManager final {
+   public:
+    FontManager() = default;
+    ~FontManager() = default;
+    FontManager(const FontManager&) = delete;
+    FontManager& operator=(const FontManager&) = delete;
+
+    void initialize(const setting::Settings& settings);
+    void applySize(int point_size);
+
+   private:
+    bool initialized_{false};
 };
 
 #endif  // BEDROCKMAP_RESOURCEMANAGER_H

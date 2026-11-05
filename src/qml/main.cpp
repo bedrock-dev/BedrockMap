@@ -12,7 +12,6 @@
 #include "base/resourcemanager.h"
 #include "base/translator.h"
 #include "controller/appcontroller.h"
-#include "controller/settingsviewmodel.h"
 #include "fileopenhandler.h"
 #include "loguru/loguru.hpp"
 #include "model/logmodel.h"
@@ -59,12 +58,12 @@ int main(int argc, char* argv[]) {
 #endif
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
     QGuiApplication app(argc, argv);
-    FileOpenHandler fileOpenHandler(app);
-    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/bedrockmap/icons/app.svg")));
     QCoreApplication::setOrganizationName(QStringLiteral("BedrockMap"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("bedrock-dev.github.io"));
     QCoreApplication::setApplicationName(QString::fromUtf8(constant::SOFTWARE_NAME));
     QCoreApplication::setApplicationVersion(constant::softwareVersion().toString().mid(1));
+    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/bedrockmap/icons/app.svg")));
+    FileOpenHandler fileOpenHandler(app);
     // Keep logging alive until all models, sessions and the QML engine exit.
     auto logs = std::make_unique<LogModel>(argc, argv);
     LOG_F(INFO, "BedrockMap %s | Qt %s | Controls style %s", BEDROCKMAP_VERSION, qVersion(),
@@ -73,13 +72,7 @@ int main(int argc, char* argv[]) {
     setupGraphicsBackend();
     constant::initColorTable();
     AppContext appContext;
-    // Initialize entity icons before any world scan can resolve actors.
-    appContext.resources().initialize();
-    setting::setupUiFont();
-    //  This executable has its own resource bundle, so it must load the shared
-    //  translation catalogs before the QML engine builds any user-visible text.
-    appContext.translator().initialize();
-    appContext.translator().setupTranslation(app, appContext.translator().resolveLanguage());
+    appContext.initialize(app);
 
     // Create application services after settings and language resolution.
     // Transfer the early log model so AppController owns its full lifecycle.
@@ -87,11 +80,12 @@ int main(int argc, char* argv[]) {
     QObject::connect(&fileOpenHandler, &FileOpenHandler::fileOpenRequested, &appController, &AppController::openFile);
     auto& settingsModel = *appController.settings();
     // Let Qt's platform palette follow the same explicit/system theme mode that
-    // the QML Theme object uses. Changing back to "system" unsets the hint, so
-    // the platform light/dark scheme becomes visible again.
+    // the QML Theme object uses.
     applyThemeHints(app.styleHints(), settingsModel.colorTheme());
     QObject::connect(&settingsModel, &SettingsViewModel::colorThemeChanged, &app,
                      [&app, &settingsModel] { applyThemeHints(app.styleHints(), settingsModel.colorTheme()); });
+    QObject::connect(&settingsModel, &SettingsViewModel::fontSizeChanged, &app,
+                     [&appContext, &settingsModel] { appContext.fonts().applySize(settingsModel.fontSize()); });
 
     // The QML engine owns the window and every page instance, so it must be
     // destroyed before the models and controllers its bindings reference.
@@ -99,8 +93,6 @@ int main(int argc, char* argv[]) {
     // CMake also copies Qt modules next to the executable for local runs.
     engine.addImportPath(QCoreApplication::applicationDirPath() + QStringLiteral("/qml"));
 
-    // Settings changes are previewed immediately. Installing a new translator
-    // makes the QML engine re-evaluate every qsTr()/qsTranslate() binding.
     QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &engine, [&app, &engine, &settingsModel, &appContext] {
         const QString configured = settingsModel.language();
         const QString language =

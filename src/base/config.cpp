@@ -16,9 +16,6 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
-#include <QFont>
-#include <QFontDatabase>
-#include <QGuiApplication>
 #include <QString>
 #include <algorithm>
 #include <string>
@@ -102,21 +99,11 @@ namespace {
         static setting::Settings instance;
         return instance;
     }
-
-    quint64& mutableRevision() {
-        static quint64 revision = 0;
-        return revision;
-    }
 }  // namespace
-
-void setting::apply(const Settings& settings) {
-    mutableSettings() = settings;
-    ++mutableRevision();
-}
 
 const setting::Settings& setting::current() { return mutableSettings(); }
 
-quint64 setting::revision() { return mutableRevision(); }
+void setting::setResolvedLanguage(const QString& language) { mutableSettings().language = language; }
 
 // Utility functions
 void constant::initColorTable() {
@@ -144,14 +131,17 @@ void setting::init() {
 }
 
 void setting::load() {
+    mutableSettings() = read();
+}
+
+setting::Settings setting::read() {
     QSettings s(app_paths::configFile(), QSettings::IniFormat);
 
     foreach (const auto& key, s.allKeys()) {
         LOG_F(INFO, "Config key: %s, value: %s", key.toStdString().c_str(), s.value(key).toString().toStdString().c_str());
     }
 
-    // Parse into a copy so a partial/failed read can never tear the live snapshot.
-    Settings loaded = current();
+    Settings loaded;
 
     s.beginGroup("Gui");
     loaded.colorTheme = s.value("theme", loaded.colorTheme).toString();
@@ -265,12 +255,12 @@ void setting::load() {
         LOG_F(WARNING, "Invalid background thread number, reset it to default(2)");
     }
 
-    apply(loaded);
+    return loaded;
 }
 
-void setting::save() { save(current()); }
+QString setting::save() { return save(current()); }
 
-void setting::save(const Settings& values) {
+QString setting::save(const Settings& values) {
     QSettings s(app_paths::configFile(), QSettings::IniFormat);
 
     s.beginGroup("Gui");
@@ -347,42 +337,10 @@ void setting::save(const Settings& values) {
 
     s.sync();
 
+    if (s.status() != QSettings::NoError) {
+        LOG_F(ERROR, "Can not save settings to %s", app_paths::configFile().toStdString().c_str());
+        return QCoreApplication::translate("setting", "Could not save settings to %1.").arg(app_paths::configFile());
+    }
     LOG_F(INFO, "Settings saved to %s", app_paths::configFile().toStdString().c_str());
-}
-
-void setting::setupUiFont() {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
-    static const QString uiFamily = [] {
-        const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::UI_FONT_RESOURCE));
-        const QStringList families = QFontDatabase::applicationFontFamilies(id);
-        if (families.isEmpty()) {
-            LOG_F(ERROR, "Can not load UI font %s", constant::UI_FONT_RESOURCE);
-            return QString{};
-        }
-        LOG_F(INFO, "Bundled UI font: %s", families.first().toUtf8().constData());
-        return families.first();
-    }();
-#endif
-    static const int monospaceFontId = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
-    if (monospaceFontId == -1) LOG_F(WARNING, "Can not load font %s", constant::MONOSPACE_FONT_RESOURCE);
-
-    QFont font = QGuiApplication::font();
-    QString fallbackFamily = font.family();
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
-    if (!uiFamily.isEmpty()) {
-        font.setFamily(uiFamily);
-        fallbackFamily = uiFamily;
-    }
-#endif
-    // Monospace editor text keeps its Latin glyphs and falls back to the normal
-    // UI font for Han characters and unsupported punctuation.
-    if (!fallbackFamily.isEmpty()) {
-        const QStringList fallback{fallbackFamily};
-        for (const auto script : {QChar::Script_Han, QChar::Script_Common}) {
-            if (QFontDatabase::applicationFallbackFontFamilies(script) != fallback)
-                QFontDatabase::setApplicationFallbackFontFamilies(script, fallback);
-        }
-    }
-    font.setPointSize(current().fontSize > 0 ? current().fontSize : constant::DEFAULT_FONT_POINT_SIZE);
-    QGuiApplication::setFont(font);
+    return {};
 }

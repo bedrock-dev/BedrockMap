@@ -117,7 +117,7 @@ TerrainQuickItem::TerrainQuickItem(QQuickItem* parent) : QQuickItem(parent) {
     });
     metrics_timer_.setInterval(250);
     connect(&metrics_timer_, &QTimer::timeout, this, &TerrainQuickItem::refreshMetrics);
-    refreshRenderSettings();
+    initializeRenderSettings();
     input_probe_timer_.setInterval(16);
     input_probe_timer_.setTimerType(Qt::PreciseTimer);
     connect(&input_probe_timer_, &QTimer::timeout, this, [this] {
@@ -297,7 +297,6 @@ void TerrainQuickItem::setCheckerAlternateColor(const QColor& color) {
 }
 
 void TerrainQuickItem::refreshMetrics() {
-    if (refreshRenderSettings() && isComponentComplete()) publishFrameState();
     timing_text_ = timings_->toString();
     frames_per_second_ = timings_->framesPerSecond();
     {
@@ -455,13 +454,6 @@ void TerrainQuickItem::syncViewState() {
     publishFrameState();
 }
 
-void TerrainQuickItem::applySettings() {
-    refreshRenderSettings();
-    if (controller_) controller_->setScale(controller_->cameraState().pixelsPerChunk, QPointF(width() / 2, height() / 2));
-    syncViewState();
-    update();
-}
-
 void TerrainQuickItem::publishViewport() {
     if (!provider_) return;
     provider_->setViewport(request_);
@@ -529,31 +521,14 @@ int TerrainQuickItem::shadowReachBlocks(const GpuRenderOptions& gpu) {
     return gpu.shadow_enabled && gpu.shadow_strength > 0.0f ? gpu.shadow_steps : 0;
 }
 
-bool TerrainQuickItem::refreshRenderSettings() {
-    const quint64 revision = setting::revision();
-    if (render_settings_ && render_settings_revision_ == revision) return false;
+void TerrainQuickItem::initializeRenderSettings() {
     auto next = std::make_shared<TerrainRenderSettingsSnapshot>();
     next->gpu = gpuRenderOptionsFromSettings();
     next->cpuShadowLevel = setting::current().cpuShadowLevel;
     next->highDetailMap = setting::current().gpuHighDetailMap;
     next->tileLayers =
         next->highDetailMap ? terrain_render_config::high_detail_tile_array_layers : terrain_render_config::tile_array_layers;
-    // A different slice count makes the render thread recreate the tile
-    // arrays, which drops every resident tile, so the provider must resend.
-    const bool layersChanged = render_settings_ && render_settings_->tileLayers != next->tileLayers;
     render_settings_ = std::move(next);
-    render_settings_revision_ = revision;
-    if (layersChanged) {
-        // Same hand-off as a provider switch: drop queued tiles and reset the
-        // render thread before the provider resends. updatePaintNode() runs
-        // while this thread is blocked, so it applies the reset before taking
-        // any tile delivered after this point.
-        tile_delivery_.clear();
-        render_reset_generation_.fetch_add(1, std::memory_order_acq_rel);
-        if (provider_) provider_->redeliver();
-    }
-    update();
-    return true;
 }
 
 void TerrainQuickItem::requestWindowRepaint() {

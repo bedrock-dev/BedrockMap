@@ -127,8 +127,8 @@ QtObject {
     readonly property color warning: palette.warning
     readonly property color warningSoft: palette.warningSoft
     readonly property color map: palette.map
-    readonly property color mapCheckerBase: App.settings.tileColorScheme === "light" ? "#ffffff" : "#141414"
-    readonly property color mapCheckerAlternate: App.settings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
+    readonly property color mapCheckerBase: App.runtimeSettings.tileColorScheme === "light" ? "#ffffff" : "#141414"
+    readonly property color mapCheckerAlternate: App.runtimeSettings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
     readonly property color overlay: palette.overlay
     readonly property color overlayTranslucent: dark ? "#b8212121" : "#c8ffffff"
     readonly property color overlayBorder: palette.overlayBorder

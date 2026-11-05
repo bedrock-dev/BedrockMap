@@ -2,8 +2,13 @@
 
 #include <QColor>
 #include <QDirIterator>
+#include <QFont>
+#include <QFontDatabase>
+#include <QGuiApplication>
+#include <QStringList>
 
 #include "base/config.h"
+#include "loguru/loguru.hpp"
 
 namespace {
     QImage addBorder(const QImage& image, int border_width) {
@@ -62,4 +67,51 @@ std::vector<const QImage*> ResourceManager::markerIcons() const {
     }
     if (fallback_image_) result.push_back(fallback_image_.get());
     return result;
+}
+
+void FontManager::initialize(const setting::Settings& settings) {
+    if (initialized_) return;
+
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+    static const QString uiFamily = [] {
+        const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::UI_FONT_RESOURCE));
+        const QStringList families = QFontDatabase::applicationFontFamilies(id);
+        if (families.isEmpty()) {
+            LOG_F(ERROR, "Can not load UI font %s", constant::UI_FONT_RESOURCE);
+            return QString{};
+        }
+        LOG_F(INFO, "Bundled UI font: %s", families.first().toUtf8().constData());
+        return families.first();
+    }();
+#endif
+
+    static const int monospaceFontId =
+        QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
+    if (monospaceFontId == -1) LOG_F(WARNING, "Can not load font %s", constant::MONOSPACE_FONT_RESOURCE);
+
+    QFont font = QGuiApplication::font();
+    QString fallbackFamily = font.family();
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+    if (!uiFamily.isEmpty()) {
+        font.setFamily(uiFamily);
+        fallbackFamily = uiFamily;
+    }
+#endif
+    if (!fallbackFamily.isEmpty()) {
+        const QStringList fallback{fallbackFamily};
+        for (const auto script : {QChar::Script_Han, QChar::Script_Common}) {
+            if (QFontDatabase::applicationFallbackFontFamilies(script) != fallback)
+                QFontDatabase::setApplicationFallbackFontFamilies(script, fallback);
+        }
+    }
+
+    QGuiApplication::setFont(font);
+    initialized_ = true;
+    applySize(settings.fontSize);
+}
+
+void FontManager::applySize(int point_size) {
+    QFont font = QGuiApplication::font();
+    font.setPointSize(point_size > 0 ? point_size : constant::DEFAULT_FONT_POINT_SIZE);
+    QGuiApplication::setFont(font);
 }

@@ -27,9 +27,9 @@ Item {
         id: voxelItem
         anchors.fill: parent
         controller: root.controller
-        selectionColor: App.settings.voxelSelectionColor
-        saturation: App.settings.gpuSaturation
-        brightness: App.settings.gpuBrightness
+        selectionColor: App.runtimeSettings.voxelSelectionColor
+        saturation: App.runtimeSettings.gpuSaturation
+        brightness: App.runtimeSettings.gpuBrightness
     }
 
     DragHandler {

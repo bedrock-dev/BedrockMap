@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/updatechecker.h"
+#include "controller/runtimesettings.h"
 #include "controller/sessioncontroller.h"
 #include "controller/settingsviewmodel.h"
 #include "model/logmodel.h"
@@ -23,6 +24,7 @@ class AppContext;
 class AppController final : public QObject {
     Q_OBJECT
     Q_PROPERTY(SettingsViewModel* settings READ settings CONSTANT)
+    Q_PROPERTY(RuntimeSettings* runtimeSettings READ runtimeSettings CONSTANT)
     Q_PROPERTY(WorldListModel* worlds READ worlds CONSTANT)
     Q_PROPERTY(NotificationCenter* notifications READ notifications CONSTANT)
     Q_PROPERTY(LogModel* logs READ logs CONSTANT)
@@ -47,6 +49,7 @@ class AppController final : public QObject {
     [[nodiscard]] static AppController* instance();
     [[nodiscard]] ResourceManager& resources() const;
     [[nodiscard]] SettingsViewModel* settings() { return &settings_; }
+    [[nodiscard]] RuntimeSettings* runtimeSettings() { return &runtime_settings_; }
     [[nodiscard]] WorldListModel* worlds() { return &worlds_; }
     [[nodiscard]] NotificationCenter* notifications() { return &notifications_; }
     [[nodiscard]] LogModel* logs() const { return logs_.get(); }
@@ -127,6 +130,7 @@ class AppController final : public QObject {
     std::unique_ptr<LogModel> logs_;
     AppContext& context_;
     SettingsViewModel settings_;
+    RuntimeSettings runtime_settings_;
     WorldListModel worlds_;
     NotificationCenter notifications_;
     UpdateChecker update_checker_;

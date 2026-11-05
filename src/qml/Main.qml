@@ -44,7 +44,7 @@ Window {
     onWidthChanged: Theme.windowWidth = width
     Component.onCompleted: {
         Theme.windowWidth = width
-        sidebarCollapsed = App.settings.collapseSidebarOnStartup
+        sidebarCollapsed = App.runtimeSettings.collapseSidebarOnStartup
         Qt.callLater(function () {
             if (App.startupNoticeRequired)
                 startupNoticeDialog.open()
@@ -522,10 +522,11 @@ Window {
                 window.navigation.retranslate()
             })
         }
-        function onSaved() {
-            App.notifications.info(qsTr("Save successful"))
-            if (App.worlds)
-                App.worlds.refresh()
+        function onSettingsSaved() {
+            App.notifications.info(qsTr("Settings saved. Rendering and world settings take effect after restart."))
+        }
+        function onErrorChanged(message) {
+            App.notifications.error(message)
         }
     }
     Connections {

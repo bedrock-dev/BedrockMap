@@ -15,92 +15,34 @@ SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_
 
 void SettingsViewModel::emitAllChanged() {
     emit colorThemeChanged();
-    emit collapseSidebarOnStartupChanged();
-    emit showMapDebugButtonChanged();
     emit languageChanged();
-    emit renderBackendChanged();
-    emit threadCountChanged();
-    emit preloadAllChunkCoordsChanged();
-    emit chunkOverviewEnabledChanged();
-    emit leveldbXorModeChanged();
-    emit leveldbXorKeyChanged();
     emit fontSizeChanged();
     emit accentColorChanged();
-    emit gpuOrthographicViewChanged();
-    emit gpuShadowStrengthChanged();
-    emit gpuAoStrengthChanged();
-    emit gpuAoStepsChanged();
-    emit gpuBevelStrengthChanged();
-    emit gpuBevelWidthChanged();
-    emit gpuSaturationChanged();
-    emit gpuBrightnessChanged();
-    emit gpuBiomeBlendBlocksChanged();
-    emit gpuShadowStepChanged();
-    emit gpuTileSnapshotCacheSizeMBChanged();
-    emit gpuHighDetailMapChanged();
-    emit cpuShadowLevelChanged();
-    emit minimumScaleLevelChanged();
-    emit maximumScaleLevelChanged();
-    emit panInertiaChanged();
-    emit gridLineColorChanged();
-    emit mapSelectionColorChanged();
-    emit voidMapColorChanged();
-    emit tileColorSchemeChanged();
-    emit actorRenderStyleChanged();
-    emit actorBorderWidthChanged();
-    emit actorBorderColorChanged();
-    emit chunkEditorHighlightColorChanged();
-    emit chunkEditorHighlightWidthChanged();
-    emit voxelSelectionColorChanged();
-    emit regionCacheSizeChanged();
-    emit emptyRegionCacheSizeChanged();
-    emit loadGlobalDataChanged();
-    emit maxGlobalDataLoadCountChanged();
-    emit transparentWaterChanged();
-    emit gpuGrassHeightEnabledChanged();
-    emit gpuGrassHeightBaseChanged();
-    emit gpuGrassHeightRangeChanged();
-    emit gpuGrassHeightColorChanged();
-    emit checkUpdateChanged();
-    emit scanLeviPathChanged();
-    emit customWorldPathsChanged();
-    emit worldSourcesChanged();
+    emit settingsChanged();
 }
 
 int SettingsViewModel::defaultFontSize() const { return constant::DEFAULT_FONT_POINT_SIZE; }
 
-void SettingsViewModel::applyFont() {
-    // setting::apply() has already published the new values.
-    setting::setupUiFont();
-}
-
-void SettingsViewModel::setSettings(const setting::Settings& values) {
-    values_ = values;
-    values_.gpuAoSteps = setting::normalizeAoSteps(values_.gpuAoSteps);
-    values_.minimumScaleLevel = setting::normalizeZoomScale(values_.minimumScaleLevel);
-    values_.maximumScaleLevel = std::max(values_.minimumScaleLevel, setting::normalizeZoomScale(values_.maximumScaleLevel));
-    emitAllChanged();
-}
-void SettingsViewModel::reload() {
-    values_ = setting::current();
-    emitAllChanged();
-}
 bool SettingsViewModel::save() {
-    setting::apply(values_);
-    setting::save(values_);
-    applyFont();
-    emit saved();
+    const QString error = setting::save(values_);
+    if (!error.isEmpty()) {
+        emit errorChanged(error);
+        return false;
+    }
+    emit settingsSaved();
     return true;
 }
 bool SettingsViewModel::saveWorldSources() {
-    setting::Settings persisted = setting::current();
+    setting::Settings persisted = setting::read();
     persisted.customWorldPaths = values_.customWorldPaths;
-    setting::apply(persisted);
-    setting::save(persisted);
-    emit saved();
+    const QString error = setting::save(persisted);
+    if (!error.isEmpty()) {
+        emit errorChanged(error);
+        return false;
+    }
+    emit settingsSaved();
     return true;
 }
-void SettingsViewModel::refreshWorldSources() { emit worldSourcesChanged(); }
 void SettingsViewModel::reset() {
     values_ = setting::Settings{};
     emitAllChanged();
@@ -124,7 +66,7 @@ void SettingsViewModel::setColorTheme(const QString& v) {
 void SettingsViewModel::setTileColorScheme(const QString& v) {
     if ((v != QStringLiteral("dark") && v != QStringLiteral("light")) || values_.tileColorScheme == v) return;
     values_.tileColorScheme = v;
-    emit tileColorSchemeChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setAccentColor(const QString& v) {
     // An empty value clears the override; anything else has to be a colour the
@@ -153,41 +95,41 @@ void SettingsViewModel::setRenderBackend(const QString& v) {
     }
     if (values_.renderBackend == normalized) return;
     values_.renderBackend = normalized;
-    emit renderBackendChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setThreadCount(int v) {
     v = std::max(1, v);
     if (values_.threadCount == v) return;
     values_.threadCount = v;
-    emit threadCountChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setMinimumScaleLevel(int v) {
     v = std::min(setting::normalizeZoomScale(v), values_.maximumScaleLevel);
     if (values_.minimumScaleLevel == v) return;
     values_.minimumScaleLevel = v;
-    emit minimumScaleLevelChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setMaximumScaleLevel(int v) {
     v = std::max(setting::normalizeZoomScale(v), values_.minimumScaleLevel);
     if (values_.maximumScaleLevel == v) return;
     values_.maximumScaleLevel = v;
-    emit maximumScaleLevelChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setPreloadAllChunkCoords(bool v) {
     if (values_.preloadAllChunkCoords == v) return;
     values_.preloadAllChunkCoords = v;
-    emit preloadAllChunkCoordsChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setLeveldbXorMode(int v) {
     v = std::clamp(v, 0, 2);
     if (values_.leveldbXorMode == v) return;
     values_.leveldbXorMode = v;
-    emit leveldbXorModeChanged();
+    emit settingsChanged();
 }
 void SettingsViewModel::setLeveldbXorKey(const QString& v) {
     if (values_.leveldbXorKey == v) return;
     values_.leveldbXorKey = v;
-    emit leveldbXorKeyChanged();
+    emit settingsChanged();
 }
 
 #define BM_SET_STRING(method, field, signal)           \
@@ -217,63 +159,62 @@ void SettingsViewModel::setLeveldbXorKey(const QString& v) {
         emit signal();                                           \
     }
 
-BM_SET_BOOL(setCollapseSidebarOnStartup, collapseSidebarOnStartup, collapseSidebarOnStartupChanged)
-BM_SET_BOOL(setShowMapDebugButton, showMapDebugButton, showMapDebugButtonChanged)
+BM_SET_BOOL(setCollapseSidebarOnStartup, collapseSidebarOnStartup, settingsChanged)
+BM_SET_BOOL(setShowMapDebugButton, showMapDebugButton, settingsChanged)
 BM_SET_INT(setFontSize, fontSize, fontSizeChanged, 6, 96)
-BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, gpuOrthographicViewChanged)
-BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, chunkOverviewEnabledChanged)
-BM_SET_DOUBLE(setGpuShadowStrength, gpuShadowStrength, gpuShadowStrengthChanged, 0.0, 1.0)
-BM_SET_DOUBLE(setGpuAoStrength, gpuAoStrength, gpuAoStrengthChanged, 0.0, 1.0)
+BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, settingsChanged)
+BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, settingsChanged)
+BM_SET_DOUBLE(setGpuShadowStrength, gpuShadowStrength, settingsChanged, 0.0, 1.0)
+BM_SET_DOUBLE(setGpuAoStrength, gpuAoStrength, settingsChanged, 0.0, 1.0)
 void SettingsViewModel::setGpuAoSteps(int value) {
     value = setting::normalizeAoSteps(value);
     if (values_.gpuAoSteps == value) return;
     values_.gpuAoSteps = value;
-    emit gpuAoStepsChanged();
+    emit settingsChanged();
 }
 
-BM_SET_DOUBLE(setGpuBevelStrength, gpuBevelStrength, gpuBevelStrengthChanged, 0.0, 1.0)
-BM_SET_DOUBLE(setGpuBevelWidth, gpuBevelWidth, gpuBevelWidthChanged, 0.25, 2.0)
-BM_SET_DOUBLE(setGpuSaturation, gpuSaturation, gpuSaturationChanged, 0.0, 2.0)
-BM_SET_DOUBLE(setGpuBrightness, gpuBrightness, gpuBrightnessChanged, 0.0, 2.0)
-BM_SET_DOUBLE(setGpuBiomeBlendBlocks, gpuBiomeBlendBlocks, gpuBiomeBlendBlocksChanged, 0.0, 16.0)
-BM_SET_INT(setGpuShadowStep, gpuShadowStep, gpuShadowStepChanged, 4, 32)
-BM_SET_INT(setGpuTileSnapshotCacheSizeMB, gpuTileSnapshotCacheSizeMB, gpuTileSnapshotCacheSizeMBChanged, 8, 512)
-BM_SET_BOOL(setGpuHighDetailMap, gpuHighDetailMap, gpuHighDetailMapChanged)
-BM_SET_INT(setCpuShadowLevel, cpuShadowLevel, cpuShadowLevelChanged, 0, 255)
-BM_SET_DOUBLE(setPanInertia, panInertia, panInertiaChanged, 0.0, 1.0)
+BM_SET_DOUBLE(setGpuBevelStrength, gpuBevelStrength, settingsChanged, 0.0, 1.0)
+BM_SET_DOUBLE(setGpuBevelWidth, gpuBevelWidth, settingsChanged, 0.25, 2.0)
+BM_SET_DOUBLE(setGpuSaturation, gpuSaturation, settingsChanged, 0.0, 2.0)
+BM_SET_DOUBLE(setGpuBrightness, gpuBrightness, settingsChanged, 0.0, 2.0)
+BM_SET_DOUBLE(setGpuBiomeBlendBlocks, gpuBiomeBlendBlocks, settingsChanged, 0.0, 16.0)
+BM_SET_INT(setGpuShadowStep, gpuShadowStep, settingsChanged, 4, 32)
+BM_SET_INT(setGpuTileSnapshotCacheSizeMB, gpuTileSnapshotCacheSizeMB, settingsChanged, 8, 512)
+BM_SET_BOOL(setGpuHighDetailMap, gpuHighDetailMap, settingsChanged)
+BM_SET_INT(setCpuShadowLevel, cpuShadowLevel, settingsChanged, 0, 255)
+BM_SET_DOUBLE(setPanInertia, panInertia, settingsChanged, 0.0, 1.0)
 void SettingsViewModel::setMapSelectionColor(const QString& value) {
     const QColor color(value.trimmed());
     if (!color.isValid()) return;
     const QString rgba = color.name(QColor::HexArgb);
     if (values_.mapSelectionColor == rgba) return;
     values_.mapSelectionColor = rgba;
-    emit mapSelectionColorChanged();
+    emit settingsChanged();
 }
 
-BM_SET_STRING(setGridLineColor, gridLineColor, gridLineColorChanged)
-BM_SET_STRING(setVoidMapColor, voidMapColor, voidMapColorChanged)
-BM_SET_INT(setActorRenderStyle, actorRenderStyle, actorRenderStyleChanged, 0, 1)
-BM_SET_INT(setActorBorderWidth, actorBorderWidth, actorBorderWidthChanged, 0, 32)
-BM_SET_STRING(setActorBorderColor, actorBorderColor, actorBorderColorChanged)
-BM_SET_STRING(setChunkEditorHighlightColor, chunkEditorHighlightColor, chunkEditorHighlightColorChanged)
-BM_SET_INT(setChunkEditorHighlightWidth, chunkEditorHighlightWidth, chunkEditorHighlightWidthChanged, 0, 64)
-BM_SET_STRING(setVoxelSelectionColor, voxelSelectionColor, voxelSelectionColorChanged)
-BM_SET_INT(setRegionCacheSize, regionCacheSize, regionCacheSizeChanged, 0, 10000000)
-BM_SET_INT(setEmptyRegionCacheSize, emptyRegionCacheSize, emptyRegionCacheSizeChanged, 0, 10000000)
-BM_SET_BOOL(setLoadGlobalData, loadGlobalData, loadGlobalDataChanged)
-BM_SET_INT(setMaxGlobalDataLoadCount, maxGlobalDataLoadCount, maxGlobalDataLoadCountChanged, 0, 10000000)
-BM_SET_BOOL(setTransparentWater, transparentWater, transparentWaterChanged)
-BM_SET_BOOL(setGpuGrassHeightEnabled, gpuGrassHeightEnabled, gpuGrassHeightEnabledChanged)
-BM_SET_DOUBLE(setGpuGrassHeightBase, gpuGrassHeightBase, gpuGrassHeightBaseChanged, -128.0, 512.0)
-BM_SET_DOUBLE(setGpuGrassHeightRange, gpuGrassHeightRange, gpuGrassHeightRangeChanged, 1.0, 512.0)
-BM_SET_STRING(setGpuGrassHeightColor, gpuGrassHeightColor, gpuGrassHeightColorChanged)
-BM_SET_BOOL(setCheckUpdate, checkUpdate, checkUpdateChanged)
+BM_SET_STRING(setGridLineColor, gridLineColor, settingsChanged)
+BM_SET_STRING(setVoidMapColor, voidMapColor, settingsChanged)
+BM_SET_INT(setActorRenderStyle, actorRenderStyle, settingsChanged, 0, 1)
+BM_SET_INT(setActorBorderWidth, actorBorderWidth, settingsChanged, 0, 32)
+BM_SET_STRING(setActorBorderColor, actorBorderColor, settingsChanged)
+BM_SET_STRING(setChunkEditorHighlightColor, chunkEditorHighlightColor, settingsChanged)
+BM_SET_INT(setChunkEditorHighlightWidth, chunkEditorHighlightWidth, settingsChanged, 0, 64)
+BM_SET_STRING(setVoxelSelectionColor, voxelSelectionColor, settingsChanged)
+BM_SET_INT(setRegionCacheSize, regionCacheSize, settingsChanged, 0, 10000000)
+BM_SET_INT(setEmptyRegionCacheSize, emptyRegionCacheSize, settingsChanged, 0, 10000000)
+BM_SET_BOOL(setLoadGlobalData, loadGlobalData, settingsChanged)
+BM_SET_INT(setMaxGlobalDataLoadCount, maxGlobalDataLoadCount, settingsChanged, 0, 10000000)
+BM_SET_BOOL(setTransparentWater, transparentWater, settingsChanged)
+BM_SET_BOOL(setGpuGrassHeightEnabled, gpuGrassHeightEnabled, settingsChanged)
+BM_SET_DOUBLE(setGpuGrassHeightBase, gpuGrassHeightBase, settingsChanged, -128.0, 512.0)
+BM_SET_DOUBLE(setGpuGrassHeightRange, gpuGrassHeightRange, settingsChanged, 1.0, 512.0)
+BM_SET_STRING(setGpuGrassHeightColor, gpuGrassHeightColor, settingsChanged)
+BM_SET_BOOL(setCheckUpdate, checkUpdate, settingsChanged)
 
 void SettingsViewModel::setScanLeviPath(bool v) {
     if (values_.scanLeviPath == v) return;
     values_.scanLeviPath = v;
-    emit scanLeviPathChanged();
-    emit worldSourcesChanged();
+    emit settingsChanged();
 }
 
 void SettingsViewModel::addCustomWorldPath(const QString& path) {
@@ -283,8 +224,7 @@ void SettingsViewModel::addCustomWorldPath(const QString& path) {
         if (platform::normalizeLocalPath(existing) == normalized) return;
     }
     values_.customWorldPaths.append(normalized);
-    emit customWorldPathsChanged();
-    emit worldSourcesChanged();
+    emit settingsChanged();
 }
 
 void SettingsViewModel::removeCustomWorldPath(const QString& path) {
@@ -293,8 +233,7 @@ void SettingsViewModel::removeCustomWorldPath(const QString& path) {
     for (int i = 0; i < values_.customWorldPaths.size(); ++i) {
         if (platform::normalizeLocalPath(values_.customWorldPaths.at(i)) == normalized) {
             values_.customWorldPaths.removeAt(i);
-            emit customWorldPathsChanged();
-            emit worldSourcesChanged();
+            emit settingsChanged();
             return;
         }
     }

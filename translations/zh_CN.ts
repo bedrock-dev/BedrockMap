@@ -337,6 +337,16 @@
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Dark mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Light mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
         <source>1 session open</source>
         <translation>已打开 1 个会话</translation>
     </message>
@@ -344,16 +354,6 @@
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>%1 sessions open</source>
         <translation>已打开 %1 个会话</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>Dark mode</source>
-        <translation>深色模式</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>Light mode</source>
-        <translation>浅色模式</translation>
     </message>
 </context>
 <context>
@@ -1074,8 +1074,8 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Save successful</source>
-        <translation>保存成功</translation>
+        <source>Settings saved. Rendering and world settings take effect after restart.</source>
+        <translation>设置已保存。渲染和世界设置将在重启后生效。</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -3815,6 +3815,14 @@ Current version: %2</source>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>文档提供方未返回文件描述符。</translation>
+    </message>
+</context>
+<context>
+    <name>setting</name>
+    <message>
+        <location filename="../src/base/config.cpp"/>
+        <source>Could not save settings to %1.</source>
+        <translation>无法将设置保存到 %1。</translation>
     </message>
 </context>
 </TS>

@@ -209,7 +209,6 @@ class TerrainDataProvider final : public QObject {
     void appendScanRange(int minX, int minZ, int maxX, int maxZ);
     void processRegion(const region_pos& pos, int& submitted);
     void syncLoaderTileRequest();
-    void syncSnapshotCacheLimit();
     void storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
     void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
     [[nodiscard]] bool enqueueTile(const region_pos& pos);
@@ -251,8 +250,6 @@ class TerrainDataProvider final : public QObject {
     int prefetch_levels_{0};
     QThreadPool tile_pool_;
     QCache<TerrainTileKey, CachedTile> snapshot_cache_{32 * 1024 * 1024};
-    bool snapshot_cache_limit_initialized_{false};
-    quint64 snapshot_cache_limit_revision_{0};
     bool active_{false};
     bool overview_only_{false};
     quint64 view_generation_{0};
