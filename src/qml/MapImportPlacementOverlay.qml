@@ -40,8 +40,8 @@ Item {
         x: Math.max(8, (root.width - root.inputRightInset - width) / 2)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 8
-        width: Math.max(0, Math.min(440, root.width - root.inputRightInset - 16))
-        height: panelColumn.implicitHeight + 16
+        width: Math.max(0, Math.min(260, root.width - root.inputRightInset - 16))
+        height: panelColumn.implicitHeight + 12
 
         // Reserve this entire strip from map input, including unused panel space.
         MouseArea {
@@ -59,34 +59,32 @@ Item {
         ColumnLayout {
             id: panelColumn
             anchors.fill: parent
-            anchors.margins: 8
-            spacing: 6
+            anchors.margins: 6
+            spacing: 4
 
             Text {
                 Layout.fillWidth: true
-                text: root.regionImport ? root.regionImport.sourceName : ""
-                elide: Text.ElideMiddle
+                text: root.regionImport ? qsTr("%1 · %2 chunks · %3 × %4").arg(root.regionImport.sourceName).arg(
+                                              root.regionImport.chunkCount).arg(root.regionImport.width).arg(
+                                              root.regionImport.height) : ""
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontBody
                 font.bold: true
-            }
-            Text {
-                Layout.fillWidth: true
-                text: root.regionImport ? qsTr("%1 chunks · %2 × %3").arg(root.regionImport.chunkCount).arg(
-                                              root.regionImport.width).arg(root.regionImport.height) : ""
-                wrapMode: Text.Wrap
-                color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                elide: Text.ElideMiddle
             }
             RowLayout {
-                Layout.alignment: Qt.AlignRight
+                Layout.fillWidth: true
                 AppButton {
+                    Layout.fillWidth: true
                     text: qsTr("Cancel")
+                    compact: true
                     onClicked: root.cancelRequested()
                 }
                 AppButton {
+                    Layout.fillWidth: true
                     text: qsTr("Import")
                     primary: true
+                    compact: true
                     enabled: root.active
                     onClicked: root.confirmPlacement()
                 }

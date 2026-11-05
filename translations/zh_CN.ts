@@ -1405,8 +1405,8 @@
     <name>MapImportPlacementOverlay</name>
     <message>
         <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
-        <source>%1 chunks · %2 × %3</source>
-        <translation type="unfinished"></translation>
+        <source>%1 · %2 chunks · %3 × %4</source>
+        <translation>%1 · %2 个区块 · %3 × %4</translation>
     </message>
     <message>
         <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
