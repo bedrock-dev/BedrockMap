@@ -33,6 +33,7 @@ bool ChunkEditService::canEdit() const { return loaded_.load(std::memory_order_a
 
 bool ChunkEditService::deleteChunk(const bl::chunk_pos& pos) {
     if (!canEdit()) return false;
+    if (preload_all_chunk_coords_ && coords_service_.ready() && !coords_service_.index().contains(pos)) return true;
     storage_.putMissing(pos);
     markChanged(pos, false);
     return true;

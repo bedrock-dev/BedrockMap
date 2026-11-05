@@ -90,6 +90,7 @@ build_wasm/
 cache
 .qtcreator
 .vscode
+.vscode/settings.json
 maps
 config.ini
 .github/agents/*
