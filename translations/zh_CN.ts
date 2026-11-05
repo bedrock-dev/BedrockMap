@@ -383,7 +383,6 @@
     </message>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
-        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>The clipboard is not available.</source>
         <translation>剪贴板不可用。</translation>
     </message>
@@ -1287,7 +1286,6 @@
 <context>
     <name>MapController</name>
     <message>
-        <location filename="../src/controller/mapcontroller.cpp"/>
         <location filename="../src/controller/mapcontroller.cpp"/>
         <location filename="../src/controller/mapcontroller.cpp"/>
         <source>The clipboard is not available.</source>

@@ -1,9 +1,6 @@
 #include "controller/blockvolumecontroller.h"
 
-#include <QClipboard>
-#include <QGuiApplication>
 #include <QMetaObject>
-#include <QMimeData>
 #include <QtConcurrent/QtConcurrentRun>
 #include <algorithm>
 #include <cmath>
@@ -11,11 +8,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/clipboarddata.h"
+#include "base/appcontext.h"
+#include "base/binaryclipboard.h"
 #include "nbt.h"
 
-BlockVolumeController::BlockVolumeController(std::unique_ptr<BlockVolumeSource> source, QObject* parent)
-    : VoxelSceneController(parent), source_(std::move(source)), document_(new NbtDocumentController(this)) {
+BlockVolumeController::BlockVolumeController(std::unique_ptr<BlockVolumeSource> source, AppContext& context, QObject* parent)
+    : VoxelSceneController(parent),
+      source_(std::move(source)),
+      document_(new NbtDocumentController(this)),
+      context_(context) {
     document_->setReadOnly(true);
     connect(&load_watcher_, &QFutureWatcherBase::finished, this, &BlockVolumeController::finishLoad);
     connect(&import_load_watcher_, &QFutureWatcherBase::finished, this, &BlockVolumeController::finishImportLoad);
@@ -72,12 +73,7 @@ bool BlockVolumeController::importStructure(const QUrl& url) {
 bool BlockVolumeController::pasteStructure() {
     if (!source_ || !source_->blockEditingEnabled() || loading_ || importing_ || deleting_ || copying_ || exporting() || !scene_)
         return false;
-    auto* clipboard = QGuiApplication::clipboard();
-    if (!clipboard) {
-        emit importFailed(tr("The clipboard is not available."));
-        return false;
-    }
-    const QByteArray raw = clipboard_data::readMcstructure(clipboard->mimeData(QClipboard::Clipboard));
+    const QByteArray raw = context_.binaryClipboard().read(BinaryClipboard::PayloadKind::Mcstructure);
     if (raw.isEmpty() || !source_->configureImportData(raw)) {
         emit importFailed(tr("The clipboard does not contain a copied structure."));
         return false;
@@ -309,14 +305,10 @@ void BlockVolumeController::finishCopy() {
         return;
     }
 
-    auto* clipboard = QGuiApplication::clipboard();
-    if (!clipboard) {
+    if (!context_.binaryClipboard().write(BinaryClipboard::PayloadKind::Mcstructure, raw)) {
         emit copyFailed(tr("The clipboard is not available."));
         return;
     }
-    auto* mimeData = new QMimeData();
-    clipboard_data::writeMcstructure(*mimeData, raw);
-    clipboard->setMimeData(mimeData, QClipboard::Clipboard);
     emit copyFinished();
 }
 

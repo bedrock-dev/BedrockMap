@@ -20,6 +20,7 @@
 #include "render/overlay.h"
 
 class AsyncLevelLoader;
+class AppContext;
 struct GlobalNBTLoadResult;
 
 struct GlobalNbtPolicy {
@@ -51,7 +52,7 @@ class GlobalNbtSection final : public QObject {
 
    public:
     GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& raw_keys,
-                     QObject* parent = nullptr);
+                     AppContext& context, QObject* parent = nullptr);
 
     [[nodiscard]] QString title() const { return title_; }
     [[nodiscard]] QString shortLabel() const { return short_label_; }
@@ -94,6 +95,7 @@ class GlobalNbtSection final : public QObject {
     QString icon_name_;
     int count_{0};
     NbtDocumentController* document_{nullptr};
+    AppContext& context_;
     std::unique_ptr<MapItemController> map_preview_;
     std::unique_ptr<BlockVolumeController> structure_preview_;
     std::optional<QByteArray> pending_structure_preview_;
@@ -112,7 +114,7 @@ class GlobalDataController : public QObject {
     Q_PROPERTY(bool dirty READ isDirty NOTIFY dirtyChanged)
 
    public:
-    explicit GlobalDataController(QObject* parent = nullptr);
+    explicit GlobalDataController(AppContext& context, QObject* parent = nullptr);
     ~GlobalDataController() override;
 
     [[nodiscard]] QVariantList sections() const { return sections_; }
@@ -151,6 +153,7 @@ class GlobalDataController : public QObject {
     std::unique_ptr<bl::nbt::compound_tag> level_dat_root_;
     std::vector<std::unique_ptr<GlobalNbtSection>> sections_storage_;
     GlobalNbtSection* level_dat_section_{nullptr};
+    AppContext& context_;
     QVariantList sections_;
     std::atomic_bool stop_{false};
     bool loading_{false};

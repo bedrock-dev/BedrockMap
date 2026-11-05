@@ -11,6 +11,7 @@
 #include "controller/voxelscenecontroller.h"
 
 class AsyncLevelLoader;
+class AppContext;
 
 /// Shared controller for file-backed and world-backed block volumes.
 class BlockVolumeController final : public VoxelSceneController {
@@ -23,7 +24,7 @@ class BlockVolumeController final : public VoxelSceneController {
     Q_PROPERTY(bool copying READ copying NOTIFY copyingChanged)
 
    public:
-    explicit BlockVolumeController(std::unique_ptr<BlockVolumeSource> source, QObject* parent = nullptr);
+    explicit BlockVolumeController(std::unique_ptr<BlockVolumeSource> source, AppContext& context, QObject* parent = nullptr);
     ~BlockVolumeController() override;
 
     void load(const QUrl& url);
@@ -81,6 +82,7 @@ class BlockVolumeController final : public VoxelSceneController {
 
     std::unique_ptr<BlockVolumeSource> source_;
     NbtDocumentController* document_;
+    AppContext& context_;
     QFutureWatcher<std::shared_ptr<BlockVolumeLoadResult>> load_watcher_;
     QFutureWatcher<std::shared_ptr<BlockVolumeLoadResult>> import_load_watcher_;
     QFutureWatcher<BlockVolumeMutationResult> import_watcher_;

@@ -2,6 +2,7 @@
 
 #include <QtConcurrent>
 
+#include "base/appcontext.h"
 #include "base/config.h"
 #include "base/platform.h"
 #include "base/worldenv.h"
@@ -10,14 +11,15 @@
 #include "loader/leveldbxor.h"
 #include "nbt.h"
 
-WorldSession::WorldSession(QString path, QString title, ResourceManager* resources, QObject* parent)
+WorldSession::WorldSession(QString path, QString title, AppContext& context, QObject* parent)
     : WorkspaceSession(QStringLiteral("world"), platform::normalizeLocalPath(path),
                        title.isEmpty() ? QStringLiteral("World workspace") : std::move(title), parent),
+      context_(context),
       map_view_state_(this),
-      map_controller_(&map_view_state_, this),
+      map_controller_(&map_view_state_, context, this),
       chunk_editor_(this),
-      voxel_view_(std::make_unique<WorldVolumeSource>(), this),
-      resources_(resources) {
+      voxel_view_(std::make_unique<WorldVolumeSource>(), context, this),
+      global_data_(context, this) {
     connect(&open_watcher_, &QFutureWatcher<OpenResult>::finished, this, &WorldSession::onOpenFinished);
     connect(&save_watcher_, &QFutureWatcher<bool>::finished, this, &WorldSession::onSaveFinished);
     connect(&global_data_, &GlobalDataController::dirtyChanged, this, &WorldSession::refreshDirty);
@@ -79,7 +81,7 @@ void WorldSession::open() {
     setIndexProgress(0, 0);
     setIndexLoading(setting::current().preloadAllChunkCoords);
     setState(State::Running);
-    opening_loader_ = std::make_unique<AsyncLevelLoader>(resources_);
+    opening_loader_ = std::make_unique<AsyncLevelLoader>(&context_.resources());
     opening_loader_->setPreloadAllChunkCoords(setting::current().preloadAllChunkCoords);
     opening_loader_->setChunkOverviewEnabled(setting::current().chunkOverviewEnabled);
     connect(opening_loader_.get(), &AsyncLevelLoader::chunkCoordsPreloadProgress, this,

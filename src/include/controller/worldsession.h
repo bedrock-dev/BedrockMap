@@ -17,7 +17,7 @@
 #include "render/terraindataprovider.h"
 
 class AsyncLevelLoader;
-class ResourceManager;
+class AppContext;
 namespace bl::nbt {
     class compound_tag;
 }
@@ -41,7 +41,7 @@ class WorldSession final : public WorkspaceSession {
     Q_PROPERTY(int workspaceSection READ workspaceSection WRITE setWorkspaceSection NOTIFY workspaceSectionChanged)
 
    public:
-    explicit WorldSession(QString path, QString title, ResourceManager* resources, QObject* parent = nullptr);
+    explicit WorldSession(QString path, QString title, AppContext& context, QObject* parent = nullptr);
     ~WorldSession() override;
 
     MapController* mapController() { return &map_controller_; }
@@ -97,6 +97,7 @@ class WorldSession final : public WorkspaceSession {
     void onSaveFinished();
     void onOpenFinished();
 
+    AppContext& context_;
     MapViewState map_view_state_;
     MapController map_controller_;
     ChunkEditorController chunk_editor_;
@@ -105,7 +106,6 @@ class WorldSession final : public WorkspaceSession {
     GlobalDataController global_data_;
     std::unique_ptr<AsyncLevelLoader> loader_;
     std::unique_ptr<AsyncLevelLoader> opening_loader_;
-    ResourceManager* resources_{nullptr};
     QFutureWatcher<OpenResult> open_watcher_;
     QFutureWatcher<bool> save_watcher_;
     std::unordered_map<std::string, std::string> pending_global_modifies_;

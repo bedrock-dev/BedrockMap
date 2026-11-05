@@ -81,7 +81,8 @@ WorkspaceSession* WorkspaceSessionModel::at(int index) const {
 
 int WorkspaceSessionModel::indexOf(WorkspaceSession* session) const { return sessions_.indexOf(session); }
 
-SessionController::SessionController(QObject* parent) : QObject(parent), open_sessions_(this) {}
+SessionController::SessionController(AppContext& context, QObject* parent)
+    : QObject(parent), open_sessions_(this), context_(context) {}
 
 SessionController::~SessionController() {
     for (auto& session : sessions_) session->close();
@@ -117,7 +118,7 @@ WorkspaceSession* SessionController::openWorld(const QString& path, const QStrin
         }
     }
 
-    auto session = std::make_unique<WorldSession>(target, title, resources_, this);
+    auto session = std::make_unique<WorldSession>(target, title, context_, this);
     auto* session_ptr = session.get();
     connect(session_ptr, &WorldSession::opened, this, [this, session_ptr] {
         if (world_model_) world_model_->recordRecentWorld(session_ptr->path());
@@ -155,7 +156,7 @@ WorkspaceSession* SessionController::openMcstructureFile(const QUrl& url) {
             return session;
         }
     }
-    auto session = std::make_unique<McstructureSession>(url, io::DocumentIo::displayName(url), this);
+    auto session = std::make_unique<McstructureSession>(url, io::DocumentIo::displayName(url), context_, this);
     auto* sessionPtr = session.get();
     connect(sessionPtr->controller(), &BlockVolumeController::loadFailed, this,
             [this, path](const QString& error) { emit errorOccurred(error, path); });

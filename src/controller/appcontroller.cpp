@@ -17,6 +17,7 @@
 #endif
 
 #include "base/apppaths.h"
+#include "base/appcontext.h"
 #include "base/platform.h"
 #include "base/worldfilesource.h"
 #include "controller/nbtsession.h"
@@ -60,15 +61,15 @@ namespace {
     }
 }  // namespace
 
-AppController::AppController(std::unique_ptr<LogModel> logs, ResourceManager& resources, QObject* parent)
+AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context, QObject* parent)
     : QObject(parent),
       logs_(std::move(logs)),
-      resources_(&resources),
+      context_(context),
       settings_(this),
       worlds_(this),
       notifications_(this),
       update_checker_(this),
-      sessions_(this) {
+      sessions_(context, this) {
     if (applicationController) qFatal("Only one AppController can exist");
     if (!logs_) qFatal("AppController requires an initialized log model");
     applicationController = this;
@@ -88,7 +89,6 @@ AppController::AppController(std::unique_ptr<LogModel> logs, ResourceManager& re
         if (manual_update_check_) notifications_.error(tr("Unable to check for updates."));
         finishUpdateCheck();
     });
-    sessions_.setResourceManager(resources_);
     sessions_.setWorldListModel(&worlds_);
     initializePermissionListeners();
     connect(&sessions_, &SessionController::activeSessionChanged, this, &AppController::activeSessionChanged);
@@ -125,6 +125,8 @@ AppController::~AppController() {
 }
 
 AppController* AppController::instance() { return applicationController; }
+
+ResourceManager& AppController::resources() const { return context_.resources(); }
 
 void AppController::acknowledgeStartupNotice() {
     if (!startup_notice_required_) return;

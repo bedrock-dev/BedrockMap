@@ -16,6 +16,7 @@
 #include "model/worldlistmodel.h"
 
 class ResourceManager;
+class AppContext;
 
 /// Application services and workspace operations. Session ownership and
 /// lifecycle live in SessionController; UI objects remain in the frontend.
@@ -40,11 +41,11 @@ class AppController final : public QObject {
     Q_PROPERTY(QString rootPermission READ rootPermission NOTIFY permissionsChanged)
 
    public:
-    explicit AppController(std::unique_ptr<LogModel> logs, ResourceManager& resources, QObject* parent = nullptr);
+    explicit AppController(std::unique_ptr<LogModel> logs, AppContext& context, QObject* parent = nullptr);
     ~AppController() override;
 
     [[nodiscard]] static AppController* instance();
-    [[nodiscard]] ResourceManager& resources() const { return *resources_; }
+    [[nodiscard]] ResourceManager& resources() const;
     [[nodiscard]] SettingsViewModel* settings() { return &settings_; }
     [[nodiscard]] WorldListModel* worlds() { return &worlds_; }
     [[nodiscard]] NotificationCenter* notifications() { return &notifications_; }
@@ -124,7 +125,7 @@ class AppController final : public QObject {
 
     // Destroy sessions before their services, and logging last.
     std::unique_ptr<LogModel> logs_;
-    ResourceManager* resources_{nullptr};
+    AppContext& context_;
     SettingsViewModel settings_;
     WorldListModel worlds_;
     NotificationCenter notifications_;

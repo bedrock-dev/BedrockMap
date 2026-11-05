@@ -60,13 +60,14 @@ namespace {
 }  // namespace
 
 GlobalNbtSection::GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots,
-                                   const QStringList& raw_keys, QObject* parent)
+                                   const QStringList& raw_keys, AppContext& context, QObject* parent)
     : QObject(parent),
       title_(std::move(policy.title)),
       short_label_(std::move(policy.shortLabel)),
       icon_name_(std::move(policy.iconName)),
       count_(static_cast<int>(roots.size())),
-      document_(new NbtDocumentController(this)) {
+      document_(new NbtDocumentController(this)),
+      context_(context) {
     document_->loadMemory(std::move(roots), raw_keys, title_, policy.presenter);
     document_->setReadOnly(policy.readOnly);
     document_->setSingleRecord(policy.singleRecord);
@@ -91,7 +92,7 @@ void GlobalNbtSection::reloadMapPreview() {
 
 void GlobalNbtSection::enableStructurePreview() {
     if (structure_preview_) return;
-    structure_preview_ = std::make_unique<BlockVolumeController>(std::make_unique<McstructureVolumeSource>());
+    structure_preview_ = std::make_unique<BlockVolumeController>(std::make_unique<McstructureVolumeSource>(), context_);
     connect(document_, &NbtDocumentController::currentIndexChanged, this, &GlobalNbtSection::reloadStructurePreview);
     connect(structure_preview_.get(), &VoxelSceneController::loadingChanged, this, [this] {
         if (structure_preview_->loading() || !pending_structure_preview_) return;
@@ -132,7 +133,7 @@ void GlobalNbtSection::reloadStructurePreview() {
     }
 }
 
-GlobalDataController::GlobalDataController(QObject* parent) : QObject(parent) {
+GlobalDataController::GlobalDataController(AppContext& context, QObject* parent) : QObject(parent), context_(context) {
     connect(&watcher_, &QFutureWatcher<void>::finished, this, [this] {
         if (stop_.load(std::memory_order_acquire) || !result_) return;
         publish(result_);
@@ -202,7 +203,7 @@ GlobalNbtSection* GlobalDataController::appendGeneralSection(
         roots.emplace_back(copy);
         raw_keys.append(QString::fromStdString(key));
     }
-    return addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, this));
+    return addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, context_, this));
 }
 
 GlobalNbtSection* GlobalDataController::addSection(std::unique_ptr<GlobalNbtSection> section) {
@@ -268,7 +269,7 @@ void GlobalDataController::appendVillageSection(std::shared_ptr<GlobalNBTLoadRes
                                                }
                                                return NbtItemPresentation{label, icon};
                                            };
-    addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, this));
+    addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, context_, this));
 }
 
 void GlobalDataController::appendLevelDatSection() {
@@ -283,8 +284,8 @@ void GlobalDataController::appendLevelDatSection() {
     policy.iconName = QStringLiteral("level_dat");
     policy.singleRecord = true;
     policy.fixedKey = QStringLiteral("level.dat");
-    level_dat_section_ =
-        addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, this));
+    level_dat_section_ = addSection(
+        std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, context_, this));
 }
 
 void GlobalDataController::collectVillageRects(GlobalNBTLoadResult& result) {

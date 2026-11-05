@@ -6,6 +6,7 @@
 #include <QStyleHints>
 #include <memory>
 
+#include "base/appcontext.h"
 #include "base/config.h"
 #include "base/platform.h"
 #include "base/resourcemanager.h"
@@ -71,19 +72,18 @@ int main(int argc, char* argv[]) {
     setting::init();
     setupGraphicsBackend();
     constant::initColorTable();
+    AppContext appContext;
     // Initialize entity icons before any world scan can resolve actors.
-    ResourceManager resources;
-    resources.initialize();
+    appContext.resources().initialize();
     setting::setupUiFont();
     //  This executable has its own resource bundle, so it must load the shared
     //  translation catalogs before the QML engine builds any user-visible text.
-    TranslatorManager translator;
-    translator.initialize();
-    translator.setupTranslation(app, translator.resolveLanguage());
+    appContext.translator().initialize();
+    appContext.translator().setupTranslation(app, appContext.translator().resolveLanguage());
 
     // Create application services after settings and language resolution.
     // Transfer the early log model so AppController owns its full lifecycle.
-    AppController appController(std::move(logs), resources);
+    AppController appController(std::move(logs), appContext);
     QObject::connect(&fileOpenHandler, &FileOpenHandler::fileOpenRequested, &appController, &AppController::openFile);
     auto& settingsModel = *appController.settings();
     // Let Qt's platform palette follow the same explicit/system theme mode that
@@ -101,10 +101,11 @@ int main(int argc, char* argv[]) {
 
     // Settings changes are previewed immediately. Installing a new translator
     // makes the QML engine re-evaluate every qsTr()/qsTranslate() binding.
-    QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &engine, [&app, &engine, &settingsModel, &translator] {
+    QObject::connect(&settingsModel, &SettingsViewModel::languageChanged, &engine, [&app, &engine, &settingsModel, &appContext] {
         const QString configured = settingsModel.language();
-        const QString language = configured.isEmpty() || configured == QStringLiteral("system") ? translator.systemLanguage() : configured;
-        translator.setupTranslation(app, language);
+        const QString language =
+            configured.isEmpty() || configured == QStringLiteral("system") ? appContext.translator().systemLanguage() : configured;
+        appContext.translator().setupTranslation(app, language);
         engine.retranslate();
     });
     engine.loadFromModule("BedrockMap", "Main");
@@ -112,8 +113,9 @@ int main(int argc, char* argv[]) {
 #ifdef Q_OS_ANDROID
     // Keep the native startup cover until Qt has submitted its first frame.
     if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().constFirst())) {
-        QObject::connect(window, &QQuickWindow::frameSwapped, window,
-                         [] { QNativeInterface::QAndroidApplication::hideSplashScreen(); }, Qt::SingleShotConnection);
+        QObject::connect(
+            window, &QQuickWindow::frameSwapped, window, [] { QNativeInterface::QAndroidApplication::hideSplashScreen(); },
+            Qt::SingleShotConnection);
     }
 #endif
     fileOpenHandler.start();

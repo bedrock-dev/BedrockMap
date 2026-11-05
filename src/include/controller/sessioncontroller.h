@@ -12,7 +12,7 @@
 #include "controller/worldsession.h"
 
 class WorldListModel;
-class ResourceManager;
+class AppContext;
 
 class WorkspaceSessionModel final : public QAbstractListModel {
     Q_OBJECT
@@ -47,11 +47,10 @@ class SessionController final : public QObject {
     Q_PROPERTY(int activeIndex READ activeIndex NOTIFY activeIndexChanged)
 
    public:
-    explicit SessionController(QObject* parent = nullptr);
+    explicit SessionController(AppContext& context, QObject* parent = nullptr);
     ~SessionController() override;
 
     void setWorldListModel(WorldListModel* model) { world_model_ = model; }
-    void setResourceManager(ResourceManager* resources) { resources_ = resources; }
     [[nodiscard]] WorkspaceSessionModel* sessions() { return &open_sessions_; }
     [[nodiscard]] WorkspaceSession* activeSession() const;
     [[nodiscard]] int activeIndex() const { return active_index_; }
@@ -87,8 +86,8 @@ class SessionController final : public QObject {
     int appendSession(std::unique_ptr<WorkspaceSession> session);
 
     WorkspaceSessionModel open_sessions_;
+    AppContext& context_;
     WorldListModel* world_model_{nullptr};
-    ResourceManager* resources_{nullptr};
     std::vector<std::unique_ptr<WorkspaceSession>> sessions_;
     int active_index_{0};
     bool active_{false};

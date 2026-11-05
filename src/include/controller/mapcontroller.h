@@ -18,6 +18,7 @@
 #include "model/mapviewstate.h"
 
 class AsyncLevelLoader;
+class AppContext;
 
 /// Commands and observable state for one map view.
 ///
@@ -39,7 +40,7 @@ class MapController final : public QObject {
     Q_PROPERTY(RegionImportController* regionImport READ regionImport CONSTANT)
 
    public:
-    explicit MapController(MapViewState* map_view_state, QObject* parent = nullptr);
+    explicit MapController(MapViewState* map_view_state, AppContext& context, QObject* parent = nullptr);
     ~MapController() override;
 
     [[nodiscard]] int dimension() const;
@@ -139,6 +140,7 @@ class MapController final : public QObject {
     void finishSelectionOperation();
 
     MapViewState* map_view_state_{nullptr};
+    AppContext& context_;
     RegionImportController region_import_;
     AsyncLevelLoader* loader_{nullptr};
     QFutureWatcher<OperationResult> operation_watcher_;

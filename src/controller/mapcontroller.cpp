@@ -5,14 +5,14 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QGuiApplication>
-#include <QMimeData>
 #include <QStringList>
 #include <QtConcurrent>
 #include <algorithm>
 #include <cmath>
 #include <exception>
 
-#include "base/clipboarddata.h"
+#include "base/appcontext.h"
+#include "base/binaryclipboard.h"
 #include "bedrock_key.h"
 #include "color.h"
 #include "loader/asynclevelloader.h"
@@ -68,8 +68,8 @@ namespace {
     }
 }  // namespace
 
-MapController::MapController(MapViewState* map_view_state, QObject* parent)
-    : QObject(parent), map_view_state_(map_view_state), region_import_(this) {
+MapController::MapController(MapViewState* map_view_state, AppContext& context, QObject* parent)
+    : QObject(parent), map_view_state_(map_view_state), context_(context), region_import_(this) {
     connect(&operation_watcher_, &QFutureWatcher<OperationResult>::finished, this, &MapController::finishSelectionOperation);
     connect(&region_import_, &RegionImportController::failed, this, &MapController::operationFailed);
     if (!map_view_state_) return;
@@ -415,15 +415,9 @@ bool MapController::beginImportAsync(const QUrl& source, int chunkX, int chunkZ)
 bool MapController::beginPasteAsync(int chunkX, int chunkZ) {
     if (!loader_ || !loader_->isOpen() || operation_running_ || editing_blocked_ || region_import_.active() || region_import_.loading())
         return false;
-    auto* clipboard = QGuiApplication::clipboard();
-    if (!clipboard) {
-        emit operationFailed(tr("The clipboard is not available."));
-        return false;
-    }
-    // Capture the clipboard on the GUI thread. The worker owns this snapshot,
-    // so later clipboard changes cannot affect an in-progress placement.
-    const auto* mime_data = clipboard->mimeData(QClipboard::Clipboard);
-    QByteArray bytes = clipboard_data::readRegion(mime_data);
+    // Capture the payload on the GUI thread. The worker owns this snapshot, so
+    // later clipboard changes cannot affect an in-progress placement.
+    QByteArray bytes = context_.binaryClipboard().read(BinaryClipboard::PayloadKind::ChunkRegion);
     if (bytes.isEmpty()) {
         emit operationFailed(tr("The clipboard does not contain any copied chunks."));
         return false;
@@ -565,14 +559,10 @@ void MapController::finishSelectionOperation() {
         return;
     }
     if (!result.clipboard.isEmpty()) {
-        auto* clipboard = QGuiApplication::clipboard();
-        if (!clipboard) {
+        if (!context_.binaryClipboard().write(BinaryClipboard::PayloadKind::ChunkRegion, result.clipboard)) {
             emit operationFailed(tr("The clipboard is not available."));
             return;
         }
-        auto* mime_data = new QMimeData();
-        clipboard_data::writeRegion(*mime_data, result.clipboard);
-        clipboard->setMimeData(mime_data, QClipboard::Clipboard);
     }
     if (result.imported) {
         region_import_.cancel();
