@@ -516,7 +516,11 @@ Window {
     Connections {
         target: App.settings
         function onLanguageChanged() {
-            window.navigation.retranslate()
+            // Navigation labels come from C++ tr(). Refresh them after the
+            // translator installation and engine retranslation complete.
+            Qt.callLater(function () {
+                window.navigation.retranslate()
+            })
         }
         function onSaved() {
             App.notifications.info(qsTr("Save successful"))
