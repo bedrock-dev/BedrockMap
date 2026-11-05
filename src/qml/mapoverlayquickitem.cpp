@@ -137,12 +137,15 @@ void MapOverlayQuickItem::setProvider(TerrainDataProvider* provider) {
         connect(provider_, &TerrainDataProvider::regionEmpty, this, &MapOverlayQuickItem::scheduleRectRefresh);
         connect(provider_, &TerrainDataProvider::windowRefilled, this, &MapOverlayQuickItem::scheduleEntityRefresh);
         connect(provider_, &TerrainDataProvider::windowRefilled, this, &MapOverlayQuickItem::scheduleRectRefresh);
+        connect(provider_, &TerrainDataProvider::chunkCoordsBoundsChanged, this, &MapOverlayQuickItem::scheduleRectRefresh);
     }
     clearEntities();
     clearSlimeChunks();
+    clearRects();
     emit providerChanged();
     scheduleEntityRefresh();
     scheduleSlimeChunkRefresh();
+    scheduleRectRefresh();
 }
 
 void MapOverlayQuickItem::setGlobalData(GlobalDataController* global_data) {
@@ -209,7 +212,7 @@ void MapOverlayQuickItem::setVillagesVisible(bool visible) {
     if (villages_visible_ == visible) return;
     villages_visible_ = visible;
     emit villagesVisibleChanged();
-    if (!visible && !hsa_visible_)
+    if (!visible && !hsa_visible_ && (!provider_ || !provider_->chunkCoordsEnabled()))
         clearRects();
     else
         scheduleRectRefresh();
@@ -220,7 +223,7 @@ void MapOverlayQuickItem::setHsaVisible(bool visible) {
     if (hsa_visible_ == visible) return;
     hsa_visible_ = visible;
     emit hsaVisibleChanged();
-    if (!visible && !villages_visible_)
+    if (!visible && !villages_visible_ && (!provider_ || !provider_->chunkCoordsEnabled()))
         clearRects();
     else
         scheduleRectRefresh();
@@ -318,7 +321,9 @@ void MapOverlayQuickItem::clearSlimeChunks() {
 }
 
 void MapOverlayQuickItem::scheduleRectRefresh() {
-    if ((!villages_visible_ && !hsa_visible_) || !provider_ || !controller_ || rect_refresh_timer_.isActive()) return;
+    const bool coords_enabled = provider_ && provider_->chunkCoordsEnabled();
+    if ((!villages_visible_ && !hsa_visible_ && !coords_enabled) || !provider_ || !controller_ || rect_refresh_timer_.isActive())
+        return;
     const qreal scale = std::abs(controller_->cameraState().pixelsPerChunk);
     rect_refresh_timer_.setInterval(scale < 16.0 ? 100 : 50);
     rect_refresh_timer_.start();
@@ -335,13 +340,22 @@ void MapOverlayQuickItem::clearRects() {
 }
 
 void MapOverlayQuickItem::refreshRects() {
-    if ((!villages_visible_ && !hsa_visible_) || !provider_ || !controller_ || width() <= 0 || height() <= 0) {
+    const bool coords_enabled = provider_ && provider_->chunkCoordsEnabled();
+    if ((!villages_visible_ && !hsa_visible_ && !coords_enabled) || !provider_ || !controller_ || width() <= 0 || height() <= 0) {
         clearRects();
         return;
     }
     auto next = std::make_shared<QVector<OverlayRect>>();
     const MapCameraState camera = controller_->cameraState();
     const int dimension = camera.dimension;
+    if (coords_enabled) {
+        const QRect bounds = provider_->chunkCoordsBounds(dimension);
+        if (bounds.isValid()) {
+            next->append(OverlayRect{static_cast<float>(bounds.left() * 16), static_cast<float>(bounds.top() * 16),
+                                     static_cast<float>((bounds.right() + 1) * 16), static_cast<float>((bounds.bottom() + 1) * 16),
+                                     dimension, QColor(255, 184, 76, 255), QColor(0, 0, 0, 0)});
+        }
+    }
     if (villages_visible_ && global_data_) {
         for (const auto& rect : global_data_->villageRects())
             if (rect.dimension == dimension) next->append(rect);

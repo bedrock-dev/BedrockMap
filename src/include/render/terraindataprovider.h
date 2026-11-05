@@ -116,6 +116,9 @@ class TerrainDataProvider final : public QObject {
     void setActive(bool active);
     [[nodiscard]] bool isActive() const { return active_; }
     [[nodiscard]] AsyncLevelLoader* loader() const { return loader_; }
+    [[nodiscard]] bool chunkCoordsEnabled() const;
+    /// Inclusive chunk-space bounds for the current dimension, or an invalid QRect.
+    [[nodiscard]] QRect chunkCoordsBounds(int dimension) const;
 
     /// Visible region window in chunk coordinates plus the layer to sample.
     /// Forwarded to the loader so the scheduler prioritises visible bakes.
@@ -179,6 +182,8 @@ class TerrainDataProvider final : public QObject {
     /// The region has no chunks. The renderer distinguishes this from a region
     /// that is still loading.
     void regionEmpty(int regionX, int regionZ, int dimension, int blocks_per_texel, int layer);
+    /// The chunk-coordinate index became ready or its bounds may have changed.
+    void chunkCoordsBoundsChanged();
 
    private:
     void buildOverview();

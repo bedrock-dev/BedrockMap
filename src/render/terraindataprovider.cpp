@@ -96,6 +96,15 @@ bool TerrainDataProvider::overviewEnabled() const {
            loader_->chunkOverviewEnabled();
 }
 
+bool TerrainDataProvider::chunkCoordsEnabled() const { return loader_ && loader_->preloadAllChunkCoords(); }
+
+QRect TerrainDataProvider::chunkCoordsBounds(int dimension) const {
+    if (!loader_) return {};
+    const auto bounds = loader_->chunkCoordsBoundingBox(dimension);
+    if (!bounds || !bounds->valid) return {};
+    return QRect(QPoint(bounds->min_x, bounds->min_z), QPoint(bounds->max_x, bounds->max_z));
+}
+
 void TerrainDataProvider::buildOverview() {
     if (!overviewEnabled() || !loader_->chunkCoordsReady() || overview_watcher_.isRunning()) return;
     const QRect chunks(viewportRequest_.regions.x() * constant::RW, viewportRequest_.regions.y() * constant::RW,
@@ -171,6 +180,7 @@ void TerrainDataProvider::setLoader(AsyncLevelLoader* loader) {
     resetDelivery();
     if (!loader_) {
         poll_timer_.stop();
+        emit chunkCoordsBoundsChanged();
         return;
     }
     loader_->setTimings(timings_);
@@ -178,6 +188,9 @@ void TerrainDataProvider::setLoader(AsyncLevelLoader* loader) {
     syncLoaderTileRequest();
     connect(loader_, &AsyncLevelLoader::regionTileReady, this, &TerrainDataProvider::onRegionReady, Qt::QueuedConnection);
     connect(loader_, &AsyncLevelLoader::regionSnapshotReady, this, &TerrainDataProvider::onRegionSnapshot, Qt::QueuedConnection);
+    connect(loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this, &TerrainDataProvider::chunkCoordsBoundsChanged,
+            Qt::QueuedConnection);
+    connect(loader_, &AsyncLevelLoader::dirtyChanged, this, &TerrainDataProvider::chunkCoordsBoundsChanged, Qt::QueuedConnection);
     connect(
         loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this,
         [this] {

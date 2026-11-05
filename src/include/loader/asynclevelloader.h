@@ -123,6 +123,11 @@ class AsyncLevelLoader : public QObject {
 
     const ChunkCoordsIndex& chunkCoords() const { return chunk_coords_service_.index(); }
 
+    [[nodiscard]] std::optional<ChunkCoordsBoundingBox> chunkCoordsBoundingBox(int dimension) const {
+        if (!preload_all_chunk_coords_ || !chunk_coords_service_.ready()) return std::nullopt;
+        return chunk_coords_service_.boundingBox(dimension);
+    }
+
     void loadGlobalData(GlobalNBTLoadResult& result, std::atomic_bool& stop);
 
    public:
