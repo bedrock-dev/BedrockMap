@@ -12,7 +12,7 @@
 class RawChunkCache {
    public:
     struct CachedChunk {
-        bl::raw_chunk chunk;
+        std::optional<bl::raw_chunk> chunk;
         bool shouldDelete = false;
     };
 
@@ -27,12 +27,12 @@ class RawChunkCache {
 
     bool hasChunk(const bl::chunk_pos& pos) const;
 
-    // Put an explicit missing marker for the given position (cache key present with nullopt).
-    void putMissing(bl::bedrock_level& level, const bl::chunk_pos& pos);
+    // Put an explicit missing marker without retaining the chunk payload.
+    void putMissing(const bl::chunk_pos& pos);
 
     // Write all cached raw_chunks into the batch. The cache is retained until
     // the database confirms the batch succeeded.
-    void commit(leveldb::WriteBatch& batch);
+    void commit(bl::bedrock_level& level, leveldb::WriteBatch& batch);
 
     void clear() { cache_.clear(); }
 

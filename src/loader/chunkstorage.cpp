@@ -27,7 +27,7 @@ std::optional<bl::raw_chunk> ChunkStorage::getRawChunk(const bl::chunk_pos& pos)
 
 void ChunkStorage::putMissing(const bl::chunk_pos& pos) {
     std::lock_guard<std::mutex> lock(mutex_);
-    cache_.putMissing(level_, pos);
+    cache_.putMissing(pos);
 }
 
 void ChunkStorage::putRawChunk(const bl::raw_chunk& raw) {
@@ -41,7 +41,7 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
     if (cache_.empty() && globalModifies.empty() && !levelDat) return true;
 
     leveldb::WriteBatch batch;
-    if (!cache_.empty()) cache_.commit(batch);
+    if (!cache_.empty()) cache_.commit(level_, batch);
     for (const auto& kv : globalModifies) {
         if (kv.second.empty()) {
             batch.Delete(kv.first);

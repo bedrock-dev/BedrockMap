@@ -277,6 +277,9 @@ class ChunkCoordsIndex {
         return count;
     }
 
+    /// Snapshot all present chunk coordinates in one dimension.
+    [[nodiscard]] std::vector<bl::chunk_pos> chunksInDimension(int32_t dim) const;
+
     std::size_t regionCount(int32_t dim) const {
         auto lock = lockForInteractive();
         const auto dim_it = regions_by_dimension_.find(dim);

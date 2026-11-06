@@ -10,11 +10,13 @@ AppMenu {
     property int dimension: 0
     property var blockInfo: ({})
     property bool operationEnabled: false
+    property bool deleteOutsideEnabled: false
     property bool inputBlocked: true
     property bool importActive: false
 
     signal unselectRequested
     signal deleteSelectionRequested
+    signal deleteOutsideSelectionRequested
     signal createVoidRequested
     signal setBiomeRequested
     signal copySelectionRequested
@@ -40,6 +42,11 @@ AppMenu {
             text: qsTr("Delete")
             enabled: root.operationEnabled
             onTriggered: root.deleteSelectionRequested()
+        }
+        AppMenuItem {
+            text: qsTr("Delete outside selection")
+            enabled: root.operationEnabled && root.deleteOutsideEnabled
+            onTriggered: root.deleteOutsideSelectionRequested()
         }
         AppMenuItem {
             text: qsTr("Create void")

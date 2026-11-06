@@ -4,6 +4,7 @@
 
 #include <QUrl>
 #include <functional>
+#include <set>
 
 #include "io/documentio.h"
 #include "loader/asynclevelloader.h"
@@ -69,6 +70,27 @@ bool ChunkOperator::deleteRegion(const QRegion& chunkRegion, AsyncLevelLoader& l
     bool success = true;
     forEachChunkInRegion(chunkRegion, dim, [&](const bl::chunk_pos& cp) { success = loader.deleteChunk(cp) && success; });
     if (invalidate_tiles) loader.invalidateRegionTiles(chunkRegion, dim);
+    return success;
+}
+
+bool ChunkOperator::deleteOutsideRegion(const QRegion& keepRegion, AsyncLevelLoader& loader, int dim,
+                                        std::vector<bl::chunk_pos>* affected_regions, bool invalidate_tiles) {
+    bool success = true;
+    std::set<bl::chunk_pos> affected;
+    const auto chunks = loader.chunkCoords().chunksInDimension(dim);
+    for (const auto& cp : chunks) {
+        if (keepRegion.contains(QPoint(cp.x, cp.z))) continue;
+        if (!loader.deleteChunk(cp, false)) {
+            success = false;
+            continue;
+        }
+        const auto region = constant::c2r(cp);
+        affected.insert(region);
+    }
+    if (!affected.empty()) loader.notifyDirtyChanged();
+    const std::vector<region_pos> affected_ids(affected.begin(), affected.end());
+    if (affected_regions) *affected_regions = affected_ids;
+    if (invalidate_tiles) loader.invalidateTilesForRegions(affected_ids);
     return success;
 }
 

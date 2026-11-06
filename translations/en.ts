@@ -1146,6 +1146,11 @@
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
+        <source>Deleting chunks outside the selection…</source>
+        <translation>Deleting chunks outside the selection…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapCanvas.qml"/>
         <source>Clearing selected chunks…</source>
         <translation>Clearing selected chunks…</translation>
     </message>
@@ -1206,6 +1211,11 @@
         <location filename="../src/qml/MapContextMenu.qml"/>
         <source>Delete</source>
         <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapContextMenu.qml"/>
+        <source>Delete outside selection</source>
+        <translation>Delete outside selection</translation>
     </message>
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>
@@ -1285,6 +1295,11 @@
 </context>
 <context>
     <name>MapController</name>
+    <message>
+        <location filename="../src/controller/mapcontroller.cpp"/>
+        <source>Some chunks outside the selection could not be deleted.</source>
+        <translation>Some chunks outside the selection could not be deleted.</translation>
+    </message>
     <message>
         <location filename="../src/controller/mapcontroller.cpp"/>
         <location filename="../src/controller/mapcontroller.cpp"/>

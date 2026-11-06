@@ -5,6 +5,7 @@
 
 #include <QRegion>
 #include <QUrl>
+#include <vector>
 
 #include "bedrock_key.h"
 #include "loader/exportedregion.h"
@@ -23,6 +24,12 @@ class ChunkOperator {
     static bool importRegion(const ExportedRegion& region, AsyncLevelLoader& loader, bool invalidate_tiles = true);
 
     static bool deleteRegion(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim, bool invalidate_tiles = true);
+
+    /// Mark every indexed chunk in the dimension for deletion except those in
+    /// `keepRegion`. `affected_regions` receives each 8x8 chunk region that
+    /// contained at least one deleted chunk.
+    static bool deleteOutsideRegion(const QRegion& keepRegion, AsyncLevelLoader& loader, int dim,
+                                    std::vector<bl::chunk_pos>* affected_regions, bool invalidate_tiles = true);
 
     static bool createVoid(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim, bool invalidate_tiles = true);
 

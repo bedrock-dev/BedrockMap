@@ -123,6 +123,10 @@ int MapController::deletedChunkCount() const {
     return loader_->chunkModifyCounts().first;
 }
 
+bool MapController::deleteOutsideAvailable() const {
+    return loader_ && loader_->preloadAllChunkCoords() && loader_->chunkCoordsReady();
+}
+
 bool MapController::selectionDragging() const {
     const auto* map_state = mapViewState();
     return map_state && map_state->selection().isDragging();
@@ -217,10 +221,14 @@ void MapController::setLevelLoader(AsyncLevelLoader* loader) {
     if (loader_) disconnect(loader_, nullptr, this, nullptr);
     loader_ = loader;
     if (loader_) {
-        connect(loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this, &MapController::worldStateChanged);
+        connect(loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this, [this] {
+            emit deleteOutsideAvailableChanged();
+            emit worldStateChanged();
+        });
         connect(loader_, &AsyncLevelLoader::dirtyChanged, this, &MapController::modificationStateChanged);
     }
     emit modificationStateChanged();
+    emit deleteOutsideAvailableChanged();
     emit transparentVoidChanged();
     emit worldStateChanged();
 }
@@ -351,6 +359,17 @@ bool MapController::deleteSelectionAsync() {
     return startSelectionOperation([](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         const bool success = ChunkOperator::deleteRegion(region, loader, dimension, false);
         return OperationResult{success, true, success ? QString() : QStringLiteral("Some selected chunks could not be deleted."), {}};
+    });
+}
+
+bool MapController::deleteOutsideSelectionAsync() {
+    if (!deleteOutsideAvailable()) return false;
+    return startSelectionOperation([](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
+        std::vector<bl::chunk_pos> affected_regions;
+        const bool success = ChunkOperator::deleteOutsideRegion(region, loader, dimension, &affected_regions, false);
+        return OperationResult{success, !affected_regions.empty(),
+                               success ? QString() : MapController::tr("Some chunks outside the selection could not be deleted."), {},
+                               false, affected_regions};
     });
 }
 
@@ -545,12 +564,20 @@ void MapController::finishSelectionOperation() {
     operation_running_ = false;
     emit operationChanged();
 
-    if (result.refresh_terrain && loader_ && !operation_region_.isEmpty()) {
+    QRegion refresh_region = operation_region_;
+    if (!result.refresh_regions.empty()) {
+        refresh_region = {};
+        for (const auto& region : result.refresh_regions) refresh_region += QRect(region.x, region.z, constant::RW, constant::RW);
+    }
+    if (result.refresh_terrain && loader_ && !refresh_region.isEmpty()) {
         // The edit ran on a worker. Drop the old region tiles here, before the
         // provider starts refilling, or cached centre tiles would be delivered
         // again and only uncached surrounding regions would show the edit.
-        loader_->invalidateRegionTiles(operation_region_, operation_dimension_);
-        emit mapDataChanged(operation_region_, operation_dimension_);
+        if (!result.refresh_regions.empty())
+            loader_->invalidateTilesForRegions(result.refresh_regions);
+        else
+            loader_->invalidateRegionTiles(refresh_region, operation_dimension_);
+        emit mapDataChanged(refresh_region, operation_dimension_);
     }
     const QRegion completed_region = operation_region_;
     operation_region_ = {};

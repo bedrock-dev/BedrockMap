@@ -159,7 +159,9 @@ class AsyncLevelLoader : public QObject {
     // Return a raw chunk from cache or storage.
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos& p);
 
-    bool deleteChunk(const bl::chunk_pos& p);
+    bool deleteChunk(const bl::chunk_pos& p, bool notify_dirty = true);
+    /// Emit one aggregated dirty notification after a bulk mutation.
+    void notifyDirtyChanged();
     bool putRawChunk(const bl::raw_chunk& raw);
 
     bool createVoid(const bl::chunk_pos& p);
@@ -168,6 +170,8 @@ class AsyncLevelLoader : public QObject {
 
     /// Drop cached region tiles covering edited chunks.
     void invalidateRegionTiles(const std::vector<bl::chunk_pos>& chunks);
+    /// Drop tiles for already-normalized 8x8 chunk region origins.
+    void invalidateTilesForRegions(const std::vector<region_pos>& regions);
 
     /// Convenience overload for a rectangular chunk selection.
     void invalidateRegionTiles(const QRegion& chunkRegion, int dim);

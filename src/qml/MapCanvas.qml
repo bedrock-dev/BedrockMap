@@ -91,11 +91,13 @@ Item {
     MapContextMenu {
         id: mapContextMenu
         operationEnabled: canvas.controller && !canvas.controller.operationRunning
+        deleteOutsideEnabled: canvas.controller && canvas.controller.deleteOutsideAvailable
         inputBlocked: canvas.inputBlocked
         importActive: canvas.importActive
 
         onUnselectRequested: canvas.clearMapSelection()
         onDeleteSelectionRequested: canvas.deleteSelectedChunks()
+        onDeleteOutsideSelectionRequested: canvas.deleteChunksOutsideSelection()
         onCreateVoidRequested: canvas.clearSelectedChunks()
         onSetBiomeRequested: canvas.openBiomePicker()
         onCopySelectionRequested: canvas.copySelectedChunks()
@@ -306,6 +308,12 @@ Item {
             return
         if (controller.deleteSelectionAsync())
             operationText = qsTr("Deleting selected chunks…")
+    }
+    function deleteChunksOutsideSelection() {
+        if (!controller || !controller.hasSelection || controller.operationRunning || !controller.deleteOutsideAvailable)
+            return
+        if (controller.deleteOutsideSelectionAsync())
+            operationText = qsTr("Deleting chunks outside the selection…")
     }
     function clearSelectedChunks() {
         if (!controller || !controller.hasSelection || controller.operationRunning)

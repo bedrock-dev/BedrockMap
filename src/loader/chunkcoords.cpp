@@ -545,6 +545,21 @@ bool ChunkCoordsIndex::containsAnyChunk(int32_t x, int32_t z, int32_t dim, int32
     return false;
 }
 
+std::vector<bl::chunk_pos> ChunkCoordsIndex::chunksInDimension(int32_t dim) const {
+    auto lock = lockForInteractive();
+    const auto dim_it = regions_by_dimension_.find(dim);
+    if (dim_it == regions_by_dimension_.end()) return {};
+
+    std::size_t count = 0;
+    for (const auto& region : dim_it->second) count += region.chunkCount();
+    std::vector<bl::chunk_pos> result;
+    result.reserve(count);
+    for (const auto& region : dim_it->second) {
+        region.forEachPresentChunk([&](int32_t x, int32_t z) { result.emplace_back(x, z, dim); });
+    }
+    return result;
+}
+
 void ChunkCoordsIndex::rebuildBoundingBox(int32_t dim) const {
     ChunkCoordsBoundingBox bounds;
     const auto dim_it = regions_by_dimension_.find(dim);

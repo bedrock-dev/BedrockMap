@@ -112,11 +112,13 @@ bl::chunk* AsyncLevelLoader::getChunk(const bl::chunk_pos& p, bl::chunk_load_pol
 
 std::optional<bl::raw_chunk> AsyncLevelLoader::getRawChunk(const bl::chunk_pos& p) { return edit_service_.getRawChunk(p); }
 
-bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos& p) {
+bool AsyncLevelLoader::deleteChunk(const bl::chunk_pos& p, bool notify_dirty) {
     if (!edit_service_.deleteChunk(p)) return false;
-    emit dirtyChanged();
+    if (notify_dirty) emit dirtyChanged();
     return true;
 }
+
+void AsyncLevelLoader::notifyDirtyChanged() { emit dirtyChanged(); }
 
 bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk& raw) {
     if (!edit_service_.putRawChunk(raw)) return false;
@@ -171,10 +173,13 @@ void AsyncLevelLoader::invalidateRegionTiles(const std::vector<bl::chunk_pos>& c
     // Collapse the edited chunks onto the 8x8-chunk region tiles covering them.
     std::set<bl::chunk_pos> regions;
     for (const auto& c : chunks) regions.insert(constant::c2r(c));
-    if (regions.empty()) return;
+    invalidateTilesForRegions({regions.begin(), regions.end()});
+}
 
+void AsyncLevelLoader::invalidateTilesForRegions(const std::vector<region_pos>& regions) {
+    if (regions.empty()) return;
     // The index already reflects the edit; invalidate cached region tiles.
-    const auto drop = [this, regions]() {
+    const auto drop = [this, regions] {
         for (const auto& r : regions) cache_manager_.removeRegion(r);
     };
     if (QThread::currentThread() == thread()) {

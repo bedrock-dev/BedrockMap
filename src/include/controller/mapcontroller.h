@@ -13,7 +13,9 @@
 #include <QVariantMap>
 #include <QVector>
 #include <functional>
+#include <vector>
 
+#include "bedrock_key.h"
 #include "controller/regionimportcontroller.h"
 #include "model/mapviewstate.h"
 
@@ -35,6 +37,7 @@ class MapController final : public QObject {
     Q_PROPERTY(int selectionRectCount READ selectionRectCount NOTIFY selectionChanged)
     Q_PROPERTY(int modifiedChunkCount READ modifiedChunkCount NOTIFY modificationStateChanged)
     Q_PROPERTY(int deletedChunkCount READ deletedChunkCount NOTIFY modificationStateChanged)
+    Q_PROPERTY(bool deleteOutsideAvailable READ deleteOutsideAvailable NOTIFY deleteOutsideAvailableChanged)
     Q_PROPERTY(bool operationRunning READ operationRunning NOTIFY operationChanged)
     Q_PROPERTY(bool worldLoaded READ worldLoaded NOTIFY worldStateChanged)
     Q_PROPERTY(RegionImportController* regionImport READ regionImport CONSTANT)
@@ -54,6 +57,7 @@ class MapController final : public QObject {
     [[nodiscard]] int selectionRectCount() const;
     [[nodiscard]] int modifiedChunkCount() const;
     [[nodiscard]] int deletedChunkCount() const;
+    [[nodiscard]] bool deleteOutsideAvailable() const;
     [[nodiscard]] bool selectionDragging() const;
     [[nodiscard]] QVector<QRect> selectionRects() const;
     [[nodiscard]] QRect selectionDragRect() const;
@@ -91,6 +95,7 @@ class MapController final : public QObject {
     Q_INVOKABLE void finishSelectionDrag();
     Q_INVOKABLE void cancelSelectionDrag();
     Q_INVOKABLE bool deleteSelectionAsync();
+    Q_INVOKABLE bool deleteOutsideSelectionAsync();
     Q_INVOKABLE bool createVoidSelectionAsync();
     Q_INVOKABLE bool setSelectionBiomeAsync(int biome);
     Q_INVOKABLE bool copySelectionAsync();
@@ -115,6 +120,7 @@ class MapController final : public QObject {
     void selectionChanged();
     void selectionModeChanged();
     void modificationStateChanged();
+    void deleteOutsideAvailableChanged();
     void operationChanged();
     void operationFinished();
     void operationFailed(const QString& message);
@@ -133,6 +139,7 @@ class MapController final : public QObject {
         QString error;
         QByteArray clipboard;
         bool imported{false};
+        std::vector<bl::chunk_pos> refresh_regions;
     };
     using SelectionOperation = std::function<OperationResult(AsyncLevelLoader&, const QRegion&, int)>;
     bool startSelectionOperation(SelectionOperation operation);
