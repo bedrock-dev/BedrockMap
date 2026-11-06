@@ -8,6 +8,7 @@ NbtSession::NbtSession(QString path, QString title, QObject* parent)
     connect(document_, &NbtDocumentController::documentTitleChanged, this, [this] { syncFromDocument(); });
     connect(document_, &NbtDocumentController::filePathChanged, this, [this] { syncFromDocument(); });
     connect(document_, &NbtDocumentController::itemsChanged, this, &NbtSession::titleBarActionsChanged);
+    connect(document_, &NbtDocumentController::documentOpenChanged, this, &NbtSession::titleBarActionsChanged);
     connect(document_, &NbtDocumentController::readOnlyChanged, this, &NbtSession::titleBarActionsChanged);
 }
 

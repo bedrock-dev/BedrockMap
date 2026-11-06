@@ -1622,6 +1622,7 @@
     <message>
         <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
         <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
+        <location filename="../src/controller/nbtdocumentcontroller.cpp"/>
         <source>A single-record section requires exactly one NBT root.</source>
         <translation>单例数据区域只能导入一个 NBT 根节点。</translation>
     </message>

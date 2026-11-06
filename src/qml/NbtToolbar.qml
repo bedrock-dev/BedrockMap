@@ -138,7 +138,7 @@ Rectangle {
             id: exportCurrentButton
             text: qsTr("Export current")
             visible: root.allowExportCurrent
-            enabled: !!root.document && root.document.itemCount > 0 && root.document.currentIndex >= 0
+            enabled: !!root.document && root.document.rootCount > 0 && root.document.currentIndex >= 0
             onClicked: root.exportCurrentRequested()
         }
         ActionButton {
@@ -153,7 +153,7 @@ Rectangle {
             id: deleteButton
             text: qsTr("Delete")
             visible: root.allowAddRemove
-            enabled: root.document && !root.document.readOnly && root.document.itemCount > 1
+            enabled: root.document && !root.document.readOnly && root.document.rootCount > 0
             onClicked: if (root.document)
                            root.document.removeItem(root.document.currentIndex)
         }
@@ -161,7 +161,7 @@ Rectangle {
             id: clearButton
             text: qsTr("Clear")
             visible: root.allowClear
-            enabled: root.document && !root.document.readOnly && root.document.itemCount > 0
+            enabled: root.document && !root.document.readOnly && root.document.rootCount > 0
             onClicked: root.clearRequested()
         }
         ActionButton {

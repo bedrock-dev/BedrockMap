@@ -56,21 +56,22 @@ void NbtDocumentController::setError(const QString& message) {
     emit lastErrorChanged();
 }
 
-void NbtDocumentController::markDirty() {
-    bool dirty = true;
-    if (mode_ == Mode::Memory) {
-        dirty = false;
-        QSet<QString> removed_keys(original_raw_keys_.begin(), original_raw_keys_.end());
-        for (const auto& item : items_) {
-            if (!item.root) continue;
-            dirty = dirty || item.modified || !item.persisted || item.raw_key.isEmpty();
-            removed_keys.remove(item.raw_key);
-        }
-        dirty = dirty || !removed_keys.isEmpty();
-    }
+void NbtDocumentController::setDirty(bool dirty) {
     if (dirty_ == dirty) return;
     dirty_ = dirty;
     emit dirtyChanged();
+}
+
+void NbtDocumentController::markDirty() { setDirty(true); }
+
+bool NbtDocumentController::hasPendingMemoryChanges() const {
+    QSet<QString> removed_keys(original_raw_keys_.begin(), original_raw_keys_.end());
+    for (const auto& item : items_) {
+        if (!item.root) continue;
+        if (item.modified || !item.persisted || item.raw_key.isEmpty()) return true;
+        removed_keys.remove(item.raw_key);
+    }
+    return !removed_keys.isEmpty();
 }
 
 void NbtDocumentController::clearItems() {
@@ -79,6 +80,12 @@ void NbtDocumentController::clearItems() {
     current_index_ = -1;
     emit itemsChanged();
     emit currentIndexChanged();
+}
+
+void NbtDocumentController::setDocumentOpen(bool open) {
+    if (document_open_ == open) return;
+    document_open_ = open;
+    emit documentOpenChanged();
 }
 
 void NbtDocumentController::replaceItems(std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& rawKeys, Mode mode,
@@ -115,14 +122,14 @@ void NbtDocumentController::replaceItems(std::vector<std::unique_ptr<bl::nbt::co
     file_url_ = url;
     document_title_ = title;
     tree_model_->setRoot(current_index_ >= 0 ? items_[current_index_].root.get() : nullptr);
-    dirty_ = false;
     loading_ = false;
     emit itemsChanged();
     emit currentIndexChanged();
+    setDocumentOpen(true);
     if (mode_changed) emit modeChanged();
     if (path_changed) emit filePathChanged();
     if (documentTitle() != old_title) emit documentTitleChanged();
-    emit dirtyChanged();
+    setDirty(false);
 }
 
 bool NbtDocumentController::loadFile(const QUrl& url) {
@@ -132,8 +139,9 @@ bool NbtDocumentController::loadFile(const QUrl& url) {
         return false;
     }
     if (read.data.isEmpty()) {
-        setError(QStringLiteral("The NBT file is empty."));
-        return false;
+        replaceItems({}, {}, Mode::File, url, io::DocumentIo::displayName(url));
+        setError({});
+        return true;
     }
     auto parsed = bl::nbt::parse_all(std::span<const byte_t>(
         reinterpret_cast<const byte_t*>(read.data.constData()), static_cast<size_t>(read.data.size())));
@@ -164,13 +172,6 @@ void NbtDocumentController::loadMemory(std::vector<std::unique_ptr<bl::nbt::comp
 std::unique_ptr<bl::nbt::compound_tag> NbtDocumentController::itemCopy(int index) const {
     if (index < 0 || index >= static_cast<int>(items_.size()) || !items_[static_cast<size_t>(index)].root) return nullptr;
     return std::unique_ptr<bl::nbt::compound_tag>(static_cast<bl::nbt::compound_tag*>(items_[static_cast<size_t>(index)].root->copy()));
-}
-
-bool NbtDocumentController::isEmpty() const {
-    for (const auto& item : items_) {
-        if (item.root && !item.root->value.empty()) return false;
-    }
-    return true;
 }
 
 void NbtDocumentController::setStoragePolicy(NbtStoragePolicy policy) { storage_ = std::move(policy); }
@@ -248,18 +249,17 @@ void NbtDocumentController::markPersisted(const NbtLevelDbPlan& plan) {
             item.persisted = true;
             item.modified = item.revision != saved->second->revision;
         }
-        markDirty();
+        setDirty(hasPendingMemoryChanges());
         return;
     }
     if (!dirty_) return;
-    dirty_ = false;
     original_raw_keys_.clear();
     for (auto& item : items_) {
         item.persisted = true;
         item.modified = false;
         if (!item.raw_key.isEmpty()) original_raw_keys_.append(item.raw_key);
     }
-    emit dirtyChanged();
+    setDirty(false);
 }
 
 bool NbtDocumentController::save() {
@@ -281,6 +281,7 @@ bool NbtDocumentController::saveAs(const QUrl& url) {
         setError(QStringLiteral("In-memory NBT documents are committed by their owner."));
         return false;
     }
+    if (read_only_) return false;
     QByteArray output;
     for (const auto& item : items_) {
         if (!item.root) continue;
@@ -298,11 +299,10 @@ bool NbtDocumentController::saveAs(const QUrl& url) {
     // Replace creation-time labels after Save As, and retain the cached title
     // when saving the same provider document again.
     if (path_changed || document_title_.isEmpty()) document_title_ = io::DocumentIo::displayName(url);
-    dirty_ = false;
+    setDirty(false);
     setError({});
     if (path_changed) emit filePathChanged();
     if (documentTitle() != old_title) emit documentTitleChanged();
-    emit dirtyChanged();
     emit saved();
     return true;
 }
@@ -313,10 +313,6 @@ bool NbtDocumentController::exportFile(const QUrl& url) {
         if (!item.root) continue;
         const std::string data = item.root->serialize();
         output.append(data.data(), static_cast<qsizetype>(data.size()));
-    }
-    if (output.isEmpty()) {
-        setError(QStringLiteral("There is no NBT data to export."));
-        return false;
     }
     if (const QString error = io::DocumentIo::writeBytes(url, output); !error.isEmpty()) {
         setError(QStringLiteral("Cannot write NBT file: %1").arg(error));
@@ -343,14 +339,23 @@ bool NbtDocumentController::exportCurrent(const QUrl& url) {
 }
 
 bool NbtDocumentController::importFile(const QUrl& url) {
+    if (read_only_) return false;
     const auto read = io::DocumentIo::readAll(url);
     if (!read.ok()) {
         setError(QStringLiteral("Cannot open NBT file: %1").arg(read.error));
         return false;
     }
     if (read.data.isEmpty()) {
-        setError(QStringLiteral("The NBT file is empty."));
-        return false;
+        if (storage_.singleRecord) {
+            setError(QCoreApplication::translate("NbtDocumentController", "A single-record section requires exactly one NBT root."));
+            return false;
+        }
+        if (mode_ == Mode::File && file_url_.isEmpty())
+            replaceItems({}, {}, Mode::File, url, io::DocumentIo::displayName(url));
+        else
+            setDocumentOpen(true);
+        setError({});
+        return true;
     }
     auto parsed = bl::nbt::parse_all(std::span<const byte_t>(
         reinterpret_cast<const byte_t*>(read.data.constData()), static_cast<size_t>(read.data.size())));
@@ -399,6 +404,7 @@ bool NbtDocumentController::importFile(const QUrl& url) {
         tree_model_->setRoot(items_.front().root.get());
         emit itemsChanged();
         emit currentIndexChanged();
+        setDocumentOpen(true);
         markDirty();
         setError({});
         return true;
@@ -438,6 +444,7 @@ bool NbtDocumentController::importFile(const QUrl& url) {
     }
     emit itemsChanged();
     emit currentIndexChanged();
+    setDocumentOpen(true);
     if (adopt_file) emit filePathChanged();
     if (documentTitle() != old_title) emit documentTitleChanged();
     markDirty();
@@ -446,7 +453,7 @@ bool NbtDocumentController::importFile(const QUrl& url) {
 }
 
 bool NbtDocumentController::replaceFile(const QUrl& url) {
-    if (!storage_.singleRecord) return false;
+    if (read_only_ || !storage_.singleRecord) return false;
     const auto read = io::DocumentIo::readAll(url);
     if (!read.ok()) {
         setError(QStringLiteral("Cannot open NBT file: %1").arg(read.error));
@@ -490,18 +497,15 @@ bool NbtDocumentController::replaceFile(const QUrl& url) {
     tree_model_->setRoot(items_.front().root.get());
     emit itemsChanged();
     emit currentIndexChanged();
+    setDocumentOpen(true);
     markDirty();
     setError({});
     return true;
 }
 
 void NbtDocumentController::createNew() {
-    auto root = std::make_unique<bl::nbt::compound_tag>("root");
-    std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots;
-    roots.push_back(std::move(root));
-    replaceItems(std::move(roots), {}, Mode::File, {}, QStringLiteral("Untitled"));
-    dirty_ = true;
-    emit dirtyChanged();
+    replaceItems({}, {}, Mode::File, {}, QStringLiteral("Untitled"));
+    markDirty();
 }
 
 void NbtDocumentController::selectItem(int index) {
@@ -514,6 +518,7 @@ void NbtDocumentController::selectItem(int index) {
 }
 
 int NbtDocumentController::addItem() {
+    if (read_only_ || (storage_.singleRecord && !items_.empty())) return -1;
     Item item;
     item.id = ++next_item_id_;
     item.root = std::make_unique<bl::nbt::compound_tag>("root");
@@ -527,11 +532,12 @@ int NbtDocumentController::addItem() {
     markDirty();
     emit itemsChanged();
     emit currentIndexChanged();
+    setDocumentOpen(true);
     return current_index_;
 }
 
 bool NbtDocumentController::removeItem(int index) {
-    if (index < 0 || index >= static_cast<int>(items_.size()) || items_.size() <= 1) return false;
+    if (read_only_ || index < 0 || index >= static_cast<int>(items_.size())) return false;
     loading_ = true;
     // Detach borrowed tags while the old roots are still alive.
     tree_model_->setRoot(nullptr);
@@ -545,13 +551,6 @@ bool NbtDocumentController::removeItem(int index) {
     markDirty();
     emit itemsChanged();
     emit currentIndexChanged();
-    return true;
-}
-
-bool NbtDocumentController::clearAllItems() {
-    if (read_only_ || items_.empty()) return false;
-    clearItems();
-    markDirty();
     return true;
 }
 

@@ -55,7 +55,7 @@ class NbtDocumentController : public QObject {
     Q_PROPERTY(QStringList itemLabels READ itemLabels NOTIFY itemsChanged)
     Q_PROPERTY(QStringList itemIcons READ itemIcons NOTIFY itemsChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE selectItem NOTIFY currentIndexChanged)
-    Q_PROPERTY(int itemCount READ itemCount NOTIFY itemsChanged)
+    Q_PROPERTY(int rootCount READ rootCount NOTIFY itemsChanged)
     Q_PROPERTY(int mode READ modeValue NOTIFY modeChanged)
     Q_PROPERTY(bool fileBacked READ fileBacked NOTIFY modeChanged)
     Q_PROPERTY(QString filePath READ filePath NOTIFY filePathChanged)
@@ -63,7 +63,7 @@ class NbtDocumentController : public QObject {
     Q_PROPERTY(QString documentTitle READ documentTitle NOTIFY documentTitleChanged)
     Q_PROPERTY(bool dirty READ dirty NOTIFY dirtyChanged)
     Q_PROPERTY(bool readOnly READ readOnly WRITE setReadOnly NOTIFY readOnlyChanged)
-    Q_PROPERTY(bool hasDocument READ hasDocument NOTIFY itemsChanged)
+    Q_PROPERTY(bool hasDocument READ hasDocument NOTIFY documentOpenChanged)
     Q_PROPERTY(bool singleRecord READ singleRecord CONSTANT)
     Q_PROPERTY(QString lastError READ lastError NOTIFY lastErrorChanged)
 
@@ -80,7 +80,7 @@ class NbtDocumentController : public QObject {
     [[nodiscard]] QStringList itemLabels() const;
     [[nodiscard]] QStringList itemIcons() const;
     [[nodiscard]] int currentIndex() const { return current_index_; }
-    [[nodiscard]] int itemCount() const { return static_cast<int>(items_.size()); }
+    [[nodiscard]] int rootCount() const { return static_cast<int>(items_.size()); }
     [[nodiscard]] Mode mode() const { return mode_; }
     [[nodiscard]] int modeValue() const { return static_cast<int>(mode_); }
     [[nodiscard]] bool fileBacked() const { return mode_ == Mode::File; }
@@ -89,9 +89,8 @@ class NbtDocumentController : public QObject {
     [[nodiscard]] QString documentTitle() const;
     [[nodiscard]] bool dirty() const { return dirty_; }
     [[nodiscard]] bool readOnly() const { return read_only_; }
-    [[nodiscard]] bool hasDocument() const { return !items_.empty(); }
+    [[nodiscard]] bool hasDocument() const { return document_open_; }
     [[nodiscard]] bool singleRecord() const { return storage_.singleRecord; }
-    Q_INVOKABLE [[nodiscard]] bool isEmpty() const;
     [[nodiscard]] QString lastError() const { return last_error_; }
 
     Q_INVOKABLE bool loadFile(const QUrl& url);
@@ -119,11 +118,11 @@ class NbtDocumentController : public QObject {
     Q_INVOKABLE int addItem();
     Q_INVOKABLE bool removeItem(int index);
     Q_INVOKABLE bool clearContents();
-    Q_INVOKABLE bool clearAllItems();
     void setReadOnly(bool read_only);
 
    signals:
     void saved();
+    void documentOpenChanged();
     void itemsChanged();
     void currentIndexChanged();
     void filePathChanged();
@@ -148,6 +147,9 @@ class NbtDocumentController : public QObject {
     void replaceItems(std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& rawKeys, Mode mode, const QUrl& url,
                       const QString& title = {}, const NbtItemPresenter& presenter = {});
     void clearItems();
+    void setDocumentOpen(bool open);
+    void setDirty(bool dirty);
+    [[nodiscard]] bool hasPendingMemoryChanges() const;
     void setError(const QString& message);
     void markDirty();
 
@@ -161,6 +163,7 @@ class NbtDocumentController : public QObject {
     QUrl file_url_;
     QString document_title_;
     QString last_error_;
+    bool document_open_{false};
     bool dirty_{false};
     bool read_only_{false};
     bool loading_{false};

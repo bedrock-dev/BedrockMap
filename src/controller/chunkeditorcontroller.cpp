@@ -422,7 +422,7 @@ bool ChunkEditorController::saveToCache() {
 
     const auto documentPayload = [](const NbtDocumentController& document) {
         std::string payload;
-        for (int index = 0; index < document.itemCount(); ++index) {
+        for (int index = 0; index < document.rootCount(); ++index) {
             auto root = document.itemCopy(index);
             if (root) payload += root->serialize();
         }
@@ -434,9 +434,9 @@ bool ChunkEditorController::saveToCache() {
     if (entities_document_.dirty()) {
         std::vector<std::unique_ptr<bl::actor>> actor_storage;
         std::vector<bl::actor*> actors;
-        actor_storage.reserve(static_cast<size_t>(entities_document_.itemCount()));
-        actors.reserve(static_cast<size_t>(entities_document_.itemCount()));
-        for (int index = 0; index < entities_document_.itemCount(); ++index) {
+        actor_storage.reserve(static_cast<size_t>(entities_document_.rootCount()));
+        actors.reserve(static_cast<size_t>(entities_document_.rootCount()));
+        for (int index = 0; index < entities_document_.rootCount(); ++index) {
             auto root = entities_document_.itemCopy(index);
             auto entity = std::make_unique<bl::actor>();
             if (!root || !entity->load_from_nbt(root.get())) return false;

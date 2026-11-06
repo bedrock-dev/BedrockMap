@@ -22,11 +22,11 @@ Item {
             replaceDialog.open()
     }
     function openClear() {
-        if (root.document && !root.document.readOnly && root.document.itemCount > 0)
+        if (root.document && !root.document.readOnly && root.document.rootCount > 0)
             clearDialog.open()
     }
     function openExport() {
-        if (root.document && root.document.itemCount > 0)
+        if (root.document)
             exportDialog.open()
     }
     function openExportCurrent() {

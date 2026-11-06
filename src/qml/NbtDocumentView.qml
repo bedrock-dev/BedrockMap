@@ -112,7 +112,7 @@ Item {
 
         RowLayout {
             visible: root.singleColumn && root.showItemList && !!root.document && root.document.hasDocument
-                     && root.document.itemCount > 0
+                     && root.document.rootCount > 0
             Layout.fillWidth: true
             Layout.preferredHeight: root.compactToolbarHeight
             Layout.minimumHeight: root.compactToolbarHeight
@@ -121,7 +121,7 @@ Item {
 
             AppComboBox {
                 id: recordSelector
-                visible: root.showItemList && !!root.document && root.document.itemCount > 0
+                visible: root.showItemList && !!root.document && root.document.rootCount > 0
                 Layout.fillWidth: true
                 Layout.preferredWidth: 0
                 Layout.minimumWidth: 100
@@ -171,7 +171,7 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                visible: !root.document || root.document.itemCount === 0
+                visible: !root.document || root.document.rootCount === 0
                 text: qsTr("No records")
                 color: Theme.muted
                 font.pixelSize: Theme.fontSubtitle
@@ -180,7 +180,7 @@ Item {
             RowLayout {
                 anchors.fill: parent
                 spacing: Theme.gapSmall / 2
-                visible: root.document && root.document.itemCount > 0
+                visible: root.document && root.document.rootCount > 0
 
                 AppCard {
                     visible: !root.singleColumn && root.showItemList
@@ -193,7 +193,7 @@ Item {
                         spacing: Theme.gapSmall
                         Text {
                             Layout.fillWidth: true
-                            text: root.itemListTitle + " (" + (root.document ? root.document.itemCount : 0) + ")"
+                            text: root.itemListTitle + " (" + (root.document ? root.document.rootCount : 0) + ")"
                             color: Theme.text
                             font.bold: true
                             font.pixelSize: Theme.fontBody
