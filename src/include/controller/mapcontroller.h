@@ -13,6 +13,7 @@
 #include <QVariantMap>
 #include <QVector>
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include "bedrock_key.h"
@@ -133,15 +134,41 @@ class MapController final : public QObject {
     /// Re-apply the configured zoom limits for the current loader state.
     void applyZoomLimits();
 
-    struct OperationResult {
+    struct SelectionOperationResult {
+        enum class RefreshTarget {
+            None,
+            Selection,
+            Regions,
+        };
+
         bool success{false};
-        bool refresh_terrain{false};
         QString error;
         QByteArray clipboard;
         bool imported{false};
+        RefreshTarget refresh_target{RefreshTarget::None};
         std::vector<bl::chunk_pos> refresh_regions;
+
+        static SelectionOperationResult noRefresh(bool success, QString error = {}) {
+            return {success, std::move(error), {}, false, RefreshTarget::None, {}};
+        }
+
+        static SelectionOperationResult refreshSelection(bool success, QString error = {}) {
+            return {success, std::move(error), {}, false, RefreshTarget::Selection, {}};
+        }
+
+        static SelectionOperationResult refreshRegions(bool success, std::vector<bl::chunk_pos> regions, QString error = {}) {
+            return {success, std::move(error), {}, false, RefreshTarget::Regions, std::move(regions)};
+        }
+
+        static SelectionOperationResult withClipboard(QByteArray clipboard) {
+            return {true, {}, std::move(clipboard), false, RefreshTarget::None, {}};
+        }
+
+        static SelectionOperationResult importResult(bool success, QString error = {}) {
+            return {success, std::move(error), {}, true, RefreshTarget::Selection, {}};
+        }
     };
-    using SelectionOperation = std::function<OperationResult(AsyncLevelLoader&, const QRegion&, int)>;
+    using SelectionOperation = std::function<SelectionOperationResult(AsyncLevelLoader&, const QRegion&, int)>;
     bool startSelectionOperation(SelectionOperation operation);
     bool startRegionOperation(SelectionOperation operation, const QRegion& region, int dimension);
     void finishSelectionOperation();
@@ -150,7 +177,7 @@ class MapController final : public QObject {
     AppContext& context_;
     RegionImportController region_import_;
     AsyncLevelLoader* loader_{nullptr};
-    QFutureWatcher<OperationResult> operation_watcher_;
+    QFutureWatcher<SelectionOperationResult> operation_watcher_;
     bool operation_running_{false};
     QRegion operation_region_;
     int operation_dimension_{0};

@@ -70,7 +70,7 @@ namespace {
 
 MapController::MapController(MapViewState* map_view_state, AppContext& context, QObject* parent)
     : QObject(parent), map_view_state_(map_view_state), context_(context), region_import_(this) {
-    connect(&operation_watcher_, &QFutureWatcher<OperationResult>::finished, this, &MapController::finishSelectionOperation);
+    connect(&operation_watcher_, &QFutureWatcher<SelectionOperationResult>::finished, this, &MapController::finishSelectionOperation);
     connect(&region_import_, &RegionImportController::failed, this, &MapController::operationFailed);
     if (!map_view_state_) return;
     connect(map_view_state_, &MapViewState::dimChanged, this, [this] { emit dimensionChanged(); });
@@ -123,9 +123,7 @@ int MapController::deletedChunkCount() const {
     return loader_->chunkModifyCounts().first;
 }
 
-bool MapController::deleteOutsideAvailable() const {
-    return loader_ && loader_->preloadAllChunkCoords() && loader_->chunkCoordsReady();
-}
+bool MapController::deleteOutsideAvailable() const { return loader_ && loader_->preloadAllChunkCoords() && loader_->chunkCoordsReady(); }
 
 bool MapController::selectionDragging() const {
     const auto* map_state = mapViewState();
@@ -358,7 +356,8 @@ void MapController::cancelSelectionDrag() {
 bool MapController::deleteSelectionAsync() {
     return startSelectionOperation([](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         const bool success = ChunkOperator::deleteRegion(region, loader, dimension, false);
-        return OperationResult{success, true, success ? QString() : QStringLiteral("Some selected chunks could not be deleted."), {}};
+        return SelectionOperationResult::refreshSelection(
+            success, success ? QString() : QStringLiteral("Some selected chunks could not be deleted."));
     });
 }
 
@@ -367,16 +366,17 @@ bool MapController::deleteOutsideSelectionAsync() {
     return startSelectionOperation([](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         std::vector<bl::chunk_pos> affected_regions;
         const bool success = ChunkOperator::deleteOutsideRegion(region, loader, dimension, &affected_regions, false);
-        return OperationResult{success, !affected_regions.empty(),
-                               success ? QString() : MapController::tr("Some chunks outside the selection could not be deleted."), {},
-                               false, affected_regions};
+        const QString error = success ? QString() : MapController::tr("Some chunks outside the selection could not be deleted.");
+        if (affected_regions.empty()) return SelectionOperationResult::noRefresh(success, error);
+        return SelectionOperationResult::refreshRegions(success, std::move(affected_regions), error);
     });
 }
 
 bool MapController::createVoidSelectionAsync() {
     return startSelectionOperation([](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         const bool success = ChunkOperator::createVoid(region, loader, dimension, false);
-        return OperationResult{success, true, success ? QString() : QStringLiteral("Some selected chunks could not be cleared."), {}};
+        return SelectionOperationResult::refreshSelection(
+            success, success ? QString() : QStringLiteral("Some selected chunks could not be cleared."));
     });
 }
 
@@ -385,8 +385,8 @@ bool MapController::setSelectionBiomeAsync(int biome) {
     const auto selected_biome = static_cast<bl::biome>(biome);
     return startSelectionOperation([selected_biome](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         const bool success = ChunkOperator::setRegionBiome(region, loader, selected_biome, dimension, false);
-        return OperationResult{
-            success, true, success ? QString() : QStringLiteral("The biome could not be applied to every selected chunk."), {}};
+        return SelectionOperationResult::refreshSelection(
+            success, success ? QString() : QStringLiteral("The biome could not be applied to every selected chunk."));
     });
 }
 
@@ -405,9 +405,10 @@ bool MapController::copySelectionAsync() {
                 }
             }
         }
-        if (exported.isEmpty()) return OperationResult{false, false, MapController::tr("No chunks were found in the selection."), {}};
+        if (exported.isEmpty())
+            return SelectionOperationResult::noRefresh(false, MapController::tr("No chunks were found in the selection."));
         const auto bytes = exported.serialize();
-        return OperationResult{true, false, {}, QByteArray(bytes.data(), static_cast<qsizetype>(bytes.size()))};
+        return SelectionOperationResult::withClipboard(QByteArray(bytes.data(), static_cast<qsizetype>(bytes.size())));
     });
 }
 
@@ -421,7 +422,8 @@ bool MapController::exportSelectionAsync(const QUrl& destination) {
     }
     return startSelectionOperation([target](AsyncLevelLoader& loader, const QRegion& region, int dimension) {
         const bool success = ChunkOperator::exportRegion(region, target, loader, dimension);
-        return OperationResult{success, false, success ? QString() : QStringLiteral("The selected chunks could not be exported."), {}};
+        return SelectionOperationResult::noRefresh(success,
+                                                   success ? QString() : QStringLiteral("The selected chunks could not be exported."));
     });
 }
 
@@ -479,13 +481,13 @@ bool MapController::confirmImport() {
                     chunk.move_to(bl::chunk_pos(pos.x + offset.x(), pos.z + offset.y(), dimension), &loader.level());
                 }
                 const bool success = ChunkOperator::importRegion(imported, loader, false);
-                return OperationResult{
-                    success, true, success ? QString() : MapController::tr("Some imported chunks could not be written."), {}, true};
+                return SelectionOperationResult::importResult(
+                    success, success ? QString() : MapController::tr("Some imported chunks could not be written."));
             } catch (const std::exception& error) {
-                return OperationResult{
-                    false, true, MapController::tr("The region could not be imported: %1").arg(QString::fromUtf8(error.what())), {}, true};
+                return SelectionOperationResult::importResult(
+                    false, MapController::tr("The region could not be imported: %1").arg(QString::fromUtf8(error.what())));
             } catch (...) {
-                return OperationResult{false, true, MapController::tr("The region could not be imported."), {}, true};
+                return SelectionOperationResult::importResult(false, MapController::tr("The region could not be imported."));
             }
         },
         region_import_.region(), region_import_.dimension());
@@ -551,9 +553,9 @@ bool MapController::startRegionOperation(SelectionOperation operation, const QRe
         try {
             return operation(*loader, region, dimension);
         } catch (const std::exception& error) {
-            return OperationResult{false, false, QString::fromUtf8(error.what()), {}};
+            return SelectionOperationResult::noRefresh(false, QString::fromUtf8(error.what()));
         } catch (...) {
-            return OperationResult{false, false, QStringLiteral("The map operation failed."), {}};
+            return SelectionOperationResult::noRefresh(false, QStringLiteral("The map operation failed."));
         }
     }));
     return true;
@@ -564,16 +566,17 @@ void MapController::finishSelectionOperation() {
     operation_running_ = false;
     emit operationChanged();
 
-    QRegion refresh_region = operation_region_;
-    if (!result.refresh_regions.empty()) {
-        refresh_region = {};
+    QRegion refresh_region;
+    if (result.refresh_target == SelectionOperationResult::RefreshTarget::Selection) {
+        refresh_region = operation_region_;
+    } else if (result.refresh_target == SelectionOperationResult::RefreshTarget::Regions) {
         for (const auto& region : result.refresh_regions) refresh_region += QRect(region.x, region.z, constant::RW, constant::RW);
     }
-    if (result.refresh_terrain && loader_ && !refresh_region.isEmpty()) {
+    if (loader_ && !refresh_region.isEmpty()) {
         // The edit ran on a worker. Drop the old region tiles here, before the
         // provider starts refilling, or cached centre tiles would be delivered
         // again and only uncached surrounding regions would show the edit.
-        if (!result.refresh_regions.empty())
+        if (result.refresh_target == SelectionOperationResult::RefreshTarget::Regions)
             loader_->invalidateTilesForRegions(result.refresh_regions);
         else
             loader_->invalidateRegionTiles(refresh_region, operation_dimension_);
