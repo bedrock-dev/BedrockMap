@@ -87,6 +87,7 @@ class NbtDocumentController : public QObject {
     [[nodiscard]] QString filePath() const;
     [[nodiscard]] bool requiresSaveAs() const;
     [[nodiscard]] QString documentTitle() const;
+    [[nodiscard]] Q_INVOKABLE QString suggestedSaveFileName() const;
     [[nodiscard]] bool dirty() const { return dirty_; }
     [[nodiscard]] bool readOnly() const { return read_only_; }
     [[nodiscard]] bool hasDocument() const { return document_open_; }

@@ -1,6 +1,8 @@
 #include "controller/nbtdocumentcontroller.h"
 
 #include <QCoreApplication>
+#include <QFileInfo>
+#include <QRegularExpression>
 #include <QSet>
 #include <QUrl>
 #include <utility>
@@ -46,6 +48,16 @@ QStringList NbtDocumentController::itemIcons() const {
 QString NbtDocumentController::documentTitle() const {
     if (!document_title_.isEmpty()) return document_title_;
     return file_url_.isEmpty() ? QStringLiteral("Untitled") : io::DocumentIo::displayName(file_url_);
+}
+
+QString NbtDocumentController::suggestedSaveFileName() const {
+    QString name = documentTitle().trimmed();
+    if (name.isEmpty()) name = QStringLiteral("Untitled");
+    static const QRegularExpression invalid_characters(QStringLiteral(R"([\\/:*?"<>|])"));
+    name.replace(invalid_characters, QStringLiteral("_"));
+    if (QFileInfo(name).suffix().isEmpty())
+        name += rootCount() > 1 ? QStringLiteral(".nbts") : QStringLiteral(".nbt");
+    return name;
 }
 
 QString NbtDocumentController::filePath() const { return file_url_.isEmpty() ? QString{} : io::DocumentIo::identifier(file_url_); }

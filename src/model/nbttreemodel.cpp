@@ -5,8 +5,6 @@
 #include <cstdint>
 #include <limits>
 
-#include "magic-enum/magic_enum.hpp"
-
 using namespace bl::nbt;
 
 namespace {
@@ -85,8 +83,8 @@ int NbtTreeModel::rowCount(const QModelIndex& parent) const {
 
 QHash<int, QByteArray> NbtTreeModel::roleNames() const {
     return {{KeyRole, "key"},       {TypeRole, "tagType"},    {TypeNameRole, "typeName"},       {ValueRole, "value"},
-            {IconRole, "icon"},     {DepthRole, "depth"},     {HasChildrenRole, "hasChildren"}, {ExpandedRole, "expanded"},
-            {CanAddRole, "canAdd"}, {CanEditRole, "canEdit"}, {CanRemoveRole, "canRemove"},     {CanClearRole, "canClear"}};
+            {DepthRole, "depth"},   {HasChildrenRole, "hasChildren"}, {ExpandedRole, "expanded"}, {CanAddRole, "canAdd"},
+            {CanEditRole, "canEdit"}, {CanRemoveRole, "canRemove"}, {CanClearRole, "canClear"}};
 }
 
 QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {
@@ -107,8 +105,6 @@ QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {
             return QString::fromStdString(tag_type_to_str(tag->type()));
         case ValueRole:
             return valueText(tag);
-        case IconRole:
-            return iconForType(tag->type());
         case DepthRole:
             return depthOf(node);
         case HasChildrenRole:
@@ -126,14 +122,6 @@ QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {
         default:
             return {};
     }
-}
-
-QString NbtTreeModel::iconForType(tag_type type) {
-    constexpr auto fallback = "qrc:/bedrockmap/icons/nbt/TAG_End.png";
-    const auto name = magic_enum::enum_name(type);
-    if (name.empty()) return QString::fromLatin1(fallback);
-    return QStringLiteral("qrc:/bedrockmap/icons/nbt/TAG_%1.png")
-        .arg(QString::fromLatin1(name.data(), static_cast<qsizetype>(name.size())));
 }
 
 QString NbtTreeModel::hexValueText(const abstract_tag* tag) {

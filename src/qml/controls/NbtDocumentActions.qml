@@ -41,11 +41,19 @@ Item {
             return
         }
         if (root.document.requiresSaveAs) {
-            saveDialog.open()
+            root.openSaveDialog()
             return
         }
         if (!root.document.save())
             App.notifications.error(qsTr("Save failed"))
+    }
+    function openSaveDialog() {
+        if (!root.document)
+            return
+        const filename = root.document.suggestedSaveFileName()
+        saveDialog.selectedFile = saveDialog.currentFolder.toString().length > 0
+                ? saveDialog.currentFolder + "/" + encodeURIComponent(filename) : filename
+        saveDialog.open()
     }
 
     FileUrlDialog {

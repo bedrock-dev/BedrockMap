@@ -211,12 +211,21 @@ Window {
         if (session.document && session.document.requiresSaveAs) {
             window.pendingShortcutSaveSession = session
             nbtSaveAsDialog.closeAfterSave = false
-            nbtSaveAsDialog.open()
+            window.openNbtSaveAsDialog()
             return
         }
         if (session.commit())
             return
         App.notifications.error(qsTr("Save failed"))
+    }
+    function openNbtSaveAsDialog() {
+        const session = window.pendingCloseSession || window.pendingShortcutSaveSession
+        if (!session || !session.document)
+            return
+        const filename = session.document.suggestedSaveFileName()
+        nbtSaveAsDialog.selectedFile = nbtSaveAsDialog.currentFolder.toString().length > 0
+                ? nbtSaveAsDialog.currentFolder + "/" + encodeURIComponent(filename) : filename
+        nbtSaveAsDialog.open()
     }
     function cancelPendingClose() {
         if (!window.pendingCloseSession)
@@ -427,7 +436,7 @@ Window {
                             return
                         if (session.document && session.document.requiresSaveAs) {
                             nbtSaveAsDialog.closeAfterSave = true
-                            nbtSaveAsDialog.open()
+                            window.openNbtSaveAsDialog()
                             return
                         }
                         if (!session.commit()) {

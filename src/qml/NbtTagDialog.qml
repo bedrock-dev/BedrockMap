@@ -18,6 +18,39 @@ Dialog {
         "Compound", "Int Array", "Long Array"]
     signal commitRequested(int type, string key, string value)
 
+    component TypeLabel: Item {
+        id: labelItem
+        property string label
+        property int tagType: 0
+        property real leftPadding: 0
+        property real rightPadding: 0
+        property alias font: labelText.font
+
+        implicitWidth: leftPadding + rightPadding + labelText.implicitWidth + Theme.iconSmallSize + Theme.ui(6)
+        implicitHeight: Math.max(Theme.iconSmallSize, labelText.implicitHeight)
+
+        Row {
+            anchors.fill: parent
+            anchors.leftMargin: labelItem.leftPadding
+            anchors.rightMargin: labelItem.rightPadding
+            spacing: Theme.ui(6)
+
+            NbtTagTypeIcon {
+                anchors.verticalCenter: parent.verticalCenter
+                tagType: labelItem.tagType
+            }
+            Text {
+                id: labelText
+                width: Math.max(0, parent.width - x)
+                anchors.verticalCenter: parent.verticalCenter
+                text: labelItem.label
+                color: Theme.text
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+        }
+    }
+
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape
@@ -111,11 +144,39 @@ Dialog {
                 Layout.preferredWidth: 54
             }
             AppComboBox {
+                id: typeCombo
                 Layout.fillWidth: true
                 model: root.typeNames
                 currentIndex: root.typeIndexForId(root.tagType)
                 enabled: !root.typeLocked
                 onActivated: root.tagType = root.typeIds[currentIndex]
+                contentItem: TypeLabel {
+                    leftPadding: Theme.ui(9)
+                    rightPadding: Theme.iconSmallSize + Theme.ui(8)
+                    label: typeCombo.displayText
+                    tagType: root.typeIds[typeCombo.currentIndex]
+                    font: typeCombo.font
+                }
+                delegate: ItemDelegate {
+                    id: typeOption
+                    required property int index
+                    required property var modelData
+                    width: typeCombo.width
+                    implicitHeight: Theme.controlHeight
+                    highlighted: typeCombo.highlightedIndex === index
+                    text: modelData
+                    contentItem: TypeLabel {
+                        leftPadding: Theme.ui(9)
+                        rightPadding: Theme.ui(9)
+                        label: typeOption.text
+                        tagType: root.typeIds[typeOption.index]
+                        font.pixelSize: Theme.fontSubtitle
+                    }
+                    background: Rectangle {
+                        radius: Theme.radiusSmall
+                        color: typeOption.highlighted ? Theme.surfaceAlt : "transparent"
+                    }
+                }
             }
         }
         RowLayout {

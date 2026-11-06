@@ -28,7 +28,6 @@ class NbtTreeModel : public QAbstractListModel {
         TypeRole,
         TypeNameRole,
         ValueRole,
-        IconRole,
         DepthRole,
         HasChildrenRole,
         ExpandedRole,
@@ -96,7 +95,6 @@ class NbtTreeModel : public QAbstractListModel {
     [[nodiscard]] int depthOf(const Node* node) const;
     [[nodiscard]] QString valueText(const bl::nbt::abstract_tag* tag) const;
     [[nodiscard]] static QString hexValueText(const bl::nbt::abstract_tag* tag);
-    [[nodiscard]] static QString iconForType(bl::nbt::tag_type type);
     [[nodiscard]] bool applyValue(bl::nbt::abstract_tag* tag, const QString& text);
     [[nodiscard]] bl::nbt::abstract_tag* createTag(int type, const QString& key, const QString& value);
 

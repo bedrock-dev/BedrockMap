@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
+import "controls"
 
 Item {
     id: root
@@ -13,17 +14,6 @@ Item {
         if (row < 0 || !model || row >= model.rowCount())
             return
         selectedRow = row
-    }
-
-    readonly property var tagLetters: ["E", "B", "S", "I", "L", "F", "D", "B", "S", "L", "C", "I", "L"]
-    readonly property var tagColors: ["#64748b", "#2563eb", "#7c3aed", "#0e7490", "#0f766e", "#b45309", "#c2410c", "#1d4ed8",
-        "#15803d", "#be185d", "#7e22ce", "#155e75", "#115e59"]
-
-    function tagLetter(type) {
-        return type >= 0 && type < tagLetters.length ? tagLetters[type] : "?"
-    }
-    function tagColor(type) {
-        return type >= 0 && type < tagColors.length ? tagColors[type] : "#475569"
     }
 
     ListView {
@@ -41,7 +31,6 @@ Item {
             required property int tagType
             required property string typeName
             required property string value
-            required property string icon
             required property int depth
             required property bool hasChildren
             required property bool expanded
@@ -90,20 +79,10 @@ Item {
                     row.requestContext(point.x, point.y)
                 }
             }
-            Rectangle {
+            NbtTagTypeIcon {
                 x: row.iconX
                 y: (row.height - height) / 2
-                width: Theme.iconSmallSize
-                height: width
-                radius: Theme.ui(4)
-                color: root.tagColor(row.tagType)
-                Text {
-                    anchors.centerIn: parent
-                    text: root.tagLetter(row.tagType)
-                    color: "#ffffff"
-                    font.pixelSize: Theme.ui(9)
-                    font.bold: true
-                }
+                tagType: row.tagType
             }
             Text {
                 id: keyLabel
