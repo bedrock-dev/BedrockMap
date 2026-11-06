@@ -7,7 +7,7 @@ import "controls"
 Item {
     id: root
     property var document
-    property bool compact: Theme.nbtCompact
+    property bool compact: Theme.compact
     property string itemListTitle: qsTr("Records")
     property bool showItemList: true
     property bool detailsHidden: false

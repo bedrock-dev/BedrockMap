@@ -940,13 +940,14 @@
     <name>Main</name>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>BedrockMap</source>
-        <translation>BedrockMap</translation>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Map</source>
+        <translation>地图</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Permissions</source>
-        <translation>权限管理</translation>
+        <source>BedrockMap</source>
+        <translation>BedrockMap</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1000,9 +1001,13 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
+        <source>Save active session</source>
+        <translation>保存当前会话</translation>
+    </message>
+    <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Wait for the current map operation to finish before saving.</source>
-        <translation>请等待当前地图操作完成后再保存。</translation>
+        <source>Close active session</source>
+        <translation>关闭当前会话</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1018,16 +1023,6 @@
         <location filename="../src/qml/Main.qml"/>
         <source>Copy and open</source>
         <translation>复制并打开</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save world</source>
-        <translation>保存世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Close world</source>
-        <translation>关闭世界</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1481,18 +1476,8 @@
     </message>
 </context>
 <context>
-    <name>McstructurePage</name>
-    <message>
-        <location filename="../src/qml/McstructurePage.qml"/>
-        <source>Structure preview</source>
-        <translation>结构预览</translation>
-    </message>
-</context>
-<context>
     <name>Navigation</name>
     <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <source>Welcome</source>
@@ -1500,19 +1485,15 @@
     </message>
     <message>
         <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <source>Open sessions</source>
         <translation type="unfinished">打开的会话</translation>
     </message>
     <message>
         <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <source>Sessions</source>
         <translation type="unfinished">会话</translation>
     </message>
     <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <source>Tools</source>
@@ -1521,22 +1502,8 @@
     <message>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
-        <source>Shortcuts</source>
-        <translation>快捷键</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <source>Settings</source>
         <translation type="unfinished">设置</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <source>Logs</source>
-        <translation type="unfinished">日志</translation>
     </message>
 </context>
 <context>
@@ -1699,16 +1666,6 @@
 </context>
 <context>
     <name>NbtEditorPage</name>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Save NBT document</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Close NBT document</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../src/qml/NbtEditorPage.qml"/>
         <source>NBT editor</source>
@@ -2900,11 +2857,6 @@
     </message>
     <message>
         <location filename="../src/qml/ShortcutsPage.qml"/>
-        <source>Keyboard shortcuts</source>
-        <translation>键盘快捷键</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
         <source>Available shortcuts for the current Qt Quick interface.</source>
         <translation>当前 Qt Quick 界面可用的快捷键。</translation>
     </message>
@@ -2961,6 +2913,7 @@
     <name>ToolsPage</name>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
+        <location filename="../src/qml/ToolsPage.qml"/>
         <source>Permissions</source>
         <translation>权限管理</translation>
     </message>
@@ -2968,6 +2921,27 @@
         <location filename="../src/qml/ToolsPage.qml"/>
         <source>Manage storage access and privileged services</source>
         <translation>管理存储访问权限和特权服务</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Keyboard shortcuts</source>
+        <translation>键盘快捷键</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Logs</source>
+        <translation>日志</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Tools</source>
+        <translation>工具</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>View shortcuts for the application, map and 3D view</source>
+        <translation>查看应用、地图和 3D 视图的快捷键</translation>
     </message>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
@@ -3770,10 +3744,12 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Chunk editor</source>
         <translation type="unfinished">区块编辑器</translation>
     </message>
     <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
         <translation type="unfinished">3D 视图</translation>

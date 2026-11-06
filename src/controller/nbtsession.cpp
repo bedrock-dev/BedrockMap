@@ -7,6 +7,8 @@ NbtSession::NbtSession(QString path, QString title, QObject* parent)
     connect(document_, &NbtDocumentController::dirtyChanged, this, [this] { setDirty(document_->dirty()); });
     connect(document_, &NbtDocumentController::documentTitleChanged, this, [this] { syncFromDocument(); });
     connect(document_, &NbtDocumentController::filePathChanged, this, [this] { syncFromDocument(); });
+    connect(document_, &NbtDocumentController::itemsChanged, this, &NbtSession::titleBarActionsChanged);
+    connect(document_, &NbtDocumentController::readOnlyChanged, this, &NbtSession::titleBarActionsChanged);
 }
 
 void NbtSession::syncFromDocument() {
@@ -16,6 +18,10 @@ void NbtSession::syncFromDocument() {
 }
 
 bool NbtSession::commit() { return document_->save(); }
+
+bool NbtSession::titleBarSaveVisible() const { return document_ && document_->hasDocument(); }
+
+bool NbtSession::titleBarSaveEnabled() const { return document_ && document_->hasDocument() && !document_->readOnly(); }
 
 bool NbtSession::loadFile(const QUrl& url) {
     if (!document_->loadFile(url)) return false;

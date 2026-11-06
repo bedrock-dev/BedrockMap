@@ -57,55 +57,54 @@ Window {
     property int workspaceIndex: App.workspaceIndex
     property var openSessions: App.openSessions
     readonly property var activeSession: App.activeSession
-    readonly property var sessionHostItem: sessionHostLazy.item
-    readonly property bool structureSessionActive: !!activeSession && activeSession.kind === "mcstructure"
-    readonly property bool nbtSessionActive: !!activeSession && activeSession.kind === "nbt"
-    readonly property bool workspaceChildOpen: workspaceOpen && !!sessionHostItem && sessionHostItem.internalPageOpen
-    readonly property bool childTitleBarVisible: compactLayout && workspaceChildOpen
-    onChildTitleBarVisibleChanged: {
-        if (childTitleBarVisible && workspaceSectionMenu)
-            workspaceSectionMenu.close()
+    readonly property var worldWorkspace: workspaceOpen && sessionHostLazy.item ? sessionHostLazy.item.worldWorkspace :
+                                                                                     null
+    // Child-page stack of the visible page: the open world's workspace or the
+    // tools page. The shell owns the back button and title for it.
+    readonly property PageGroup childPages: {
+        if (workspaceOpen)
+            return worldWorkspace ? worldWorkspace.childPages : null
+        if (currentPage === navigation.pageTools && toolsPageLazy.item)
+            return toolsPageLazy.item.childPages
+        return null
     }
-    readonly property bool canNavigateBack: (!workspaceOpen && (currentPage === window.navigation.pageShortcuts
-                                                                || currentPage === window.navigation.pagePermissions))
-                                            || (compactLayout && (workspaceOpen || currentPage
-                                                                  === window.navigation.pageLogs))
+    readonly property bool childPageOpen: !!childPages && childPages.isChildOpen
+    // Save and close for the open session live in the compact title bar.
+    readonly property bool sessionTitleBarActions: workspaceOpen && Theme.showTopbar && !!activeSession && !childPageOpen
+    onChildPageOpenChanged: if (childPageOpen)
+                                workspaceSectionMenu.close()
+    readonly property bool canNavigateBack: childPageOpen || (!!worldWorkspace && worldWorkspace.canGoBack)
+                                            || (Theme.showTopbar && workspaceOpen)
     readonly property string shellTitle: {
-        if (workspaceOpen) {
+        if (childPageOpen)
+            return childPages.currentTitle
+        if (workspaceOpen)
             return activeSession ? activeSession.title + (activeSession.dirty ? " *" : "") : qsTr("Open world")
+        return window.navigation.pages[currentPage].title
+    }
+    // Section 0 is the map; global data sections follow.
+    readonly property var workspaceSectionEntries: {
+        const entries = [{
+                             title: qsTr("Map"),
+                             iconName: "map",
+                             label: qsTr("Map")
+                         }]
+        const sections = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationSections :
+                                                                                   []
+        for (let i = 0; i < sections.length; ++i) {
+            const section = sections[i]
+            entries.push({
+                             title: section.title,
+                             iconName: section.iconName ? section.iconName : "nbt_editor",
+                             label: section.title + (section.count > 0 ? " " + section.count : "") + (section.dirty
+                                                                                                       ? " *" : "")
+                         })
         }
-        return currentPage === window.navigation.pagePermissions ? qsTr("Permissions") :
-                                                                   window.navigation.pages[currentPage].title
+        return entries
     }
-    readonly property var workspaceSections: activeSession && activeSession.kind === "world"
-                                             && activeSession.globalData ? activeSession.globalData.sections : []
-    readonly property int workspaceSection: activeSession && activeSession.kind === "world"
-                                            ? activeSession.workspaceSection : 0
-    readonly property string workspaceSectionTitle: {
-        if (workspaceSection <= 0)
-            return "Map"
-        const index = workspaceSection - 1
-        return index < workspaceSections.length ? workspaceSections[index].title : "Map"
-    }
-    readonly property string workspaceSectionIcon: {
-        if (workspaceSection <= 0)
-            return "map"
-        const index = workspaceSection - 1
-        if (index >= workspaceSections.length)
-            return "map"
-        return workspaceSections[index].iconName ? workspaceSections[index].iconName : "nbt_editor"
-    }
-    readonly property int workspaceSectionCount: {
-        if (workspaceSection <= 0)
-            return 0
-        const index = workspaceSection - 1
-        return index < workspaceSections.length ? workspaceSections[index].count : 0
-    }
-    readonly property bool workspaceSectionDirty: {
-        if (workspaceSection <= 0)
-            return false
-        const index = workspaceSection - 1
-        return index < workspaceSections.length ? workspaceSections[index].dirty : false
+    readonly property var workspaceSectionEntry: {
+        const section = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationIndex : 0
+        return workspaceSectionEntries[section] || workspaceSectionEntries[0]
     }
 
     Shortcut {
@@ -161,15 +160,11 @@ Window {
         App.openWorld(path, title)
     }
     function navigateBack() {
-        if (workspaceOpen) {
-            if (sessionHostItem && sessionHostItem.goBack())
-                return
-            App.navigateToPage(window.navigation.pageSessions)
+        // The world workspace cancels a pending region import before popping.
+        if (worldWorkspace ? worldWorkspace.goBack() : childPageOpen && childPages.pop())
             return
-        }
-        if (currentPage === window.navigation.pageShortcuts || currentPage === window.navigation.pageLogs
-                || currentPage === window.navigation.pagePermissions)
-            App.navigateToPage(window.navigation.pageTools)
+        if (workspaceOpen)
+            App.navigateToPage(window.navigation.pageSessions)
     }
     /// Worlds page: the folder picker lives here so the header button, the empty
     /// state card and a dropped folder all take the same path. App
@@ -213,7 +208,7 @@ Window {
         const session = window.activeSession
         if (!session)
             return
-        if (session.kind === "nbt" && session.document && session.document.requiresSaveAs) {
+        if (session.document && session.document.requiresSaveAs) {
             window.pendingShortcutSaveSession = session
             nbtSaveAsDialog.closeAfterSave = false
             nbtSaveAsDialog.open()
@@ -221,10 +216,7 @@ Window {
         }
         if (session.commit())
             return
-        if (session.kind === "world")
-            App.notifications.warning(qsTr("Wait for the current map operation to finish before saving."))
-        else
-            App.notifications.error(qsTr("Save failed"))
+        App.notifications.error(qsTr("Save failed"))
     }
     function cancelPendingClose() {
         if (!window.pendingCloseSession)
@@ -297,41 +289,16 @@ Window {
         id: workspaceSectionMenu
         readonly property real sectionItemHeight: Theme.menuItemHeight
         Repeater {
-            model: {
-                const items = [
-                          {
-                              title: "Map",
-                              iconName: "map",
-                              count: 0,
-                              dirty: false,
-                              section: 0,
-                              showCount: false
-                          }
-                      ]
-                for (let i = 0; i < window.workspaceSections.length; ++i) {
-                    const section = window.workspaceSections[i]
-                    items.push({
-                                   title: section.title,
-                                   iconName: section.iconName ? section.iconName : "nbt_editor",
-                                   count: section.count,
-                                   dirty: section.dirty,
-                                   section: i + 1,
-                                   showCount: true
-                               })
-                }
-                return items
-            }
+            model: window.workspaceSectionEntries
             delegate: AppMenuItem {
                 required property var modelData
-                text: modelData.title + (modelData.showCount ? " " + modelData.count : "") + (modelData.dirty ? " *" :
-                                                                                                                "")
+                required property int index
+                text: modelData.label
                 iconName: modelData.iconName
                 implicitHeight: workspaceSectionMenu.sectionItemHeight
                 height: workspaceSectionMenu.sectionItemHeight
-                enabled: !window.childTitleBarVisible
-                onTriggered: if (window.activeSession && window.activeSession.kind === "world" &&
-                                     !window.childTitleBarVisible)
-                                 window.activeSession.workspaceSection = modelData.section
+                onTriggered: if (window.activeSession && window.activeSession.titleBarNavigationVisible)
+                                 window.activeSession.titleBarNavigationIndex = index
             }
         }
     }
@@ -344,8 +311,8 @@ Window {
         }
     }
     Connections {
-        target: window.pendingCloseSession && window.pendingCloseSession.kind === "world" ? window.pendingCloseSession :
-                                                                                            null
+        target: window.pendingCloseSession && window.pendingCloseSession.saveCompletesAsynchronously ?
+                    window.pendingCloseSession : null
         function onSaved() {
             if (window.pendingCloseSession)
                 window.completePendingSessionClose()
@@ -458,21 +425,17 @@ Window {
                         const session = window.pendingCloseSession
                         if (!session)
                             return
-                        if (session.kind === "nbt") {
-                            if (session.document && session.document.requiresSaveAs) {
-                                nbtSaveAsDialog.closeAfterSave = true
-                                nbtSaveAsDialog.open()
-                                return
-                            }
-                            if (session.commit())
-                                window.completePendingSessionClose()
-                            else if (session.document)
-                                App.notifications.error(qsTr("Save failed"))
+                        if (session.document && session.document.requiresSaveAs) {
+                            nbtSaveAsDialog.closeAfterSave = true
+                            nbtSaveAsDialog.open()
                             return
                         }
-                        if (!session.commit())
-                            App.notifications.warning(qsTr(
-                                                          "Wait for the current map operation to finish before saving."))
+                        if (!session.commit()) {
+                            App.notifications.error(qsTr("Save failed"))
+                            return
+                        }
+                        if (!session.saveCompletesAsynchronously)
+                            window.completePendingSessionClose()
                     }
                 }
             }
@@ -559,8 +522,7 @@ Window {
         anchors.leftMargin: window.safeLeft
         anchors.topMargin: window.safeTop
         anchors.bottomMargin: window.safeBottom
-        currentIndex: window.workspaceOpen ? -1 : window.currentPage === window.navigation.pagePermissions
-                                             ? window.navigation.pageTools : window.currentPage
+        currentIndex: window.workspaceOpen ? -1 : window.currentPage
         darkMode: Theme.dark
         onToggleCollapsed: window.sidebarCollapsed = !window.sidebarCollapsed
         // Preview the explicit opposite mode; Save settings persists it.
@@ -594,95 +556,69 @@ Window {
 
         Rectangle {
             id: topbar
-            visible: Theme.showTopbar && !window.nbtSessionActive && !(window.workspaceOpen
-                                                                       && window.structureSessionActive)
+            visible: Theme.showTopbar
             height: window.safeTop + Theme.topbarHeight
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             color: Theme.surface
-            Item {
-                id: topbarContent
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
+
+            AppTitleBar {
+                anchors.fill: parent
                 anchors.topMargin: window.safeTop
-                height: Theme.topbarHeight
+                leftInset: window.safeLeft
+                rightInset: window.safeRight
+                title: window.shellTitle
+                backVisible: window.canNavigateBack
+                onBackRequested: window.navigateBack()
 
-                AppTitleBar {
-                    visible: !window.childTitleBarVisible
-                    enabled: visible
-                    anchors.fill: parent
-                    leftInset: window.safeLeft
-                    rightInset: window.safeRight
-                    title: window.shellTitle
-                    backVisible: window.canNavigateBack
-                    onBackRequested: window.navigateBack()
-
-                    actions: [
-                        AppIconButton {
-                            visible: window.currentPage === window.navigation.pageSettings && !window.workspaceOpen
-                            iconName: "refresh"
-                            label: qsTr("Reset settings")
-                            buttonSize: 34
-                            onClicked: resetSettingsDialog.open()
-                        },
-                        AppIconButton {
-                            visible: window.compactLayout && window.currentPage === window.navigation.pageSettings &&
-                                     !window.workspaceOpen
-                            iconName: "save"
-                            label: qsTr("Save settings")
-                            buttonSize: 34
-                            onClicked: App.settings.save()
-                        },
-                        AppButton {
-                            id: workspaceSectionButton
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
-                                     && window.activeSession.kind === "world"
-                            compact: window.compactLayout
-                            iconName: window.workspaceSectionIcon
-                            text: window.workspaceSectionTitle + (window.workspaceSectionCount > 0 ? " " + window.workspaceSectionCount :
-                                                                                                     "") + (window.workspaceSectionDirty
-                                                                                                            ? " *" : "")
-                                  + "  ▾"
-                            onClicked: workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
-                                                                  - workspaceSectionMenu.width,
-                                                                  workspaceSectionButton.height + 4)
-                        },
-                        AppIconButton {
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
-                                     && window.activeSession.kind === "world"
-                            iconName: window.activeSession && !window.activeSession.saving ? "save" : ""
-                            icon: window.activeSession && window.activeSession.saving ? "…" : ""
-                            label: qsTr("Save world")
-                            dirty: !!window.activeSession && window.activeSession.dirty
-                            buttonSize: 34
-                            enabled: !!window.activeSession && window.activeSession.kind === "world"
-                                     && window.activeSession.canSave
-                            onClicked: window.saveActiveSession()
-                        },
-                        AppIconButton {
-                            visible: window.workspaceOpen && window.compactLayout && window.activeSession
-                                     && window.activeSession.kind === "world"
-                            iconName: "exit"
-                            label: qsTr("Close world")
-                            danger: true
-                            buttonSize: 34
-                            onClicked: window.closeActiveSession()
-                        }
-                    ]
-                }
-
-                AppTitleBar {
-                    visible: window.childTitleBarVisible
-                    enabled: visible
-                    anchors.fill: parent
-                    leftInset: window.safeLeft
-                    rightInset: window.safeRight
-                    title: window.sessionHostItem ? window.sessionHostItem.internalPageTitle : ""
-                    backVisible: true
-                    onBackRequested: window.navigateBack()
-                }
+                actions: [
+                    AppIconButton {
+                        visible: window.currentPage === window.navigation.pageSettings && !window.workspaceOpen
+                        iconName: "refresh"
+                        label: qsTr("Reset settings")
+                        buttonSize: 34
+                        onClicked: resetSettingsDialog.open()
+                    },
+                    AppIconButton {
+                        visible: Theme.showTopbar && window.currentPage === window.navigation.pageSettings &&
+                                 !window.workspaceOpen
+                        iconName: "save"
+                        label: qsTr("Save settings")
+                        buttonSize: 34
+                        onClicked: App.settings.save()
+                    },
+                    AppButton {
+                        id: workspaceSectionButton
+                        visible: window.sessionTitleBarActions && window.activeSession
+                                 && window.activeSession.titleBarNavigationVisible
+                        compact: window.compactLayout
+                        iconName: window.workspaceSectionEntry.iconName
+                        text: window.workspaceSectionEntry.label + "  ▾"
+                        onClicked: workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
+                                                              - workspaceSectionMenu.width,
+                                                              workspaceSectionButton.height + 4)
+                    },
+                    AppIconButton {
+                        visible: window.sessionTitleBarActions && window.activeSession
+                                 && window.activeSession.titleBarSaveVisible
+                        iconName: window.activeSession && !window.activeSession.saving ? "save" : ""
+                        icon: window.activeSession && window.activeSession.saving ? "…" : ""
+                        label: qsTr("Save active session")
+                        dirty: !!window.activeSession && window.activeSession.dirty
+                        buttonSize: 34
+                        enabled: window.activeSession && window.activeSession.titleBarSaveEnabled
+                        onClicked: window.saveActiveSession()
+                    },
+                    AppIconButton {
+                        visible: window.sessionTitleBarActions
+                        iconName: "exit"
+                        label: qsTr("Close active session")
+                        danger: true
+                        buttonSize: 34
+                        onClicked: window.closeActiveSession()
+                    }
+                ]
             }
         }
         StackLayout {
@@ -708,30 +644,18 @@ Window {
                 sourceComponent: openWorldsPage
             }
             LazyPage {
+                id: toolsPageLazy
                 pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageTools
                 sourceComponent: toolsPage
-            }
-            LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageShortcuts
-                            && Qt.platform.os !== "android"
-                sourceComponent: shortcutsPage
             }
             LazyPage {
                 pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageSettings
                 sourceComponent: settingsPage
             }
             LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pageLogs
-                sourceComponent: logsPage
-            }
-            LazyPage {
                 id: sessionHostLazy
                 pageActive: window.workspaceOpen
                 sourceComponent: sessionHostPage
-            }
-            LazyPage {
-                pageActive: !window.workspaceOpen && window.currentPage === window.navigation.pagePermissions
-                sourceComponent: permissionsPage
             }
         }
     }
@@ -747,8 +671,7 @@ Window {
         anchors.right: parent.right
         anchors.rightMargin: window.safeRight
         anchors.bottom: parent.bottom
-        currentIndex: window.workspaceOpen ? -1 : window.currentPage === window.navigation.pagePermissions
-                                             ? window.navigation.pageTools : window.currentPage
+        currentIndex: window.workspaceOpen ? -1 : window.currentPage
         onNavigate: index => window.navigateToPage(index)
     }
 
@@ -817,13 +740,7 @@ Window {
     }
     Component {
         id: toolsPage
-        ToolsPage {
-            navigation: window.navigation
-        }
-    }
-    Component {
-        id: shortcutsPage
-        ShortcutsPage {}
+        ToolsPage {}
     }
     Component {
         id: sessionHostPage
@@ -831,20 +748,11 @@ Window {
             activeSession: window.activeSession
             currentIndex: window.workspaceIndex
             onCloseRequested: index => window.closeSession(index)
-            onBackRequested: window.navigateBack()
             onSaveRequested: window.saveActiveSession()
         }
     }
     Component {
         id: settingsPage
         SettingsPage {}
-    }
-    Component {
-        id: logsPage
-        LogPage {}
-    }
-    Component {
-        id: permissionsPage
-        PermissionsPage {}
     }
 }

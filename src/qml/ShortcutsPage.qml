@@ -261,12 +261,6 @@ Item {
                 spacing: Theme.gapSmall
 
                 Text {
-                    text: qsTr("Keyboard shortcuts")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontHeading
-                    font.bold: true
-                }
-                Text {
                     width: parent.width
                     text: qsTr("Available shortcuts for the current Qt Quick interface.")
                     color: Theme.muted

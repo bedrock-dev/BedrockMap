@@ -25,39 +25,22 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        AppTitleBar {
             visible: root.headerVisible
+            embedded: true
             Layout.fillWidth: true
             Layout.preferredHeight: 48
-            color: Theme.surface
-
-            Text {
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                text: root.headerTitle
-                color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
-                font.bold: true
-            }
-
-            AppIconButton {
-                anchors.right: parent.right
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                iconName: "close"
-                label: qsTr("Close 3D view")
-                buttonSize: 32
-                onClicked: root.closeRequested()
-            }
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                height: 1
-                color: Theme.border
-            }
+            title: root.headerTitle
+            leftInset: 12
+            rightInset: 8
+            actions: [
+                AppIconButton {
+                    iconName: "close"
+                    label: qsTr("Close 3D view")
+                    buttonSize: 32
+                    onClicked: root.closeRequested()
+                }
+            ]
         }
 
         VoxelPreview {

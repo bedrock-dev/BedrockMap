@@ -23,8 +23,11 @@ WorldSession::WorldSession(QString path, QString title, AppContext& context, QOb
     connect(&open_watcher_, &QFutureWatcher<OpenResult>::finished, this, &WorldSession::onOpenFinished);
     connect(&save_watcher_, &QFutureWatcher<bool>::finished, this, &WorldSession::onSaveFinished);
     connect(&global_data_, &GlobalDataController::dirtyChanged, this, &WorldSession::refreshDirty);
+    connect(&global_data_, &GlobalDataController::sectionsChanged, this, &WorldSession::titleBarActionsChanged);
     connect(&chunk_editor_, &ChunkEditorController::dirtyChanged, this, &WorldSession::refreshDirty);
     connect(this, &WorkspaceSession::savingChanged, this, &WorldSession::canSaveChanged);
+    connect(this, &WorldSession::canSaveChanged, this, &WorkspaceSession::titleBarActionsChanged);
+    connect(this, &WorldSession::workspaceSectionChanged, this, &WorkspaceSession::titleBarActionsChanged);
     connect(this, &WorkspaceSession::savingChanged, this, [this] { map_controller_.setEditingBlocked(closing_ || saving()); });
     connect(&map_controller_, &MapController::mapDataChanged, this, [this](const QRegion& region, int dimension) {
         if (terrain_data_) terrain_data_->invalidateRegions(region, dimension);
@@ -51,6 +54,12 @@ void WorldSession::setWorkspaceSection(int section) {
     if (section < 0 || workspace_section_ == section) return;
     workspace_section_ = section;
     emit workspaceSectionChanged();
+}
+
+void WorldSession::setWorkspaceRoute(const QString& route) {
+    if (workspace_route_ == route) return;
+    workspace_route_ = route;
+    emit workspaceRouteChanged();
 }
 
 void WorldSession::setActive(bool active) {

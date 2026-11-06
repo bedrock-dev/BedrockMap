@@ -6,6 +6,32 @@ import "controls"
 
 Item {
     id: workspace
+
+    readonly property PageGroup childPages: PageGroup {
+        rootRoute: "root"
+        definitions: [
+            {
+                route: "root",
+                title: ""
+            },
+            {
+                route: "chunk-editor",
+                title: qsTr("Chunk editor")
+            },
+            {
+                route: "voxel",
+                title: qsTr("3D view")
+            }
+        ]
+        titleOverride: {
+            if (workspace.chunkEditorOpen)
+                return chunkEditorPanel.headerTitle
+            if (workspace.voxelViewOpen)
+                return voxelOverviewPanel.headerTitle
+            return ""
+        }
+    }
+
     property var session
     property var mapController: session ? session.mapController : null
     property var terrainData: session ? session.terrainData : null
@@ -16,21 +42,27 @@ Item {
     property bool layerPanelOpen: false
     property bool mapFilterPanelOpen: false
     property bool debugVisible: false
-    property bool chunkEditorOpen: false
-    property bool voxelViewOpen: false
-    readonly property bool childPageOpen: chunkEditorOpen || voxelViewOpen
+    readonly property bool chunkEditorOpen: childPages.currentRoute === "chunk-editor"
+    readonly property bool voxelViewOpen: childPages.currentRoute === "voxel"
+    readonly property bool importPending: !!mapController && !!mapController.regionImport
+                                          && (mapController.regionImport.active || mapController.regionImport.loading)
+    // Back first cancels a pending region import, then closes the child page.
+    readonly property bool canGoBack: importPending || childPages.isChildOpen
     readonly property bool textInputFocused: !!Window.activeFocusItem && Window.activeFocusItem.text !== undefined
-    readonly property bool mapShortcutsEnabled: section === 0 && !childPageOpen && !!mapController &&
-                                                !mapController.operationRunning && !(mapController.regionImport && (
-                                                                                         mapController.regionImport.active
-                                                                                         || mapController.regionImport.loading))
+    readonly property bool mapShortcutsEnabled: section === 0 && !childPages.isChildOpen && !!mapController
+                                                && !mapController.operationRunning && !importPending
                                                 && !textInputFocused
-    readonly property string childPageTitle: chunkEditorOpen ? chunkEditorPanel.headerTitle : (voxelViewOpen
-                                                                                               ? voxelOverviewPanel.headerTitle :
-                                                                                                 "")
     property real sidePanelWidth: 0
     signal closeRequested
     signal saveRequested
+
+    Connections {
+        target: workspace.childPages
+        function onNavigated(previousRoute, nextRoute) {
+            if (workspace.session)
+                workspace.session.workspaceRoute = nextRoute
+        }
+    }
 
     component MapShortcut: Shortcut {
         property bool needsSelection: false
@@ -249,16 +281,22 @@ Item {
             return
         mapController.gotoBlock(Math.round(x), Math.round(z))
     }
+    function openChunkEditor(chunkX, chunkZ, dimension) {
+        if (!session || !session.chunkEditor)
+            return
+        session.chunkEditor.openChunk(chunkX, chunkZ, dimension)
+        canvas.selectionToolActive = false
+        childPages.open("chunk-editor")
+    }
     function toggleChunkEditor() {
         if (chunkEditorOpen) {
-            chunkEditorOpen = false
+            childPages.pop()
             return
         }
         if (!session || !session.chunkEditor || (!session.chunkEditor.hasChunk && !session.chunkEditor.loading))
             return
         canvas.selectionToolActive = false
-        voxelViewOpen = false
-        chunkEditorOpen = true
+        childPages.open("chunk-editor")
     }
     function openVoxelView() {
         if (!mapController || !session || !session.voxelView)
@@ -268,12 +306,11 @@ Item {
             return
         session.voxelView.openArea(area.minX, area.minZ, area.maxX, area.maxZ, area.dimension)
         canvas.selectionToolActive = false
-        chunkEditorOpen = false
-        voxelViewOpen = true
+        childPages.open("voxel")
     }
     function toggleVoxelView() {
         if (voxelViewOpen) {
-            voxelViewOpen = false
+            childPages.pop()
             return
         }
         openVoxelView()
@@ -286,30 +323,25 @@ Item {
         return sidePanelWidth > 0 ? clampSidePanelWidth(sidePanelWidth) : sectionHost.width * 0.5
     }
     function goBack() {
-        if (mapController && (mapController.regionImport.active || mapController.regionImport.loading)) {
+        if (importPending) {
             mapController.cancelImport()
             return true
         }
-        if (chunkEditorOpen) {
-            chunkEditorOpen = false
-            return true
-        }
-        if (voxelViewOpen) {
-            voxelViewOpen = false
-            return true
-        }
-        return false
+        return childPages.pop()
     }
 
-    onSessionChanged: {
+    function restoreSessionState() {
         restoringSection = true
         section = session ? session.workspaceSection : 0
         restoringSection = false
-        chunkEditorOpen = false
-        voxelViewOpen = false
+        const route = session ? session.workspaceRoute : "root"
+        childPages.reset(childPages.contains(route) ? route : "root")
         layerPanelOpen = false
         mapFilterPanelOpen = false
     }
+
+    onSessionChanged: restoreSessionState()
+    Component.onCompleted: restoreSessionState()
     onMapFilterPanelOpenChanged: {
         if (!mapFilterPanel)
             return
@@ -352,11 +384,7 @@ Item {
                 showVillages: villagesToggle.active
                 showHsa: hsaToggle.active
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
-                onChunkEditorRequested: function (chunkX, chunkZ, dimension) {
-                    if (workspace.session && workspace.session.chunkEditor)
-                        workspace.session.chunkEditor.openChunk(chunkX, chunkZ, dimension)
-                    workspace.chunkEditorOpen = true
-                }
+                onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
                     workspace.openVoxelView()
                 }
@@ -401,7 +429,7 @@ Item {
                     headerVisible: !workspace.compact
                     z: 1
                     controller: workspace.session ? workspace.session.chunkEditor : null
-                    onCloseRequested: workspace.chunkEditorOpen = false
+                    onCloseRequested: workspace.childPages.pop()
                 }
 
                 VoxelOverviewPanel {
@@ -411,7 +439,7 @@ Item {
                     headerVisible: !workspace.compact
                     z: 1
                     controller: workspace.session ? workspace.session.voxelView : null
-                    onCloseRequested: workspace.voxelViewOpen = false
+                    onCloseRequested: workspace.childPages.pop()
                 }
             }
 

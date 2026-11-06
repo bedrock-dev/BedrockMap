@@ -16,6 +16,8 @@ class NbtSession final : public WorkspaceSession {
 
     [[nodiscard]] NbtDocumentController* document() const { return document_; }
     [[nodiscard]] bool commit() override;
+    [[nodiscard]] bool titleBarSaveVisible() const override;
+    [[nodiscard]] bool titleBarSaveEnabled() const override;
 
     bool loadFile(const QUrl& url);
     void createNew();

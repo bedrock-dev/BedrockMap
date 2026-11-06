@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
     const QString startupWorld = qEnvironmentVariable("BEDROCKMAP_OPEN_WORLD");
     if (!startupWorld.isEmpty()) appController.openWorld(startupWorld, QString());
     // Development hook: land on a specific app page (0 worlds, 1 open worlds,
-    // 2 tools, 3 settings, 4 logs) for inspection.
+    // 2 tools, 3 settings) for inspection.
     const QString startupPage = qEnvironmentVariable("BEDROCKMAP_START_PAGE");
     if (!startupPage.isEmpty()) appController.setCurrentPage(startupPage.toInt());
 

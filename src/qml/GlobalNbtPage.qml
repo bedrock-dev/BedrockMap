@@ -15,7 +15,7 @@ Item {
     readonly property var mapPreview: section ? section.mapPreview : null
     readonly property bool hasMapPreview: !!mapPreview
     readonly property bool singleRecord: !!document && document.singleRecord
-    readonly property bool compact: Theme.nbtCompact
+    readonly property bool compact: Theme.compact
     property bool detailsHidden: false
 
     onSectionChanged: detailsHidden = !!section && (!!section.structurePreview || !!section.mapPreview)

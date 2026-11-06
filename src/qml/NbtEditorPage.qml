@@ -7,8 +7,7 @@ import "controls"
 Item {
     id: page
     property var document
-    property bool compact: Theme.nbtCompact
-    readonly property bool showTitleBar: compact
+    property bool compact: Theme.compact
     property string itemFilter: ""
     readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.cardPadding
     signal closeRequested
@@ -33,40 +32,13 @@ Item {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: (page.showTitleBar ? Theme.topbarHeight : 0) + (document.hasDocument ? fileToolbar.implicitHeight
-                                                                                                           + page.toolbarVerticalPadding
-                                                                                                           * 2 + 1 : 0)
+            Layout.preferredHeight: document.hasDocument ? fileToolbar.implicitHeight + page.toolbarVerticalPadding * 2
+                                                           + 1 : 0
             color: Theme.surface
 
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 0
-
-                AppTitleBar {
-                    visible: page.showTitleBar
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Theme.topbarHeight
-                    title: document.documentTitle + (document.dirty ? " *" : "")
-
-                    actions: [
-                        AppIconButton {
-                            Layout.alignment: Qt.AlignVCenter
-                            iconName: "save"
-                            label: qsTr("Save NBT document")
-                            buttonSize: 30
-                            enabled: document.hasDocument && !document.readOnly
-                            onClicked: page.saveRequested()
-                        },
-                        AppIconButton {
-                            Layout.alignment: Qt.AlignVCenter
-                            iconName: "exit"
-                            label: qsTr("Close NBT document")
-                            danger: true
-                            buttonSize: 30
-                            onClicked: page.closeRequested()
-                        }
-                    ]
-                }
 
                 Item {
                     Layout.fillWidth: true
@@ -84,6 +56,8 @@ Item {
                         anchors.bottomMargin: page.toolbarVerticalPadding
                         document: page.document
                         compact: page.compact
+                        // The shell title bar carries Save and Close when shown.
+                        inlineFileActions: !Theme.showTopbar
                         allowSave: true
                         allowClose: true
                         showSearch: false

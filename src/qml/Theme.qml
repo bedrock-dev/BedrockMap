@@ -10,9 +10,7 @@ QtObject {
     // else consumes the derived layout policy below.
     property real windowWidth: 0
     readonly property int compactBreakpoint: 720
-    readonly property int nbtCompactBreakpoint: 760
     readonly property bool compact: windowWidth > 0 && windowWidth < compactBreakpoint
-    readonly property bool nbtCompact: windowWidth > 0 && windowWidth < nbtCompactBreakpoint
     readonly property bool touch: Qt.platform.os === "android" || Qt.platform.os === "ios"
 
     // Scale mobile geometry independently from the user's font size. All values

@@ -17,7 +17,9 @@ Rectangle {
     property bool showSearch: true
     property bool allowDetailsToggle: false
     property bool detailsHidden: false
-    property bool compact: Theme.nbtCompact
+    property bool compact: Theme.compact
+    // Save and Close sit in the toolbar unless the host shows them elsewhere.
+    property bool inlineFileActions: !compact
     property string searchText
     signal importRequested
     signal replaceRequested
@@ -35,17 +37,17 @@ Rectangle {
     readonly property real searchHeight: Math.max(Theme.buttonHeight, allowDetailsToggle ? detailsToggle.controlSize : 0)
     readonly property int actionCount: (allowImport ? 1 : 0) + (allowReplace ? 1 : 0) + (allowExport ? 1 : 0) + (
                                            allowExportCurrent ? 1 : 0) + (allowAddRemove ? 2 : 0) + (allowClear ? 1 :
-                                                                                                                  0) + (!compact
+                                                                                                                  0) + (inlineFileActions
                                                                                                                         && allowSave
                                                                                                                         ? 1 : 0)
-                                       + (!compact && allowClose ? 1 : 0)
+                                       + (inlineFileActions && allowClose ? 1 : 0)
     readonly property real naturalButtonWidth: Math.max(allowImport ? importButton.implicitWidth : 0, allowReplace
                                                         ? replaceButton.implicitWidth : 0, allowExport
                                                         ? exportButton.implicitWidth : 0, allowExportCurrent
                                                         ? exportCurrentButton.implicitWidth : 0, allowAddRemove
                                                         ? Math.max(addButton.implicitWidth, deleteButton.implicitWidth) :
-                                                          0, allowClear ? clearButton.implicitWidth : 0, !compact
-                                                        && allowSave ? saveButton.implicitWidth : 0, !compact
+                                                          0, allowClear ? clearButton.implicitWidth : 0, inlineFileActions
+                                                        && allowSave ? saveButton.implicitWidth : 0, inlineFileActions
                                                         && allowClose ? closeButton.implicitWidth : 0)
     readonly property real naturalActionsWidth: actionCount * naturalButtonWidth + Math.max(0, actionCount - 1) * gap
     // Measure this toolbar, including translated labels, rather than the window.
@@ -165,7 +167,7 @@ Rectangle {
         ActionButton {
             id: saveButton
             text: qsTr("Save")
-            visible: !root.compact && root.allowSave
+            visible: root.inlineFileActions && root.allowSave
             primary: true
             enabled: root.document && root.document.hasDocument && !root.document.readOnly
             onClicked: root.saveRequested()
@@ -173,7 +175,7 @@ Rectangle {
         ActionButton {
             id: closeButton
             text: qsTr("Close")
-            visible: !root.compact && root.allowClose
+            visible: root.inlineFileActions && root.allowClose
             danger: true
             onClicked: root.closeRequested()
         }

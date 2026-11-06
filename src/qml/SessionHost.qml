@@ -18,11 +18,9 @@ Item {
     readonly property bool nbtActive: !!activeSession && activeSession.kind === "nbt"
     readonly property bool worldVisible: !!worldSession && !!activeSession && activeSession.kind === "world"
     readonly property bool nbtVisible: !!nbtSession && nbtActive
-    readonly property var worldPage: worldLoader.item
-    readonly property bool internalPageOpen: worldVisible && worldPage ? worldPage.internalPageOpen === true : false
-    readonly property string internalPageTitle: internalPageOpen ? worldPage.internalPageTitle : ""
+    /// The visible world's workspace, which owns its child-page stack.
+    readonly property var worldWorkspace: worldVisible && worldLoader.item ? worldLoader.item.worldWorkspace : null
     signal closeRequested(int index)
-    signal backRequested
     signal saveRequested
 
     Connections {
@@ -57,10 +55,6 @@ Item {
     onActiveSessionChanged: syncSession()
     Component.onCompleted: syncSession()
 
-    function goBack() {
-        return worldVisible && worldPage ? worldPage.goBack() : false
-    }
-
     Loader {
         id: worldLoader
         anchors.fill: parent
@@ -91,7 +85,6 @@ Item {
         id: structureComponent
         McstructurePage {
             session: host.structureSession
-            onBackRequested: host.backRequested()
         }
     }
 

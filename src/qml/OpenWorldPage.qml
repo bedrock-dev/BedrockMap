@@ -6,14 +6,8 @@ Item {
     property var activeSession
     property int currentIndex: 0
     readonly property var worldWorkspace: activeSession && activeSession.ready ? loader.item : null
-    readonly property bool internalPageOpen: !!worldWorkspace && worldWorkspace.childPageOpen === true
-    readonly property string internalPageTitle: internalPageOpen ? worldWorkspace.childPageTitle : ""
     signal closeRequested(int index)
     signal saveRequested
-
-    function goBack() {
-        return internalPageOpen && worldWorkspace.goBack()
-    }
 
     Loader {
         id: loader

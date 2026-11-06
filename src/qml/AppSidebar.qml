@@ -193,21 +193,6 @@ Rectangle {
             onClicked: navigate(root.navigation.pageTools)
         }
         AppListRow {
-            visible: Qt.platform.os !== "android"
-            label: root.navigation.pages[root.navigation.pageShortcuts].title
-            iconName: root.navigation.pages[root.navigation.pageShortcuts].icon
-            selected: currentIndex === root.navigation.pageShortcuts
-            compact: root.collapsed
-            onClicked: navigate(root.navigation.pageShortcuts)
-        }
-        AppListRow {
-            label: root.navigation.pages[root.navigation.pageLogs].title
-            iconName: root.navigation.pages[root.navigation.pageLogs].icon
-            selected: currentIndex === root.navigation.pageLogs
-            compact: root.collapsed
-            onClicked: navigate(root.navigation.pageLogs)
-        }
-        AppListRow {
             label: root.navigation.pages[root.navigation.pageSettings].title
             iconName: root.navigation.pages[root.navigation.pageSettings].icon
             selected: currentIndex === root.navigation.pageSettings

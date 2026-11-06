@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 
 /// Common lifecycle and presentation contract for every document tab in the
 /// application. Worlds, NBT files and future structures differ in their
@@ -15,6 +16,12 @@ class WorkspaceSession : public QObject {
     Q_PROPERTY(bool dirty READ isDirty NOTIFY dirtyChanged)
     Q_PROPERTY(bool saving READ saving NOTIFY savingChanged)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+    Q_PROPERTY(bool titleBarSaveVisible READ titleBarSaveVisible NOTIFY titleBarActionsChanged)
+    Q_PROPERTY(bool titleBarSaveEnabled READ titleBarSaveEnabled NOTIFY titleBarActionsChanged)
+    Q_PROPERTY(bool titleBarNavigationVisible READ titleBarNavigationVisible NOTIFY titleBarActionsChanged)
+    Q_PROPERTY(QVariantList titleBarNavigationSections READ titleBarNavigationSections NOTIFY titleBarActionsChanged)
+    Q_PROPERTY(int titleBarNavigationIndex READ titleBarNavigationIndex WRITE setTitleBarNavigationIndex NOTIFY titleBarActionsChanged)
+    Q_PROPERTY(bool saveCompletesAsynchronously READ saveCompletesAsynchronously CONSTANT)
 
    public:
     explicit WorkspaceSession(QString kind, QString path, QString title, QObject* parent = nullptr);
@@ -26,6 +33,13 @@ class WorkspaceSession : public QObject {
     [[nodiscard]] bool isDirty() const { return dirty_; }
     [[nodiscard]] bool saving() const { return saving_; }
     [[nodiscard]] bool active() const { return active_; }
+    [[nodiscard]] virtual bool titleBarSaveVisible() const { return false; }
+    [[nodiscard]] virtual bool titleBarSaveEnabled() const { return false; }
+    [[nodiscard]] virtual bool titleBarNavigationVisible() const { return false; }
+    [[nodiscard]] virtual QVariantList titleBarNavigationSections() const { return {}; }
+    [[nodiscard]] virtual int titleBarNavigationIndex() const { return 0; }
+    [[nodiscard]] virtual bool saveCompletesAsynchronously() const { return false; }
+    virtual void setTitleBarNavigationIndex(int) {}
 
     Q_INVOKABLE virtual void open() {}
     Q_INVOKABLE virtual void close() {}
@@ -39,6 +53,9 @@ class WorkspaceSession : public QObject {
     void dirtyChanged();
     void savingChanged();
     void activeChanged();
+    void titleBarActionsChanged();
+    void saved();
+    void saveFailed(const QString& message);
 
    protected:
     void setPath(const QString& path);

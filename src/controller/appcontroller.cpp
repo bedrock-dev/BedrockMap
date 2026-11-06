@@ -156,7 +156,7 @@ void AppController::finishUpdateCheck() {
 void AppController::setCurrentPage(int page) {
     // Application-level destinations only. World-internal data and tools live
     // inside the active workspace.
-    page = qBound(0, page, 6);
+    page = qBound(0, page, 3);
     if (current_page_ == page) return;
     current_page_ = page;
     emit currentPageChanged();

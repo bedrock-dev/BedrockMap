@@ -39,6 +39,7 @@ class WorldSession final : public WorkspaceSession {
     Q_PROPERTY(qulonglong indexedChunks READ indexedChunks NOTIFY indexProgressChanged)
     Q_PROPERTY(QString errorCode READ errorCode NOTIFY errorCodeChanged)
     Q_PROPERTY(int workspaceSection READ workspaceSection WRITE setWorkspaceSection NOTIFY workspaceSectionChanged)
+    Q_PROPERTY(QString workspaceRoute READ workspaceRoute WRITE setWorkspaceRoute NOTIFY workspaceRouteChanged)
 
    public:
     explicit WorldSession(QString path, QString title, AppContext& context, QObject* parent = nullptr);
@@ -62,7 +63,14 @@ class WorldSession final : public WorkspaceSession {
     qulonglong indexedChunks() const { return indexed_chunks_; }
     QString errorCode() const { return error_code_; }
     int workspaceSection() const { return workspace_section_; }
+    QString workspaceRoute() const { return workspace_route_; }
     AsyncLevelLoader* loader() const { return loader_.get(); }
+    [[nodiscard]] bool titleBarSaveVisible() const override { return true; }
+    [[nodiscard]] bool titleBarSaveEnabled() const override { return canSave(); }
+    [[nodiscard]] bool titleBarNavigationVisible() const override { return true; }
+    [[nodiscard]] QVariantList titleBarNavigationSections() const override { return global_data_.sections(); }
+    [[nodiscard]] int titleBarNavigationIndex() const override { return workspace_section_; }
+    [[nodiscard]] bool saveCompletesAsynchronously() const override { return true; }
 
     void open() override;
     void close() override;
@@ -70,6 +78,8 @@ class WorldSession final : public WorkspaceSession {
     void ensureTerrainData();
     void setActive(bool active) override;
     void setWorkspaceSection(int section);
+    void setWorkspaceRoute(const QString& route);
+    void setTitleBarNavigationIndex(int index) override { setWorkspaceSection(index); }
 
    signals:
     void stateChanged();
@@ -80,8 +90,7 @@ class WorldSession final : public WorkspaceSession {
     void indexProgressChanged();
     void errorCodeChanged();
     void workspaceSectionChanged();
-    void saved();
-    void saveFailed(const QString& message);
+    void workspaceRouteChanged();
     void opened();
     void closed();
 
@@ -117,6 +126,7 @@ class WorldSession final : public WorkspaceSession {
     qulonglong indexed_chunks_{0};
     QString error_code_;
     int workspace_section_{0};
+    QString workspace_route_{QStringLiteral("root")};
     bool closing_{false};
 };
 

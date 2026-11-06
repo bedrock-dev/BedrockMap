@@ -42,48 +42,23 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        AppTitleBar {
             visible: root.headerVisible
+            embedded: true
             Layout.fillWidth: true
             Layout.preferredHeight: 48
-            color: Theme.surface
-
-            Column {
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 1
-
-                Text {
-                    text: root.headerTitle
-                    color: Theme.text
-                    font.pixelSize: Theme.fontSubtitle
-                    font.bold: true
+            title: root.headerTitle
+            subtitle: root.headerSubtitle
+            leftInset: 12
+            rightInset: 8
+            actions: [
+                AppIconButton {
+                    iconName: "close"
+                    label: qsTr("Close chunk editor")
+                    buttonSize: 32
+                    onClicked: root.closeRequested()
                 }
-                Text {
-                    text: root.headerSubtitle
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
-                }
-            }
-
-            AppIconButton {
-                anchors.right: parent.right
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                iconName: "close"
-                label: qsTr("Close chunk editor")
-                buttonSize: 32
-                onClicked: root.closeRequested()
-            }
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                height: 1
-                color: Theme.border
-            }
+            ]
         }
 
         AppSegmentedControl {

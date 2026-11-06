@@ -21,10 +21,10 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Theme.ui(6) + root.bottomInset
         Repeater {
-            model: root.navigation.bottomPages
+            model: root.navigation.pages
             delegate: Item {
                 required property var modelData
-                width: parent.width / root.navigation.bottomPages.length
+                width: parent.width / root.navigation.pages.length
                 height: parent.height
                 AppNavigationButton {
                     iconName: modelData.icon

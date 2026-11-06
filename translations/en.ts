@@ -940,13 +940,14 @@
     <name>Main</name>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>BedrockMap</source>
+        <location filename="../src/qml/Main.qml"/>
+        <source>Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Permissions</source>
-        <translation>Permissions</translation>
+        <source>BedrockMap</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1000,9 +1001,13 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
+        <source>Save active session</source>
+        <translation>Save active session</translation>
+    </message>
+    <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Wait for the current map operation to finish before saving.</source>
-        <translation type="unfinished"></translation>
+        <source>Close active session</source>
+        <translation>Close active session</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1018,16 +1023,6 @@
         <location filename="../src/qml/Main.qml"/>
         <source>Copy and open</source>
         <translation>Copy and open</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save world</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Close world</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1481,18 +1476,8 @@
     </message>
 </context>
 <context>
-    <name>McstructurePage</name>
-    <message>
-        <location filename="../src/qml/McstructurePage.qml"/>
-        <source>Structure preview</source>
-        <translation>Structure preview</translation>
-    </message>
-</context>
-<context>
     <name>Navigation</name>
     <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <source>Welcome</source>
@@ -1500,12 +1485,10 @@
     </message>
     <message>
         <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <source>Open sessions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <source>Sessions</source>
         <translation type="unfinished"></translation>
@@ -1513,29 +1496,13 @@
     <message>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <source>Tools</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tools</translation>
     </message>
     <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <source>Shortcuts</source>
-        <translation>Shortcuts</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <location filename="../src/qml/navigation.cpp"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/navigation.cpp"/>
-        <location filename="../src/qml/navigation.cpp"/>
-        <source>Logs</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1699,16 +1666,6 @@
 </context>
 <context>
     <name>NbtEditorPage</name>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Save NBT document</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtEditorPage.qml"/>
-        <source>Close NBT document</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../src/qml/NbtEditorPage.qml"/>
         <source>NBT editor</source>
@@ -2900,11 +2857,6 @@
     </message>
     <message>
         <location filename="../src/qml/ShortcutsPage.qml"/>
-        <source>Keyboard shortcuts</source>
-        <translation>Keyboard shortcuts</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
         <source>Available shortcuts for the current Qt Quick interface.</source>
         <translation>Available shortcuts for the current Qt Quick interface.</translation>
     </message>
@@ -2961,6 +2913,7 @@
     <name>ToolsPage</name>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
+        <location filename="../src/qml/ToolsPage.qml"/>
         <source>Permissions</source>
         <translation>Permissions</translation>
     </message>
@@ -2968,6 +2921,27 @@
         <location filename="../src/qml/ToolsPage.qml"/>
         <source>Manage storage access and privileged services</source>
         <translation>Manage storage access and privileged services</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Keyboard shortcuts</source>
+        <translation>Keyboard shortcuts</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Logs</source>
+        <translation>Logs</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>Tools</source>
+        <translation>Tools</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ToolsPage.qml"/>
+        <source>View shortcuts for the application, map and 3D view</source>
+        <translation>View shortcuts for the application, map and 3D view</translation>
     </message>
     <message>
         <location filename="../src/qml/ToolsPage.qml"/>
@@ -3770,10 +3744,12 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Chunk editor</source>
         <translation type="unfinished">Chunk editor</translation>
     </message>
     <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
         <translation type="unfinished">3D view</translation>
