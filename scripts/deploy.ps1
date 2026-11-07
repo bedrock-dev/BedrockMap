@@ -33,8 +33,42 @@ Copy-Item -Path "$build_dir\BedrockMap.exe" -Destination $release_dir
 
 # Deploy Qt runtime files for the standalone package.
 Push-Location $release_dir
-& $windeployqt --release --qmldir "$PSScriptRoot\..\src\qml" BedrockMap.exe
+& $windeployqt --release --no-translations --no-compiler-runtime --qmldir "$PSScriptRoot\..\src\qml" BedrockMap.exe
 Pop-Location
+
+# The application always selects the Basic Controls style. Remove the other
+# deployed styles and their QML trees to avoid shipping unused themes.
+$releaseRoot = [IO.Path]::GetFullPath((Join-Path (Get-Location).Path $release_dir))
+$unusedStylePaths = @(
+    "qml\QtQuick\Controls\FluentWinUI3",
+    "qml\QtQuick\Controls\Fusion",
+    "qml\QtQuick\Controls\Imagine",
+    "qml\QtQuick\Controls\Material",
+    "qml\QtQuick\Controls\Universal",
+    "qml\QtQuick\Controls\Windows",
+    "qml\QtQuick\NativeStyle"
+)
+foreach ($relativePath in $unusedStylePaths) {
+    $targetPath = [IO.Path]::GetFullPath((Join-Path $releaseRoot $relativePath))
+    if (-not $targetPath.StartsWith($releaseRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to remove path outside release directory: $targetPath"
+    }
+    if (Test-Path -LiteralPath $targetPath) {
+        Remove-Item -LiteralPath $targetPath -Recurse -Force
+    }
+}
+$unusedStyleLibraries = Get-ChildItem -LiteralPath $releaseRoot -Filter "Qt6QuickControls2*.dll" -File |
+    Where-Object Name -Match "Qt6QuickControls2(?:FluentWinUI3|Fusion|Imagine|Material|Universal|Windows).*\.dll$"
+foreach ($library in $unusedStyleLibraries) {
+    Remove-Item -LiteralPath $library.FullName -Force
+}
+
+# Keep debug information in the build tree, but not in the user-facing package.
+$strip = (Get-Command strip -ErrorAction Stop).Source
+& $strip --strip-unneeded (Join-Path $releaseRoot "BedrockMap.exe")
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to strip packaged executable ($LASTEXITCODE)."
+}
 
 # windeployqt may copy runtime DLLs from the Qt installation. Replace them
 # with the versions from the compiler used to build this project.
