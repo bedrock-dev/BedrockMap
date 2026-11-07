@@ -51,7 +51,7 @@ void TerrainTileTask::run() {
     const auto buildAndEmit = [&](int blocks_per_texel) {
         const auto snapshot = TerrainTiles::buildSnapshot(*region_, pos_, blocks_per_texel, layer_);
         emit finished(generation_, pos_.x, pos_.z, pos_.dim, blocks_per_texel, layer_, static_cast<qulonglong>(region_->revision),
-                      cache_only_, snapshot.color, snapshot.surface, snapshot.has_terrain);
+                      cache_only_, snapshot.color, snapshot.surface, snapshot.has_chunks);
     };
 
     // Prefetch tasks also warm the remaining coarser levels up to their limit,
@@ -638,17 +638,17 @@ void TerrainDataProvider::syncLoaderTileRequest() {
 }
 
 void TerrainDataProvider::storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface,
-                                        bool hasTerrain) {
+                                        bool hasChunks) {
     if (!sourceRevision || color.isNull() || surface.isNull()) return;
     const qint64 bytes = static_cast<qint64>(color.sizeInBytes()) + static_cast<qint64>(surface.sizeInBytes());
     ++snapshot_inserts_;
     snapshot_bytes_ += static_cast<quint64>(std::max<qint64>(bytes, 0));
-    snapshot_cache_.insert(key, new CachedTile{sourceRevision, color, surface, hasTerrain},
+    snapshot_cache_.insert(key, new CachedTile{sourceRevision, color, surface, hasChunks},
                            static_cast<int>(std::min<qint64>(bytes, std::numeric_limits<int>::max())));
 }
 
 void TerrainDataProvider::deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface,
-                                          bool hasTerrain) {
+                                          bool hasChunks) {
     const auto existing = delivered_.find(key);
     if (!fullTileRefresh() && existing != delivered_.end() && !existing->second.empty &&
         existing->second.sourceRevision == sourceRevision) {
@@ -657,7 +657,7 @@ void TerrainDataProvider::deliverSnapshot(const TerrainTileKey& key, quint64 sou
     delivered_[key] = DeliveredInfo{sourceRevision, false};
     ++delivered_tiles_;
     const RenderTimingScope scope(timings_.get(), QStringLiteral("Tile delivery"));
-    emit tileReady(key.regionX, key.regionZ, key.dimension, key.blocksPerTexel, key.layer, color, surface, hasTerrain);
+    emit tileReady(key.regionX, key.regionZ, key.dimension, key.blocksPerTexel, key.layer, color, surface, hasChunks);
 }
 
 bool TerrainDataProvider::enqueueTile(const region_pos& pos) {
@@ -678,7 +678,7 @@ bool TerrainDataProvider::enqueueTile(const region_pos& pos) {
     if (auto* cached = snapshot_cache_.object(key); cached && !fullTileRefresh()) {
         if (cached->sourceRevision == lease->revision) {
             ++snapshot_hits_;
-            deliverSnapshot(key, lease->revision, cached->color, cached->surface, cached->hasTerrain);
+            deliverSnapshot(key, lease->revision, cached->color, cached->surface, cached->hasChunks);
             return false;
         }
         ++snapshot_stale_;
@@ -703,21 +703,21 @@ void TerrainDataProvider::onRegionReady(const region_pos& pos) {
 }
 
 void TerrainDataProvider::onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& surface,
-                                           bool hasTerrain) {
+                                           bool hasChunks) {
     if (!loader_ || color.isNull() || surface.isNull()) return;
     auto lease = loader_->regionLease(pos);
     if (!lease) return;
     const TerrainTileKey key{pos.x, pos.z, pos.dim, blocksPerTexel, layer};
     const quint64 sourceRevision = lease->revision;
-    storeSnapshot(key, sourceRevision, color, surface, hasTerrain);
+    storeSnapshot(key, sourceRevision, color, surface, hasChunks);
     if (!active_ || blocksPerTexel != blocks_per_texel_ || layer != viewportRequest_.layer || !regionInWindow(pos)) return;
-    deliverSnapshot(key, sourceRevision, color, surface, hasTerrain);
+    deliverSnapshot(key, sourceRevision, color, surface, hasChunks);
     maybeCompleteCatchUp();
 }
 
 void TerrainDataProvider::onTileFinished(quint64 generation, int regionX, int regionZ, int dimension, int blocksPerTexel, int layer,
                                          qulonglong sourceToken, bool cacheOnly, const QImage& color, const QImage& surface,
-                                         bool hasTerrain) {
+                                         bool hasChunks) {
     const TerrainTileKey key{regionX, regionZ, dimension, blocksPerTexel, layer};
     in_flight_.erase(key);
     if (!active_) return;
@@ -728,10 +728,10 @@ void TerrainDataProvider::onTileFinished(quint64 generation, int regionX, int re
         maybeCompleteCatchUp();
         return;
     }
-    storeSnapshot(key, lease->revision, color, surface, hasTerrain);
+    storeSnapshot(key, lease->revision, color, surface, hasChunks);
     if (blocksPerTexel == terrain_render_config::overview_blocks_per_texel && layer == viewportRequest_.layer &&
         regionInWindow({regionX, regionZ, dimension})) {
-        deliverSnapshot(key, lease->revision, color, surface, hasTerrain);
+        deliverSnapshot(key, lease->revision, color, surface, hasChunks);
     }
     if (cacheOnly) {
         const region_pos pos{regionX, regionZ, dimension};
@@ -745,7 +745,7 @@ void TerrainDataProvider::onTileFinished(quint64 generation, int regionX, int re
         maybeCompleteCatchUp();
         return;
     }
-    deliverSnapshot(key, lease->revision, color, surface, hasTerrain);
+    deliverSnapshot(key, lease->revision, color, surface, hasChunks);
     maybeCompleteCatchUp();
     if (!metrics_clock_.isValid() || metrics_clock_.elapsed() >= 250) {
         metrics_clock_.start();

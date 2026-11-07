@@ -134,9 +134,7 @@ class TerrainTiles final {
     [[nodiscard]] static QImage colorTile(const ChunkRegion& region, int blocks_per_texel, bool biome_layer);
     /// Packed solid/top heights, biome id and material flags. Tint and water
     /// flags are omitted when `material_tint` is false (biome layer).
-    /// `has_terrain`, when given, reports whether any texel is non-void.
-    [[nodiscard]] static QImage surfaceTile(const ChunkRegion& region, int blocks_per_texel, bool material_tint = true,
-                                            bool* has_terrain = nullptr);
+    [[nodiscard]] static QImage surfaceTile(const ChunkRegion& region, int blocks_per_texel, bool material_tint = true);
     /// Three rows of tint colours indexed by biome id: water, leaves, grass.
     [[nodiscard]] static QImage biomePaletteImage();
     /// Texels one region occupies at a level, i.e. region_blocks / level.

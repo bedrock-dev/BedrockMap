@@ -53,7 +53,7 @@ class AsyncLevelLoader : public QObject {
     /// A specific region tile finished baking and is ready for a renderer.
     void regionTileReady(region_pos region);
     /// First tile generated in the same worker task as the region bake.
-    void regionSnapshotReady(region_pos region, int blocksPerTexel, int layer, const QImage& color, const QImage& surface, bool hasTerrain);
+    void regionSnapshotReady(region_pos region, int blocksPerTexel, int layer, const QImage& color, const QImage& surface, bool hasChunks);
     /// Initial coordinate scan progress, forwarded from ChunkCoordsService.
     void chunkCoordsPreloadProgress(qulonglong scannedKeys, qulonglong chunks);
     /// The initial coordinate scan completed; the map can enter the

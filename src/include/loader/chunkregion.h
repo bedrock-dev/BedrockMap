@@ -100,9 +100,9 @@ struct TerrainTileSnapshot {
     int layer{0};
     QImage color;
     QImage surface;
-    /// False when every surface texel is void, so the renderer keeps the
-    /// empty placeholder instead of drawing a baked but visually empty tile.
-    bool has_terrain{false};
+    /// Whether this region contains at least one existing chunk. Present
+    /// chunks may still contain only void terrain.
+    bool has_chunks{false};
 };
 
 struct RegionRenderResult {

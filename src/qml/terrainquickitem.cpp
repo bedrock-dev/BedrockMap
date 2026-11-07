@@ -375,18 +375,18 @@ void TerrainQuickItem::setProvider(TerrainDataProvider* provider) {
         });
         connect(provider_, &TerrainDataProvider::tileReady, this,
                 [this](int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color, const QImage& surface,
-                       bool hasTerrain) {
+                       bool hasChunks) {
                     // This runs on the GUI thread, where the provider drives the
                     // shared scheduler. Only the finished tiles cross over to the
                     // scene-graph render thread, which just uploads them. A baked
                     // region whose surface is all void stays in the empty set.
-                    if (hasTerrain && !has_data_) {
+                    if (hasChunks && !has_data_) {
                         has_data_ = true;
                         emit hasDataChanged();
                     }
                     // Overview mode draws the aggregated overview image, not tiles.
                     if (detailedTileMode() && blocks_per_texel == provider_->blocksPerTexel())
-                        queueArrayRegionPiece(regionX, regionZ, dimension, blocks_per_texel, layer, color, surface, !hasTerrain);
+                        queueArrayRegionPiece(regionX, regionZ, dimension, blocks_per_texel, layer, color, surface, !hasChunks);
                     // QQuickItem::update() already coalesces to one scene-graph
                     // frame. A whole-window update plus a zero-delay timer per
                     // tile turns a region refill into an event storm.
@@ -836,8 +836,8 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
                 h &= 0x3FFFu;
                 return h == 0 ? 1u : h;
             }();
-            const bool hasTerrain = array_tile_pool_.terrainTiles.contains(it.key());
-            row[x * 4 + 2] = static_cast<uchar>(0x80u | (hasTerrain ? 0u : 0x40u) | ((hashValue >> 8) & 0x3Fu));
+            const bool hasChunks = array_tile_pool_.terrainTiles.contains(it.key());
+            row[x * 4 + 2] = static_cast<uchar>(0x80u | (hasChunks ? 0u : 0x40u) | ((hashValue >> 8) & 0x3Fu));
             row[x * 4 + 3] = static_cast<uchar>(hashValue & 0xFFu);
             // Visible entries count as used for LRU eviction.
             array_tile_pool_.layerLastUsed[it.value()] = array_tile_pool_.frameCounter;

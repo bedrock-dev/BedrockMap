@@ -42,7 +42,7 @@ AsyncLevelLoader::AsyncLevelLoader(ResourceManager* resources)
             }
             if (!result.tile.color.isNull() && !result.tile.surface.isNull()) {
                 emit regionSnapshotReady(result.pos, result.tile.blocks_per_texel, result.tile.layer, result.tile.color,
-                                         result.tile.surface, result.tile.has_terrain);
+                                         result.tile.surface, result.tile.has_chunks);
             }
             emit regionTileReady(result.pos);
         },

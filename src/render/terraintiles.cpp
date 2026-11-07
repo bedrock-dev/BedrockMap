@@ -19,12 +19,11 @@ int TerrainTiles::texelsPerRegion(int blocks_per_texel) {
 }
 
 TerrainTileSnapshot TerrainTiles::buildSnapshot(const ChunkRegion& region, const region_pos& pos, int blocks_per_texel, int layer) {
-    bool has_terrain = false;
     // The biome layer draws categorical biome colours that must not be tinted
     // again by the shader.
-    QImage surface = surfaceTile(region, blocks_per_texel, layer == 0, &has_terrain);
+    QImage surface = surfaceTile(region, blocks_per_texel, layer == 0);
     return TerrainTileSnapshot{pos,        std::max(1, blocks_per_texel), layer, colorTile(region, blocks_per_texel, layer != 0), surface,
-                               has_terrain};
+                               region.chunk_bit_map_.any()};
 }
 
 QImage TerrainTiles::colorTile(const ChunkRegion& region, int blocks_per_texel, bool biome_layer) {
@@ -56,10 +55,9 @@ QImage TerrainTiles::colorTile(const ChunkRegion& region, int blocks_per_texel, 
     return tile;
 }
 
-QImage TerrainTiles::surfaceTile(const ChunkRegion& region, int blocks_per_texel, bool material_tint, bool* has_terrain) {
+QImage TerrainTiles::surfaceTile(const ChunkRegion& region, int blocks_per_texel, bool material_tint) {
     const int texels = texelsPerRegion(blocks_per_texel);
     const int bp = std::max(1, blocks_per_texel);
-    bool any_terrain = false;
     QImage tile(texels, texels, QImage::Format_RGBA8888);
     for (int z = 0; z < texels; ++z) {
         auto* row = tile.scanLine(z);
@@ -70,7 +68,6 @@ QImage TerrainTiles::surfaceTile(const ChunkRegion& region, int blocks_per_texel
             const int top = terrain_height_codec::encodeHeight(info.height);
             const int solid = top == terrain_height_codec::void_code ? terrain_height_codec::void_marker
                                                                      : terrain_height_codec::encodeHeight(info.solid_height);
-            any_terrain = any_terrain || top != terrain_height_codec::void_code;
             unsigned char flags = material_tint ? terrain_material_flags::forTips(info) : 0;
             if (!region.chunk_bit_map_.test((block_x / 16) * constant::RW + block_z / 16)) flags |= terrain_material_flags::missing_chunk;
             const std::uint32_t packed = static_cast<std::uint32_t>(solid) | (static_cast<std::uint32_t>(top) << 10) |
@@ -82,7 +79,6 @@ QImage TerrainTiles::surfaceTile(const ChunkRegion& region, int blocks_per_texel
             row[x * 4 + 3] = static_cast<uchar>((packed >> 24) & 0xFFu);
         }
     }
-    if (has_terrain) *has_terrain = any_terrain;
     return tile;
 }
 

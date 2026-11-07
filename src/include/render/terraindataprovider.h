@@ -40,7 +40,7 @@ class TerrainTileTask final : public QObject, public QRunnable {
 
    signals:
     void finished(quint64 generation, int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, qulonglong sourceToken,
-                  bool cache_only, const QImage& color, const QImage& surface, bool hasTerrain);
+                  bool cache_only, const QImage& color, const QImage& surface, bool hasChunks);
 
    private:
     std::shared_ptr<const ChunkRegion> region_;
@@ -173,7 +173,7 @@ class TerrainDataProvider final : public QObject {
     /// travels with the tile: a re-sample for a new zoom level is handed over
     /// while the renderer is still drawing the previous one.
     void tileReady(int regionX, int regionZ, int dimension, int blocks_per_texel, int layer, const QImage& color, const QImage& surface,
-                   bool hasTerrain);
+                   bool hasChunks);
     /// A catch-up pass finished: everything the loader had ready for the window
     /// has been handed over at `blocks_per_texel`. The renderer switches levels on
     /// its next frame, so it draws that frame from tiles it already holds instead
@@ -214,14 +214,14 @@ class TerrainDataProvider final : public QObject {
     void appendScanRange(int minX, int minZ, int maxX, int maxZ);
     void processRegion(const region_pos& pos, int& submitted);
     void syncLoaderTileRequest();
-    void storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
-    void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasTerrain);
+    void storeSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasChunks);
+    void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasChunks);
     [[nodiscard]] bool enqueueTile(const region_pos& pos);
     void onRegionReady(const region_pos& pos);
     void onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& surface,
-                          bool hasTerrain);
+                          bool hasChunks);
     void onTileFinished(quint64 generation, int regionX, int regionZ, int dimension, int blocksPerTexel, int layer, qulonglong sourceToken,
-                        bool cache_only, const QImage& color, const QImage& surface, bool hasTerrain);
+                        bool cache_only, const QImage& color, const QImage& surface, bool hasChunks);
     void maybeCompleteCatchUp();
     [[nodiscard]] bool hasRelevantInFlight() const;
     [[nodiscard]] bool regionInWindow(const region_pos& pos) const;
@@ -242,7 +242,7 @@ class TerrainDataProvider final : public QObject {
         quint64 sourceRevision{0};
         QImage color;
         QImage surface;
-        bool hasTerrain{false};
+        bool hasChunks{false};
     };
 
     AsyncLevelLoader* loader_{nullptr};
