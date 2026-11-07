@@ -818,60 +818,63 @@ Item {
                             font.pixelSize: Theme.fontBody
                             wrapMode: Text.WordWrap
                         }
-                        RowLayout {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: Theme.gapMedium
-                            Text {
+                            spacing: Theme.ui(2)
+                            RowLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredWidth: 0
-                                text: qsTr("Component")
-                                color: Theme.muted
-                                font.pixelSize: Theme.fontCaption
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 0
-                                text: qsTr("License")
-                                color: Theme.muted
-                                font.pixelSize: Theme.fontCaption
-                            }
-                        }
-                        Repeater {
-                            model: page.openSourceCredits
-                            delegate: RowLayout {
-                                id: creditRow
-                                required property var modelData
-                                Layout.fillWidth: true
-                                Layout.minimumHeight: Theme.controlHeight
                                 spacing: Theme.gapMedium
                                 Text {
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 0
-                                    Layout.minimumWidth: 0
-                                    Layout.alignment: Qt.AlignTop
-                                    text: creditRow.modelData.url ? "<a href=\"" + creditRow.modelData.url + "\">"
-                                                                  + creditRow.modelData.name + "</a>" : creditRow.modelData.name
-                                    textFormat: Text.StyledText
-                                    color: Theme.text
-                                    linkColor: Theme.accent
-                                    font.pixelSize: Theme.fontBody
-                                    wrapMode: Text.Wrap
-                                    onLinkActivated: link => Qt.openUrlExternally(link)
+                                    text: qsTr("Component")
+                                    color: Theme.muted
+                                    font.pixelSize: Theme.fontCaption
                                 }
                                 Text {
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 0
-                                    Layout.minimumWidth: 0
-                                    Layout.alignment: Qt.AlignTop
-                                    text: creditRow.modelData.licenseUrl ? "<a href=\"" + creditRow.modelData.licenseUrl
-                                                                         + "\">" + creditRow.modelData.license + "</a>" :
-                                                                         creditRow.modelData.license
-                                    textFormat: Text.StyledText
-                                    color: Theme.text
-                                    linkColor: Theme.accent
-                                    font.pixelSize: Theme.fontBody
-                                    wrapMode: Text.Wrap
-                                    onLinkActivated: link => Qt.openUrlExternally(link)
+                                    text: qsTr("License")
+                                    color: Theme.muted
+                                    font.pixelSize: Theme.fontCaption
+                                }
+                            }
+                            Repeater {
+                                model: page.openSourceCredits
+                                delegate: RowLayout {
+                                    id: creditRow
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    spacing: Theme.gapMedium
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.preferredWidth: 0
+                                        Layout.minimumWidth: 0
+                                        Layout.alignment: Qt.AlignTop
+                                        text: creditRow.modelData.url ? "<a href=\"" + creditRow.modelData.url + "\">"
+                                                                      + creditRow.modelData.name + "</a>" : creditRow.modelData.name
+                                        textFormat: Text.StyledText
+                                        color: Theme.text
+                                        linkColor: Theme.accent
+                                        font.pixelSize: Theme.fontBody
+                                        wrapMode: Text.Wrap
+                                        onLinkActivated: link => Qt.openUrlExternally(link)
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.preferredWidth: 0
+                                        Layout.minimumWidth: 0
+                                        Layout.alignment: Qt.AlignTop
+                                        text: creditRow.modelData.licenseUrl ? "<a href=\"" + creditRow.modelData.licenseUrl
+                                                                             + "\">" + creditRow.modelData.license + "</a>" :
+                                                                             creditRow.modelData.license
+                                        textFormat: Text.StyledText
+                                        color: Theme.text
+                                        linkColor: Theme.accent
+                                        font.pixelSize: Theme.fontBody
+                                        wrapMode: Text.Wrap
+                                        onLinkActivated: link => Qt.openUrlExternally(link)
+                                    }
                                 }
                             }
                         }

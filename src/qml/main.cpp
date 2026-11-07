@@ -61,7 +61,8 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationName(QStringLiteral("BedrockMap"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("bedrock-dev.github.io"));
     QCoreApplication::setApplicationName(QString::fromUtf8(constant::SOFTWARE_NAME));
-    QCoreApplication::setApplicationVersion(constant::softwareVersion().toString().mid(1));
+    QCoreApplication::setApplicationVersion(
+        QStringLiteral("%1+%2").arg(constant::softwareVersion().toString().mid(1), QString::fromUtf8(GIT_COMMIT_HASH)));
     QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/bedrockmap/icons/app.svg")));
     FileOpenHandler fileOpenHandler(app);
     // Keep logging alive until all models, sessions and the QML engine exit.

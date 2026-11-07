@@ -31,7 +31,11 @@ if (!(Test-Path (Join-Path $build_dir "CMakeCache.txt"))) {
     # Use the Qt/MinGW64 toolchain available in the current environment.
     cmake -G "Ninja" -B $build_dir "-DCMAKE_BUILD_TYPE=$config_type" `
         -DBEDROCK_LEVEL_BUILD_BENCHMARKS=ON .
+} else {
+    # Reconfigure so configure-time metadata such as the Git commit hash stays current.
+    cmake -S . -B $build_dir "-DCMAKE_BUILD_TYPE=$config_type" -DBEDROCK_LEVEL_BUILD_BENCHMARKS=ON
 }
+if ($LASTEXITCODE -ne 0) { throw "CMake configure failed ($LASTEXITCODE)." }
 
 if ($Jobs -eq 0) {
     $Jobs = [Environment]::ProcessorCount
