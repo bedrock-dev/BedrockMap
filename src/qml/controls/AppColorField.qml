@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Dialogs
 
 Row {
@@ -34,7 +35,8 @@ Row {
     ColorDialog {
         id: colorDialog
         title: qsTr("Choose color")
-        options: ColorDialog.ShowAlphaChannel
+        options: ColorDialog.ShowAlphaChannel | ColorDialog.DontUseNativeDialog
+        popupType: Popup.Item
         onAccepted: root.edited(selectedColor.toString())
     }
 }

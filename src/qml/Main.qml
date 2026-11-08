@@ -32,6 +32,11 @@ Window {
     palette.brightText: Theme.onAccent
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.onAccent
+    palette.light: Theme.surfaceAlt
+    palette.midlight: Theme.border
+    palette.mid: Theme.border
+    palette.dark: Theme.border
+    palette.shadow: Theme.background
 
     property bool sidebarCollapsed: false
     readonly property real safeTop: appBackground.safeTop
