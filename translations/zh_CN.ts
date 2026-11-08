@@ -3527,11 +3527,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>All files (*)</source>
         <translation>所有文件 (*)</translation>
     </message>
@@ -3539,11 +3534,6 @@ Current version: %2</source>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>No worlds</source>
         <translation>没有世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Open world</source>
-        <translation>打开世界</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -3567,12 +3557,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Minecraft structures (*.mcstructure)</source>
-        <translation>Minecraft 结构文件 (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Minecraft worlds (*.mcworld)</source>
         <translation>我的世界存档 (*.mcworld)</translation>
     </message>
@@ -3583,6 +3567,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Getting Started</source>
         <translation>开始使用</translation>
     </message>
@@ -3590,6 +3579,11 @@ Current version: %2</source>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Open a world or file, or start a new NBT document.</source>
         <translation>打开世界或文件，或新建一个 NBT 文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open world folder</source>
+        <translation type="unfinished">打开世界文件夹</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>

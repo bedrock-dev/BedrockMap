@@ -77,14 +77,8 @@ Item {
         id: openFileDialog
         title: qsTr("Open file")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr(
-                "Minecraft structures (*.mcstructure)"), qsTr("Minecraft worlds (*.mcworld)"), qsTr("All files (*)")]
-        onAccepted: {
-            if (selectedNameFilter.index === 1)
-                App.openMcstructureFile(selectedUrl)
-            else
-                App.openFile(selectedUrl)
-        }
+        nameFilters: [qsTr("Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        onAccepted: App.openFile(selectedUrl)
     }
 
     component SectionTitle: Row {
@@ -220,7 +214,7 @@ Item {
                     height: Theme.touch ? implicitHeight : (Theme.compact ? 64 : 68)
                     stacked: Theme.compact
                     iconName: "opened_world_list"
-                    label: qsTr("Open world")
+                    label: qsTr("Open world folder")
                     detail: Theme.compact ? "" : qsTr("Open a Bedrock world folder")
                     onClicked: page.addRequested()
                 }

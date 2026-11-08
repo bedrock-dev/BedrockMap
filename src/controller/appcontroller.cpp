@@ -346,8 +346,11 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
 
 void AppController::openFile(const QUrl& url) {
     const QString fileName = io::DocumentIo::displayName(url);
-    if (QFileInfo(fileName).suffix().compare(QStringLiteral("mcworld"), Qt::CaseInsensitive) == 0)
+    const QString suffix = QFileInfo(fileName).suffix();
+    if (suffix.compare(QStringLiteral("mcworld"), Qt::CaseInsensitive) == 0)
         openMcworldFile(url);
+    else if (suffix.compare(QStringLiteral("mcstructure"), Qt::CaseInsensitive) == 0)
+        openMcstructureFile(url);
     else
         openNbtFile(url);
 }

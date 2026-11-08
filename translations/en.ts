@@ -3527,11 +3527,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>All files (*)</source>
         <translation type="unfinished">All files (*)</translation>
     </message>
@@ -3539,11 +3534,6 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>No worlds</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Open world</source>
-        <translation type="unfinished">Open world</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -3567,12 +3557,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Minecraft structures (*.mcstructure)</source>
-        <translation>Minecraft structures (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Minecraft worlds (*.mcworld)</source>
         <translation>Minecraft worlds (*.mcworld)</translation>
     </message>
@@ -3583,12 +3567,22 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Getting Started</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Open a world or file, or start a new NBT document.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Open world folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
