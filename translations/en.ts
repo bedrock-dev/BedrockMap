@@ -260,6 +260,16 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Exporting world</source>
+        <translation>Exporting world</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>The world export worker failed.</source>
+        <translation>The world export worker failed.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export successful</source>
         <translation>Export successful</translation>
     </message>
@@ -293,11 +303,6 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Close the world and any files inside it before exporting it.</source>
         <translation>Close the world and any files inside it before exporting it.</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Exporting world...</source>
-        <translation>Exporting world...</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>

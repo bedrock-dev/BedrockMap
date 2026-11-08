@@ -153,6 +153,13 @@ void AppController::finishUpdateCheck() {
     emit checkingForUpdatesChanged();
 }
 
+void AppController::setWorldTask(const QString& title, const QString& detail) {
+    if (world_task_title_ == title && world_task_detail_ == detail) return;
+    world_task_title_ = title;
+    world_task_detail_ = detail;
+    emit worldTaskChanged();
+}
+
 void AppController::setCurrentPage(int page) {
     // Application-level destinations only. World-internal data and tools live
     // inside the active workspace.
@@ -328,18 +335,26 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
         return;
     }
 
+    const QString export_name = QFileInfo(source).fileName();
+    setWorldTask(tr("Exporting world"), export_name);
     exporting_world_ = true;
     emit exportingWorldChanged();
-    notifications_.info(tr("Exporting world..."));
     export_watcher_.disconnect(this);
-    connect(&export_watcher_, &QFutureWatcher<QString>::finished, this, [this] {
-        const QString error = export_watcher_.result();
+    connect(&export_watcher_, &QFutureWatcher<QString>::finished, this, [this, export_name] {
+        QString error;
+        try {
+            error = export_watcher_.result();
+        } catch (const std::exception& exception) {
+            error = QString::fromUtf8(exception.what());
+        } catch (...) {
+            error = tr("The world export worker failed.");
+        }
         exporting_world_ = false;
         emit exportingWorldChanged();
         if (error.isEmpty())
             notifications_.info(tr("Export successful"));
         else
-            notifications_.error(tr("Export failed"));
+            notifications_.error(tr("Export failed"), export_name, error);
     });
     export_watcher_.setFuture(QtConcurrent::run([source, target] { return LevelOperator::exportMcworld(source, target); }));
 }
@@ -383,8 +398,7 @@ void AppController::importWorldToInternal(const QUrl& url, bool archive) {
         return;
     }
 
-    world_import_title_ = archive ? tr("Extracting world archive") : tr("Copying world");
-    world_import_detail_ = import_name;
+    setWorldTask(archive ? tr("Extracting world archive") : tr("Copying world"), import_name);
     importing_world_ = true;
     emit importingWorldChanged();
 

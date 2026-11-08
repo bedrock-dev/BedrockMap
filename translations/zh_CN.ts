@@ -260,6 +260,16 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Exporting world</source>
+        <translation>正在导出世界</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>The world export worker failed.</source>
+        <translation>世界导出后台任务失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export successful</source>
         <translation>导出成功</translation>
     </message>
@@ -293,11 +303,6 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Close the world and any files inside it before exporting it.</source>
         <translation>导出前请先关闭该世界及其目录内打开的文件。</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Exporting world...</source>
-        <translation>正在导出世界…</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>

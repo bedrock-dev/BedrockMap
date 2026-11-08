@@ -687,9 +687,9 @@ Window {
     AppBusyOverlay {
         anchors.fill: parent
         z: 1000
-        active: App.importingWorld
-        text: App.worldImportTitle
-        detail: App.worldImportDetail
+        active: App.importingWorld || App.exportingWorld
+        text: App.worldTaskTitle
+        detail: App.worldTaskDetail
     }
 
     // Open dropped world folders, world archives and standalone structure files.
