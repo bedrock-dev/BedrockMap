@@ -27,6 +27,15 @@ FileOpenHandler::~FileOpenHandler() {
 }
 
 void FileOpenHandler::start() {
+    // Windows file associations and most desktop file managers pass opened
+    // files as command line arguments instead of QFileOpenEvent.
+    const auto arguments = application_.arguments();
+    for (qsizetype index = 1; index < arguments.size(); ++index) {
+        const QUrl argument_url(arguments.at(index));
+        const QString path = argument_url.isLocalFile() ? argument_url.toLocalFile() : arguments.at(index);
+        const QFileInfo file(path);
+        if (file.isFile()) pending_.append(QUrl::fromLocalFile(file.absoluteFilePath()));
+    }
     ready_ = true;
     const auto pending = std::exchange(pending_, {});
     for (const auto& url : pending) openUrl(url);
