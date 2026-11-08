@@ -354,12 +354,12 @@
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>Dark mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Dark mode</translation>
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>Light mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Light mode</translation>
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
@@ -878,10 +878,12 @@
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
+        <location filename="../src/qml/LogPage.qml"/>
         <source>Copy</source>
         <translation type="unfinished">Copy</translation>
     </message>
     <message>
+        <location filename="../src/qml/LogPage.qml"/>
         <location filename="../src/qml/LogPage.qml"/>
         <source>Copy displayed logs</source>
         <translation type="unfinished"></translation>
@@ -3573,11 +3575,6 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Getting Started</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Open a world or file, or start a new NBT document.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

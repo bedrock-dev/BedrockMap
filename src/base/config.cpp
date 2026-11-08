@@ -248,8 +248,6 @@ setting::Settings setting::read() {
         LOG_F(WARNING, "Settings read error: %d", s.status());
     }
 
-    LOG_F(INFO, "all keys: %d", static_cast<int>(s.allKeys().size()));
-
     if (loaded.threadCount < 1) {
         loaded.threadCount = 2;
         LOG_F(WARNING, "Invalid background thread number, reset it to default(2)");

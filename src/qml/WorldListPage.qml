@@ -197,13 +197,6 @@ Item {
                 font.pixelSize: Theme.fontDisplay
                 font.bold: true
             }
-            Text {
-                width: parent.width
-                text: qsTr("Open a world or file, or start a new NBT document.")
-                color: Theme.muted
-                font.pixelSize: Theme.fontSubtitle
-                wrapMode: Text.WordWrap
-            }
             Flow {
                 id: welcomeActions
                 width: parent.width

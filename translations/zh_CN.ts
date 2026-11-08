@@ -354,12 +354,12 @@
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>Dark mode</source>
-        <translation type="unfinished"></translation>
+        <translation>暗色模式</translation>
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
         <source>Light mode</source>
-        <translation type="unfinished"></translation>
+        <translation>亮色模式</translation>
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
@@ -878,10 +878,12 @@
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
+        <location filename="../src/qml/LogPage.qml"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
+        <location filename="../src/qml/LogPage.qml"/>
         <location filename="../src/qml/LogPage.qml"/>
         <source>Copy displayed logs</source>
         <translation>复制当前显示的日志</translation>
@@ -3574,11 +3576,6 @@ Current version: %2</source>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Getting Started</source>
         <translation>开始使用</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Open a world or file, or start a new NBT document.</source>
-        <translation>打开世界或文件，或新建一个 NBT 文档。</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>

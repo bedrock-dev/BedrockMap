@@ -18,6 +18,17 @@ Control {
     palette.highlightedText: Theme.onAccent
     palette.placeholderText: Theme.muted
 
+    function openLogExport() {
+        const logPath = App.logs.logFile
+        const separator = Math.max(logPath.lastIndexOf("/"), logPath.lastIndexOf("\\"))
+        const existingName = logPath.length > 0 ? logPath.substring(separator + 1) : ""
+        const timestamp = Qt.formatDateTime(new Date(), "yyyyMMdd-HHmmss")
+        const fileName = existingName.length > 0 ? existingName : "BedrockMap-logs-" + timestamp + ".log"
+        exportDialog.selectedFile = exportDialog.currentFolder.toString().length > 0
+                ? exportDialog.currentFolder + "/" + encodeURIComponent(fileName) : fileName
+        exportDialog.open()
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.background
@@ -91,9 +102,15 @@ Control {
                     Layout.fillWidth: true
                 }
                 AppButton {
+                    text: qsTr("Copy")
+                    enabled: App.logs.count > 0
+                    onClicked: App.logs.copyAll()
+                    tooltip: qsTr("Copy displayed logs")
+                }
+                AppButton {
                     text: qsTr("Export")
                     enabled: App.logs.logFile.length > 0 || App.logs.storedCount > 0
-                    onClicked: exportDialog.open()
+                    onClicked: page.openLogExport()
                     tooltip: qsTr("Export the complete log file")
                 }
                 AppButton {
