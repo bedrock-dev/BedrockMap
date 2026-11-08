@@ -7,9 +7,6 @@
 namespace bl {
     class level_dat;
 }
-namespace platform {
-    class WorldFileSource;
-}
 
 /// File operations for complete worlds, including import into internal storage.
 class LevelOperator {
@@ -31,12 +28,12 @@ class LevelOperator {
     /// Returns empty when the user must confirm importing a copy first.
     [[nodiscard]] static QString resolveContentWorldFolder(const QUrl& source);
 
-    /// Checks for a readable, parseable level.dat and the db directory using local file access.
+    /// Checks for a readable, parseable level.dat and the db directory through the VFS.
     /// Does not open LevelDB or traverse the world's files.
     [[nodiscard]] static bool isCompleteWorld(const QString& path);
 
-    /// Validates a world directory and parses level.dat through the selected source.
-    [[nodiscard]] static bool loadLevelDat(platform::WorldFileSource& files, const QString& path, bl::level_dat& dat);
+    /// Validates a world directory and parses level.dat through the VFS.
+    [[nodiscard]] static bool loadLevelDat(const QString& path, bl::level_dat& dat);
 
     /// Copies to a temporary directory, validates it, then publishes to target.
     /// Call on a worker with a target from targetForSource(); existing targets

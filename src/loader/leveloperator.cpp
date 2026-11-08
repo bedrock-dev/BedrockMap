@@ -21,7 +21,6 @@
 
 #include "base/platform.h"
 #include "base/worldenv.h"
-#include "base/worldfilesource.h"
 #include "io/documentio.h"
 #include "level_dat.h"
 
@@ -56,13 +55,13 @@ namespace {
         return directories;
     }
 
-    QString archiveWorldDirectory(platform::WorldFileSource& files, const QString& source, const QString& relative, WorldArchive& archive,
-                                  int depth = 0) {
+    QUrl fileUrl(const QString& path) { return QUrl::fromLocalFile(path); }
+
+    QString archiveWorldDirectory(const QString& source, const QString& relative, WorldArchive& archive, int depth = 0) {
         if (depth > 64) return QCoreApplication::translate("AppController", "Directory nesting is too deep.");
-        QStringList children;
-        const QString childrenError = files.children(source, &children);
-        if (!childrenError.isEmpty()) return childrenError;
-        for (const auto& name : children) {
+        const auto children = io::DocumentIo::list(fileUrl(source));
+        if (!children.ok()) return children.error;
+        for (const auto& name : children.names) {
             if (name.isEmpty() || name == QStringLiteral(".") || name == QStringLiteral("..") || name.contains(QLatin1Char('/')) ||
                 name.contains(QLatin1Char('\\')))
                 return QCoreApplication::translate("AppController", "Invalid file name in world directory.");
@@ -75,9 +74,9 @@ namespace {
             if (name.contains(QLatin1Char(':')) || name.contains(QChar::Null) || name.endsWith(QLatin1Char('.')) ||
                 name.endsWith(QLatin1Char(' ')))
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(path);
-            platform::WorldFileInfo info;
-            const QString infoError = files.fileInfo(from, info);
-            if (!infoError.isEmpty()) return infoError;
+            const auto status = io::DocumentIo::stat(fileUrl(from));
+            if (!status.ok()) return status.error;
+            const auto& info = status.info;
             if (info.isLink || (!info.isFile && !info.isDirectory))
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(path);
             if (!archive.reserveEntry(info.isDirectory ? path + QLatin1Char('/') : path, info.isFile ? info.size : 0))
@@ -88,20 +87,19 @@ namespace {
                 archive.writer.addDirectory(path);
                 if (archive.writer.status() != QZipWriter::NoError)
                     return QCoreApplication::translate("AppController", "Could not write the world archive.");
-                const QString error = archiveWorldDirectory(files, from, path, archive, depth + 1);
+                const QString error = archiveWorldDirectory(from, path, archive, depth + 1);
                 if (!error.isEmpty()) return error;
                 continue;
             }
 
-            const auto input = files.openRead(from);
-            if (!input) return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(path);
             // QZipWriter compresses one complete entry at a time.
-            const QByteArray data = input->readAll();
-            if (input->error() != QFileDevice::NoError) return input->errorString();
-            platform::WorldFileInfo after;
-            const QString afterError = files.fileInfo(from, after);
-            if (!afterError.isEmpty()) return afterError;
-            if (std::uint64_t(data.size()) != info.size || after.size != info.size || after.modified != info.modified)
+            const auto read = io::DocumentIo::readAll(fileUrl(from));
+            if (!read.ok())
+                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(path) + QLatin1Char('\n') + read.error;
+            const QByteArray& data = read.data;
+            const auto after = io::DocumentIo::stat(fileUrl(from));
+            if (!after.ok()) return after.error;
+            if (std::uint64_t(data.size()) != info.size || after.info.size != info.size || after.info.modified != info.modified)
                 return QCoreApplication::translate("AppController", "The world changed during export. Close Minecraft and try again.");
             archive.writer.setCreationPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther);
             archive.writer.addFile(path, data);
@@ -147,12 +145,11 @@ namespace {
         return {};
     }
 
-    QString copyWorldDirectory(platform::WorldFileSource& files, const QString& source, const QString& target, int depth = 0) {
+    QString copyWorldDirectory(const QString& source, const QString& target, int depth = 0) {
         if (depth > 64) return QCoreApplication::translate("AppController", "Directory nesting is too deep.");
-        QStringList children;
-        const QString childrenError = files.children(source, &children);
-        if (!childrenError.isEmpty()) return childrenError;
-        for (const auto& name : children) {
+        const auto children = io::DocumentIo::list(fileUrl(source));
+        if (!children.ok()) return children.error;
+        for (const auto& name : children.names) {
             if (name.isEmpty() || name == QStringLiteral(".") || name == QStringLiteral("..") || name.contains(QLatin1Char('/')) ||
                 name.contains(QLatin1Char('\\')))
                 return QCoreApplication::translate("AppController", "Invalid file name in world directory.");
@@ -162,20 +159,23 @@ namespace {
                 continue;
             const QString from = QDir(source).filePath(name);
             const QString to = QDir(target).filePath(name);
-            platform::WorldFileInfo info;
-            const QString infoError = files.fileInfo(from, info);
-            if (!infoError.isEmpty()) return infoError;
+            const auto status = io::DocumentIo::stat(fileUrl(from));
+            if (!status.ok()) return status.error;
+            const auto& info = status.info;
             if (info.isLink || (!info.isFile && !info.isDirectory))
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(from);
             if (info.isDirectory) {
-                if (!QDir().mkdir(to)) return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to);
-                const QString error = copyWorldDirectory(files, from, to, depth + 1);
+                if (const QString error = io::DocumentIo::makeDirectory(fileUrl(to), false); !error.isEmpty())
+                    return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to) + QLatin1Char('\n') + error;
+                const QString error = copyWorldDirectory(from, to, depth + 1);
                 if (!error.isEmpty()) return error;
                 continue;
             }
-            const auto input = files.openRead(from);
-            if (!input) return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(from);
-            const QString writeError = io::DocumentIo::writeStream(QUrl::fromLocalFile(to), [&](QIODevice& output) {
+            auto opened = io::DocumentIo::openRead(fileUrl(from));
+            if (!opened.ok())
+                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(from) + QLatin1Char('\n') + opened.error;
+            QFile* input = opened.file.get();
+            const QString writeError = io::DocumentIo::writeStream(fileUrl(to), [&](QIODevice& output) {
                 char buffer[65536];
                 std::uint64_t copied = 0;
                 for (;;) {
@@ -227,22 +227,21 @@ QString LevelOperator::resolveContentWorldFolder(const QUrl& source) {
 }
 
 bool LevelOperator::isCompleteWorld(const QString& path) {
-    const auto files = platform::worldFileSource(path);
-    if (!files) return false;
     bl::level_dat dat;
-    return loadLevelDat(*files, path, dat);
+    return loadLevelDat(path, dat);
 }
 
-bool LevelOperator::loadLevelDat(platform::WorldFileSource& files, const QString& path, bl::level_dat& dat) {
-    platform::WorldFileInfo info;
+bool LevelOperator::loadLevelDat(const QString& path, bl::level_dat& dat) {
     const QDir directory(path);
-    if (!files.fileInfo(directory.filePath(QStringLiteral("level.dat")), info).isEmpty() || !info.isFile) return false;
-    if (!files.fileInfo(directory.filePath(QStringLiteral("db")), info).isEmpty() || !info.isDirectory) return false;
-    const auto input = files.openRead(directory.filePath(QStringLiteral("level.dat")));
-    if (!input) return false;
-    const QByteArray raw = input->readAll();
-    if (input->error() != QFileDevice::NoError || raw.isEmpty()) return false;
-    return dat.load_from_raw_data(std::vector<byte_t>(raw.begin(), raw.end()));
+    const QUrl levelDat = fileUrl(directory.filePath(QStringLiteral("level.dat")));
+    const auto file = io::DocumentIo::stat(levelDat);
+    if (!file.ok() || !file.info.isFile) return false;
+    const auto database = io::DocumentIo::stat(fileUrl(directory.filePath(QStringLiteral("db"))));
+    if (!database.ok() || !database.info.isDirectory) return false;
+    // level.dat is a small NBT file; reject anything implausibly large.
+    const auto read = io::DocumentIo::readAll(levelDat, 64 << 20);
+    if (!read.ok() || read.data.isEmpty()) return false;
+    return dat.load_from_raw_data(std::vector<byte_t>(read.data.begin(), read.data.end()));
 }
 
 QString LevelOperator::copyToInternal(const QUrl& source, const QString& target) {
@@ -260,10 +259,7 @@ QString LevelOperator::copyToInternal(const QUrl& source, const QString& target)
         database.remove(QStringLiteral("LOG"));
         database.remove(QStringLiteral("LOG.old"));
     } else {
-        const QString sourcePath = source.toLocalFile();
-        const auto files = platform::worldFileSource(sourcePath);
-        if (!files) return QCoreApplication::translate("AppController", "Cannot access the source world directory.");
-        const QString error = copyWorldDirectory(*files, sourcePath, staging.path());
+        const QString error = copyWorldDirectory(source.toLocalFile(), staging.path());
         if (!error.isEmpty()) return error;
     }
 
@@ -372,22 +368,26 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
             if (relative != QStringLiteral("..") && !relative.startsWith(QStringLiteral("../")) && !QDir::isAbsolutePath(relative))
                 return QCoreApplication::translate("AppController", "Save the archive outside the source world folder.");
         }
-        const auto files = platform::worldFileSource(source);
-        if (!files) return QCoreApplication::translate("AppController", "Cannot access the source world directory.");
         bl::level_dat dat;
-        if (!loadLevelDat(*files, source, dat))
+        if (!loadLevelDat(source, dat))
             return QCoreApplication::translate("AppController",
                                                "The selected directory must contain a valid level.dat file and a db directory.");
 
         platform::WorldEnv env;
         // Hold the database lock while reading its files, including transaction
         // logs, so Minecraft or another process cannot modify or compact it.
+        // The default Env cannot reach privileged paths; there the per-file
+        // size and timestamp checks in archiveWorldDirectory detect changes.
         leveldb::FileLock* rawLock = nullptr;
-        const auto status = env.LockFile(source.toStdString() + "/db/LOCK", &rawLock);
-        if (!status.ok())
-            return QCoreApplication::translate("AppController", "Close Minecraft and other programs using this world before exporting.\n%1")
-                .arg(QString::fromStdString(status.ToString()));
-        const auto unlock = [&env](leveldb::FileLock* lock) { env.UnlockFile(lock); };
+        if (!io::isPrivilegedPath(source)) {
+            const auto status = env.LockFile(source.toStdString() + "/db/LOCK", &rawLock);
+            if (!status.ok())
+                return QCoreApplication::translate("AppController", "Close Minecraft and other programs using this world before exporting.\n%1")
+                    .arg(QString::fromStdString(status.ToString()));
+        }
+        const auto unlock = [&env](leveldb::FileLock* lock) {
+            if (lock) env.UnlockFile(lock);
+        };
         const std::unique_ptr<leveldb::FileLock, decltype(unlock)> lock(rawLock, unlock);
 
         // Always finish the seekable archive before touching the chosen output.
@@ -396,7 +396,7 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
         if (!temporary.open()) return temporary.errorString();
         QZipWriter writer(&temporary);
         WorldArchive archive{writer};
-        const QString error = archiveWorldDirectory(*files, source, {}, archive);
+        const QString error = archiveWorldDirectory(source, {}, archive);
         if (!error.isEmpty()) return error;
         writer.close();
         if (writer.status() != QZipWriter::NoError || temporary.error() != QFileDevice::NoError)

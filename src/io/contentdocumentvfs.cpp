@@ -1,4 +1,6 @@
+#include <QCoreApplication>
 #include <QFile>
+#include <QTemporaryFile>
 #include <exception>
 
 #include "base/platform.h"
@@ -6,48 +8,36 @@
 
 namespace io {
     OpenReadResult ContentDocumentVfsBackend::openRead(const QUrl& url) const {
-        if (!platform::isContentUri(url)) return {{}, QStringLiteral("The URI is not a content document.")};
+        if (!platform::isContentUri(url)) return {{}, QCoreApplication::translate("Vfs", "The URI is not a content document.")};
         auto file = std::make_unique<QFile>(url.toString(QUrl::FullyEncoded));
         if (const QString error = platform::openDocumentFile(*file, QIODevice::ReadOnly); !error.isEmpty()) return {{}, error};
         return {std::move(file), {}};
     }
 
-    ReadResult ContentDocumentVfsBackend::readAll(const QUrl& url, qint64 max_bytes) const {
-        auto opened = openRead(url);
-        if (!opened.ok()) return {{}, opened.error};
-        if (max_bytes >= 0 && opened.file->size() > max_bytes) return {{}, QStringLiteral("The file is too large.")};
-        const QByteArray data = opened.file->readAll();
-        if (opened.file->error() != QFileDevice::NoError) return {{}, opened.file->errorString()};
-        return {data, {}};
-    }
+    QString ContentDocumentVfsBackend::writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions&) const {
+        if (!platform::isContentUri(url)) return QCoreApplication::translate("Vfs", "The URI is not a content document.");
+        if (!writer) return QCoreApplication::translate("Vfs", "No file writer was provided.");
 
-    QString ContentDocumentVfsBackend::readStream(const QUrl& url, const StreamReader& reader) const {
-        if (!platform::isContentUri(url)) return QStringLiteral("The URI is not a content document.");
-        if (!reader) return QStringLiteral("No file reader was provided.");
-        auto opened = openRead(url);
-        if (!opened.ok()) return opened.error;
+        // Providers cannot replace a document atomically. Serialize completely
+        // first, so a failing writer never truncates the existing document.
+        QTemporaryFile staging;
+        if (!staging.open()) return staging.errorString();
         try {
-            return reader(*opened.file);
+            if (const QString error = writer(staging); !error.isEmpty()) return error;
         } catch (const std::exception& error) {
             return QString::fromUtf8(error.what());
         } catch (...) {
-            return QStringLiteral("The file reader failed.");
+            return QCoreApplication::translate("Vfs", "The file writer failed.");
         }
-    }
-
-    QString ContentDocumentVfsBackend::writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions&) const {
-        if (!platform::isContentUri(url)) return QStringLiteral("The URI is not a content document.");
-        if (!writer) return QStringLiteral("No file writer was provided.");
+        if (!staging.flush() || !staging.seek(0)) return staging.errorString();
 
         QFile file(url.toString(QUrl::FullyEncoded));
         if (const QString error = platform::openDocumentFile(file, QIODevice::WriteOnly | QIODevice::Truncate); !error.isEmpty())
             return error;
-        try {
-            if (const QString error = writer(file); !error.isEmpty()) return error;
-        } catch (const std::exception& error) {
-            return QString::fromUtf8(error.what());
-        } catch (...) {
-            return QStringLiteral("The file writer failed.");
+        while (!staging.atEnd()) {
+            const QByteArray block = staging.read(256 * 1024);
+            if (staging.error() != QFileDevice::NoError) return staging.errorString();
+            if (file.write(block) != block.size()) return file.errorString();
         }
         if (!file.flush()) return file.errorString();
         file.close();

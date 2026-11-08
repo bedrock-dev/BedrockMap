@@ -6,61 +6,91 @@ import android.system.OsConstants;
 
 import java.io.IOException;
 
-/** Read-only privileged source retained for scanning and importing a world. */
+/**
+ * Native bridge to the privileged file service. Shizuku is preferred over root.
+ * Called only from native worker threads; both providers return null on the
+ * main looper and never request authorization themselves.
+ */
 public final class WorldFileAccess {
-    private final IWorldFiles files;
+    private static final String TAG = "BedrockMapFiles";
+    private static final long[] NO_SERVICE_STAT = {-OsConstants.ENOSYS, 0, 0, 0};
 
-    private WorldFileAccess(IWorldFiles files) { this.files = files; }
+    private WorldFileAccess() {}
 
-    // Native workers call this only after ordinary local access is unavailable.
-    public static WorldFileAccess connect(String path) {
-        IWorldFiles service = ShizukuPermission.files();
-        WorldFileAccess access = accessible(service, path, "Shizuku");
-        if (access != null) return access;
-        return accessible(RootPermission.files(), path, "root");
+    private static IWorldFiles service() {
+        IWorldFiles files = ShizukuPermission.files();
+        return files != null ? files : RootPermission.files();
     }
 
-    private static WorldFileAccess accessible(IWorldFiles service, String path, String backend) {
-        if (service == null) return null;
-        try {
-            long[] info = service.stat(path);
-            if (info != null && info.length == 4 && info[0] == 0
-                    && OsConstants.S_ISDIR((int) info[1]) && service.list(path) != null) {
-                AppLog.d("BedrockMapFiles", "Using " + backend + ": " + path);
-                return new WorldFileAccess(service);
-            }
-        } catch (RemoteException | RuntimeException exception) {
-            AppLog.w("BedrockMapFiles", "Cannot access directory: " + path, exception);
-        }
-        return null;
-    }
+    public static boolean available() { return service() != null; }
 
-    public int openRead(String path) {
+    /** Returns an owned descriptor, or a negated errno. */
+    public static int open(String path, int flags, int mode) {
+        IWorldFiles files = service();
+        if (files == null) return -OsConstants.ENOSYS;
         int[] error = {0};
-        try (ParcelFileDescriptor descriptor = files.openRead(path, error)) {
+        try (ParcelFileDescriptor descriptor = files.open(path, flags, mode, error)) {
             if (descriptor == null) return error[0] > 0 ? -error[0] : -OsConstants.EIO;
             return descriptor.detachFd();
         } catch (RemoteException | IOException | RuntimeException exception) {
-            AppLog.w("BedrockMapFiles", "Cannot open file: " + path, exception);
+            AppLog.w(TAG, "Cannot open file: " + path, exception);
             return -OsConstants.EIO;
         }
     }
 
-    public long[] stat(String path) {
+    public static long[] stat(String path) {
+        IWorldFiles files = service();
+        if (files == null) return NO_SERVICE_STAT.clone();
         try {
-            return files.stat(path);
+            long[] result = files.stat(path);
+            return result != null ? result : new long[] {-OsConstants.EIO, 0, 0, 0};
         } catch (RemoteException | RuntimeException exception) {
             return new long[] {-OsConstants.EIO, 0, 0, 0};
         }
     }
 
-    public String[] list(String path) {
+    public static String[] list(String path, int[] error) {
+        IWorldFiles files = service();
+        if (files == null) {
+            error[0] = OsConstants.ENOSYS;
+            return null;
+        }
         try {
-            return files.list(path);
+            return files.list(path, error);
         } catch (RemoteException | RuntimeException exception) {
-            AppLog.w("BedrockMapFiles", "Cannot list directory: " + path, exception);
+            AppLog.w(TAG, "Cannot list directory: " + path, exception);
+            error[0] = OsConstants.EIO;
             return null;
         }
     }
 
+    public static int mkdir(String path, int mode) {
+        IWorldFiles files = service();
+        if (files == null) return -OsConstants.ENOSYS;
+        try {
+            return files.mkdir(path, mode);
+        } catch (RemoteException | RuntimeException exception) {
+            return -OsConstants.EIO;
+        }
+    }
+
+    public static int rename(String from, String to) {
+        IWorldFiles files = service();
+        if (files == null) return -OsConstants.ENOSYS;
+        try {
+            return files.rename(from, to);
+        } catch (RemoteException | RuntimeException exception) {
+            return -OsConstants.EIO;
+        }
+    }
+
+    public static int remove(String path) {
+        IWorldFiles files = service();
+        if (files == null) return -OsConstants.ENOSYS;
+        try {
+            return files.remove(path);
+        } catch (RemoteException | RuntimeException exception) {
+            return -OsConstants.EIO;
+        }
+    }
 }

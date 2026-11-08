@@ -40,8 +40,6 @@ namespace platform {
         leveldb::Status checkLocalWrite(const std::string& path, const leveldb::Status& status);
         std::atomic_bool write_access_denied_{false};
     };
-
-    [[nodiscard]] leveldb::Status writeWorldFileAtomically(leveldb::Env& env, const std::string& path, const std::string& data);
 }  // namespace platform
 
 #endif  // BEDROCKMAP_WORLDENV_H

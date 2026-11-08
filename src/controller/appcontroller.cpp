@@ -19,7 +19,6 @@
 #include "base/apppaths.h"
 #include "base/appcontext.h"
 #include "base/platform.h"
-#include "base/worldfilesource.h"
 #include "controller/nbtsession.h"
 #include "controller/workspacesession.h"
 #include "controller/worldsession.h"
@@ -217,7 +216,8 @@ void AppController::openWorldFolder(const QUrl& url) {
 
 void AppController::openWorld(const QString& path, const QString& title) {
     if (!checkWorldFileOperationIdle()) return;
-    if (platform::requiresWorldCopy(path)) {
+    // LevelDB uses the default Env, which cannot open privileged paths.
+    if (io::isPrivilegedPath(path)) {
         importWorldToInternal(QUrl::fromLocalFile(path), false);
         return;
     }

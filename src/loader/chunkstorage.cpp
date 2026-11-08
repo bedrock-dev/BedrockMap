@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/worldenv.h"
+#include "io/documentio.h"
 #include "loguru/loguru.hpp"
 
 bl::chunk* ChunkStorage::getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy) {
@@ -74,10 +74,12 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
     }
 
     if (levelDat) {
-        const auto levelDatPath = level_.root_path() + "/" + bl::bedrock_level::LEVEL_DATA;
-        const auto status = platform::writeWorldFileAtomically(level_.file_env(), levelDatPath, levelDatRaw);
-        if (!status.ok()) {
-            LOG_F(ERROR, "Cannot save level.dat: %s", status.ToString().c_str());
+        // level.dat is an ordinary file, so it goes through the VFS rather than LevelDB's Env.
+        const auto levelDatPath = QString::fromStdString(level_.root_path() + "/" + bl::bedrock_level::LEVEL_DATA);
+        const QString error = io::DocumentIo::writeBytes(QUrl::fromLocalFile(levelDatPath),
+                                                         QByteArray(levelDatRaw.data(), static_cast<qsizetype>(levelDatRaw.size())), {false});
+        if (!error.isEmpty()) {
+            LOG_F(ERROR, "Cannot save level.dat: %s", error.toStdString().c_str());
             last_commit_error_ = CommitError::LevelDatWrite;
             if (!cache_.empty() || !globalModifies.empty()) {
                 LOG_F(ERROR, "LevelDB changes committed, but level.dat could not be replaced; edits remain dirty for retry");

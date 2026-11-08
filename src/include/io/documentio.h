@@ -4,7 +4,7 @@
 #include "io/vfs.h"
 
 namespace io {
-    /// URI-aware file operations for every non-LevelDB document path.
+    /// URI-aware file and directory operations for every external, non-LevelDB path.
     class DocumentIo final {
        public:
         DocumentIo() = delete;
@@ -19,6 +19,12 @@ namespace io {
         [[nodiscard]] static QString identifier(const QUrl& url);
         [[nodiscard]] static QString copyTree(const QUrl& source, const QUrl& destination);
         [[nodiscard]] static QString resolveNativeDirectory(const QUrl& source);
+        [[nodiscard]] static StatResult stat(const QUrl& url);
+        [[nodiscard]] static ListResult list(const QUrl& url);
+        [[nodiscard]] static QString makeDirectory(const QUrl& url, bool recursive = true);
+        [[nodiscard]] static QString remove(const QUrl& url);
+        [[nodiscard]] static QString rename(const QUrl& from, const QUrl& to);
+        [[nodiscard]] static NativeFileResult openNative(const QUrl& url, NativeOpen flags, int mode = 0644);
     };
 }  // namespace io
 

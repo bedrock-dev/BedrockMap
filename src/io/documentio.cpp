@@ -42,4 +42,16 @@ namespace io {
     QString DocumentIo::copyTree(const QUrl& source, const QUrl& destination) { return fileSystem().copyTree(source, destination); }
 
     QString DocumentIo::resolveNativeDirectory(const QUrl& source) { return fileSystem().resolveNativeDirectory(source); }
+
+    StatResult DocumentIo::stat(const QUrl& url) { return fileSystem().stat(url); }
+
+    ListResult DocumentIo::list(const QUrl& url) { return fileSystem().list(url); }
+
+    QString DocumentIo::makeDirectory(const QUrl& url, bool recursive) { return fileSystem().makeDirectory(url, recursive); }
+
+    QString DocumentIo::remove(const QUrl& url) { return fileSystem().remove(url); }
+
+    QString DocumentIo::rename(const QUrl& from, const QUrl& to) { return fileSystem().rename(from, to); }
+
+    NativeFileResult DocumentIo::openNative(const QUrl& url, NativeOpen flags, int mode) { return fileSystem().openNative(url, flags, mode); }
 }  // namespace io

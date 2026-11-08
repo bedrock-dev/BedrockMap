@@ -132,12 +132,6 @@
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
-        <source>Cannot access the source world directory.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/loader/leveloperator.cpp"/>
-        <location filename="../src/loader/leveloperator.cpp"/>
         <source>The world archive is invalid or unsupported.</source>
         <translation>世界压缩包无效或格式不受支持。</translation>
     </message>
@@ -3011,6 +3005,97 @@ Current version: %2</source>
         <location filename="../src/qml/UpdateDialog.qml"/>
         <source>Download</source>
         <translation>下载</translation>
+    </message>
+</context>
+<context>
+    <name>Vfs</name>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <source>The URI is not a content document.</source>
+        <translation>该 URI 不是内容文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>No file writer was provided.</source>
+        <translation>未提供文件写入操作。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <source>The file writer failed.</source>
+        <translation>文件写入操作失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>The local file path is invalid.</source>
+        <translation>本地文件路径无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>This operation is not supported for this location.</source>
+        <translation>此位置不支持该操作。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Cannot move files between storage locations.</source>
+        <translation>无法在不同存储位置之间移动文件。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>The file is too large.</source>
+        <translation>文件过大。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>No file reader was provided.</source>
+        <translation>未提供文件读取操作。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Directory copy is not supported for this URI.</source>
+        <translation>此 URI 不支持复制目录。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not create the destination directory.</source>
+        <translation>无法创建目标目录。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Directory unavailable.</source>
+        <translation>目录不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not create directory: %1</source>
+        <translation>无法创建目录：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not remove %1 (error %2).</source>
+        <translation>无法删除 %1（错误 %2）。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not rename %1 (error %2).</source>
+        <translation>无法重命名 %1（错误 %2）。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not open %1.</source>
+        <translation>无法打开 %1。</translation>
     </message>
 </context>
 <context>

@@ -94,21 +94,4 @@ namespace platform {
 #endif
     }
 #endif
-
-    leveldb::Status writeWorldFileAtomically(leveldb::Env& env, const std::string& path, const std::string& data) {
-        const std::string temporary = path + ".tmp";
-        leveldb::WritableFile* raw = nullptr;
-        auto status = env.NewWritableFile(temporary, &raw);
-        std::unique_ptr<leveldb::WritableFile> file(raw);
-        if (!status.ok()) return status;
-        status = file->Append(data);
-        if (status.ok()) status = file->Sync();
-        const auto closed = file->Close();
-        if (status.ok()) status = closed;
-        if (!status.ok()) {
-            env.RemoveFile(temporary);
-            return status;
-        }
-        return env.RenameFile(temporary, path);
-    }
 }  // namespace platform

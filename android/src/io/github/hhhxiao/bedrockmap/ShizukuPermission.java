@@ -18,7 +18,8 @@ import rikka.shizuku.Shizuku;
 public final class ShizukuPermission {
     private static final String TAG = "BedrockMapShizuku";
     private static final int REQUEST_CODE = 1002;
-    private static final long BIND_TIMEOUT_SECONDS = 10;
+    // A healthy UserService connects within ~0.3 s, including process start.
+    private static final long BIND_TIMEOUT_SECONDS = 3;
     private static final long BIND_RETRY_DELAY_MS = 5000;
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static boolean initialized;
@@ -68,7 +69,7 @@ public final class ShizukuPermission {
             initialized = true;
             serviceComponent = new ComponentName(context, WorldFileService.class);
             serviceArgs = new Shizuku.UserServiceArgs(serviceComponent)
-                    .daemon(false).processNameSuffix("world_files").version(7);
+                    .daemon(false).processNameSuffix("world_files").version(8);
             AppLog.i(TAG, "Initialized: appUid=" + android.os.Process.myUid() + ", package=" + context.getPackageName());
             Shizuku.addBinderReceivedListenerSticky(() -> {
                 requesting = false;

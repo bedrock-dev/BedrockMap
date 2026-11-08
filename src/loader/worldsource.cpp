@@ -3,7 +3,6 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSet>
@@ -12,50 +11,67 @@
 #include <utility>
 
 #include "base/platform.h"
-#include "base/worldfilesource.h"
+#include "io/documentio.h"
 #include "level_dat.h"
 #include "loader/leveldbxor.h"
 #include "loader/leveloperator.h"
 
 namespace {
-    QByteArray readAll(platform::WorldFileSource& source, const QString& path) {
-        const auto input = source.openRead(path);
-        return input ? input->readAll() : QByteArray{};
+    QUrl fileUrl(const QString& path) { return QUrl::fromLocalFile(path); }
+
+    QByteArray readAll(const QString& path) {
+        const auto read = io::DocumentIo::readAll(fileUrl(path));
+        return read.ok() ? read.data : QByteArray{};
     }
 
-    WorldMetadata readMetadata(const QString& path, platform::WorldFileSource& source) {
+    /// Child directories in name order. Launcher folders may be links or
+    /// junctions, so a link counts when its target can be listed.
+    QStringList childDirectories(const QString& path) {
+        QStringList result;
+        const auto children = io::DocumentIo::list(fileUrl(path));
+        if (!children.ok()) return result;
+        for (const auto& name : children.names) {
+            const QString entry = QDir(path).filePath(name);
+            const auto status = io::DocumentIo::stat(fileUrl(entry));
+            if (!status.ok()) continue;
+            if (status.info.isDirectory || (status.info.isLink && io::DocumentIo::list(fileUrl(entry)).ok())) result.push_back(entry);
+        }
+        return result;
+    }
+
+    WorldMetadata readMetadata(const QString& path) {
         WorldMetadata info;
         info.path = path.toStdString();
         const QDir directory(path);
         const auto child = [&](const char* name) { return directory.filePath(QString::fromLatin1(name)); };
         bl::level_dat dat;
-        if (!LevelOperator::loadLevelDat(source, path, dat)) return info;
+        if (!LevelOperator::loadLevelDat(path, dat)) return info;
         info.levelName = dat.level_name();
         info.version = dat.min_compat_version().to_string();
-        info.xorEncrypted = leveldb_xor::isEncrypted(source, path);
-        const QByteArray nameRaw = readAll(source, child("levelname.txt"));
+        info.xorEncrypted = leveldb_xor::isEncrypted(path);
+        const QByteArray nameRaw = readAll(child("levelname.txt"));
         if (!nameRaw.isEmpty()) {
             const auto name = QString::fromUtf8(nameRaw).trimmed();
             if (!name.isEmpty()) info.levelName = name.toStdString();
         }
-        const QByteArray thumbnail = readAll(source, child("world_icon.jpeg"));
+        const QByteArray thumbnail = readAll(child("world_icon.jpeg"));
         if (!thumbnail.isEmpty()) {
             info.thumbnailDataUrl = "data:image/jpeg;base64," + thumbnail.toBase64().toStdString();
         }
-        platform::WorldFileInfo file;
         QStringList directories{path};
         while (!directories.empty()) {
             const QString current = directories.takeLast();
-            QStringList children;
-            if (!source.children(current, &children).isEmpty()) continue;
-            for (const auto& name : children) {
+            const auto children = io::DocumentIo::list(fileUrl(current));
+            if (!children.ok()) continue;
+            for (const auto& name : children.names) {
                 const QString entry = QDir(current).filePath(name);
-                if (!source.fileInfo(entry, file).isEmpty() || file.isLink) continue;
-                if (file.isDirectory)
+                const auto status = io::DocumentIo::stat(fileUrl(entry));
+                if (!status.ok() || status.info.isLink) continue;
+                if (status.info.isDirectory)
                     directories.push_back(entry);
-                else if (file.isFile) {
-                    info.sizeBytes += file.size;
-                    info.lastModified = std::max(info.lastModified, file.modified);
+                else if (status.info.isFile) {
+                    info.sizeBytes += status.info.size;
+                    info.lastModified = std::max(info.lastModified, status.info.modified);
                 }
             }
         }
@@ -92,9 +108,8 @@ namespace {
         const auto appendUsers = [&](const QString& base, bool levi) {
             for (bool preview : {false, true}) {
                 const QString product = preview ? QStringLiteral("Minecraft Bedrock Preview") : QStringLiteral("Minecraft Bedrock");
-                const QDir users(QDir(base).filePath(product + QStringLiteral("/Users")));
-                for (const auto& user : users.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
-                    append({.path = QDir(user.absoluteFilePath()).filePath(games),
+                for (const auto& user : childDirectories(QDir(base).filePath(product + QStringLiteral("/Users")))) {
+                    append({.path = QDir(user).filePath(games),
                             .kind = levi ? WorldSourceKind::Levi : (preview ? WorldSourceKind::Preview : WorldSourceKind::Release)});
                 }
             }
@@ -102,14 +117,13 @@ namespace {
         appendUsers(appData, false);
 
         if (!scanLeviPath) return;
-        QFile config(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json")));
-        if (!config.open(QIODevice::ReadOnly)) return;
-        const auto doc = QJsonDocument::fromJson(config.readAll());
+        const auto config = io::DocumentIo::readAll(fileUrl(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json"))), 1 << 20);
+        if (!config.ok()) return;
+        const auto doc = QJsonDocument::fromJson(config.data);
         const QString baseRoot = doc.object().value(QStringLiteral("base_root")).toString();
         if (baseRoot.isEmpty()) return;
-        const QDir versions(QDir(baseRoot).filePath(QStringLiteral("versions")));
-        for (const auto& version : versions.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
-            appendUsers(version.absoluteFilePath(), true);
+        for (const auto& version : childDirectories(QDir(baseRoot).filePath(QStringLiteral("versions")))) {
+            appendUsers(version, true);
         }
     }
 #endif
@@ -150,22 +164,22 @@ std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool s
 WorldMetadata readWorldMetadata(const QString& path) {
     const auto normalized = platform::normalizeLocalPath(path);
     if (normalized.isEmpty()) return {};
-    const auto source = platform::worldFileSource(normalized);
-    return source ? readMetadata(normalized, *source) : WorldMetadata{};
+    return readMetadata(normalized);
 }
 
 std::vector<WorldMetadata> scanWorldSource(const WorldSource& source) {
     std::vector<WorldMetadata> result;
     if (source.path.isEmpty()) return result;
-    const auto files = platform::worldFileSource(source.path);
-    if (!files) return result;
-    QStringList children;
-    if (!files->children(source.path, &children).isEmpty()) return result;
-    for (const auto& name : children) {
+    const auto children = io::DocumentIo::list(fileUrl(source.path));
+    if (!children.ok()) {
+        qInfo().noquote() << "[WorldScan] Source unavailable: path=" << source.path << "error=" << children.error;
+        return result;
+    }
+    for (const auto& name : children.names) {
         const QString path = QDir(source.path).filePath(name);
-        platform::WorldFileInfo file;
-        if (!files->fileInfo(path, file).isEmpty() || !file.isDirectory || file.isLink) continue;
-        auto world = readMetadata(path, *files);
+        const auto status = io::DocumentIo::stat(fileUrl(path));
+        if (!status.ok() || !status.info.isDirectory || status.info.isLink) continue;
+        auto world = readMetadata(path);
         if (!world.isValid) continue;
         world.sourceKind = source.kind;
         result.push_back(std::move(world));

@@ -27,14 +27,6 @@ namespace io {
 
     OpenReadResult SafTreeVfsBackend::openRead(const QUrl& url) const { return ContentDocumentVfsBackend{}.openRead(url); }
 
-    ReadResult SafTreeVfsBackend::readAll(const QUrl& url, qint64 max_bytes) const {
-        return ContentDocumentVfsBackend{}.readAll(url, max_bytes);
-    }
-
-    QString SafTreeVfsBackend::readStream(const QUrl& url, const StreamReader& reader) const {
-        return ContentDocumentVfsBackend{}.readStream(url, reader);
-    }
-
     QString SafTreeVfsBackend::writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options) const {
         return ContentDocumentVfsBackend{}.writeStream(url, writer, options);
     }

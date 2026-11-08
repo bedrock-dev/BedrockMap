@@ -132,12 +132,6 @@
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
-        <source>Cannot access the source world directory.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/loader/leveloperator.cpp"/>
-        <location filename="../src/loader/leveloperator.cpp"/>
         <source>The world archive is invalid or unsupported.</source>
         <translation>The world archive is invalid or unsupported.</translation>
     </message>
@@ -3011,6 +3005,97 @@ Current version: %2</translation>
         <location filename="../src/qml/UpdateDialog.qml"/>
         <source>Download</source>
         <translation>Download</translation>
+    </message>
+</context>
+<context>
+    <name>Vfs</name>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <source>The URI is not a content document.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>No file writer was provided.</source>
+        <translation type="unfinished">No file writer was provided.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/contentdocumentvfs.cpp"/>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <source>The file writer failed.</source>
+        <translation type="unfinished">The file writer failed.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>The local file path is invalid.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>This operation is not supported for this location.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Cannot move files between storage locations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>The file is too large.</source>
+        <translation type="unfinished">The file is too large.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>No file reader was provided.</source>
+        <translation type="unfinished">No file reader was provided.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Directory copy is not supported for this URI.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not create the destination directory.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Directory unavailable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not create directory: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not remove %1 (error %2).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not rename %1 (error %2).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Could not open %1.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
