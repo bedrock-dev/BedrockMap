@@ -12,7 +12,7 @@ endif()
 # Project
 # Qt Quick application and its data layer.
 project(BedrockMap VERSION 1.5.0 LANGUAGES CXX)
-set(BEDROCKMAP_VERSION_SUFFIX "-beta2" CACHE STRING "Optional BedrockMap version suffix, e.g. -beta2")
+set(BEDROCKMAP_VERSION_SUFFIX "-beta3" CACHE STRING "Optional BedrockMap version suffix, e.g. -beta2")
 set(BEDROCKMAP_VERSION "${PROJECT_VERSION}${BEDROCKMAP_VERSION_SUFFIX}")
 
 # Qt AUTOGEN handles resources and moc for the data layer and Qt Quick application.
