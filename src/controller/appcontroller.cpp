@@ -9,6 +9,7 @@
 #include <QSettings>
 #include <QUrl>
 #include <QtConcurrent>
+#include <exception>
 #include <memory>
 #ifdef Q_OS_ANDROID
 #include <QGuiApplication>
@@ -16,8 +17,8 @@
 #include <QJniObject>
 #endif
 
-#include "base/apppaths.h"
 #include "base/appcontext.h"
+#include "base/apppaths.h"
 #include "base/platform.h"
 #include "controller/nbtsession.h"
 #include "controller/workspacesession.h"
@@ -49,8 +50,8 @@ namespace {
         if (env.registerNativeMethods("io/github/hhhxiao/bedrockmap/ShizukuPermission",
                                       {{"onStateChanged", "()V", reinterpret_cast<void*>(onPermissionStateChanged)}})) {
             const auto context = QNativeInterface::QAndroidApplication::context();
-            QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/ShizukuPermission", "initialize", "(Landroid/content/Context;)V",
-                                               context.object());
+            QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/ShizukuPermission", "initialize",
+                                               "(Landroid/content/Context;)V", context.object());
         }
         env.checkAndClearExceptions();
         env.registerNativeMethods("io/github/hhhxiao/bedrockmap/RootPermission",
@@ -358,13 +359,20 @@ void AppController::importWorldToInternal(const QUrl& url, bool archive) {
         return;
     }
 
-    if (url.isEmpty()) return;
+    const QString import_name = io::DocumentIo::displayName(url);
+    if (url.isEmpty()) {
+        notifications_.error(tr("Import failed"), {}, tr("No source file was provided."));
+        return;
+    }
     const QString source = io::DocumentIo::identifier(url);
-    if (source.isEmpty()) return;
+    if (source.isEmpty()) {
+        notifications_.error(tr("Import failed"), import_name, tr("The selected file location could not be identified."));
+        return;
+    }
 
     const QString target = LevelOperator::targetForSource(source);
     if (target.isEmpty()) {
-        notifications_.error(tr("Import failed"));
+        notifications_.error(tr("Import failed"), import_name, tr("Could not create a destination path for the imported world."));
         return;
     }
     if (LevelOperator::isCompleteWorld(target)) {
@@ -377,12 +385,19 @@ void AppController::importWorldToInternal(const QUrl& url, bool archive) {
     notifications_.info(archive ? tr("Extracting the world to internal storage...") : tr("Copying the world to internal storage..."));
 
     import_watcher_.disconnect(this);
-    connect(&import_watcher_, &QFutureWatcher<QString>::finished, this, [this, target] {
-        const QString error = import_watcher_.result();
+    connect(&import_watcher_, &QFutureWatcher<QString>::finished, this, [this, target, import_name] {
+        QString error;
+        try {
+            error = import_watcher_.result();
+        } catch (const std::exception& exception) {
+            error = QString::fromUtf8(exception.what());
+        } catch (...) {
+            error = tr("The world import worker failed.");
+        }
         importing_world_ = false;
         emit importingWorldChanged();
         if (!error.isEmpty()) {
-            notifications_.error(tr("Import failed"));
+            notifications_.error(tr("Import failed"), import_name, error);
             return;
         }
         notifications_.info(tr("Import successful"));

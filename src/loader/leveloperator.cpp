@@ -49,6 +49,7 @@ namespace {
         QSet<QString> directories;
         for (const auto& entry : entries) {
             const QString path = QDir::cleanPath(entry.filePath);
+            if (entry.isDir) directories.insert(path);
             for (qsizetype slash = path.lastIndexOf(QLatin1Char('/')); slash > 0; slash = path.lastIndexOf(QLatin1Char('/'), slash - 1))
                 directories.insert(path.left(slash));
         }
@@ -95,7 +96,8 @@ namespace {
             // QZipWriter compresses one complete entry at a time.
             const auto read = io::DocumentIo::readAll(fileUrl(from));
             if (!read.ok())
-                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(path) + QLatin1Char('\n') + read.error;
+                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(path) + QLatin1Char('\n') +
+                       read.error;
             const QByteArray& data = read.data;
             const auto after = io::DocumentIo::stat(fileUrl(from));
             if (!after.ok()) return after.error;
@@ -166,14 +168,16 @@ namespace {
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(from);
             if (info.isDirectory) {
                 if (const QString error = io::DocumentIo::makeDirectory(fileUrl(to), false); !error.isEmpty())
-                    return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to) + QLatin1Char('\n') + error;
+                    return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to) + QLatin1Char('\n') +
+                           error;
                 const QString error = copyWorldDirectory(from, to, depth + 1);
                 if (!error.isEmpty()) return error;
                 continue;
             }
             auto opened = io::DocumentIo::openRead(fileUrl(from));
             if (!opened.ok())
-                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(from) + QLatin1Char('\n') + opened.error;
+                return QCoreApplication::translate("AppController", "Cannot read world file: %1").arg(from) + QLatin1Char('\n') +
+                       opened.error;
             QFile* input = opened.file.get();
             const QString writeError = io::DocumentIo::writeStream(fileUrl(to), [&](QIODevice& output) {
                 char buffer[65536];
@@ -310,7 +314,7 @@ QString LevelOperator::extractToInternal(const QUrl& source, const QString& targ
     const QDir destination(staging.path());
     for (const auto& entry : entries) {
         const QString path = QDir::cleanPath(entry.filePath);
-        const bool isDirectory = directories.contains(path);
+        const bool isDirectory = entry.isDir || directories.contains(path);
         if (isDirectory && path == QStringLiteral(".")) continue;
         // ZIP entries must stay inside the new destination, with no links or
         // Windows drive/alternate-stream names that could escape it.
@@ -382,7 +386,8 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
         if (!io::isPrivilegedPath(source)) {
             const auto status = env.LockFile(source.toStdString() + "/db/LOCK", &rawLock);
             if (!status.ok())
-                return QCoreApplication::translate("AppController", "Close Minecraft and other programs using this world before exporting.\n%1")
+                return QCoreApplication::translate("AppController",
+                                                   "Close Minecraft and other programs using this world before exporting.\n%1")
                     .arg(QString::fromStdString(status.ToString()));
         }
         const auto unlock = [&env](leveldb::FileLock* lock) {

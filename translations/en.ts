@@ -203,6 +203,8 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import failed</source>
         <translation>Import failed</translation>
     </message>
@@ -289,6 +291,21 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <source>No source file was provided.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>The selected file location could not be identified.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not create a destination path for the imported world.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Copying the world to internal storage...</source>
         <translation>Copying the world to internal storage...</translation>
     </message>
@@ -296,6 +313,11 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Extracting the world to internal storage...</source>
         <translation>Extracting the world to internal storage...</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>The world import worker failed.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
