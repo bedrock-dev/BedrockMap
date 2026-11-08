@@ -361,16 +361,6 @@
         <source>Light mode</source>
         <translation>亮色模式</translation>
     </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>1 session open</source>
-        <translation>已打开 1 个会话</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>%1 sessions open</source>
-        <translation>已打开 %1 个会话</translation>
-    </message>
 </context>
 <context>
     <name>AppTitleBar</name>

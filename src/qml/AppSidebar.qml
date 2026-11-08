@@ -1,6 +1,5 @@
 import BedrockMap 1.0
 import QtQuick
-import QtQuick.Controls
 import "controls"
 
 Rectangle {
@@ -25,43 +24,6 @@ Rectangle {
         anchors.right: parent.right
         anchors.margins: root.collapsed ? 8 : 18
         spacing: Theme.gapMedium
-
-        Row {
-            width: parent.width
-            height: 44
-            spacing: Theme.gapMedium
-            Rectangle {
-                width: 34
-                height: 34
-                radius: Theme.radiusCard
-                color: Theme.accent
-                anchors.verticalCenter: parent.verticalCenter
-                Image {
-                    anchors.centerIn: parent
-                    width: 24
-                    height: 24
-                    source: "qrc:/bedrockmap/icons/app.svg"
-                    smooth: true
-                }
-            }
-            Column {
-                visible: !root.collapsed
-                anchors.verticalCenter: parent.verticalCenter
-                Text {
-                    text: "BedrockMap"
-                    color: Theme.text
-                    font.bold: true
-                    font.pixelSize: Theme.fontTitle
-                }
-                Text {
-                    text: App && App.openSessions ? (App.openSessions.count === 1 ? qsTr("1 session open") : qsTr(
-                                                                                        "%1 sessions open").arg(
-                                                                                        App.openSessions.count)) : ""
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
-                }
-            }
-        }
 
         AppListRow {
             iconName: root.collapsed ? "collapse_right" : "collapse_left"

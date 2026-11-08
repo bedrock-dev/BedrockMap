@@ -361,16 +361,6 @@
         <source>Light mode</source>
         <translation>Light mode</translation>
     </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>1 session open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
-        <source>%1 sessions open</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>AppTitleBar</name>

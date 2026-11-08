@@ -13,8 +13,10 @@ Item {
     property var controller
     readonly property var regionImport: controller ? controller.regionImport : null
     readonly property bool importActive: !!regionImport && regionImport.active
+    readonly property bool biomeDialogOpen: biomeDialog && biomeDialog.opened
     readonly property bool inputBlocked: !controller || controller.operationRunning || (!!regionImport
                                                                                         && regionImport.loading)
+                                         || biomeDialogOpen
     property var terrainData
     property var globalData
     property bool showGrid: true
@@ -414,8 +416,16 @@ Item {
                           if (controller)
                               controller.endImportDrag()
                       }
-    onInputBlockedChanged: if (inputBlocked)
-                               clearHoverBlock()
+    onInputBlockedChanged: {
+        if (!inputBlocked)
+            return
+        clearHoverBlock()
+        stopPanInertia()
+        if (mapTouchInput)
+            mapTouchInput.cancelGesture()
+        if (controller && controller.selectionDragging)
+            controller.cancelSelectionDrag()
+    }
     onSelectionToolActiveChanged: {
         if (mapTouchInput)
             mapTouchInput.cancelGesture()
@@ -480,7 +490,7 @@ Item {
     AppBusyOverlay {
         anchors.fill: parent
         z: 20
-        active: canvas.inputBlocked && !!canvas.controller
+        active: canvas.inputBlocked && !canvas.biomeDialogOpen && !!canvas.controller
         text: canvas.regionImport && canvas.regionImport.loading ? qsTr("Loading region…") : canvas.operationText
     }
 

@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Window
 
 MenuSeparator {
     id: root
@@ -15,9 +16,13 @@ MenuSeparator {
     contentItem: Item {
         implicitHeight: 1
         Rectangle {
-            anchors.verticalCenter: parent.verticalCenter
+            readonly property real pixelRatio: Screen.devicePixelRatio > 0 ? Screen.devicePixelRatio : 1
+            readonly property real lineHeight: 1 / pixelRatio
+
             width: parent.width
-            height: 1
+            height: lineHeight
+            y: Math.round((parent.height - lineHeight) * pixelRatio / 2) / pixelRatio
+            antialiasing: false
             color: Theme.border
         }
     }

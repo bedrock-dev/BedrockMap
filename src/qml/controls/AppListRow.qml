@@ -1,6 +1,5 @@
 import BedrockMap 1.0
 import QtQuick
-import QtQuick.Controls
 
 Rectangle {
     id: root
@@ -18,6 +17,9 @@ Rectangle {
     readonly property real labelHeight: Theme.fontSubtitle + (detail.length > 0 ? Theme.fontBody + Theme.ui(2) : 0)
     readonly property real rowHeight: Theme.ui(detail.length > 0 ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 :
                                                                                                                 46))
+    readonly property bool activeBackdrop: selected || ((mouse.pressed || mouse.containsMouse) && interactive)
+    readonly property color activeBackdropColor: selected ? Theme.accentSoft : (activeBackdrop ? Theme.surfaceAlt :
+                                                                                              "transparent")
 
     width: parent.width
     implicitHeight: stacked ? Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
@@ -29,10 +31,18 @@ Rectangle {
                                                                                                   * 2) : 0)
     height: implicitHeight
     radius: Theme.radiusCard
-    color: selected ? Theme.accentSoft : ((mouse.pressed || mouse.containsMouse) && interactive ? Theme.surfaceAlt :
-                                                                                                  "transparent")
+    color: compact ? "transparent" : activeBackdropColor
     border.width: 0
     opacity: enabled ? 1.0 : 0.5
+
+    Rectangle {
+        visible: root.compact
+        width: Math.min(root.width, root.height)
+        height: width
+        anchors.centerIn: parent
+        radius: Theme.radiusCard
+        color: root.activeBackdropColor
+    }
 
     Row {
         visible: !root.stacked
