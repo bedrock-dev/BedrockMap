@@ -265,6 +265,16 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Extracting world archive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Copying world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import successful</source>
         <translation>Import successful</translation>
@@ -303,16 +313,6 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Could not create a destination path for the imported world.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Copying the world to internal storage...</source>
-        <translation>Copying the world to internal storage...</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
-        <source>Extracting the world to internal storage...</source>
-        <translation>Extracting the world to internal storage...</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>

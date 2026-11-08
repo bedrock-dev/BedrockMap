@@ -5,6 +5,7 @@ Rectangle {
     id: root
     property bool active: false
     property string text
+    property string detail
 
     visible: active
     color: Theme.overlay
@@ -18,8 +19,8 @@ Rectangle {
 
     AppCard {
         anchors.centerIn: parent
-        width: Math.min(360, parent.width - 40)
-        height: 96
+        width: Math.min(400, parent.width - 40)
+        height: root.detail.length > 0 ? 128 : 104
         Column {
             anchors.fill: parent
             anchors.margins: 16
@@ -31,6 +32,15 @@ Rectangle {
                 font.pixelSize: Theme.fontSubtitle
                 font.bold: true
                 elide: Text.ElideRight
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Text {
+                width: parent.width
+                visible: root.detail.length > 0
+                text: root.detail
+                color: Theme.muted
+                font.pixelSize: Theme.fontCaption
+                elide: Text.ElideMiddle
                 horizontalAlignment: Text.AlignHCenter
             }
             Rectangle {

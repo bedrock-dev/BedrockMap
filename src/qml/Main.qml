@@ -684,6 +684,14 @@ Window {
         onNavigate: index => window.navigateToPage(index)
     }
 
+    AppBusyOverlay {
+        anchors.fill: parent
+        z: 1000
+        active: App.importingWorld
+        text: App.worldImportTitle
+        detail: App.worldImportDetail
+    }
+
     // Open dropped world folders, world archives and standalone structure files.
     DropArea {
         id: worldDrop

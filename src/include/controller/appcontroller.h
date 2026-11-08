@@ -34,6 +34,8 @@ class AppController final : public QObject {
     Q_PROPERTY(WorkspaceSessionModel* openSessions READ openSessions CONSTANT)
     Q_PROPERTY(QObject* activeSession READ activeSession NOTIFY activeSessionChanged)
     Q_PROPERTY(bool importingWorld READ importingWorld NOTIFY importingWorldChanged)
+    Q_PROPERTY(QString worldImportTitle READ worldImportTitle NOTIFY importingWorldChanged)
+    Q_PROPERTY(QString worldImportDetail READ worldImportDetail NOTIFY importingWorldChanged)
     Q_PROPERTY(bool deletingWorld READ deletingWorld NOTIFY deletingWorldChanged)
     Q_PROPERTY(bool exportingWorld READ exportingWorld NOTIFY exportingWorldChanged)
     Q_PROPERTY(bool checkingForUpdates READ checkingForUpdates NOTIFY checkingForUpdatesChanged)
@@ -60,6 +62,8 @@ class AppController final : public QObject {
     [[nodiscard]] WorkspaceSessionModel* openSessions() { return sessions_.sessions(); }
     [[nodiscard]] QObject* activeSession() const { return sessions_.activeSession(); }
     [[nodiscard]] bool importingWorld() const { return importing_world_; }
+    [[nodiscard]] QString worldImportTitle() const { return world_import_title_; }
+    [[nodiscard]] QString worldImportDetail() const { return world_import_detail_; }
     [[nodiscard]] bool deletingWorld() const { return deleting_world_; }
     [[nodiscard]] bool exportingWorld() const { return exporting_world_; }
     [[nodiscard]] bool checkingForUpdates() const { return checking_for_updates_; }
@@ -142,6 +146,8 @@ class AppController final : public QObject {
     SessionController sessions_;
     QFutureWatcher<QString> import_watcher_;
     bool importing_world_{false};
+    QString world_import_title_;
+    QString world_import_detail_;
     QFutureWatcher<QString> delete_watcher_;
     bool deleting_world_{false};
     QFutureWatcher<QString> export_watcher_;

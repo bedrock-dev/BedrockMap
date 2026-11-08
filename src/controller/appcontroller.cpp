@@ -380,9 +380,10 @@ void AppController::importWorldToInternal(const QUrl& url, bool archive) {
         return;
     }
 
+    world_import_title_ = archive ? tr("Extracting world archive") : tr("Copying world");
+    world_import_detail_ = import_name;
     importing_world_ = true;
     emit importingWorldChanged();
-    notifications_.info(archive ? tr("Extracting the world to internal storage...") : tr("Copying the world to internal storage..."));
 
     import_watcher_.disconnect(this);
     connect(&import_watcher_, &QFutureWatcher<QString>::finished, this, [this, target, import_name] {
