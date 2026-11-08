@@ -248,8 +248,9 @@ Item {
                     }
                     Rectangle {
                         anchors.centerIn: parent
-                        width: 1
-                        height: parent.height
+                        width: Theme.ui(3)
+                        height: Math.max(1, parent.height - Theme.gapSmall * 2)
+                        radius: width / 2
                         color: drag.active || hover.hovered ? Theme.accent : Theme.border
                     }
                     HoverHandler {

@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
+import "controls"
 
 Item {
     id: page
@@ -20,6 +21,9 @@ Item {
         anchors.fill: parent
         objectName: "mcstructurePanes"
         orientation: page.stacked ? Qt.Vertical : Qt.Horizontal
+        handle: AppSplitHandle {
+            orientation: SplitView.view.orientation
+        }
 
         NbtEditorSurface {
             visible: !page.portrait
