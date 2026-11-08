@@ -163,7 +163,7 @@ Rectangle {
         }
         AppListRow {
             iconName: darkMode ? "dark" : "light"
-            label: darkMode ? qsTr("Dark mode") : qsTr("Light mode")
+            label: Theme.black ? qsTr("Black mode") : darkMode ? qsTr("Dark mode") : qsTr("Light mode")
             compact: root.collapsed
             onClicked: root.toggleTheme()
         }

@@ -66,10 +66,31 @@ QtObject {
 
     readonly property real fontScale: App.settings.fontSize / 12.0
     readonly property bool systemDark: Application.styleHints.colorScheme !== Qt.Light
-    readonly property bool dark: App.settings.colorTheme === "dark" || (App.settings.colorTheme !== "light"
-                                                                        && systemDark)
+    readonly property bool black: App.settings.colorTheme === "black"
+    readonly property bool dark: black || App.settings.colorTheme === "dark" || (App.settings.colorTheme
+                                                                                 === "system" && systemDark)
 
-    readonly property var palette: dark ? darkPalette : lightPalette
+    readonly property var palette: black ? blackPalette : dark ? darkPalette : lightPalette
+    readonly property var blackPalette: themeWith({
+                                                      background: "#000000",
+                                                      surface: "#080808",
+                                                      surfaceAlt: "#111111",
+                                                      border: "#272727",
+                                                      text: "#f3f3f3",
+                                                      muted: "#999999",
+                                                      accent: "#72d572",
+                                                      accentSoft: "#17341d",
+                                                      onAccent: "#071108",
+                                                      danger: "#ed7785",
+                                                      dangerSoft: "#3b171c",
+                                                      warning: "#e6b455",
+                                                      warningSoft: "#3b2f16",
+                                                      map: "#030504",
+                                                      overlay: "#e6000000",
+                                                      overlayBorder: "#66888888",
+                                                      overlayText: "#f0f0f0",
+                                                      overlayMuted: "#d0d0d0"
+                                                  })
     readonly property var darkPalette: themeWith({
                                                      background: "#111419",
                                                      surface: "#191e26",

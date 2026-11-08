@@ -361,6 +361,11 @@
         <source>Light mode</source>
         <translation>Light mode</translation>
     </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Black mode</source>
+        <translation>Black mode</translation>
+    </message>
 </context>
 <context>
     <name>AppTitleBar</name>
@@ -2374,6 +2379,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Public domain</source>
         <translation>Public domain</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Black</source>
+        <translation>Black</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

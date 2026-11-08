@@ -59,6 +59,8 @@ QVariantList SettingsViewModel::worldSources() const {
     return result;
 }
 void SettingsViewModel::setColorTheme(const QString& v) {
+    if (v != QStringLiteral("light") && v != QStringLiteral("dark") && v != QStringLiteral("black") && v != QStringLiteral("system"))
+        return;
     if (values_.colorTheme == v) return;
     values_.colorTheme = v;
     emit colorThemeChanged();

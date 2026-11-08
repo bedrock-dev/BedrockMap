@@ -20,7 +20,7 @@ namespace {
     // Unknown modes let the platform choose the effective color scheme.
     void applyThemeHints(QStyleHints* hints, const QString& colorTheme) {
         if (!hints) return;
-        if (colorTheme == QStringLiteral("dark")) {
+        if (colorTheme == QStringLiteral("dark") || colorTheme == QStringLiteral("black")) {
             hints->setColorScheme(Qt::ColorScheme::Dark);
         } else if (colorTheme == QStringLiteral("light")) {
             hints->setColorScheme(Qt::ColorScheme::Light);

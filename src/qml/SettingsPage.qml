@@ -150,11 +150,12 @@ Item {
                         SettingRow {
                             label: qsTr("Theme")
                             AppComboBox {
-                                model: [qsTr("Light"), qsTr("Dark"), qsTr("System")]
+                                model: [qsTr("Light"), qsTr("Dark"), qsTr("Black"), qsTr("System")]
                                 currentIndex: App.settings.colorTheme === "light" ? 0 : App.settings.colorTheme
-                                                                                    === "dark" ? 1 : 2
+                                                                                    === "dark" ? 1 : App.settings.colorTheme
+                                                                                                 === "black" ? 2 : 3
                                 onActivated: {
-                                    App.settings.colorTheme = ["light", "dark", "system"][currentIndex]
+                                    App.settings.colorTheme = ["light", "dark", "black", "system"][currentIndex]
                                 }
                             }
                         }

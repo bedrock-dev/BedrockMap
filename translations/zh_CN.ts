@@ -361,6 +361,11 @@
         <source>Light mode</source>
         <translation>亮色模式</translation>
     </message>
+    <message>
+        <location filename="../src/qml/AppSidebar.qml"/>
+        <source>Black mode</source>
+        <translation>纯黑模式</translation>
+    </message>
 </context>
 <context>
     <name>AppTitleBar</name>
@@ -2374,6 +2379,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Public domain</source>
         <translation>公有领域</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Black</source>
+        <translation>纯黑</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
