@@ -2314,11 +2314,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Thanks to the following open-source projects.</source>
-        <translation>Thanks to the following open-source projects.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Component</source>
         <translation>Component</translation>
     </message>
@@ -3637,31 +3632,6 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Refresh worlds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Scanning worlds…</source>
-        <translation>Scanning worlds…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>1 world</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>%1 worlds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

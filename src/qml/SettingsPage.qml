@@ -696,8 +696,6 @@ Item {
                 ColumnLayout {
                     visible: page.category === 5
                     Layout.fillWidth: true
-                    Layout.maximumWidth: Theme.ui(820)
-                    Layout.alignment: Qt.AlignHCenter
                     spacing: Theme.gapMedium
                     SettingGroup {
                         title: qsTr("Application information")
@@ -775,6 +773,28 @@ Item {
                                 onClicked: Qt.openUrlExternally("https://qm.qq.com/q/3KJZZCkDbW")
                             }
                         }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Theme.gapSmall
+                            Text {
+                                Layout.fillWidth: true
+                                text: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
+                                color: Theme.text
+                                font.pixelSize: Theme.fontLabel
+                                font.bold: true
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                textFormat: Text.StyledText
+                                text: "<a href=\"https://space.bilibili.com/382492603\">INTZOT</a>  ·  "
+                                      + "<a href=\"https://github.com/OEOTYAN\">OEOYAN</a>"
+                                color: Theme.muted
+                                linkColor: Theme.accent
+                                font.pixelSize: Theme.fontBody
+                                wrapMode: Text.Wrap
+                                onLinkActivated: link => Qt.openUrlExternally(link)
+                            }
+                        }
                     }
                     SettingGroup {
                         title: qsTr("Updates")
@@ -797,28 +817,7 @@ Item {
                         }
                     }
                     SettingGroup {
-                        title: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
-                        Text {
-                            Layout.fillWidth: true
-                            textFormat: Text.StyledText
-                            text: "<a href=\"https://space.bilibili.com/382492603\">INTZOT</a>  ·  "
-                                  + "<a href=\"https://github.com/OEOTYAN\">OEOYAN</a>"
-                            color: Theme.muted
-                            linkColor: Theme.accent
-                            font.pixelSize: Theme.fontBody
-                            wrapMode: Text.Wrap
-                            onLinkActivated: link => Qt.openUrlExternally(link)
-                        }
-                    }
-                    SettingGroup {
                         title: qsTr("Open-source credits")
-                        Text {
-                            Layout.fillWidth: true
-                            text: qsTr("Thanks to the following open-source projects.")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontBody
-                            wrapMode: Text.WordWrap
-                        }
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: Theme.ui(2)

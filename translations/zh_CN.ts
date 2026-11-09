@@ -850,7 +850,7 @@
     <message>
         <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Lock map image</source>
-        <translation>锁定顶图</translation>
+        <translation>锁定地图</translation>
     </message>
 </context>
 <context>
@@ -2314,11 +2314,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Thanks to the following open-source projects.</source>
-        <translation>感谢以下开源项目。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Component</source>
         <translation>组件</translation>
     </message>
@@ -3638,31 +3633,6 @@ Current version: %2</source>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Refresh worlds</source>
         <translation>刷新世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Scanning worlds…</source>
-        <translation>正在扫描世界……</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>1 world</source>
-        <translation>1 个世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>%1 worlds</source>
-        <translation>%1 个世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Cards</source>
-        <translation>卡片</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Table</source>
-        <translation>表格</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>

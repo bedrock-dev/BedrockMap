@@ -622,12 +622,12 @@ void MapOverlayQuickItem::updateGridNode(QSGNode* root) {
     };
 
     if (draw_minor) {
-        for (int x = min_x; x <= max_x + 1; ++x) addVertical(x, 1.0);
-        for (int z = min_z; z <= max_z + 1; ++z) addHorizontal(z, 1.0);
+        for (int x = min_x; x <= max_x + 1; ++x) addVertical(x, 0.8);
+        for (int z = min_z; z <= max_z + 1; ++z) addHorizontal(z, 0.8);
     }
     if (draw_major) {
-        for (int x = major_min_x; x <= major_max_x; x += major_step) addVertical(x, 3.0);
-        for (int z = major_min_z; z <= major_max_z; z += major_step) addHorizontal(z, 3.0);
+        for (int x = major_min_x; x <= major_max_x; x += major_step) addVertical(x, 1.6);
+        for (int z = major_min_z; z <= major_max_z; z += major_step) addHorizontal(z, 1.6);
     }
 
     geometry->setVertexCount(vertex);
