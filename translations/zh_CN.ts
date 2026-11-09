@@ -3621,6 +3621,16 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Cards</source>
+        <translation>卡片</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>List</source>
+        <translation>列表</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Refresh worlds</source>
         <translation>刷新世界</translation>
     </message>

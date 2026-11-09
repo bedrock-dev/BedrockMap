@@ -3621,6 +3621,16 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Cards</source>
+        <translation>Cards</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>List</source>
+        <translation>List</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Refresh worlds</source>
         <translation type="unfinished"></translation>
     </message>

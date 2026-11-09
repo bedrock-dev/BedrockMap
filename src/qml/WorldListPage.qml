@@ -9,8 +9,9 @@ Item {
     signal openWorld(string path, string title)
     signal addRequested
     signal newNbtRequested
+    property bool tableMode: false
     readonly property bool listOnly: !Theme.showWorldCards
-    readonly property bool effectiveTableMode: listOnly
+    readonly property bool effectiveTableMode: listOnly || tableMode
     property var recentWorlds: App.worlds ? App.worlds.recentWorlds : []
     property var allWorlds: App.worlds ? App.worlds.allWorlds : []
     readonly property var sourceOptions: App.worlds ? App.worlds.sourceOptions : []
@@ -232,7 +233,7 @@ Item {
 
             Item {
                 width: parent.width
-                height: Math.max(worldsTitle.implicitHeight, refreshButton.height)
+                height: Math.max(worldsTitle.implicitHeight, worldsActions.height)
                 Text {
                     id: worldsTitle
                     anchors.left: parent.left
@@ -241,14 +242,26 @@ Item {
                     color: Theme.text
                     font.pixelSize: Theme.fontHeading
                 }
-                AppIconButton {
-                    id: refreshButton
+                Row {
+                    id: worldsActions
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    iconName: "refresh"
-                    label: qsTr("Refresh worlds")
-                    buttonSize: 30
-                    onClicked: App.worlds.refresh()
+                    spacing: Theme.gapSmall
+                    AppSegmentedControl {
+                        id: viewMode
+                        visible: Theme.showWorldCards
+                        fitLabels: true
+                        options: [qsTr("Cards"), qsTr("List")]
+                        currentIndex: page.effectiveTableMode ? 1 : 0
+                        onActivated: index => page.tableMode = index === 1
+                    }
+                    AppIconButton {
+                        id: refreshButton
+                        iconName: "refresh"
+                        label: qsTr("Refresh worlds")
+                        buttonSize: 30
+                        onClicked: App.worlds.refresh()
+                    }
                 }
             }
 
