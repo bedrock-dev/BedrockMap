@@ -13,9 +13,9 @@ class LevelOperator {
    public:
     LevelOperator() = delete;
 
-    /// Resolves the stable internal destination for a normalized path or content URI.
-    /// Uses 16 SHA-256 hex characters for new copies; reuses existing full-hash paths.
-    [[nodiscard]] static QString targetForSource(const QString& source);
+    /// Resolves a readable internal destination from the display name and the
+    /// first eight SHA-256 hex characters of a normalized path or content URI.
+    [[nodiscard]] static QString targetForSource(const QString& source, const QString& display_name);
 
     /// True only for a real direct child directory of the app's worlds folder.
     [[nodiscard]] static bool isInternalWorld(const QString& path);

@@ -439,7 +439,7 @@ void AppController::importWorldToInternal(const QUrl& url, bool archive) {
         return;
     }
 
-    const QString target = LevelOperator::targetForSource(source);
+    const QString target = LevelOperator::targetForSource(source, import_name);
     if (target.isEmpty()) {
         notifications_.error(tr("Import failed"), import_name, tr("Could not create a destination path for the imported world."));
         return;

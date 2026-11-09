@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
 #include <QTemporaryDir>
@@ -147,6 +148,19 @@ namespace {
         return {};
     }
 
+    QString importDirectoryStem(const QString& display_name) {
+        QString stem = display_name.trimmed();
+        if (stem.endsWith(QStringLiteral(".mcworld"), Qt::CaseInsensitive))
+            stem.chop(8);
+        stem.replace(QRegularExpression(QStringLiteral(R"([\\/:*?"<>|\x00-\x1f])")), QStringLiteral("_"));
+        stem = stem.left(96).trimmed();
+        while (stem.startsWith(QLatin1Char('.')) || stem.startsWith(QLatin1Char(' ')))
+            stem.remove(0, 1);
+        while (stem.endsWith(QLatin1Char('.')) || stem.endsWith(QLatin1Char(' ')))
+            stem.chop(1);
+        return stem.isEmpty() ? QStringLiteral("World") : stem;
+    }
+
     QString copyWorldDirectory(const QString& source, const QString& target, int depth = 0) {
         if (depth > 64) return QCoreApplication::translate("AppController", "Directory nesting is too deep.");
         const auto children = io::DocumentIo::list(fileUrl(source));
@@ -200,14 +214,11 @@ namespace {
     }
 }  // namespace
 
-QString LevelOperator::targetForSource(const QString& source) {
+QString LevelOperator::targetForSource(const QString& source, const QString& display_name) {
     const QString root = internalWorldsRoot();
     if (root.isEmpty()) return {};
     const QString key = QString::fromLatin1(QCryptographicHash::hash(source.toUtf8(), QCryptographicHash::Sha256).toHex());
-    // Keep existing copies at their original paths, including recent-world entries.
-    const QFileInfo legacyTarget(QDir(root).filePath(key));
-    if (legacyTarget.exists() || legacyTarget.isSymLink()) return legacyTarget.filePath();
-    return QDir(root).filePath(key.left(16));
+    return QDir(root).filePath(importDirectoryStem(display_name) + QLatin1Char('-') + key.left(8));
 }
 
 bool LevelOperator::isInternalWorld(const QString& path) { return !internalWorldPath(path).isEmpty(); }
@@ -226,7 +237,8 @@ QString LevelOperator::resolveContentWorldFolder(const QUrl& source) {
     const QString resolved = io::DocumentIo::resolveNativeDirectory(source);
     if (!resolved.isEmpty() && isCompleteWorld(resolved)) return resolved;
     // Reuse an existing internal copy when direct access is unavailable.
-    const QString target = targetForSource(io::DocumentIo::identifier(source));
+    const QString target =
+        targetForSource(io::DocumentIo::identifier(source), io::DocumentIo::displayName(source));
     return !target.isEmpty() && isCompleteWorld(target) ? target : QString{};
 }
 
