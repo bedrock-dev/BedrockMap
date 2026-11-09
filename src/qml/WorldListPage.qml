@@ -9,9 +9,8 @@ Item {
     signal openWorld(string path, string title)
     signal addRequested
     signal newNbtRequested
-    property bool tableMode: false
     readonly property bool listOnly: !Theme.showWorldCards
-    readonly property bool effectiveTableMode: listOnly || tableMode
+    readonly property bool effectiveTableMode: listOnly
     property var recentWorlds: App.worlds ? App.worlds.recentWorlds : []
     property var allWorlds: App.worlds ? App.worlds.allWorlds : []
     readonly property var sourceOptions: App.worlds ? App.worlds.sourceOptions : []
@@ -253,29 +252,6 @@ Item {
                     label: qsTr("Refresh worlds")
                     buttonSize: 30
                     onClicked: App.worlds.refresh()
-                }
-            }
-
-            Row {
-                width: parent.width
-                spacing: Theme.gapSmall
-                Text {
-                    width: Math.max(0, parent.width - (viewMode.visible ? viewMode.width + parent.spacing : 0))
-                    text: App.worlds && App.worlds.loading ? qsTr("Scanning worlds…") : (worldsSection.count === 1
-                                                                                         ? qsTr("1 world") : qsTr(
-                                                                                               "%1 worlds").arg(
-                                                                                               worldsSection.count))
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontBody
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                AppSegmentedControl {
-                    id: viewMode
-                    visible: Theme.showWorldCards
-                    width: 150
-                    options: [qsTr("Cards"), qsTr("Table")]
-                    currentIndex: page.effectiveTableMode ? 1 : 0
-                    onActivated: index => page.tableMode = index === 1
                 }
             }
 

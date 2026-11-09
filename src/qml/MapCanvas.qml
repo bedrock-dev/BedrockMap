@@ -45,6 +45,12 @@ Item {
                                                   pointSize: 8
                                               })
 
+    function releaseInputFocus() {
+        if (Window.activeFocusItem)
+            Window.activeFocusItem.focus = false
+        Qt.inputMethod.hide()
+    }
+
     FileUrlDialog {
         id: importDialog
         title: qsTr("Import chunks")
@@ -546,6 +552,7 @@ Item {
             acceptedDevices: PointerDevice.Mouse
             acceptedButtons: Qt.RightButton
             onTapped: function (eventPoint) {
+                canvas.releaseInputFocus()
                 canvas.openMapContextMenu(eventPoint.position)
             }
         }
@@ -554,8 +561,10 @@ Item {
             enabled: !canvas.inputBlocked && mapTouchInput.pointCount === 0
             acceptedDevices: PointerDevice.Mouse
             acceptedButtons: Qt.LeftButton
-            onPressedChanged: if (pressed)
+            onPressedChanged: if (pressed) {
+                                  canvas.releaseInputFocus()
                                   canvas.stopPanInertia()
+                              }
             onLongPressed: canvas.openMapContextMenu(point.position)
         }
 
@@ -617,6 +626,7 @@ Item {
                 if (!canvas.controller)
                     return
                 if (active) {
+                    canvas.releaseInputFocus()
                     canvas.stopPanInertia()
                     selecting = true
                     canvas.controller.beginSelectionDragAt(localPosition())
@@ -644,6 +654,7 @@ Item {
             onPointCountChanged: if (pointCount === 0)
                                      cameraOnlySequence = false
             onContactStarted: {
+                canvas.releaseInputFocus()
                 canvas.stopPanInertia()
                 if (pointCount >= 2)
                     cameraOnlySequence = true

@@ -17,12 +17,12 @@ ComboBox {
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
-    indicator: Text {
+    indicator: AppIcon {
         x: root.width - width - Theme.ui(9)
         y: root.topPadding + (root.availableHeight - height) / 2
-        text: "\u25be"
-        color: Theme.muted
-        font.pixelSize: Theme.fontBody
+        name: "caret_down"
+        iconSize: Theme.iconSmallSize
+        iconColor: Theme.muted
     }
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0

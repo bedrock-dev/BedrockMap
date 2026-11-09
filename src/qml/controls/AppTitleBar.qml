@@ -31,6 +31,7 @@ Rectangle {
             iconName: "back"
             label: qsTr("Back")
             buttonSize: root.embedded ? 30 : 34
+            Layout.alignment: Qt.AlignVCenter
             onClicked: root.backRequested()
         }
         ColumnLayout {
