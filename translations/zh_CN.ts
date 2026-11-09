@@ -1376,11 +1376,6 @@
     </message>
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Blocks</source>
         <translation>方块</translation>
     </message>

@@ -496,7 +496,7 @@ Item {
                 id: layerPanel
                 visible: workspace.section === 0 && workspace.layerPanelOpen
                 z: 2
-                width: Math.min(260, Math.max(180, parent.width - Theme.gapLarge * 2))
+                width: Math.max(0, Math.min(360, parent.width - 16))
                 readonly property real naturalHeight: inspectorColumn.height + Theme.cardPadding * 2
                 height: Math.min(naturalHeight, Math.max(0, layerToolbar.y - navigationToolbar.y - navigationToolbar.height
                                                          - Theme.gapSmall * 2))
@@ -516,8 +516,14 @@ Item {
                         spacing: Theme.gapSmall
                         Text {
                             text: qsTr("View")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
+                            color: Theme.text
+                            font.pixelSize: Theme.fontTitle
+                            font.bold: true
+                        }
+                        Rectangle {
+                            width: parent.width
+                            height: Theme.borderWidth
+                            color: Theme.border
                         }
                         Flow {
                             width: parent.width
@@ -526,20 +532,17 @@ Item {
                                 id: gridToggle
                                 label: qsTr("Grid")
                                 active: true
-                                compact: true
                                 onToggled: workspace.setGridEnabled(active)
                             }
                             AppToggle {
                                 id: coordsToggle
                                 label: qsTr("Coords")
                                 active: false
-                                compact: true
                                 onToggled: workspace.setCoordinatesEnabled(active)
                             }
                             AppToggle {
                                 id: transparentVoidToggle
                                 label: qsTr("Transparent void")
-                                compact: true
                                 enabled: !!workspace.mapController
                                 onToggled: workspace.setTransparentVoidEnabled(active)
                                 Binding {
@@ -557,7 +560,7 @@ Item {
                         AppSegmentedControl {
                             id: dimensionBar
                             width: parent.width
-                            height: Theme.touch ? Theme.segmentedHeight : 28
+                            height: Theme.buttonHeight
                             options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
                             currentIndex: workspace.mapController ? workspace.mapController.dimension : 0
                             onActivated: index => {
@@ -572,7 +575,7 @@ Item {
                         AppSegmentedControl {
                             id: layerBar
                             width: parent.width
-                            height: Theme.touch ? Theme.segmentedHeight : 28
+                            height: Theme.buttonHeight
                             options: [qsTr("Terrain"), qsTr("Biomes")]
                             currentIndex: workspace.mapController ? workspace.mapController.layer : 0
                             onActivated: index => {
@@ -591,26 +594,22 @@ Item {
                                 id: slimeToggle
                                 label: qsTr("Slime")
                                 active: false
-                                compact: true
                                 onToggled: workspace.setSlimeChunksEnabled(active)
                             }
                             AppToggle {
                                 id: entitiesToggle
                                 label: qsTr("Entities")
                                 active: false
-                                compact: true
                                 onToggled: workspace.setEntitiesEnabled(active)
                             }
                             AppToggle {
                                 id: villagesToggle
                                 label: qsTr("Villages")
-                                compact: true
                                 onToggled: workspace.setVillagesEnabled(active)
                             }
                             AppToggle {
                                 id: hsaToggle
                                 label: qsTr("HSA")
-                                compact: true
                                 onToggled: workspace.setHsaEnabled(active)
                             }
                         }
@@ -622,7 +621,7 @@ Item {
                         AppSegmentedControl {
                             id: selectionModeControl
                             width: parent.width
-                            height: Theme.touch ? Theme.segmentedHeight : 28
+                            height: Theme.buttonHeight
                             options: [qsTr("Replace"), qsTr("Add"), qsTr("Subtract")]
                             currentIndex: workspace.mapController ? workspace.mapController.selectionMode : 0
                             onActivated: index => {

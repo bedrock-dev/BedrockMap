@@ -10,19 +10,16 @@ ComboBox {
     font.pixelSize: Theme.fontSubtitle
     contentItem: Text {
         leftPadding: Theme.ui(9)
-        rightPadding: Theme.iconSmallSize + Theme.ui(8)
+        rightPadding: Theme.ui(9)
         text: root.displayText
         font: root.font
         color: Theme.text
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
-    indicator: AppIcon {
-        x: root.width - width - Theme.ui(9)
-        y: root.topPadding + (root.availableHeight - height) / 2
-        name: "caret_down"
-        iconSize: Theme.iconSmallSize
-        iconColor: Theme.muted
+    indicator: Item {
+        implicitWidth: 0
+        implicitHeight: 0
     }
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0

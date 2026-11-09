@@ -108,7 +108,7 @@ Popup {
     focus: true
     closePolicy: Popup.CloseOnEscape
     padding: Theme.cardPadding
-    width: Math.min(360, parent ? parent.width - 16 : 360)
+    width: parent ? Math.max(0, Math.min(360, parent.width - 16)) : 360
     height: Math.min(popupColumn.implicitHeight + topPadding + bottomPadding, parent ? parent.height - 16 : 600)
 
     onOpened: positionNearAnchor()
@@ -133,29 +133,17 @@ Popup {
             width: contentFlick.width
             spacing: Theme.gapMedium
 
-            RowLayout {
+            Text {
                 Layout.fillWidth: true
-                spacing: Theme.gapSmall
-
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Map filters")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontTitle
-                    font.bold: true
-                }
-
-                AppIconButton {
-                    buttonSize: 24
-                    iconName: "close"
-                    label: qsTr("Close")
-                    onClicked: root.close()
-                }
+                text: qsTr("Map filters")
+                color: Theme.text
+                font.pixelSize: Theme.fontTitle
+                font.bold: true
             }
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 1
+                Layout.preferredHeight: Theme.borderWidth
                 color: Theme.border
             }
 
@@ -173,7 +161,7 @@ Popup {
 
                 AppSegmentedControl {
                     Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.touch ? Theme.segmentedHeight : 28
+                    Layout.preferredHeight: Theme.buttonHeight
                     options: [qsTr("Exclude"), qsTr("Include")]
                     currentIndex: root.blockBlackMode ? 0 : 1
                     onActivated: index => root.blockBlackMode = index === 0
@@ -201,7 +189,7 @@ Popup {
 
                 AppSegmentedControl {
                     Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.touch ? Theme.segmentedHeight : 28
+                    Layout.preferredHeight: Theme.buttonHeight
                     options: [qsTr("Exclude"), qsTr("Include")]
                     currentIndex: root.biomeBlackMode ? 0 : 1
                     onActivated: index => root.biomeBlackMode = index === 0
@@ -229,7 +217,7 @@ Popup {
 
                 AppSegmentedControl {
                     Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.touch ? Theme.segmentedHeight : 28
+                    Layout.preferredHeight: Theme.buttonHeight
                     options: [qsTr("Exclude"), qsTr("Include")]
                     currentIndex: root.actorBlackMode ? 0 : 1
                     onActivated: index => root.actorBlackMode = index === 0
@@ -245,7 +233,7 @@ Popup {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 1
+                Layout.preferredHeight: Theme.borderWidth
                 color: Theme.border
             }
 
@@ -256,7 +244,6 @@ Popup {
                 AppToggle {
                     label: qsTr("Fixed Y layer")
                     active: root.layerEnabled
-                    compact: true
                     onToggled: root.layerEnabled = active
                 }
 
