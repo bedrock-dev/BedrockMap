@@ -81,7 +81,6 @@ Item {
                                 text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
                                 color: active ? Theme.accent : Theme.text
                                 font.pixelSize: Theme.fontSubtitle
-                                font.bold: true
                                 elide: Text.ElideRight
                             }
                             Text {
@@ -131,7 +130,6 @@ Item {
                         text: qsTr("No open sessions")
                         color: Theme.text
                         font.pixelSize: Theme.fontSubtitle
-                        font.bold: true
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter

@@ -30,7 +30,6 @@ CheckBox {
             text: "✓"
             color: Theme.accent
             font.pixelSize: Theme.fontBody
-            font.bold: true
         }
     }
 }

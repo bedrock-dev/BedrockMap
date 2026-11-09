@@ -23,7 +23,6 @@ Item {
             text: root.tagType >= 0 && root.tagType < root.letters.length ? root.letters[root.tagType] : "?"
             color: "#ffffff"
             font.pixelSize: Theme.ui(9)
-            font.bold: true
         }
     }
 }

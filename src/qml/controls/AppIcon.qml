@@ -44,6 +44,5 @@ Item {
         text: root.fallback
         color: root.iconColor
         font.pixelSize: Math.max(8, root.iconSize)
-        font.bold: true
     }
 }

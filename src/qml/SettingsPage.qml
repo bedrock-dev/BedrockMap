@@ -132,7 +132,6 @@ Item {
                         text: page.categoryNames[page.category]
                         color: Theme.text
                         font.pixelSize: Theme.fontHeading
-                        font.bold: true
                     }
                     AppButton {
                         visible: !page.compact
@@ -725,7 +724,6 @@ Item {
                                     text: Qt.application.name
                                     color: Theme.text
                                     font.pixelSize: Theme.fontHeading
-                                    font.bold: true
                                     wrapMode: Text.Wrap
                                 }
                                 Text {
@@ -781,7 +779,6 @@ Item {
                                 text: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
                                 color: Theme.text
                                 font.pixelSize: Theme.fontLabel
-                                font.bold: true
                             }
                             Text {
                                 Layout.fillWidth: true
@@ -897,7 +894,6 @@ Item {
             y: Theme.cardPadding
             text: title
             color: Theme.text
-            font.bold: true
             font.pixelSize: Theme.fontLabel
         }
         ColumnLayout {

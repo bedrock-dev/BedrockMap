@@ -195,7 +195,6 @@ Item {
                             Layout.fillWidth: true
                             text: root.itemListTitle + " (" + (root.document ? root.document.rootCount : 0) + ")"
                             color: Theme.text
-                            font.bold: true
                             font.pixelSize: Theme.fontBody
                         }
                         ListView {

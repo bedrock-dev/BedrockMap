@@ -52,7 +52,6 @@ Dialog {
             text: root.title
             color: Theme.text
             font.pixelSize: Theme.fontLabel
-            font.bold: true
             elide: Text.ElideRight
         }
     }

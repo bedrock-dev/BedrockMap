@@ -138,7 +138,6 @@ Popup {
                 text: qsTr("Map filters")
                 color: Theme.text
                 font.pixelSize: Theme.fontTitle
-                font.bold: true
             }
 
             Rectangle {
@@ -156,7 +155,6 @@ Popup {
                     text: qsTr("Blocks")
                     color: Theme.text
                     font.pixelSize: Theme.fontSubtitle
-                    font.bold: true
                 }
 
                 AppSegmentedControl {
@@ -184,7 +182,6 @@ Popup {
                     text: qsTr("Biomes")
                     color: Theme.text
                     font.pixelSize: Theme.fontSubtitle
-                    font.bold: true
                 }
 
                 AppSegmentedControl {
@@ -212,7 +209,6 @@ Popup {
                     text: qsTr("Entities")
                     color: Theme.text
                     font.pixelSize: Theme.fontSubtitle
-                    font.bold: true
                 }
 
                 AppSegmentedControl {

@@ -298,7 +298,6 @@ Item {
             text: previewSection.title
             color: Theme.text
             font.pixelSize: Theme.fontLabel
-            font.bold: true
         }
         background: AppCard {}
     }

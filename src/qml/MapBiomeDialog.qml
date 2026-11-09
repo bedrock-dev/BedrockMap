@@ -73,7 +73,6 @@ Dialog {
             text: qsTr("Set biome")
             color: Theme.text
             font.pixelSize: Theme.fontTitle
-            font.bold: true
         }
 
         AppTextField {

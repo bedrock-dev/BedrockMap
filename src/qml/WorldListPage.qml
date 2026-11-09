@@ -89,7 +89,6 @@ Item {
             text: parent.title
             color: Theme.text
             font.pixelSize: Theme.fontLabel
-            font.bold: true
         }
         Text {
             anchors.baseline: titleText.baseline
@@ -196,7 +195,6 @@ Item {
                 text: qsTr("Getting Started")
                 color: Theme.text
                 font.pixelSize: Theme.fontDisplay
-                font.bold: true
             }
             Flow {
                 id: welcomeActions
@@ -242,7 +240,6 @@ Item {
                     text: qsTr("Worlds")
                     color: Theme.text
                     font.pixelSize: Theme.fontHeading
-                    font.bold: true
                 }
                 AppIconButton {
                     id: refreshButton
@@ -302,7 +299,6 @@ Item {
                         Text {
                             text: qsTr("No worlds yet")
                             color: Theme.text
-                            font.bold: true
                             font.pixelSize: Theme.fontSubtitle
                         }
                         Text {

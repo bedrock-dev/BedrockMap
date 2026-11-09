@@ -30,7 +30,6 @@ Rectangle {
                 text: root.text.length > 0 ? root.text : qsTr("Working…")
                 color: Theme.text
                 font.pixelSize: Theme.fontSubtitle
-                font.bold: true
                 elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
             }

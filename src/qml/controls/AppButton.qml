@@ -70,7 +70,6 @@ Item {
             text: root.text
             color: root.contentColor
             font.pixelSize: root.compact ? Theme.fontCaption : Theme.fontSubtitle
-            font.bold: root.active
             elide: Text.ElideRight
         }
     }

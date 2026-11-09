@@ -45,7 +45,6 @@ Rectangle {
                 color: Theme.text
                 font.pixelSize: root.embedded ? Theme.fontSubtitle :
                                                 Theme.compact ? Theme.fontTitle : Theme.fontDisplay
-                font.bold: true
                 elide: Text.ElideRight
             }
             Text {

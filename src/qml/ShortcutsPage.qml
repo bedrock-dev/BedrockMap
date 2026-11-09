@@ -206,7 +206,6 @@ Item {
                 text: shortcutSection.heading
                 color: Theme.text
                 font.pixelSize: Theme.fontLabel
-                font.bold: true
             }
             Repeater {
                 model: shortcutSection.entries
@@ -235,7 +234,6 @@ Item {
                             text: modelData.sequence
                             color: Theme.accent
                             font.pixelSize: Theme.fontCaption
-                            font.bold: true
                         }
                     }
                 }

@@ -79,7 +79,6 @@ Rectangle {
                 text: root.label
                 color: root.selected ? Theme.accent : Theme.text
                 font.pixelSize: root.detail.length > 0 ? Theme.fontSubtitle : Theme.fontSubtitle
-                font.bold: root.selected || root.detail.length > 0
                 elide: Text.ElideRight
             }
             Text {
@@ -118,7 +117,6 @@ Rectangle {
             text: root.label
             color: root.selected ? Theme.accent : Theme.text
             font.pixelSize: Theme.fontSubtitle
-            font.bold: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }

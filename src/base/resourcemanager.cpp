@@ -72,16 +72,18 @@ std::vector<const QImage*> ResourceManager::markerIcons() const {
 void FontManager::initialize(const setting::Settings& settings) {
     if (initialized_) return;
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+#if defined(Q_OS_ANDROID)
     static const QString uiFamily = [] {
-        const int id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::UI_FONT_RESOURCE));
-        const QStringList families = QFontDatabase::applicationFontFamilies(id);
-        if (families.isEmpty()) {
-            LOG_F(ERROR, "Can not load UI font %s", constant::UI_FONT_RESOURCE);
-            return QString{};
-        }
-        LOG_F(INFO, "Bundled UI font: %s", families.first().toUtf8().constData());
-        return families.first();
+        const int regular_id =
+            QFontDatabase::addApplicationFont(QString::fromLatin1(constant::ANDROID_UI_FONT_REGULAR_RESOURCE));
+        if (regular_id == -1)
+            LOG_F(ERROR, "Can not load UI font %s", constant::ANDROID_UI_FONT_REGULAR_RESOURCE);
+
+        const QStringList regular_families = QFontDatabase::applicationFontFamilies(regular_id);
+        if (regular_families.isEmpty()) return QString{};
+        const QString family = regular_families.first();
+        LOG_F(INFO, "Bundled UI font: %s", family.toUtf8().constData());
+        return family;
     }();
 #endif
 
@@ -91,7 +93,7 @@ void FontManager::initialize(const setting::Settings& settings) {
 
     QFont font = QGuiApplication::font();
     QString fallbackFamily = font.family();
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+#if defined(Q_OS_ANDROID)
     if (!uiFamily.isEmpty()) {
         font.setFamily(uiFamily);
         fallbackFamily = uiFamily;

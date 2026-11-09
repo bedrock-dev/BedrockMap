@@ -109,7 +109,6 @@ Item {
                         text: qsTr("What are these permissions for?")
                         color: Theme.text
                         font.pixelSize: Theme.fontLabel
-                        font.bold: true
                         wrapMode: Text.Wrap
                     }
                     Repeater {
@@ -157,7 +156,6 @@ Item {
                 text: entry.title
                 color: Theme.text
                 font.pixelSize: Theme.fontLabel
-                font.bold: true
                 wrapMode: Text.Wrap
             }
             Label {

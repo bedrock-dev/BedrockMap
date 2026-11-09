@@ -394,7 +394,6 @@ Window {
                 text: closeWorldDialog.title
                 color: Theme.text
                 font.pixelSize: Theme.fontLabel
-                font.bold: true
                 elide: Text.ElideRight
             }
         }
@@ -406,7 +405,6 @@ Window {
                 text: window.pendingCloseSession ? (window.pendingCloseSession.title || qsTr("Untitled world")) : ""
                 color: Theme.text
                 font.pixelSize: Theme.fontSubtitle
-                font.bold: true
                 elide: Text.ElideRight
             }
             Text {

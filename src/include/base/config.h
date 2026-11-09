@@ -36,7 +36,8 @@ namespace constant {
     static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     inline constexpr int GRID_WIDTH = 32;
     inline constexpr int DEFAULT_FONT_POINT_SIZE = 14;
-    inline constexpr const char* UI_FONT_RESOURCE = ":/bedrockmap/fonts/NotoSansSC-Regular.otf";
+    inline constexpr const char* ANDROID_UI_FONT_REGULAR_RESOURCE =
+        ":/bedrockmap/fonts/MiSans-Regular.ttf";
     inline constexpr const char* MONOSPACE_FONT_RESOURCE = ":/bedrockmap/fonts/JetBrainsMono-Regular.ttf";
 
     // Floor zoom for the whole-world overview mode, derived from region size.

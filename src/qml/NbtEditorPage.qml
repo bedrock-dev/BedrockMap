@@ -96,7 +96,6 @@ Item {
                     text: qsTr("NBT editor")
                     color: Theme.text
                     font.pixelSize: Theme.fontTitle
-                    font.bold: true
                 }
                 Text {
                     Layout.fillWidth: true

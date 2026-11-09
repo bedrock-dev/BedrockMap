@@ -70,10 +70,9 @@ file(GLOB_RECURSE BEDROCKMAP_RESOURCE_FILES CONFIGURE_DEPENDS
 list(APPEND BEDROCKMAP_RESOURCE_FILES
     "${PROJECT_SOURCE_DIR}/res/fonts/JetBrainsMono-Regular.ttf"
 )
-if(ANDROID OR EMSCRIPTEN)
+if(ANDROID)
     list(APPEND BEDROCKMAP_RESOURCE_FILES
-        "${PROJECT_SOURCE_DIR}/res/fonts/NotoSansSC-Regular.otf"
-        "${PROJECT_SOURCE_DIR}/res/fonts/NotoSansSC-OFL.txt"
+        "${PROJECT_SOURCE_DIR}/res/fonts/MiSans-Regular.ttf"
     )
 endif()
 

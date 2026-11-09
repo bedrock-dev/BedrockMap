@@ -69,7 +69,6 @@ Item {
                                               root.regionImport.height) : ""
                 color: Theme.text
                 font.pixelSize: Theme.fontBody
-                font.bold: true
                 elide: Text.ElideMiddle
             }
             RowLayout {

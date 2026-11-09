@@ -148,7 +148,6 @@ Item {
                             visible: card.source.length > 0
                             color: root.levelColor(card.level)
                             font.pixelSize: Theme.fontBody
-                            font.bold: true
                             elide: Text.ElideRight
                             width: Math.min(implicitWidth, body.width - repeatBadge.width - 6)
                         }

@@ -46,7 +46,6 @@ AppCard {
                     text: qsTr("Name")
                     color: Theme.muted
                     font.pixelSize: Theme.fontCaption
-                    font.bold: true
                     elide: Text.ElideRight
                 }
                 Text {
@@ -54,7 +53,6 @@ AppCard {
                     text: qsTr("Size")
                     color: Theme.muted
                     font.pixelSize: Theme.fontCaption
-                    font.bold: true
                     horizontalAlignment: Text.AlignRight
                 }
                 Text {
@@ -62,14 +60,12 @@ AppCard {
                     text: qsTr("Hash")
                     color: Theme.muted
                     font.pixelSize: Theme.fontCaption
-                    font.bold: true
                 }
                 Text {
                     Layout.preferredWidth: 138
                     text: qsTr("Actions")
                     color: Theme.muted
                     font.pixelSize: Theme.fontCaption
-                    font.bold: true
                 }
             }
         }

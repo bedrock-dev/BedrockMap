@@ -69,7 +69,6 @@ AppCard {
                 Text {
                     text: card.title
                     color: Theme.text
-                    font.bold: true
                     font.pixelSize: Theme.fontLabel
                     elide: Text.ElideRight
                     width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? listBadge.implicitWidth
@@ -80,7 +79,6 @@ AppCard {
                     visible: card.xorMarked
                     text: "[XOR]"
                     color: Theme.danger
-                    font.bold: true
                     font.pixelSize: Theme.fontBody
                 }
             }
@@ -141,7 +139,6 @@ AppCard {
                 Text {
                     text: card.title
                     color: Theme.text
-                    font.bold: true
                     font.pixelSize: Theme.fontSubtitle
                     elide: Text.ElideRight
                     width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? gridBadge.implicitWidth
@@ -152,7 +149,6 @@ AppCard {
                     visible: card.xorMarked
                     text: "[XOR]"
                     color: Theme.danger
-                    font.bold: true
                     font.pixelSize: Theme.fontCaption
                 }
             }

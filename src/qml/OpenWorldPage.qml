@@ -33,7 +33,6 @@ Item {
                                                                 "Opening world")
                     color: Theme.text
                     font.pixelSize: Theme.fontHeading
-                    font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                 }
                 Text {
