@@ -59,7 +59,9 @@ QtObject {
     readonly property bool showTopbar: compact
     readonly property bool showWorldCards: !compact
     readonly property real sidebarWidth: ui(232)
-    readonly property real sidebarCollapsedWidth: ui(56)
+    readonly property real sidebarCollapsedWidth: ui(52)
+    readonly property real sidebarCollapsedPadding: ui(8)
+    readonly property real sidebarCollapsedItemSize: sidebarCollapsedWidth - sidebarCollapsedPadding * 2
     readonly property real bottomNavigationHeight: touch ? Math.max(ui(56), iconSize + fontCaption + ui(22)) : (compact
                                                                                                                 ? 64 : 72)
     readonly property real topbarHeight: touch ? Math.max(ui(52), controlHeight + ui(8)) : (compact ? 52 : 72)

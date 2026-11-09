@@ -756,7 +756,7 @@ Item {
         id: desktopSidebar
         visible: !workspace.compact
         z: 1
-        width: 56
+        width: Theme.sidebarCollapsedWidth
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -773,16 +773,16 @@ Item {
             id: desktopSidebarScroll
             width: parent.width
             anchors.top: parent.top
-            anchors.topMargin: Theme.cardPadding
+            anchors.topMargin: Theme.sidebarCollapsedPadding
             anchors.bottom: desktopSidebarFooter.top
             contentWidth: width
-            contentHeight: desktopSidebarColumn.height + Theme.cardPadding * 2
+            contentHeight: desktopSidebarColumn.height + Theme.sidebarCollapsedPadding * 2
             clip: true
             Column {
                 id: desktopSidebarColumn
-                x: Theme.cardPadding
-                y: Theme.cardPadding
-                width: parent.width - Theme.cardPadding * 2
+                x: Theme.sidebarCollapsedPadding
+                y: Theme.sidebarCollapsedPadding
+                width: parent.width - Theme.sidebarCollapsedPadding * 2
                 spacing: 2
                 AppListRow {
                     iconName: "map"
@@ -840,7 +840,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.margins: Theme.cardPadding
+            anchors.margins: Theme.sidebarCollapsedPadding
             spacing: Theme.gapSmall
             AppIconButton {
                 x: (parent.width - width) / 2

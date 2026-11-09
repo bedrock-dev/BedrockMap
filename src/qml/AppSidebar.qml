@@ -22,7 +22,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: root.collapsed ? 8 : 18
+        anchors.margins: root.collapsed ? Theme.sidebarCollapsedPadding : 18
         spacing: Theme.gapMedium
 
         AppListRow {
@@ -56,8 +56,8 @@ Rectangle {
         anchors.bottom: bottomSection.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.leftMargin: root.collapsed ? 8 : 12
-        anchors.rightMargin: root.collapsed ? 8 : 12
+        anchors.leftMargin: root.collapsed ? Theme.sidebarCollapsedPadding : 12
+        anchors.rightMargin: root.collapsed ? Theme.sidebarCollapsedPadding : 12
         anchors.topMargin: 4
         anchors.bottomMargin: 8
         clip: true
@@ -71,7 +71,7 @@ Rectangle {
             required property string kind
             readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
             width: openWorldList.width
-            height: Theme.touch ? Theme.controlHeight : (root.collapsed ? 36 : 40)
+            height: Theme.touch ? Theme.controlHeight : (root.collapsed ? Theme.sidebarCollapsedItemSize : 40)
             radius: Theme.radiusControl
             color: active ? Theme.accentSoft : ((openWorldMouse.pressed || openWorldMouse.containsMouse)
                                                 ? Theme.surfaceAlt : "transparent")
@@ -139,7 +139,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: root.collapsed ? 8 : 18
+        anchors.margins: root.collapsed ? Theme.sidebarCollapsedPadding : 18
         spacing: Theme.gapMedium
 
         Rectangle {
