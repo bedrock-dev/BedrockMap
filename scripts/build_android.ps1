@@ -181,7 +181,21 @@ try {
     # Gradle packages, aligns and signs with the configured key.
     Push-Location -LiteralPath $deploymentDir
     try {
-        & .\gradlew.bat --no-daemon "-PbedrockmapNdkPath=$NdkRoot" '-PlegacyPackaging=true' assembleRelease
+        # AGP's incremental APK splitter can retain stale native-library snapshots
+        # after androiddeployqt replaces deployment files. Reset only that task's
+        # incremental state so normal CMake and Gradle caches remain reusable.
+        $packageIncrementalDir = [IO.Path]::GetFullPath(
+            (Join-Path $deploymentDir 'build\intermediates\incremental\packageRelease'))
+        $deploymentPrefix = [IO.Path]::GetFullPath($deploymentDir) + [IO.Path]::DirectorySeparatorChar
+        if (-not $packageIncrementalDir.StartsWith($deploymentPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Android package cache is outside the deployment directory: $packageIncrementalDir"
+        }
+        if (Test-Path -LiteralPath $packageIncrementalDir -PathType Container) {
+            Remove-Item -LiteralPath $packageIncrementalDir -Recurse -Force
+        }
+
+        & .\gradlew.bat --no-daemon --stacktrace "-PbedrockmapNdkPath=$NdkRoot" `
+            '-PlegacyPackaging=true' assembleRelease
         if ($LASTEXITCODE -ne 0) { throw "Android package failed ($LASTEXITCODE)." }
     } finally { Pop-Location }
     $signedApk = Join-Path $deploymentDir 'build\outputs\apk\release\android-build-release.apk'

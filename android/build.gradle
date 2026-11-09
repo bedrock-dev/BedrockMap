@@ -13,7 +13,10 @@ buildscript {
 repositories {
     google()
     mavenCentral()
-    maven { url 'https://jitpack.io'; content { includeGroup 'com.github.topjohnwu.libsu' } }
+    maven {
+        url = uri('https://jitpack.io')
+        content { includeGroup 'com.github.topjohnwu.libsu' }
+    }
 }
 
 apply plugin: qtGradlePluginType
