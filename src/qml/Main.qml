@@ -301,6 +301,8 @@ Window {
 
     AppMenu {
         id: workspaceSectionMenu
+        parent: workspaceSectionButton
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
         readonly property real sectionItemHeight: Theme.menuItemHeight
         Repeater {
             model: window.workspaceSectionEntries
@@ -606,10 +608,17 @@ Window {
                                  && window.activeSession.titleBarNavigationVisible
                         compact: window.compactLayout
                         iconName: window.workspaceSectionEntry.iconName
-                        text: window.workspaceSectionEntry.label + "  ▾"
-                        onClicked: workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
-                                                              - workspaceSectionMenu.width,
-                                                              workspaceSectionButton.height + 4)
+                        text: window.workspaceSectionEntry.label
+                        active: workspaceSectionMenu.opened
+                        onClicked: {
+                            if (workspaceSectionMenu.opened) {
+                                workspaceSectionMenu.close()
+                            } else {
+                                workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
+                                                           - workspaceSectionMenu.width,
+                                                           workspaceSectionButton.height + 4)
+                            }
+                        }
                     },
                     AppIconButton {
                         visible: window.sessionTitleBarActions && window.activeSession

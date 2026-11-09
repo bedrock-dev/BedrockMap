@@ -1,19 +1,19 @@
 import BedrockMap 1.0
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
-Popup {
+AppCard {
     id: root
 
     property var controller
-    property var anchorItem
     property bool blockBlackMode: true
     property bool biomeBlackMode: true
     property bool actorBlackMode: true
     property bool layerEnabled: false
-    property int layer: 64
+    property int fixedLayer: 64
+    readonly property real naturalHeight: popupColumn.implicitHeight + Theme.cardPadding * 2
+    signal closeRequested
 
     function formatList(values) {
         if (!values || values.length === undefined)
@@ -52,7 +52,7 @@ Popup {
         biomeBlackMode = options.biomeBlackMode !== undefined ? Boolean(options.biomeBlackMode) : true
         actorBlackMode = options.actorBlackMode !== undefined ? Boolean(options.actorBlackMode) : true
         layerEnabled = options.layerEnabled !== undefined ? Boolean(options.layerEnabled) : false
-        layer = options.layer !== undefined ? Number(options.layer) : 64
+        fixedLayer = options.layer !== undefined ? Number(options.layer) : 64
         blockField.text = formatList(options.blockList)
         biomeField.text = formatList(options.biomeList)
         actorField.text = formatList(options.actorList)
@@ -77,74 +77,31 @@ Popup {
                                                              actorBlackMode: actorBlackMode,
                                                              actorList: splitList(actorField.text),
                                                              layerEnabled: layerEnabled,
-                                                             layer: layer
+                                                             layer: fixedLayer
                                                          })
         if (applied)
-            close()
+            root.closeRequested()
     }
 
-    function positionNearAnchor() {
-        if (!anchorItem || !parent || !opened)
-            return
-        const origin = anchorItem.mapToItem(parent, 0, 0)
-        const margin = 8
-        const gap = 6
-        const maxX = Math.max(margin, parent.width - width - margin)
-        x = Math.min(Math.max(margin, origin.x + anchorItem.width - width), maxX)
+    onVisibleChanged: if (visible)
+                           refresh()
+    onControllerChanged: if (!controller && visible)
+                             root.closeRequested()
 
-        const below = origin.y + anchorItem.height + gap
-        y = below + height <= parent.height - margin ? below : Math.max(margin, origin.y - height - gap)
-    }
-
-    function openFor(item) {
-        anchorItem = item
-        refresh()
-        open()
-        Qt.callLater(positionNearAnchor)
-    }
-
-    parent: Overlay.overlay
-    modal: false
-    focus: true
-    closePolicy: Popup.CloseOnEscape
-    padding: Theme.cardPadding
-    width: parent ? Math.max(0, Math.min(360, parent.width - 16)) : 360
-    height: Math.min(popupColumn.implicitHeight + topPadding + bottomPadding, parent ? parent.height - 16 : 600)
-
-    onOpened: positionNearAnchor()
-    onHeightChanged: if (opened)
-                         positionNearAnchor()
-    onControllerChanged: if (!controller && opened)
-                             close()
-
-    background: AppCard {}
-
-    contentItem: Flickable {
+    Flickable {
         id: contentFlick
-        implicitWidth: 320
-        implicitHeight: popupColumn.implicitHeight
+        anchors.fill: parent
         contentWidth: width
-        contentHeight: popupColumn.implicitHeight
+        contentHeight: popupColumn.implicitHeight + Theme.cardPadding * 2
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: popupColumn
-            width: contentFlick.width
+            x: Theme.cardPadding
+            y: Theme.cardPadding
+            width: contentFlick.width - Theme.cardPadding * 2
             spacing: Theme.gapMedium
-
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("Map filters")
-                color: Theme.text
-                font.pixelSize: Theme.fontTitle
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Theme.borderWidth
-                color: Theme.border
-            }
 
             RowLayout {
                 Layout.fillWidth: true
@@ -251,9 +208,9 @@ Popup {
                     Layout.preferredWidth: 112
                     from: -64
                     to: 320
-                    value: root.layer
+                    value: root.fixedLayer
                     enabled: root.layerEnabled
-                    onValueModified: root.layer = value
+                    onValueModified: root.fixedLayer = value
                 }
             }
 
@@ -272,7 +229,7 @@ Popup {
 
                 AppButton {
                     text: qsTr("Cancel")
-                    onClicked: root.close()
+                    onClicked: root.closeRequested()
                 }
 
                 AppButton {

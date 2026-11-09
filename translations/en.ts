@@ -1371,11 +1371,6 @@
     <name>MapFilterPanel</name>
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
-        <source>Map filters</source>
-        <translation>Map filters</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Blocks</source>
         <translation>Blocks</translation>
     </message>
@@ -3727,11 +3722,6 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Biomes</source>
         <translation type="unfinished">Biomes</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>View</source>
-        <translation type="unfinished">View</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

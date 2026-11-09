@@ -1371,11 +1371,6 @@
     <name>MapFilterPanel</name>
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
-        <source>Map filters</source>
-        <translation>地图过滤器</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Blocks</source>
         <translation>方块</translation>
     </message>
@@ -3727,11 +3722,6 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Biomes</source>
         <translation>生物群系</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>View</source>
-        <translation>视图</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

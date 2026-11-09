@@ -257,10 +257,16 @@ Item {
             setTransparentVoidEnabled(!mapController.transparentVoid)
     }
     function toggleLayerPanel() {
-        layerPanelOpen = !layerPanelOpen
+        const opening = !layerPanelOpen
+        layerPanelOpen = opening
+        if (opening)
+            mapFilterPanelOpen = false
     }
     function toggleMapFilterPanel() {
-        mapFilterPanelOpen = !mapFilterPanelOpen
+        const opening = !mapFilterPanelOpen
+        mapFilterPanelOpen = opening
+        if (opening)
+            layerPanelOpen = false
     }
     function toggleDebugPanels() {
         debugVisible = !debugVisible
@@ -322,6 +328,9 @@ Item {
     function currentSidePanelWidth() {
         return sidePanelWidth > 0 ? clampSidePanelWidth(sidePanelWidth) : sectionHost.width * 0.5
     }
+    function maximumInspectorPanelHeight() {
+        return Math.max(0, layerToolbar.y - navigationToolbar.y - navigationToolbar.height - Theme.gapSmall * 2)
+    }
     function goBack() {
         if (importPending) {
             mapController.cancelImport()
@@ -342,19 +351,15 @@ Item {
 
     onSessionChanged: restoreSessionState()
     Component.onCompleted: restoreSessionState()
-    onMapFilterPanelOpenChanged: {
-        if (!mapFilterPanel)
-            return
-        if (mapFilterPanelOpen)
-            mapFilterPanel.openFor(mapFilterButton)
-        else
-            mapFilterPanel.close()
-    }
     onGlobalSectionsChanged: if (session && section >= globalSections.length + 1)
                                  section = 0
     onSectionChanged: {
-        if (section !== 0 && canvas)
-            canvas.selectionToolActive = false
+        if (section !== 0) {
+            if (canvas)
+                canvas.selectionToolActive = false
+            layerPanelOpen = false
+            mapFilterPanelOpen = false
+        }
         if (!restoringSection && session)
             session.workspaceSection = section
     }
@@ -498,8 +503,7 @@ Item {
                 z: 2
                 width: Math.max(0, Math.min(360, parent.width - 16))
                 readonly property real naturalHeight: inspectorColumn.height + Theme.cardPadding * 2
-                height: Math.min(naturalHeight, Math.max(0, layerToolbar.y - navigationToolbar.y - navigationToolbar.height
-                                                         - Theme.gapSmall * 2))
+                height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
                 anchors.bottom: layerToolbar.top
                 anchors.bottomMargin: Theme.gapSmall
                 anchors.left: layerToolbar.left
@@ -514,16 +518,6 @@ Item {
                         y: Theme.cardPadding
                         width: parent.width - Theme.cardPadding * 2
                         spacing: Theme.gapSmall
-                        Text {
-                            text: qsTr("View")
-                            color: Theme.text
-                            font.pixelSize: Theme.fontTitle
-                        }
-                        Rectangle {
-                            width: parent.width
-                            height: Theme.borderWidth
-                            color: Theme.border
-                        }
                         Flow {
                             width: parent.width
                             spacing: Theme.gapSmall
@@ -684,6 +678,19 @@ Item {
                         onAccepted: workspace.jumpToCoordinates()
                     }
                 }
+            }
+
+            MapFilterPanel {
+                id: mapFilterPanel
+                visible: workspace.section === 0 && workspace.mapFilterPanelOpen
+                z: 2
+                width: Math.max(0, Math.min(360, parent.width - 16))
+                height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
+                anchors.bottom: layerToolbar.top
+                anchors.bottomMargin: Theme.gapSmall
+                anchors.left: layerToolbar.left
+                controller: workspace.mapController
+                onCloseRequested: workspace.mapFilterPanelOpen = false
             }
 
             AppCard {
@@ -882,13 +889,6 @@ Item {
                 onClicked: workspace.toggleDebugPanels()
             }
         }
-    }
-
-    MapFilterPanel {
-        id: mapFilterPanel
-        controller: workspace.mapController
-        onOpened: workspace.mapFilterPanelOpen = true
-        onClosed: workspace.mapFilterPanelOpen = false
     }
 
     AppBusyOverlay {
