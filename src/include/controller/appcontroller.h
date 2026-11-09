@@ -148,6 +148,7 @@ class AppController final : public QObject {
     bool startup_notice_required_{true};
     int current_page_{0};
     bool workspace_open_{false};
+    QString last_shizuku_permission_;
     SessionController sessions_;
     QFutureWatcher<QString> import_watcher_;
     bool importing_world_{false};

@@ -190,7 +190,14 @@ QString AppController::rootPermission() const { return platform::rootPermission(
 
 void AppController::requestRootPermission() { platform::requestRootPermission(); }
 
-void AppController::refreshPermissions() { emit permissionsChanged(); }
+void AppController::refreshPermissions() {
+    const QString currentShizukuPermission = shizukuPermission();
+    const bool shizukuJustGranted = last_shizuku_permission_ != QStringLiteral("Granted") &&
+                                    currentShizukuPermission == QStringLiteral("Granted");
+    last_shizuku_permission_ = currentShizukuPermission;
+    emit permissionsChanged();
+    if (shizukuJustGranted) worlds_.refresh();
+}
 
 void AppController::selectWorkspace(int index) {
     if (!sessions_.sessions()->at(index)) return;
