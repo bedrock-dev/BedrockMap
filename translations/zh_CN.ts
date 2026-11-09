@@ -255,8 +255,15 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export failed</source>
         <translation>导出失败</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not create the temporary export directory.</source>
+        <translation>无法创建临时导出目录。</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -272,6 +279,16 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export successful</source>
         <translation>导出成功</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Open exported world</source>
+        <translation>打开导出的世界</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not open the exported world</source>
+        <translation>无法打开导出的世界</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -3520,6 +3537,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <source>Export and open</source>
+        <translation>导出并打开</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Delete world</source>
         <translation>删除世界</translation>
     </message>
@@ -3910,6 +3932,27 @@ Current version: %2</source>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>文档提供方未返回文件描述符。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The exported file is not local.</source>
+        <translation>导出的文件不在本地。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The Android activity is unavailable.</source>
+        <translation>Android 活动不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Cannot open the exported world.</source>
+        <translation>无法打开导出的世界。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>This operation is only available on Android.</source>
+        <translation>此操作仅适用于 Android。</translation>
     </message>
 </context>
 <context>

@@ -1,11 +1,15 @@
 #include "controller/appcontroller.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDesktopServices>
+#include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QImage>
 #include <QImageWriter>
 #include <QPointer>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QUrl>
 #include <QtConcurrent>
@@ -330,6 +334,40 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
         if (QFileInfo(targetPath).suffix().isEmpty()) targetPath += QStringLiteral(".mcworld");
         target = QUrl::fromLocalFile(targetPath);
     }
+    startWorldExport(source, target, false);
+}
+
+void AppController::exportAndOpenWorld(const QString& path, const QString& title) {
+    if (!checkWorldFileOperationIdle()) return;
+    const QString source = platform::normalizeLocalPath(path);
+    if (source.isEmpty()) {
+        notifications_.error(tr("Export failed"));
+        return;
+    }
+
+    const QString export_root = QDir(app_paths::cacheDirectory()).filePath(QStringLiteral("world_exports"));
+    if (!QDir().mkpath(export_root)) {
+        notifications_.error(tr("Export failed"), {}, tr("Could not create the temporary export directory."));
+        return;
+    }
+    const QDateTime expires_before = QDateTime::currentDateTime().addDays(-1);
+    for (const auto& info : QDir(export_root).entryInfoList({QStringLiteral("*.mcworld")}, QDir::Files)) {
+        if (info.lastModified() < expires_before) QFile::remove(info.absoluteFilePath());
+    }
+
+    QString export_name = title.trimmed();
+    export_name.replace(QRegularExpression(QStringLiteral("[<>:\"/\\\\|?*\\x{0000}-\\x{001f}]")), QStringLiteral("_"));
+    while (!export_name.isEmpty() && (export_name.endsWith(QLatin1Char('.')) || export_name.endsWith(QLatin1Char(' '))))
+        export_name.chop(1);
+    if (export_name.isEmpty()) export_name = QStringLiteral("world");
+    export_name = export_name.left(96);
+    const QString timestamp = QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-HHmmss-zzz"));
+    const QUrl target =
+        QUrl::fromLocalFile(QDir(export_root).filePath(export_name + QLatin1Char('-') + timestamp + QStringLiteral(".mcworld")));
+    startWorldExport(source, target, true);
+}
+
+void AppController::startWorldExport(const QString& source, const QUrl& target, bool open_after_export) {
     if (hasOpenSessionInWorld(source)) {
         notifications_.warning(tr("Close the world and any files inside it before exporting it."));
         return;
@@ -340,7 +378,7 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
     exporting_world_ = true;
     emit exportingWorldChanged();
     export_watcher_.disconnect(this);
-    connect(&export_watcher_, &QFutureWatcher<QString>::finished, this, [this, export_name] {
+    connect(&export_watcher_, &QFutureWatcher<QString>::finished, this, [this, export_name, target, open_after_export] {
         QString error;
         try {
             error = export_watcher_.result();
@@ -351,10 +389,16 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
         }
         exporting_world_ = false;
         emit exportingWorldChanged();
-        if (error.isEmpty())
+        if (error.isEmpty()) {
             notifications_.info(tr("Export successful"));
-        else
+            if (open_after_export) {
+                const QString launch_error = platform::openExportedWorld(target, tr("Open exported world"));
+                if (!launch_error.isEmpty())
+                    notifications_.error(tr("Could not open the exported world"), target.toLocalFile(), launch_error);
+            }
+        } else {
             notifications_.error(tr("Export failed"), export_name, error);
+        }
     });
     export_watcher_.setFuture(QtConcurrent::run([source, target] { return LevelOperator::exportMcworld(source, target); }));
 }

@@ -25,6 +25,10 @@ namespace platform {
     /// Returns empty when the provider or current permissions prevent resolution.
     [[nodiscard]] QString resolveContentDirectory(const QUrl& url);
 
+    /// Opens a temporary local export through the Android application chooser.
+    /// Returns an error, empty on success, or an unsupported error elsewhere.
+    [[nodiscard]] QString openExportedWorld(const QUrl& url, const QString& chooserTitle);
+
     /// Installs the native crash reporter when the target enables it.
     /// Safe to call more than once.
     void installCrashHandler();

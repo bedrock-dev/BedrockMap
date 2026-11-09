@@ -1,5 +1,6 @@
 #include "base/platform.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
@@ -302,6 +303,28 @@ namespace platform {
 #else
         Q_UNUSED(url);
         return {};
+#endif
+    }
+
+    QString openExportedWorld(const QUrl& url, const QString& chooserTitle) {
+#ifdef Q_OS_ANDROID
+        if (!url.isLocalFile()) return QCoreApplication::translate("platform", "The exported file is not local.");
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        if (!context.isValid()) return QCoreApplication::translate("platform", "The Android activity is unavailable.");
+        const auto path = QJniObject::fromString(url.toLocalFile());
+        const auto title = QJniObject::fromString(chooserTitle);
+        const auto result =
+            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/WorldExportLauncher", "open",
+                                               "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                                               context.object(), path.object<jstring>(), title.object<jstring>());
+        QJniEnvironment env;
+        if (env.checkAndClearExceptions() || !result.isValid())
+            return QCoreApplication::translate("platform", "Cannot open the exported world.");
+        return result.toString().isEmpty() ? QString{} : QCoreApplication::translate("platform", "Cannot open the exported world.");
+#else
+        Q_UNUSED(url);
+        Q_UNUSED(chooserTitle);
+        return QCoreApplication::translate("platform", "This operation is only available on Android.");
 #endif
     }
 

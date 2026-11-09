@@ -255,8 +255,15 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export failed</source>
         <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not create the temporary export directory.</source>
+        <translation>Could not create the temporary export directory.</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -272,6 +279,16 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export successful</source>
         <translation>Export successful</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Open exported world</source>
+        <translation>Open exported world</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>Could not open the exported world</source>
+        <translation>Could not open the exported world</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -3520,6 +3537,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <source>Export and open</source>
+        <translation>Export and open</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Delete world</source>
         <translation>Delete world</translation>
     </message>
@@ -3910,6 +3932,27 @@ Current version: %2</translation>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>The document provider returned no file descriptor.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The exported file is not local.</source>
+        <translation>The exported file is not local.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The Android activity is unavailable.</source>
+        <translation>The Android activity is unavailable.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Cannot open the exported world.</source>
+        <translation>Cannot open the exported world.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>This operation is only available on Android.</source>
+        <translation>This operation is only available on Android.</translation>
     </message>
 </context>
 <context>

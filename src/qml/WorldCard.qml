@@ -10,6 +10,7 @@ AppCard {
     signal openRequested(string path, string title)
     signal deleteRequested(string path, string title)
     signal exportRequested(string path, string title)
+    signal exportAndOpenRequested(string path, string title)
     property string title
     property string versionText
     property string tag
@@ -229,6 +230,12 @@ AppCard {
             enabled: !App.exportingWorld && !App.importingWorld && !App.deletingWorld
             text: qsTr("Export as mcworld")
             onTriggered: card.exportRequested(card.pathText, card.title)
+        }
+        AppMenuItem {
+            visible: Qt.platform.os === "android"
+            enabled: !App.exportingWorld && !App.importingWorld && !App.deletingWorld
+            text: qsTr("Export and open")
+            onTriggered: card.exportAndOpenRequested(card.pathText, card.title)
         }
         AppMenuItem {
             visible: card.appInternal

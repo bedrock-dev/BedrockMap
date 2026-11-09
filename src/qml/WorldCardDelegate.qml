@@ -16,6 +16,7 @@ Item {
     signal openRequested(string path, string title)
     signal deleteRequested(string path, string title)
     signal exportRequested(string path, string title)
+    signal exportAndOpenRequested(string path, string title)
 
     WorldCard {
         anchors.fill: parent
@@ -33,5 +34,7 @@ Item {
         onOpenRequested: (worldPath, worldTitle) => root.openRequested(worldPath, worldTitle)
         onDeleteRequested: (worldPath, worldTitle) => root.deleteRequested(worldPath, worldTitle)
         onExportRequested: (worldPath, worldTitle) => root.exportRequested(worldPath, worldTitle)
+        onExportAndOpenRequested: (worldPath, worldTitle) => root.exportAndOpenRequested(worldPath,
+                                                                                       worldTitle)
     }
 }

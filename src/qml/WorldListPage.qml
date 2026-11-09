@@ -151,6 +151,7 @@ Item {
                 onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
                 onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
                 onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
+                onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
             }
         }
 
@@ -169,6 +170,7 @@ Item {
                 onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
                 onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
                 onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
+                onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
             }
             Text {
                 visible: listView.count === 0

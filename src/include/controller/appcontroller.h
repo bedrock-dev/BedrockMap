@@ -89,6 +89,8 @@ class AppController final : public QObject {
     /// Called after the frontend confirms permanent deletion of an internal world.
     Q_INVOKABLE void deleteWorld(const QString& path);
     Q_INVOKABLE void exportWorld(const QString& path, const QUrl& destination);
+    /// Exports to app cache and opens Android's application chooser.
+    Q_INVOKABLE void exportAndOpenWorld(const QString& path, const QString& title);
     /// Dispatches a standalone file to world import, structure preview or NBT.
     Q_INVOKABLE void openFile(const QUrl& url);
     Q_INVOKABLE void openMcstructureFile(const QUrl& url);
@@ -129,6 +131,7 @@ class AppController final : public QObject {
     void setWorkspaceOpen(bool open);
     void setWorldTask(const QString& title, const QString& detail);
     void importWorldToInternal(const QUrl& url, bool archive);
+    void startWorldExport(const QString& source, const QUrl& target, bool open_after_export);
     [[nodiscard]] bool checkWorldFileOperationIdle();
     [[nodiscard]] bool hasOpenSessionInWorld(const QString& path);
 
