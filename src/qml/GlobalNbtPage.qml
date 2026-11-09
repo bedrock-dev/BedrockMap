@@ -188,7 +188,7 @@ Item {
                             height: mapImage.paintedHeight + 2
                             visible: mapImage.status === Image.Ready
                             color: "transparent"
-                            border.width: 1
+                            border.width: Theme.borderWidth
                             border.color: Theme.muted
                         }
 

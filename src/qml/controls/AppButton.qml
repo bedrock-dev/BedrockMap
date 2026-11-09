@@ -38,7 +38,7 @@ Item {
                                                                                                          (root.hovered
                                                                                                           ? Theme.surface :
                                                                                                             Theme.surfaceAlt)
-        border.width: root.bordered && !(root.ghost && !root.active && !root.hovered) ? 1 : 0
+        border.width: root.bordered && !(root.ghost && !root.active && !root.hovered) ? Theme.borderWidth : 0
         border.color: root.primary ? Theme.accent : root.danger ? Theme.danger : (root.active || root.hovered)
                                                                   ? Theme.accent : Theme.border
     }

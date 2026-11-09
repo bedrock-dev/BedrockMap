@@ -22,7 +22,7 @@ CheckBox {
         height: width
         radius: Theme.radiusSmall
         color: root.checked ? Theme.accentSoft : Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: root.checked ? Theme.accent : Theme.border
         Text {
             anchors.centerIn: parent

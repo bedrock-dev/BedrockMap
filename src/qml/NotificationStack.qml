@@ -66,7 +66,7 @@ Item {
                 // the messages it shows inline.
                 color: root.levelSoftColor(card.level)
                 border.color: root.levelColor(card.level)
-                border.width: 1
+                border.width: Theme.borderWidth
 
                 // Only the newest card animates in: the ones above it were
                 // already on screen and should not flicker when a card leaves.

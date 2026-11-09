@@ -758,7 +758,7 @@ Item {
         color: Theme.surface
         border.width: 0
         Rectangle {
-            width: 1
+            width: Theme.borderWidth
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: parent.left
@@ -804,7 +804,7 @@ Item {
                 }
                 Rectangle {
                     width: parent.width
-                    height: 1
+                    height: Theme.borderWidth
                     color: Theme.border
                 }
                 Repeater {
@@ -826,7 +826,7 @@ Item {
         Rectangle {
             id: desktopSidebarFooterLine
             width: parent.width
-            height: 1
+            height: Theme.borderWidth
             anchors.bottom: desktopSidebarFooter.top
             color: Theme.border
         }

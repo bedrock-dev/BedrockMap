@@ -94,7 +94,7 @@ Dialog {
     background: Rectangle {
         radius: Theme.radiusCard
         color: Theme.surface
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.border
     }
 
@@ -215,7 +215,7 @@ Dialog {
                     background: Rectangle {
                         radius: Theme.radiusSmall
                         color: Theme.surfaceAlt
-                        border.width: 1
+                        border.width: Theme.borderWidth
                         border.color: valueField.activeFocus ? Theme.accent : Theme.border
                     }
                 }

@@ -31,7 +31,7 @@ Item {
         radius: Theme.radiusControl
         color: root.selected ? Theme.accentSoft : (root.hovered ? (root.danger ? Theme.dangerSoft : Theme.surfaceAlt) :
                                                                   "transparent")
-        border.width: root.selected ? 1 : 0
+        border.width: root.selected ? Theme.borderWidth : 0
         border.color: Theme.accent
     }
 

@@ -39,7 +39,7 @@ Item {
             height: Theme.treeRowHeight
             radius: Theme.radiusSmall
             color: index === root.selectedRow ? Theme.accentSoft : "transparent"
-            border.width: index === root.selectedRow ? 1 : 0
+            border.width: index === root.selectedRow ? Theme.borderWidth : 0
             border.color: Theme.accent
 
             readonly property real arrowX: Theme.ui(8) + row.depth * Theme.iconSmallSize

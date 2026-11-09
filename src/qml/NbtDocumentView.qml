@@ -272,7 +272,7 @@ Item {
                     Layout.fillHeight: true
                     radius: root.compact ? 0 : Theme.radiusCard
                     color: root.compact ? "transparent" : Theme.surface
-                    border.width: root.compact ? 0 : 1
+                    border.width: root.compact ? 0 : Theme.borderWidth
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: root.compact ? 0 : Theme.gapSmall

@@ -61,7 +61,7 @@ Dialog {
     background: Rectangle {
         radius: Theme.radiusCard
         color: Theme.surface
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.border
     }
 
@@ -88,7 +88,7 @@ Dialog {
             Layout.fillHeight: true
             radius: Theme.radiusSmall
             color: Theme.surfaceAlt
-            border.width: 1
+            border.width: Theme.borderWidth
             border.color: Theme.border
 
             ListView {
@@ -126,7 +126,7 @@ Dialog {
                     background: Rectangle {
                         radius: Theme.radiusSmall
                         color: biomeOption.highlighted ? Theme.accentSoft : "transparent"
-                        border.width: biomeOption.highlighted ? 1 : 0
+                        border.width: biomeOption.highlighted ? Theme.borderWidth : 0
                         border.color: Theme.accent
                     }
 
@@ -141,7 +141,7 @@ Dialog {
                                 Layout.preferredHeight: 20
                                 radius: 3
                                 color: biomeOption.modelData.color
-                                border.width: 1
+                                border.width: Theme.borderWidth
                                 border.color: Theme.border
                             }
 

@@ -14,7 +14,7 @@ Rectangle {
     border.width: 0
 
     Rectangle {
-        width: 1
+        width: Theme.borderWidth
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left

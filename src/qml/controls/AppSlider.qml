@@ -29,7 +29,7 @@ Slider {
         implicitHeight: Theme.sliderHandleSize
         radius: height / 2
         color: root.enabled ? Theme.accent : Theme.muted
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.surface
     }
 }

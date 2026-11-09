@@ -360,7 +360,7 @@ Item {
                     color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt :
                                                                                               Theme.surface)
 
-                    border.width: 1
+                    border.width: Theme.borderWidth
                     border.color: Theme.border
                     opacity: 0.95
                 }

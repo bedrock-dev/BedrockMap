@@ -43,7 +43,7 @@ Menu {
     background: Rectangle {
         radius: Theme.radiusControl
         color: Theme.surface
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.border
     }
 }

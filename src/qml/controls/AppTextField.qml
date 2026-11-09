@@ -17,7 +17,7 @@ TextField {
         height: root.height - y * 2
         radius: Theme.radiusSmall
         color: Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border
         opacity: root.enabled ? 1.0 : 0.5
     }

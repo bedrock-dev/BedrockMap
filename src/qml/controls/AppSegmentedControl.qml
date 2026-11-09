@@ -32,7 +32,7 @@ Rectangle {
     implicitWidth: fitLabels ? row.implicitWidth + Theme.segmentedPadding * 2 : 0
     radius: Theme.radiusControl
     color: Theme.surfaceAlt
-    border.width: 1
+    border.width: Theme.borderWidth
     border.color: Theme.border
     clip: true
 

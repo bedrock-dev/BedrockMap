@@ -46,7 +46,7 @@ Item {
                                                                                                        (Theme.compact
                                                                                                         ? "transparent" :
                                                                                                           Theme.surface))
-                    border.width: active ? 1 : (Theme.compact ? 0 : 1)
+                    border.width: active ? Theme.borderWidth : (Theme.compact ? 0 : Theme.borderWidth)
                     border.color: active ? Theme.accent : Theme.border
 
                     Row {

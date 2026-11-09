@@ -19,7 +19,7 @@ ToolTip {
     background: Rectangle {
         radius: Theme.radiusSmall
         color: Theme.surface
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.border
     }
 

@@ -185,7 +185,7 @@ Item {
         property bool biomeLayer: false
 
         color: Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: Theme.border
         clip: true
 
@@ -204,7 +204,7 @@ Item {
                     width: grid.width / 16
                     height: grid.height / 16
                     color: square.biomeLayer ? modelData.biomeColor : modelData.terrainColor
-                    border.width: root.showGrid ? 1 : 0
+                    border.width: root.showGrid ? Theme.borderWidth : 0
                     border.color: Theme.border
 
                     MouseArea {

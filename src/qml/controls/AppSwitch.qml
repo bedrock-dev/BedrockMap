@@ -15,7 +15,7 @@ Switch {
         y: parent.height / 2 - height / 2
         radius: height / 2
         color: root.checked ? Theme.accentSoft : Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: root.checked ? Theme.accent : Theme.border
         opacity: root.enabled ? 1.0 : 0.5
         Rectangle {

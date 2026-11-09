@@ -21,7 +21,7 @@ Item {
         height: Theme.touch ? Math.min(root.height, Theme.controlVisualHeight) : root.height
         radius: Theme.radiusControl
         color: root.active || toggleMouse.pressed ? Theme.accentSoft : Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: root.active || toggleMouse.pressed ? Theme.accent : Theme.border
     }
 

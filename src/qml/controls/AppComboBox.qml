@@ -29,7 +29,7 @@ ComboBox {
         height: root.height - y * 2
         radius: Theme.radiusSmall
         color: Theme.surfaceAlt
-        border.width: 1
+        border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border
         opacity: root.enabled ? 1.0 : 0.5
     }
@@ -63,7 +63,7 @@ ComboBox {
         background: Rectangle {
             radius: Theme.radiusControl
             color: Theme.surface
-            border.width: 1
+            border.width: Theme.borderWidth
             border.color: Theme.border
         }
         contentItem: ListView {

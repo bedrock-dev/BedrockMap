@@ -10,7 +10,7 @@ Rectangle {
     signal navigate(int index)
     color: Theme.surface
     border.color: Theme.border
-    border.width: 1
+    border.width: Theme.borderWidth
     Row {
         anchors.left: parent.left
         anchors.right: parent.right

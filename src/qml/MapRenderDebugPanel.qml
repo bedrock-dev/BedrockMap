@@ -164,7 +164,7 @@ Item {
                 }
                 Rectangle {
                     width: Math.max(0, renderPanel.width - 16)
-                    height: 1
+                    height: Theme.borderWidth
                     color: Theme.overlayBorder
                 }
                 Text {

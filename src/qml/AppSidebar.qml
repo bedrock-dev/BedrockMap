@@ -15,7 +15,7 @@ Rectangle {
 
     color: Theme.surface
     border.color: Theme.border
-    border.width: 1
+    border.width: Theme.borderWidth
 
     Column {
         id: topSection
@@ -144,7 +144,7 @@ Rectangle {
 
         Rectangle {
             width: parent.width
-            height: 1
+            height: Theme.borderWidth
             color: Theme.border
         }
         AppListRow {

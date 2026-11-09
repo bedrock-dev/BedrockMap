@@ -10,7 +10,7 @@ Rectangle {
 
     radius: Theme.radiusCard
     color: selected ? Theme.accentSoft : (interactive && hovered ? Theme.surfaceAlt : Theme.surface)
-    border.width: selected || danger ? 1 : 1
+    border.width: Theme.borderWidth
     border.color: danger ? Theme.danger : (selected || (interactive && hovered) ? Theme.accent : Theme.border)
     opacity: enabled ? 1.0 : 0.5
 }

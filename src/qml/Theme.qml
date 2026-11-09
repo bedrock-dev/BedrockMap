@@ -155,6 +155,7 @@ QtObject {
     readonly property color overlayMuted: palette.overlayMuted
 
     readonly property real metricScale: palette.metricScale
+    readonly property real borderWidth: palette.borderWidth
     readonly property int radiusSmall: palette.radiusSmall
     readonly property int radiusControl: palette.radiusControl
     readonly property int radiusCard: palette.radiusCard
@@ -180,6 +181,7 @@ QtObject {
         const text = base => Math.max(8, Math.round(base * scale))
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
+                                 borderWidth: 0.5,
                                  radiusSmall: ui(5),
                                  radiusControl: ui(8),
                                  radiusCard: ui(10),
