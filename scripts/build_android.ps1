@@ -150,13 +150,15 @@ try {
         [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
     }
 
-    # Compile the arm64 Release library.
+    # Compile the arm64 Release library, refreshing the source-controlled
+    # application version without discarding other build caches.
     & $qtCmake -S $sourceDir -B $BuildDir -G Ninja `
         "-DQT_HOST_PATH=$qtHost" "-DANDROID_SDK_ROOT=$SdkRoot" "-DANDROID_NDK_ROOT=$NdkRoot" `
         '-DANDROID_ABI=arm64-v8a' '-DANDROID_PLATFORM=android-28' '-DCMAKE_BUILD_TYPE=Release' `
         '-DBEDROCKMAP_FULL_DEBUG=OFF' "-DBEDROCKMAP_ANDROID_COMPILE_SDK=$CompileSdk" `
         '-DBEDROCKMAP_ANDROID_COMPRESS_LIBS=ON' '-DQT_ANDROID_DEPLOYMENT_TYPE=Release' `
-        '-DQT_NO_GLOBAL_APK_TARGET_PART_OF_ALL=ON'
+        '-DQT_NO_GLOBAL_APK_TARGET_PART_OF_ALL=ON' `
+        '-UBEDROCKMAP_VERSION_SUFFIX'
     if ($LASTEXITCODE -ne 0) { throw "Android configure failed ($LASTEXITCODE)." }
     cmake --build $BuildDir --target BedrockMap --parallel $Jobs
     if ($LASTEXITCODE -ne 0) { throw "Android build failed ($LASTEXITCODE)." }
