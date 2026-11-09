@@ -17,8 +17,8 @@ QtObject {
     // are logical pixels; Qt handles the device pixel ratio separately.
     readonly property real mobileUiScale: 1.0
     readonly property real uiScale: touch ? mobileUiScale : 1.0
-    readonly property int minimumTouchTarget: 40
-    readonly property int touchTarget: Math.max(minimumTouchTarget, ui(40))
+    readonly property int minimumTouchTarget: 32
+    readonly property int touchTarget: Math.max(minimumTouchTarget, ui(32))
     readonly property int iconSmallSize: ui(16)
     readonly property int iconSize: ui(18)
     readonly property int iconLargeSize: ui(24)
