@@ -753,48 +753,83 @@ Item {
         }
     }
 
-    Rectangle {
+    AppCard {
         id: mapStatusOverlay
         visible: !!canvas.controller
         z: 6
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: Theme.gapLarge + canvas.inputRightInset
-        anchors.bottomMargin: Theme.gapLarge + importPlacementOverlay.reservedHeight
-        width: statusColumn.implicitWidth + Theme.gapMedium * 2
-        height: statusColumn.implicitHeight + Theme.gapMedium * 2
-        radius: Theme.radiusSmall
-        color: Theme.overlayTranslucent
-        border.width: 0
+        readonly property real edgeMargin: Theme.gapLarge
+        readonly property real innerPadding: Theme.gapMedium
+        readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
+        readonly property string positionText: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
+                                                                          canvas.controller.dimension).arg(
+                                                                          canvas.hoverBlockInfo.blockX).arg(
+                                                                          canvas.hoverBlockInfo.blockZ).arg(
+                                                                          canvas.hoverBlockInfo.chunkX).arg(
+                                                                          canvas.hoverBlockInfo.chunkZ) :
+                                                                      "Dim: %1 Pos:--,--/--,--".arg(
+                                                                          canvas.controller.dimension)
+        readonly property string countsText: "Sel:%1 Modify:%2 Del:%3".arg(
+                                                 canvas.controller.selectionChunkCount).arg(
+                                                 canvas.controller.modifiedChunkCount).arg(
+                                                 canvas.controller.deletedChunkCount)
+        readonly property real contentWidth: Math.max(positionMetrics.advanceWidth, countsMetrics.advanceWidth)
+        width: Math.min(Math.max(Theme.ui(190), contentWidth + innerPadding * 2), availableWidth)
+        height: statusColumn.implicitHeight + innerPadding * 2
+        x: Math.max(edgeMargin, parent.width - canvas.inputRightInset - edgeMargin - width)
+        y: Math.max(edgeMargin, parent.height - importPlacementOverlay.reservedHeight - edgeMargin - height)
+        color: Theme.surface
+        radius: Theme.radiusCard
+        border.width: Theme.borderWidth
+        border.color: Theme.border
+        clip: true
+
+        TextMetrics {
+            id: positionMetrics
+            font.family: "JetBrains Mono"
+            font.pixelSize: Theme.fontBody
+            text: mapStatusOverlay.positionText
+        }
+        TextMetrics {
+            id: countsMetrics
+            font.family: "JetBrains Mono"
+            font.pixelSize: Theme.fontBody
+            text: mapStatusOverlay.countsText
+        }
 
         Column {
             id: statusColumn
-            anchors.centerIn: parent
-            spacing: Theme.gapTiny
+            x: mapStatusOverlay.innerPadding
+            y: mapStatusOverlay.innerPadding
+            width: parent.width - mapStatusOverlay.innerPadding * 2
+            spacing: Theme.gapSmall
 
             Text {
-                text: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(canvas.controller.dimension).arg(
-                                                    canvas.hoverBlockInfo.blockX).arg(canvas.hoverBlockInfo.blockZ).arg(
-                                                    canvas.hoverBlockInfo.chunkX).arg(canvas.hoverBlockInfo.chunkZ) :
-                                                "Dim: %1 Pos:--,--/--,--".arg(canvas.controller.dimension)
-                color: Theme.overlayText
-                font: canvas.debugFont
+                width: parent.width
+                text: mapStatusOverlay.positionText
+                color: Theme.text
+                font.family: "JetBrains Mono"
+                font.pixelSize: Theme.fontBody
+                elide: Text.ElideRight
             }
             Row {
+                width: parent.width
                 Text {
                     text: "Sel:%1 ".arg(canvas.controller.selectionChunkCount)
-                    color: Theme.overlayText
-                    font: canvas.debugFont
+                    color: Theme.text
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: Theme.fontBody
                 }
                 Text {
                     text: "Modify:%1 ".arg(canvas.controller.modifiedChunkCount)
-                    color: canvas.controller.modifiedChunkCount > 0 ? Theme.danger : Theme.overlayText
-                    font: canvas.debugFont
+                    color: canvas.controller.modifiedChunkCount > 0 ? Theme.danger : Theme.text
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: Theme.fontBody
                 }
                 Text {
                     text: "Del:%1".arg(canvas.controller.deletedChunkCount)
-                    color: canvas.controller.deletedChunkCount > 0 ? Theme.danger : Theme.overlayText
-                    font: canvas.debugFont
+                    color: canvas.controller.deletedChunkCount > 0 ? Theme.danger : Theme.text
+                    font.family: "JetBrains Mono"
+                    font.pixelSize: Theme.fontBody
                 }
             }
         }
