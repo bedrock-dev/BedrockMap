@@ -32,13 +32,13 @@ Item {
         property alias font: recordText.font
         implicitHeight: Math.max(Theme.iconSmallSize, recordText.implicitHeight)
         implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (recordIcon.visible ? Theme.iconSmallSize
-                                                                                                     + Theme.ui(6) : 0)
+                                                                                                     + Theme.gapMedium : 0)
 
         Row {
             anchors.fill: parent
             anchors.leftMargin: recordLabel.leftPadding
             anchors.rightMargin: recordLabel.rightPadding
-            spacing: Theme.ui(6)
+            spacing: Theme.gapMedium
 
             Image {
                 id: recordIcon
@@ -133,8 +133,8 @@ Item {
                 textRole: "label"
                 currentIndex: root.currentFilteredIndex()
                 contentItem: RecordLabel {
-                    leftPadding: 9
-                    rightPadding: 24
+                    leftPadding: Theme.gapLarge
+                    rightPadding: Theme.gapLarge
                     label: recordSelector.displayText
                     icon: recordSelector.currentIndex >= 0 && recordSelector.currentIndex < root.filteredItems.length
                           ? root.filteredItems[recordSelector.currentIndex].icon : ""
@@ -149,8 +149,8 @@ Item {
                     highlighted: recordSelector.highlightedIndex === index
                     text: modelData.label
                     contentItem: RecordLabel {
-                        leftPadding: 9
-                        rightPadding: 9
+                        leftPadding: Theme.gapLarge
+                        rightPadding: Theme.gapLarge
                         label: recordOption.text
                         icon: recordOption.modelData.icon
                         font.pixelSize: Theme.fontSubtitle
@@ -179,7 +179,7 @@ Item {
 
             RowLayout {
                 anchors.fill: parent
-                spacing: Theme.gapSmall / 2
+                spacing: Theme.gapTiny
                 visible: root.document && root.document.rootCount > 0
 
                 AppCard {
@@ -189,7 +189,7 @@ Item {
                     Layout.fillHeight: true
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: Theme.cardPadding
+                        anchors.margins: Theme.gapLarge
                         spacing: Theme.gapSmall
                         Text {
                             Layout.fillWidth: true
@@ -216,8 +216,8 @@ Item {
                                        ? Theme.accentSoft : (itemMouse.pressed ? Theme.surfaceAlt : "transparent")
                                 RecordLabel {
                                     anchors.fill: parent
-                                    leftPadding: 8
-                                    rightPadding: 8
+                                    leftPadding: Theme.gapMedium
+                                    rightPadding: Theme.gapMedium
                                     label: modelData.label
                                     icon: modelData.icon
                                     textColor: root.document && modelData.sourceIndex === root.document.currentIndex
@@ -307,7 +307,7 @@ Item {
                                                    root.document.treeModel.hexMode = checked
                                 }
                                 AppIconButton {
-                                    icon: "▾"
+                                    iconText: "▾"
                                     label: qsTr("Expand all")
                                     buttonSize: root.compactToolbarHeight
                                     Layout.preferredWidth: controlSize
@@ -317,7 +317,7 @@ Item {
                                                    root.document.treeModel.expandAll()
                                 }
                                 AppIconButton {
-                                    icon: "▸"
+                                    iconText: "▸"
                                     label: qsTr("Collapse all")
                                     buttonSize: root.compactToolbarHeight
                                     Layout.preferredWidth: controlSize

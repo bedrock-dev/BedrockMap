@@ -107,7 +107,9 @@ AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context
             connect(nbt->document(), &NbtDocumentController::saved, this, [this] { notifications_.info(tr("Save successful")); });
         } else if (auto* world = qobject_cast<WorldSession*>(session)) {
             connect(world, &WorldSession::saved, this, [this] { notifications_.info(tr("Save successful")); });
-            connect(world, &WorldSession::saveFailed, this, [this](const QString&) { notifications_.error(tr("Save failed")); });
+            connect(world, &WorldSession::saveFailed, this, [this](const QString& message) {
+                notifications_.error(message.isEmpty() ? tr("Save failed") : message);
+            });
             connect(world->voxelView(), &BlockVolumeController::importFinished, this,
                     [this] { notifications_.info(tr("Import successful")); });
         }

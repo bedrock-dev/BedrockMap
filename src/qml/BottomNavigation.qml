@@ -15,11 +15,11 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.leftMargin: Theme.ui(6)
-        anchors.rightMargin: Theme.ui(6)
-        anchors.topMargin: Theme.ui(6)
+        anchors.leftMargin: Theme.gapMedium
+        anchors.rightMargin: Theme.gapMedium
+        anchors.topMargin: Theme.gapMedium
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: Theme.ui(6) + root.bottomInset
+        anchors.bottomMargin: Theme.gapMedium + root.bottomInset
         Repeater {
             model: root.navigation.pages
             delegate: Item {

@@ -65,11 +65,11 @@ Control {
         spacing: 0
         ColumnLayout {
             Layout.fillWidth: true
-            Layout.margins: 12
-            spacing: 8
+            Layout.margins: Theme.gapLarge
+            spacing: Theme.gapMedium
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Theme.gapMedium
                 AppTextField {
                     id: search
                     Layout.fillWidth: true
@@ -92,7 +92,7 @@ Control {
             }
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Theme.gapMedium
                 AppCheckBox {
                     text: qsTr("Show prefix")
                     checked: App.logs.showPrefix
@@ -135,7 +135,7 @@ Control {
                 anchors.fill: parent
                 clip: true
                 contentWidth: width
-                contentHeight: message.height + 20
+                contentHeight: message.height + Theme.gapMedium * 2
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
                 onMovementStarted: followTail = false
@@ -149,9 +149,9 @@ Control {
 
                 TextEdit {
                     id: message
-                    x: 12
-                    y: 10
-                    width: logView.width - 24
+                    x: Theme.gapLarge
+                    y: Theme.gapMedium
+                    width: logView.width - Theme.gapLarge * 2
                     height: implicitHeight
                     text: App.logs.displayHtml
                     textFormat: TextEdit.RichText
@@ -187,8 +187,8 @@ Control {
         }
         ColumnLayout {
             Layout.fillWidth: true
-            Layout.margins: 10
-            spacing: 4
+            Layout.margins: Theme.gapMedium
+            spacing: Theme.gapSmall
             Label {
                 Layout.fillWidth: true
                 text: qsTr("%1 displayed / %2 retained | %3 older entries omitted").arg(App.logs.count).arg(

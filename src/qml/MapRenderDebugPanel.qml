@@ -17,8 +17,8 @@ Item {
     readonly property real summaryContentWidth: Math.max(timingHeading.implicitWidth, rendererInfo.implicitWidth,
                                                          timingZoom.implicitWidth, atlasState.implicitWidth,
                                                          uploadState.implicitWidth, viewportState.implicitWidth)
-    readonly property real preferredPanelWidth: Math.min(560, Math.max(debugActions.implicitWidth + 8,
-                                                                       summaryContentWidth + 16))
+    readonly property real preferredPanelWidth: Math.min(560, Math.max(debugActions.implicitWidth + Theme.gapMedium,
+                                                                       summaryContentWidth + Theme.gapMedium * 2))
 
     function snapshot() {
         return timingHeading.text + "\n" + rendererInfo.text + "\n" + timingZoom.text + "\n" + atlasState.text + "\n" + uploadState.text
@@ -44,11 +44,11 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.topMargin: 72
-        anchors.rightMargin: 18
+        anchors.rightMargin: Theme.gapLarge
         implicitWidth: root.preferredPanelWidth
-        implicitHeight: renderColumn.implicitHeight + 16
-        width: Math.max(0, Math.min(implicitWidth, parent.width - 36))
-        height: Math.max(0, Math.min(implicitHeight, parent.height - 90))
+        implicitHeight: renderColumn.implicitHeight + Theme.gapMedium * 2
+        width: Math.max(0, Math.min(implicitWidth, parent.width - Theme.gapLarge * 2))
+        height: Math.max(0, Math.min(implicitHeight, parent.height - renderPanel.y - Theme.gapLarge))
         radius: Theme.radiusSmall
         color: Theme.overlayTranslucent
         border.width: 0
@@ -67,15 +67,15 @@ Item {
             z: 2
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.margins: 4
-            spacing: 2
+            anchors.margins: Theme.gapSmall
+            spacing: Theme.gapTiny
 
             Button {
                 text: "Reset"
                 flat: true
                 font: root.panelFont
-                leftPadding: 4
-                rightPadding: 4
+                leftPadding: Theme.gapSmall
+                rightPadding: Theme.gapSmall
                 topPadding: 0
                 bottomPadding: 0
                 implicitHeight: 16
@@ -85,8 +85,8 @@ Item {
                 text: "Copy"
                 flat: true
                 font: root.panelFont
-                leftPadding: 4
-                rightPadding: 4
+                leftPadding: Theme.gapSmall
+                rightPadding: Theme.gapSmall
                 topPadding: 0
                 bottomPadding: 0
                 implicitHeight: 16
@@ -96,8 +96,8 @@ Item {
 
         Flickable {
             anchors.fill: parent
-            anchors.margins: 8
-            anchors.topMargin: 24
+            anchors.margins: Theme.gapMedium
+            anchors.topMargin: Theme.gapSection
             contentWidth: Math.max(width, timingTree.implicitWidth)
             contentHeight: renderColumn.implicitHeight
             clip: true
@@ -105,11 +105,11 @@ Item {
             Column {
                 id: renderColumn
                 width: Math.max(renderPanel.width - 16, timingTree.implicitWidth)
-                spacing: 1
+                spacing: Theme.gapTiny
 
                 Text {
                     id: timingHeading
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     text: "RENDERER DEBUG  |  %1 FPS".arg(root.terrainLayer.framesPerSecond.toFixed(1))
                     color: Theme.overlayText
                     font.pointSize: root.panelFont.pointSize
@@ -118,7 +118,7 @@ Item {
 
                 Text {
                     id: rendererInfo
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: root.terrainLayer.graphicsInfo
@@ -126,7 +126,7 @@ Item {
                 }
                 Text {
                     id: timingZoom
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     color: Theme.overlayText
                     font: root.panelFont
                     wrapMode: Text.Wrap
@@ -139,7 +139,7 @@ Item {
                 }
                 Text {
                     id: atlasState
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     color: Theme.overlayText
                     font: root.panelFont
                     wrapMode: Text.Wrap
@@ -150,20 +150,20 @@ Item {
                 }
                 Text {
                     id: uploadState
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: "Uploads: %1 terrain tiles".arg(root.terrainLayer.uploadedTiles)
                 }
                 Text {
                     id: viewportState
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     color: Theme.overlayText
                     font: root.panelFont
                     text: "Viewport: %1 × %2 px".arg(Math.round(root.width)).arg(Math.round(root.height))
                 }
                 Rectangle {
-                    width: Math.max(0, renderPanel.width - 16)
+                    width: Math.max(0, renderPanel.width - Theme.gapMedium * 2)
                     height: Theme.borderWidth
                     color: Theme.overlayBorder
                 }
@@ -182,11 +182,11 @@ Item {
         id: loaderPanel
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.topMargin: parent.width < renderPanel.width + implicitWidth + 36 ? renderPanel.y + renderPanel.height
-                                                                                   + 10 : 72
-        anchors.leftMargin: 18
-        implicitWidth: loaderColumn.implicitWidth + 16
-        implicitHeight: loaderColumn.implicitHeight + 16
+        anchors.topMargin: parent.width < renderPanel.width + implicitWidth + Theme.gapLarge * 2 ? renderPanel.y + renderPanel.height
+                                                                                   + Theme.gapMedium : renderPanel.y
+        anchors.leftMargin: Theme.gapLarge
+        implicitWidth: loaderColumn.implicitWidth + Theme.gapMedium * 2
+        implicitHeight: loaderColumn.implicitHeight + Theme.gapMedium * 2
         width: implicitWidth
         height: implicitHeight
         radius: Theme.radiusSmall
@@ -207,7 +207,7 @@ Item {
             id: loaderColumn
             anchors.left: parent.left
             anchors.top: parent.top
-            anchors.margins: 8
+            anchors.margins: Theme.gapMedium
             spacing: 0
 
             Repeater {

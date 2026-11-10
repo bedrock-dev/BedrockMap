@@ -160,7 +160,7 @@ Item {
             width: parent.width
             height: count > 0 ? contentHeight : 42
             interactive: false
-            spacing: Theme.cardGap
+            spacing: Theme.gapLarge
             model: section.worlds
             delegate: WorldCardDelegate {
                 width: ListView.view.width
@@ -187,9 +187,9 @@ Item {
         clip: true
         Column {
             id: body
-            x: Theme.pageGutter
+            x: Theme.gapSection
             y: Theme.gapMedium
-            width: parent.width - Theme.pageGutter * 2
+            width: parent.width - Theme.gapSection * 2
             spacing: Theme.gapMedium
 
             Text {
@@ -259,7 +259,7 @@ Item {
                         id: refreshButton
                         iconName: "refresh"
                         label: qsTr("Refresh worlds")
-                        buttonSize: 30
+                        buttonSize: Theme.iconButtonSmallSize
                         onClicked: App.worlds.refresh()
                     }
                 }
@@ -290,7 +290,7 @@ Item {
                 border.color: Theme.border
                 Row {
                     anchors.fill: parent
-                    anchors.margins: 10
+                    anchors.margins: Theme.gapMedium
                     spacing: Theme.gapLarge
                     Rectangle {
                         width: 74

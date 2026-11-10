@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
-Dialog {
+AppDialog {
     id: root
     property string newVersion
     property string releaseNotes
@@ -12,14 +12,8 @@ Dialog {
     readonly property string localizedNotes: selectReleaseNotes(releaseNotes)
 
     title: qsTr("Update available")
-    modal: true
-    parent: Overlay.overlay
-    closePolicy: Popup.CloseOnEscape
-    width: Math.min(640, parent ? parent.width - 32 : 640)
-    height: Math.min(560, parent ? parent.height - 48 : 560)
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
-    padding: Theme.cardPadding
+    preferredWidth: Theme.ui(640)
+    preferredHeight: Theme.ui(560)
 
     function present(version, notes, url) {
         newVersion = version
@@ -40,25 +34,6 @@ Dialog {
         return selected.join("\n").trim() || notes.trim()
     }
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-    header: Item {
-        implicitHeight: Theme.controlHeight + Theme.gapSmall
-        Text {
-            anchors.fill: parent
-            anchors.leftMargin: root.padding
-            anchors.rightMargin: root.padding
-            verticalAlignment: Text.AlignVCenter
-            text: root.title
-            color: Theme.text
-            font.pixelSize: Theme.fontLabel
-            elide: Text.ElideRight
-        }
-    }
     contentItem: ColumnLayout {
         spacing: Theme.gapMedium
         Text {

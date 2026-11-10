@@ -15,7 +15,7 @@ TextField {
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
         height: root.height - y * 2
-        radius: Theme.radiusSmall
+        radius: Theme.radiusControl
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border

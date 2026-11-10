@@ -15,7 +15,7 @@ TextArea {
     wrapMode: TextEdit.Wrap
     selectByMouse: true
     background: Rectangle {
-        radius: Theme.radiusSmall
+        radius: Theme.radiusControl
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border

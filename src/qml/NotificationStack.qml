@@ -58,7 +58,7 @@ Item {
                 required property int repeat
 
                 width: column.width
-                height: body.height + 20
+                height: body.height + Theme.gapLarge * 2
                 radius: Theme.radiusCard
                 // Severity is the card's own colour — tinted fill, full-tone
                 // border — rather than a bar glued to its left edge, which read
@@ -107,7 +107,7 @@ Item {
                     id: dismissButton
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: Theme.gapMedium
                     width: 16
                     height: 16
                     name: "close"
@@ -116,7 +116,7 @@ Item {
                     MouseArea {
                         id: dismissArea
                         anchors.fill: parent
-                        anchors.margins: -6
+                        anchors.margins: -Theme.gapSmall
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.center.dismiss(card.notificationId)
@@ -126,11 +126,11 @@ Item {
                 Column {
                     id: body
                     anchors.left: parent.left
-                    anchors.leftMargin: 14
+                    anchors.leftMargin: Theme.gapLarge
                     anchors.right: parent.right
-                    anchors.rightMargin: 30
+                    anchors.rightMargin: dismissButton.width + Theme.gapMedium * 2
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 3
+                    spacing: Theme.gapTiny
 
                     // Header line: where the message came from and how often it
                     // repeated. The whole row is hidden — not just its texts —
@@ -141,7 +141,7 @@ Item {
                     Row {
                         width: parent.width
                         visible: card.source.length > 0 || card.repeat > 1
-                        spacing: 6
+                        spacing: Theme.gapMedium
                         Text {
                             id: header
                             text: card.source
@@ -149,7 +149,7 @@ Item {
                             color: root.levelColor(card.level)
                             font.pixelSize: Theme.fontBody
                             elide: Text.ElideRight
-                            width: Math.min(implicitWidth, body.width - repeatBadge.width - 6)
+                            width: Math.min(implicitWidth, body.width - repeatBadge.width - Theme.gapMedium)
                         }
                         Text {
                             id: repeatBadge

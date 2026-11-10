@@ -28,7 +28,7 @@ AppCard {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Theme.cardPadding
+        anchors.margins: Theme.gapLarge
         spacing: Theme.gapSmall
 
         Item {
@@ -37,9 +37,9 @@ AppCard {
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 8
-                anchors.rightMargin: 6
-                spacing: 6
+                anchors.leftMargin: Theme.gapMedium
+                anchors.rightMargin: Theme.gapMedium
+                spacing: Theme.gapMedium
 
                 Text {
                     Layout.fillWidth: true
@@ -89,9 +89,9 @@ AppCard {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 8
-                    anchors.rightMargin: 6
-                    spacing: 6
+                    anchors.leftMargin: Theme.gapMedium
+                    anchors.rightMargin: Theme.gapMedium
+                    spacing: Theme.gapMedium
 
                     Text {
                         Layout.fillWidth: true

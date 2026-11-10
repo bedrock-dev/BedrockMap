@@ -49,13 +49,13 @@ Rectangle {
             Layout.preferredHeight: 48
             title: root.headerTitle
             subtitle: root.headerSubtitle
-            leftInset: 12
-            rightInset: 8
+            leftInset: Theme.gapLarge
+            rightInset: Theme.gapMedium
             actions: [
                 AppIconButton {
                     iconName: "close"
                     label: qsTr("Close chunk editor")
-                    buttonSize: 32
+                    buttonSize: Theme.iconButtonSmallSize
                     onClicked: root.closeRequested()
                 }
             ]
@@ -137,7 +137,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        width: parent.width - 32
+        width: parent.width - Theme.gapSection * 2
         visible: root.controller && root.controller.errorMessage.length > 0 && !root.controller.loading
         text: root.controller ? root.controller.errorMessage : ""
         color: Theme.danger
@@ -152,7 +152,7 @@ Rectangle {
 
         Text {
             anchors.centerIn: parent
-            width: parent.width - 48
+            width: parent.width - Theme.gapSection * 2
             text: parent.text
             color: Theme.muted
             font.pixelSize: Theme.fontBody

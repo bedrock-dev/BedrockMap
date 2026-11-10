@@ -198,12 +198,12 @@ Item {
 
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignTop
-        implicitHeight: content.implicitHeight + Theme.cardPadding * 2
+        implicitHeight: content.implicitHeight + Theme.gapLarge * 2
 
         Column {
             id: content
             anchors.fill: parent
-            anchors.margins: Theme.cardPadding
+            anchors.margins: Theme.gapLarge
             spacing: Theme.gapSmall
 
             Text {
@@ -227,8 +227,8 @@ Item {
                         wrapMode: Text.WordWrap
                     }
                     Rectangle {
-                        implicitWidth: shortcutLabel.implicitWidth + Theme.ui(8)
-                        implicitHeight: shortcutLabel.implicitHeight + Theme.ui(4)
+                        implicitWidth: shortcutLabel.implicitWidth + Theme.gapMedium
+                        implicitHeight: shortcutLabel.implicitHeight + Theme.gapSmall
                         radius: Theme.radiusSmall
                         color: Theme.surfaceAlt
 
@@ -248,14 +248,14 @@ Item {
     Flickable {
         anchors.fill: parent
         contentWidth: width
-        contentHeight: body.implicitHeight + Theme.pageGutter * 2
+        contentHeight: body.implicitHeight + Theme.gapSection * 2
         clip: true
 
         Column {
             id: body
-            x: Theme.pageGutter
-            y: Theme.pageGutter
-            width: Math.max(0, page.width - Theme.pageGutter * 2)
+            x: Theme.gapSection
+            y: Theme.gapSection
+            width: Math.max(0, page.width - Theme.gapSection * 2)
             spacing: Theme.gapSection
 
             Column {
@@ -273,11 +273,11 @@ Item {
 
             RowLayout {
                 width: parent.width
-                spacing: Theme.cardGap
+                spacing: Theme.gapLarge
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: Theme.cardGap
+                    spacing: Theme.gapLarge
 
                     ShortcutSection {
                         heading: qsTr("Global")
@@ -291,7 +291,7 @@ Item {
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: Theme.cardGap
+                    spacing: Theme.gapLarge
 
                     ShortcutSection {
                         heading: qsTr("Map view")

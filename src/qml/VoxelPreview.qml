@@ -19,7 +19,8 @@ Item {
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
     readonly property bool importing: !!controller && controller.importing
     readonly property bool copying: !!controller && controller.copying
-    readonly property bool textInputFocused: !!Window.activeFocusItem && Window.activeFocusItem.text !== undefined
+    readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
+                                               || Window.activeFocusItem instanceof TextEdit
     readonly property bool viewShortcutsEnabled: root.visible && root.hasModel && !!root.controller && !root.controller.loading &&
                                                  !root.importPreviewActive && !root.textInputFocused
 
@@ -303,7 +304,7 @@ Item {
     }
 
     component ViewButton: AppIconButton {
-        buttonSize: 32
+        buttonSize: Theme.iconButtonSmallSize
         Layout.preferredWidth: controlSize
         Layout.preferredHeight: controlSize
     }
@@ -385,7 +386,6 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             ScrollBar.vertical: ScrollBar {}
-
             GridLayout {
                 id: sections
                 x: Theme.gapSmall

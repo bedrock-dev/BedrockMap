@@ -22,22 +22,22 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: root.embedded ? root.leftInset : (Theme.compact ? 12 : 28) + root.leftInset
-        anchors.rightMargin: root.embedded ? root.rightInset : (Theme.compact ? 8 : 22) + root.rightInset
+        anchors.leftMargin: root.embedded ? root.leftInset : Theme.gapSection + root.leftInset
+        anchors.rightMargin: root.embedded ? root.rightInset : Theme.gapSection + root.rightInset
         spacing: Theme.gapSmall
 
         AppIconButton {
             visible: root.backVisible
             iconName: "back"
             label: qsTr("Back")
-            buttonSize: root.embedded ? 30 : 34
+            buttonSize: root.embedded ? Theme.iconButtonSmallSize : Theme.iconButtonSize
             Layout.alignment: Qt.AlignVCenter
             onClicked: root.backRequested()
         }
         ColumnLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
-            spacing: 1
+            spacing: Theme.gapTiny
 
             Text {
                 Layout.fillWidth: true

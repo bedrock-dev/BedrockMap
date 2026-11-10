@@ -48,7 +48,8 @@ Item {
                                           && (mapController.regionImport.active || mapController.regionImport.loading)
     // Back first cancels a pending region import, then closes the child page.
     readonly property bool canGoBack: importPending || childPages.isChildOpen
-    readonly property bool textInputFocused: !!Window.activeFocusItem && Window.activeFocusItem.text !== undefined
+    readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
+                                               || Window.activeFocusItem instanceof TextEdit
     readonly property bool mapShortcutsEnabled: section === 0 && !childPages.isChildOpen && !!mapController
                                                 && !mapController.operationRunning && !importPending
                                                 && !textInputFocused
@@ -201,8 +202,8 @@ Item {
     }
 
     function setMapToggle(toggle, enabled) {
-        if (toggle && toggle.active !== enabled)
-            toggle.active = enabled
+        if (toggle && toggle.checked !== enabled)
+            toggle.checked = enabled
     }
     function setMapDimension(index) {
         if (mapController)
@@ -230,37 +231,37 @@ Item {
         setMapToggle(gridToggle, enabled)
     }
     function toggleGrid() {
-        setGridEnabled(!gridToggle.active)
+        setGridEnabled(!gridToggle.checked)
     }
     function setCoordinatesEnabled(enabled) {
         setMapToggle(coordsToggle, enabled)
     }
     function toggleCoordinates() {
-        setCoordinatesEnabled(!coordsToggle.active)
+        setCoordinatesEnabled(!coordsToggle.checked)
     }
     function setSlimeChunksEnabled(enabled) {
         setMapToggle(slimeToggle, enabled)
     }
     function toggleSlimeChunks() {
-        setSlimeChunksEnabled(!slimeToggle.active)
+        setSlimeChunksEnabled(!slimeToggle.checked)
     }
     function setEntitiesEnabled(enabled) {
         setMapToggle(entitiesToggle, enabled)
     }
     function toggleEntities() {
-        setEntitiesEnabled(!entitiesToggle.active)
+        setEntitiesEnabled(!entitiesToggle.checked)
     }
     function setVillagesEnabled(enabled) {
         setMapToggle(villagesToggle, enabled)
     }
     function toggleVillages() {
-        setVillagesEnabled(!villagesToggle.active)
+        setVillagesEnabled(!villagesToggle.checked)
     }
     function setHsaEnabled(enabled) {
         setMapToggle(hsaToggle, enabled)
     }
     function toggleHsa() {
-        setHsaEnabled(!hsaToggle.active)
+        setHsaEnabled(!hsaToggle.checked)
     }
     function setTransparentVoidEnabled(enabled) {
         if (mapController && mapController.transparentVoid !== enabled)
@@ -358,7 +359,7 @@ Item {
         section = session ? session.workspaceSection : 0
         restoringSection = false
         const route = session ? session.workspaceRoute : "root"
-        childPages.reset(childPages.contains(route) ? route : "root")
+        childPages.reset(childPages.routeDefinition(route) ? route : "root")
         layerPanelOpen = false
         mapFilterPanelOpen = false
     }
@@ -396,12 +397,12 @@ Item {
                 controller: workspace.mapController
                 terrainData: workspace.terrainData
                 globalData: workspace.session ? workspace.session.globalData : null
-                showGrid: gridToggle.active
-                showCoordinates: coordsToggle.active
-                showEntities: entitiesToggle.active
-                showSlimeChunks: slimeToggle.active
-                showVillages: villagesToggle.active
-                showHsa: hsaToggle.active
+                showGrid: gridToggle.checked
+                showCoordinates: coordsToggle.checked
+                showEntities: entitiesToggle.checked
+                showSlimeChunks: slimeToggle.checked
+                showVillages: villagesToggle.checked
+                showHsa: hsaToggle.checked
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
                 onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
@@ -515,8 +516,8 @@ Item {
                 id: layerPanel
                 visible: workspace.section === 0 && workspace.layerPanelOpen
                 z: 2
-                width: Math.max(0, Math.min(360, parent.width - 16))
-                readonly property real naturalHeight: inspectorColumn.height + Theme.cardPadding * 2
+                width: Math.max(0, Math.min(360, parent.width - Theme.gapMedium * 2))
+                readonly property real naturalHeight: inspectorColumn.height + Theme.gapLarge * 2
                 height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
                 anchors.bottom: layerToolbar.top
                 anchors.bottomMargin: Theme.gapSmall
@@ -525,36 +526,36 @@ Item {
                     anchors.fill: parent
                     clip: true
                     contentWidth: width
-                    contentHeight: inspectorColumn.height + Theme.cardPadding * 2
+                    contentHeight: inspectorColumn.height + Theme.gapLarge * 2
                     Column {
                         id: inspectorColumn
-                        x: Theme.cardPadding
-                        y: Theme.cardPadding
-                        width: parent.width - Theme.cardPadding * 2
+                        x: Theme.gapLarge
+                        y: Theme.gapLarge
+                        width: parent.width - Theme.gapLarge * 2
                         spacing: Theme.gapSmall
                         Flow {
                             width: parent.width
                             spacing: Theme.gapSmall
                             AppToggle {
                                 id: gridToggle
-                                label: qsTr("Grid")
-                                active: true
-                                onToggled: workspace.setGridEnabled(active)
+                                text: qsTr("Grid")
+                                checked: true
+                                onToggled: workspace.setGridEnabled(checked)
                             }
                             AppToggle {
                                 id: coordsToggle
-                                label: qsTr("Coords")
-                                active: false
-                                onToggled: workspace.setCoordinatesEnabled(active)
+                                text: qsTr("Coords")
+                                checked: false
+                                onToggled: workspace.setCoordinatesEnabled(checked)
                             }
                             AppToggle {
                                 id: transparentVoidToggle
-                                label: qsTr("Transparent void")
+                                text: qsTr("Transparent void")
                                 enabled: !!workspace.mapController
-                                onToggled: workspace.setTransparentVoidEnabled(active)
+                                onToggled: workspace.setTransparentVoidEnabled(checked)
                                 Binding {
                                     target: transparentVoidToggle
-                                    property: "active"
+                                    property: "checked"
                                     value: !!workspace.mapController && workspace.mapController.transparentVoid
                                 }
                             }
@@ -614,25 +615,25 @@ Item {
                             spacing: Theme.gapSmall
                             AppToggle {
                                 id: slimeToggle
-                                label: qsTr("Slime")
-                                active: false
-                                onToggled: workspace.setSlimeChunksEnabled(active)
+                                text: qsTr("Slime")
+                                checked: false
+                                onToggled: workspace.setSlimeChunksEnabled(checked)
                             }
                             AppToggle {
                                 id: entitiesToggle
-                                label: qsTr("Entities")
-                                active: false
-                                onToggled: workspace.setEntitiesEnabled(active)
+                                text: qsTr("Entities")
+                                checked: false
+                                onToggled: workspace.setEntitiesEnabled(checked)
                             }
                             AppToggle {
                                 id: villagesToggle
-                                label: qsTr("Villages")
-                                onToggled: workspace.setVillagesEnabled(active)
+                                text: qsTr("Villages")
+                                onToggled: workspace.setVillagesEnabled(checked)
                             }
                             AppToggle {
                                 id: hsaToggle
-                                label: qsTr("HSA")
-                                onToggled: workspace.setHsaEnabled(active)
+                                text: qsTr("HSA")
+                                onToggled: workspace.setHsaEnabled(checked)
                             }
                         }
                         Text {
@@ -657,8 +658,8 @@ Item {
             AppCard {
                 id: navigationToolbar
                 z: 1
-                readonly property real horizontalPadding: workspace.compact ? 8 : 10
-                readonly property real verticalPadding: Theme.toolbarPadding
+                readonly property real horizontalPadding: Theme.gapMedium
+                readonly property real verticalPadding: Theme.gapSmall
                 width: navigationRow.width + horizontalPadding * 2
                 height: navigationRow.height + verticalPadding * 2
                 anchors.top: parent.top
@@ -669,23 +670,20 @@ Item {
                     x: navigationToolbar.horizontalPadding
                     height: Theme.touch ? Theme.controlHeight : 34
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
+                    spacing: Theme.gapTiny
                     AppIconButton {
                         iconName: "zoom_in"
                         label: qsTr("Zoom in")
-                        buttonSize: 34
                         onClicked: canvas.zoomIn()
                     }
                     AppIconButton {
                         iconName: "zoom_out"
                         label: qsTr("Zoom out")
-                        buttonSize: 34
                         onClicked: canvas.zoomOut()
                     }
                     AppIconButton {
                         iconName: "locate"
                         label: qsTr("Return to origin")
-                        buttonSize: 34
                         onClicked: canvas.centerOnOrigin()
                     }
                     AppTextField {
@@ -713,7 +711,7 @@ Item {
                 id: mapFilterPanel
                 visible: workspace.section === 0 && workspace.mapFilterPanelOpen
                 z: 2
-                width: Math.max(0, Math.min(360, parent.width - 16))
+                width: Math.max(0, Math.min(360, parent.width - Theme.gapMedium * 2))
                 height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
                 anchors.bottom: layerToolbar.top
                 anchors.bottomMargin: Theme.gapSmall
@@ -725,7 +723,7 @@ Item {
             AppCard {
                 id: layerToolbar
                 z: 3
-                readonly property real toolbarPadding: Theme.toolbarPadding
+                readonly property real toolbarPadding: Theme.gapSmall
                 width: layerToolbarRow.width + toolbarPadding * 2
                 height: layerToolbarRow.height + toolbarPadding * 2
                 anchors.left: parent.left
@@ -737,14 +735,13 @@ Item {
                     x: layerToolbar.toolbarPadding
                     height: Theme.touch ? Theme.controlHeight : 34
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
+                    spacing: Theme.gapTiny
 
                     AppIconButton {
                         id: layerButton
                         iconName: "layers"
                         label: qsTr("Layers")
                         selected: workspace.layerPanelOpen
-                        buttonSize: 34
                         onClicked: workspace.toggleLayerPanel()
                     }
 
@@ -753,7 +750,6 @@ Item {
                         iconName: "filter"
                         label: qsTr("Map filters")
                         selected: workspace.mapFilterPanelOpen
-                        buttonSize: 34
                         onClicked: workspace.toggleMapFilterPanel()
                     }
 
@@ -766,7 +762,6 @@ Item {
                                                                 ? workspace.mapController.selectionChunkCount : 0) :
                                                             qsTr("Selection mode")
                         selected: canvas.selectionToolActive
-                        buttonSize: 34
                         onClicked: workspace.toggleSelectionTool()
                     }
                 }
@@ -802,17 +797,17 @@ Item {
             id: desktopSidebarScroll
             width: parent.width
             anchors.top: parent.top
-            anchors.topMargin: Theme.sidebarCollapsedPadding
+            anchors.topMargin: Theme.gapMedium
             anchors.bottom: desktopSidebarFooter.top
             contentWidth: width
-            contentHeight: desktopSidebarColumn.height + Theme.sidebarCollapsedPadding * 2
+            contentHeight: desktopSidebarColumn.height + Theme.gapMedium * 2
             clip: true
             Column {
                 id: desktopSidebarColumn
-                x: Theme.sidebarCollapsedPadding
-                y: Theme.sidebarCollapsedPadding
-                width: parent.width - Theme.sidebarCollapsedPadding * 2
-                spacing: 2
+                x: Theme.gapMedium
+                y: Theme.gapMedium
+                width: parent.width - Theme.gapMedium * 2
+                spacing: Theme.gapTiny
                 AppListRow {
                     iconName: "map"
                     label: qsTr("Map")
@@ -869,15 +864,14 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.margins: Theme.sidebarCollapsedPadding
+            anchors.margins: Theme.gapMedium
             spacing: Theme.gapSmall
             AppIconButton {
                 x: (parent.width - width) / 2
                 iconName: workspace.session && !workspace.session.saving ? "save" : ""
-                icon: workspace.session && workspace.session.saving ? "…" : ""
+                iconText: workspace.session && workspace.session.saving ? "…" : ""
                 label: workspace.session && workspace.session.saving ? qsTr("Saving…") : qsTr("Save world")
                 dirty: !!workspace.session && workspace.session.dirty
-                buttonSize: 34
                 visible: !!workspace.session
                 enabled: workspace.session && workspace.session.canSave
                 onClicked: workspace.saveRequested()
@@ -886,7 +880,6 @@ Item {
                 x: (parent.width - width) / 2
                 iconName: "exit"
                 label: qsTr("Close world")
-                buttonSize: 34
                 danger: true
                 onClicked: workspace.closeRequested()
             }
@@ -898,7 +891,7 @@ Item {
         z: 7
         visible: App.runtimeSettings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen &&
                  !workspace.voxelViewOpen
-        readonly property real toolbarPadding: Theme.toolbarPadding
+        readonly property real toolbarPadding: Theme.gapSmall
         width: workspaceToolbarRow.width + toolbarPadding * 2
         height: workspaceToolbarRow.height + toolbarPadding * 2
         anchors.top: parent.top
@@ -909,12 +902,11 @@ Item {
             x: workspaceToolbar.toolbarPadding
             height: Theme.touch ? Theme.controlHeight : 34
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 2
+            spacing: Theme.gapTiny
             AppIconButton {
                 iconName: "debug"
                 label: qsTr("Debug panels")
                 selected: workspace.debugVisible
-                buttonSize: 34
                 onClicked: workspace.toggleDebugPanels()
             }
         }

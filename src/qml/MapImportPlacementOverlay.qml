@@ -37,11 +37,11 @@ Item {
         visible: root.active
         enabled: !root.inputBlocked
         z: 10
-        x: Math.max(8, (root.width - root.inputRightInset - width) / 2)
+        x: Math.max(Theme.gapMedium, (root.width - root.inputRightInset - width) / 2)
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
-        width: Math.max(0, Math.min(260, root.width - root.inputRightInset - 16))
-        height: panelColumn.implicitHeight + 12
+        anchors.bottomMargin: Theme.gapMedium
+        width: Math.max(0, Math.min(260, root.width - root.inputRightInset - Theme.gapMedium * 2))
+        height: panelColumn.implicitHeight + Theme.gapMedium * 2
 
         // Reserve this entire strip from map input, including unused panel space.
         MouseArea {
@@ -59,8 +59,8 @@ Item {
         ColumnLayout {
             id: panelColumn
             anchors.fill: parent
-            anchors.margins: 6
-            spacing: 4
+            anchors.margins: Theme.gapMedium
+            spacing: Theme.gapSmall
 
             Text {
                 Layout.fillWidth: true

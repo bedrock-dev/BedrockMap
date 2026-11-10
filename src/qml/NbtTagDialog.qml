@@ -4,7 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
-Dialog {
+AppDialog {
     id: root
     property int mode: 0
     property int sourceRow: -1
@@ -26,14 +26,14 @@ Dialog {
         property real rightPadding: 0
         property alias font: labelText.font
 
-        implicitWidth: leftPadding + rightPadding + labelText.implicitWidth + Theme.iconSmallSize + Theme.ui(6)
+        implicitWidth: leftPadding + rightPadding + labelText.implicitWidth + Theme.iconSmallSize + Theme.gapMedium
         implicitHeight: Math.max(Theme.iconSmallSize, labelText.implicitHeight)
 
         Row {
             anchors.fill: parent
             anchors.leftMargin: labelItem.leftPadding
             anchors.rightMargin: labelItem.rightPadding
-            spacing: Theme.ui(6)
+            spacing: Theme.gapMedium
 
             NbtTagTypeIcon {
                 anchors.verticalCenter: parent.verticalCenter
@@ -51,15 +51,8 @@ Dialog {
         }
     }
 
-    modal: true
     focus: true
-    closePolicy: Popup.CloseOnEscape
-    parent: Overlay.overlay
-    width: Math.min(440, parent ? parent.width - 32 : 440)
-    height: parent ? Math.min(implicitHeight, parent.height - 32) : implicitHeight
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
-    padding: Theme.gapSmall
+    preferredWidth: Theme.ui(440)
     title: mode === 0 ? qsTr("Add NBT tag") : qsTr("Edit NBT tag")
 
     function openCreate(row, childType) {
@@ -91,33 +84,8 @@ Dialog {
         return 0
     }
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-
-    // The Basic style supplies a square-backed header by default. Keep the
-    // title but use a transparent header so the rounded dialog background is
-    // visible at the top corners.
-    header: Item {
-        implicitHeight: Theme.controlHeight + Theme.gapSmall
-        Text {
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.gapSmall
-            anchors.right: parent.right
-            anchors.rightMargin: Theme.gapSmall
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.title
-            color: Theme.text
-            font.pixelSize: Theme.fontLabel
-            elide: Text.ElideRight
-        }
-    }
-
     contentItem: ColumnLayout {
-        spacing: Math.max(2, Math.round(Theme.gapSmall / 2))
+        spacing: Theme.gapTiny
         RowLayout {
             Layout.fillWidth: true
             Text {
@@ -150,8 +118,8 @@ Dialog {
                 enabled: !root.typeLocked
                 onActivated: root.tagType = root.typeIds[currentIndex]
                 contentItem: TypeLabel {
-                    leftPadding: Theme.ui(9)
-                    rightPadding: Theme.iconSmallSize + Theme.ui(8)
+                    leftPadding: Theme.gapLarge
+                    rightPadding: Theme.iconSmallSize + Theme.gapMedium
                     label: typeCombo.displayText
                     tagType: root.typeIds[typeCombo.currentIndex]
                     font: typeCombo.font
@@ -165,8 +133,8 @@ Dialog {
                     highlighted: typeCombo.highlightedIndex === index
                     text: modelData
                     contentItem: TypeLabel {
-                        leftPadding: Theme.ui(9)
-                        rightPadding: Theme.ui(9)
+                        leftPadding: Theme.gapLarge
+                        rightPadding: Theme.gapLarge
                         label: typeOption.text
                         tagType: root.typeIds[typeOption.index]
                         font.pixelSize: Theme.fontSubtitle
@@ -184,7 +152,7 @@ Dialog {
             Text {
                 Layout.preferredWidth: 54
                 Layout.alignment: Qt.AlignTop
-                Layout.topMargin: Math.round(Theme.gapSmall / 2)
+                Layout.topMargin: Theme.gapTiny
                 text: qsTr("Value")
                 color: Theme.muted
                 font.pixelSize: Theme.fontBody

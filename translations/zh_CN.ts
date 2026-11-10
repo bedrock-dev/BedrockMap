@@ -1014,51 +1014,6 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Save NBT file</source>
-        <translation>保存 NBT 文件</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Unsaved changes</source>
-        <translation>未保存的更改</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Untitled world</source>
-        <translation>未命名世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Discard</source>
-        <translation>放弃</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Saving…</source>
-        <translation>正在保存……</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save</source>
-        <translation>保存</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
         <source>Save active session</source>
         <translation>保存当前会话</translation>
     </message>
@@ -1091,18 +1046,6 @@
         <location filename="../src/qml/Main.qml"/>
         <source>Open world</source>
         <translation>打开世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save failed</source>
-        <translation>保存失败</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save changes before closing this session?</source>
-        <translation>关闭此会话前是否保存更改？</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -2151,6 +2094,66 @@
         <location filename="../src/controller/regionimportcontroller.cpp"/>
         <source>The region file could not be loaded.</source>
         <translation>无法加载区域文件。</translation>
+    </message>
+</context>
+<context>
+    <name>SessionCloseFlow</name>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save failed</source>
+        <translation>保存失败</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save NBT file</source>
+        <translation>保存 NBT 文件</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Unsaved changes</source>
+        <translation>未保存的更改</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save changes before closing this session?</source>
+        <translation>关闭此会话前是否保存更改？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Discard</source>
+        <translation>放弃</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Saving…</source>
+        <translation>正在保存……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save</source>
+        <translation>保存</translation>
     </message>
 </context>
 <context>

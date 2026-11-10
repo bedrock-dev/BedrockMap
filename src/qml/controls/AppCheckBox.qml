@@ -7,7 +7,7 @@ CheckBox {
 
     implicitHeight: Math.max(Theme.controlHeight, implicitContentHeight + topPadding + bottomPadding)
     font.pixelSize: Theme.fontSubtitle
-    spacing: Theme.controlSpacing
+    spacing: Theme.gapMedium
     contentItem: Text {
         leftPadding: root.indicator.width + root.spacing
         text: root.text

@@ -759,8 +759,8 @@ Item {
         anchors.bottom: parent.bottom
         anchors.rightMargin: Theme.gapLarge + canvas.inputRightInset
         anchors.bottomMargin: Theme.gapLarge + importPlacementOverlay.reservedHeight
-        width: statusColumn.implicitWidth + Theme.ui(16)
-        height: statusColumn.implicitHeight + Theme.ui(12)
+        width: statusColumn.implicitWidth + Theme.gapMedium * 2
+        height: statusColumn.implicitHeight + Theme.gapMedium * 2
         radius: Theme.radiusSmall
         color: Theme.overlayTranslucent
         border.width: 0
@@ -768,7 +768,7 @@ Item {
         Column {
             id: statusColumn
             anchors.centerIn: parent
-            spacing: Theme.ui(1)
+            spacing: Theme.gapTiny
 
             Text {
                 text: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(canvas.controller.dimension).arg(

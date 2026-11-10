@@ -143,23 +143,23 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 56
+        height: Theme.ui(56)
         visible: root.controller && root.controller.loading
-        color: "#b0101419"
+        color: Theme.overlayTranslucent
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
-            anchors.topMargin: 8
-            anchors.bottomMargin: 8
-            spacing: 4
+            anchors.leftMargin: Theme.gapSection
+            anchors.rightMargin: Theme.gapSection
+            anchors.topMargin: Theme.gapSmall
+            anchors.bottomMargin: Theme.gapSmall
+            spacing: Theme.gapSmall
 
             Text {
                 Layout.fillWidth: true
                 text: root.controller ? qsTr("Building voxel terrain… %1%").arg(root.controller.voxelProgress) : qsTr(
                                             "Building voxel terrain…")
-                color: "#f1f4f8"
+                color: Theme.overlayText
                 font.pixelSize: Theme.fontCaption
             }
             ProgressBar {
@@ -192,7 +192,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: 10
+        anchors.margins: Theme.gapMedium
         visible: !root.controller || !root.controller.loading
         wrapMode: Text.Wrap
         text: (areaInfo.length > 0 ? areaInfo + "\n" : "") + (voxelItem.rotationLocked ? (Theme.touch ? qsTr("Rotation locked · Two fingers: pan and zoom") :

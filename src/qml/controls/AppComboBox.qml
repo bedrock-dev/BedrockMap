@@ -9,8 +9,8 @@ ComboBox {
     implicitHeight: Theme.controlHeight
     font.pixelSize: Theme.fontSubtitle
     contentItem: Text {
-        leftPadding: Theme.ui(9)
-        rightPadding: Theme.ui(9)
+        leftPadding: Theme.gapLarge
+        rightPadding: Theme.gapLarge
         text: root.displayText
         font: root.font
         color: Theme.text
@@ -24,7 +24,7 @@ ComboBox {
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
         height: root.height - y * 2
-        radius: Theme.radiusSmall
+        radius: Theme.radiusControl
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border
@@ -39,8 +39,8 @@ ComboBox {
         highlighted: root.highlightedIndex === index
         text: root.textRole ? modelData[root.textRole] : modelData
         contentItem: Text {
-            leftPadding: Theme.ui(9)
-            rightPadding: Theme.ui(9)
+            leftPadding: Theme.gapLarge
+            rightPadding: Theme.gapLarge
             text: option.text
             color: Theme.text
             font.pixelSize: Theme.fontSubtitle

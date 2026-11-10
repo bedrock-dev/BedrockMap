@@ -10,7 +10,7 @@ Row {
 
     width: Theme.ui(224)
     height: Theme.controlHeight
-    spacing: Theme.ui(6)
+    spacing: Theme.gapMedium
 
     AppTextField {
         width: root.width - pickerButton.width - root.spacing
@@ -23,7 +23,7 @@ Row {
     AppIconButton {
         id: pickerButton
         anchors.verticalCenter: parent.verticalCenter
-        buttonSize: 28
+        buttonSize: Theme.iconButtonSmallSize
         iconName: "color_picker"
         label: qsTr("Choose color")
         onClicked: {

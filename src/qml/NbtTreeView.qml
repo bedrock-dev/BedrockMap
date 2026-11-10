@@ -42,11 +42,11 @@ Item {
             border.width: index === root.selectedRow ? Theme.borderWidth : 0
             border.color: Theme.accent
 
-            readonly property real arrowX: Theme.ui(8) + row.depth * Theme.iconSmallSize
+            readonly property real arrowX: Theme.gapMedium + row.depth * Theme.iconSmallSize
             readonly property real iconX: row.arrowX + Theme.ui(20)
             readonly property real keyX: row.iconX + Theme.ui(22)
             readonly property real keyWidth: Math.max(Theme.ui(90), list.width * 0.28)
-            readonly property real valueX: row.keyX + row.keyWidth + Theme.controlSpacing
+            readonly property real valueX: row.keyX + row.keyWidth + Theme.gapMedium
 
             function requestContext(sceneX, sceneY) {
                 root.selectRow(row.index)
@@ -119,7 +119,7 @@ Item {
             Text {
                 x: row.valueX
                 y: (row.height - height) / 2
-                width: Math.max(0, list.width - row.valueX - Theme.controlSpacing)
+                width: Math.max(0, list.width - row.valueX - Theme.gapMedium)
                 text: row.value
                 color: Theme.muted
                 font.family: "JetBrains Mono"

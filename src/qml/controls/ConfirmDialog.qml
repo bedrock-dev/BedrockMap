@@ -1,9 +1,8 @@
 import BedrockMap 1.0
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+AppDialog {
     id: root
     property string message
     property string confirmText: qsTr("OK")
@@ -13,14 +12,6 @@ Dialog {
     signal cancelled
 
     property bool confirmPending: false
-
-    modal: true
-    parent: Overlay.overlay
-    closePolicy: Popup.CloseOnEscape
-    width: Math.min(430, parent ? parent.width - 40 : 430)
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
-    padding: Theme.cardPadding
 
     function accept() {
         confirmPending = true
@@ -34,28 +25,6 @@ Dialog {
         confirmPending = false
     }
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-
-    header: Item {
-        implicitHeight: Theme.controlHeight + Theme.gapSmall
-        Text {
-            anchors.left: parent.left
-            anchors.leftMargin: Theme.gapSmall
-            anchors.right: parent.right
-            anchors.rightMargin: Theme.gapSmall
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.title
-            color: Theme.text
-            font.pixelSize: Theme.fontLabel
-            elide: Text.ElideRight
-        }
-    }
-
     contentItem: ColumnLayout {
         spacing: Theme.gapMedium
         Text {
@@ -67,6 +36,7 @@ Dialog {
         }
         RowLayout {
             Layout.fillWidth: true
+            spacing: Theme.gapMedium
             Item {
                 Layout.fillWidth: true
             }

@@ -16,9 +16,9 @@ Item {
 
         Column {
             id: body
-            x: Theme.pageGutter
+            x: Theme.gapSection
             y: Theme.gapMedium
-            width: parent.width - Theme.pageGutter * 2
+            width: parent.width - Theme.gapSection * 2
             spacing: Theme.gapMedium
 
             Text {
@@ -51,7 +51,7 @@ Item {
 
                     Row {
                         anchors.fill: parent
-                        anchors.margins: Theme.cardPadding
+                        anchors.margins: Theme.gapLarge
                         spacing: Theme.gapMedium
 
                         Rectangle {
@@ -75,7 +75,7 @@ Item {
                             width: Math.max(0, parent.width - Theme.ui(34) - parent.spacing - closeButton.controlSize
                                             - Theme.gapSmall)
                             anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
+                            spacing: Theme.gapTiny
                             Text {
                                 width: parent.width
                                 text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
@@ -108,7 +108,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "close"
                         label: qsTr("Close session")
-                        buttonSize: 28
+                        buttonSize: Theme.iconButtonSmallSize
                         danger: true
                         onClicked: App.closeSession(sessionIndex)
                     }

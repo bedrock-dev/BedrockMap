@@ -22,7 +22,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: root.collapsed ? Theme.sidebarCollapsedPadding : 18
+        anchors.margins: root.collapsed ? Theme.gapMedium : Theme.gapLarge
         spacing: Theme.gapMedium
 
         AppListRow {
@@ -45,7 +45,7 @@ Rectangle {
             text: root.navigation.pages[root.navigation.pageSessions].title
             color: Theme.muted
             font.pixelSize: Theme.fontCaption
-            leftPadding: 8
+            leftPadding: Theme.gapMedium
         }
     }
 
@@ -56,12 +56,12 @@ Rectangle {
         anchors.bottom: bottomSection.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.leftMargin: root.collapsed ? Theme.sidebarCollapsedPadding : 12
-        anchors.rightMargin: root.collapsed ? Theme.sidebarCollapsedPadding : 12
-        anchors.topMargin: 4
-        anchors.bottomMargin: 8
+        anchors.leftMargin: root.collapsed ? Theme.gapMedium : Theme.gapLarge
+        anchors.rightMargin: root.collapsed ? Theme.gapMedium : Theme.gapLarge
+        anchors.topMargin: Theme.gapSmall
+        anchors.bottomMargin: Theme.gapMedium
         clip: true
-        spacing: 2
+        spacing: Theme.gapTiny
         model: App.openSessions
         delegate: Rectangle {
             id: sessionRow
@@ -78,7 +78,7 @@ Rectangle {
             Row {
                 x: root.collapsed ? (parent.width - width) / 2 : 10
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 9
+                spacing: Theme.gapMedium
                 AppIcon {
                     width: 14
                     height: 14
@@ -90,7 +90,7 @@ Rectangle {
                         dirty: sessionRow.dirty && root.collapsed
                         anchors.top: parent.top
                         anchors.right: parent.right
-                        anchors.margins: -2
+                        anchors.margins: -Theme.gapTiny
                     }
                 }
                 Text {
@@ -112,7 +112,7 @@ Rectangle {
             AppIcon {
                 visible: !root.collapsed
                 anchors.right: parent.right
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.gapMedium
                 anchors.verticalCenter: parent.verticalCenter
                 width: 16
                 height: 16
@@ -122,7 +122,7 @@ Rectangle {
                 MouseArea {
                     id: openWorldClose
                     anchors.fill: parent
-                    anchors.margins: -5
+                    anchors.margins: -Theme.gapSmall
                     hoverEnabled: true
                     onClicked: root.closeSessionRequested(sessionIndex)
                 }
@@ -139,7 +139,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: root.collapsed ? Theme.sidebarCollapsedPadding : 18
+        anchors.margins: root.collapsed ? Theme.gapMedium : Theme.gapLarge
         spacing: Theme.gapMedium
 
         Rectangle {

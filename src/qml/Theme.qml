@@ -22,11 +22,14 @@ QtObject {
     readonly property int iconSmallSize: ui(16)
     readonly property int iconSize: ui(18)
     readonly property int iconLargeSize: ui(24)
-    readonly property int controlPadding: ui(10)
-    readonly property int controlSpacing: ui(8)
-    readonly property int toolbarPadding: touch ? ui(4) : 3
-    readonly property int toolbarRowSpacing: touch ? ui(2) : gapSmall
-    readonly property int segmentedPadding: ui(3)
+    // Spacing scale on a 4px grid. Narrow windows and touch devices share the
+    // dense values; touch only enlarges hit targets, not spacing.
+    readonly property bool dense: compact || touch
+    readonly property int gapTiny: ui(2)
+    readonly property int gapSmall: ui(4)
+    readonly property int gapMedium: ui(8)
+    readonly property int gapLarge: ui(dense ? 8 : 12)
+    readonly property int gapSection: ui(dense ? 16 : 24)
     readonly property int checkBoxSize: touch ? ui(20) : 18
     readonly property int switchWidth: ui(40)
     readonly property int switchHeight: touch ? ui(24) : 22
@@ -39,13 +42,15 @@ QtObject {
     readonly property int controlHeight: touch ? Math.max(touchTarget, controlVisualHeight) : 28
     readonly property int buttonHeight: touch ? controlHeight : 32
     readonly property int compactButtonHeight: touch ? controlHeight : 28
-    readonly property int segmentedHeight: touch ? Math.max(controlHeight, controlVisualHeight + segmentedPadding * 2) :
-                                                   controlHeight + segmentedPadding * 2
+    readonly property int segmentedHeight: touch ? Math.max(controlHeight, controlVisualHeight + gapTiny * 2) :
+                                                   controlHeight + gapTiny * 2
     readonly property int menuItemHeight: touch ? controlHeight : 30
     readonly property int treeRowHeight: touch ? controlHeight : 28
     readonly property int settingRowHeight: touch ? Math.max(ui(44), controlHeight + ui(4)) : (compact ? 36 : 38)
     readonly property int sessionRowHeight: touch ? Math.max(ui(56), controlHeight + ui(8), fontSubtitle + fontCaption
-                                                             + ui(2) + cardPadding * 2) : (compact ? 52 : 64)
+                                                             + gapTiny + gapLarge * 2) : (compact ? 52 : 64)
+    readonly property int iconButtonSize: ui(34)
+    readonly property int iconButtonSmallSize: ui(28)
     readonly property int dirtyIndicatorSize: touch ? ui(10) : 9
 
     function ui(value) {
@@ -60,8 +65,7 @@ QtObject {
     readonly property bool showWorldCards: !compact
     readonly property real sidebarWidth: ui(232)
     readonly property real sidebarCollapsedWidth: ui(52)
-    readonly property real sidebarCollapsedPadding: ui(8)
-    readonly property real sidebarCollapsedItemSize: sidebarCollapsedWidth - sidebarCollapsedPadding * 2
+    readonly property real sidebarCollapsedItemSize: sidebarCollapsedWidth - gapMedium * 2
     readonly property real bottomNavigationHeight: touch ? Math.max(ui(56), iconSize + fontCaption + ui(22)) : (compact
                                                                                                                 ? 64 : 72)
     readonly property real topbarHeight: touch ? Math.max(ui(52), controlHeight + ui(8)) : (compact ? 52 : 72)
@@ -89,6 +93,7 @@ QtObject {
                                                       warningSoft: "#3b2f16",
                                                       map: "#030504",
                                                       overlay: "#e6000000",
+                                                      overlayTranslucent: "#b8000000",
                                                       overlayBorder: "#66888888",
                                                       overlayText: "#f0f0f0",
                                                       overlayMuted: "#d0d0d0"
@@ -109,6 +114,7 @@ QtObject {
                                                      warningSoft: "#4a3d1d",
                                                      map: "#18241f",
                                                      overlay: "#d9212121",
+                                                     overlayTranslucent: "#b8212121",
                                                      overlayBorder: "#66888888",
                                                      overlayText: "#f0f0f0",
                                                      overlayMuted: "#d0d0d0"
@@ -129,6 +135,7 @@ QtObject {
                                                       warningSoft: "#fdf1d6",
                                                       map: "#e1eee5",
                                                       overlay: "#e8ffffff",
+                                                      overlayTranslucent: "#c8ffffff",
                                                       overlayBorder: "#33000000",
                                                       overlayText: "#1a2028",
                                                       overlayMuted: "#68717e"
@@ -142,7 +149,7 @@ QtObject {
     readonly property color muted: palette.muted
     readonly property color accent: palette.accent
     readonly property color accentSoft: palette.accentSoft
-    readonly property color onAccent: dark ? "#102116" : "#ffffff"
+    readonly property color onAccent: palette.onAccent
     readonly property color danger: palette.danger
     readonly property color dangerSoft: palette.dangerSoft
     readonly property color warning: palette.warning
@@ -151,7 +158,7 @@ QtObject {
     readonly property color mapCheckerBase: App.runtimeSettings.tileColorScheme === "light" ? "#ffffff" : "#141414"
     readonly property color mapCheckerAlternate: App.runtimeSettings.tileColorScheme === "light" ? "#eeeeee" : "#282828"
     readonly property color overlay: palette.overlay
-    readonly property color overlayTranslucent: dark ? "#b8212121" : "#c8ffffff"
+    readonly property color overlayTranslucent: palette.overlayTranslucent
     readonly property color overlayBorder: palette.overlayBorder
     readonly property color overlayText: palette.overlayText
     readonly property color overlayMuted: palette.overlayMuted
@@ -169,17 +176,9 @@ QtObject {
     readonly property int fontTitle: palette.fontTitle
     readonly property int fontHeading: palette.fontHeading
     readonly property int fontDisplay: palette.fontDisplay
-    readonly property real gapSmall: palette.gapSmall
-    readonly property real gapMedium: palette.gapMedium
-    readonly property real gapLarge: palette.gapLarge
-    readonly property real gapSection: palette.gapSection
-    readonly property real pageGutter: palette.pageGutter
-    readonly property real cardPadding: palette.cardPadding
-    readonly property real cardGap: palette.cardGap
 
     function themeWith(palette) {
         const scale = fontScale
-        const compactSpacing = compact || touch
         const text = base => Math.max(8, Math.round(base * scale))
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
@@ -194,14 +193,7 @@ QtObject {
                                  fontLabel: text(14),
                                  fontTitle: text(17),
                                  fontHeading: text(22),
-                                 fontDisplay: text(25),
-                                 gapSmall: ui(compactSpacing ? 4 : 6),
-                                 gapMedium: ui(touch ? 6 : (compact ? 5 : 10)),
-                                 gapLarge: ui(touch ? 10 : (compact ? 8 : 14)),
-                                 gapSection: ui(compactSpacing ? 12 : 20),
-                                 pageGutter: ui(compactSpacing ? 10 : 22),
-                                 cardPadding: ui(touch ? 8 : (compact ? 7 : 12)),
-                                 cardGap: ui(compactSpacing ? 6 : 14)
+                                 fontDisplay: text(25)
                              })
     }
 
@@ -209,9 +201,12 @@ QtObject {
         const accent = App.settings.accentColor
         if (!accent)
             return {}
+        const color = Qt.darker(accent, 1.0)
+        const luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
         return {
             accent: accent,
-            accentSoft: Qt.tint(accent, "#C4" + palette.background.substring(1))
+            accentSoft: Qt.tint(accent, "#C4" + palette.background.substring(1)),
+            onAccent: luminance > 0.5 ? "#102116" : "#ffffff"
         }
     }
 }

@@ -4,15 +4,12 @@ import QtQuick.Layouts
 import BedrockMap 1.0
 import "controls"
 
-Dialog {
+AppDialog {
     id: root
 
-    modal: true
-    width: Math.min(400, parent ? parent.width - 32 : 400)
-    height: Math.min(420, parent ? parent.height - 48 : 420)
-    padding: Theme.cardPadding
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
+    title: qsTr("Set biome")
+    preferredWidth: Theme.ui(400)
+    preferredHeight: Theme.ui(420)
 
     property var options: []
     property var allOptions: []
@@ -58,22 +55,8 @@ Dialog {
         close()
     }
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-
     contentItem: ColumnLayout {
         spacing: Theme.gapMedium
-
-        Text {
-            Layout.fillWidth: true
-            text: qsTr("Set biome")
-            color: Theme.text
-            font.pixelSize: Theme.fontTitle
-        }
 
         AppTextField {
             id: biomeSearch
@@ -93,9 +76,9 @@ Dialog {
             ListView {
                 id: biomeList
                 anchors.fill: parent
-                anchors.margins: 3
+                anchors.margins: Theme.gapTiny
                 clip: true
-                spacing: 1
+                spacing: Theme.gapTiny
                 model: root.options
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {
@@ -133,7 +116,7 @@ Dialog {
                         RowLayout {
                             width: parent.width
                             anchors.verticalCenter: parent.verticalCenter
-                            spacing: 10
+                            spacing: Theme.gapMedium
 
                             Rectangle {
                                 Layout.preferredWidth: 20

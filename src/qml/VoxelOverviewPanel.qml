@@ -31,13 +31,13 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 48
             title: root.headerTitle
-            leftInset: 12
-            rightInset: 8
+            leftInset: Theme.gapLarge
+            rightInset: Theme.gapMedium
             actions: [
                 AppIconButton {
                     iconName: "close"
                     label: qsTr("Close 3D view")
-                    buttonSize: 32
+                    buttonSize: Theme.iconButtonSmallSize
                     onClicked: root.closeRequested()
                 }
             ]

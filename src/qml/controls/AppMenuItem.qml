@@ -19,14 +19,14 @@ MenuItem {
     spacing: 0
     implicitHeight: visible ? rowHeight : 0
     height: visible ? rowHeight : 0
-    implicitWidth: visible ? Math.max(Theme.ui(160), contentItem ? contentItem.implicitWidth + Theme.controlPadding * 2 :
+    implicitWidth: visible ? Math.max(Theme.ui(160), contentItem ? contentItem.implicitWidth + Theme.gapLarge * 2 :
                                                                    Theme.ui(160)) : 0
     width: visible && parent ? parent.width : 0
 
     contentItem: Item {
-        implicitWidth: Math.max(Theme.ui(160), label.implicitWidth + Theme.controlPadding * 2 + (root.iconName.length > 0
+        implicitWidth: Math.max(Theme.ui(160), label.implicitWidth + Theme.gapLarge * 2 + (root.iconName.length > 0
                                                                                                  ? Theme.iconSmallSize
-                                                                                                   + Theme.controlSpacing :
+                                                                                                   + Theme.gapMedium :
                                                                                                    0) + (root.subMenu
                                                                                                          ? Theme.ui(14) :
                                                                                                            0))
@@ -36,7 +36,7 @@ MenuItem {
             width: Theme.iconSmallSize
             height: width
             anchors.left: parent.left
-            anchors.leftMargin: Theme.controlPadding
+            anchors.leftMargin: Theme.gapLarge
             anchors.verticalCenter: parent.verticalCenter
             name: root.iconName
             iconSize: width
@@ -45,10 +45,10 @@ MenuItem {
         Text {
             id: label
             anchors.left: parent.left
-            anchors.leftMargin: Theme.controlPadding + (root.iconName.length > 0 ? Theme.iconSmallSize + Theme.controlSpacing :
+            anchors.leftMargin: Theme.gapLarge + (root.iconName.length > 0 ? Theme.iconSmallSize + Theme.gapMedium :
                                                                                    0)
             anchors.right: parent.right
-            anchors.rightMargin: root.subMenu ? Theme.iconSmallSize + Theme.controlSpacing : Theme.controlPadding
+            anchors.rightMargin: root.subMenu ? Theme.iconSmallSize + Theme.gapMedium : Theme.gapLarge
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: root.danger ? Theme.danger : Theme.text
@@ -58,7 +58,7 @@ MenuItem {
         }
         Text {
             anchors.right: parent.right
-            anchors.rightMargin: Theme.controlPadding
+            anchors.rightMargin: Theme.gapLarge
             anchors.verticalCenter: parent.verticalCenter
             visible: root.subMenu !== null
             text: "›"

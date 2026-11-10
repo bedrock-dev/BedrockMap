@@ -26,7 +26,7 @@ Item {
             Column {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - 96, 520)
-                spacing: 16
+                spacing: Theme.gapSection
                 Text {
                     width: parent.width
                     text: session && session.indexLoading ? qsTr("Building world coordinate index") : qsTr(

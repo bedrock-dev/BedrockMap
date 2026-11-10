@@ -9,7 +9,7 @@ Item {
     property var document
     property bool compact: Theme.compact
     property string itemFilter: ""
-    readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.cardPadding
+    readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.gapLarge
     signal closeRequested
     signal saveRequested
 
@@ -50,8 +50,8 @@ Item {
                     NbtToolbar {
                         id: fileToolbar
                         anchors.fill: parent
-                        anchors.leftMargin: Theme.cardPadding
-                        anchors.rightMargin: Theme.cardPadding
+                        anchors.leftMargin: Theme.gapLarge
+                        anchors.rightMargin: Theme.gapLarge
                         anchors.topMargin: page.toolbarVerticalPadding
                         anchors.bottomMargin: page.toolbarVerticalPadding
                         document: page.document
@@ -88,8 +88,8 @@ Item {
 
             ColumnLayout {
                 anchors.centerIn: parent
-                width: Math.min(460, parent.width - 40)
-                spacing: 10
+                width: Math.min(460, parent.width - Theme.gapSection * 2)
+                spacing: Theme.gapMedium
                 visible: !document.hasDocument
                 Text {
                     Layout.alignment: Qt.AlignHCenter

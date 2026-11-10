@@ -93,7 +93,7 @@ Item {
     ColumnLayout {
         id: shell
         anchors.fill: parent
-        anchors.margins: Theme.pageGutter
+        anchors.margins: Theme.gapSection
         spacing: Theme.gapMedium
 
         AppSegmentedControl {
@@ -438,7 +438,7 @@ Item {
                                     visible: modelData.removable
                                     iconName: "close"
                                     label: qsTr("Remove world folder")
-                                    buttonSize: 28
+                                    buttonSize: Theme.iconButtonSmallSize
                                     onClicked: {
                                         App.settings.removeCustomWorldPath(modelData.path)
                                         App.settings.saveWorldSources()
@@ -817,7 +817,7 @@ Item {
                         title: qsTr("Open-source credits")
                         ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: Theme.ui(2)
+                            spacing: Theme.gapTiny
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: Theme.gapMedium
@@ -887,11 +887,11 @@ Item {
         // Bounded by construction: a group must never inflate the scroll content,
         // or the trailing controls end up outside the visible viewport.
         Layout.preferredWidth: 0
-        implicitHeight: titleLabel.implicitHeight + body.implicitHeight + Theme.cardPadding * 2 + Theme.gapSmall
+        implicitHeight: titleLabel.implicitHeight + body.implicitHeight + Theme.gapLarge * 2 + Theme.gapSmall
         Label {
             id: titleLabel
-            x: Theme.cardPadding
-            y: Theme.cardPadding
+            x: Theme.gapLarge
+            y: Theme.gapLarge
             text: title
             color: Theme.text
             font.pixelSize: Theme.fontLabel
@@ -899,9 +899,9 @@ Item {
         ColumnLayout {
             id: body
             anchors.left: parent.left
-            anchors.leftMargin: Theme.cardPadding
+            anchors.leftMargin: Theme.gapLarge
             anchors.right: parent.right
-            anchors.rightMargin: Theme.cardPadding
+            anchors.rightMargin: Theme.gapLarge
             anchors.top: titleLabel.bottom
             anchors.topMargin: Theme.gapSmall
             spacing: Theme.gapSmall

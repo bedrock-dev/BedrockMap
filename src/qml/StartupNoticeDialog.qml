@@ -4,37 +4,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
-Dialog {
+AppDialog {
     id: root
     title: qsTr("Before you start")
-    modal: true
-    parent: Overlay.overlay
     closePolicy: Popup.NoAutoClose
-    width: Math.min(600, parent ? parent.width - 32 : 600)
-    height: Math.min(implicitHeight, parent ? parent.height - 48 : 520)
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
-    padding: Theme.cardPadding
+    preferredWidth: Theme.ui(600)
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-    header: Item {
-        implicitHeight: Theme.controlHeight + Theme.gapSmall
-        Text {
-            anchors.fill: parent
-            anchors.leftMargin: root.padding
-            anchors.rightMargin: root.padding
-            verticalAlignment: Text.AlignVCenter
-            text: root.title
-            color: Theme.text
-            font.pixelSize: Theme.fontLabel
-            elide: Text.ElideRight
-        }
-    }
     contentItem: ColumnLayout {
         spacing: Theme.gapMedium
         ScrollView {

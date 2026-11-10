@@ -17,7 +17,7 @@ Rectangle {
     Column {
         anchors.centerIn: parent
         width: parent.width
-        spacing: Theme.ui(2)
+        spacing: Theme.gapTiny
         AppIcon {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Theme.iconSize

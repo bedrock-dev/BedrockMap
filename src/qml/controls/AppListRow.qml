@@ -14,20 +14,20 @@ Rectangle {
     property bool stacked: false
     signal clicked
 
-    readonly property real labelHeight: Theme.fontSubtitle + (detail.length > 0 ? Theme.fontBody + Theme.ui(2) : 0)
+    readonly property real labelHeight: Theme.fontSubtitle + (detail.length > 0 ? Theme.fontBody + Theme.gapTiny : 0)
     readonly property real rowHeight: Theme.ui(detail.length > 0 ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 :
                                                                                                                 46))
     readonly property bool activeBackdrop: selected || ((mouse.pressed || mouse.containsMouse) && interactive)
     readonly property color activeBackdropColor: selected ? Theme.accentSoft : (activeBackdrop ? Theme.surfaceAlt :
                                                                                               "transparent")
 
-    width: parent.width
+    implicitWidth: parent ? parent.width : 0
     implicitHeight: stacked ? Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
-                                       + Theme.gapSmall + Theme.cardPadding * 2) : Math.max(rowHeight, Theme.touch
+                                       + Theme.gapSmall + Theme.gapLarge * 2) : Math.max(rowHeight, Theme.touch
                                                                                             ? Math.max(
                                                                                                   Theme.controlHeight,
                                                                                                   labelHeight
-                                                                                                  + Theme.cardPadding
+                                                                                                  + Theme.gapLarge
                                                                                                   * 2) : 0)
     height: implicitHeight
     radius: Theme.radiusCard
@@ -46,10 +46,10 @@ Rectangle {
 
     Row {
         visible: !root.stacked
-        x: root.compact ? (parent.width - width) / 2 : Theme.ui(Theme.compact ? 8 : 13)
+        x: root.compact ? (parent.width - width) / 2 : Theme.gapLarge
         width: root.compact ? implicitWidth : parent.width - x * 2
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Theme.ui(Theme.compact ? 8 : 13)
+        spacing: Theme.gapLarge
         Item {
             width: Theme.ui(20)
             height: width
@@ -66,19 +66,19 @@ Rectangle {
                 dirty: root.dirty
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: -2
+                anchors.margins: -Theme.gapTiny
             }
         }
         Column {
             visible: !root.compact
             width: Math.max(0, parent.width - Theme.ui(20) - parent.spacing - Theme.iconSize)
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.ui(2)
+            spacing: Theme.gapTiny
             Text {
                 width: parent.width
                 text: root.label
                 color: root.selected ? Theme.accent : Theme.text
-                font.pixelSize: root.detail.length > 0 ? Theme.fontSubtitle : Theme.fontSubtitle
+                font.pixelSize: Theme.fontSubtitle
                 elide: Text.ElideRight
             }
             Text {
@@ -109,11 +109,11 @@ Rectangle {
                 dirty: root.dirty
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: -2
+                anchors.margins: -Theme.gapTiny
             }
         }
         Text {
-            width: Math.max(0, root.width - Theme.cardPadding * 2)
+            width: Math.max(0, root.width - Theme.gapLarge * 2)
             text: root.label
             color: root.selected ? Theme.accent : Theme.text
             font.pixelSize: Theme.fontSubtitle
@@ -125,7 +125,7 @@ Rectangle {
     Text {
         visible: root.detail.length > 0 && root.interactive && !root.compact && !root.stacked
         anchors.right: parent.right
-        anchors.rightMargin: Theme.cardPadding
+        anchors.rightMargin: Theme.gapLarge
         anchors.verticalCenter: parent.verticalCenter
         text: "›"
         color: Theme.accent

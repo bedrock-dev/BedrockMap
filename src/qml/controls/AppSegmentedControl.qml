@@ -7,8 +7,8 @@ Rectangle {
     property int currentIndex: 0
     property bool fitLabels: false
     readonly property int optionCount: options.length
-    readonly property real buttonWidth: optionCount > 0 ? Math.max(Theme.ui(48), (width - Theme.segmentedPadding * 2
-                                                                                  - Theme.ui(2) * Math.max(0,
+    readonly property real buttonWidth: optionCount > 0 ? Math.max(Theme.ui(48), (width - Theme.gapTiny * 2
+                                                                                  - Theme.gapTiny * Math.max(0,
                                                                                                            optionCount
                                                                                                            - 1)) / optionCount) :
                                                           0
@@ -29,7 +29,7 @@ Rectangle {
     onWidthChanged: Qt.callLater(ensureCurrentVisible)
 
     implicitHeight: Theme.segmentedHeight
-    implicitWidth: fitLabels ? row.implicitWidth + Theme.segmentedPadding * 2 : 0
+    implicitWidth: fitLabels ? row.implicitWidth + Theme.gapTiny * 2 : 0
     radius: Theme.radiusControl
     color: Theme.surfaceAlt
     border.width: Theme.borderWidth
@@ -39,10 +39,10 @@ Rectangle {
     Flickable {
         id: tabFlick
         anchors.fill: parent
-        anchors.leftMargin: Theme.segmentedPadding
-        anchors.rightMargin: Theme.segmentedPadding
-        anchors.topMargin: Theme.touch ? 0 : Theme.segmentedPadding
-        anchors.bottomMargin: Theme.touch ? 0 : Theme.segmentedPadding
+        anchors.leftMargin: Theme.gapTiny
+        anchors.rightMargin: Theme.gapTiny
+        anchors.topMargin: Theme.touch ? 0 : Theme.gapTiny
+        anchors.bottomMargin: Theme.touch ? 0 : Theme.gapTiny
         contentWidth: row.width
         contentHeight: height
         clip: true
@@ -72,7 +72,7 @@ Rectangle {
         Row {
             id: row
             height: parent.height
-            spacing: Theme.ui(2)
+            spacing: Theme.gapTiny
             Repeater {
                 id: optionButtons
                 model: root.options
@@ -86,7 +86,7 @@ Rectangle {
                     active: root.currentIndex === index
                     width: root.fitLabels ? implicitWidth : root.buttonWidth
                     height: row.height
-                    visualHeight: Theme.touch ? height - Theme.segmentedPadding * 2 : height
+                    visualHeight: Theme.touch ? height - Theme.gapTiny * 2 : height
                     onClicked: root.activated(index)
                 }
             }

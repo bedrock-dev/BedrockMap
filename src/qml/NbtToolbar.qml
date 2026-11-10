@@ -32,7 +32,7 @@ Rectangle {
     signal detailsToggleRequested
 
     readonly property real gap: Theme.gapSmall
-    readonly property real rowGap: Theme.toolbarRowSpacing
+    readonly property real rowGap: Theme.gapSmall
     readonly property real actionHeight: compact ? Theme.compactButtonHeight : Theme.buttonHeight
     readonly property real searchHeight: Math.max(Theme.buttonHeight, allowDetailsToggle ? detailsToggle.controlSize : 0)
     readonly property int actionCount: (allowImport ? 1 : 0) + (allowReplace ? 1 : 0) + (allowExport ? 1 : 0) + (

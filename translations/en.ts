@@ -1014,51 +1014,6 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Save NBT file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>All files (*)</source>
-        <translation type="unfinished">All files (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Unsaved changes</source>
-        <translation type="unfinished">Unsaved changes</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Untitled world</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Discard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Saving…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
         <source>Save active session</source>
         <translation>Save active session</translation>
     </message>
@@ -1091,18 +1046,6 @@
         <location filename="../src/qml/Main.qml"/>
         <source>Open world</source>
         <translation type="unfinished">Open world</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save failed</source>
-        <translation>Save failed</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Save changes before closing this session?</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -2151,6 +2094,66 @@
         <location filename="../src/controller/regionimportcontroller.cpp"/>
         <source>The region file could not be loaded.</source>
         <translation>The region file could not be loaded.</translation>
+    </message>
+</context>
+<context>
+    <name>SessionCloseFlow</name>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save NBT file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>All files (*)</source>
+        <translation>All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Unsaved changes</source>
+        <translation>Unsaved changes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Untitled world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save changes before closing this session?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Discard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Saving…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

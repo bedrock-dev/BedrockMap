@@ -12,7 +12,7 @@ AppCard {
     property bool actorBlackMode: true
     property bool layerEnabled: false
     property int fixedLayer: 64
-    readonly property real naturalHeight: popupColumn.implicitHeight + Theme.cardPadding * 2
+    readonly property real naturalHeight: popupColumn.implicitHeight + Theme.gapLarge * 2
     signal closeRequested
 
     function formatList(values) {
@@ -92,15 +92,15 @@ AppCard {
         id: contentFlick
         anchors.fill: parent
         contentWidth: width
-        contentHeight: popupColumn.implicitHeight + Theme.cardPadding * 2
+        contentHeight: popupColumn.implicitHeight + Theme.gapLarge * 2
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
         ColumnLayout {
             id: popupColumn
-            x: Theme.cardPadding
-            y: Theme.cardPadding
-            width: contentFlick.width - Theme.cardPadding * 2
+            x: Theme.gapLarge
+            y: Theme.gapLarge
+            width: contentFlick.width - Theme.gapLarge * 2
             spacing: Theme.gapMedium
 
             RowLayout {
@@ -195,9 +195,9 @@ AppCard {
                 spacing: Theme.gapSmall
 
                 AppToggle {
-                    label: qsTr("Fixed Y layer")
-                    active: root.layerEnabled
-                    onToggled: root.layerEnabled = active
+                    text: qsTr("Fixed Y layer")
+                    checked: root.layerEnabled
+                    onToggled: root.layerEnabled = checked
                 }
 
                 Item {

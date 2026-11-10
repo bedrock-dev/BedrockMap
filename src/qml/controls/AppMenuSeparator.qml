@@ -6,7 +6,7 @@ import QtQuick.Window
 MenuSeparator {
     id: root
 
-    implicitHeight: visible ? Theme.ui(9) : 0
+    implicitHeight: visible ? Theme.gapMedium : 0
     height: implicitHeight
     leftPadding: 0
     topPadding: 0

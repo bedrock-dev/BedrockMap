@@ -18,9 +18,9 @@ Item {
         clip: true
         Column {
             id: column
-            x: Theme.pageGutter
+            x: Theme.gapSection
             y: Theme.gapMedium
-            width: parent.width - Theme.pageGutter * 2
+            width: parent.width - Theme.gapSection * 2
             spacing: Theme.gapLarge
             AppListRow {
                 visible: Qt.platform.os === "android"
@@ -62,8 +62,8 @@ Item {
             title: pageGroup.currentTitle
             backVisible: true
             showBottomBorder: false
-            leftInset: Theme.pageGutter
-            rightInset: Theme.pageGutter
+            leftInset: Theme.gapSection
+            rightInset: Theme.gapSection
             Layout.fillWidth: true
             Layout.topMargin: Theme.gapMedium
             onBackRequested: pageGroup.pop()

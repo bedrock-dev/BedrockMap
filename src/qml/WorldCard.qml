@@ -49,7 +49,7 @@ AppCard {
     Row {
         visible: !card.gridMode
         anchors.fill: parent
-        anchors.margins: Theme.cardPadding
+        anchors.margins: Theme.gapLarge
         spacing: Theme.gapLarge
 
         WorldThumbnail {
@@ -120,7 +120,7 @@ AppCard {
         id: gridContent
         visible: card.gridMode
         anchors.fill: parent
-        anchors.margins: Theme.cardPadding
+        anchors.margins: Theme.gapLarge
         spacing: Theme.gapSmall
 
         WorldThumbnail {
@@ -203,13 +203,13 @@ AppCard {
     AppIconButton {
         id: actionsButton
         anchors.right: parent.right
-        anchors.rightMargin: Theme.cardPadding
+        anchors.rightMargin: Theme.gapLarge
         y: card.gridMode ? gridContent.y + gridDetails.y + (gridDetails.height - height) / 2 : (card.height - height)
                            / 2
         z: 1
         iconName: "menu"
         label: qsTr("World actions")
-        buttonSize: 28
+        buttonSize: Theme.iconButtonSmallSize
         selected: cardMenu.visible
         onClicked: cardMenu.popup(actionsButton, actionsButton.width - cardMenu.width, actionsButton.height)
     }

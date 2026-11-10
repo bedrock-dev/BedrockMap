@@ -43,12 +43,15 @@ Window {
     readonly property real safeBottom: appBackground.safeBottom
     readonly property real safeLeft: appBackground.safeLeft
     readonly property real safeRight: appBackground.safeRight
-    property var pendingCloseSession: null
-    property var pendingShortcutSaveSession: null
-    property bool closingAfterDirty: false
-    onWidthChanged: Theme.windowWidth = width
+    // Theme chosen before the sidebar toggle overrode it; toggling back restores it.
+    property string themeBeforeToggle: ""
+    property string themeSetByToggle: ""
+    Binding {
+        target: Theme
+        property: "windowWidth"
+        value: window.width
+    }
     Component.onCompleted: {
-        Theme.windowWidth = width
         sidebarCollapsed = App.runtimeSettings.collapseSidebarOnStartup
         Qt.callLater(function () {
             if (App.startupNoticeRequired)
@@ -201,6 +204,25 @@ Window {
         if (!window.workspaceOpen)
             navigateToPage(window.navigation.pageSettings)
     }
+    function themeIsDark(theme) {
+        return theme === "black" || theme === "dark" || (theme === "system" && Theme.systemDark)
+    }
+    function toggleTheme() {
+        const wantDark = !Theme.dark
+        // A theme picked on the settings page since the last toggle replaces the remembered one.
+        if (App.settings.colorTheme !== window.themeSetByToggle)
+            window.themeBeforeToggle = ""
+        if (window.themeBeforeToggle.length > 0 && window.themeIsDark(window.themeBeforeToggle) === wantDark) {
+            App.settings.colorTheme = window.themeBeforeToggle
+            window.themeBeforeToggle = ""
+            window.themeSetByToggle = ""
+            return
+        }
+        if (window.themeBeforeToggle.length === 0)
+            window.themeBeforeToggle = App.settings.colorTheme
+        window.themeSetByToggle = wantDark ? "dark" : "light"
+        App.settings.colorTheme = window.themeSetByToggle
+    }
     function navigateToPage(index) {
         App.navigateToPage(index)
     }
@@ -210,93 +232,13 @@ Window {
         App.openWorldFolder(url)
     }
     function saveActiveSession() {
-        const session = window.activeSession
-        if (!session)
-            return
-        if (session.document && session.document.requiresSaveAs) {
-            window.pendingShortcutSaveSession = session
-            nbtSaveAsDialog.closeAfterSave = false
-            window.openNbtSaveAsDialog()
-            return
-        }
-        if (session.commit())
-            return
-        App.notifications.error(qsTr("Save failed"))
-    }
-    function openNbtSaveAsDialog() {
-        const session = window.pendingCloseSession || window.pendingShortcutSaveSession
-        if (!session || !session.document)
-            return
-        const filename = session.document.suggestedSaveFileName()
-        nbtSaveAsDialog.selectedFile = nbtSaveAsDialog.currentFolder.toString().length > 0
-                ? nbtSaveAsDialog.currentFolder + "/" + encodeURIComponent(filename) : filename
-        nbtSaveAsDialog.open()
-    }
-    function cancelPendingClose() {
-        if (!window.pendingCloseSession)
-            return
-        window.pendingCloseSession = null
-        window.closingAfterDirty = false
-    }
-    function finishWindowClose() {
-        window.closingAfterDirty = false
-        Qt.callLater(function () {
-            window.close()
-        })
-    }
-    function promptNextDirtySession() {
-        if (window.pendingCloseSession)
-            return
-        if (!App.requestCloseFirstDirtySession()) {
-            window.finishWindowClose()
-            return
-        }
-        // A dirty session prompts synchronously. If it became clean before the
-        // request was handled it is removed without a prompt, so re-check after
-        // the model update instead of stopping the close sequence.
-        if (!window.pendingCloseSession)
-            Qt.callLater(window.promptNextDirtySession)
-    }
-    function completePendingSessionClose() {
-        const session = window.pendingCloseSession
-        if (!session)
-            return
-        window.pendingCloseSession = null
-        App.discardSessionObject(session)
-        // onClosed() continues the window-close sequence after this dialog has
-        // fully closed, so the next prompt cannot race the current one.
-        closeWorldDialog.close()
+        sessionClose.save(window.activeSession)
     }
     FolderUrlDialog {
         id: folderDialog
         title: qsTr("Open world folder")
         currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: window.openWorldFolder(selectedUrl)
-    }
-    FileUrlDialog {
-        id: nbtSaveAsDialog
-        property bool closeAfterSave: true
-        title: qsTr("Save NBT file")
-        fileMode: FileDialog.SaveFile
-        defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: {
-            const session = closeAfterSave ? window.pendingCloseSession : window.pendingShortcutSaveSession
-            if (!session || !session.document)
-                return
-            if (!session.document.saveAs(selectedUrl)) {
-                if (!closeAfterSave)
-                    window.pendingShortcutSaveSession = null
-                App.notifications.error(qsTr("Save failed"))
-                return
-            }
-            if (closeAfterSave)
-                window.completePendingSessionClose()
-            else
-                window.pendingShortcutSaveSession = null
-        }
-        onRejected: if (!closeAfterSave)
-                        window.pendingShortcutSaveSession = null
     }
 
     AppMenu {
@@ -319,36 +261,13 @@ Window {
         }
     }
 
-    Connections {
-        target: App
-        function onSessionCloseRequested(session) {
-            window.pendingCloseSession = session
-            closeWorldDialog.open()
-        }
-    }
-    Connections {
-        target: window.pendingCloseSession && window.pendingCloseSession.saveCompletesAsynchronously ?
-                    window.pendingCloseSession : null
-        function onSaved() {
-            if (window.pendingCloseSession)
-                window.completePendingSessionClose()
-        }
-        function onSaveFailed(message) {
-            window.pendingCloseSession = null
-            window.closingAfterDirty = false
-            closeWorldDialog.close()
-        }
-    }
     onClosing: function (close) {
-        if (window.closingAfterDirty) {
+        if (!sessionClose.requestWindowClose())
             close.accepted = false
-            return
-        }
-        if (App.firstDirtySessionIndex() < 0)
-            return
-        close.accepted = false
-        window.closingAfterDirty = true
-        window.promptNextDirtySession()
+    }
+    SessionCloseFlow {
+        id: sessionClose
+        onWindowCloseReady: window.close()
     }
     UpdateDialog {
         id: updateDialog
@@ -362,97 +281,6 @@ Window {
         target: App
         function onUpdateAvailable(newVersion, releaseNotes, htmlUrl) {
             updateDialog.present(newVersion, releaseNotes, htmlUrl)
-        }
-    }
-    Dialog {
-        id: closeWorldDialog
-        modal: true
-        parent: Overlay.overlay
-        closePolicy: Popup.CloseOnEscape
-        title: qsTr("Unsaved changes")
-        width: Math.min(430, parent ? parent.width - 40 : 430)
-        x: parent ? Math.round((parent.width - width) / 2) : 0
-        y: parent ? Math.round((parent.height - height) / 2) : 0
-        padding: 18
-        onClosed: {
-            window.cancelPendingClose()
-            if (window.closingAfterDirty)
-                Qt.callLater(window.promptNextDirtySession)
-        }
-        background: Rectangle {
-            radius: Theme.radiusCard
-            color: Theme.surface
-            border.width: Theme.borderWidth
-            border.color: Theme.border
-        }
-        header: Item {
-            implicitHeight: Theme.controlHeight + Theme.gapSmall
-            Text {
-                anchors.left: parent.left
-                anchors.leftMargin: 18
-                anchors.right: parent.right
-                anchors.rightMargin: 18
-                anchors.verticalCenter: parent.verticalCenter
-                text: closeWorldDialog.title
-                color: Theme.text
-                font.pixelSize: Theme.fontLabel
-                elide: Text.ElideRight
-            }
-        }
-        contentItem: Column {
-            spacing: 14
-            Text {
-                width: parent.width
-                visible: !!window.pendingCloseSession
-                text: window.pendingCloseSession ? (window.pendingCloseSession.title || qsTr("Untitled world")) : ""
-                color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
-                elide: Text.ElideRight
-            }
-            Text {
-                width: parent.width
-                text: qsTr("Save changes before closing this session?")
-                color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
-                wrapMode: Text.WordWrap
-            }
-            Row {
-                anchors.right: parent.right
-                spacing: 8
-                AppButton {
-                    text: qsTr("Cancel")
-                    onClicked: closeWorldDialog.close()
-                }
-                AppButton {
-                    danger: true
-                    text: qsTr("Discard")
-                    onClicked: {
-                        window.completePendingSessionClose()
-                    }
-                }
-                AppButton {
-                    primary: true
-                    text: window.pendingCloseSession && window.pendingCloseSession.saving ? qsTr("Saving…") : qsTr(
-                                                                                                "Save")
-                    enabled: window.pendingCloseSession && !window.pendingCloseSession.saving
-                    onClicked: {
-                        const session = window.pendingCloseSession
-                        if (!session)
-                            return
-                        if (session.document && session.document.requiresSaveAs) {
-                            nbtSaveAsDialog.closeAfterSave = true
-                            window.openNbtSaveAsDialog()
-                            return
-                        }
-                        if (!session.commit()) {
-                            App.notifications.error(qsTr("Save failed"))
-                            return
-                        }
-                        if (!session.saveCompletesAsynchronously)
-                            window.completePendingSessionClose()
-                    }
-                }
-            }
         }
     }
 
@@ -539,8 +367,8 @@ Window {
         currentIndex: window.workspaceOpen ? -1 : window.currentPage
         darkMode: Theme.dark
         onToggleCollapsed: window.sidebarCollapsed = !window.sidebarCollapsed
-        // Preview the explicit opposite mode; Save settings persists it.
-        onToggleTheme: App.settings.colorTheme = Theme.dark ? "light" : "dark"
+        // Preview the opposite mode; Save settings persists it.
+        onToggleTheme: window.toggleTheme()
         onNavigate: index => window.navigateToPage(index)
         onCloseSessionRequested: index => window.closeSession(index)
     }
@@ -563,8 +391,8 @@ Window {
             z: 100
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottomMargin: 18
-            width: Math.min(420, Math.max(240, parent.width - 24))
+            anchors.bottomMargin: Theme.gapSection
+            width: Math.min(420, Math.max(240, parent.width - Theme.gapLarge * 2))
             center: App.notifications
         }
 
@@ -591,7 +419,6 @@ Window {
                         visible: window.currentPage === window.navigation.pageSettings && !window.workspaceOpen
                         iconName: "refresh"
                         label: qsTr("Reset settings")
-                        buttonSize: 34
                         onClicked: resetSettingsDialog.open()
                     },
                     AppIconButton {
@@ -599,7 +426,6 @@ Window {
                                  !window.workspaceOpen
                         iconName: "save"
                         label: qsTr("Save settings")
-                        buttonSize: 34
                         onClicked: App.settings.save()
                     },
                     AppButton {
@@ -624,10 +450,9 @@ Window {
                         visible: window.sessionTitleBarActions && window.activeSession
                                  && window.activeSession.titleBarSaveVisible
                         iconName: window.activeSession && !window.activeSession.saving ? "save" : ""
-                        icon: window.activeSession && window.activeSession.saving ? "…" : ""
+                        iconText: window.activeSession && window.activeSession.saving ? "…" : ""
                         label: qsTr("Save active session")
                         dirty: !!window.activeSession && window.activeSession.dirty
-                        buttonSize: 34
                         enabled: window.activeSession && window.activeSession.titleBarSaveEnabled
                         onClicked: window.saveActiveSession()
                     },
@@ -636,7 +461,6 @@ Window {
                         iconName: "exit"
                         label: qsTr("Close active session")
                         danger: true
-                        buttonSize: 34
                         onClicked: window.closeActiveSession()
                     }
                 ]

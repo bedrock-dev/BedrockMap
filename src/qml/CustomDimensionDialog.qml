@@ -6,18 +6,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
-Dialog {
+AppDialog {
     id: root
 
     property var dimensions: []
     signal dimensionAccepted(int dimension)
 
-    modal: true
-    width: Math.min(380, parent ? parent.width - 32 : 380)
-    height: Math.min(380, parent ? parent.height - 48 : 380)
-    padding: Theme.cardPadding
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
+    title: qsTr("Custom dimension")
+    preferredWidth: Theme.ui(380)
+    preferredHeight: Theme.ui(380)
 
     function openFor(options, preferredDimension) {
         dimensions = options
@@ -43,22 +40,8 @@ Dialog {
         close()
     }
 
-    background: Rectangle {
-        radius: Theme.radiusCard
-        color: Theme.surface
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-    }
-
     contentItem: ColumnLayout {
         spacing: Theme.gapMedium
-
-        Text {
-            Layout.fillWidth: true
-            text: qsTr("Custom dimension")
-            color: Theme.text
-            font.pixelSize: Theme.fontTitle
-        }
 
         Rectangle {
             Layout.fillWidth: true
@@ -71,9 +54,9 @@ Dialog {
             ListView {
                 id: dimensionList
                 anchors.fill: parent
-                anchors.margins: Theme.ui(3)
+                anchors.margins: Theme.gapTiny
                 clip: true
-                spacing: 1
+                spacing: Theme.gapTiny
                 model: root.dimensions
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {

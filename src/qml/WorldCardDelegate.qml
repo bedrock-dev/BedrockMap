@@ -20,7 +20,7 @@ Item {
 
     WorldCard {
         anchors.fill: parent
-        anchors.margins: root.gridMode ? (Theme.compact ? 3 : 4) : 0
+        anchors.margins: root.gridMode ? Theme.gapSmall : 0
         gridMode: root.gridMode
         title: root.name
         versionText: root.version

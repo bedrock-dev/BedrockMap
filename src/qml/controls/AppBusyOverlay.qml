@@ -19,12 +19,12 @@ Rectangle {
 
     AppCard {
         anchors.centerIn: parent
-        width: Math.min(400, parent.width - 40)
+        width: Math.min(400, parent.width - Theme.gapSection * 2)
         height: root.detail.length > 0 ? 128 : 104
         Column {
             anchors.fill: parent
-            anchors.margins: 16
-            spacing: 12
+            anchors.margins: Theme.gapLarge
+            spacing: Theme.gapLarge
             Text {
                 width: parent.width
                 text: root.text.length > 0 ? root.text : qsTr("Working…")

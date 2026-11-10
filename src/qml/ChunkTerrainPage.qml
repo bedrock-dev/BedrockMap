@@ -165,7 +165,7 @@ Item {
                                                                                               - spacing) / 2)))
                 width: edge
                 anchors.centerIn: viewport
-                spacing: 6
+                spacing: Theme.gapMedium
 
                 TerrainSquare {
                     width: squares.edge

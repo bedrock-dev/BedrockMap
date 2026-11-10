@@ -13,7 +13,7 @@ Item {
     ScrollView {
         id: scroll
         anchors.fill: parent
-        anchors.margins: Theme.pageGutter
+        anchors.margins: Theme.gapSection
         contentWidth: availableWidth
         clip: true
 
@@ -95,13 +95,13 @@ Item {
             }
             AppCard {
                 Layout.fillWidth: true
-                implicitHeight: permissionHelp.implicitHeight + Theme.cardPadding * 2
+                implicitHeight: permissionHelp.implicitHeight + Theme.gapLarge * 2
 
                 ColumnLayout {
                     id: permissionHelp
-                    x: Theme.cardPadding
-                    y: Theme.cardPadding
-                    width: parent.width - Theme.cardPadding * 2
+                    x: Theme.gapLarge
+                    y: Theme.gapLarge
+                    width: parent.width - Theme.gapLarge * 2
                     spacing: Theme.gapMedium
 
                     Label {
@@ -142,13 +142,13 @@ Item {
         property bool requestEnabled: false
         signal requestAccess
         Layout.fillWidth: true
-        implicitHeight: body.implicitHeight + Theme.cardPadding * 2
+        implicitHeight: body.implicitHeight + Theme.gapLarge * 2
 
         ColumnLayout {
             id: body
-            x: Theme.cardPadding
-            y: Theme.cardPadding
-            width: parent.width - Theme.cardPadding * 2
+            x: Theme.gapLarge
+            y: Theme.gapLarge
+            width: parent.width - Theme.gapLarge * 2
             spacing: Theme.gapSmall
 
             Label {

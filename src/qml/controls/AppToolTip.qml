@@ -7,7 +7,7 @@ ToolTip {
     property bool shown: false
 
     delay: 350
-    padding: Theme.ui(6)
+    padding: Theme.gapMedium
     x: parent ? (parent.width - width) / 2 : 0
     y: parent ? -height - Theme.gapSmall : 0
     contentItem: Text {
