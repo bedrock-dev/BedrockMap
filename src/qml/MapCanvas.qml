@@ -11,6 +11,7 @@ Item {
     // clip descendants by default.
     clip: true
     property var controller
+    property var chunkEditor
     readonly property var regionImport: controller ? controller.regionImport : null
     readonly property bool importActive: !!regionImport && regionImport.active
     readonly property bool biomeDialogOpen: biomeDialog && biomeDialog.opened
@@ -474,6 +475,7 @@ Item {
         cameraSource: terrainLayer
         provider: canvas.terrainData
         globalData: canvas.globalData
+        chunkEditor: canvas.chunkEditor
         entitiesVisible: canvas.showEntities
         slimeChunksVisible: canvas.showSlimeChunks
         villagesVisible: canvas.showVillages

@@ -397,6 +397,7 @@ Item {
                 controller: workspace.mapController
                 terrainData: workspace.terrainData
                 globalData: workspace.session ? workspace.session.globalData : null
+                chunkEditor: workspace.session ? workspace.session.chunkEditor : null
                 showGrid: gridToggle.checked
                 showCoordinates: coordsToggle.checked
                 showEntities: entitiesToggle.checked

@@ -15,6 +15,7 @@
 
 #include "controller/globaldatacontroller.h"
 #include "controller/mapcontroller.h"
+#include "overlayquadlayer.h"
 #include "render/overlay.h"
 #include "render/terraindataprovider.h"
 
@@ -29,10 +30,18 @@ struct MapOverlaySelectionSnapshot {
     QVector<QLineF> importEdges;
 };
 
+struct MapOverlayOpenedChunkSnapshot {
+    bool visible{false};
+    int chunkX{0};
+    int chunkZ{0};
+    int dimension{0};
+    QColor color;
+    qreal borderWidth{0.0};
+};
+
 /// Renderer-side overlay layer above the terrain atlas. It publishes the camera
-/// actually applied by the terrain node; HSA, villages, slime masks, sprites and
-/// selection can later be added as sibling scene-graph nodes without creating
-/// QML items per feature.
+/// actually applied by the terrain node and batches bounds, selection and chunk
+/// highlights through reusable quad layers; sprites use their own texture batch.
 class MapOverlayQuickItem : public QQuickItem {
     Q_OBJECT
     QML_ELEMENT
@@ -40,6 +49,7 @@ class MapOverlayQuickItem : public QQuickItem {
     Q_PROPERTY(QObject* cameraSource READ cameraSource WRITE setCameraSource NOTIFY cameraSourceChanged)
     Q_PROPERTY(TerrainDataProvider* provider READ provider WRITE setProvider NOTIFY providerChanged)
     Q_PROPERTY(GlobalDataController* globalData READ globalData WRITE setGlobalData NOTIFY globalDataChanged)
+    Q_PROPERTY(QObject* chunkEditor READ chunkEditor WRITE setChunkEditor NOTIFY chunkEditorChanged)
     Q_PROPERTY(bool entitiesVisible READ entitiesVisible WRITE setEntitiesVisible NOTIFY entitiesVisibleChanged)
     Q_PROPERTY(bool slimeChunksVisible READ slimeChunksVisible WRITE setSlimeChunksVisible NOTIFY slimeChunksVisibleChanged)
     Q_PROPERTY(bool villagesVisible READ villagesVisible WRITE setVillagesVisible NOTIFY villagesVisibleChanged)
@@ -59,6 +69,7 @@ class MapOverlayQuickItem : public QQuickItem {
     [[nodiscard]] QObject* cameraSource() const { return camera_source_; }
     [[nodiscard]] TerrainDataProvider* provider() const { return provider_; }
     [[nodiscard]] GlobalDataController* globalData() const { return global_data_; }
+    [[nodiscard]] QObject* chunkEditor() const { return chunk_editor_; }
     [[nodiscard]] bool entitiesVisible() const { return entities_visible_; }
     [[nodiscard]] bool slimeChunksVisible() const { return slime_chunks_visible_; }
     [[nodiscard]] bool villagesVisible() const { return villages_visible_; }
@@ -74,6 +85,7 @@ class MapOverlayQuickItem : public QQuickItem {
     void setCameraSource(QObject* source);
     void setProvider(TerrainDataProvider* provider);
     void setGlobalData(GlobalDataController* global_data);
+    void setChunkEditor(QObject* chunk_editor);
     void setEntitiesVisible(bool visible);
     void setSlimeChunksVisible(bool visible);
     void setVillagesVisible(bool visible);
@@ -88,6 +100,7 @@ class MapOverlayQuickItem : public QQuickItem {
     void cameraSourceChanged();
     void providerChanged();
     void globalDataChanged();
+    void chunkEditorChanged();
     void entitiesVisibleChanged();
     void slimeChunksVisibleChanged();
     void villagesVisibleChanged();
@@ -114,13 +127,16 @@ class MapOverlayQuickItem : public QQuickItem {
     void scheduleRectRefresh();
     void refreshRects();
     void clearRects();
+    void refreshOpenedChunk();
     void updateSlimeChunkNode(QSGNode* root);
     void updateGridNode(QSGNode* root);
+    void updateOpenedChunkNode(QSGNode* root, int dimension);
 
     QPointer<MapController> controller_;
     QPointer<QObject> camera_source_;
     QPointer<TerrainDataProvider> provider_;
     QPointer<GlobalDataController> global_data_;
+    QPointer<QObject> chunk_editor_;
     std::shared_ptr<MapRenderState> camera_state_;
     QTimer entity_refresh_timer_;
     bool entities_visible_{true};
@@ -138,19 +154,19 @@ class MapOverlayQuickItem : public QQuickItem {
     int sprite_vertex_capacity_{0};
     mutable QMutex slime_chunks_mutex_;
     std::shared_ptr<const QVector<QRect>> slime_chunks_;
-    QSGGeometryNode* slime_node_{nullptr};
-    int slime_vertex_capacity_{0};
+    OverlayQuadLayer slime_layer_;
     QTimer rect_refresh_timer_;
     mutable QMutex rects_mutex_;
     std::shared_ptr<const QVector<OverlayRect>> overlay_rects_;
     mutable QMutex selection_mutex_;
     std::shared_ptr<const MapOverlaySelectionSnapshot> selection_snapshot_;
-    QSGGeometryNode* rect_node_{nullptr};
-    int rect_vertex_capacity_{0};
+    OverlayQuadLayer rect_layer_;
     QSGGeometryNode* grid_node_{nullptr};
     int grid_vertex_capacity_{0};
-    QSGGeometryNode* selection_node_{nullptr};
-    int selection_vertex_capacity_{0};
+    OverlayQuadLayer selection_layer_;
+    mutable QMutex opened_chunk_mutex_;
+    MapOverlayOpenedChunkSnapshot opened_chunk_;
+    OverlayQuadLayer opened_chunk_layer_;
     qreal center_x_{0.0};
     qreal center_z_{0.0};
     qreal scale_{64.0};

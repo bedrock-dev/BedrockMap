@@ -10,12 +10,14 @@
 #include <QSGNode>
 #include <QSGTextureMaterial>
 #include <QSGVertexColorMaterial>
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
 #include "base/config.h"
 #include "base/resourcemanager.h"
 #include "controller/appcontroller.h"
+#include "controller/chunkeditorcontroller.h"
 #include "controller/globaldatacontroller.h"
 #include "controller/mapcontroller.h"
 #include "iconatlas.h"
@@ -155,6 +157,35 @@ void MapOverlayQuickItem::setGlobalData(GlobalDataController* global_data) {
     if (global_data_) connect(global_data_, &GlobalDataController::sectionsChanged, this, &MapOverlayQuickItem::scheduleRectRefresh);
     emit globalDataChanged();
     scheduleRectRefresh();
+}
+
+void MapOverlayQuickItem::setChunkEditor(QObject* chunk_editor) {
+    if (chunk_editor_ == chunk_editor) return;
+    if (chunk_editor_) disconnect(chunk_editor_, nullptr, this, nullptr);
+    chunk_editor_ = chunk_editor;
+    if (chunk_editor_) connect(chunk_editor_, &QObject::destroyed, this, &MapOverlayQuickItem::refreshOpenedChunk);
+    if (auto* editor = qobject_cast<ChunkEditorController*>(chunk_editor))
+        connect(editor, &ChunkEditorController::chunkChanged, this, &MapOverlayQuickItem::refreshOpenedChunk);
+    emit chunkEditorChanged();
+    refreshOpenedChunk();
+}
+
+void MapOverlayQuickItem::refreshOpenedChunk() {
+    MapOverlayOpenedChunkSnapshot next;
+    if (auto* editor = qobject_cast<ChunkEditorController*>(chunk_editor_.data()); editor && editor->hasChunk()) {
+        next.visible = true;
+        next.chunkX = editor->chunkX();
+        next.chunkZ = editor->chunkZ();
+        next.dimension = editor->dimension();
+        next.color = QColor(setting::current().chunkEditorHighlightColor);
+        if (!next.color.isValid()) next.color = QColor(QStringLiteral("#ffaa00"));
+        next.borderWidth = std::clamp(setting::current().chunkEditorHighlightWidth, 0, 64);
+    }
+    {
+        const QMutexLocker lock(&opened_chunk_mutex_);
+        opened_chunk_ = next;
+    }
+    update();
 }
 
 void MapOverlayQuickItem::setEntitiesVisible(bool visible) {
@@ -449,80 +480,26 @@ void MapOverlayQuickItem::updateSlimeChunkNode(QSGNode* root) {
         const QMutexLocker lock(&slime_chunks_mutex_);
         chunks = slime_chunks_;
     }
-    if (!chunks || chunks->isEmpty() || !slime_chunks_visible_) {
-        if (slime_node_ && slime_node_->parent()) root->removeChildNode(slime_node_);
-        return;
-    }
-
-    if (!slime_node_) {
-        auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), 0);
-        geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-        geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-        slime_node_ = new QSGGeometryNode;
-        slime_node_->setGeometry(geometry);
-        slime_node_->setFlag(QSGNode::OwnsGeometry, true);
-        auto* material = new QSGVertexColorMaterial;
-        material->setFlag(QSGMaterial::Blending, true);
-        slime_node_->setMaterial(material);
-        slime_node_->setFlag(QSGNode::OwnsMaterial, true);
-    }
-    if (!slime_node_->parent()) {
-        // Slime chunks sit above HSA/village fills and below the chunk grid.
-        if (grid_node_ && grid_node_->parent())
-            root->insertChildNodeBefore(slime_node_, grid_node_);
-        else if (selection_node_ && selection_node_->parent())
-            root->insertChildNodeBefore(slime_node_, selection_node_);
-        else if (sprite_node_ && sprite_node_->parent())
-            root->insertChildNodeBefore(slime_node_, sprite_node_);
-        else
-            root->appendChildNode(slime_node_);
-    }
-
-    const int required_vertices = static_cast<int>(chunks->size()) * 6;
-    auto* geometry = slime_node_->geometry();
-    if (slime_vertex_capacity_ < required_vertices) {
-        geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), required_vertices);
-        geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-        geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-        slime_node_->setGeometry(geometry);
-        slime_vertex_capacity_ = required_vertices;
-    }
-
-    auto* vertices = geometry->vertexDataAsColoredPoint2D();
-    int vertex = 0;
+    QVector<OverlayQuad> quads;
+    if (slime_chunks_visible_ && chunks) quads.reserve(chunks->size());
     const QColor color(29, 145, 44, 190);
-    const auto alpha = static_cast<uchar>(color.alpha());
-    const auto red = static_cast<uchar>((color.red() * alpha + 127) / 255);
-    const auto green = static_cast<uchar>((color.green() * alpha + 127) / 255);
-    const auto blue = static_cast<uchar>((color.blue() * alpha + 127) / 255);
     const qreal scale = std::abs(scale_);
-    const auto addQuad = [&](qreal left, qreal top, qreal right, qreal bottom) {
-        if (right <= left || bottom <= top) return;
-        const float l = static_cast<float>(left);
-        const float t = static_cast<float>(top);
-        const float r = static_cast<float>(right);
-        const float b = static_cast<float>(bottom);
-        vertices[vertex++].set(l, t, red, green, blue, alpha);
-        vertices[vertex++].set(r, t, red, green, blue, alpha);
-        vertices[vertex++].set(l, b, red, green, blue, alpha);
-        vertices[vertex++].set(r, t, red, green, blue, alpha);
-        vertices[vertex++].set(r, b, red, green, blue, alpha);
-        vertices[vertex++].set(l, b, red, green, blue, alpha);
-    };
     const qreal view_center_x = width() / 2.0;
     const qreal view_center_z = height() / 2.0;
-    for (const QRect& chunk : *chunks) {
-        const qreal left = view_center_x + (chunk.x() - center_x_) * scale;
-        const qreal top = view_center_z + (chunk.y() - center_z_) * scale;
-        const qreal right = left + chunk.width() * scale;
-        const qreal bottom = top + chunk.height() * scale;
-        if (right < 0.0 || left > width() || bottom < 0.0 || top > height()) continue;
-        addQuad(left, top, right, bottom);
+    if (slime_chunks_visible_ && chunks) {
+        for (const QRect& chunk : *chunks) {
+            const qreal left = view_center_x + (chunk.x() - center_x_) * scale;
+            const qreal top = view_center_z + (chunk.y() - center_z_) * scale;
+            const qreal right = left + chunk.width() * scale;
+            const qreal bottom = top + chunk.height() * scale;
+            if (right < 0.0 || left > width() || bottom < 0.0 || top > height()) continue;
+            quads.append(OverlayQuad{QRectF(left, top, right - left, bottom - top), color, QColor(Qt::transparent), 0.0});
+        }
     }
-
-    geometry->setVertexCount(vertex);
-    geometry->markVertexDataDirty();
-    slime_node_->markDirty(QSGNode::DirtyGeometry);
+    QSGNode* before = grid_node_;
+    if (!before) before = selection_layer_.node();
+    if (!before) before = opened_chunk_layer_.node();
+    slime_layer_.update(root, quads, before);
 }
 
 void MapOverlayQuickItem::updateGridNode(QSGNode* root) {
@@ -572,8 +549,8 @@ void MapOverlayQuickItem::updateGridNode(QSGNode* root) {
     }
     if (!grid_node_->parent()) {
         // Grid sits above terrain overlays but below selections and actors.
-        if (selection_node_ && selection_node_->parent())
-            root->insertChildNodeBefore(grid_node_, selection_node_);
+        if (QSGNode* selection_node = selection_layer_.node(); selection_node && selection_node->parent())
+            root->insertChildNodeBefore(grid_node_, selection_node);
         else if (sprite_node_ && sprite_node_->parent())
             root->insertChildNodeBefore(grid_node_, sprite_node_);
         else
@@ -643,24 +620,50 @@ void MapOverlayQuickItem::geometryChange(const QRectF& newGeometry, const QRectF
     }
 }
 
+void MapOverlayQuickItem::updateOpenedChunkNode(QSGNode* root, int dimension) {
+    MapOverlayOpenedChunkSnapshot snapshot;
+    {
+        const QMutexLocker lock(&opened_chunk_mutex_);
+        snapshot = opened_chunk_;
+    }
+
+    const bool visible = snapshot.visible && snapshot.dimension == dimension && snapshot.borderWidth > 0.0 && snapshot.color.isValid() &&
+                         snapshot.color.alpha() > 0;
+    QVector<OverlayQuad> quads;
+    if (visible) {
+        const qreal view_center_x = width() / 2.0;
+        const qreal view_center_z = height() / 2.0;
+        qreal left = view_center_x + (snapshot.chunkX - center_x_) * scale_;
+        qreal right = view_center_x + (snapshot.chunkX + 1 - center_x_) * scale_;
+        qreal top = view_center_z + (snapshot.chunkZ - center_z_) * scale_;
+        qreal bottom = view_center_z + (snapshot.chunkZ + 1 - center_z_) * scale_;
+        if (right < left) std::swap(left, right);
+        if (bottom < top) std::swap(top, bottom);
+        if (right >= 0.0 && left <= width() && bottom >= 0.0 && top <= height()) {
+            quads.append(
+                OverlayQuad{QRectF(left, top, right - left, bottom - top), QColor(Qt::transparent), snapshot.color, snapshot.borderWidth});
+        }
+    }
+    QSGNode* before = sprite_node_ && sprite_node_->parent() ? static_cast<QSGNode*>(sprite_node_) : nullptr;
+    opened_chunk_layer_.update(root, quads, before);
+}
+
 QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     auto* root = oldNode ? oldNode : new QSGNode;
     if (!oldNode) {
-        rect_node_ = nullptr;
-        rect_vertex_capacity_ = 0;
+        rect_layer_.resetSceneGraph();
         grid_node_ = nullptr;
         grid_vertex_capacity_ = 0;
-        slime_node_ = nullptr;
-        slime_vertex_capacity_ = 0;
-        selection_node_ = nullptr;
-        selection_vertex_capacity_ = 0;
+        slime_layer_.resetSceneGraph();
+        selection_layer_.resetSceneGraph();
         sprite_node_ = nullptr;
         sprite_vertex_capacity_ = 0;
+        opened_chunk_layer_.resetSceneGraph();
     }
+    int render_dimension = 0;
     if (camera_state_) {
         quint64 revision = 0;
-        int dimension = 0;
-        camera_state_->read(center_x_, center_z_, scale_, dimension, revision);
+        camera_state_->read(center_x_, center_z_, scale_, render_dimension, revision);
         if (revision != published_camera_revision_) {
             published_camera_revision_ = revision;
             const double center_x = center_x_;
@@ -685,56 +688,11 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
         const QMutexLocker lock(&rects_mutex_);
         rects = overlay_rects_;
     }
-    if ((!rects || rects->isEmpty()) && rect_node_ && rect_node_->parent()) root->removeChildNode(rect_node_);
-    if (rects && !rects->isEmpty()) {
-        if (!rect_node_) {
-            auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), 0);
-            geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-            geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-            rect_node_ = new QSGGeometryNode;
-            rect_node_->setGeometry(geometry);
-            rect_node_->setFlag(QSGNode::OwnsGeometry, true);
-            auto* material = new QSGVertexColorMaterial;
-            material->setFlag(QSGMaterial::Blending, true);
-            rect_node_->setMaterial(material);
-            rect_node_->setFlag(QSGNode::OwnsMaterial, true);
-            root->prependChildNode(rect_node_);
-        } else if (!rect_node_->parent()) {
-            root->prependChildNode(rect_node_);
-        }
-
-        const int capacity = static_cast<int>(rects->size()) * 30;
-        auto* geometry = rect_node_->geometry();
-        if (rect_vertex_capacity_ < capacity) {
-            geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), capacity);
-            geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-            geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-            rect_node_->setGeometry(geometry);
-            rect_vertex_capacity_ = capacity;
-        }
-        auto* vertices = geometry->vertexDataAsColoredPoint2D();
-        int vertex = 0;
-        const qreal view_center_x = width() / 2.0;
-        const qreal view_center_z = height() / 2.0;
-        const auto addQuad = [&](qreal left, qreal top, qreal right, qreal bottom, const QColor& color) {
-            if (right <= left || bottom <= top || color.alpha() == 0) return;
-            const auto a = static_cast<uchar>(color.alpha());
-            // QSG uses premultiplied-alpha blending for vertex colors.
-            const auto premultiply = [a](int channel) { return static_cast<uchar>((channel * a + 127) / 255); };
-            const auto r = premultiply(color.red());
-            const auto g = premultiply(color.green());
-            const auto b = premultiply(color.blue());
-            const float l = static_cast<float>(left);
-            const float t = static_cast<float>(top);
-            const float rr = static_cast<float>(right);
-            const float bb = static_cast<float>(bottom);
-            vertices[vertex++].set(l, t, r, g, b, a);
-            vertices[vertex++].set(rr, t, r, g, b, a);
-            vertices[vertex++].set(l, bb, r, g, b, a);
-            vertices[vertex++].set(rr, t, r, g, b, a);
-            vertices[vertex++].set(rr, bb, r, g, b, a);
-            vertices[vertex++].set(l, bb, r, g, b, a);
-        };
+    QVector<OverlayQuad> rect_quads;
+    if (rects) rect_quads.reserve(rects->size());
+    const qreal view_center_x = width() / 2.0;
+    const qreal view_center_z = height() / 2.0;
+    if (rects) {
         for (const auto& rect : *rects) {
             qreal left = view_center_x + (rect.min_x / 16.0 - center_x_) * scale_;
             qreal right = view_center_x + (rect.max_x / 16.0 - center_x_) * scale_;
@@ -743,17 +701,10 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
             if (right < left) std::swap(left, right);
             if (bottom < top) std::swap(top, bottom);
             if (right < 0.0 || left > width() || bottom < 0.0 || top > height()) continue;
-            addQuad(left, top, right, bottom, rect.fill);
-            const qreal border = 2.5;
-            addQuad(left, top, right, std::min(bottom, top + border), rect.outline);
-            addQuad(left, std::max(top, bottom - border), right, bottom, rect.outline);
-            addQuad(left, std::min(bottom, top + border), std::min(right, left + border), std::max(top, bottom - border), rect.outline);
-            addQuad(std::max(left, right - border), std::min(bottom, top + border), right, std::max(top, bottom - border), rect.outline);
+            rect_quads.append(OverlayQuad{QRectF(left, top, right - left, bottom - top), rect.fill, rect.outline, 2.5});
         }
-        geometry->setVertexCount(vertex);
-        geometry->markVertexDataDirty();
-        rect_node_->markDirty(QSGNode::DirtyGeometry);
     }
+    rect_layer_.update(root, rect_quads, nullptr, true);
 
     updateSlimeChunkNode(root);
     updateGridNode(root);
@@ -766,57 +717,11 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
     const QVector<QRect> selection_rects = selection ? selection->rects : QVector<QRect>();
     const QRect drag_rect = selection ? selection->dragRect : QRect();
     const bool has_selection = !selection_rects.isEmpty() || drag_rect.isValid();
-    if (!has_selection) {
-        if (selection_node_ && selection_node_->parent()) root->removeChildNode(selection_node_);
-    } else {
-        if (!selection_node_) {
-            auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), 0);
-            geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-            geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-            selection_node_ = new QSGGeometryNode;
-            selection_node_->setGeometry(geometry);
-            selection_node_->setFlag(QSGNode::OwnsGeometry, true);
-            auto* material = new QSGVertexColorMaterial;
-            material->setFlag(QSGMaterial::Blending, true);
-            selection_node_->setMaterial(material);
-            selection_node_->setFlag(QSGNode::OwnsMaterial, true);
-        }
-        if (!selection_node_->parent()) root->appendChildNode(selection_node_);
-
+    QVector<OverlayQuad> selection_quads;
+    if (has_selection) {
         const bool importing = selection && selection->importing;
-        const int capacity = (static_cast<int>(selection_rects.size()) * (importing ? 1 : 5) +
-                              (importing ? static_cast<int>(selection->importEdges.size()) : 0) + (drag_rect.isValid() ? 5 : 0)) *
-                             6;
-        auto* geometry = selection_node_->geometry();
-        if (selection_vertex_capacity_ < capacity) {
-            geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), capacity);
-            geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-            geometry->setVertexDataPattern(QSGGeometry::DynamicPattern);
-            selection_node_->setGeometry(geometry);
-            selection_vertex_capacity_ = capacity;
-        }
-        auto* vertices = geometry->vertexDataAsColoredPoint2D();
-        int vertex = 0;
         const qreal view_center_x = width() / 2.0;
         const qreal view_center_z = height() / 2.0;
-        const auto addQuad = [&](qreal left, qreal top, qreal right, qreal bottom, const QColor& color) {
-            if (right <= left || bottom <= top || color.alpha() == 0) return;
-            const auto a = static_cast<uchar>(color.alpha());
-            const auto premultiply = [a](int channel) { return static_cast<uchar>((channel * a + 127) / 255); };
-            const auto r = premultiply(color.red());
-            const auto g = premultiply(color.green());
-            const auto b = premultiply(color.blue());
-            const float l = static_cast<float>(left);
-            const float t = static_cast<float>(top);
-            const float rr = static_cast<float>(right);
-            const float bb = static_cast<float>(bottom);
-            vertices[vertex++].set(l, t, r, g, b, a);
-            vertices[vertex++].set(rr, t, r, g, b, a);
-            vertices[vertex++].set(l, bb, r, g, b, a);
-            vertices[vertex++].set(rr, t, r, g, b, a);
-            vertices[vertex++].set(rr, bb, r, g, b, a);
-            vertices[vertex++].set(l, bb, r, g, b, a);
-        };
         const auto screenRect = [&](const QRect& rect) {
             return QRectF(view_center_x + (rect.x() - center_x_) * scale_, view_center_z + (rect.y() - center_z_) * scale_,
                           rect.width() * scale_, rect.height() * scale_);
@@ -829,16 +734,20 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
         constexpr qreal border_width = 2.0;
         for (const auto& rect : selection_rects) {
             const QRectF screen = screenRect(rect);
-            addQuad(screen.left(), screen.top(), screen.right(), screen.bottom(), fill);
+            selection_quads.append(OverlayQuad{screen, fill, QColor(Qt::transparent), 0.0});
             if (importing) continue;
             if (!selection_region.intersects(QRect(rect.x(), rect.y() - 1, rect.width(), 1)))
-                addQuad(screen.left(), screen.top(), screen.right(), screen.top() + border_width, border);
+                selection_quads.append(
+                    OverlayQuad{QRectF(screen.left(), screen.top(), screen.width(), border_width), border, QColor(Qt::transparent), 0.0});
             if (!selection_region.intersects(QRect(rect.x(), rect.y() + rect.height(), rect.width(), 1)))
-                addQuad(screen.left(), screen.bottom() - border_width, screen.right(), screen.bottom(), border);
+                selection_quads.append(OverlayQuad{QRectF(screen.left(), screen.bottom() - border_width, screen.width(), border_width),
+                                                   border, QColor(Qt::transparent), 0.0});
             if (!selection_region.intersects(QRect(rect.x() - 1, rect.y(), 1, rect.height())))
-                addQuad(screen.left(), screen.top(), screen.left() + border_width, screen.bottom(), border);
+                selection_quads.append(
+                    OverlayQuad{QRectF(screen.left(), screen.top(), border_width, screen.height()), border, QColor(Qt::transparent), 0.0});
             if (!selection_region.intersects(QRect(rect.x() + rect.width(), rect.y(), 1, rect.height())))
-                addQuad(screen.right() - border_width, screen.top(), screen.right(), screen.bottom(), border);
+                selection_quads.append(OverlayQuad{QRectF(screen.right() - border_width, screen.top(), border_width, screen.height()),
+                                                   border, QColor(Qt::transparent), 0.0});
         }
         if (importing) {
             for (const auto& edge : selection->importEdges) {
@@ -847,21 +756,19 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
                 const qreal x2 = view_center_x + (edge.x2() - center_x_) * scale_;
                 const qreal y2 = view_center_z + (edge.y2() - center_z_) * scale_;
                 const qreal half = border_width / 2;
-                addQuad(std::min(x1, x2) - half, std::min(y1, y2) - half, std::max(x1, x2) + half, std::max(y1, y2) + half, border);
+                selection_quads.append(OverlayQuad{QRectF(std::min(x1, x2) - half, std::min(y1, y2) - half,
+                                                          std::abs(x2 - x1) + border_width, std::abs(y2 - y1) + border_width),
+                                                   border, QColor(Qt::transparent), 0.0});
             }
         }
         if (drag_rect.isValid()) {
             const QRectF screen = screenRect(drag_rect);
-            addQuad(screen.left(), screen.top(), screen.right(), screen.bottom(), fill);
-            addQuad(screen.left(), screen.top(), screen.right(), screen.top() + border_width, border);
-            addQuad(screen.left(), screen.bottom() - border_width, screen.right(), screen.bottom(), border);
-            addQuad(screen.left(), screen.top(), screen.left() + border_width, screen.bottom(), border);
-            addQuad(screen.right() - border_width, screen.top(), screen.right(), screen.bottom(), border);
+            selection_quads.append(OverlayQuad{screen, fill, border, border_width});
         }
-        geometry->setVertexCount(vertex);
-        geometry->markVertexDataDirty();
-        selection_node_->markDirty(QSGNode::DirtyGeometry);
     }
+    selection_layer_.update(root, selection_quads);
+
+    updateOpenedChunkNode(root, render_dimension);
 
     std::shared_ptr<const QVector<ActorSprite>> sprites;
     {
@@ -895,9 +802,6 @@ QSGNode* MapOverlayQuickItem::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeD
         root->appendChildNode(sprite_node_);
     }
 
-    const qreal px_per_block = scale_ / 16.0;
-    const qreal view_center_x = width() / 2.0;
-    const qreal view_center_z = height() / 2.0;
     int visible_count = 0;
     for (const auto& sprite : *sprites) {
         const auto* entry = atlas.entry(sprite.icon);
