@@ -497,7 +497,7 @@ bool NbtTreeModel::updateNode(int row, const QString& key, const QString& value)
     Node* node = nodeAt(row);
     if (!node || !node->tag) return false;
     if (!editable_ || hex_mode_) {
-        setError(QStringLiteral("The current view is read-only."));
+        setError(tr("The current view is read-only."));
         return false;
     }
     auto* tag = node->tag;
@@ -506,14 +506,14 @@ bool NbtTreeModel::updateNode(int row, const QString& key, const QString& value)
     if (node->parent && node->parent->tag && node->parent->tag->type() == Compound && key_changed) {
         auto* parent = static_cast<compound_tag*>(node->parent->tag);
         if (parent->get(new_key.toStdString())) {
-            setError(QStringLiteral("A tag with this key already exists."));
+            setError(tr("A tag with this key already exists."));
             return false;
         }
         auto* clone = tag->copy();
         clone->set_key(new_key.toStdString());
         if (!applyValue(clone, value)) {
             delete clone;
-            setError(QStringLiteral("Invalid value for this tag type."));
+            setError(tr("Invalid value for this tag type."));
             return false;
         }
         parent->remove(tag->key());
@@ -526,7 +526,7 @@ bool NbtTreeModel::updateNode(int row, const QString& key, const QString& value)
         return true;
     }
     if (!applyValue(tag, value)) {
-        setError(QStringLiteral("Invalid value for this tag type."));
+        setError(tr("Invalid value for this tag type."));
         return false;
     }
     if (key_changed) tag->set_key(new_key.toStdString());
@@ -539,25 +539,25 @@ bool NbtTreeModel::addChild(int row, int type, const QString& key, const QString
     Node* node = nodeAt(row);
     if (!node || !node->tag || !editable_ || hex_mode_) return false;
     if (node->tag->type() != Compound && node->tag->type() != List) {
-        setError(QStringLiteral("This tag cannot contain children."));
+        setError(tr("This tag cannot contain children."));
         return false;
     }
     if (node->tag->type() == List) {
         auto* list = static_cast<list_tag*>(node->tag);
         if (!list->value.empty() && list->value.front()->type() != static_cast<tag_type>(type)) {
-            setError(QStringLiteral("All items in this list must have the same type."));
+            setError(tr("All items in this list must have the same type."));
             return false;
         }
     } else {
         auto* compound = static_cast<compound_tag*>(node->tag);
         if (compound->get(key.toStdString())) {
-            setError(QStringLiteral("A tag with this key already exists."));
+            setError(tr("A tag with this key already exists."));
             return false;
         }
     }
     auto* child = createTag(type, key, value);
     if (!child) {
-        setError(QStringLiteral("Invalid value for this tag type."));
+        setError(tr("Invalid value for this tag type."));
         return false;
     }
     if (node->tag->type() == Compound)

@@ -193,16 +193,9 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: Theme.gapMedium
-        visible: !root.controller || !root.controller.loading
+        visible: areaInfo.length > 0 && (!root.controller || !root.controller.loading)
         wrapMode: Text.Wrap
-        text: (areaInfo.length > 0 ? areaInfo + "\n" : "") + (voxelItem.rotationLocked ? (Theme.touch ? qsTr("Rotation locked · Two fingers: pan and zoom") :
-                                                                                                        qsTr("Rotation locked · Right drag: pan · Wheel: zoom")) :
-                                                                                         Theme.touch ? qsTr(
-                                                                                                           "One finger: rotate · Two fingers: pan and zoom") :
-                                                                                                       qsTr("Left drag: rotate · Right drag: pan · Wheel: zoom"))
-              + (voxelItem.selectionEnabled ? "\n" + (Theme.touch ? qsTr("Drag a handle to edit the selection") : qsTr(
-                                                                        "Middle drag a handle to edit the selection")) :
-                                              "")
+        text: areaInfo
         color: "#aab3c0"
         font.pixelSize: Theme.fontCaption
     }

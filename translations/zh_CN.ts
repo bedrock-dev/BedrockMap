@@ -1060,8 +1060,8 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Settings saved. Rendering and world settings take effect after restart.</source>
-        <translation>设置已保存。渲染和世界设置将在重启后生效。</translation>
+        <source>Settings saved. All settings except language and font will take effect after restarting the application.</source>
+        <translation>设置已保存。除语言和字体外，其他设置都将在重启软件后生效。</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1492,7 +1492,7 @@
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>No NBT document is open.</source>
-        <translation type="unfinished">没有打开的 NBT 文档。</translation>
+        <translation>没有打开的 NBT 文档。</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1503,7 +1503,7 @@
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Import NBT file</source>
-        <translation type="unfinished">导入 NBT 文件</translation>
+        <translation>导入 NBT 文件</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1512,7 +1512,7 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished">NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1521,7 +1521,7 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>All files (*)</source>
-        <translation type="unfinished">所有文件 (*)</translation>
+        <translation>所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1550,37 +1550,37 @@
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Replace NBT record</source>
-        <translation type="unfinished"></translation>
+        <translation>替换 NBT 记录</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Save NBT file</source>
-        <translation type="unfinished">保存 NBT 文件</translation>
+        <translation>保存 NBT 文件</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export NBT file</source>
-        <translation type="unfinished">导出 NBT 文件</translation>
+        <translation>导出 NBT 文件</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export current NBT record</source>
-        <translation type="unfinished">导出当前 NBT 记录</translation>
+        <translation>导出当前 NBT 记录</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Clear all records</source>
-        <translation type="unfinished">清空所有记录</translation>
+        <translation>清空所有记录</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Remove all records from this NBT section? This cannot be undone.</source>
-        <translation type="unfinished">从此 NBT 分区中移除所有记录？此操作无法撤销。</translation>
+        <translation>从此 NBT 分区中移除所有记录？此操作无法撤销。</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Clear</source>
-        <translation type="unfinished">清空</translation>
+        <translation>清空</translation>
     </message>
 </context>
 <context>
@@ -1623,17 +1623,17 @@
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
         <source>Hex</source>
-        <translation type="unfinished">十六进制</translation>
+        <translation>十六进制</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
         <source>Expand all</source>
-        <translation type="unfinished">全部展开</translation>
+        <translation>全部展开</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
         <source>Collapse all</source>
-        <translation type="unfinished">全部折叠</translation>
+        <translation>全部折叠</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
@@ -1765,6 +1765,66 @@
         <source>Apply</source>
         <translation>应用</translation>
     </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Byte</source>
+        <translation>字节</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Short</source>
+        <translation>短整型</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Int</source>
+        <translation>整数</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Long</source>
+        <translation>长整型</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Float</source>
+        <translation>单精度浮点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Double</source>
+        <translation>双精度浮点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Byte Array</source>
+        <translation>字节数组</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>String</source>
+        <translation>字符串</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>List</source>
+        <translation>列表</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Compound</source>
+        <translation>复合标签</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Int Array</source>
+        <translation>整数数组</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Long Array</source>
+        <translation>长整型数组</translation>
+    </message>
 </context>
 <context>
     <name>NbtToolbar</name>
@@ -1811,7 +1871,7 @@
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Replace</source>
-        <translation type="unfinished">替换</translation>
+        <translation>替换</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -1821,12 +1881,43 @@
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Save</source>
-        <translation type="unfinished">保存</translation>
+        <translation>保存</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Close</source>
-        <translation type="unfinished">关闭</translation>
+        <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>NbtTreeModel</name>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The current view is read-only.</source>
+        <translation>当前视图为只读。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>A tag with this key already exists.</source>
+        <translation>已存在同名标签。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Invalid value for this tag type.</source>
+        <translation>该标签类型的值无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>This tag cannot contain children.</source>
+        <translation>此标签不能包含子项。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>All items in this list must have the same type.</source>
+        <translation>此列表中的所有项目必须具有相同类型。</translation>
     </message>
 </context>
 <context>
@@ -2376,13 +2467,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Collapse sidebar</source>
-        <translation>折叠侧边栏</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Automatically collapse the sidebar on startup</source>
-        <translation>启动时自动折叠侧边栏</translation>
+        <source>Collapse sidebar on startup</source>
+        <translation>启动时默认折叠侧边栏</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2421,8 +2507,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Map selection color</source>
-        <translation>大地图选区颜色</translation>
+        <source>Selection color</source>
+        <translation>选区颜色</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2431,8 +2517,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Tile colors</source>
-        <translation>瓦片颜色</translation>
+        <source>Empty tile colors</source>
+        <translation>空白瓦片颜色</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2466,8 +2552,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Chunk editor and voxel selection</source>
-        <translation>区块编辑器与体素选择</translation>
+        <source>3D view editor</source>
+        <translation>3D视图编辑器</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2546,11 +2632,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Terrain overview</source>
-        <translation>地形概览</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>LevelDB XOR</source>
         <translation>LevelDB XOR</translation>
     </message>
@@ -2602,11 +2683,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Higher AO quality improves occlusion detail at a higher rendering cost.</source>
-        <translation>较高的 AO 质量可改善遮挡细节，但会增加渲染开销。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Application information</source>
         <translation>应用信息</translation>
     </message>
@@ -2624,11 +2700,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Graphics backend</source>
         <translation>图形后端</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Graphics backend changes take effect after restarting the application.</source>
-        <translation>图形后端更改将在重启应用后生效。</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2652,13 +2723,13 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>High-detail map</source>
-        <translation>高清地图</translation>
+        <source>High-detail terrain cache</source>
+        <translation>高细节地形缓存</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Keep full-resolution terrain and shading further out when zooming. Uses up to 256 MiB more GPU memory and builds more tiles.</source>
-        <translation>缩小时更久地保持全分辨率地形与光影效果。最多额外占用 256 MiB 显存，并会生成更多图块。</translation>
+        <source>Keep full-resolution terrain and shading further out when zooming. Raises terrain tile arrays from about 96 MiB to 256 MiB and builds more tiles.</source>
+        <translation>缩小时更久地保持全分辨率地形与光影效果。地形瓦片纹理数组会从约 96 MiB 提升到 256 MiB，并会生成更多瓦片。</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -3475,38 +3546,8 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
-        <source>One finger: rotate · Two fingers: pan and zoom</source>
-        <translation>单指：旋转 · 双指：平移和缩放</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Left drag: rotate · Right drag: pan · Wheel: zoom</source>
-        <translation>左键拖动：旋转 · 右键拖动：平移 · 滚轮：缩放</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Drag a handle to edit the selection</source>
-        <translation>拖动手柄编辑选区</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Middle drag a handle to edit the selection</source>
-        <translation>鼠标中键拖动手柄编辑选区</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Rotation locked · Two fingers: pan and zoom</source>
-        <translation>旋转已锁定 · 双指：平移和缩放</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
         <source>No terrain loaded.</source>
         <translation>尚未加载体素数据。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Rotation locked · Right drag: pan · Wheel: zoom</source>
-        <translation>旋转已锁定 · 右键拖动：平移 · 滚轮：缩放</translation>
     </message>
 </context>
 <context>

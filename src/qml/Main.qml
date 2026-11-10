@@ -328,7 +328,8 @@ Window {
             })
         }
         function onSettingsSaved() {
-            App.notifications.info(qsTr("Settings saved. Rendering and world settings take effect after restart."))
+            App.notifications.info(
+                        qsTr("Settings saved. All settings except language and font will take effect after restarting the application."))
         }
         function onErrorChanged(message) {
             App.notifications.error(message)

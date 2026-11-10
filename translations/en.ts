@@ -1060,8 +1060,8 @@
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <source>Settings saved. Rendering and world settings take effect after restart.</source>
-        <translation>Settings saved. Rendering and world settings take effect after restart.</translation>
+        <source>Settings saved. All settings except language and font will take effect after restarting the application.</source>
+        <translation>Settings saved. All settings except language and font will take effect after restarting the application.</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1765,6 +1765,66 @@
         <source>Apply</source>
         <translation type="unfinished">Apply</translation>
     </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Byte</source>
+        <translation>Byte</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Short</source>
+        <translation>Short</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Int</source>
+        <translation>Int</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Long</source>
+        <translation>Long</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Float</source>
+        <translation>Float</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Double</source>
+        <translation>Double</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Byte Array</source>
+        <translation>Byte Array</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>String</source>
+        <translation>String</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>List</source>
+        <translation>List</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Compound</source>
+        <translation>Compound</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Int Array</source>
+        <translation>Int Array</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtTagDialog.qml"/>
+        <source>Long Array</source>
+        <translation>Long Array</translation>
+    </message>
 </context>
 <context>
     <name>NbtToolbar</name>
@@ -1827,6 +1887,37 @@
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Close</source>
         <translation type="unfinished">Close</translation>
+    </message>
+</context>
+<context>
+    <name>NbtTreeModel</name>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The current view is read-only.</source>
+        <translation>The current view is read-only.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>A tag with this key already exists.</source>
+        <translation>A tag with this key already exists.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Invalid value for this tag type.</source>
+        <translation>Invalid value for this tag type.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>This tag cannot contain children.</source>
+        <translation>This tag cannot contain children.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>All items in this list must have the same type.</source>
+        <translation>All items in this list must have the same type.</translation>
     </message>
 </context>
 <context>
@@ -2376,13 +2467,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Collapse sidebar</source>
-        <translation type="unfinished">Collapse sidebar</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Automatically collapse the sidebar on startup</source>
-        <translation>Automatically collapse the sidebar on startup</translation>
+        <source>Collapse sidebar on startup</source>
+        <translation>Collapse sidebar on startup</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2421,8 +2507,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Map selection color</source>
-        <translation>Map selection color</translation>
+        <source>Selection color</source>
+        <translation>Selection color</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2431,8 +2517,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Tile colors</source>
-        <translation>Tile colors</translation>
+        <source>Empty tile colors</source>
+        <translation>Empty tile colors</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2466,8 +2552,8 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Chunk editor and voxel selection</source>
-        <translation type="unfinished"></translation>
+        <source>3D view editor</source>
+        <translation>3D view editor</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2546,11 +2632,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Terrain overview</source>
-        <translation>Terrain overview</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>LevelDB XOR</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2602,11 +2683,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Higher AO quality improves occlusion detail at a higher rendering cost.</source>
-        <translation>Higher AO quality improves occlusion detail at a higher rendering cost.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Application information</source>
         <translation>Application information</translation>
     </message>
@@ -2624,11 +2700,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Graphics backend</source>
         <translation>Graphics backend</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Graphics backend changes take effect after restarting the application.</source>
-        <translation>Graphics backend changes take effect after restarting the application.</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2652,13 +2723,13 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>High-detail map</source>
-        <translation type="unfinished"></translation>
+        <source>High-detail terrain cache</source>
+        <translation>High-detail terrain cache</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Keep full-resolution terrain and shading further out when zooming. Uses up to 256 MiB more GPU memory and builds more tiles.</source>
-        <translation type="unfinished"></translation>
+        <source>Keep full-resolution terrain and shading further out when zooming. Raises terrain tile arrays from about 96 MiB to 256 MiB and builds more tiles.</source>
+        <translation>Keep full-resolution terrain and shading further out when zooming. Raises terrain tile arrays from about 96 MiB to 256 MiB and builds more tiles.</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -3475,38 +3546,8 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelView.qml"/>
-        <source>One finger: rotate · Two fingers: pan and zoom</source>
-        <translation>One finger: rotate · Two fingers: pan and zoom</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Left drag: rotate · Right drag: pan · Wheel: zoom</source>
-        <translation>Left drag: rotate · Right drag: pan · Wheel: zoom</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Drag a handle to edit the selection</source>
-        <translation>Drag a handle to edit the selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Middle drag a handle to edit the selection</source>
-        <translation>Middle drag a handle to edit the selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Rotation locked · Two fingers: pan and zoom</source>
-        <translation>Rotation locked · Two fingers: pan and zoom</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
         <source>No terrain loaded.</source>
         <translation>No terrain loaded.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelView.qml"/>
-        <source>Rotation locked · Right drag: pan · Wheel: zoom</source>
-        <translation>Rotation locked · Right drag: pan · Wheel: zoom</translation>
     </message>
 </context>
 <context>

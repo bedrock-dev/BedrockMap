@@ -177,11 +177,10 @@ Item {
                             }
                         }
                         SettingRow {
-                            label: qsTr("Collapse sidebar")
+                            label: qsTr("Collapse sidebar on startup")
                             AppSwitch {
                                 checked: App.settings.collapseSidebarOnStartup
                                 onToggled: App.settings.collapseSidebarOnStartup = checked
-                                tooltip: qsTr("Automatically collapse the sidebar on startup")
                             }
                         }
                         SettingRow {
@@ -280,7 +279,7 @@ Item {
                             }
                         }
                         SettingRow {
-                            label: qsTr("Map selection color")
+                            label: qsTr("Selection color")
                             AppColorField {
                                 value: App.settings.mapSelectionColor
                                 onEdited: color => App.settings.mapSelectionColor = color
@@ -294,7 +293,7 @@ Item {
                             }
                         }
                         SettingRow {
-                            label: qsTr("Tile colors")
+                            label: qsTr("Empty tile colors")
                             AppComboBox {
                                 model: [qsTr("Dark"), qsTr("Light")]
                                 currentIndex: App.settings.tileColorScheme === "light" ? 1 : 0
@@ -330,7 +329,7 @@ Item {
                         }
                     }
                     SettingGroup {
-                        title: qsTr("Chunk editor and voxel selection")
+                        title: qsTr("3D view editor")
                         SettingRow {
                             label: qsTr("Editor color")
                             AppColorField {
@@ -473,14 +472,6 @@ Item {
                                 onToggled: App.settings.preloadAllChunkCoords = checked
                             }
                         }
-                        SettingRow {
-                            label: qsTr("Terrain overview")
-                            AppSwitch {
-                                enabled: App.settings.preloadAllChunkCoords
-                                checked: enabled && App.settings.chunkOverviewEnabled
-                                onToggled: App.settings.chunkOverviewEnabled = checked
-                            }
-                        }
                     }
                     SettingGroup {
                         title: qsTr("LevelDB XOR")
@@ -525,13 +516,6 @@ Item {
                                 onActivated: App.settings.renderBackend = page.renderBackendValues[currentIndex]
                             }
                         }
-                        Text {
-                            Layout.fillWidth: true
-                            text: qsTr("Graphics backend changes take effect after restarting the application.")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                            wrapMode: Text.WordWrap
-                        }
                     }
                     SettingGroup {
                         title: qsTr("Shadows and occlusion")
@@ -570,13 +554,6 @@ Item {
                                 currentIndex: [2, 4, 8].indexOf(App.settings.gpuAoSteps)
                                 onActivated: App.settings.gpuAoSteps = [2, 4, 8][currentIndex]
                             }
-                        }
-                        Text {
-                            Layout.fillWidth: true
-                            text: qsTr("Higher AO quality improves occlusion detail at a higher rendering cost.")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                            wrapMode: Text.Wrap
                         }
                     }
                     SettingGroup {
@@ -673,12 +650,12 @@ Item {
                     SettingGroup {
                         title: qsTr("Performance")
                         SettingRow {
-                            label: qsTr("High-detail map")
+                            label: qsTr("High-detail terrain cache")
                             AppSwitch {
                                 checked: App.settings.gpuHighDetailMap
                                 onToggled: App.settings.gpuHighDetailMap = checked
                                 tooltip: qsTr(
-                                             "Keep full-resolution terrain and shading further out when zooming. Uses up to 256 MiB more GPU memory and builds more tiles.")
+                                             "Keep full-resolution terrain and shading further out when zooming. Raises terrain tile arrays from about 96 MiB to 256 MiB and builds more tiles.")
                             }
                         }
                         SettingRow {

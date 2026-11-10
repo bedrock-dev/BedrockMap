@@ -14,8 +14,20 @@ AppDialog {
     property string tagKey: ""
     property string tagValue: ""
     readonly property var typeIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    readonly property var typeNames: ["Byte", "Short", "Int", "Long", "Float", "Double", "Byte Array", "String", "List",
-        "Compound", "Int Array", "Long Array"]
+    readonly property var typeNames: [
+        qsTr("Byte"),
+        qsTr("Short"),
+        qsTr("Int"),
+        qsTr("Long"),
+        qsTr("Float"),
+        qsTr("Double"),
+        qsTr("Byte Array"),
+        qsTr("String"),
+        qsTr("List"),
+        qsTr("Compound"),
+        qsTr("Int Array"),
+        qsTr("Long Array")
+    ]
     signal commitRequested(int type, string key, string value)
 
     component TypeLabel: Item {
