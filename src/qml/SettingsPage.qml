@@ -702,23 +702,25 @@ Item {
                             Layout.fillWidth: true
                             spacing: Theme.gapLarge
                             Rectangle {
-                                Layout.preferredWidth: 76
-                                Layout.preferredHeight: 76
+                                Layout.preferredWidth: Theme.ui(64)
+                                Layout.preferredHeight: Theme.ui(64)
+                                Layout.alignment: Qt.AlignTop
                                 radius: Theme.radiusCard
                                 color: Theme.accentSoft
                                 Image {
                                     anchors.centerIn: parent
-                                    width: 58
-                                    height: 58
+                                    width: Theme.ui(48)
+                                    height: Theme.ui(48)
                                     source: "qrc:/bedrockmap/icons/app.svg"
-                                    sourceSize.width: 116
-                                    sourceSize.height: 116
+                                    sourceSize.width: width * 2
+                                    sourceSize.height: height * 2
                                     smooth: true
                                 }
                             }
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: Theme.gapSmall
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: Theme.gapTiny
                                 Text {
                                     Layout.fillWidth: true
                                     text: Qt.application.name
@@ -727,13 +729,8 @@ Item {
                                     wrapMode: Text.Wrap
                                 }
                                 Text {
-                                    text: Qt.application.version
-                                    color: Theme.accent
-                                    font.pixelSize: Theme.fontSubtitle
-                                }
-                                Text {
                                     Layout.fillWidth: true
-                                    text: qsTranslate("AboutDialog", "aboutDialog.copyright")
+                                    text: Qt.application.version + "  ·  " + qsTranslate("AboutDialog", "aboutDialog.copyright")
                                     color: Theme.muted
                                     font.pixelSize: Theme.fontBody
                                     wrapMode: Text.WordWrap
@@ -742,26 +739,24 @@ Item {
                         }
                         Text {
                             Layout.fillWidth: true
+                            Layout.topMargin: Theme.gapSmall
                             text: qsTranslate("AboutDialog", "aboutDialog.description")
                             color: Theme.text
                             font.pixelSize: Theme.fontBody
+                            lineHeight: 1.3
                             wrapMode: Text.WordWrap
-                        }
-                        Text {
-                            Layout.fillWidth: true
-                            textFormat: Text.StyledText
-                            text: qsTranslate("AboutDialog", "aboutDialog.developer").arg(
-                                      "<a href=\"https://github.com/hhhxiao\">hhhxiao</a>")
-                            color: Theme.muted
-                            linkColor: Theme.accent
-                            font.pixelSize: Theme.fontBody
-                            wrapMode: Text.WordWrap
-                            onLinkActivated: link => Qt.openUrlExternally(link)
                         }
                         Flow {
                             Layout.fillWidth: true
+                            Layout.topMargin: Theme.gapSmall
                             Layout.preferredHeight: implicitHeight
                             spacing: Theme.gapSmall
+                            AppButton {
+                                primary: true
+                                text: App.checkingForUpdates ? qsTr("Checking...") : qsTr("Check for updates")
+                                enabled: !App.checkingForUpdates
+                                onClicked: App.checkForUpdates(true)
+                            }
                             AppButton {
                                 text: qsTranslate("AboutDialog", "aboutDialog.github")
                                 onClicked: Qt.openUrlExternally("https://github.com/bedrock-dev/BedrockMap")
@@ -771,46 +766,36 @@ Item {
                                 onClicked: Qt.openUrlExternally("https://qm.qq.com/q/3KJZZCkDbW")
                             }
                         }
-                        ColumnLayout {
+                        AppCheckBox {
                             Layout.fillWidth: true
-                            spacing: Theme.gapSmall
-                            Text {
-                                Layout.fillWidth: true
-                                text: qsTranslate("AboutDialog", "aboutDialog.otherContributors")
-                                color: Theme.text
-                                font.pixelSize: Theme.fontLabel
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                textFormat: Text.StyledText
-                                text: "<a href=\"https://space.bilibili.com/382492603\">INTZOT</a>  ·  "
-                                      + "<a href=\"https://github.com/OEOTYAN\">OEOYAN</a>"
-                                color: Theme.muted
-                                linkColor: Theme.accent
-                                font.pixelSize: Theme.fontBody
-                                wrapMode: Text.Wrap
-                                onLinkActivated: link => Qt.openUrlExternally(link)
-                            }
+                            text: qsTr("Don't check for updates on startup")
+                            checked: !App.settings.checkUpdate
+                            onToggled: App.settings.checkUpdate = !checked
                         }
                     }
                     SettingGroup {
-                        title: qsTr("Updates")
-                        GridLayout {
+                        title: qsTr("Developers")
+                        PersonRow {
+                            primary: true
+                            name: "hhhxiao"
+                            url: "https://github.com/hhhxiao"
+                        }
+                        Rectangle {
                             Layout.fillWidth: true
-                            columns: page.compact ? 1 : 2
-                            columnSpacing: Theme.gapLarge
-                            rowSpacing: Theme.gapSmall
-                            AppButton {
-                                text: App.checkingForUpdates ? qsTr("Checking...") : qsTr("Check for updates")
-                                enabled: !App.checkingForUpdates
-                                onClicked: App.checkForUpdates(true)
-                            }
-                            AppCheckBox {
-                                Layout.fillWidth: true
-                                text: qsTr("Don't check for updates on startup")
-                                checked: !App.settings.checkUpdate
-                                onToggled: App.settings.checkUpdate = !checked
-                            }
+                            Layout.topMargin: Theme.gapSmall
+                            Layout.bottomMargin: Theme.gapSmall
+                            implicitHeight: Theme.borderWidth
+                            color: Theme.border
+                        }
+                        PersonRow {
+                            name: "INTZOT"
+                            role: qsTr("Contributor")
+                            url: "https://space.bilibili.com/382492603"
+                        }
+                        PersonRow {
+                            name: "OEOTYAN"
+                            role: qsTr("Contributor")
+                            url: "https://github.com/OEOTYAN"
                         }
                     }
                     SettingGroup {
@@ -922,6 +907,74 @@ Item {
             elide: Text.ElideRight
         }
         // The second child supplied by each row occupies the trailing column.
+    }
+    component PersonRow: Rectangle {
+        id: person
+        property string name
+        property string role
+        property string url
+        property bool primary: false
+        Layout.fillWidth: true
+        implicitHeight: personRow.implicitHeight + Theme.gapSmall * 2
+        radius: Theme.radiusControl
+        color: personMouse.containsMouse ? Theme.surfaceAlt : "transparent"
+
+        RowLayout {
+            id: personRow
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: Theme.gapSmall
+            anchors.rightMargin: Theme.gapSmall
+            spacing: Theme.gapMedium
+            Rectangle {
+                Layout.preferredWidth: person.primary ? Theme.ui(44) : Theme.ui(32)
+                Layout.preferredHeight: Layout.preferredWidth
+                radius: width / 2
+                color: person.primary ? Theme.accentSoft : Theme.surfaceAlt
+                border.width: Theme.borderWidth
+                border.color: person.primary ? Theme.accent : Theme.border
+                Text {
+                    anchors.centerIn: parent
+                    text: person.name.charAt(0).toUpperCase()
+                    color: person.primary ? Theme.accent : Theme.muted
+                    font.pixelSize: person.primary ? Theme.fontTitle : Theme.fontSubtitle
+                }
+            }
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 0
+                Text {
+                    Layout.fillWidth: true
+                    text: person.name
+                    color: Theme.text
+                    font.pixelSize: person.primary ? Theme.fontLabel : Theme.fontSubtitle
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillWidth: true
+                    visible: person.role.length > 0
+                    text: person.role
+                    color: Theme.muted
+                    font.pixelSize: Theme.fontCaption
+                    elide: Text.ElideRight
+                }
+            }
+            Text {
+                text: "›"
+                color: personMouse.containsMouse ? Theme.accent : Theme.muted
+                font.pixelSize: Theme.fontHeading
+            }
+        }
+        MouseArea {
+            id: personMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: Qt.openUrlExternally(person.url)
+        }
+        Accessible.role: Accessible.Link
+        Accessible.name: person.role.length > 0 ? person.name + ", " + person.role : person.name
     }
 
 }

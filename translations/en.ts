@@ -10,11 +10,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.developer</source>
-        <translation>Developed by %1</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.copyright</source>
         <translation>Licensed under GNU AGPL v3.0</translation>
     </message>
@@ -22,11 +17,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
         <translation>BedrockMap is a fully open-source map editor for Minecraft Bedrock Edition, built with Qt6 and C++20. It provides a comprehensive toolset for browsing, inspecting, and editing Bedrock world saves (LevelDB format) across all dimensions.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.otherContributors</source>
-        <translation>Other Contributors</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2320,6 +2310,17 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Developers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Contributor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Open-source credits</source>
         <translation>Open-source credits</translation>
     </message>
@@ -2608,11 +2609,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Application information</source>
         <translation>Application information</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Updates</source>
-        <translation>Updates</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

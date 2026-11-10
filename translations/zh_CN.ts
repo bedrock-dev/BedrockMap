@@ -10,11 +10,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.developer</source>
-        <translation>由%1开发</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.copyright</source>
         <translation>采用GNU AGPL v3.0协议</translation>
     </message>
@@ -22,11 +17,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>aboutDialog.description</source>
         <translation>BedrockMap 是一个完全开源的 Minecraft 基岩版地图编辑器，使用 Qt6 和 C++20 构建。它提供了一套全面的工具，用于浏览、检查和编辑所有维度的LevelDB格式的基岩版世界存档。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>aboutDialog.otherContributors</source>
-        <translation>其他贡献者</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -2320,6 +2310,17 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Developers</source>
+        <translation>开发者</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Contributor</source>
+        <translation>贡献者</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Open-source credits</source>
         <translation>开源致谢</translation>
     </message>
@@ -2608,11 +2609,6 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Application information</source>
         <translation>应用信息</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Updates</source>
-        <translation>更新</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

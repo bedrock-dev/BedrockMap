@@ -163,7 +163,7 @@ AppDialog {
                 padding: 0
                 clip: true
                 background: Rectangle {
-                    radius: Theme.radiusSmall
+                    radius: Theme.radiusControl
                     color: Theme.surfaceAlt
                 }
                 TextArea {
@@ -180,7 +180,7 @@ AppDialog {
                     selectByMouse: true
                     onTextChanged: root.tagValue = text
                     background: Rectangle {
-                        radius: Theme.radiusSmall
+                        radius: Theme.radiusControl
                         color: Theme.surfaceAlt
                         border.width: Theme.borderWidth
                         border.color: valueField.activeFocus ? Theme.accent : Theme.border

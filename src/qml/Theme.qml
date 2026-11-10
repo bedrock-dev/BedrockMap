@@ -201,12 +201,19 @@ QtObject {
         const accent = App.settings.accentColor
         if (!accent)
             return {}
-        const color = Qt.darker(accent, 1.0)
-        const luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
+        const accentLuminance = relativeLuminance(accent)
+        const darkContrast = (accentLuminance + 0.05) / (relativeLuminance("#102116") + 0.05)
+        const lightContrast = 1.05 / (accentLuminance + 0.05)
         return {
             accent: accent,
             accentSoft: Qt.tint(accent, "#C4" + palette.background.substring(1)),
-            onAccent: luminance > 0.5 ? "#102116" : "#ffffff"
+            onAccent: darkContrast >= lightContrast ? "#102116" : "#ffffff"
         }
+    }
+
+    function relativeLuminance(value) {
+        const color = Qt.darker(value, 1.0)
+        const linear = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+        return 0.2126 * linear(color.r) + 0.7152 * linear(color.g) + 0.0722 * linear(color.b)
     }
 }

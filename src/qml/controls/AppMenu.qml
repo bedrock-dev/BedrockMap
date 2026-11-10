@@ -11,7 +11,7 @@ Menu {
     width: Math.max(Theme.ui(190), contentItem ? contentItem.implicitWidth + leftPadding + rightPadding : Theme.ui(190))
     height: contentItem ? Math.min(contentItem.implicitHeight + topPadding + bottomPadding, Screen.height - Theme.ui(
                                        48)) : Theme.controlHeight
-    padding: Theme.gapMedium
+    padding: Theme.gapSmall
     margins: 0
     overlap: 1
     leftInset: 0
