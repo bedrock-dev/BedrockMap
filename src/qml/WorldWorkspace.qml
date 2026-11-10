@@ -90,6 +90,10 @@ Item {
         onActivated: workspace.setMapDimension(2)
     }
     MapShortcut {
+        sequence: "Alt+4"
+        onActivated: workspace.openCustomDimensionDialog()
+    }
+    MapShortcut {
         sequence: "Alt+T"
         onActivated: workspace.setMapLayer(0)
     }
@@ -203,6 +207,16 @@ Item {
     function setMapDimension(index) {
         if (mapController)
             mapController.setDimension(index)
+    }
+    function openCustomDimensionDialog() {
+        if (!mapController)
+            return
+        const options = mapController.customDimensionOptions()
+        if (options.length === 0) {
+            App.notifications.info(qsTr("This world has no custom dimensions."))
+            return
+        }
+        customDimensionDialog.openFor(options, mapController.dimension)
     }
     function setMapLayer(index) {
         if (mapController)
@@ -550,14 +564,29 @@ Item {
                             color: Theme.muted
                             font.pixelSize: Theme.fontCaption
                         }
-                        AppSegmentedControl {
-                            id: dimensionBar
+                        Row {
                             width: parent.width
                             height: Theme.buttonHeight
-                            options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
-                            currentIndex: workspace.mapController ? workspace.mapController.dimension : 0
-                            onActivated: index => {
-                                workspace.setMapDimension(index)
+                            spacing: Theme.gapSmall
+                            AppSegmentedControl {
+                                id: dimensionBar
+                                width: Math.max(0, parent.width - customDimensionButton.width - parent.spacing)
+                                height: parent.height
+                                options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
+                                currentIndex: workspace.mapController && workspace.mapController.dimension >= 0 &&
+                                              workspace.mapController.dimension < 3 ? workspace.mapController.dimension : -1
+                                onActivated: index => {
+                                    workspace.setMapDimension(index)
+                                }
+                            }
+                            AppButton {
+                                id: customDimensionButton
+                                text: qsTr("Custom")
+                                compact: workspace.compact
+                                height: parent.height
+                                active: !!workspace.mapController && (workspace.mapController.dimension < 0 ||
+                                                                      workspace.mapController.dimension > 2)
+                                onClicked: workspace.openCustomDimensionDialog()
                             }
                         }
                         Text {
@@ -896,5 +925,10 @@ Item {
         z: 40
         active: !!workspace.session && workspace.session.saving
         text: qsTr("Saving world…")
+    }
+
+    CustomDimensionDialog {
+        id: customDimensionDialog
+        onDimensionAccepted: dimension => workspace.setMapDimension(dimension)
     }
 }

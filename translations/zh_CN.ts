@@ -781,6 +781,29 @@
     </message>
 </context>
 <context>
+    <name>CustomDimensionDialog</name>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Custom dimension</source>
+        <translation>自定义维度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>ID: %1</source>
+        <translation>ID: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Apply</source>
+        <translation>应用</translation>
+    </message>
+</context>
+<context>
     <name>GlobalDataController</name>
     <message>
         <location filename="../src/controller/globaldatacontroller.cpp"/>
@@ -2728,6 +2751,11 @@
     </message>
     <message>
         <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Custom dimension</source>
+        <translation>自定义维度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
         <source>Terrain layer</source>
         <translation>地形图层</translation>
     </message>
@@ -3767,6 +3795,16 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>The End</source>
         <translation>末地</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Custom</source>
+        <translation>自定义</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>This world has no custom dimensions.</source>
+        <translation>这个世界没有自定义维度。</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

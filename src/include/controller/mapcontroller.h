@@ -102,6 +102,7 @@ class MapController final : public QObject {
     Q_INVOKABLE bool copySelectionAsync();
     Q_INVOKABLE bool exportSelectionAsync(const QUrl& destination);
     [[nodiscard]] Q_INVOKABLE QVariantList biomeOptions() const;
+    [[nodiscard]] Q_INVOKABLE QVariantList customDimensionOptions() const;
     [[nodiscard]] Q_INVOKABLE QVariantMap mapFilterOptions() const;
     [[nodiscard]] Q_INVOKABLE QVariantMap defaultMapFilterOptions() const;
     Q_INVOKABLE bool applyMapFilterOptions(const QVariantMap& options);

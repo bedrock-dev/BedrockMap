@@ -777,7 +777,30 @@
     <message>
         <location filename="../src/qml/controls/ConfirmDialog.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+</context>
+<context>
+    <name>CustomDimensionDialog</name>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Custom dimension</source>
+        <translation>Custom dimension</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>ID: %1</source>
+        <translation>ID: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/CustomDimensionDialog.qml"/>
+        <source>Apply</source>
+        <translation>Apply</translation>
     </message>
 </context>
 <context>
@@ -1017,7 +1040,7 @@
     <message>
         <location filename="../src/qml/Main.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/Main.qml"/>
@@ -1128,12 +1151,12 @@
     <message>
         <location filename="../src/qml/MapBiomeDialog.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/MapBiomeDialog.qml"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apply</translation>
     </message>
 </context>
 <context>
@@ -1426,12 +1449,12 @@
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apply</translation>
     </message>
 </context>
 <context>
@@ -1444,7 +1467,7 @@
     <message>
         <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/MapImportPlacementOverlay.qml"/>
@@ -1797,7 +1820,7 @@
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
@@ -1807,7 +1830,7 @@
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apply</translation>
     </message>
 </context>
 <context>
@@ -2728,6 +2751,11 @@
     </message>
     <message>
         <location filename="../src/qml/ShortcutsPage.qml"/>
+        <source>Custom dimension</source>
+        <translation>Custom dimension</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/ShortcutsPage.qml"/>
         <source>Terrain layer</source>
         <translation>Terrain layer</translation>
     </message>
@@ -3343,7 +3371,7 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cancel</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3767,6 +3795,16 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>The End</source>
         <translation type="unfinished">The End</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Custom</source>
+        <translation>Custom</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>This world has no custom dimensions.</source>
+        <translation>This world has no custom dimensions.</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

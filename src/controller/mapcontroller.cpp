@@ -213,6 +213,26 @@ QVariantMap MapController::voxelViewArea() const {
 
 bool MapController::worldLoaded() const { return loader_ && loader_->isOpen(); }
 
+QVariantList MapController::customDimensionOptions() const {
+    QVariantList result;
+    if (!loader_ || !loader_->isOpen()) return result;
+
+    std::vector<std::pair<std::string, int>> dimensions;
+    for (const auto& [name, dimension] : loader_->level().custom_dimension_table())
+        dimensions.emplace_back(name, dimension);
+    std::sort(dimensions.begin(), dimensions.end(), [](const auto& lhs, const auto& rhs) {
+        return QString::localeAwareCompare(QString::fromStdString(lhs.first), QString::fromStdString(rhs.first)) < 0;
+    });
+
+    for (const auto& [name, dimension] : dimensions) {
+        QVariantMap option;
+        option.insert(QStringLiteral("name"), QString::fromStdString(name));
+        option.insert(QStringLiteral("id"), dimension);
+        result.append(option);
+    }
+    return result;
+}
+
 void MapController::setLevelLoader(AsyncLevelLoader* loader) {
     if (loader_ == loader) return;
     region_import_.cancel();

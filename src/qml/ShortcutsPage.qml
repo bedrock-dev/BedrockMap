@@ -58,6 +58,10 @@ Item {
             sequence: "Alt+3"
         },
         {
+            description: qsTr("Custom dimension"),
+            sequence: "Alt+4"
+        },
+        {
             description: qsTr("Terrain layer"),
             sequence: "Alt+T"
         },
