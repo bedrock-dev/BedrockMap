@@ -189,20 +189,6 @@ QVariantMap MapController::voxelViewArea() const {
     }
     if (area.isEmpty()) return result;
 
-    // Bound the interactive preview so a zoomed-out viewport cannot enqueue
-    // hundreds of chunks at once. Selection rectangles are normally far below
-    // this limit and are preserved whenever they already fit.
-    constexpr int max_side = 16;
-    if (area.width() > max_side) {
-        const int center = area.center().x();
-        area.setLeft(center - max_side / 2);
-        area.setRight(area.left() + max_side - 1);
-    }
-    if (area.height() > max_side) {
-        const int center = area.center().y();
-        area.setTop(center - max_side / 2);
-        area.setBottom(area.top() + max_side - 1);
-    }
     result.insert(QStringLiteral("minX"), area.left());
     result.insert(QStringLiteral("minZ"), area.top());
     result.insert(QStringLiteral("maxX"), area.right());
