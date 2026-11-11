@@ -25,7 +25,7 @@ try {
         $previousEnvironment[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key, 'Process')
         [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
     }
-    & $qtCmake -S $sourceDir -B $BuildDir -G Ninja '-DCMAKE_BUILD_TYPE=Release' "-DQT_HOST_PATH=$qtHost"
+    & $qtCmake -S $sourceDir -B $BuildDir -G Ninja '-DCMAKE_BUILD_TYPE=Release' "-DQT_HOST_PATH=$qtHost" '-UBEDROCKMAP_VERSION_SUFFIX'
     if ($LASTEXITCODE -ne 0) { throw "Wasm configure failed ($LASTEXITCODE)." }
     cmake --build $BuildDir --target BedrockMap --parallel $Jobs
     if ($LASTEXITCODE -ne 0) { throw "Wasm build failed ($LASTEXITCODE)." }
@@ -45,6 +45,21 @@ try {
         Copy-Item -LiteralPath (Join-Path $BuildDir $name) -Destination $distDir -Force
     }
     Copy-Item -LiteralPath (Join-Path $sourceDir 'web/serve.py') -Destination $distDir -Force
+    # Static hosts that support precompressed assets serve these with Content-Encoding: gzip.
+    Add-Type -AssemblyName System.IO.Compression
+    $levels = [Enum]::GetNames([IO.Compression.CompressionLevel])
+    $level = if ($levels -contains 'SmallestSize') { 'SmallestSize' } else { 'Optimal' }
+    foreach ($name in @('BedrockMap.wasm', 'BedrockMap.js', 'qtloader.js')) {
+        $source = Join-Path $distDir $name
+        $sourceStream = [IO.File]::OpenRead($source)
+        try {
+            $output = [IO.File]::Create("$source.gz")
+            try {
+                $gzip = New-Object IO.Compression.GZipStream($output, [IO.Compression.CompressionLevel]$level)
+                try { $sourceStream.CopyTo($gzip) } finally { $gzip.Dispose() }
+            } finally { $output.Dispose() }
+        } finally { $sourceStream.Dispose() }
+    }
     Write-Host "Distribution directory: $distDir"
     Write-Host "Serve with: python `"$(Join-Path $distDir 'serve.py')`""
 } finally {

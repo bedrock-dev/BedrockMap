@@ -15,6 +15,9 @@ self.addEventListener('fetch', event => {
         const headers = new Headers(response.headers);
         headers.set('Cross-Origin-Opener-Policy', 'same-origin');
         headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+        // The body is already decoded, so precompressed assets must not keep their encoding.
+        headers.delete('Content-Encoding');
+        headers.delete('Content-Length');
         return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,

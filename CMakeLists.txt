@@ -237,6 +237,32 @@ target_link_libraries(BedrockMap PRIVATE
     Qt6::Svg
 )
 
+if(EMSCRIPTEN)
+    # The import scanner follows every optional QtQuick.Controls style. Static
+    # wasm links only the Basic style and the modules reachable from the QML tree.
+    set_target_properties(BedrockMap PROPERTIES QT_QML_MODULE_NO_IMPORT_SCAN TRUE)
+    target_link_libraries(BedrockMap PRIVATE
+        Qt6::qmlplugin
+        Qt6::modelsplugin
+        Qt6::workerscriptplugin
+        Qt6::qtqmlcoreplugin
+        Qt6::qtquick2plugin
+        Qt6::quickwindow
+        Qt6::qquicklayoutsplugin
+        Qt6::effectsplugin
+        Qt6::qmlshapesplugin
+        Qt6::qmlfolderlistmodelplugin
+        Qt6::qtquicktemplates2plugin
+        Qt6::qtquickcontrols2plugin
+        Qt6::qtquickcontrols2implplugin
+        Qt6::qtquickcontrols2basicstyleplugin
+        Qt6::qtquickcontrols2basicstyleimplplugin
+        Qt6::qtquickdialogsplugin
+        Qt6::qtquickdialogs2quickimplplugin
+    )
+    qt_import_plugins(BedrockMap EXCLUDE_BY_TYPE qmltooling)
+endif()
+
 # Target: BedrockMapBenchmark (console, excluded from normal builds)
 add_subdirectory(${PROJECT_SOURCE_DIR}/benchmark)
 
