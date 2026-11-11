@@ -759,6 +759,9 @@ Item {
         z: 6
         readonly property real edgeMargin: Theme.gapLarge
         readonly property real innerPadding: Theme.gapMedium
+        // Matches the height of the layer toolbar in WorldWorkspace.
+        readonly property real toolbarHeight: (Theme.touch ? Theme.controlHeight : 34) + Theme.gapSmall * 2
+        readonly property int statusFontSize: Theme.fontCaption
         readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
         readonly property string positionText: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
                                                                           canvas.controller.dimension).arg(
@@ -774,7 +777,7 @@ Item {
                                                  canvas.controller.deletedChunkCount)
         readonly property real contentWidth: Math.max(positionMetrics.advanceWidth, countsMetrics.advanceWidth)
         width: Math.min(Math.max(Theme.ui(190), contentWidth + innerPadding * 2), availableWidth)
-        height: statusColumn.implicitHeight + innerPadding * 2
+        height: Math.max(toolbarHeight, statusColumn.implicitHeight + Theme.gapTiny * 2)
         x: Math.max(edgeMargin, parent.width - canvas.inputRightInset - edgeMargin - width)
         y: Math.max(edgeMargin, parent.height - importPlacementOverlay.reservedHeight - edgeMargin - height)
         color: Theme.surface
@@ -786,29 +789,29 @@ Item {
         TextMetrics {
             id: positionMetrics
             font.family: "JetBrains Mono"
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: mapStatusOverlay.statusFontSize
             text: mapStatusOverlay.positionText
         }
         TextMetrics {
             id: countsMetrics
             font.family: "JetBrains Mono"
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: mapStatusOverlay.statusFontSize
             text: mapStatusOverlay.countsText
         }
 
         Column {
             id: statusColumn
             x: mapStatusOverlay.innerPadding
-            y: mapStatusOverlay.innerPadding
+            anchors.verticalCenter: parent.verticalCenter
             width: parent.width - mapStatusOverlay.innerPadding * 2
-            spacing: Theme.gapSmall
+            spacing: 0
 
             Text {
                 width: parent.width
                 text: mapStatusOverlay.positionText
                 color: Theme.text
                 font.family: "JetBrains Mono"
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: mapStatusOverlay.statusFontSize
                 elide: Text.ElideRight
             }
             Row {
@@ -817,19 +820,19 @@ Item {
                     text: "Sel:%1 ".arg(canvas.controller.selectionChunkCount)
                     color: Theme.text
                     font.family: "JetBrains Mono"
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: mapStatusOverlay.statusFontSize
                 }
                 Text {
                     text: "Modify:%1 ".arg(canvas.controller.modifiedChunkCount)
                     color: canvas.controller.modifiedChunkCount > 0 ? Theme.danger : Theme.text
                     font.family: "JetBrains Mono"
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: mapStatusOverlay.statusFontSize
                 }
                 Text {
                     text: "Del:%1".arg(canvas.controller.deletedChunkCount)
                     color: canvas.controller.deletedChunkCount > 0 ? Theme.danger : Theme.text
                     font.family: "JetBrains Mono"
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: mapStatusOverlay.statusFontSize
                 }
             }
         }
