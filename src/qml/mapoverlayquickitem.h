@@ -54,6 +54,8 @@ class MapOverlayQuickItem : public QQuickItem {
     Q_PROPERTY(bool slimeChunksVisible READ slimeChunksVisible WRITE setSlimeChunksVisible NOTIFY slimeChunksVisibleChanged)
     Q_PROPERTY(bool villagesVisible READ villagesVisible WRITE setVillagesVisible NOTIFY villagesVisibleChanged)
     Q_PROPERTY(bool hsaVisible READ hsaVisible WRITE setHsaVisible NOTIFY hsaVisibleChanged)
+    /// Outline of the chunk coordinate bounds. Requires preloaded chunk coordinates.
+    Q_PROPERTY(bool dimensionBorderVisible READ dimensionBorderVisible WRITE setDimensionBorderVisible NOTIFY dimensionBorderVisibleChanged)
     Q_PROPERTY(int actorRenderStyle READ actorRenderStyle WRITE setActorRenderStyle NOTIFY actorRenderStyleChanged)
     Q_PROPERTY(bool gridVisible READ gridVisible WRITE setGridVisible NOTIFY gridVisibleChanged)
     Q_PROPERTY(QColor gridColor READ gridColor WRITE setGridColor NOTIFY gridColorChanged)
@@ -74,6 +76,7 @@ class MapOverlayQuickItem : public QQuickItem {
     [[nodiscard]] bool slimeChunksVisible() const { return slime_chunks_visible_; }
     [[nodiscard]] bool villagesVisible() const { return villages_visible_; }
     [[nodiscard]] bool hsaVisible() const { return hsa_visible_; }
+    [[nodiscard]] bool dimensionBorderVisible() const { return dimension_border_visible_; }
     [[nodiscard]] int actorRenderStyle() const { return actor_render_style_; }
     [[nodiscard]] bool gridVisible() const { return grid_visible_; }
     [[nodiscard]] QColor gridColor() const { return grid_color_; }
@@ -90,6 +93,7 @@ class MapOverlayQuickItem : public QQuickItem {
     void setSlimeChunksVisible(bool visible);
     void setVillagesVisible(bool visible);
     void setHsaVisible(bool visible);
+    void setDimensionBorderVisible(bool visible);
     void setActorRenderStyle(int style);
     void setGridVisible(bool visible);
     void setGridColor(const QColor& color);
@@ -105,6 +109,7 @@ class MapOverlayQuickItem : public QQuickItem {
     void slimeChunksVisibleChanged();
     void villagesVisibleChanged();
     void hsaVisibleChanged();
+    void dimensionBorderVisibleChanged();
     void actorRenderStyleChanged();
     void gridVisibleChanged();
     void gridColorChanged();
@@ -124,6 +129,8 @@ class MapOverlayQuickItem : public QQuickItem {
     void scheduleSlimeChunkRefresh();
     void refreshSlimeChunks();
     void clearSlimeChunks();
+    [[nodiscard]] bool dimensionBorderActive() const;
+    [[nodiscard]] bool rectsWanted() const;
     void scheduleRectRefresh();
     void refreshRects();
     void clearRects();
@@ -144,6 +151,7 @@ class MapOverlayQuickItem : public QQuickItem {
     bool slime_chunks_visible_{false};
     bool villages_visible_{false};
     bool hsa_visible_{false};
+    bool dimension_border_visible_{false};
     int actor_render_style_{0};
     bool grid_visible_{true};
     QColor grid_color_{QStringLiteral("#bbbbbb")};

@@ -404,6 +404,7 @@ Item {
                 showSlimeChunks: slimeToggle.checked
                 showVillages: villagesToggle.checked
                 showHsa: hsaToggle.checked
+                showDimensionBorder: dimensionBorderToggle.checked
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
                 onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
@@ -559,6 +560,12 @@ Item {
                                     property: "checked"
                                     value: !!workspace.mapController && workspace.mapController.transparentVoid
                                 }
+                            }
+                            AppToggle {
+                                id: dimensionBorderToggle
+                                text: qsTr("Dimension border")
+                                checked: true
+                                enabled: !!workspace.terrainData && workspace.terrainData.chunkCoordsEnabled
                             }
                         }
                         Text {

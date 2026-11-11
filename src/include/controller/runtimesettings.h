@@ -11,6 +11,7 @@ class RuntimeSettings final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool collapseSidebarOnStartup READ collapseSidebarOnStartup CONSTANT)
     Q_PROPERTY(bool showMapDebugButton READ showMapDebugButton CONSTANT)
+    Q_PROPERTY(bool showMapStatusBar READ showMapStatusBar CONSTANT)
     Q_PROPERTY(QString tileColorScheme READ tileColorScheme CONSTANT)
     Q_PROPERTY(double panInertia READ panInertia CONSTANT)
     Q_PROPERTY(QString gridLineColor READ gridLineColor CONSTANT)
@@ -25,6 +26,7 @@ class RuntimeSettings final : public QObject {
 
     [[nodiscard]] bool collapseSidebarOnStartup() const { return values_.collapseSidebarOnStartup; }
     [[nodiscard]] bool showMapDebugButton() const { return values_.showMapDebugButton; }
+    [[nodiscard]] bool showMapStatusBar() const { return values_.showMapStatusBar; }
     [[nodiscard]] QString tileColorScheme() const { return values_.tileColorScheme; }
     [[nodiscard]] double panInertia() const { return values_.panInertia; }
     [[nodiscard]] QString gridLineColor() const { return values_.gridLineColor; }

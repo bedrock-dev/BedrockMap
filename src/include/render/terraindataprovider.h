@@ -87,6 +87,7 @@ inline std::size_t qHash(const TerrainTileKey& key, std::size_t seed = 0) noexce
 class TerrainDataProvider final : public QObject {
     Q_OBJECT
     /// Renderer stats: drawable regions, delivered tiles and window scan cost.
+    Q_PROPERTY(bool chunkCoordsEnabled READ chunkCoordsEnabled NOTIFY chunkCoordsBoundsChanged)
     Q_PROPERTY(int windowRegions READ windowRegions NOTIFY metricsChanged)
     Q_PROPERTY(int pendingRegions READ pendingRegions NOTIFY metricsChanged)
     Q_PROPERTY(int emptyRegions READ emptyRegions NOTIFY metricsChanged)

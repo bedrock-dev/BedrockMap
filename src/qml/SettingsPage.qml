@@ -183,13 +183,6 @@ Item {
                                 onToggled: App.settings.collapseSidebarOnStartup = checked
                             }
                         }
-                        SettingRow {
-                            label: qsTr("Show debug panel button")
-                            AppSwitch {
-                                checked: App.settings.showMapDebugButton
-                                onToggled: App.settings.showMapDebugButton = checked
-                            }
-                        }
                         // One colour drives the whole accent family: the fill, the
                         // tinted background and the text drawn on top of it.
                         SettingRow {
@@ -243,6 +236,23 @@ Item {
                     visible: page.category === 1
                     Layout.fillWidth: true
                     spacing: Theme.gapMedium
+                    SettingGroup {
+                        title: qsTr("Interface")
+                        SettingRow {
+                            label: qsTr("Show debug panel button")
+                            AppSwitch {
+                                checked: App.settings.showMapDebugButton
+                                onToggled: App.settings.showMapDebugButton = checked
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Show status bar")
+                            AppSwitch {
+                                checked: App.settings.showMapStatusBar
+                                onToggled: App.settings.showMapStatusBar = checked
+                            }
+                        }
+                    }
                     SettingGroup {
                         title: qsTr("Zoom and appearance")
                         SettingRow {

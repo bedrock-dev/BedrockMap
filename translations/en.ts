@@ -2264,6 +2264,7 @@
     <name>SettingsPage</name>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2504,6 +2505,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Black</source>
         <translation>Black</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Show status bar</source>
+        <translation>Show status bar</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -3860,6 +3866,11 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Overlays</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Dimension border</source>
+        <translation>Dimension border</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

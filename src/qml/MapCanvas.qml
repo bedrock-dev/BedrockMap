@@ -26,6 +26,7 @@ Item {
     property bool showSlimeChunks: false
     property bool showVillages: false
     property bool showHsa: false
+    property bool showDimensionBorder: true
     property bool showRenderDebug: true
     property bool selectionToolActive: false
     property real inputRightInset: 0
@@ -480,6 +481,7 @@ Item {
         slimeChunksVisible: canvas.showSlimeChunks
         villagesVisible: canvas.showVillages
         hsaVisible: canvas.showHsa
+        dimensionBorderVisible: canvas.showDimensionBorder
         actorRenderStyle: App.runtimeSettings ? App.runtimeSettings.actorRenderStyle : 0
         gridVisible: canvas.showGrid
         gridColor: App.runtimeSettings ? App.runtimeSettings.gridLineColor : "#bbbbbb"
@@ -755,7 +757,7 @@ Item {
 
     AppCard {
         id: mapStatusOverlay
-        visible: !!canvas.controller
+        visible: !!canvas.controller && App.runtimeSettings.showMapStatusBar
         z: 6
         readonly property real edgeMargin: Theme.gapLarge
         readonly property real innerPadding: Theme.gapMedium

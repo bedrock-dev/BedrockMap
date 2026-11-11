@@ -14,6 +14,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(QString colorTheme READ colorTheme WRITE setColorTheme NOTIFY colorThemeChanged)
     Q_PROPERTY(bool collapseSidebarOnStartup READ collapseSidebarOnStartup WRITE setCollapseSidebarOnStartup NOTIFY settingsChanged)
     Q_PROPERTY(bool showMapDebugButton READ showMapDebugButton WRITE setShowMapDebugButton NOTIFY settingsChanged)
+    Q_PROPERTY(bool showMapStatusBar READ showMapStatusBar WRITE setShowMapStatusBar NOTIFY settingsChanged)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(QString renderBackend READ renderBackend WRITE setRenderBackend NOTIFY settingsChanged)
     Q_PROPERTY(int threadCount READ threadCount WRITE setThreadCount NOTIFY settingsChanged)
@@ -72,6 +73,7 @@ class SettingsViewModel final : public QObject {
     QString colorTheme() const { return values_.colorTheme; }
     bool collapseSidebarOnStartup() const { return values_.collapseSidebarOnStartup; }
     bool showMapDebugButton() const { return values_.showMapDebugButton; }
+    bool showMapStatusBar() const { return values_.showMapStatusBar; }
     QString language() const { return values_.language; }
     QString renderBackend() const { return values_.renderBackend; }
     int threadCount() const { return values_.threadCount; }
@@ -131,6 +133,7 @@ class SettingsViewModel final : public QObject {
     void setColorTheme(const QString& value);
     void setCollapseSidebarOnStartup(bool value);
     void setShowMapDebugButton(bool value);
+    void setShowMapStatusBar(bool value);
     void setLanguage(const QString& value);
     void setRenderBackend(const QString& value);
     void setThreadCount(int value);

@@ -153,6 +153,7 @@ setting::Settings setting::read() {
 
     s.beginGroup("Map");
     loaded.showMapDebugButton = s.value("show_debug_button", loaded.showMapDebugButton).toBool();
+    loaded.showMapStatusBar = s.value("show_status_bar", loaded.showMapStatusBar).toBool();
     loaded.minimumScaleLevel = normalizeZoomScale(s.value("min_scale_level", loaded.minimumScaleLevel).toInt());
     loaded.maximumScaleLevel =
         std::max(loaded.minimumScaleLevel, normalizeZoomScale(s.value("max_scale_level", loaded.maximumScaleLevel).toInt()));
@@ -293,6 +294,7 @@ QString setting::save(const Settings& values) {
 
     s.beginGroup("Map");
     s.setValue("show_debug_button", values.showMapDebugButton);
+    s.setValue("show_status_bar", values.showMapStatusBar);
     s.setValue("min_scale_level", values.minimumScaleLevel);
     s.setValue("max_scale_level", values.maximumScaleLevel);
     s.setValue("pan_inertia", values.panInertia);

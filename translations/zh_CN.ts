@@ -2264,6 +2264,7 @@
     <name>SettingsPage</name>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Interface</source>
         <translation>界面</translation>
     </message>
@@ -2504,6 +2505,11 @@
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Black</source>
         <translation>纯黑</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Show status bar</source>
+        <translation>显示状态栏</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -3860,6 +3866,11 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Overlays</source>
         <translation>叠加层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Dimension border</source>
+        <translation>维度边框</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
