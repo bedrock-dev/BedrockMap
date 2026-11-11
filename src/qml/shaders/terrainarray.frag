@@ -276,13 +276,11 @@ float ambientOcclusion(vec2 world, float surfaceHeight) {
     int steps = clamp(int(uAo.w), 2, 8);
     // Preserve adjacent blockers and spend fewer samples on distant terrain.
     float distances[8];
-    float inverseDistances[8];
     float stepFraction = 1.0 / float(steps - 1);
     for (int k = 0; k < 8; ++k) {
         if (k >= steps) break;
         float t = float(k) * stepFraction;
         distances[k] = 1.0 + (radius - 1.0) * t * t;
-        inverseDistances[k] = 1.0 / distances[k];
     }
     float sum = 0.0;
     for (int i = 0; i < 8; ++i) {
@@ -292,9 +290,13 @@ float ambientOcclusion(vec2 world, float surfaceHeight) {
             vec2 h;
             float biome;
             int flags;
-            if (neighbourSample(floor(world + AO_DIRECTIONS[i] * distances[k]), h, biome, flags) &&
-                (flags & MISSING_CHUNK) == 0 && h.g > VOID_HEIGHT)
-                steepest = max(steepest, (lightingHeight(h, flags) - surfaceHeight) * inverseDistances[k]);
+            vec2 cell = floor(world + AO_DIRECTIONS[i] * distances[k]);
+            if (neighbourSample(cell, h, biome, flags) && (flags & MISSING_CHUNK) == 0 && h.g > VOID_HEIGHT) {
+                // Measure to the blocker's nearest edge, not the nominal sample
+                // distance, so occlusion varies inside a block.
+                float edgeDistance = max(length(world - clamp(world, cell, cell + 1.0)), 0.25);
+                steepest = max(steepest, (lightingHeight(h, flags) - surfaceHeight) / edgeDistance);
+            }
         }
         sum += steepest * inversesqrt(1.0 + steepest * steepest);
     }
@@ -303,8 +305,10 @@ float ambientOcclusion(vec2 world, float surfaceHeight) {
 
 float shadowOcclusion(vec2 world, float top) {
     if (uShade.z <= 0.0 || uParams.z >= 1.0) return 0.0;
-    float stepBlocks = max(uShade.w, 1.0);
-    for (int i = 1; i <= 64; ++i) {
+    // Sub-block steps are required: with whole-block steps every pixel of a
+    // block samples the same columns, so shadow edges snap to block borders.
+    float stepBlocks = max(uShade.w, 0.03125);
+    for (int i = 1; i <= 1024; ++i) {
         float travelled = float(i) * stepBlocks;
         if (travelled > uShade.z) break;
         vec2 h;
