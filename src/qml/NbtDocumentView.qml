@@ -104,6 +104,16 @@ Item {
         function onModelReset() {
             root.selectedRow = -1
         }
+        function onRowsInserted(parent, first, last) {
+            if (root.selectedRow >= first)
+                root.selectedRow += last - first + 1
+        }
+        function onRowsRemoved(parent, first, last) {
+            if (root.selectedRow > last)
+                root.selectedRow -= last - first + 1
+            else if (root.selectedRow >= first)
+                root.selectedRow = -1
+        }
     }
 
     ColumnLayout {

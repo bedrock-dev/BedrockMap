@@ -60,19 +60,18 @@ NbtTreeModel::~NbtTreeModel() = default;
 void NbtTreeModel::setRoot(compound_tag* root) {
     root_ = root;
     beginResetModel();
-    rebuild();
+    search_collapsed_.clear();
+    const auto previous = rebuild();
+    updateMatches();
+    visible_ = collectVisible();
     endResetModel();
     emit countChanged();
 }
 
 bool NbtTreeModel::setRootChild(std::unique_ptr<abstract_tag> tag) {
     if (!root_ || !editable_ || !tag || tag->key().empty()) return false;
-    beginResetModel();
     root_->put(tag.release());
-    rebuild();
-    endResetModel();
-    emit countChanged();
-    emit documentChanged();
+    commitStructureChange();
     return true;
 }
 
@@ -108,9 +107,9 @@ QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {
         case DepthRole:
             return depthOf(node);
         case HasChildrenRole:
-            return !node->children.empty();
+            return hasVisibleChildren(node);
         case ExpandedRole:
-            return node->expanded;
+            return isExpanded(node);
         case CanAddRole:
             return editable_ && !hex_mode_ && container;
         case CanEditRole:
@@ -207,98 +206,140 @@ void NbtTreeModel::setSearchText(const QString& text) {
     const QString needle = text.trimmed().toLower();
     if (search_text_ == needle) return;
     search_text_ = needle;
-    beginResetModel();
-    rebuildVisible();
-    endResetModel();
-    emit countChanged();
+    search_collapsed_.clear();
+    updateMatches();
+    applyVisible(collectVisible(), true);
     emit searchTextChanged();
 }
 
-void NbtTreeModel::rebuild() {
+std::unique_ptr<NbtTreeModel::Node> NbtTreeModel::rebuild(const abstract_tag* renamed_from, const abstract_tag* renamed_to) {
+    // Old tags may already be deleted. Their addresses are only compared,
+    // never dereferenced.
     QSet<const abstract_tag*> expanded;
-    if (root_node_) {
-        for (const Node* node : visible_)
-            if (node->expanded) expanded.insert(node->tag);
-    }
+    const auto collect = [&expanded](auto&& self, const Node* node) -> void {
+        if (node->expanded) expanded.insert(node->tag);
+        for (const auto& child : node->children) self(self, child.get());
+    };
+    if (root_node_) collect(collect, root_node_.get());
+    if (renamed_from && expanded.contains(renamed_from)) expanded.insert(renamed_to);
+    QSet<const abstract_tag*> collapsed;
+    if (renamed_from && search_collapsed_.contains(renamed_from)) collapsed.insert(renamed_to);
+
+    auto previous = std::move(root_node_);
     root_node_ = std::make_unique<Node>();
     root_node_->tag = root_;
     root_node_->expanded = true;
     if (root_) {
-        const auto build = [&expanded](auto&& self, Node* node) -> void {
-            if (!node || !node->tag) return;
+        const auto build = [&](auto&& self, Node* node) -> void {
+            if (expanded.contains(node->tag)) node->expanded = true;
+            if (search_collapsed_.contains(node->tag)) collapsed.insert(node->tag);
+            const auto add_child = [&](abstract_tag* child, int row_in_parent) {
+                auto next = std::make_unique<Node>();
+                next->tag = child;
+                next->parent = node;
+                next->row_in_parent = row_in_parent;
+                node->children.emplace_back(std::move(next));
+                self(self, node->children.back().get());
+            };
             if (node->tag->type() == Compound) {
                 auto* compound = static_cast<compound_tag*>(node->tag);
                 node->children.reserve(compound->value.size());
                 for (const auto& [key, child] : compound->value) {
                     Q_UNUSED(key);
-                    if (!child) continue;
-                    auto next = std::make_unique<Node>();
-                    next->tag = child;
-                    next->parent = node;
-                    next->row_in_parent = static_cast<int>(node->children.size());
-                    node->children.emplace_back(std::move(next));
-                    self(self, node->children.back().get());
+                    if (child) add_child(child, static_cast<int>(node->children.size()));
                 }
             } else if (node->tag->type() == List) {
                 auto* list = static_cast<list_tag*>(node->tag);
                 node->children.reserve(list->value.size());
-                for (size_t i = 0; i < list->value.size(); ++i) {
-                    auto* child = list->value[i];
-                    if (!child) continue;
-                    auto next = std::make_unique<Node>();
-                    next->tag = child;
-                    next->parent = node;
-                    next->row_in_parent = static_cast<int>(i);
-                    node->children.emplace_back(std::move(next));
-                    self(self, node->children.back().get());
-                }
+                for (size_t i = 0; i < list->value.size(); ++i)
+                    if (list->value[i]) add_child(list->value[i], static_cast<int>(i));
             }
-            if (expanded.contains(node->tag)) node->expanded = true;
         };
         build(build, root_node_.get());
     }
-    rebuildVisible();
+    search_collapsed_ = std::move(collapsed);
+    return previous;
 }
 
-void NbtTreeModel::rebuildVisible() {
-    visible_.clear();
+void NbtTreeModel::updateMatches() {
     filtered_nodes_.clear();
-    if (search_text_.isEmpty()) {
-        appendNode(root_node_.get());
-        return;
-    }
-    if (!root_node_) return;
-    if (markMatches(root_node_.get(), search_text_)) appendFiltered(root_node_.get());
+    search_parents_.clear();
+    if (!search_text_.isEmpty() && root_node_) Q_UNUSED(markMatches(root_node_.get()));
 }
 
-void NbtTreeModel::appendNode(Node* node) {
-    if (!node) return;
-    visible_.append(node);
-    if (!node->expanded) return;
-    for (auto& child : node->children) appendNode(child.get());
-}
-
-bool NbtTreeModel::markMatches(Node* node, const QString& needle) {
+bool NbtTreeModel::markMatches(Node* node) {
     if (!node || !node->tag) return false;
-    const QString key = QString::fromStdString(node->tag->key()).toLower();
-    const QString value = valueText(node->tag).toLower();
-    bool matched = key.contains(needle) || value.contains(needle);
     bool child_matched = false;
     for (auto& child : node->children) {
-        if (markMatches(child.get(), needle)) child_matched = true;
+        if (markMatches(child.get())) child_matched = true;
     }
-    if (matched || child_matched) {
-        filtered_nodes_.insert(node);
-        if (child_matched) node->expanded = true;
-        return true;
+    if (child_matched) search_parents_.insert(node);
+    if (!child_matched) {
+        const QString key = QString::fromStdString(node->tag->key()).toLower();
+        if (!key.contains(search_text_) && !valueText(node->tag).toLower().contains(search_text_)) return false;
     }
-    return false;
+    filtered_nodes_.insert(node);
+    return true;
 }
 
-void NbtTreeModel::appendFiltered(Node* node) {
-    if (!node || !filtered_nodes_.contains(node)) return;
-    visible_.append(node);
-    for (auto& child : node->children) appendFiltered(child.get());
+bool NbtTreeModel::isExpanded(const Node* node) const {
+    if (search_text_.isEmpty()) return node->expanded;
+    return search_parents_.contains(node) && !search_collapsed_.contains(node->tag);
+}
+
+bool NbtTreeModel::hasVisibleChildren(const Node* node) const {
+    return search_text_.isEmpty() ? !node->children.empty() : search_parents_.contains(node);
+}
+
+QVector<NbtTreeModel::Node*> NbtTreeModel::collectVisible() const {
+    QVector<Node*> rows;
+    if (root_node_ && root_node_->tag) appendVisible(root_node_.get(), rows);
+    return rows;
+}
+
+void NbtTreeModel::appendVisible(Node* node, QVector<Node*>& rows) const {
+    if (!search_text_.isEmpty() && !filtered_nodes_.contains(node)) return;
+    rows.append(node);
+    if (!isExpanded(node)) return;
+    for (auto& child : node->children) appendVisible(child.get(), rows);
+}
+
+void NbtTreeModel::applyVisible(QVector<Node*> next, bool refresh_all) {
+    // Rows are matched by tag because a rebuild replaces every Node.
+    const qsizetype old_size = visible_.size();
+    const qsizetype new_size = next.size();
+    qsizetype prefix = 0;
+    while (prefix < old_size && prefix < new_size && visible_[prefix]->tag == next[prefix]->tag) ++prefix;
+    qsizetype suffix = 0;
+    while (suffix < old_size - prefix && suffix < new_size - prefix &&
+           visible_[old_size - 1 - suffix]->tag == next[new_size - 1 - suffix]->tag)
+        ++suffix;
+    const int first = static_cast<int>(prefix);
+    const int removed = static_cast<int>(old_size - prefix - suffix);
+    const int inserted = static_cast<int>(new_size - prefix - suffix);
+
+    if (removed > 0) {
+        beginRemoveRows({}, first, first + removed - 1);
+        visible_.remove(prefix, removed);
+        endRemoveRows();
+    }
+    if (inserted > 0) {
+        beginInsertRows({}, first, first + inserted - 1);
+        visible_ = std::move(next);
+        endInsertRows();
+    } else {
+        visible_ = std::move(next);
+    }
+    if (refresh_all && !visible_.isEmpty()) emit dataChanged(index(0), index(static_cast<int>(visible_.size()) - 1));
+    if (old_size != new_size) emit countChanged();
+}
+
+void NbtTreeModel::commitStructureChange(const abstract_tag* renamed_from, const abstract_tag* renamed_to) {
+    // visible_ still points into the previous tree until applyVisible() returns.
+    const auto previous = rebuild(renamed_from, renamed_to);
+    updateMatches();
+    applyVisible(collectVisible(), true);
+    emit documentChanged();
 }
 
 NbtTreeModel::Node* NbtTreeModel::nodeAt(int row) const {
@@ -323,11 +364,13 @@ int NbtTreeModel::depthOf(const Node* node) const {
 
 bool NbtTreeModel::toggleExpanded(int row) {
     Node* node = nodeAt(row);
-    if (!node || node->children.empty()) return false;
-    node->expanded = !node->expanded;
-    beginResetModel();
-    rebuildVisible();
-    endResetModel();
+    if (!node || !hasVisibleChildren(node)) return false;
+    if (search_text_.isEmpty())
+        node->expanded = !node->expanded;
+    else if (!search_collapsed_.remove(node->tag))
+        search_collapsed_.insert(node->tag);
+    applyVisible(collectVisible(), false);
+    emit dataChanged(index(row), index(row), {ExpandedRole});
     return true;
 }
 
@@ -337,15 +380,13 @@ void NbtTreeModel::expandAll() {
         node->expanded = true;
         for (auto& child : node->children) self(self, child.get());
     };
-    beginResetModel();
     expand(expand, root_node_.get());
-    rebuildVisible();
-    endResetModel();
+    search_collapsed_.clear();
+    applyVisible(collectVisible(), true);
 }
 
 void NbtTreeModel::collapseAll() {
     if (!root_node_) return;
-    beginResetModel();
     root_node_->expanded = true;
     const auto collapse = [](auto&& self, Node* node) -> void {
         for (auto& child : node->children) {
@@ -354,8 +395,9 @@ void NbtTreeModel::collapseAll() {
         }
     };
     collapse(collapse, root_node_.get());
-    rebuildVisible();
-    endResetModel();
+    for (const Node* node : std::as_const(search_parents_))
+        if (node != root_node_.get()) search_collapsed_.insert(node->tag);
+    applyVisible(collectVisible(), true);
 }
 
 bool NbtTreeModel::applyValue(abstract_tag* tag, const QString& text) {
@@ -518,11 +560,7 @@ bool NbtTreeModel::updateNode(int row, const QString& key, const QString& value)
         }
         parent->remove(tag->key());
         parent->put(clone);
-        beginResetModel();
-        rebuild();
-        endResetModel();
-        emit countChanged();
-        emit documentChanged();
+        commitStructureChange(tag, clone);
         return true;
     }
     if (!applyValue(tag, value)) {
@@ -565,11 +603,8 @@ bool NbtTreeModel::addChild(int row, int type, const QString& key, const QString
     else
         static_cast<list_tag*>(node->tag)->push_back(child);
     node->expanded = true;
-    beginResetModel();
-    rebuild();
-    endResetModel();
-    emit countChanged();
-    emit documentChanged();
+    search_collapsed_.remove(node->tag);
+    commitStructureChange();
     return true;
 }
 
@@ -584,11 +619,7 @@ bool NbtTreeModel::removeNode(int row) {
     } else {
         return false;
     }
-    beginResetModel();
-    rebuild();
-    endResetModel();
-    emit countChanged();
-    emit documentChanged();
+    commitStructureChange();
     return true;
 }
 
@@ -604,11 +635,7 @@ bool NbtTreeModel::clearChildren(int row) {
     } else {
         return false;
     }
-    beginResetModel();
-    rebuild();
-    endResetModel();
-    emit countChanged();
-    emit documentChanged();
+    commitStructureChange();
     return true;
 }
 

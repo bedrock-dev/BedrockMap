@@ -85,11 +85,19 @@ class NbtTreeModel : public QAbstractListModel {
         std::vector<std::unique_ptr<Node>> children;
     };
 
-    void rebuild();
-    void rebuildVisible();
-    void appendNode(Node* node);
-    [[nodiscard]] bool markMatches(Node* node, const QString& needle);
-    void appendFiltered(Node* node);
+    /// Rebuild the node tree from root_ and return the previous tree, keeping
+    /// expansion by tag identity. renamed_to inherits the state of renamed_from.
+    std::unique_ptr<Node> rebuild(const bl::nbt::abstract_tag* renamed_from = nullptr, const bl::nbt::abstract_tag* renamed_to = nullptr);
+    void updateMatches();
+    [[nodiscard]] bool markMatches(Node* node);
+    [[nodiscard]] QVector<Node*> collectVisible() const;
+    void appendVisible(Node* node, QVector<Node*>& rows) const;
+    /// Replace visible_ with the minimal row removal and insertion so views keep
+    /// their scroll position and delegates.
+    void applyVisible(QVector<Node*> next, bool refresh_all);
+    void commitStructureChange(const bl::nbt::abstract_tag* renamed_from = nullptr, const bl::nbt::abstract_tag* renamed_to = nullptr);
+    [[nodiscard]] bool isExpanded(const Node* node) const;
+    [[nodiscard]] bool hasVisibleChildren(const Node* node) const;
     [[nodiscard]] Node* nodeAt(int row) const;
     void setError(const QString& message);
     [[nodiscard]] int depthOf(const Node* node) const;
@@ -102,6 +110,10 @@ class NbtTreeModel : public QAbstractListModel {
     std::unique_ptr<Node> root_node_;
     QVector<Node*> visible_;
     QSet<Node*> filtered_nodes_;
+    /// Search results show every branch with a match. These sets hold that
+    /// temporary state without overwriting Node::expanded.
+    QSet<const Node*> search_parents_;
+    QSet<const bl::nbt::abstract_tag*> search_collapsed_;
     bool hex_mode_{false};
     bool editable_{true};
     QString last_error_;

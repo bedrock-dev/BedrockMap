@@ -97,6 +97,16 @@ Item {
         function onModelReset() {
             root.contextRow = -1
         }
+        function onRowsInserted(parent, first, last) {
+            if (root.contextRow >= first)
+                root.contextRow += last - first + 1
+        }
+        function onRowsRemoved(parent, first, last) {
+            if (root.contextRow > last)
+                root.contextRow -= last - first + 1
+            else if (root.contextRow >= first)
+                root.contextRow = -1
+        }
     }
 
     NbtDocumentView {
