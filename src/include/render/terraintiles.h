@@ -38,7 +38,7 @@ namespace terrain_render_config {
     /// The final detailed LOD before switching to the sampled overview.
     inline constexpr int overview_blocks_per_texel = 32;
     /// Page-table slices, one per level from 1 to max_blocks_per_texel blocks
-    /// per texel. terrainarray.frag's MAX_LOD_INDEX is this minus one.
+    /// per texel. terrain_common.glsl's MAX_LOD_INDEX is this minus one.
     inline constexpr int page_table_levels = 6;
     static_assert((1 << (page_table_levels - 1)) == max_blocks_per_texel, "one page-table slice per detailed level");
     [[nodiscard]] constexpr bool atlasHoldsWholeTiles() {
@@ -66,7 +66,7 @@ struct TerrainViewportRequest {
     }
 };
 
-/// Fixed-point height encoding shared with terrainarray.frag.
+/// Fixed-point height encoding shared with terrain_common.glsl.
 ///
 /// A surface texel packs solid height (bits 0-9), top height (bits 10-19),
 /// biome id (bits 20-27) and material flags (bits 28-31). Code zero is void;
