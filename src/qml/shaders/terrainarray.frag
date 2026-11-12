@@ -36,11 +36,10 @@ void main() {
                 return;
             }
         }
+        // Regions without chunks are never scanned, so their page-table entries
+        // stay unknown rather than empty; outline every unresolved pixel.
         vec4 background = overviewOrEmpty(world);
-        int layer = 0;
-        vec2 uv;
-        if (tileState(world, desiredLod, layer, uv) == TILE_EMPTY)
-            background.rgb = withTerrainOutline(background.rgb, world);
+        background.rgb = withTerrainOutline(background.rgb, world);
         fragColor = background;
         return;
     }
