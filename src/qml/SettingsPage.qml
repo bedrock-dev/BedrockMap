@@ -296,13 +296,6 @@ Item {
                             }
                         }
                         SettingRow {
-                            label: qsTr("Void color")
-                            AppColorField {
-                                value: App.settings.voidMapColor
-                                onEdited: color => App.settings.voidMapColor = color
-                            }
-                        }
-                        SettingRow {
                             label: qsTr("Empty tile colors")
                             AppComboBox {
                                 model: [qsTr("Dark"), qsTr("Light")]

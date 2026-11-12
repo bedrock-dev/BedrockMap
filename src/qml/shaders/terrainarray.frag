@@ -20,7 +20,7 @@ layout(std140, binding = 0) uniform buf {
     vec4 uOverviewRect;
     vec4 uChecker;
     vec4 uCheckerAlternate;
-    vec4 uVoidOptions; // transparent void
+    vec4 uVoidOptions; // transparent void, outline width in blocks (0 = off), blocks per pixel
 };
 
 uint regionHash(ivec2 region) {
@@ -34,6 +34,18 @@ uint regionHash(ivec2 region) {
 vec3 emptyColor(vec2 world) {
     int checker = (int(floor(world.x / 64.0)) ^ int(floor(world.y / 64.0))) & 1;
     return checker != 0 ? uCheckerAlternate.rgb : uChecker.rgb;
+}
+
+vec3 voidColor() {
+    // Void regions use a solid tone opposite the empty-tile palette.
+    vec3 emptyAverage = (uChecker.rgb + uCheckerAlternate.rgb) * 0.5;
+    float luminance = dot(emptyAverage, vec3(0.2126, 0.7152, 0.0722));
+    return luminance > 0.5 ? vec3(20.0 / 255.0) : vec3(221.0 / 255.0);
+}
+
+vec3 contrastingOutlineColor(vec3 background) {
+    float luminance = dot(background, vec3(0.2126, 0.7152, 0.0722));
+    return luminance > 0.5 ? vec3(0.0) : vec3(1.0);
 }
 
 vec4 overviewOrEmpty(vec2 world) {
@@ -94,19 +106,32 @@ vec3 paletteTint(float biomeId, int row) {
     return clamp(tint * BIOME_TINT_BRIGHTNESS, 0.0, 1.0);
 }
 
-bool residentLayer(vec2 block, int lod, out int layer, out vec2 uv) {
+const int TILE_UNKNOWN = 0;
+const int TILE_EMPTY = 1;
+const int TILE_RESIDENT = 2;
+
+/// Page-table state of the tile holding block. Empty tiles are resident but
+/// contain no chunks, so they carry no layer.
+int tileState(vec2 block, int lod, out int layer, out vec2 uv) {
+    layer = 0;
+    uv = vec2(0.0);
     float tileWorld = max(uParams.x, 1.0) * exp2(float(lod));
     vec2 tileCoord = floor(block / tileWorld);
     float side = max(uParams.y, 1.0);
     ivec2 vc = ivec2(mod(mod(tileCoord, side) + side, side));
     vec4 entry = texelFetch(uPageTable, ivec3(vc, lod), 0);
     int flags = int(floor(entry.b * 255.0 + 0.5));
-    if ((flags & 0x80) == 0 || (flags & 0x40) != 0) return false;
+    if ((flags & 0x80) == 0) return TILE_UNKNOWN;
     uint storedHash = (uint(flags & 0x3F) << 8) | uint(floor(entry.a * 255.0 + 0.5));
-    if (storedHash != regionHash(ivec2(tileCoord))) return false;
+    if (storedHash != regionHash(ivec2(tileCoord))) return TILE_UNKNOWN;
+    if ((flags & 0x40) != 0) return TILE_EMPTY;
     layer = int(floor(entry.r * 255.0 + 0.5)) + int(floor(entry.g * 255.0 + 0.5)) * 256;
     uv = fract(block / tileWorld);
-    return true;
+    return TILE_RESIDENT;
+}
+
+bool residentLayer(vec2 block, int lod, out int layer, out vec2 uv) {
+    return tileState(block, lod, layer, uv) == TILE_RESIDENT;
 }
 
 bool targetSample(vec2 block, out vec3 color, out vec2 heights, out float biome, out int flags) {
@@ -213,7 +238,8 @@ vec3 gradeColor(vec3 color, float factor) {
     return clamp(mix(vec3(luma), color, uTint.x), 0.0, 1.0);
 }
 
-bool fallbackColor(vec2 block, int lod, out vec3 color) {
+bool fallbackColor(vec2 block, int lod, out vec3 color, out bool empty) {
+    empty = false;
     int layer = 0;
     vec2 uv;
     if (!residentLayer(block, lod, layer, uv)) return false;
@@ -224,8 +250,12 @@ bool fallbackColor(vec2 block, int lod, out vec3 color) {
     int flags;
     if (!readSurface(vec3(uv, float(layer)), heights, biome, flags)) return false;
     const bool voidSample = heights.g <= VOID_HEIGHT;
-    if ((flags & MISSING_CHUNK) != 0 || (uVoidOptions.x > 0.5 && voidSample)) {
+    if ((flags & MISSING_CHUNK) != 0) {
         color = emptyColor(block);
+        empty = true;
+    } else if (voidSample) {
+        color = uVoidOptions.x > 0.5 ? emptyColor(block) : voidColor();
+        empty = true;
     } else {
         // Fallback skips neighbour-based lighting and biome blending while
         // preserving the current tile's water and material tint.
@@ -303,6 +333,41 @@ float ambientOcclusion(vec2 world, float surfaceHeight) {
     return 1.0 - strength * clamp(sum * 0.125, 0.0, 1.0);
 }
 
+/// True only when the block is known to contain terrain. Empty tiles, missing
+/// chunks, void and tiles that are not resident yet do not count as terrain.
+bool terrainNeighbour(vec2 block) {
+    int layer;
+    vec2 uv;
+    int state = tileState(block, max(0, int(floor(uParams.z + 0.5))), layer, uv);
+    if (state != TILE_RESIDENT) return false;
+    vec2 heights;
+    float biome;
+    int flags;
+    if (!readSurface(vec3(uv, float(layer)), heights, biome, flags)) return false;
+    return (flags & MISSING_CHUNK) == 0 && heights.g > VOID_HEIGHT;
+}
+
+/// Coverage of the contrasting outline drawn on the empty side of every edge
+/// that borders terrain.
+float outlineCoverage(vec2 world) {
+    float width = uVoidOptions.y;
+    if (width <= 0.0) return 0.0;
+    float texel = max(uParams.w, 1.0);
+    vec2 cell = floor(world / texel) * texel;
+    vec2 local = world - cell;
+    vec4 distances = vec4(local.x, texel - local.x, local.y, texel - local.y);
+    float nearest = 1.0e9;
+    if (distances.x < width && terrainNeighbour(cell + vec2(-texel, 0.0))) nearest = min(nearest, distances.x);
+    if (distances.y < width && terrainNeighbour(cell + vec2(texel, 0.0))) nearest = min(nearest, distances.y);
+    if (distances.z < width && terrainNeighbour(cell + vec2(0.0, -texel))) nearest = min(nearest, distances.z);
+    if (distances.w < width && terrainNeighbour(cell + vec2(0.0, texel))) nearest = min(nearest, distances.w);
+    return clamp((width - nearest) / max(uVoidOptions.z, 1.0e-4), 0.0, 1.0);
+}
+
+vec3 withTerrainOutline(vec3 background, vec2 world) {
+    return mix(background, contrastingOutlineColor(background), outlineCoverage(world));
+}
+
 float shadowOcclusion(vec2 world, float top) {
     if (uShade.z <= 0.0 || uParams.z >= 1.0) return 0.0;
     // Sub-block steps are required: with whole-block steps every pixel of a
@@ -339,22 +404,29 @@ void main() {
             const int coarser = desiredLod + distance;
             const int finer = desiredLod - distance;
             if (coarser > MAX_LOD_INDEX && finer < 0) break;
-            if ((coarser <= MAX_LOD_INDEX && fallbackColor(world, coarser, color)) ||
-                (finer >= 0 && fallbackColor(world, finer, color))) {
-                fragColor = vec4(color, 1.0);
+            bool empty = false;
+            if ((coarser <= MAX_LOD_INDEX && fallbackColor(world, coarser, color, empty)) ||
+                (finer >= 0 && fallbackColor(world, finer, color, empty))) {
+                fragColor = vec4(empty ? withTerrainOutline(color, world) : color, 1.0);
                 return;
             }
         }
-        fragColor = overviewOrEmpty(world);
+        vec4 background = overviewOrEmpty(world);
+        int layer = 0;
+        vec2 uv;
+        if (tileState(world, desiredLod, layer, uv) == TILE_EMPTY)
+            background.rgb = withTerrainOutline(background.rgb, world);
+        fragColor = background;
         return;
     }
 
     if ((flags & MISSING_CHUNK) != 0) {
-        fragColor = vec4(emptyColor(world), 1.0);
+        fragColor = vec4(withTerrainOutline(emptyColor(world), world), 1.0);
         return;
     }
     if (heights.g <= VOID_HEIGHT) {
-        fragColor = vec4(uVoidOptions.x > 0.5 ? emptyColor(world) : color, 1.0);
+        vec3 background = uVoidOptions.x > 0.5 ? emptyColor(world) : voidColor();
+        fragColor = vec4(withTerrainOutline(background, world), 1.0);
         return;
     }
     vec3 surface = surfaceMaterial(world, color, heights, biome, flags);

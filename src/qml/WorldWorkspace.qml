@@ -405,6 +405,7 @@ Item {
                 showVillages: villagesToggle.checked
                 showHsa: hsaToggle.checked
                 showDimensionBorder: dimensionBorderToggle.checked
+                showTerrainOutline: terrainOutlineToggle.checked
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
                 onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
@@ -566,6 +567,11 @@ Item {
                                 text: qsTr("Dimension border")
                                 checked: true
                                 enabled: !!workspace.terrainData && workspace.terrainData.chunkCoordsEnabled
+                            }
+                            AppToggle {
+                                id: terrainOutlineToggle
+                                text: qsTr("Terrain outline")
+                                checked: true
                             }
                         }
                         Text {

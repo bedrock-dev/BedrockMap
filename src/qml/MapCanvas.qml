@@ -27,6 +27,7 @@ Item {
     property bool showVillages: false
     property bool showHsa: false
     property bool showDimensionBorder: true
+    property bool showTerrainOutline: true
     property bool showRenderDebug: true
     property bool selectionToolActive: false
     property real inputRightInset: 0
@@ -462,6 +463,7 @@ Item {
         controller: canvas.controller
         provider: canvas.terrainData
         metricsEnabled: canvas.showRenderDebug
+        terrainOutline: canvas.showTerrainOutline
         checkerColor: Theme.mapCheckerBase
         checkerAlternateColor: Theme.mapCheckerAlternate
     }

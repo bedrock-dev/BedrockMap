@@ -166,10 +166,10 @@ setting::Settings setting::read() {
     loaded.actorBorderColor = s.value("actor_border_color", loaded.actorBorderColor).toString();
     loaded.chunkEditorHighlightColor = s.value("chunk_editor_highlight_color", loaded.chunkEditorHighlightColor).toString();
     loaded.chunkEditorHighlightWidth = s.value("chunk_editor_highlight_width", loaded.chunkEditorHighlightWidth).toInt();
-    loaded.voidMapColor = s.value("void_color", loaded.voidMapColor).toString();
     loaded.tileColorScheme = s.value("tile_color_scheme", loaded.tileColorScheme).toString() == QStringLiteral("light")
                                  ? QStringLiteral("light")
                                  : QStringLiteral("dark");
+    loaded.voidMapColor = loaded.tileColorScheme == QStringLiteral("light") ? QStringLiteral("#141414") : QStringLiteral("#dddddd");
     loaded.voxelSelectionColor = s.value("voxel_selection_color", loaded.voxelSelectionColor).toString();
     loaded.transparentWater = s.value("transparent_water", loaded.transparentWater).toBool();
     s.endGroup();

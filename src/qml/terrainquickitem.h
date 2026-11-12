@@ -263,6 +263,8 @@ class TerrainQuickItem : public QQuickItem {
     Q_PROPERTY(QColor checkerColor READ checkerColor WRITE setCheckerColor NOTIFY checkerColorChanged)
     Q_PROPERTY(QColor checkerAlternateColor READ checkerAlternateColor WRITE setCheckerAlternateColor NOTIFY checkerAlternateColorChanged)
     Q_PROPERTY(bool metricsEnabled READ metricsEnabled WRITE setMetricsEnabled NOTIFY metricsEnabledChanged)
+    /// Contrasting outline where terrain meets missing chunks or void. Hidden when zoomed out.
+    Q_PROPERTY(bool terrainOutline READ terrainOutline WRITE setTerrainOutline NOTIFY terrainOutlineChanged)
     Q_PROPERTY(QString timingText READ timingText NOTIFY metricsChanged)
     Q_PROPERTY(QString graphicsInfo READ graphicsInfo NOTIFY metricsChanged)
     Q_PROPERTY(double framesPerSecond READ framesPerSecond NOTIFY metricsChanged)
@@ -291,6 +293,8 @@ class TerrainQuickItem : public QQuickItem {
     [[nodiscard]] QColor checkerAlternateColor() const { return checker_alternate_color_; }
     void setCheckerColor(const QColor& color);
     void setCheckerAlternateColor(const QColor& color);
+    [[nodiscard]] bool terrainOutline() const { return terrain_outline_; }
+    void setTerrainOutline(bool enabled);
     [[nodiscard]] std::shared_ptr<MapRenderState> renderState() const { return render_state_; }
     [[nodiscard]] bool metricsEnabled() const { return metrics_enabled_.load(std::memory_order_relaxed); }
     [[nodiscard]] int terrainSlotCount() const { return display_metrics_.terrainSlots; }
@@ -310,6 +314,7 @@ class TerrainQuickItem : public QQuickItem {
     void hasDataChanged();
     void checkerColorChanged();
     void checkerAlternateColorChanged();
+    void terrainOutlineChanged();
     void metricsEnabledChanged();
     void metricsChanged();
 
@@ -356,6 +361,7 @@ class TerrainQuickItem : public QQuickItem {
     QPointer<MapController> controller_;
     QColor checker_color_{20, 20, 20};
     QColor checker_alternate_color_{40, 40, 40};
+    bool terrain_outline_{false};
     QPointer<TerrainDataProvider> provider_;
     MapCameraState camera_;
     /// Last published demand, with its window expressed in region indices.

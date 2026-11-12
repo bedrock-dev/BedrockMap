@@ -2518,11 +2518,6 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
-        <source>Void color</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Empty tile colors</source>
         <translation>Empty tile colors</translation>
     </message>
@@ -3871,6 +3866,11 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Dimension border</source>
         <translation>Dimension border</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Terrain outline</source>
+        <translation>Terrain outline</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

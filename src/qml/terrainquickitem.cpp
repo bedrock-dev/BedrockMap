@@ -296,6 +296,13 @@ void TerrainQuickItem::setCheckerAlternateColor(const QColor& color) {
     update();
 }
 
+void TerrainQuickItem::setTerrainOutline(bool enabled) {
+    if (terrain_outline_ == enabled) return;
+    terrain_outline_ = enabled;
+    emit terrainOutlineChanged();
+    update();
+}
+
 void TerrainQuickItem::refreshMetrics() {
     timing_text_ = timings_->toString();
     frames_per_second_ = timings_->framesPerSecond();
@@ -867,6 +874,15 @@ QSGNode* TerrainQuickItem::updateArrayPaintNode(QSGNode* oldNode, const MapCamer
     }
     TerrainArrayUniformBody body;
     body.void_options[0] = transparentVoid ? 1.0f : 0.0f;
+    {
+        constexpr qreal outline_device_pixels = 4.0;
+        constexpr qreal outline_min_device_pixels_per_block = 0.125;
+        const qreal device_px_per_block = pxPerBlock * (window() ? window()->effectiveDevicePixelRatio() : 1.0);
+        if (terrain_outline_ && !overviewOnly && device_px_per_block >= outline_min_device_pixels_per_block) {
+            body.void_options[1] = static_cast<float>(outline_device_pixels / device_px_per_block);
+            body.void_options[2] = static_cast<float>(1.0 / device_px_per_block);
+        }
+    }
     body.checker = {float(checker_color_.redF()), float(checker_color_.greenF()), float(checker_color_.blueF()), 1.0f};
     body.checker_alternate = {float(checker_alternate_color_.redF()), float(checker_alternate_color_.greenF()),
                               float(checker_alternate_color_.blueF()), 1.0f};
