@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <span>
+#include <string>
+
+#include "base/binaryclipboard.h"
 
 using namespace bl::nbt;
 
@@ -639,6 +643,77 @@ bool NbtTreeModel::clearChildren(int row) {
     return true;
 }
 
+bool NbtTreeModel::copyNode(int row) {
+    const Node* node = nodeAt(row);
+    if (!node || !node->tag) return false;
+    if (!clipboard_) {
+        setError(tr("The clipboard is not available."));
+        return false;
+    }
+    // NBT payloads always start with a compound, so the copied tag is wrapped
+    // in an unnamed compound to keep its own type and key.
+    compound_tag wrapper("");
+    wrapper.put(node->tag->copy());
+    const std::string raw = wrapper.serialize();
+    if (!clipboard_->write(BinaryClipboard::PayloadKind::NbtTag, QByteArray(raw.data(), static_cast<qsizetype>(raw.size())))) {
+        setError(tr("Failed to write the clipboard."));
+        return false;
+    }
+    return true;
+}
+
+bool NbtTreeModel::pasteInto(int row) {
+    Node* node = nodeAt(row);
+    if (!node || !node->tag) return false;
+    if (!editable_ || hex_mode_) {
+        setError(tr("The current view is read-only."));
+        return false;
+    }
+    const auto target_type = node->tag->type();
+    if (target_type != Compound && target_type != List) {
+        setError(tr("Tags can only be pasted into a compound or list."));
+        return false;
+    }
+    if (!clipboard_) {
+        setError(tr("The clipboard is not available."));
+        return false;
+    }
+    const QByteArray raw = clipboard_->read(BinaryClipboard::PayloadKind::NbtTag);
+    if (raw.isEmpty()) {
+        setError(tr("The clipboard does not contain a copied NBT tag."));
+        return false;
+    }
+    const auto parsed = parse_one(std::span(reinterpret_cast<const byte_t*>(raw.constData()), static_cast<size_t>(raw.size())));
+    const std::unique_ptr<compound_tag> wrapper(parsed.root);
+    if (!parsed || !wrapper || wrapper->value.size() != 1 || parsed.consumed_length != static_cast<size_t>(raw.size())) {
+        setError(tr("The clipboard does not contain a valid NBT tag."));
+        return false;
+    }
+    std::unique_ptr<abstract_tag> tag(wrapper->value.begin()->second->copy());
+
+    if (target_type == List) {
+        auto* list = static_cast<list_tag*>(node->tag);
+        if (!list->value.empty() && list->value.front()->type() != tag->type()) {
+            setError(tr("All items in this list must have the same type."));
+            return false;
+        }
+        tag->set_key("");
+        list->push_back(tag.release());
+    } else {
+        auto* compound = static_cast<compound_tag*>(node->tag);
+        if (tag->key().empty()) tag->set_key(tag_type_to_str(tag->type()));
+        if (compound->get(tag->key())) {
+            setError(tr("A tag with this key already exists."));
+            return false;
+        }
+        compound->put(tag.release());
+    }
+    node->expanded = true;
+    search_collapsed_.remove(node->tag);
+    commitStructureChange();
+    return true;
+}
+
 int NbtTreeModel::childTypeForRow(int row) const {
     const Node* node = nodeAt(row);
     if (!node || !node->tag) return -1;
@@ -673,5 +748,7 @@ QVariantMap NbtTreeModel::tagInfo(int row) const {
             {QStringLiteral("canAdd"), can_add},
             {QStringLiteral("canEdit"), can_edit},
             {QStringLiteral("canRemove"), can_remove},
-            {QStringLiteral("canClear"), can_clear}};
+            {QStringLiteral("canClear"), can_clear},
+            {QStringLiteral("canCopy"), clipboard_ != nullptr},
+            {QStringLiteral("canPaste"), clipboard_ != nullptr && can_add}};
 }

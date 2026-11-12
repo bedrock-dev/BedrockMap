@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <algorithm>
 
+#include "base/appcontext.h"
 #include "base/platform.h"
 #include "controller/mcstructuresession.h"
 #include "controller/nbtsession.h"
@@ -180,7 +181,7 @@ WorkspaceSession* SessionController::openNbtFile(const QUrl& url) {
         }
     }
 
-    auto session = std::make_unique<NbtSession>(path, fileName, this);
+    auto session = std::make_unique<NbtSession>(path, fileName, &context_.binaryClipboard(), this);
     auto* session_ptr = session.get();
     if (!session_ptr->loadFile(url)) {
         emit errorOccurred(session_ptr->document()->lastError(), path);
@@ -191,7 +192,7 @@ WorkspaceSession* SessionController::openNbtFile(const QUrl& url) {
 }
 
 WorkspaceSession* SessionController::newNbtDocument() {
-    auto session = std::make_unique<NbtSession>(QString(), QStringLiteral("Untitled"), this);
+    auto session = std::make_unique<NbtSession>(QString(), QStringLiteral("Untitled"), &context_.binaryClipboard(), this);
     auto* session_ptr = session.get();
     session_ptr->createNew();
     appendSession(std::move(session));

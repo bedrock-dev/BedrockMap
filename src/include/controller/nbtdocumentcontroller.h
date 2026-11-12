@@ -120,6 +120,7 @@ class NbtDocumentController : public QObject {
     Q_INVOKABLE bool removeItem(int index);
     Q_INVOKABLE bool clearContents();
     void setReadOnly(bool read_only);
+    void setClipboard(BinaryClipboard* clipboard) { tree_model_->setClipboard(clipboard); }
 
    signals:
     void saved();

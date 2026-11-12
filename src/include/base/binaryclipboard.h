@@ -11,7 +11,7 @@
 /// short marker instead.
 class BinaryClipboard {
    public:
-    enum class PayloadKind { ChunkRegion, Mcstructure };
+    enum class PayloadKind { ChunkRegion, Mcstructure, NbtTag };
 
     virtual ~BinaryClipboard() = default;
 

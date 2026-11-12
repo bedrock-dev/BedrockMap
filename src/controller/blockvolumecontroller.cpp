@@ -18,6 +18,7 @@ BlockVolumeController::BlockVolumeController(std::unique_ptr<BlockVolumeSource> 
       document_(new NbtDocumentController(this)),
       context_(context) {
     document_->setReadOnly(true);
+    document_->setClipboard(&context_.binaryClipboard());
     connect(&load_watcher_, &QFutureWatcherBase::finished, this, &BlockVolumeController::finishLoad);
     connect(&import_load_watcher_, &QFutureWatcherBase::finished, this, &BlockVolumeController::finishImportLoad);
     connect(&import_watcher_, &QFutureWatcher<BlockVolumeMutationResult>::finished, this, &BlockVolumeController::finishImport);

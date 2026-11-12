@@ -2,8 +2,9 @@
 
 #include <utility>
 
-NbtSession::NbtSession(QString path, QString title, QObject* parent)
+NbtSession::NbtSession(QString path, QString title, BinaryClipboard* clipboard, QObject* parent)
     : WorkspaceSession(QStringLiteral("nbt"), std::move(path), std::move(title), parent), document_(new NbtDocumentController(this)) {
+    document_->setClipboard(clipboard);
     connect(document_, &NbtDocumentController::dirtyChanged, this, [this] { setDirty(document_->dirty()); });
     connect(document_, &NbtDocumentController::documentTitleChanged, this, [this] { syncFromDocument(); });
     connect(document_, &NbtDocumentController::filePathChanged, this, [this] { syncFromDocument(); });

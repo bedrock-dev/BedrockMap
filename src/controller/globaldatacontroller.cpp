@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/appcontext.h"
 #include "controller/mcstructurevolumesource.h"
 #include "global.h"
 #include "loader/asynclevelloader.h"
@@ -70,6 +71,7 @@ GlobalNbtSection::GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::uniq
       context_(context) {
     document_->loadMemory(std::move(roots), raw_keys, title_, policy.presenter);
     document_->setReadOnly(policy.readOnly);
+    document_->setClipboard(&context_.binaryClipboard());
     document_->setSingleRecord(policy.singleRecord);
     document_->setSingleRecordKey(std::move(policy.fixedKey));
     document_->setKeyResolver(std::move(policy.keyResolver));

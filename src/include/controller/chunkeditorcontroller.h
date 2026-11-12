@@ -117,6 +117,7 @@ class ChunkEditorController : public VoxelSceneController {
     [[nodiscard]] NbtDocumentController* entitiesDocument() { return &entities_document_; }
     [[nodiscard]] NbtDocumentController* blockEntitiesDocument() { return &block_entities_document_; }
     [[nodiscard]] NbtDocumentController* pendingTicksDocument() { return &pending_ticks_document_; }
+    void setClipboard(BinaryClipboard* clipboard);
 
     Q_INVOKABLE void openChunk(int chunkX, int chunkZ, int dimension);
     Q_INVOKABLE void clear();

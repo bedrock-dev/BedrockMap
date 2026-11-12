@@ -11,6 +11,8 @@
 
 #include "nbt.h"
 
+class BinaryClipboard;
+
 /// Flat presentation model for one NBT compound tree. Rows are expanded nodes
 /// in display order, which keeps the QML view simple and mobile friendly while
 /// the C++ tree still provides parent/list semantics for edits.
@@ -57,6 +59,8 @@ class NbtTreeModel : public QAbstractListModel {
     void setHexMode(bool enabled);
     void setEditable(bool editable);
     void setSearchText(const QString& text);
+    /// The clipboard is owned by the application context and must outlive the model.
+    void setClipboard(BinaryClipboard* clipboard) { clipboard_ = clipboard; }
 
     Q_INVOKABLE bool toggleExpanded(int row);
     Q_INVOKABLE void expandAll();
@@ -65,6 +69,9 @@ class NbtTreeModel : public QAbstractListModel {
     Q_INVOKABLE bool addChild(int row, int type, const QString& key, const QString& value);
     Q_INVOKABLE bool removeNode(int row);
     Q_INVOKABLE bool clearChildren(int row);
+    Q_INVOKABLE bool copyNode(int row);
+    /// Paste the clipboard tag as a child of a compound or list row.
+    Q_INVOKABLE bool pasteInto(int row);
     Q_INVOKABLE int childTypeForRow(int row) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap tagInfo(int row) const;
 
@@ -116,6 +123,7 @@ class NbtTreeModel : public QAbstractListModel {
     QSet<const bl::nbt::abstract_tag*> search_collapsed_;
     bool hex_mode_{false};
     bool editable_{true};
+    BinaryClipboard* clipboard_{nullptr};
     QString last_error_;
     bool rebuilding_{false};
     QString search_text_;

@@ -83,6 +83,30 @@ Item {
             visible: root.contextInfo.canClear === true
             onTriggered: clearDialog.open()
         }
+        AppMenuSeparator {
+            visible: (addAction.visible || editAction.visible || removeAction.visible || clearAction.visible) &&
+                     (copyAction.visible || pasteAction.visible)
+        }
+        AppMenuItem {
+            id: copyAction
+            text: qsTr("Copy")
+            visible: root.contextInfo.canCopy === true
+            onTriggered: {
+                if (root.document.treeModel.copyNode(root.contextRow))
+                    App.notifications.info(qsTr("Tag copied"))
+                else
+                    App.notifications.error(root.document.treeModel.lastError)
+            }
+        }
+        AppMenuItem {
+            id: pasteAction
+            text: qsTr("Paste")
+            visible: root.contextInfo.canPaste === true
+            onTriggered: {
+                if (!root.document.treeModel.pasteInto(root.contextRow))
+                    App.notifications.error(root.document.treeModel.lastError)
+            }
+        }
     }
 
     Connections {
@@ -125,12 +149,19 @@ Item {
             tagDialog.openModify(row, root.contextInfo)
         }
         onContextRequested: function (row, sceneX, sceneY) {
-            if (root.readOnly || root.detailsHidden)
+            if (root.detailsHidden)
                 return
             root.contextRow = row
-            root.contextInfo = root.document.treeModel.tagInfo(row)
-            if (!root.contextInfo.canAdd && !root.contextInfo.canEdit && !root.contextInfo.canRemove &&
-                    !root.contextInfo.canClear)
+            const info = root.document.treeModel.tagInfo(row)
+            if (root.readOnly) {
+                info.canAdd = false
+                info.canEdit = false
+                info.canRemove = false
+                info.canClear = false
+                info.canPaste = false
+            }
+            root.contextInfo = info
+            if (!info.canAdd && !info.canEdit && !info.canRemove && !info.canClear && !info.canCopy && !info.canPaste)
                 return
             const pos = root.mapFromItem(null, sceneX, sceneY)
             nodeMenu.popup(pos.x, pos.y)

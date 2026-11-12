@@ -12,7 +12,7 @@ class NbtSession final : public WorkspaceSession {
     Q_PROPERTY(NbtDocumentController* document READ document CONSTANT)
 
    public:
-    explicit NbtSession(QString path, QString title, QObject* parent = nullptr);
+    explicit NbtSession(QString path, QString title, BinaryClipboard* clipboard, QObject* parent = nullptr);
 
     [[nodiscard]] NbtDocumentController* document() const { return document_; }
     [[nodiscard]] bool commit() override;

@@ -1712,6 +1712,21 @@
         <source>Remove</source>
         <translation>移除</translation>
     </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Tag copied</source>
+        <translation>已复制标签</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
 </context>
 <context>
     <name>NbtTagDialog</name>
@@ -1893,10 +1908,12 @@
     <name>NbtTreeModel</name>
     <message>
         <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <source>The current view is read-only.</source>
         <translation>当前视图为只读。</translation>
     </message>
     <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <location filename="../src/model/nbttreemodel.cpp"/>
         <location filename="../src/model/nbttreemodel.cpp"/>
         <source>A tag with this key already exists.</source>
@@ -1916,8 +1933,35 @@
     </message>
     <message>
         <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <source>All items in this list must have the same type.</source>
         <translation>此列表中的所有项目必须具有相同类型。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard is not available.</source>
+        <translation>剪贴板不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Failed to write the clipboard.</source>
+        <translation>写入剪贴板失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Tags can only be pasted into a compound or list.</source>
+        <translation>标签只能粘贴到 compound 或 list 中。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard does not contain a copied NBT tag.</source>
+        <translation>剪贴板中没有复制的 NBT 标签。</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard does not contain a valid NBT tag.</source>
+        <translation>剪贴板中的 NBT 标签无效。</translation>
     </message>
 </context>
 <context>

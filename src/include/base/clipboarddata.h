@@ -13,6 +13,8 @@ namespace clipboard_data {
     inline constexpr char MCSTRUCTURE_TEXT_PREFIX[] = "BedrockMap/mcstructure:v1:";
     inline constexpr char CHUNK_REGION_MIME_TYPE[] = "application/x-bedrockmap-region";
     inline constexpr char CHUNK_REGION_TEXT_PREFIX[] = "BedrockMap/region:v1:";
+    inline constexpr char NBT_TAG_MIME_TYPE[] = "application/x-bedrockmap-nbt";
+    inline constexpr char NBT_TAG_TEXT_PREFIX[] = "BedrockMap/nbt:v1:";
 
     inline QByteArray read(const QMimeData* mimeData, const char* mimeType, const QStringList& fileExtensions) {
         if (!mimeData) return {};
@@ -72,6 +74,23 @@ namespace clipboard_data {
     inline void writeRegion(QMimeData& mimeData, const QByteArray& raw) {
         write(mimeData, CHUNK_REGION_MIME_TYPE, raw);
         mimeData.setText(QString::fromLatin1(CHUNK_REGION_TEXT_PREFIX) + QString::fromLatin1(raw.toBase64()));
+    }
+
+    inline QByteArray readNbtTag(const QMimeData* mimeData) {
+        if (!mimeData) return {};
+        const auto raw = mimeData->data(QString::fromLatin1(NBT_TAG_MIME_TYPE));
+        if (!raw.isEmpty()) return raw;
+
+        const QString prefix = QString::fromLatin1(NBT_TAG_TEXT_PREFIX);
+        const QString text = mimeData->text();
+        if (!text.startsWith(prefix)) return {};
+        const auto decoded = QByteArray::fromBase64Encoding(text.sliced(prefix.size()).toLatin1(), QByteArray::AbortOnBase64DecodingErrors);
+        return decoded ? decoded.decoded : QByteArray{};
+    }
+
+    inline void writeNbtTag(QMimeData& mimeData, const QByteArray& raw) {
+        write(mimeData, NBT_TAG_MIME_TYPE, raw);
+        mimeData.setText(QString::fromLatin1(NBT_TAG_TEXT_PREFIX) + QString::fromLatin1(raw.toBase64()));
     }
 }  // namespace clipboard_data
 

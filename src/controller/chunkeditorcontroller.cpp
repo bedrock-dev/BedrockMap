@@ -242,6 +242,12 @@ ChunkEditorController::ChunkEditorController(QObject* parent) : VoxelSceneContro
     connect(&pending_ticks_document_, &NbtDocumentController::dirtyChanged, this, &ChunkEditorController::dirtyChanged);
 }
 
+void ChunkEditorController::setClipboard(BinaryClipboard* clipboard) {
+    entities_document_.setClipboard(clipboard);
+    block_entities_document_.setClipboard(clipboard);
+    pending_ticks_document_.setClipboard(clipboard);
+}
+
 ChunkEditorController::~ChunkEditorController() {
     waitForExport();
     if (watcher_.isRunning()) watcher_.waitForFinished();

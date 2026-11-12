@@ -1712,6 +1712,21 @@
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Copy</source>
+        <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Tag copied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtEditorSurface.qml"/>
+        <source>Paste</source>
+        <translation type="unfinished">Paste</translation>
+    </message>
 </context>
 <context>
     <name>NbtTagDialog</name>
@@ -1893,10 +1908,12 @@
     <name>NbtTreeModel</name>
     <message>
         <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <source>The current view is read-only.</source>
         <translation>The current view is read-only.</translation>
     </message>
     <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <location filename="../src/model/nbttreemodel.cpp"/>
         <location filename="../src/model/nbttreemodel.cpp"/>
         <source>A tag with this key already exists.</source>
@@ -1916,8 +1933,35 @@
     </message>
     <message>
         <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
         <source>All items in this list must have the same type.</source>
         <translation>All items in this list must have the same type.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard is not available.</source>
+        <translation type="unfinished">The clipboard is not available.</translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Failed to write the clipboard.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>Tags can only be pasted into a compound or list.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard does not contain a copied NBT tag.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/model/nbttreemodel.cpp"/>
+        <source>The clipboard does not contain a valid NBT tag.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

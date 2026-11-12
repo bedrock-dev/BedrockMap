@@ -20,6 +20,7 @@ WorldSession::WorldSession(QString path, QString title, AppContext& context, QOb
       chunk_editor_(this),
       voxel_view_(std::make_unique<WorldVolumeSource>(), context, this),
       global_data_(context, this) {
+    chunk_editor_.setClipboard(&context.binaryClipboard());
     connect(&open_watcher_, &QFutureWatcher<OpenResult>::finished, this, &WorldSession::onOpenFinished);
     connect(&save_watcher_, &QFutureWatcher<bool>::finished, this, &WorldSession::onSaveFinished);
     connect(&global_data_, &GlobalDataController::dirtyChanged, this, &WorldSession::refreshDirty);

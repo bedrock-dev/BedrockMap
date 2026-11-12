@@ -10,8 +10,27 @@
 
 namespace {
     QString kindName(BinaryClipboard::PayloadKind kind) {
-        return kind == BinaryClipboard::PayloadKind::ChunkRegion ? QStringLiteral("region")
-                                                                 : QStringLiteral("mcstructure");
+        switch (kind) {
+            case BinaryClipboard::PayloadKind::ChunkRegion:
+                return QStringLiteral("region");
+            case BinaryClipboard::PayloadKind::Mcstructure:
+                return QStringLiteral("mcstructure");
+            case BinaryClipboard::PayloadKind::NbtTag:
+                return QStringLiteral("nbt");
+        }
+        return {};
+    }
+
+    QByteArray readMimePayload(BinaryClipboard::PayloadKind kind, const QMimeData* mime_data) {
+        switch (kind) {
+            case BinaryClipboard::PayloadKind::ChunkRegion:
+                return clipboard_data::readRegion(mime_data);
+            case BinaryClipboard::PayloadKind::Mcstructure:
+                return clipboard_data::readMcstructure(mime_data);
+            case BinaryClipboard::PayloadKind::NbtTag:
+                return clipboard_data::readNbtTag(mime_data);
+        }
+        return {};
     }
 
     class SystemBinaryClipboard final : public BinaryClipboard {
@@ -21,10 +40,17 @@ namespace {
             if (!clipboard || data.isEmpty()) return false;
 
             auto mime_data = std::make_unique<QMimeData>();
-            if (kind == PayloadKind::ChunkRegion)
-                clipboard_data::writeRegion(*mime_data, data);
-            else
-                clipboard_data::writeMcstructure(*mime_data, data);
+            switch (kind) {
+                case PayloadKind::ChunkRegion:
+                    clipboard_data::writeRegion(*mime_data, data);
+                    break;
+                case PayloadKind::Mcstructure:
+                    clipboard_data::writeMcstructure(*mime_data, data);
+                    break;
+                case PayloadKind::NbtTag:
+                    clipboard_data::writeNbtTag(*mime_data, data);
+                    break;
+            }
             clipboard->setMimeData(mime_data.release(), QClipboard::Clipboard);
             return true;
         }
@@ -32,9 +58,7 @@ namespace {
         [[nodiscard]] QByteArray read(PayloadKind kind) const override {
             const auto* clipboard = QGuiApplication::clipboard();
             if (!clipboard) return {};
-            const auto* mime_data = clipboard->mimeData(QClipboard::Clipboard);
-            return kind == PayloadKind::ChunkRegion ? clipboard_data::readRegion(mime_data)
-                                                    : clipboard_data::readMcstructure(mime_data);
+            return readMimePayload(kind, clipboard->mimeData(QClipboard::Clipboard));
         }
     };
 
@@ -62,8 +86,7 @@ namespace {
             if (kind == kind_ && !marker_.isEmpty() && clipboard->text(QClipboard::Clipboard) == marker_) return data_;
 
             // Keep older Base64 text payloads readable after upgrading.
-            return kind == PayloadKind::ChunkRegion ? clipboard_data::readRegion(mime_data)
-                                                    : clipboard_data::readMcstructure(mime_data);
+            return readMimePayload(kind, mime_data);
         }
 
        private:
