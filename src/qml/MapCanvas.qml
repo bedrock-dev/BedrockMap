@@ -26,8 +26,8 @@ Item {
     property bool showSlimeChunks: false
     property bool showVillages: false
     property bool showHsa: false
-    property bool showDimensionBorder: true
-    property bool showTerrainOutline: true
+    property bool showDimensionBorder: false
+    property bool showTerrainOutline: false
     property bool showRenderDebug: true
     property bool selectionToolActive: false
     property real inputRightInset: 0

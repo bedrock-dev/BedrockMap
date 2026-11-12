@@ -565,13 +565,13 @@ Item {
                             AppToggle {
                                 id: dimensionBorderToggle
                                 text: qsTr("Dimension border")
-                                checked: true
+                                checked: false
                                 enabled: !!workspace.terrainData && workspace.terrainData.chunkCoordsEnabled
                             }
                             AppToggle {
                                 id: terrainOutlineToggle
                                 text: qsTr("Terrain outline")
-                                checked: true
+                                checked: false
                             }
                         }
                         Text {
