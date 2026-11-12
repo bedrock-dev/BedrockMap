@@ -110,8 +110,6 @@ AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context
             connect(world, &WorldSession::saveFailed, this, [this](const QString& message) {
                 notifications_.error(message.isEmpty() ? tr("Save failed") : message);
             });
-            connect(world->voxelView(), &BlockVolumeController::importFinished, this,
-                    [this] { notifications_.info(tr("Import successful")); });
         }
     });
     connect(&sessions_, &SessionController::sessionsChanged, this, [this] {

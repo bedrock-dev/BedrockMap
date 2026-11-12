@@ -32,7 +32,7 @@ Item {
             SplitView.preferredWidth: panes.width * 0.45
             SplitView.preferredHeight: panes.height * 0.4
             objectName: "mcstructureNbtBrowser"
-            document: page.controller ? page.controller.document : null
+            document: page.session ? page.session.document : null
             readOnly: true
             showItemList: false
         }

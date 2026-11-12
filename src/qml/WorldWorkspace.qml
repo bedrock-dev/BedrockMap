@@ -840,7 +840,6 @@ Item {
                 AppListRow {
                     iconName: "structure"
                     label: qsTr("3D view")
-                    dirty: !!workspace.session && workspace.session.voxelView.dirty
                     compact: true
                     selected: workspace.voxelViewOpen
                     onClicked: workspace.toggleVoxelView()

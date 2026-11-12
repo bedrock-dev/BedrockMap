@@ -292,7 +292,6 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
-        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import successful</source>
         <translation>Import successful</translation>
     </message>
@@ -390,11 +389,6 @@
 <context>
     <name>BlockVolumeController</name>
     <message>
-        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
-        <source>Clipboard</source>
-        <translation>Clipboard</translation>
-    </message>
-    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not copy the selected blocks.</source>
         <translation>Could not copy the selected blocks.</translation>
@@ -416,7 +410,26 @@
     </message>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not generate the structure data.</source>
+        <translation type="unfinished">Could not generate the structure data.</translation>
+    </message>
+    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export the structure: %1</source>
+        <translation type="unfinished">Could not export the structure: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export GLB.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export GLB: %1</source>
+        <translation type="unfinished">Could not export GLB: %1</translation>
+    </message>
+    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not read the import structure.</source>
         <translation>Could not read the import structure.</translation>
@@ -427,8 +440,6 @@
         <translation>Could not read the import structure: %1</translation>
     </message>
     <message>
-        <location filename="../src/controller/blockvolumecontroller.cpp"/>
-        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not build the block volume.</source>
         <translation>Could not build the block volume.</translation>
@@ -459,6 +470,10 @@
         <translation>Could not read the structure NBT: %1</translation>
     </message>
     <message>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
         <location filename="../src/controller/mcstructurevolumesource.cpp"/>
         <source>Invalid or unsupported mcstructure file.</source>
         <translation>Invalid or unsupported mcstructure file.</translation>
@@ -3354,6 +3369,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import successful</source>
+        <translation type="unfinished">Import successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Minimum</source>
         <translation>Minimum</translation>
     </message>
@@ -3490,11 +3510,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Compress mesh</source>
-        <translation>Compress mesh</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import</source>
         <translation type="unfinished">Import</translation>
     </message>
@@ -3546,25 +3561,6 @@ Current version: %2</translation>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Export GLB</source>
         <translation>Export GLB</translation>
-    </message>
-</context>
-<context>
-    <name>VoxelSceneController</name>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not generate the structure data.</source>
-        <translation>Could not generate the structure data.</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not export the structure: %1</source>
-        <translation>Could not export the structure: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not export GLB: %1</source>
-        <translation>Could not export GLB: %1</translation>
     </message>
 </context>
 <context>

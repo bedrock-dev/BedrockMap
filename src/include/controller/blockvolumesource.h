@@ -7,24 +7,42 @@
 #include <QUrl>
 #include <functional>
 #include <memory>
+#include <variant>
 
 #include "geometry.h"
 #include "nbt.h"
 #include "render/voxel_scene.h"
 
 class AsyncLevelLoader;
+namespace bl {
+    class mcstructure;
+}
+
+struct ChunkArea {
+    int minChunkX{0};
+    int minChunkZ{0};
+    int maxChunkX{-1};
+    int maxChunkZ{-1};
+    int dimension{0};
+};
+
+/// What to load: an mcstructure file, raw mcstructure bytes, a parsed
+/// mcstructure root, or a chunk area of the open world.
+using BlockVolumeRequest = std::variant<QUrl, QByteArray, std::shared_ptr<const bl::nbt::compound_tag>, ChunkArea>;
+
+/// An immutable loaded volume. Fields a backend does not use stay empty.
+struct BlockVolume {
+    std::shared_ptr<const VoxelSceneData> scene;
+    std::shared_ptr<const bl::mcstructure> structure;
+    std::shared_ptr<const bl::nbt::compound_tag> root;
+    int dimension{0};
+};
 
 struct BlockVolumeLoadResult {
-    std::shared_ptr<const VoxelSceneData> scene;
-    std::unique_ptr<bl::nbt::compound_tag> documentRoot;
-    QString documentTitle;
+    std::shared_ptr<const BlockVolume> volume;
     QString error;
-    int chunkX{0};
-    int chunkZ{0};
-    int dimension{0};
-    QString yRange;
 
-    [[nodiscard]] bool valid() const { return scene && error.isEmpty(); }
+    [[nodiscard]] bool valid() const { return volume && volume->scene && error.isEmpty(); }
 };
 
 struct BlockVolumeMutationResult {
@@ -34,22 +52,21 @@ struct BlockVolumeMutationResult {
 };
 
 /// Backend-specific data access for the shared block-volume controller.
+/// Loads run on worker threads and must not depend on earlier requests.
 class BlockVolumeSource {
    public:
     virtual ~BlockVolumeSource() = default;
 
     [[nodiscard]] virtual bool blockEditingEnabled() const { return false; }
-    virtual bool configureStructure(const QUrl&) { return false; }
-    virtual bool configureBytes(const QByteArray&) { return false; }
-    virtual bool configureArea(int, int, int, int, int) { return false; }
-    virtual bool configureImport(const QUrl&) { return false; }
-    virtual bool configureImportData(const QByteArray&) { return false; }
     virtual void setLevelLoader(AsyncLevelLoader*) {}
-    virtual std::shared_ptr<BlockVolumeLoadResult> load(const std::function<void(int)>&) = 0;
-    virtual std::shared_ptr<BlockVolumeLoadResult> loadImport(const std::function<void(int)>&) { return {}; }
-    [[nodiscard]] virtual QByteArray exportStructure(const VoxelSceneData&, const bl::block_box&, bool, bool) const { return {}; }
-    [[nodiscard]] virtual BlockVolumeMutationResult commitImport(const VoxelSceneData&, const bl::block_box&, bool) { return {}; }
-    [[nodiscard]] virtual BlockVolumeMutationResult deleteBlocks(const VoxelSceneData&, const bl::block_box&, bool) { return {}; }
+    [[nodiscard]] virtual BlockVolumeLoadResult load(const BlockVolumeRequest& request,
+                                                     const std::function<void(int)>& reportProgress) const = 0;
+    [[nodiscard]] virtual QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds, bool exportEntities,
+                                                     bool useNewFormat) const = 0;
+    [[nodiscard]] virtual BlockVolumeMutationResult commitImport(const BlockVolume&, const BlockVolume&, const bl::block_box&, bool) {
+        return {};
+    }
+    [[nodiscard]] virtual BlockVolumeMutationResult deleteBlocks(const BlockVolume&, const bl::block_box&, bool) { return {}; }
 };
 
 #endif  // BEDROCKMAP_BLOCKVOLUMESOURCE_H

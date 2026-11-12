@@ -19,14 +19,15 @@ Item {
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
     readonly property bool importing: !!controller && controller.importing
     readonly property bool copying: !!controller && controller.copying
+    readonly property bool busy: !!controller && controller.busy
+    readonly property bool operationsEnabled: root.hasModel && !!root.controller && !root.busy && !root.importPreviewActive
     readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
                                                || Window.activeFocusItem instanceof TextEdit
     readonly property bool viewShortcutsEnabled: root.visible && root.hasModel && !!root.controller && !root.controller.loading &&
                                                  !root.importPreviewActive && !root.textInputFocused
 
     function chooseStructureExport() {
-        if (!controller || controller.loading || controller.exporting || !hasModel || structureExportDialog.visible
-                || glbExportDialog.visible)
+        if (!operationsEnabled || structureExportDialog.visible || glbExportDialog.visible)
             return
         exportTarget = controller
         exportMinimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
@@ -37,8 +38,7 @@ Item {
     }
 
     function chooseGlbExport() {
-        if (!controller || controller.loading || controller.exporting || !hasModel || structureExportDialog.visible
-                || glbExportDialog.visible)
+        if (!operationsEnabled || structureExportDialog.visible || glbExportDialog.visible)
             return
         exportTarget = controller
         exportMinimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
@@ -47,15 +47,14 @@ Item {
     }
 
     function deleteSelection() {
-        if (!blockVolumeEditingEnabled || !viewport.camera.selectionEnabled || !controller)
+        if (!blockVolumeEditingEnabled || !viewport.camera.selectionEnabled || !operationsEnabled)
             return
         controller.deleteBlockVolumeAsync(viewport.camera.selectionMinimum, viewport.camera.selectionMaximum,
                                           includeEntities.checked)
     }
 
     function chooseStructureImport() {
-        if (!blockVolumeEditingEnabled || !controller || controller.loading || controller.deleting || importing
-                || copying)
+        if (!blockVolumeEditingEnabled || !operationsEnabled)
             return
         structureImportDialog.open()
     }
@@ -68,7 +67,7 @@ Item {
     }
 
     function copySelection() {
-        if (!controller || copying)
+        if (!operationsEnabled)
             return
         const minimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
         const maximum = viewport.camera.selectionEnabled ? viewport.camera.selectionMaximum : viewport.camera.modelSize
@@ -76,7 +75,7 @@ Item {
     }
 
     function pasteStructure() {
-        if (!blockVolumeEditingEnabled || !controller || importing || copying)
+        if (!blockVolumeEditingEnabled || !operationsEnabled)
             return
         controller.pasteStructure()
     }
@@ -124,7 +123,7 @@ Item {
         target: root.exportTarget
         function onExportFinished(path, error) {
             if (error.length > 0)
-                App.notifications.error(qsTr("Export failed"))
+                App.notifications.error(qsTr("Export failed"), "", error)
             else
                 App.notifications.info(qsTr("Export successful"))
         }
@@ -139,7 +138,10 @@ Item {
                 viewport.camera.deactivateImportSelection()
         }
         function onImportFailed(message) {
-            App.notifications.error(qsTr("Import failed"))
+            App.notifications.error(qsTr("Import failed"), "", message)
+        }
+        function onImportFinished() {
+            App.notifications.info(qsTr("Import successful"))
         }
         function onCopyFailed(message) {
             App.notifications.error(qsTr("Copy failed"), "", message)
@@ -245,8 +247,7 @@ Item {
                 App.notifications.error(qsTr("Export failed"))
         }
     }
-    readonly property bool hasModel: viewport.camera.modelSize.x > 0 && viewport.camera.modelSize.y > 0
-                                     && viewport.camera.modelSize.z > 0
+    readonly property bool hasModel: !!controller && controller.hasVoxelModel
     readonly property var worldOrigin: [viewport.camera.modelOrigin.x, viewport.camera.modelOrigin.y,
         viewport.camera.modelOrigin.z]
 
@@ -577,14 +578,6 @@ Item {
                         contentItem: ColumnLayout {
                             spacing: Theme.gapSmall
 
-                            AppCheckBox {
-                                id: compressMesh
-                                objectName: "voxelCompressMesh"
-                                Layout.fillWidth: true
-                                text: qsTr("Compress mesh")
-                                checked: false
-                            }
-
                             Item {
                                 Layout.fillHeight: true
                             }
@@ -596,9 +589,7 @@ Item {
                                 compact: true
                                 text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr(
                                                                                          "Export GLB")
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting &&
-                                         !root.importPreviewActive && !root.importing && !root.copying
+                                enabled: root.operationsEnabled
                                 onClicked: root.chooseGlbExport()
                             }
                         }
@@ -649,44 +640,33 @@ Item {
                                 objectName: "voxelImportStructure"
                                 text: root.importing ? qsTr("Importing…") : qsTr("Import")
                                 visible: root.blockVolumeEditingEnabled
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting &&
-                                         !root.importPreviewActive && !root.importing && !root.copying
+                                enabled: root.operationsEnabled
                                 onClicked: root.chooseStructureImport()
                             }
                             OperationButton {
                                 objectName: "voxelExportStructure"
                                 text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr("Export")
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting &&
-                                         !root.importPreviewActive && !root.importing && !root.copying
+                                enabled: root.operationsEnabled
                                 onClicked: root.chooseStructureExport()
                             }
                             OperationButton {
                                 objectName: "voxelCopy"
                                 text: root.copying ? qsTr("Copying…") : qsTr("Copy")
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting && !root.importing &&
-                                         !root.copying && !root.importPreviewActive
+                                enabled: root.operationsEnabled
                                 onClicked: root.copySelection()
                             }
                             OperationButton {
                                 objectName: "voxelPaste"
                                 text: qsTr("Paste")
                                 visible: root.blockVolumeEditingEnabled
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting && !root.importing &&
-                                         !root.copying && !root.importPreviewActive
+                                enabled: root.operationsEnabled
                                 onClicked: root.pasteStructure()
                             }
                             OperationButton {
                                 objectName: "voxelDelete"
                                 text: root.controller && root.controller.deleting ? qsTr("Deleting…") : qsTr("Delete")
                                 visible: root.blockVolumeEditingEnabled
-                                enabled: root.hasModel && !!root.controller && !root.controller.loading &&
-                                         !root.controller.exporting && !root.controller.deleting
-                                         && viewport.camera.selectionEnabled && !root.importing && !root.copying &&
-                                         !root.importPreviewActive
+                                enabled: root.operationsEnabled && viewport.camera.selectionEnabled
                                 onClicked: root.deleteSelection()
                             }
                         }

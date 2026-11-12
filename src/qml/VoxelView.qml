@@ -157,7 +157,7 @@ Item {
 
             Text {
                 Layout.fillWidth: true
-                text: root.controller ? qsTr("Building voxel terrain… %1%").arg(root.controller.voxelProgress) : qsTr(
+                text: root.controller ? qsTr("Building voxel terrain… %1%").arg(root.controller.loadProgress) : qsTr(
                                             "Building voxel terrain…")
                 color: Theme.overlayText
                 font.pixelSize: Theme.fontCaption
@@ -166,7 +166,7 @@ Item {
                 Layout.fillWidth: true
                 from: 0
                 to: 100
-                value: root.controller ? root.controller.voxelProgress : 0
+                value: root.controller ? root.controller.loadProgress : 0
             }
         }
     }
@@ -183,7 +183,7 @@ Item {
     Text {
         objectName: "voxelViewportInfo"
         readonly property vector3d size: voxelItem.modelSize
-        readonly property bool hasModel: size.x > 0 && size.y > 0 && size.z > 0
+        readonly property bool hasModel: !!root.controller && root.controller.hasVoxelModel
         readonly property string areaInfo: hasModel ? qsTr("Origin: %1, %2, %3").arg(voxelItem.modelOrigin.x).arg(
                                                           voxelItem.modelOrigin.y).arg(voxelItem.modelOrigin.z) + "\n"
                                                       + qsTr("Size: %1 × %2 × %3").arg(size.x).arg(size.y).arg(size.z) :

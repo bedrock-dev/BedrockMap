@@ -98,7 +98,6 @@ class GlobalNbtSection final : public QObject {
     AppContext& context_;
     std::unique_ptr<MapItemController> map_preview_;
     std::unique_ptr<BlockVolumeController> structure_preview_;
-    std::optional<QByteArray> pending_structure_preview_;
     NbtLevelDbPlan pending_plan_;
 };
 

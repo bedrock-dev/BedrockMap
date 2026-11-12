@@ -3,7 +3,6 @@
 
 #include <QtQml/qqmlregistration.h>
 
-#include <QMutex>
 #include <QPointer>
 #include <QQuickRhiItem>
 #include <QVector3D>
@@ -113,7 +112,6 @@ class VoxelQuickItem : public QQuickRhiItem {
     QPointer<VoxelSceneController> controller_;
     QMetaObject::Connection scene_connection_;
     QMetaObject::Connection overlay_connection_;
-    mutable QMutex state_mutex_;
     std::shared_ptr<const VoxelSceneData> scene_;
     std::shared_ptr<const VoxelSceneData> overlay_scene_;
     float yaw_{45.0f};

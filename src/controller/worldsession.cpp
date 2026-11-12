@@ -38,15 +38,13 @@ WorldSession::WorldSession(QString path, QString title, AppContext& context, QOb
     });
     connect(&voxel_view_, &BlockVolumeController::regionsChanged, &map_controller_, &MapController::refreshRegions);
     const auto refreshVoxelEditingState = [this] {
-        map_controller_.setEditingBlocked(closing_ || saving() || voxel_view_.deleting() || voxel_view_.importing() ||
-                                          voxel_view_.importPreviewActive() || voxel_view_.copying());
+        // Rebuilding the preview only reads the world, so map edits stay available meanwhile.
+        map_controller_.setEditingBlocked(closing_ || saving() || (voxel_view_.busy() && !voxel_view_.loading()) ||
+                                          voxel_view_.importPreviewActive());
         emit canSaveChanged();
     };
-    connect(&voxel_view_, &VoxelSceneController::deletingChanged, this, refreshVoxelEditingState);
-    connect(&voxel_view_, &BlockVolumeController::importingChanged, this, refreshVoxelEditingState);
+    connect(&voxel_view_, &BlockVolumeController::operationChanged, this, refreshVoxelEditingState);
     connect(&voxel_view_, &BlockVolumeController::importPreviewChanged, this, refreshVoxelEditingState);
-    connect(&voxel_view_, &BlockVolumeController::copyingChanged, this, refreshVoxelEditingState);
-    connect(&voxel_view_, &VoxelSceneController::loadingChanged, this, &WorldSession::canSaveChanged);
 }
 
 WorldSession::~WorldSession() { close(); }
@@ -172,8 +170,8 @@ void WorldSession::onOpenFinished() {
 }
 
 bool WorldSession::commit() {
-    if (closing_ || saving() || !loader_ || !loader_->isOpen() || map_controller_.operationRunning() || voxel_view_.loading() ||
-        voxel_view_.deleting() || voxel_view_.importing() || voxel_view_.importPreviewActive() || voxel_view_.copying())
+    if (closing_ || saving() || !loader_ || !loader_->isOpen() || map_controller_.operationRunning() || voxel_view_.busy() ||
+        voxel_view_.importPreviewActive())
         return false;
 
     if (chunk_editor_.dirty()) {

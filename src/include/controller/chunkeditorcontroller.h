@@ -8,6 +8,7 @@
 #include <QUrl>
 #include <QVariantList>
 #include <array>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -87,7 +88,6 @@ class ChunkEditorController : public VoxelSceneController {
     Q_PROPERTY(int terrainMaxLayer READ terrainMaxLayer NOTIFY terrainChanged)
     Q_PROPERTY(QVariantList terrainCells READ terrainCells NOTIFY terrainChanged)
     Q_PROPERTY(QVariantList statistics READ statistics NOTIFY statisticsChanged)
-    Q_PROPERTY(int voxelRevision READ voxelRevision NOTIFY voxelChanged)
     Q_PROPERTY(NbtDocumentController* entitiesDocument READ entitiesDocument CONSTANT)
     Q_PROPERTY(NbtDocumentController* blockEntitiesDocument READ blockEntitiesDocument CONSTANT)
     Q_PROPERTY(NbtDocumentController* pendingTicksDocument READ pendingTicksDocument CONSTANT)
@@ -111,8 +111,7 @@ class ChunkEditorController : public VoxelSceneController {
     [[nodiscard]] int terrainMaxLayer() const;
     [[nodiscard]] QVariantList terrainCells() const;
     [[nodiscard]] QVariantList statistics() const;
-    [[nodiscard]] int voxelProgress() const override { return voxel_progress_; }
-    [[nodiscard]] int voxelRevision() const { return voxel_revision_; }
+    [[nodiscard]] int loadProgress() const override { return load_progress_; }
     [[nodiscard]] std::shared_ptr<const VoxelSceneData> voxelScene() const override { return voxel_scene_; }
     [[nodiscard]] NbtDocumentController* entitiesDocument() { return &entities_document_; }
     [[nodiscard]] NbtDocumentController* blockEntitiesDocument() { return &block_entities_document_; }
@@ -137,19 +136,17 @@ class ChunkEditorController : public VoxelSceneController {
     void terrainChanged();
     void statisticsChanged();
 
-   protected:
-    [[nodiscard]] StructureExportTask structureExportTask(const bl::block_box& localBounds, bool exportEntities,
-                                                          bool useNewFormat) const override;
-
    private:
     void finishLoad();
     void setLoading(bool loading);
-    void setVoxelProgress(int progress);
+    void setLoadProgress(int progress);
     [[nodiscard]] const ChunkTerrainLayerSnapshot* terrainLayerAt(int y) const;
 
     AsyncLevelLoader* loader_{nullptr};
     QFutureWatcher<std::shared_ptr<ChunkNbtSnapshot>> watcher_;
     quint64 request_generation_{0};
+    /// Latest chunk requested while a snapshot was still loading.
+    std::function<void()> pending_open_;
     bool loading_{false};
     bool has_chunk_{false};
     int chunk_x_{0};
@@ -161,8 +158,7 @@ class ChunkEditorController : public VoxelSceneController {
     int terrain_y_{0};
     int terrain_layer_{0};
     std::shared_ptr<const ChunkStatisticsSnapshot> statistics_;
-    int voxel_progress_{0};
-    int voxel_revision_{0};
+    int load_progress_{0};
     std::shared_ptr<const VoxelSceneData> voxel_scene_;
     NbtDocumentController entities_document_;
     NbtDocumentController block_entities_document_;

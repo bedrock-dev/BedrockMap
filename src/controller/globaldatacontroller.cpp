@@ -96,43 +96,16 @@ void GlobalNbtSection::enableStructurePreview() {
     if (structure_preview_) return;
     structure_preview_ = std::make_unique<BlockVolumeController>(std::make_unique<McstructureVolumeSource>(), context_);
     connect(document_, &NbtDocumentController::currentIndexChanged, this, &GlobalNbtSection::reloadStructurePreview);
-    connect(structure_preview_.get(), &VoxelSceneController::loadingChanged, this, [this] {
-        if (structure_preview_->loading() || !pending_structure_preview_) return;
-        QMetaObject::invokeMethod(
-            this,
-            [this] {
-                if (structure_preview_->loading() || !pending_structure_preview_) return;
-                QByteArray raw = std::move(*pending_structure_preview_);
-                pending_structure_preview_.reset();
-                if (raw.isEmpty()) {
-                    structure_preview_->clearPreview();
-                } else {
-                    structure_preview_->loadBytes(raw);
-                }
-            },
-            Qt::QueuedConnection);
-    });
     reloadStructurePreview();
 }
 
 void GlobalNbtSection::reloadStructurePreview() {
     if (!structure_preview_) return;
-    const auto root = document_->itemCopy(document_->currentIndex());
-    QByteArray raw;
-    if (root) {
-        const std::string serialized = root->serialize();
-        raw = QByteArray(serialized.data(), static_cast<qsizetype>(serialized.size()));
-    }
-    if (structure_preview_->loading()) {
-        pending_structure_preview_ = std::move(raw);
-        return;
-    }
-    pending_structure_preview_.reset();
-    if (raw.isEmpty()) {
+    std::shared_ptr<const bl::nbt::compound_tag> root = document_->itemCopy(document_->currentIndex());
+    if (root)
+        structure_preview_->load(std::move(root));
+    else
         structure_preview_->clearPreview();
-    } else {
-        structure_preview_->loadBytes(raw);
-    }
 }
 
 GlobalDataController::GlobalDataController(AppContext& context, QObject* parent) : QObject(parent), context_(context) {

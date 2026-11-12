@@ -5,7 +5,9 @@
 #include <cmath>
 #include <exception>
 #include <optional>
+#include <span>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "chunk_data_position.h"
@@ -15,14 +17,6 @@
 #include "render/voxel_mesh.h"
 
 namespace {
-    struct McstructureData {
-        std::shared_ptr<bl::mcstructure> structure;
-        std::unique_ptr<bl::nbt::compound_tag> root;
-        QString error;
-
-        [[nodiscard]] bool valid() const { return structure && error.isEmpty(); }
-    };
-
     std::unique_ptr<bl::nbt::compound_tag> blockEntityAtWorldPosition(const bl::nbt::compound_tag* source,
                                                                       const bl::block_pos& worldPosition) {
         if (!source) return {};
@@ -100,103 +94,85 @@ namespace {
         return std::make_shared<bl::mcstructure>(builder.build());
     }
 
-    McstructureData parseMcstructure(QByteArray raw) {
-        McstructureData result;
-        try {
-            if (!raw.isEmpty()) {
-                const auto* bytes = reinterpret_cast<const byte_t*>(raw.constData());
-                const auto size = static_cast<size_t>(raw.size());
-                result.structure = std::make_shared<bl::mcstructure>(bl::parse_mcstructure(bytes, size));
-                if (result.structure->size_x() > 0 && result.structure->size_y() > 0 && result.structure->size_z() > 0) {
-                    auto parsed = bl::nbt::parse_one(std::span<const byte_t>(bytes, size));
-                    result.root.reset(parsed.root);
-                    if (!parsed || !result.root) {
-                        result.error = QCoreApplication::translate("BlockVolumeController",
-                                                                     "Could not read the structure NBT: %1")
-                                           .arg(bl::nbt::parse_error_to_string(parsed.error_code));
-                        return result;
-                    }
-                    return result;
-                }
+    /// Parse raw bytes into an NBT root, or set error.
+    std::shared_ptr<const bl::nbt::compound_tag> parseRoot(const QByteArray& raw, QString& error) {
+        if (raw.isEmpty()) {
+            error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
+            return {};
+        }
+        auto parsed = bl::nbt::parse_one(std::span(reinterpret_cast<const byte_t*>(raw.constData()), static_cast<size_t>(raw.size())));
+        std::shared_ptr<const bl::nbt::compound_tag> root(parsed.root);
+        if (!parsed || !root) {
+            error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure NBT: %1").arg(bl::nbt::parse_error_to_string(parsed.error_code));
+            return {};
+        }
+        return root;
+    }
+
+    std::shared_ptr<const bl::nbt::compound_tag> requestRoot(const BlockVolumeRequest& request, QString& error) {
+        if (const auto* root = std::get_if<std::shared_ptr<const bl::nbt::compound_tag>>(&request)) {
+            if (!*root) error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
+            return *root;
+        }
+        if (const auto* raw = std::get_if<QByteArray>(&request)) return parseRoot(*raw, error);
+        if (const auto* url = std::get_if<QUrl>(&request)) {
+            const auto read = io::DocumentIo::readAll(*url);
+            if (!read.ok()) {
+                error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1").arg(read.error);
+                return {};
             }
-            result.error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
-        } catch (const std::exception& error) {
-            result.error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1")
-                               .arg(QString::fromUtf8(error.what()));
+            return parseRoot(read.data, error);
         }
-        result.structure.reset();
-        return result;
-    }
-
-    McstructureData loadMcstructure(const QUrl& url) {
-        const auto read = io::DocumentIo::readAll(url);
-        if (!read.ok()) {
-            McstructureData result;
-            result.error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1").arg(read.error);
-            return result;
-        }
-        return parseMcstructure(read.data);
-    }
-
-    std::shared_ptr<VoxelSceneData> buildScene(const bl::mcstructure& structure) {
-        auto grid = voxel_mesh::createVoxelDataFromMcstructure(structure);
-        auto scene = std::make_shared<VoxelSceneData>();
-        if (const auto bounds = voxel_mesh::fullBounds(grid)) {
-            auto mesh = voxel_mesh::build(grid, *bounds);
-            scene->opaqueVertices = std::move(mesh.opaqueVertices);
-            scene->opaqueIndices = std::move(mesh.opaqueIndices);
-            scene->transparentVertices = std::move(mesh.transparentVertices);
-            scene->transparentIndices = std::move(mesh.transparentIndices);
-        }
-        scene->modelSize = QVector3D(structure.size_x(), structure.size_y(), structure.size_z());
-        scene->voxels = std::make_shared<const VoxelGrid>(std::move(grid));
-        const auto origin = structure.origin();
-        scene->origin = QVector3D(origin.x, origin.y, origin.z);
-        scene->revision = 1;
-        return scene;
+        error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
+        return {};
     }
 }  // namespace
 
-bool McstructureVolumeSource::configureStructure(const QUrl& url) {
-    if (url.isEmpty()) return false;
-    url_ = url;
-    raw_.clear();
-    volume_.reset();
-    return true;
+BlockVolumeLoadResult McstructureVolumeSource::load(const BlockVolumeRequest& request, const std::function<void(int)>& reportProgress) const {
+    return loadStructure(request, reportProgress);
 }
 
-bool McstructureVolumeSource::configureBytes(const QByteArray& raw) {
-    if (raw.isEmpty()) return false;
-    url_.clear();
-    raw_ = raw;
-    volume_.reset();
-    return true;
-}
-
-std::shared_ptr<BlockVolumeLoadResult> McstructureVolumeSource::load(const std::function<void(int)>& reportProgress) {
-    auto result = std::make_shared<BlockVolumeLoadResult>();
-    reportProgress(5);
-    auto data = raw_.isEmpty() ? loadMcstructure(url_) : parseMcstructure(raw_);
-    if (!data.valid()) {
-        result->error = data.error;
-        return result;
+BlockVolumeLoadResult McstructureVolumeSource::loadStructure(const BlockVolumeRequest& request,
+                                                            const std::function<void(int)>& reportProgress) {
+    BlockVolumeLoadResult result;
+    try {
+        reportProgress(5);
+        auto root = requestRoot(request, result.error);
+        if (!root) return result;
+        reportProgress(30);
+        auto structure = std::make_shared<const bl::mcstructure>(bl::parse_mcstructure(*root));
+        if (structure->size_x() <= 0 || structure->size_y() <= 0 || structure->size_z() <= 0) {
+            result.error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
+            return result;
+        }
+        reportProgress(45);
+        const auto origin = structure->origin();
+        auto scene = makeVoxelScene(voxel_mesh::createVoxelDataFromMcstructure(*structure), QVector3D(origin.x, origin.y, origin.z),
+                                    QVector3D(structure->size_x(), structure->size_y(), structure->size_z()));
+        if (!scene) {
+            result.error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
+            return result;
+        }
+        auto volume = std::make_shared<BlockVolume>();
+        volume->scene = std::move(scene);
+        volume->structure = std::move(structure);
+        volume->root = std::move(root);
+        result.volume = std::move(volume);
+        reportProgress(100);
+    } catch (const std::exception& error) {
+        result.volume.reset();
+        result.error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1").arg(QString::fromUtf8(error.what()));
     }
-    reportProgress(45);
-    volume_ = std::move(data.structure);
-    result->scene = buildScene(*volume_);
-    result->documentRoot = std::move(data.root);
-    result->documentTitle =
-        url_.isEmpty() ? QCoreApplication::translate("BlockVolumeController", "Clipboard") : io::DocumentIo::displayName(url_);
-    reportProgress(100);
     return result;
 }
 
-QByteArray McstructureVolumeSource::exportStructure(const VoxelSceneData&, const bl::block_box& selection, bool exportEntities,
+QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, const bl::block_box& selection, bool exportEntities,
                                                     bool useNewFormat) const {
-    if (!volume_ || !selection.is_valid()) return {};
-    const auto fullBounds = bl::block_box::from_min_and_size({0, 0, 0}, volume_->size_x(), volume_->size_y(), volume_->size_z());
+    const auto& structure = volume.structure;
+    if (!structure || !selection.is_valid()) return {};
+    const auto fullBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
     const auto bounds = selection.normalized().intersected(fullBounds);
     if (!bounds.is_valid()) return {};
-    const auto raw = buildExportStructure(*volume_, bounds, useNewFormat ? 2 : 1, exportEntities)->to_raw();
+    const auto raw = buildExportStructure(*structure, bounds, useNewFormat ? 2 : 1, exportEntities)->to_raw();
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }

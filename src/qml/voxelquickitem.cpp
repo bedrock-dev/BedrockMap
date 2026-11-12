@@ -167,8 +167,8 @@ namespace {
             if (scene_) {
                 if (scene_.get() != uploaded_scene_.get()) {
                     uploaded_scene_ = scene_;
-                    uploadMesh(updates, scene_->opaqueVertices, scene_->opaqueIndices, false);
-                    uploadMesh(updates, scene_->transparentVertices, scene_->transparentIndices, true);
+                    uploadMesh(updates, scene_->mesh.opaqueVertices, scene_->mesh.opaqueIndices, false);
+                    uploadMesh(updates, scene_->mesh.transparentVertices, scene_->mesh.transparentIndices, true);
                 }
 
                 const QMatrix4x4 matrix = cameraMatrix(camera_, scene_->modelSize, logical_size_);
@@ -269,8 +269,8 @@ namespace {
                 indices.reserve(indices.size() + sourceIndices.size());
                 for (const auto index : sourceIndices) indices.push_back(base + index);
             };
-            appendMesh(overlay_scene_->opaqueVertices, overlay_scene_->opaqueIndices);
-            appendMesh(overlay_scene_->transparentVertices, overlay_scene_->transparentIndices);
+            appendMesh(overlay_scene_->mesh.opaqueVertices, overlay_scene_->mesh.opaqueIndices);
+            appendMesh(overlay_scene_->mesh.transparentVertices, overlay_scene_->mesh.transparentIndices);
             if (vertices.empty() || indices.empty()) return;
 
             delete overlay_index_buffer_;
@@ -289,8 +289,13 @@ namespace {
         }
 
         void uploadAxes(QRhiResourceUpdateBatch* updates, const QVector3D& modelSize) {
+            if (!show_axes_) {
+                axes_vertex_count_ = 0;
+                return;
+            }
+            if (axes_vertex_buffer_ && axes_vertex_count_ > 0 && axes_model_size_ == modelSize) return;
+            axes_model_size_ = modelSize;
             axes_vertex_count_ = 0;
-            if (!show_axes_) return;
 
             const auto axisVertices = voxel_mesh::buildAxesMesh(modelSize);
             std::vector<float> vertices;
@@ -301,17 +306,16 @@ namespace {
                 vertices.insert(vertices.end(), axisVertices.begin() + offset + 3, axisVertices.begin() + offset + 7);
             }
             const quint32 bytes = static_cast<quint32>(vertices.size() * sizeof(float));
+            delete axes_vertex_buffer_;
+            axes_vertex_buffer_ = nullptr;
             if (!bytes) return;
-            if (!axes_vertex_buffer_ || axes_vertex_buffer_->size() < bytes) {
+            axes_vertex_buffer_ = rhi()->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, bytes);
+            if (!axes_vertex_buffer_->create()) {
                 delete axes_vertex_buffer_;
-                axes_vertex_buffer_ = rhi()->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, bytes);
-                if (!axes_vertex_buffer_->create()) {
-                    delete axes_vertex_buffer_;
-                    axes_vertex_buffer_ = nullptr;
-                    return;
-                }
+                axes_vertex_buffer_ = nullptr;
+                return;
             }
-            updates->updateDynamicBuffer(axes_vertex_buffer_, 0, bytes, vertices.data());
+            updates->uploadStaticBuffer(axes_vertex_buffer_, vertices.data());
             axes_vertex_count_ = static_cast<quint32>(vertices.size() / 10);
         }
 
@@ -380,6 +384,7 @@ namespace {
         VoxelRhiSelectionState selection_;
         QRhiBuffer* axes_vertex_buffer_{nullptr};
         quint32 axes_vertex_count_{0};
+        QVector3D axes_model_size_;
         QRhiBuffer* overlay_vertex_buffer_{nullptr};
         QRhiBuffer* overlay_index_buffer_{nullptr};
         quint32 overlay_index_count_{0};
@@ -426,205 +431,160 @@ void VoxelQuickItem::setController(VoxelSceneController* controller) {
 }
 
 std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentScene() const {
-    const QMutexLocker lock(&state_mutex_);
     return scene_;
 }
 
 std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentOverlayScene() const {
-    const QMutexLocker lock(&state_mutex_);
     return overlay_scene_;
 }
 
 VoxelRhiCameraState VoxelQuickItem::cameraState() const {
-    const QMutexLocker lock(&state_mutex_);
     return {yaw_, pitch_, zoom_, pan_, ortho_mode_};
 }
 
 bool VoxelQuickItem::orthoMode() const {
-    const QMutexLocker lock(&state_mutex_);
     return ortho_mode_;
 }
 
 void VoxelQuickItem::setOrthoMode(bool ortho) {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (ortho_mode_ == ortho) return;
-        ortho_mode_ = ortho;
-    }
+    if (ortho_mode_ == ortho) return;
+    ortho_mode_ = ortho;
     emit viewOptionsChanged();
     update();
 }
 
 bool VoxelQuickItem::rotationLocked() const {
-    const QMutexLocker lock(&state_mutex_);
     return rotation_locked_;
 }
 
 void VoxelQuickItem::setRotationLocked(bool locked) {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (rotation_locked_ == locked) return;
-        rotation_locked_ = locked;
-        if (locked) rotating_ = false;
-    }
+    if (rotation_locked_ == locked) return;
+    rotation_locked_ = locked;
+    if (locked) rotating_ = false;
     emit viewOptionsChanged();
     update();
 }
 
 bool VoxelQuickItem::showAxes() const {
-    const QMutexLocker lock(&state_mutex_);
     return show_axes_;
 }
 
 void VoxelQuickItem::setShowAxes(bool enabled) {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (show_axes_ == enabled) return;
-        show_axes_ = enabled;
-    }
+    if (show_axes_ == enabled) return;
+    show_axes_ = enabled;
     emit axesChanged();
     update();
 }
 
 QVector3D VoxelQuickItem::modelSize() const {
-    const QMutexLocker lock(&state_mutex_);
     return scene_ ? scene_->modelSize : QVector3D{};
 }
 
 QVector3D VoxelQuickItem::modelOrigin() const {
-    const QMutexLocker lock(&state_mutex_);
     return scene_ ? scene_->origin : QVector3D{};
 }
 
 VoxelRhiSelectionState VoxelQuickItem::selectionState() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_;
 }
 
 bool VoxelQuickItem::selectionEnabled() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_.enabled;
 }
 
 void VoxelQuickItem::setSelectionEnabled(bool enabled) {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (selection_locked_ && !enabled) return;
-        if (selection_.enabled == enabled) return;
-        selection_.enabled = enabled;
-        selection_.active = VoxelSelectionHandle::None;
-        selection_drag_ = {};
-    }
+    if (selection_locked_ && !enabled) return;
+    if (selection_.enabled == enabled) return;
+    selection_.enabled = enabled;
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
     emit selectionOptionsChanged();
     emit selectionInteractionChanged();
     update();
 }
 
 bool VoxelQuickItem::selectionMoveMode() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_move_mode_;
 }
 
 void VoxelQuickItem::setSelectionMoveMode(bool enabled) {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (selection_locked_ && !enabled) return;
-        if (selection_move_mode_ == enabled) return;
-        selection_move_mode_ = enabled;
-        selection_.active = VoxelSelectionHandle::None;
-        selection_drag_ = {};
-    }
+    if (selection_locked_ && !enabled) return;
+    if (selection_move_mode_ == enabled) return;
+    selection_move_mode_ = enabled;
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
     emit selectionOptionsChanged();
     emit selectionInteractionChanged();
     update();
 }
 
 bool VoxelQuickItem::selectionLocked() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_locked_;
 }
 
 QColor VoxelQuickItem::selectionColor() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_.color;
 }
 
 void VoxelQuickItem::setSelectionColor(const QColor& color) {
     if (!color.isValid()) return;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (selection_.color == color) return;
-        selection_.color = color;
-    }
+    if (selection_.color == color) return;
+    selection_.color = color;
     emit selectionOptionsChanged();
     update();
 }
 
 QVector3D VoxelQuickItem::selectionMinimum() const {
-    const QMutexLocker lock(&state_mutex_);
     const auto& p = selection_.bounds.min_pos;
     return QVector3D(p.x, p.y, p.z);
 }
 
 QVector3D VoxelQuickItem::selectionMaximum() const {
-    const QMutexLocker lock(&state_mutex_);
     const auto& p = selection_.bounds.max_pos;
     return QVector3D(p.x, p.y, p.z);
 }
 
 bool VoxelQuickItem::selectionDragging() const {
-    const QMutexLocker lock(&state_mutex_);
     return selection_.active != VoxelSelectionHandle::None;
 }
 
 float VoxelQuickItem::saturation() const {
-    const QMutexLocker lock(&state_mutex_);
     return saturation_;
 }
 
 void VoxelQuickItem::setSaturation(float saturation) {
     saturation = std::clamp(saturation, 0.0f, 2.0f);
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (qFuzzyCompare(saturation_, saturation)) return;
-        saturation_ = saturation;
-    }
+    if (qFuzzyCompare(saturation_, saturation)) return;
+    saturation_ = saturation;
     emit toneChanged();
     update();
 }
 
 float VoxelQuickItem::brightness() const {
-    const QMutexLocker lock(&state_mutex_);
     return brightness_;
 }
 
 void VoxelQuickItem::setBrightness(float brightness) {
     brightness = std::clamp(brightness, 0.0f, 2.0f);
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (qFuzzyCompare(brightness_, brightness)) return;
-        brightness_ = brightness;
-    }
+    if (qFuzzyCompare(brightness_, brightness)) return;
+    brightness_ = brightness;
     emit toneChanged();
     update();
 }
 
 void VoxelQuickItem::setSelectionBoundary(int axis, bool maximum, int value) {
     if (axis < 0 || axis > 2) return;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (!scene_ || selection_locked_ || !selection_.enabled || !selection_.bounds.is_valid()) return;
-        auto bounds = selection_.bounds;
-        int* low[] = {&bounds.min_pos.x, &bounds.min_pos.y, &bounds.min_pos.z};
-        int* high[] = {&bounds.max_pos.x, &bounds.max_pos.y, &bounds.max_pos.z};
-        if (maximum)
-            *high[axis] = std::clamp(value, *low[axis] + 1, static_cast<int>(scene_->modelSize[axis]));
-        else
-            *low[axis] = std::clamp(value, 0, *high[axis] - 1);
-        selection_.bounds = bounds;
-        selection_.active = VoxelSelectionHandle::None;
-        selection_drag_ = {};
-    }
+    if (!scene_ || selection_locked_ || !selection_.enabled || !selection_.bounds.is_valid()) return;
+    auto bounds = selection_.bounds;
+    int* low[] = {&bounds.min_pos.x, &bounds.min_pos.y, &bounds.min_pos.z};
+    int* high[] = {&bounds.max_pos.x, &bounds.max_pos.y, &bounds.max_pos.z};
+    if (maximum)
+        *high[axis] = std::clamp(value, *low[axis] + 1, static_cast<int>(scene_->modelSize[axis]));
+    else
+        *low[axis] = std::clamp(value, 0, *high[axis] - 1);
+    selection_.bounds = bounds;
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
     emit selectionChanged();
     emit selectionInteractionChanged();
     update();
@@ -632,21 +592,18 @@ void VoxelQuickItem::setSelectionBoundary(int axis, bool maximum, int value) {
 
 void VoxelQuickItem::activateImportSelection(const QVector3D& size) {
     if (size.x() <= 0.0f || size.y() <= 0.0f || size.z() <= 0.0f) return;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (!scene_) return;
-        if (!selection_locked_) {
-            selection_before_import_ = selection_;
-            selection_move_mode_before_import_ = selection_move_mode_;
-        }
-        selection_locked_ = true;
-        selection_move_mode_ = true;
-        selection_.enabled = true;
-        selection_.active = VoxelSelectionHandle::None;
-        const auto origin = selection_.bounds.is_valid() ? selection_.bounds.min_pos : bl::block_pos{};
-        selection_.bounds = bl::block_box::from_min_and_size(origin, qRound(size.x()), qRound(size.y()), qRound(size.z()));
-        selection_drag_ = {};
+    if (!scene_) return;
+    if (!selection_locked_) {
+        selection_before_import_ = selection_;
+        selection_move_mode_before_import_ = selection_move_mode_;
     }
+    selection_locked_ = true;
+    selection_move_mode_ = true;
+    selection_.enabled = true;
+    selection_.active = VoxelSelectionHandle::None;
+    const auto origin = selection_.bounds.is_valid() ? selection_.bounds.min_pos : bl::block_pos{};
+    selection_.bounds = bl::block_box::from_min_and_size(origin, qRound(size.x()), qRound(size.y()), qRound(size.z()));
+    selection_drag_ = {};
     emit selectionOptionsChanged();
     emit selectionChanged();
     emit selectionInteractionChanged();
@@ -654,14 +611,11 @@ void VoxelQuickItem::activateImportSelection(const QVector3D& size) {
 }
 
 void VoxelQuickItem::deactivateImportSelection() {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (!selection_locked_) return;
-        selection_ = selection_before_import_;
-        selection_move_mode_ = selection_move_mode_before_import_;
-        selection_locked_ = false;
-        selection_drag_ = {};
-    }
+    if (!selection_locked_) return;
+    selection_ = selection_before_import_;
+    selection_move_mode_ = selection_move_mode_before_import_;
+    selection_locked_ = false;
+    selection_drag_ = {};
     emit selectionOptionsChanged();
     emit selectionChanged();
     emit selectionInteractionChanged();
@@ -672,19 +626,16 @@ bool VoxelQuickItem::beginSelectionDrag(const QPointF& position, qreal pickRadiu
     if (!std::isfinite(position.x()) || !std::isfinite(position.y()) || !std::isfinite(pickRadius) || pickRadius <= 0 || width() <= 0 ||
         height() <= 0)
         return false;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (!scene_ || !selection_.enabled) return false;
-        const VoxelRhiCameraState camera{yaw_, pitch_, zoom_, pan_, ortho_mode_};
-        const VoxelSelectionView view{cameraMatrix(camera, scene_->modelSize, QSizeF(width(), height())), QSizeF(width(), height()), 1.0f};
-        const auto drag = voxel_mesh::beginSelectionDrag(selection_.bounds, scene_->modelSize, view, position,
-                                                         selection_move_mode_ || selection_locked_, static_cast<float>(pickRadius));
-        if (drag.handle == VoxelSelectionHandle::None) return false;
-        selection_drag_ = drag;
-        selection_.active = drag.handle;
-        rotating_ = false;
-        panning_ = false;
-    }
+    if (!scene_ || !selection_.enabled) return false;
+    const VoxelRhiCameraState camera{yaw_, pitch_, zoom_, pan_, ortho_mode_};
+    const VoxelSelectionView view{cameraMatrix(camera, scene_->modelSize, QSizeF(width(), height())), QSizeF(width(), height()), 1.0f};
+    const auto drag = voxel_mesh::beginSelectionDrag(selection_.bounds, scene_->modelSize, view, position,
+                                                     selection_move_mode_ || selection_locked_, static_cast<float>(pickRadius));
+    if (drag.handle == VoxelSelectionHandle::None) return false;
+    selection_drag_ = drag;
+    selection_.active = drag.handle;
+    rotating_ = false;
+    panning_ = false;
     emit selectionInteractionChanged();
     update();
     return true;
@@ -692,67 +643,55 @@ bool VoxelQuickItem::beginSelectionDrag(const QPointF& position, qreal pickRadiu
 
 void VoxelQuickItem::dragSelection(const QPointF& position) {
     if (!std::isfinite(position.x()) || !std::isfinite(position.y())) return;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (!scene_ || !selection_.enabled || selection_.active == VoxelSelectionHandle::None) return;
-        const auto bounds = voxel_mesh::dragSelection(selection_drag_, scene_->modelSize, position, selection_locked_);
-        if (!bounds.is_valid() || (bounds.min_pos == selection_.bounds.min_pos && bounds.max_pos == selection_.bounds.max_pos)) return;
-        selection_.bounds = bounds;
-    }
+    if (!scene_ || !selection_.enabled || selection_.active == VoxelSelectionHandle::None) return;
+    const auto bounds = voxel_mesh::dragSelection(selection_drag_, scene_->modelSize, position, selection_locked_);
+    if (!bounds.is_valid() || (bounds.min_pos == selection_.bounds.min_pos && bounds.max_pos == selection_.bounds.max_pos)) return;
+    selection_.bounds = bounds;
     emit selectionChanged();
     update();
 }
 
 void VoxelQuickItem::endSelectionDrag() {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        if (selection_.active == VoxelSelectionHandle::None) return;
-        selection_.active = VoxelSelectionHandle::None;
-        selection_drag_ = {};
-    }
+    if (selection_.active == VoxelSelectionHandle::None) return;
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
     emit selectionInteractionChanged();
     update();
 }
 
 void VoxelQuickItem::rotateView(float yawDegrees, float pitchDegrees) {
     if (!std::isfinite(yawDegrees) || !std::isfinite(pitchDegrees)) return;
-    {
-        const QMutexLocker lock(&state_mutex_);
-        // Explicit buttons remain available while drag rotation is locked,
-        // matching the native preview's controls.
-        yaw_ = std::remainder(yaw_ + yawDegrees, 360.0f);
-        pitch_ = std::remainder(pitch_ + pitchDegrees, 360.0f);
-    }
+    // Explicit buttons remain available while drag rotation is locked,
+    // matching the native preview's controls.
+    yaw_ = std::remainder(yaw_ + yawDegrees, 360.0f);
+    pitch_ = std::remainder(pitch_ + pitchDegrees, 360.0f);
     update();
 }
 
 void VoxelQuickItem::focusFrontFace() {
-    {
-        const QMutexLocker lock(&state_mutex_);
-        const QQuaternion current = QQuaternion::fromAxisAndAngle(1, 0, 0, pitch_) * QQuaternion::fromAxisAndAngle(0, 1, 0, yaw_);
-        const QVector3D axes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
-        QVector3D front;
-        float facing = -2.0f;
-        for (const auto& axis : axes) {
-            const float z = current.rotatedVector(axis).z();
-            if (z > facing) {
-                facing = z;
-                front = axis;
-            }
+    const QQuaternion current = QQuaternion::fromAxisAndAngle(1, 0, 0, pitch_) * QQuaternion::fromAxisAndAngle(0, 1, 0, yaw_);
+    const QVector3D axes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+    QVector3D front;
+    float facing = -2.0f;
+    for (const auto& axis : axes) {
+        const float z = current.rotatedVector(axis).z();
+        if (z > facing) {
+            facing = z;
+            front = axis;
         }
-        // Pick the nearest axis-aligned yaw/pitch pose that faces the camera.
-        // This preserves the roll-free orbit used by dragging and arrow buttons.
-        float bestDot = -1.0f;
-        for (const float pitch : {-180.0f, -90.0f, 0.0f, 90.0f}) {
-            for (const float yaw : {-180.0f, -90.0f, 0.0f, 90.0f}) {
-                const QQuaternion candidate = QQuaternion::fromAxisAndAngle(1, 0, 0, pitch) * QQuaternion::fromAxisAndAngle(0, 1, 0, yaw);
-                if (candidate.rotatedVector(front).z() < 0.999f) continue;
-                const float dot = std::abs(QQuaternion::dotProduct(current, candidate));
-                if (dot > bestDot) {
-                    bestDot = dot;
-                    yaw_ = yaw;
-                    pitch_ = pitch;
-                }
+    }
+    // Pick the nearest axis-aligned yaw/pitch pose that faces the camera.
+    // This preserves the roll-free orbit used by dragging and arrow buttons.
+    float bestDot = -1.0f;
+    for (const float pitch : {-180.0f, -90.0f, 0.0f, 90.0f}) {
+        for (const float yaw : {-180.0f, -90.0f, 0.0f, 90.0f}) {
+            const QQuaternion candidate = QQuaternion::fromAxisAndAngle(1, 0, 0, pitch) * QQuaternion::fromAxisAndAngle(0, 1, 0, yaw);
+            if (candidate.rotatedVector(front).z() < 0.999f) continue;
+            const float dot = std::abs(QQuaternion::dotProduct(current, candidate));
+            if (dot > bestDot) {
+                bestDot = dot;
+                yaw_ = yaw;
+                pitch_ = pitch;
             }
         }
     }
@@ -764,15 +703,18 @@ QQuickRhiItemRenderer* VoxelQuickItem::createRenderer() { return new VoxelRhiRen
 void VoxelQuickItem::syncScene() {
     std::shared_ptr<const VoxelSceneData> next;
     if (controller_) next = controller_->voxelScene();
-    {
-        const QMutexLocker lock(&state_mutex_);
-        scene_ = std::move(next);
-        selection_.bounds =
-            scene_ ? bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(scene_->modelSize.x()),
-                                                      static_cast<int>(scene_->modelSize.y()), static_cast<int>(scene_->modelSize.z()))
-                   : bl::block_box{};
-        selection_.active = VoxelSelectionHandle::None;
-        selection_drag_ = {};
+    // A rebuilt scene of the same volume, such as after an edit, keeps the
+    // camera and selection the user is working with.
+    const bool same_volume =
+        scene_ && next && scene_->modelSize == next->modelSize && scene_->origin == next->origin;
+    scene_ = std::move(next);
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
+    if (!same_volume) {
+        selection_.bounds = scene_ ? bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(scene_->modelSize.x()),
+                                                                      static_cast<int>(scene_->modelSize.y()),
+                                                                      static_cast<int>(scene_->modelSize.z()))
+                                   : bl::block_box{};
         yaw_ = 45.0f;
         pitch_ = 45.0f;
         zoom_ = 1.0f;
@@ -789,10 +731,7 @@ void VoxelQuickItem::syncScene() {
 void VoxelQuickItem::syncOverlay() {
     std::shared_ptr<const VoxelSceneData> next;
     if (controller_) next = controller_->voxelOverlayScene();
-    {
-        const QMutexLocker lock(&state_mutex_);
-        overlay_scene_ = std::move(next);
-    }
+    overlay_scene_ = std::move(next);
     update();
 }
 
@@ -807,7 +746,6 @@ void VoxelQuickItem::resetView() {
 
 void VoxelQuickItem::beginRotate(const QPointF& position) {
     if (!std::isfinite(position.x()) || !std::isfinite(position.y())) return;
-    const QMutexLocker lock(&state_mutex_);
     last_mouse_position_ = position;
     rotating_ = !rotation_locked_;
     panning_ = false;
@@ -815,7 +753,6 @@ void VoxelQuickItem::beginRotate(const QPointF& position) {
 
 void VoxelQuickItem::beginPan(const QPointF& position) {
     if (!std::isfinite(position.x()) || !std::isfinite(position.y())) return;
-    const QMutexLocker lock(&state_mutex_);
     last_mouse_position_ = position;
     panning_ = true;
     rotating_ = false;
@@ -823,7 +760,6 @@ void VoxelQuickItem::beginPan(const QPointF& position) {
 
 void VoxelQuickItem::dragView(const QPointF& position) {
     if (!std::isfinite(position.x()) || !std::isfinite(position.y())) return;
-    const QMutexLocker lock(&state_mutex_);
     const QPointF delta = position - last_mouse_position_;
     last_mouse_position_ = position;
     if (rotating_ && !rotation_locked_) {
@@ -841,14 +777,12 @@ void VoxelQuickItem::dragView(const QPointF& position) {
 }
 
 void VoxelQuickItem::endView() {
-    const QMutexLocker lock(&state_mutex_);
     rotating_ = false;
     panning_ = false;
 }
 
 void VoxelQuickItem::zoomBy(qreal factor) {
     if (!std::isfinite(factor) || factor <= 0.0) return;
-    const QMutexLocker lock(&state_mutex_);
     zoom_ = std::clamp(zoom_ * static_cast<float>(factor), 0.1f, 10.0f);
     update();
 }

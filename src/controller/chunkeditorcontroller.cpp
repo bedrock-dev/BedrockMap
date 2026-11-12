@@ -13,6 +13,7 @@
 #include <functional>
 #include <memory>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "actor.h"
@@ -21,7 +22,6 @@
 #include "color.h"
 #include "io/documentio.h"
 #include "loader/asynclevelloader.h"
-#include "loader/blockvolumeoperator.h"
 #include "nbt.h"
 #include "raw_chunk.h"
 #include "render/voxel_mesh.h"
@@ -143,19 +143,10 @@ namespace {
         }
         int firstWorldY = 0;
         auto grid = voxel_mesh::createVoxelDataFromChunks({{chunk.get()}}, {}, &firstWorldY);
-        const auto bounds = voxel_mesh::fullBounds(grid);
-        if (!bounds) return {};
         reportProgress(65);
-
-        auto scene = std::make_shared<VoxelSceneData>();
-        scene->origin = QVector3D(raw.pos().x * 16, firstWorldY, raw.pos().z * 16);
-        scene->modelSize = QVector3D(16.0f, static_cast<float>(grid.size()), 16.0f);
-        auto mesh = voxel_mesh::build(grid, *bounds);
-        scene->opaqueVertices = std::move(mesh.opaqueVertices);
-        scene->opaqueIndices = std::move(mesh.opaqueIndices);
-        scene->transparentVertices = std::move(mesh.transparentVertices);
-        scene->transparentIndices = std::move(mesh.transparentIndices);
-        scene->voxels = std::make_shared<const VoxelGrid>(std::move(grid));
+        const QVector3D origin(raw.pos().x * 16, firstWorldY, raw.pos().z * 16);
+        const QVector3D modelSize(16.0f, static_cast<float>(grid.size()), 16.0f);
+        auto scene = makeVoxelScene(std::move(grid), origin, modelSize);
         reportProgress(98);
         return scene;
     }
@@ -249,20 +240,23 @@ void ChunkEditorController::setClipboard(BinaryClipboard* clipboard) {
 }
 
 ChunkEditorController::~ChunkEditorController() {
-    waitForExport();
     if (watcher_.isRunning()) watcher_.waitForFinished();
 }
 
 void ChunkEditorController::setLoader(AsyncLevelLoader* loader) {
     if (loader_ == loader) return;
-    waitForExport();
     if (watcher_.isRunning()) watcher_.waitForFinished();
     clear();
     loader_ = loader;
 }
 
 void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
-    if (!loader_ || !loader_->isOpen() || watcher_.isRunning()) return;
+    if (!loader_ || !loader_->isOpen()) return;
+    if (watcher_.isRunning()) {
+        ++request_generation_;
+        pending_open_ = [this, chunkX, chunkZ, dimension] { openChunk(chunkX, chunkZ, dimension); };
+        return;
+    }
     ++request_generation_;
     chunk_x_ = chunkX;
     chunk_z_ = chunkZ;
@@ -278,7 +272,7 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     terrain_y_ = 0;
     terrain_layer_ = 0;
     voxel_scene_.reset();
-    setVoxelProgress(0);
+    setLoadProgress(0);
     setLoading(true);
     emit chunkChanged();
     emit dataChanged();
@@ -289,7 +283,7 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     const quint64 generation = request_generation_;
     watcher_.setFuture(QtConcurrent::run([this, loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation] {
         const auto reportProgress = [this](int progress) {
-            QMetaObject::invokeMethod(this, [this, progress] { setVoxelProgress(progress); }, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, [this, progress] { setLoadProgress(progress); }, Qt::QueuedConnection);
         };
         return loadChunkSnapshot(loader, pos, generation, reportProgress);
     }));
@@ -297,6 +291,7 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
 
 void ChunkEditorController::clear() {
     ++request_generation_;
+    pending_open_ = {};
     setLoading(false);
     has_chunk_ = false;
     y_range_.clear();
@@ -309,7 +304,7 @@ void ChunkEditorController::clear() {
     terrain_y_ = 0;
     terrain_layer_ = 0;
     voxel_scene_.reset();
-    setVoxelProgress(0);
+    setLoadProgress(0);
     emit voxelChanged();
     emit chunkChanged();
     emit dataChanged();
@@ -461,6 +456,11 @@ bool ChunkEditorController::saveToCache() {
 }
 
 void ChunkEditorController::finishLoad() {
+    if (pending_open_) {
+        const auto open = std::exchange(pending_open_, {});
+        open();
+        return;
+    }
     const auto snapshot = watcher_.result();
     if (!snapshot || snapshot->generation != request_generation_) return;
     setLoading(false);
@@ -480,10 +480,8 @@ void ChunkEditorController::finishLoad() {
         terrain_y_ = 0;
         terrain_layer_ = 0;
     }
-    ++voxel_revision_;
-    if (snapshot->voxelScene) snapshot->voxelScene->revision = static_cast<std::uint64_t>(voxel_revision_);
     voxel_scene_ = snapshot->voxelScene;
-    setVoxelProgress(100);
+    setLoadProgress(100);
 
     entities_document_.loadMemory(
         cloneRoots(snapshot->entities), {}, tr("Entities"),
@@ -506,21 +504,9 @@ void ChunkEditorController::setLoading(bool loading) {
     emit loadingChanged();
 }
 
-void ChunkEditorController::setVoxelProgress(int progress) {
+void ChunkEditorController::setLoadProgress(int progress) {
     progress = std::clamp(progress, 0, 100);
-    if (voxel_progress_ == progress) return;
-    voxel_progress_ = progress;
-    emit voxelProgressChanged();
-}
-
-VoxelSceneController::StructureExportTask ChunkEditorController::structureExportTask(const bl::block_box& localBounds, bool exportEntities,
-                                                                                     bool useNewFormat) const {
-    if (!loader_ || !loader_->isOpen() || !voxel_scene_) return {};
-    const auto origin = voxel_scene_->origin;
-    const auto bounds = localBounds.translated({qRound(origin.x()), qRound(origin.y()), qRound(origin.z())});
-    return [loader = loader_, dimension = dimension_, bounds, exportEntities, useNewFormat] {
-        const auto raw =
-            BlockVolumeOperator::exportWorldMcstructureData(*loader, dimension, bounds, false, useNewFormat ? 2 : 1, exportEntities);
-        return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
-    };
+    if (load_progress_ == progress) return;
+    load_progress_ = progress;
+    emit loadProgressChanged();
 }

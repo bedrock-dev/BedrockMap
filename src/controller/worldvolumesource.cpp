@@ -4,9 +4,11 @@
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <variant>
 #include <vector>
 
 #include "chunk.h"
+#include "controller/mcstructurevolumesource.h"
 #include "loader/asynclevelloader.h"
 #include "loader/blockvolumeoperator.h"
 #include "render/voxel_mesh.h"
@@ -39,96 +41,74 @@ namespace {
             voxel_mesh::createVoxelDataFromChunks(chunks, [&](int count) { reportProgress(35 + count * 30 / totalChunks); }, &firstWorldY);
         ownedChunks.clear();
         chunks.clear();
-        const auto bounds = voxel_mesh::fullBounds(grid);
-        if (!bounds) return {};
         reportProgress(70);
-        auto mesh = voxel_mesh::build(grid, *bounds);
-
-        auto scene = std::make_shared<VoxelSceneData>();
-        scene->origin = QVector3D(minChunk.x * 16, firstWorldY, minChunk.z * 16);
-        scene->modelSize = QVector3D(static_cast<float>(columns * 16), static_cast<float>(grid.size()), static_cast<float>(rows * 16));
-        scene->opaqueVertices = std::move(mesh.opaqueVertices);
-        scene->opaqueIndices = std::move(mesh.opaqueIndices);
-        scene->transparentVertices = std::move(mesh.transparentVertices);
-        scene->transparentIndices = std::move(mesh.transparentIndices);
-        scene->voxels = std::make_shared<const VoxelGrid>(std::move(grid));
-        scene->revision = 1;
+        const QVector3D origin(minChunk.x * 16, firstWorldY, minChunk.z * 16);
+        const QVector3D modelSize(static_cast<float>(columns * 16), static_cast<float>(grid.size()), static_cast<float>(rows * 16));
+        auto scene = makeVoxelScene(std::move(grid), origin, modelSize);
         reportProgress(100);
         return scene;
     }
 }  // namespace
 
-bool WorldVolumeSource::configureArea(int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ, int dimension) {
-    if (maxChunkX < minChunkX || maxChunkZ < minChunkZ) return false;
-    min_chunk_x_ = minChunkX;
-    min_chunk_z_ = minChunkZ;
-    max_chunk_x_ = maxChunkX;
-    max_chunk_z_ = maxChunkZ;
-    dimension_ = dimension;
-    return true;
-}
+namespace {
+    bl::block_pos originOf(const BlockVolume& volume) {
+        const auto& origin = volume.scene->origin;
+        return {qRound(origin.x()), qRound(origin.y()), qRound(origin.z())};
+    }
+}  // namespace
 
-bool WorldVolumeSource::configureImport(const QUrl& url) { return import_source_.configureStructure(url); }
+BlockVolumeLoadResult WorldVolumeSource::load(const BlockVolumeRequest& request, const std::function<void(int)>& reportProgress) const {
+    const auto* area = std::get_if<ChunkArea>(&request);
+    if (!area) return McstructureVolumeSource::loadStructure(request, reportProgress);
 
-bool WorldVolumeSource::configureImportData(const QByteArray& raw) { return import_source_.configureBytes(raw); }
-
-void WorldVolumeSource::setLevelLoader(AsyncLevelLoader* loader) { loader_ = loader; }
-
-std::shared_ptr<BlockVolumeLoadResult> WorldVolumeSource::load(const std::function<void(int)>& reportProgress) {
-    auto result = std::make_shared<BlockVolumeLoadResult>();
-    if (!loader_ || !loader_->isOpen() || max_chunk_x_ < min_chunk_x_ || max_chunk_z_ < min_chunk_z_) {
-        result->error = QCoreApplication::translate("BlockVolumeController", "The world is not open.");
+    BlockVolumeLoadResult result;
+    if (!loader_ || !loader_->isOpen() || area->maxChunkX < area->minChunkX || area->maxChunkZ < area->minChunkZ) {
+        result.error = QCoreApplication::translate("BlockVolumeController", "The world is not open.");
         return result;
     }
-    result->scene =
-        buildVolumeScene(loader_, {min_chunk_x_, min_chunk_z_, dimension_}, {max_chunk_x_, max_chunk_z_, dimension_}, reportProgress);
-    if (!result->scene) {
-        result->error = QCoreApplication::translate("BlockVolumeController", "No terrain was found in the current area.");
+    auto scene = buildVolumeScene(loader_, {area->minChunkX, area->minChunkZ, area->dimension},
+                                  {area->maxChunkX, area->maxChunkZ, area->dimension}, reportProgress);
+    if (!scene) {
+        result.error = QCoreApplication::translate("BlockVolumeController", "No terrain was found in the current area.");
         return result;
     }
-    result->chunkX = min_chunk_x_;
-    result->chunkZ = min_chunk_z_;
-    result->dimension = dimension_;
+    auto volume = std::make_shared<BlockVolume>();
+    volume->scene = std::move(scene);
+    volume->dimension = area->dimension;
+    result.volume = std::move(volume);
     return result;
 }
 
-std::shared_ptr<BlockVolumeLoadResult> WorldVolumeSource::loadImport(const std::function<void(int)>& reportProgress) {
-    return import_source_.load(reportProgress);
-}
-
-QByteArray WorldVolumeSource::exportStructure(const VoxelSceneData& scene, const bl::block_box& localBounds, bool exportEntities,
+QByteArray WorldVolumeSource::exportStructure(const BlockVolume& volume, const bl::block_box& localBounds, bool exportEntities,
                                               bool useNewFormat) const {
-    if (!loader_ || !loader_->isOpen()) return {};
-    const auto bounds = localBounds.translated({qRound(scene.origin.x()), qRound(scene.origin.y()), qRound(scene.origin.z())});
-    const auto raw =
-        BlockVolumeOperator::exportWorldMcstructureData(*loader_, dimension_, bounds, false, useNewFormat ? 2 : 1, exportEntities);
+    if (!loader_ || !loader_->isOpen() || !volume.scene) return {};
+    const auto raw = BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(originOf(volume)),
+                                                                     false, useNewFormat ? 2 : 1, exportEntities);
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }
 
-BlockVolumeMutationResult WorldVolumeSource::commitImport(const VoxelSceneData& scene, const bl::block_box& localBounds,
-                                                          bool importEntities) {
+BlockVolumeMutationResult WorldVolumeSource::commitImport(const BlockVolume& target, const BlockVolume& import,
+                                                          const bl::block_box& localBounds, bool importEntities) {
     BlockVolumeMutationResult result;
-    const auto* structure = import_source_.volume();
-    if (!loader_ || !loader_->isOpen() || !structure || !localBounds.is_valid()) return result;
-    const auto worldPosition =
-        bl::block_pos{qRound(scene.origin.x()) + localBounds.min_pos.x, qRound(scene.origin.y()) + localBounds.min_pos.y,
-                      qRound(scene.origin.z()) + localBounds.min_pos.z};
+    if (!loader_ || !loader_->isOpen() || !target.scene || !import.structure || !localBounds.is_valid()) return result;
+    const auto worldPosition = originOf(target) + localBounds.min_pos;
     const auto worldBounds =
         bl::block_box::from_min_and_size(worldPosition, localBounds.size_x(), localBounds.size_y(), localBounds.size_z());
     result.region = BlockVolumeOperator::regionForBounds(worldBounds);
-    result.dimension = dimension_;
-    result.success = !result.region.isEmpty() &&
-                     BlockVolumeOperator::importMcstructureIntoWorld(*structure, worldPosition, *loader_, dimension_, true, importEntities);
+    result.dimension = target.dimension;
+    result.success = !result.region.isEmpty() && BlockVolumeOperator::importMcstructureIntoWorld(*import.structure, worldPosition, *loader_,
+                                                                                                target.dimension, true, importEntities);
     return result;
 }
 
-BlockVolumeMutationResult WorldVolumeSource::deleteBlocks(const VoxelSceneData& scene, const bl::block_box& localBounds,
+BlockVolumeMutationResult WorldVolumeSource::deleteBlocks(const BlockVolume& volume, const bl::block_box& localBounds,
                                                           bool deleteEntities) {
     BlockVolumeMutationResult result;
-    if (!loader_ || !loader_->isOpen() || !localBounds.is_valid()) return result;
-    const auto worldBounds = localBounds.translated({qRound(scene.origin.x()), qRound(scene.origin.y()), qRound(scene.origin.z())});
+    if (!loader_ || !loader_->isOpen() || !volume.scene || !localBounds.is_valid()) return result;
+    const auto worldBounds = localBounds.translated(originOf(volume));
     result.region = BlockVolumeOperator::regionForBounds(worldBounds);
-    result.dimension = dimension_;
-    result.success = !result.region.isEmpty() && BlockVolumeOperator::deleteWorldBlocks(*loader_, dimension_, worldBounds, deleteEntities);
+    result.dimension = volume.dimension;
+    result.success =
+        !result.region.isEmpty() && BlockVolumeOperator::deleteWorldBlocks(*loader_, volume.dimension, worldBounds, deleteEntities);
     return result;
 }

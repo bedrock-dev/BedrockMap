@@ -292,7 +292,6 @@
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
-        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Import successful</source>
         <translation>导入成功</translation>
     </message>
@@ -390,11 +389,6 @@
 <context>
     <name>BlockVolumeController</name>
     <message>
-        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
-        <source>Clipboard</source>
-        <translation>剪贴板</translation>
-    </message>
-    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not copy the selected blocks.</source>
         <translation>无法复制选中的方块。</translation>
@@ -416,7 +410,26 @@
     </message>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not generate the structure data.</source>
+        <translation>无法生成结构数据。</translation>
+    </message>
+    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export the structure: %1</source>
+        <translation>无法导出结构：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export GLB.</source>
+        <translation>无法导出 GLB。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <source>Could not export GLB: %1</source>
+        <translation>无法导出 GLB：%1</translation>
+    </message>
+    <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not read the import structure.</source>
         <translation>无法读取要导入的结构。</translation>
@@ -427,8 +440,6 @@
         <translation>无法读取要导入的结构：%1</translation>
     </message>
     <message>
-        <location filename="../src/controller/blockvolumecontroller.cpp"/>
-        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not build the block volume.</source>
         <translation>无法生成方块体。</translation>
@@ -459,6 +470,10 @@
         <translation>无法读取结构 NBT：%1</translation>
     </message>
     <message>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
+        <location filename="../src/controller/mcstructurevolumesource.cpp"/>
         <location filename="../src/controller/mcstructurevolumesource.cpp"/>
         <source>Invalid or unsupported mcstructure file.</source>
         <translation>无效或不支持的 mcstructure 文件。</translation>
@@ -3354,6 +3369,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Import successful</source>
+        <translation>导入成功</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Minimum</source>
         <translation>最小坐标</translation>
     </message>
@@ -3490,11 +3510,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Compress mesh</source>
-        <translation>压缩网格</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import</source>
         <translation type="unfinished">导入</translation>
     </message>
@@ -3546,25 +3561,6 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Export GLB</source>
         <translation>导出 GLB</translation>
-    </message>
-</context>
-<context>
-    <name>VoxelSceneController</name>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not generate the structure data.</source>
-        <translation>无法生成结构数据。</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not export the structure: %1</source>
-        <translation>无法导出结构：%1</translation>
-    </message>
-    <message>
-        <location filename="../src/controller/voxelscenecontroller.cpp"/>
-        <source>Could not export GLB: %1</source>
-        <translation>无法导出 GLB：%1</translation>
     </message>
 </context>
 <context>
