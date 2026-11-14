@@ -15,6 +15,7 @@ Item {
     property vector3d exportMaximum
     property bool exportEntities: true
     property bool exportNewFormat: false
+    property bool exportCompressMesh: false
     readonly property bool blockVolumeEditingEnabled: !!controller && controller.blockVolumeEditingEnabled
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
     readonly property bool importing: !!controller && controller.importing
@@ -43,6 +44,11 @@ Item {
         exportTarget = controller
         exportMinimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
         exportMaximum = viewport.camera.selectionEnabled ? viewport.camera.selectionMaximum : viewport.camera.modelSize
+        exportCompressMesh = compressMesh.checked
+        const fileName = "voxel-" + [0, 1, 2].map(axis => root.worldOrigin[axis] + root.axisValue(exportMinimum, axis)).join("_")
+                + ".glb"
+        glbExportDialog.selectedFile = glbExportDialog.currentFolder.toString().length > 0
+                ? glbExportDialog.currentFolder + "/" + encodeURIComponent(fileName) : fileName
         glbExportDialog.open()
     }
 
@@ -243,7 +249,8 @@ Item {
         defaultSuffix: "glb"
         nameFilters: [qsTr("GLB models (*.glb)")]
         onAccepted: {
-            if (!root.exportTarget || !root.exportTarget.exportGlb(selectedUrl, root.exportMinimum, root.exportMaximum))
+            if (!root.exportTarget || !root.exportTarget.exportGlb(selectedUrl, root.exportMinimum, root.exportMaximum,
+                                                                   root.exportCompressMesh))
                 App.notifications.error(qsTr("Export failed"))
         }
     }
@@ -577,6 +584,14 @@ Item {
                         enabled: root.hasModel && !!root.controller && !root.controller.loading
                         contentItem: ColumnLayout {
                             spacing: Theme.gapSmall
+
+                            AppCheckBox {
+                                id: compressMesh
+                                objectName: "voxelCompressMesh"
+                                Layout.fillWidth: true
+                                text: qsTr("Compress mesh")
+                                checked: false
+                            }
 
                             Item {
                                 Layout.fillHeight: true

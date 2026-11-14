@@ -522,6 +522,32 @@
     <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Nether Fortress</source>
+        <translation>Nether Fortress</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Swamp Hut</source>
+        <translation>Swamp Hut</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Ocean Monument</source>
+        <translation>Ocean Monument</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Pillager Outpost</source>
+        <translation>Pillager Outpost</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Unknown</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <source>The world is not open.</source>
         <translation>The world is not open.</translation>
     </message>
@@ -664,11 +690,6 @@
         <location filename="../src/qml/ChunkEditorPanel.qml"/>
         <source>Records</source>
         <translation>Records</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>HSA editing is not available in this preview.</source>
-        <translation>HSA editing is not available in this preview.</translation>
     </message>
 </context>
 <context>
@@ -879,6 +900,59 @@
         <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Lock map image</source>
         <translation>Lock map image</translation>
+    </message>
+</context>
+<context>
+    <name>HsaEditorPage</name>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Range</source>
+        <translation>Range</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Edit</source>
+        <translation>Edit</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Hide HSA</source>
+        <translation>Hide HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Show HSA</source>
+        <translation>Show HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Editing</source>
+        <translation>Editing</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Delete HSA</source>
+        <translation>Delete HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>No hardcoded spawn areas in this chunk.</source>
+        <translation>No hardcoded spawn areas in this chunk.</translation>
     </message>
 </context>
 <context>
@@ -1720,7 +1794,7 @@
     <message>
         <location filename="../src/qml/NbtEditorSurface.qml"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Edit</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtEditorSurface.qml"/>
@@ -1763,7 +1837,7 @@
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Type</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
@@ -1788,7 +1862,7 @@
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Add</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtTagDialog.qml"/>
@@ -1866,7 +1940,7 @@
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Add</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -2809,7 +2883,7 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Range</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -3459,6 +3533,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Compress mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Structure</source>
         <translation>Structure</translation>
     </message>
@@ -3612,7 +3691,7 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Unknown</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
@@ -3945,7 +4024,7 @@ Current version: %2</translation>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Add</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

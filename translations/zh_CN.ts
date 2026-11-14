@@ -522,6 +522,32 @@
     <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Nether Fortress</source>
+        <translation>下界要塞</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Swamp Hut</source>
+        <translation>沼泽小屋</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Ocean Monument</source>
+        <translation>海底神殿</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Pillager Outpost</source>
+        <translation>掠夺者前哨站</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/chunkeditorcontroller.cpp"/>
         <source>The world is not open.</source>
         <translation>世界尚未打开。</translation>
     </message>
@@ -664,11 +690,6 @@
         <location filename="../src/qml/ChunkEditorPanel.qml"/>
         <source>Records</source>
         <translation>记录</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkEditorPanel.qml"/>
-        <source>HSA editing is not available in this preview.</source>
-        <translation>此预览暂不支持编辑 HSA。</translation>
     </message>
 </context>
 <context>
@@ -879,6 +900,59 @@
         <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Lock map image</source>
         <translation>锁定地图</translation>
+    </message>
+</context>
+<context>
+    <name>HsaEditorPage</name>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Range</source>
+        <translation>范围</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Hide HSA</source>
+        <translation>隐藏 HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Show HSA</source>
+        <translation>显示 HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Editing</source>
+        <translation>编辑中</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>Delete HSA</source>
+        <translation>删除 HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/HsaEditorPage.qml"/>
+        <source>No hardcoded spawn areas in this chunk.</source>
+        <translation>此区块没有硬编码生成区域。</translation>
     </message>
 </context>
 <context>
@@ -3456,6 +3530,11 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Model</source>
         <translation>模型</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Compress mesh</source>
+        <translation>压缩网格</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>

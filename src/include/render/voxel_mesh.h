@@ -62,8 +62,21 @@ struct VoxelSelectionMesh {
     std::uint32_t lineCount{0};
 };
 
+struct VoxelHsaArea {
+    bl::block_box bounds;
+    QColor color;
+};
+
+struct VoxelHsaMesh {
+    std::vector<float> vertices;  // pos3 + rgba4; all fills followed by all outlines.
+    std::uint32_t fillCount{0};
+    std::uint32_t lineCount{0};
+};
+
 namespace voxel_mesh {
-    [[nodiscard]] bool exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, QString* errorMessage = nullptr);
+    /// mergeFaces merges coplanar faces of equal color, which shrinks the file
+    /// but leaves T-junctions where merged and unit faces meet.
+    [[nodiscard]] bool exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, bool mergeFaces, QString* errorMessage = nullptr);
     [[nodiscard]] VoxelGrid createVoxelDataFromMcstructure(const bl::mcstructure& structure);
     [[nodiscard]] QPointF projectSelectionPoint(const VoxelSelectionView& view, const QVector3D& point, bool* visible = nullptr);
     [[nodiscard]] QVector3D selectionHandlePosition(const bl::block_box& bounds, VoxelSelectionHandle handle, float voxelSize = 1.0f);
@@ -78,6 +91,7 @@ namespace voxel_mesh {
     [[nodiscard]] std::vector<float> buildAxesMesh(const QVector3D& modelSize);
     [[nodiscard]] VoxelSelectionMesh buildSelectionMesh(const bl::block_box& bounds, const VoxelSelectionView& view, const QColor& color,
                                                         VoxelSelectionHandle active);
+    [[nodiscard]] VoxelHsaMesh buildHsaAreasMesh(const std::vector<VoxelHsaArea>& areas, float voxelSize = 1.0f);
     // Combine chunks indexed by [X][Z] before meshing so face culling and AO
     // see adjacent chunks. Trim only empty outer Y layers; preserve internal gaps.
     [[nodiscard]] VoxelGrid createVoxelDataFromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,

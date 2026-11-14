@@ -55,6 +55,16 @@ struct ChunkStatisticsSnapshot {
     std::vector<ChunkStatisticRowSnapshot> rows;
 };
 
+struct ChunkHsaAreaSnapshot {
+    int type{0};
+    int minX{0};
+    int minY{0};
+    int minZ{0};
+    int maxX{0};
+    int maxY{0};
+    int maxZ{0};
+};
+
 struct ChunkNbtSnapshot {
     quint64 generation{0};
     int chunkX{0};
@@ -67,6 +77,7 @@ struct ChunkNbtSnapshot {
     std::vector<std::shared_ptr<bl::nbt::compound_tag>> pendingTicks;
     std::shared_ptr<ChunkTerrainSnapshot> terrain;
     std::shared_ptr<ChunkStatisticsSnapshot> statistics;
+    std::vector<ChunkHsaAreaSnapshot> hsaAreas;
     std::shared_ptr<VoxelSceneData> voxelScene;
     bool ok{false};
 };
@@ -88,6 +99,8 @@ class ChunkEditorController : public VoxelSceneController {
     Q_PROPERTY(int terrainMaxLayer READ terrainMaxLayer NOTIFY terrainChanged)
     Q_PROPERTY(QVariantList terrainCells READ terrainCells NOTIFY terrainChanged)
     Q_PROPERTY(QVariantList statistics READ statistics NOTIFY statisticsChanged)
+    Q_PROPERTY(QVariantList hsaAreas READ hsaAreas NOTIFY hsaChanged)
+    Q_PROPERTY(QVariantList hsaTypes READ hsaTypes CONSTANT)
     Q_PROPERTY(NbtDocumentController* entitiesDocument READ entitiesDocument CONSTANT)
     Q_PROPERTY(NbtDocumentController* blockEntitiesDocument READ blockEntitiesDocument CONSTANT)
     Q_PROPERTY(NbtDocumentController* pendingTicksDocument READ pendingTicksDocument CONSTANT)
@@ -111,6 +124,9 @@ class ChunkEditorController : public VoxelSceneController {
     [[nodiscard]] int terrainMaxLayer() const;
     [[nodiscard]] QVariantList terrainCells() const;
     [[nodiscard]] QVariantList statistics() const;
+    [[nodiscard]] QVariantList hsaAreas() const;
+    /// Editable HSA types as {value, name} entries, in display order.
+    [[nodiscard]] QVariantList hsaTypes() const;
     [[nodiscard]] int loadProgress() const override { return load_progress_; }
     [[nodiscard]] std::shared_ptr<const VoxelSceneData> voxelScene() const override { return voxel_scene_; }
     [[nodiscard]] NbtDocumentController* entitiesDocument() { return &entities_document_; }
@@ -124,6 +140,10 @@ class ChunkEditorController : public VoxelSceneController {
     Q_INVOKABLE void setTerrainLayer(int layer);
     Q_INVOKABLE void copyText(const QString& text) const;
     Q_INVOKABLE [[nodiscard]] bool exportStatistic(int index, const QUrl& url) const;
+    Q_INVOKABLE [[nodiscard]] int addHsa(int type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
+    Q_INVOKABLE [[nodiscard]] bool setHsaBounds(int index, int minX, int minY, int minZ, int maxX, int maxY, int maxZ);
+    Q_INVOKABLE [[nodiscard]] bool setHsaType(int index, int type);
+    Q_INVOKABLE [[nodiscard]] bool removeHsa(int index);
     /// Write the current editor documents into the loader's raw chunk cache.
     /// The world save remains responsible for committing that cache to disk.
     Q_INVOKABLE [[nodiscard]] bool saveToCache();
@@ -135,6 +155,7 @@ class ChunkEditorController : public VoxelSceneController {
     void dirtyChanged();
     void terrainChanged();
     void statisticsChanged();
+    void hsaChanged();
 
    private:
     void finishLoad();
@@ -158,6 +179,8 @@ class ChunkEditorController : public VoxelSceneController {
     int terrain_y_{0};
     int terrain_layer_{0};
     std::shared_ptr<const ChunkStatisticsSnapshot> statistics_;
+    std::vector<ChunkHsaAreaSnapshot> hsa_areas_;
+    bool hsa_dirty_{false};
     int load_progress_{0};
     std::shared_ptr<const VoxelSceneData> voxel_scene_;
     NbtDocumentController entities_document_;

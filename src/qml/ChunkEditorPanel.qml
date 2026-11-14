@@ -94,11 +94,8 @@ Rectangle {
             ChunkNbtPage {
                 document: root.controller ? root.controller.pendingTicksDocument : null
             }
-            Item {
-                PlaceholderPage {
-                    anchors.fill: parent
-                    text: qsTr("HSA editing is not available in this preview.")
-                }
+            HsaEditorPage {
+                controller: root.controller
             }
             ChunkStatsPage {
                 controller: root.controller
@@ -145,20 +142,6 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap
         z: 21
-    }
-
-    component PlaceholderPage: Item {
-        property string text
-
-        Text {
-            anchors.centerIn: parent
-            width: parent.width - Theme.gapSection * 2
-            text: parent.text
-            color: Theme.muted
-            font.pixelSize: Theme.fontBody
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-        }
     }
 
     component ChunkNbtPage: Item {

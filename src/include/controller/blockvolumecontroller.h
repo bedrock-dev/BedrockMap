@@ -42,7 +42,7 @@ class BlockVolumeController final : public VoxelSceneController {
     Q_INVOKABLE void cancelImport();
     Q_INVOKABLE bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
                                        bool useNewFormat);
-    Q_INVOKABLE bool exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum);
+    Q_INVOKABLE bool exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh);
     Q_INVOKABLE bool deleteBlockVolumeAsync(const QVector3D& minimum, const QVector3D& maximum, bool deleteEntities);
     void setLoader(AsyncLevelLoader* loader);
 

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
@@ -8,6 +10,7 @@ Item {
     id: root
     property var controller: null
     property alias camera: voxelItem
+    property var hsaAreas: []
     property alias showAxes: voxelItem.showAxes
     readonly property bool inputEnabled: !!root.controller && !root.controller.loading
 
@@ -27,6 +30,7 @@ Item {
         id: voxelItem
         anchors.fill: parent
         controller: root.controller
+        hsaAreas: root.hsaAreas
         selectionColor: App.runtimeSettings.voxelSelectionColor
         saturation: App.runtimeSettings.gpuSaturation
         brightness: App.runtimeSettings.gpuBrightness

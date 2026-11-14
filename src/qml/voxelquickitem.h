@@ -5,8 +5,10 @@
 
 #include <QPointer>
 #include <QQuickRhiItem>
+#include <QVariantList>
 #include <QVector3D>
 #include <memory>
+#include <vector>
 
 #include "controller/voxelscenecontroller.h"
 #include "render/voxel_mesh.h"
@@ -43,6 +45,7 @@ class VoxelQuickItem : public QQuickRhiItem {
     Q_PROPERTY(QVector3D selectionMinimum READ selectionMinimum NOTIFY selectionChanged)
     Q_PROPERTY(QVector3D selectionMaximum READ selectionMaximum NOTIFY selectionChanged)
     Q_PROPERTY(bool selectionDragging READ selectionDragging NOTIFY selectionInteractionChanged)
+    Q_PROPERTY(QVariantList hsaAreas READ hsaAreas WRITE setHsaAreas NOTIFY hsaAreasChanged)
     Q_PROPERTY(float saturation READ saturation WRITE setSaturation NOTIFY toneChanged)
     Q_PROPERTY(float brightness READ brightness WRITE setBrightness NOTIFY toneChanged)
 
@@ -73,11 +76,15 @@ class VoxelQuickItem : public QQuickRhiItem {
     [[nodiscard]] QVector3D selectionMinimum() const;
     [[nodiscard]] QVector3D selectionMaximum() const;
     [[nodiscard]] bool selectionDragging() const;
+    [[nodiscard]] QVariantList hsaAreas() const { return hsa_areas_qml_; }
+    void setHsaAreas(const QVariantList& areas);
+    [[nodiscard]] std::shared_ptr<const std::vector<VoxelHsaArea>> hsaAreasState() const { return hsa_areas_state_; }
     [[nodiscard]] float saturation() const;
     void setSaturation(float saturation);
     [[nodiscard]] float brightness() const;
     void setBrightness(float brightness);
     Q_INVOKABLE void setSelectionBoundary(int axis, bool maximum, int value);
+    Q_INVOKABLE void setSelectionBounds(const QVector3D& minimum, const QVector3D& maximum, bool allowOutside = false);
     Q_INVOKABLE void activateImportSelection(const QVector3D& size);
     Q_INVOKABLE void deactivateImportSelection();
     Q_INVOKABLE bool beginSelectionDrag(const QPointF& position, qreal pickRadius = 10.8);
@@ -100,6 +107,7 @@ class VoxelQuickItem : public QQuickRhiItem {
     void selectionOptionsChanged();
     void selectionChanged();
     void selectionInteractionChanged();
+    void hsaAreasChanged();
     void toneChanged();
 
    protected:
@@ -129,9 +137,12 @@ class VoxelQuickItem : public QQuickRhiItem {
     VoxelRhiSelectionState selection_;
     VoxelRhiSelectionState selection_before_import_;
     VoxelSelectionDrag selection_drag_;
+    QVariantList hsa_areas_qml_;
+    std::shared_ptr<const std::vector<VoxelHsaArea>> hsa_areas_state_;
     bool selection_move_mode_{false};
     bool selection_move_mode_before_import_{false};
     bool selection_locked_{false};
+    bool selection_allows_outside_{false};
 };
 
 #endif  // BEDROCKMAP_VOXELQUICKITEM_H

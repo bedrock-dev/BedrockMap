@@ -301,18 +301,18 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
     return true;
 }
 
-bool BlockVolumeController::exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum) {
+bool BlockVolumeController::exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh) {
     const auto bounds = selectionBounds(minimum, maximum);
     const auto scene = voxelScene();
     if (url.isEmpty() || busy() || !hasVoxelModel() || !scene->voxels || !bounds) return false;
     const QUrl output = withDefaultSuffix(url, QStringLiteral("glb"));
     // Capture the immutable preview, so navigating or closing the session cannot
     // invalidate an export or make it read a different version of the world.
-    run(Operation::Exporting, [this, scene, bounds = *bounds, output]() -> std::function<void()> {
+    run(Operation::Exporting, [this, scene, bounds = *bounds, output, compressMesh]() -> std::function<void()> {
         QString error;
         try {
             const auto mesh = voxel_mesh::build(*scene->voxels, bounds);
-            if (!voxel_mesh::exportGlb(mesh, output, &error) && error.isEmpty()) error = tr("Could not export GLB.");
+            if (!voxel_mesh::exportGlb(mesh, output, compressMesh, &error) && error.isEmpty()) error = tr("Could not export GLB.");
         } catch (const std::exception& exception) {
             error = tr("Could not export GLB: %1").arg(QString::fromUtf8(exception.what()));
         }

@@ -46,6 +46,7 @@ namespace {
        public:
         ~VoxelRhiRenderer() override {
             delete axes_vertex_buffer_;
+            delete hsa_vertex_buffer_;
             delete selection_vertex_buffer_;
             delete overlay_index_buffer_;
             delete overlay_vertex_buffer_;
@@ -150,6 +151,7 @@ namespace {
             auto* voxelItem = static_cast<VoxelQuickItem*>(item);
             scene_ = voxelItem->currentScene();
             overlay_scene_ = voxelItem->currentOverlayScene();
+            hsa_areas_ = voxelItem->hsaAreasState();
             camera_ = voxelItem->cameraState();
             selection_ = voxelItem->selectionState();
             saturation_ = voxelItem->saturation();
@@ -185,6 +187,7 @@ namespace {
                 }
                 uploadAxes(updates, scene_->modelSize);
                 uploadOverlay(updates);
+                uploadHsaAreas(updates);
                 uploadSelection(updates, {matrix, logical_size_, 1.0f});
                 std::array<float, uniformSize / sizeof(float)> uniform_data{};
                 std::memcpy(uniform_data.data(), mvp.constData(), 16 * sizeof(float));
@@ -198,8 +201,10 @@ namespace {
                 transparent_index_count_ = 0;
                 axes_vertex_count_ = 0;
                 overlay_index_count_ = 0;
+                hsa_vertex_count_ = 0;
                 selection_vertex_count_ = 0;
                 uploaded_overlay_scene_.reset();
+                uploaded_hsa_areas_.reset();
                 uploaded_scene_.reset();
             }
             command_buffer->beginPass(renderTarget(), QColor(25, 30, 38), QRhiDepthStencilClearValue(1.0f, 0), updates);
@@ -226,6 +231,18 @@ namespace {
                 command_buffer->setShaderResources(overlay_shader_resources_);
                 command_buffer->setVertexInput(0, 1, &input, overlay_index_buffer_, 0, QRhiCommandBuffer::IndexUInt32);
                 command_buffer->drawIndexed(overlay_index_count_);
+            }
+            if (scene_ && hsa_vertex_buffer_ && hsa_vertex_count_ > 0) {
+                const QRhiCommandBuffer::VertexInput input(hsa_vertex_buffer_, 0);
+                const auto drawHsa = [&](QRhiGraphicsPipeline* pipeline, quint32 count, quint32 first) {
+                    if (!pipeline || !count) return;
+                    command_buffer->setGraphicsPipeline(pipeline);
+                    command_buffer->setShaderResources(shader_resources_);
+                    command_buffer->setVertexInput(0, 1, &input);
+                    command_buffer->draw(count, 1, first);
+                };
+                drawHsa(selection_fill_pipeline_, hsa_fill_count_, 0);
+                drawHsa(selection_line_pipeline_, hsa_line_count_, hsa_fill_count_);
             }
             if (axes_vertex_buffer_ && axes_vertex_count_ > 0 && selection_line_pipeline_) {
                 const QRhiCommandBuffer::VertexInput input(axes_vertex_buffer_, 0);
@@ -348,6 +365,45 @@ namespace {
             selection_line_count_ = mesh.lineCount;
         }
 
+        void uploadHsaAreas(QRhiResourceUpdateBatch* updates) {
+            if (!hsa_areas_ || hsa_areas_->empty()) {
+                hsa_vertex_count_ = 0;
+                hsa_fill_count_ = 0;
+                hsa_line_count_ = 0;
+                uploaded_hsa_areas_.reset();
+                return;
+            }
+            if (hsa_areas_.get() == uploaded_hsa_areas_.get() && hsa_vertex_buffer_) return;
+            uploaded_hsa_areas_ = hsa_areas_;
+            hsa_vertex_count_ = 0;
+            hsa_fill_count_ = 0;
+            hsa_line_count_ = 0;
+
+            const auto mesh = voxel_mesh::buildHsaAreasMesh(*hsa_areas_);
+            std::vector<float> vertices;
+            vertices.reserve(mesh.vertices.size() / 7 * 10);
+            for (size_t offset = 0; offset < mesh.vertices.size(); offset += 7) {
+                vertices.insert(vertices.end(), mesh.vertices.begin() + offset, mesh.vertices.begin() + offset + 3);
+                vertices.insert(vertices.end(), {0, 0, 0});
+                vertices.insert(vertices.end(), mesh.vertices.begin() + offset + 3, mesh.vertices.begin() + offset + 7);
+            }
+            const quint32 bytes = static_cast<quint32>(vertices.size() * sizeof(float));
+            if (!bytes) return;
+            if (!hsa_vertex_buffer_ || hsa_vertex_buffer_->size() < bytes) {
+                delete hsa_vertex_buffer_;
+                hsa_vertex_buffer_ = rhi()->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, bytes);
+                if (!hsa_vertex_buffer_->create()) {
+                    delete hsa_vertex_buffer_;
+                    hsa_vertex_buffer_ = nullptr;
+                    return;
+                }
+            }
+            updates->updateDynamicBuffer(hsa_vertex_buffer_, 0, bytes, vertices.data());
+            hsa_vertex_count_ = static_cast<quint32>(vertices.size() / 10);
+            hsa_fill_count_ = mesh.fillCount;
+            hsa_line_count_ = mesh.lineCount;
+        }
+
         void uploadMesh(QRhiResourceUpdateBatch* updates, const std::vector<float>& vertices, const std::vector<std::uint32_t>& indices,
                         bool transparent) {
             QRhiBuffer*& vertexBuffer = transparent ? transparent_vertex_buffer_ : opaque_vertex_buffer_;
@@ -373,8 +429,10 @@ namespace {
 
         std::shared_ptr<const VoxelSceneData> scene_;
         std::shared_ptr<const VoxelSceneData> overlay_scene_;
+        std::shared_ptr<const std::vector<VoxelHsaArea>> hsa_areas_;
         std::shared_ptr<const VoxelSceneData> uploaded_scene_;
         std::shared_ptr<const VoxelSceneData> uploaded_overlay_scene_;
+        std::shared_ptr<const std::vector<VoxelHsaArea>> uploaded_hsa_areas_;
         VoxelRhiCameraState camera_;
         float saturation_{1.0f};
         float brightness_{1.0f};
@@ -389,12 +447,16 @@ namespace {
         QRhiBuffer* overlay_index_buffer_{nullptr};
         quint32 overlay_index_count_{0};
         QRhiBuffer* selection_vertex_buffer_{nullptr};
+        QRhiBuffer* hsa_vertex_buffer_{nullptr};
         QRhiGraphicsPipeline* selection_fill_pipeline_{nullptr};
         QRhiGraphicsPipeline* selection_line_pipeline_{nullptr};
         QRhiGraphicsPipeline* selection_handle_pipeline_{nullptr};
         quint32 selection_vertex_count_{0};
         quint32 selection_fill_count_{0};
         quint32 selection_line_count_{0};
+        quint32 hsa_vertex_count_{0};
+        quint32 hsa_fill_count_{0};
+        quint32 hsa_line_count_{0};
         QRhiBuffer* uniform_buffer_{nullptr};
         QRhiShaderResourceBindings* shader_resources_{nullptr};
         QRhiBuffer* overlay_uniform_buffer_{nullptr};
@@ -496,6 +558,7 @@ void VoxelQuickItem::setSelectionEnabled(bool enabled) {
     if (selection_locked_ && !enabled) return;
     if (selection_.enabled == enabled) return;
     selection_.enabled = enabled;
+    if (!enabled) selection_allows_outside_ = false;
     selection_.active = VoxelSelectionHandle::None;
     selection_drag_ = {};
     emit selectionOptionsChanged();
@@ -548,6 +611,34 @@ bool VoxelQuickItem::selectionDragging() const {
     return selection_.active != VoxelSelectionHandle::None;
 }
 
+void VoxelQuickItem::setHsaAreas(const QVariantList& values) {
+    std::vector<VoxelHsaArea> areas;
+    areas.reserve(static_cast<size_t>(values.size()));
+    for (const auto& value : values) {
+        const auto area = value.toMap();
+        const bl::block_box bounds{
+            bl::block_pos{
+                area.value(QStringLiteral("minX")).toInt(),
+                area.value(QStringLiteral("minY")).toInt(),
+                area.value(QStringLiteral("minZ")).toInt(),
+            },
+            bl::block_pos{
+                area.value(QStringLiteral("maxX")).toInt(),
+                area.value(QStringLiteral("maxY")).toInt(),
+                area.value(QStringLiteral("maxZ")).toInt(),
+            },
+        };
+        const QColor color = area.value(QStringLiteral("color")).value<QColor>();
+        if (!bounds.is_valid() || !color.isValid()) continue;
+        areas.push_back(VoxelHsaArea{bounds, color});
+    }
+    hsa_areas_qml_ = values;
+    auto state = std::make_shared<std::vector<VoxelHsaArea>>(std::move(areas));
+    hsa_areas_state_ = std::move(state);
+    emit hsaAreasChanged();
+    update();
+}
+
 float VoxelQuickItem::saturation() const {
     return saturation_;
 }
@@ -579,9 +670,28 @@ void VoxelQuickItem::setSelectionBoundary(int axis, bool maximum, int value) {
     int* low[] = {&bounds.min_pos.x, &bounds.min_pos.y, &bounds.min_pos.z};
     int* high[] = {&bounds.max_pos.x, &bounds.max_pos.y, &bounds.max_pos.z};
     if (maximum)
-        *high[axis] = std::clamp(value, *low[axis] + 1, static_cast<int>(scene_->modelSize[axis]));
+        *high[axis] = selection_allows_outside_
+                          ? std::max(value, *low[axis] + 1)
+                          : std::clamp(value, *low[axis] + 1, static_cast<int>(scene_->modelSize[axis]));
     else
-        *low[axis] = std::clamp(value, 0, *high[axis] - 1);
+        *low[axis] = selection_allows_outside_ ? std::min(value, *high[axis] - 1) : std::clamp(value, 0, *high[axis] - 1);
+    selection_.bounds = bounds;
+    selection_.active = VoxelSelectionHandle::None;
+    selection_drag_ = {};
+    emit selectionChanged();
+    emit selectionInteractionChanged();
+    update();
+}
+
+void VoxelQuickItem::setSelectionBounds(const QVector3D& minimum, const QVector3D& maximum, bool allowOutside) {
+    if (!scene_ || selection_locked_ || !selection_.enabled) return;
+    bl::block_box bounds{
+        {qRound(minimum.x()), qRound(minimum.y()), qRound(minimum.z())},
+        {qRound(maximum.x()), qRound(maximum.y()), qRound(maximum.z())},
+    };
+    if (!allowOutside) bounds = voxel_mesh::clampSelection(bounds, scene_->modelSize);
+    if (!bounds.is_valid()) return;
+    selection_allows_outside_ = allowOutside;
     selection_.bounds = bounds;
     selection_.active = VoxelSelectionHandle::None;
     selection_drag_ = {};
@@ -644,7 +754,8 @@ bool VoxelQuickItem::beginSelectionDrag(const QPointF& position, qreal pickRadiu
 void VoxelQuickItem::dragSelection(const QPointF& position) {
     if (!std::isfinite(position.x()) || !std::isfinite(position.y())) return;
     if (!scene_ || !selection_.enabled || selection_.active == VoxelSelectionHandle::None) return;
-    const auto bounds = voxel_mesh::dragSelection(selection_drag_, scene_->modelSize, position, selection_locked_);
+    const auto bounds = voxel_mesh::dragSelection(selection_drag_, scene_->modelSize, position,
+                                                  selection_locked_ || selection_allows_outside_);
     if (!bounds.is_valid() || (bounds.min_pos == selection_.bounds.min_pos && bounds.max_pos == selection_.bounds.max_pos)) return;
     selection_.bounds = bounds;
     emit selectionChanged();

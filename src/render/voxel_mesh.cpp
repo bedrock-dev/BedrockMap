@@ -222,9 +222,12 @@ namespace voxel_mesh {
             *low[axis] = locked ? minimum : std::clamp(minimum, 0, static_cast<int>(modelSize[axis]) - span);
             *high[axis] = *low[axis] + span;
         } else if (static_cast<int>(drag.handle) % 2 == 1) {
-            *low[axis] = std::clamp(qRound(static_cast<float>(*low[axis]) + delta), 0, *high[axis] - 1);
+            const int value = qRound(static_cast<float>(*low[axis]) + delta);
+            *low[axis] = locked ? std::min(value, *high[axis] - 1) : std::clamp(value, 0, *high[axis] - 1);
         } else {
-            *high[axis] = std::clamp(qRound(static_cast<float>(*high[axis]) + delta), *low[axis] + 1, static_cast<int>(modelSize[axis]));
+            const int value = qRound(static_cast<float>(*high[axis]) + delta);
+            *high[axis] = locked ? std::max(value, *low[axis] + 1)
+                                 : std::clamp(value, *low[axis] + 1, static_cast<int>(modelSize[axis]));
         }
         return result;
     }
@@ -334,6 +337,60 @@ namespace voxel_mesh {
             const QVector3D handlePosition = selectionHandlePosition(bounds, handle, view.voxelSize);
             appendColoredBox(selection_vertices_, handlePosition, selectionHandleHalfSize(view, handlePosition), color);
         }
+        return result;
+    }
+
+    VoxelHsaMesh buildHsaAreasMesh(const std::vector<VoxelHsaArea>& areas, float voxelSize) {
+        VoxelHsaMesh result;
+        if (areas.empty() || voxelSize <= 0.0f) return result;
+
+        const int faces[6][4] = {
+            {0, 3, 2, 1}, {4, 5, 6, 7}, {0, 4, 7, 3}, {1, 2, 6, 5}, {3, 7, 6, 2}, {0, 1, 5, 4},
+        };
+        const int edges[12][2] = {
+            {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+        };
+
+        for (const auto& area : areas) {
+            if (!area.bounds.is_valid() || !area.color.isValid()) continue;
+            const QVector3D minimum(area.bounds.min_pos.x * voxelSize, area.bounds.min_pos.y * voxelSize,
+                                    area.bounds.min_pos.z * voxelSize);
+            const QVector3D maximum(area.bounds.max_pos.x * voxelSize, area.bounds.max_pos.y * voxelSize,
+                                    area.bounds.max_pos.z * voxelSize);
+            const QVector3D p[8] = {
+                {minimum.x(), minimum.y(), minimum.z()}, {maximum.x(), minimum.y(), minimum.z()},
+                {maximum.x(), maximum.y(), minimum.z()}, {minimum.x(), maximum.y(), minimum.z()},
+                {minimum.x(), minimum.y(), maximum.z()}, {maximum.x(), minimum.y(), maximum.z()},
+                {maximum.x(), maximum.y(), maximum.z()}, {minimum.x(), maximum.y(), maximum.z()},
+            };
+
+            QColor fill = area.color.darker(145);
+            fill.setAlpha(28);
+            for (const auto& face : faces)
+                appendColoredQuad(result.vertices, p[face[0]], p[face[1]], p[face[2]], p[face[3]], fill);
+        }
+        result.fillCount = static_cast<std::uint32_t>(result.vertices.size() / 7);
+
+        for (const auto& area : areas) {
+            if (!area.bounds.is_valid() || !area.color.isValid()) continue;
+            const QVector3D minimum(area.bounds.min_pos.x * voxelSize, area.bounds.min_pos.y * voxelSize,
+                                    area.bounds.min_pos.z * voxelSize);
+            const QVector3D maximum(area.bounds.max_pos.x * voxelSize, area.bounds.max_pos.y * voxelSize,
+                                    area.bounds.max_pos.z * voxelSize);
+            const QVector3D p[8] = {
+                {minimum.x(), minimum.y(), minimum.z()}, {maximum.x(), minimum.y(), minimum.z()},
+                {maximum.x(), maximum.y(), minimum.z()}, {minimum.x(), maximum.y(), minimum.z()},
+                {minimum.x(), minimum.y(), maximum.z()}, {maximum.x(), minimum.y(), maximum.z()},
+                {maximum.x(), maximum.y(), maximum.z()}, {minimum.x(), maximum.y(), maximum.z()},
+            };
+            QColor outline = area.color;
+            outline.setAlpha(190);
+            for (const auto& edge : edges) {
+                appendColoredVertex(result.vertices, p[edge[0]], outline);
+                appendColoredVertex(result.vertices, p[edge[1]], outline);
+            }
+        }
+        result.lineCount = static_cast<std::uint32_t>(result.vertices.size() / 7) - result.fillCount;
         return result;
     }
 

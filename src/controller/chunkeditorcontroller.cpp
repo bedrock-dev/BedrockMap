@@ -99,6 +99,42 @@ namespace {
 
     QColor toQColor(bl::color color) { return QColor(color.r, color.g, color.b); }
 
+    bool supportedHsaType(bl::HSAType type) {
+        return type == bl::NetherFortress || type == bl::SwampHut || type == bl::OceanMonument || type == bl::PillagerOutpost;
+    }
+
+    QString hsaTypeName(bl::HSAType type) {
+        switch (type) {
+            case bl::NetherFortress:
+                return ChunkEditorController::tr("Nether Fortress");
+            case bl::SwampHut:
+                return ChunkEditorController::tr("Swamp Hut");
+            case bl::OceanMonument:
+                return ChunkEditorController::tr("Ocean Monument");
+            case bl::PillagerOutpost:
+                return ChunkEditorController::tr("Pillager Outpost");
+            case bl::Unknown:
+                return ChunkEditorController::tr("Unknown");
+        }
+        return ChunkEditorController::tr("Unknown");
+    }
+
+    QColor hsaTypeColor(bl::HSAType type) {
+        switch (type) {
+            case bl::NetherFortress:
+                return QColor(0, 223, 162);
+            case bl::SwampHut:
+                return QColor(255, 0, 96);
+            case bl::OceanMonument:
+                return QColor(246, 250, 112);
+            case bl::PillagerOutpost:
+                return QColor(0, 121, 255);
+            case bl::Unknown:
+                return QColor(160, 166, 176);
+        }
+        return QColor(160, 166, 176);
+    }
+
     std::shared_ptr<VoxelSceneData> buildVoxelScene(const bl::raw_chunk& raw, const std::function<void(int)>& reportProgress,
                                                     ChunkTerrainSnapshot* terrain = nullptr) {
         auto chunk = std::make_unique<bl::chunk>(raw.pos());
@@ -194,6 +230,22 @@ namespace {
                 if (!data.empty())
                     appendStatistic(*snapshot->statistics, QStringLiteral("SubChunk[%1 ~ %2]").arg(y * 16).arg((y + 1) * 16 - 1), data);
             }
+            bl::hardcoded_spawn_area_list hsa_list;
+            if (hsa_list.from_raw(raw->get_normal_key(bl::chunk_key::HardCodedSpawnAreas))) {
+                snapshot->hsaAreas.reserve(hsa_list.size());
+                for (const auto& area : hsa_list) {
+                    if (!supportedHsaType(area.type)) continue;
+                    snapshot->hsaAreas.push_back(ChunkHsaAreaSnapshot{
+                        static_cast<int>(area.type),
+                        area.min_pos.x,
+                        area.min_pos.y,
+                        area.min_pos.z,
+                        area.max_pos.x,
+                        area.max_pos.y,
+                        area.max_pos.z,
+                    });
+                }
+            }
             if (!raw->get_actor_digest().empty())
                 appendStatistic(*snapshot->statistics, QStringLiteral("ActorDigest"), raw->get_actor_digest());
             for (const auto& [key, data] : raw->get_entities()) {
@@ -269,6 +321,8 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     pending_ticks_document_.loadMemory({}, {}, tr("Pts"));
     terrain_.reset();
     statistics_.reset();
+    hsa_areas_.clear();
+    hsa_dirty_ = false;
     terrain_y_ = 0;
     terrain_layer_ = 0;
     voxel_scene_.reset();
@@ -278,6 +332,8 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
+    emit hsaChanged();
+    emit dirtyChanged();
     emit statusChanged();
 
     const quint64 generation = request_generation_;
@@ -301,6 +357,8 @@ void ChunkEditorController::clear() {
     pending_ticks_document_.loadMemory({}, {}, tr("Pts"));
     terrain_.reset();
     statistics_.reset();
+    hsa_areas_.clear();
+    hsa_dirty_ = false;
     terrain_y_ = 0;
     terrain_layer_ = 0;
     voxel_scene_.reset();
@@ -310,11 +368,13 @@ void ChunkEditorController::clear() {
     emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
+    emit hsaChanged();
+    emit dirtyChanged();
     emit statusChanged();
 }
 
 bool ChunkEditorController::dirty() const {
-    return entities_document_.dirty() || block_entities_document_.dirty() || pending_ticks_document_.dirty();
+    return hsa_dirty_ || entities_document_.dirty() || block_entities_document_.dirty() || pending_ticks_document_.dirty();
 }
 
 int ChunkEditorController::terrainMinY() const { return terrain_ ? terrain_->minY : 0; }
@@ -382,6 +442,87 @@ QVariantList ChunkEditorController::statistics() const {
     return result;
 }
 
+QVariantList ChunkEditorController::hsaAreas() const {
+    QVariantList result;
+    result.reserve(static_cast<qsizetype>(hsa_areas_.size()));
+    for (size_t index = 0; index < hsa_areas_.size(); ++index) {
+        const auto& area = hsa_areas_[index];
+        const auto type = static_cast<bl::HSAType>(area.type);
+        QVariantMap value;
+        value.insert(QStringLiteral("index"), static_cast<int>(index));
+        value.insert(QStringLiteral("type"), area.type);
+        value.insert(QStringLiteral("typeName"), hsaTypeName(type));
+        value.insert(QStringLiteral("color"), hsaTypeColor(type));
+        value.insert(QStringLiteral("minX"), area.minX);
+        value.insert(QStringLiteral("minY"), area.minY);
+        value.insert(QStringLiteral("minZ"), area.minZ);
+        value.insert(QStringLiteral("maxX"), area.maxX);
+        value.insert(QStringLiteral("maxY"), area.maxY);
+        value.insert(QStringLiteral("maxZ"), area.maxZ);
+        result.push_back(value);
+    }
+    return result;
+}
+
+QVariantList ChunkEditorController::hsaTypes() const {
+    QVariantList result;
+    for (const auto type : {bl::NetherFortress, bl::SwampHut, bl::OceanMonument, bl::PillagerOutpost}) {
+        QVariantMap value;
+        value.insert(QStringLiteral("value"), static_cast<int>(type));
+        value.insert(QStringLiteral("name"), hsaTypeName(type));
+        result.push_back(value);
+    }
+    return result;
+}
+
+int ChunkEditorController::addHsa(int type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+    if (!has_chunk_ || !supportedHsaType(static_cast<bl::HSAType>(type)) || minX > maxX || minY > maxY || minZ > maxZ) return -1;
+    hsa_areas_.push_back(ChunkHsaAreaSnapshot{type, minX, minY, minZ, maxX, maxY, maxZ});
+    hsa_dirty_ = true;
+    emit hsaChanged();
+    emit dirtyChanged();
+    return static_cast<int>(hsa_areas_.size()) - 1;
+}
+
+bool ChunkEditorController::setHsaBounds(int index, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+    if (!has_chunk_ || index < 0 || index >= static_cast<int>(hsa_areas_.size()) || minX > maxX || minY > maxY || minZ > maxZ)
+        return false;
+    auto& area = hsa_areas_[static_cast<size_t>(index)];
+    if (area.minX == minX && area.minY == minY && area.minZ == minZ && area.maxX == maxX && area.maxY == maxY && area.maxZ == maxZ)
+        return true;
+    area.minX = minX;
+    area.minY = minY;
+    area.minZ = minZ;
+    area.maxX = maxX;
+    area.maxY = maxY;
+    area.maxZ = maxZ;
+    hsa_dirty_ = true;
+    emit hsaChanged();
+    emit dirtyChanged();
+    return true;
+}
+
+bool ChunkEditorController::setHsaType(int index, int type) {
+    if (!has_chunk_ || index < 0 || index >= static_cast<int>(hsa_areas_.size())) return false;
+    if (!supportedHsaType(static_cast<bl::HSAType>(type))) return false;
+    auto& area = hsa_areas_[static_cast<size_t>(index)];
+    if (area.type == type) return true;
+    area.type = type;
+    hsa_dirty_ = true;
+    emit hsaChanged();
+    emit dirtyChanged();
+    return true;
+}
+
+bool ChunkEditorController::removeHsa(int index) {
+    if (!has_chunk_ || index < 0 || index >= static_cast<int>(hsa_areas_.size())) return false;
+    hsa_areas_.erase(hsa_areas_.begin() + index);
+    hsa_dirty_ = true;
+    emit hsaChanged();
+    emit dirtyChanged();
+    return true;
+}
+
 void ChunkEditorController::setTerrainY(int y) {
     if (!terrain_) {
         if (terrain_y_ == 0) return;
@@ -430,6 +571,18 @@ bool ChunkEditorController::saveToCache() {
         return payload;
     };
 
+    if (hsa_dirty_) {
+        bl::hardcoded_spawn_area_list list;
+        for (const auto& area : hsa_areas_) {
+            list.add(bl::hardcoded_spawn_area{
+                static_cast<bl::HSAType>(area.type),
+                bl::block_pos{area.minX, area.minY, area.minZ},
+                bl::block_pos{area.maxX, area.maxY, area.maxZ},
+            });
+        }
+        const std::string hsa_payload = hsa_areas_.empty() ? std::string{} : list.to_raw();
+        raw->set_normal(bl::chunk_key::HardCodedSpawnAreas, hsa_payload);
+    }
     if (pending_ticks_document_.dirty()) raw->set_normal(bl::chunk_key::PendingTicks, documentPayload(pending_ticks_document_));
     if (block_entities_document_.dirty()) raw->set_normal(bl::chunk_key::BlockEntity, documentPayload(block_entities_document_));
     if (entities_document_.dirty()) {
@@ -448,6 +601,7 @@ bool ChunkEditorController::saveToCache() {
     }
 
     if (!loader_->putRawChunk(*raw)) return false;
+    hsa_dirty_ = false;
     entities_document_.markPersisted();
     block_entities_document_.markPersisted();
     pending_ticks_document_.markPersisted();
@@ -473,6 +627,8 @@ void ChunkEditorController::finishLoad() {
     has_chunk_ = snapshot->ok;
     terrain_ = snapshot->terrain;
     statistics_ = snapshot->statistics;
+    hsa_areas_ = snapshot->hsaAreas;
+    hsa_dirty_ = false;
     if (terrain_ && !terrain_->layers.empty()) {
         terrain_y_ = std::clamp(0, terrain_->minY, terrain_->maxY);
         terrain_layer_ = std::clamp(terrain_layer_, 0, terrainMaxLayer());
@@ -494,6 +650,8 @@ void ChunkEditorController::finishLoad() {
     emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
+    emit hsaChanged();
+    emit dirtyChanged();
     emit statusChanged();
     emit voxelChanged();
 }
