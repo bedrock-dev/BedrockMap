@@ -11,16 +11,29 @@
 #include <QObject>
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <optional>
 #include <tuple>
 
 #include "bedrock_key.h"
+#include "magic-enum/magic_enum.hpp"
 #include "model/chunkselection.h"
 
 /// View state (dimension, layer and overlays) for the 2D map.
 struct MapRenderOptions {
     enum LayerType { Terrain = 0, Biome = 1 };
-    enum OtherType { Grid = 0, Coords = 1, SlimeChunk = 2, Actors = 3, Village = 4, HSA = 5, Portal = 6, OtherLen = 7 };
+    enum OtherType {
+        Grid = 0,
+        Coords = 1,
+        SlimeChunk = 2,
+        Actors = 3,
+        Village = 4,
+        HSA = 5,
+        Portal = 6,
+        DimensionBorder = 7,
+        TerrainOutline = 8
+    };
+    static constexpr std::size_t OtherTypeCount = magic_enum::enum_count<OtherType>();
 
     static constexpr int OverWorld = 0;
     static constexpr int Nether = 1;
@@ -30,7 +43,7 @@ struct MapRenderOptions {
 
     int dim{OverWorld};
     LayerType layer{Terrain};
-    std::array<bool, OtherType::OtherLen> others{};
+    std::array<bool, OtherTypeCount> others{};
 
     void reset() {
         dim = OverWorld;
@@ -42,20 +55,26 @@ struct MapRenderOptions {
     void setDim(int new_dimension) { dim = new_dimension; }
     void setLayer(LayerType new_layer) { layer = new_layer; }
 
+    static constexpr bool validOtherType(OtherType type) {
+        const int index = static_cast<int>(type);
+        return index >= 0 && static_cast<std::size_t>(index) < OtherTypeCount;
+    }
+
     bool toggleOther(OtherType type) {
-        if (type < 0 || type >= OtherType::OtherLen) return true;
-        others[type] = !others[type];
-        return others[type];
+        if (!validOtherType(type)) return true;
+        auto& value = others[static_cast<std::size_t>(static_cast<int>(type))];
+        value = !value;
+        return value;
     }
 
     void setOther(OtherType type, bool value) {
-        if (type < 0 || type >= OtherType::OtherLen) return;
-        others[type] = value;
+        if (!validOtherType(type)) return;
+        others[static_cast<std::size_t>(static_cast<int>(type))] = value;
     }
 
     bool getOther(OtherType type) const {
-        if (type < 0 || type >= OtherType::OtherLen) return false;
-        return others[type];
+        if (!validOtherType(type)) return false;
+        return others[static_cast<std::size_t>(static_cast<int>(type))];
     }
 };
 

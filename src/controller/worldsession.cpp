@@ -16,7 +16,7 @@ WorldSession::WorldSession(QString path, QString title, AppContext& context, QOb
                        title.isEmpty() ? QStringLiteral("World workspace") : std::move(title), parent),
       context_(context),
       map_view_state_(this),
-      map_controller_(&map_view_state_, context, this),
+      map_controller_(map_view_state_, context, this),
       chunk_editor_(this),
       voxel_view_(std::make_unique<WorldVolumeSource>(), context, this),
       global_data_(context, this) {

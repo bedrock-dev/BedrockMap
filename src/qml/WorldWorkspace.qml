@@ -36,6 +36,8 @@ Item {
     property var mapController: session ? session.mapController : null
     property var terrainData: session ? session.terrainData : null
     property var globalSections: session && session.globalData ? session.globalData.sections : []
+    // Overlay switches live in the session's map state, so each world keeps its own.
+    readonly property var overlays: mapController ? mapController.overlays : ({})
     property int section: 0
     property bool restoringSection: false
     property bool compact: Theme.compact
@@ -57,6 +59,54 @@ Item {
     signal closeRequested
     signal saveRequested
 
+    // Map shortcuts only fire while mapShortcutsEnabled, so actions may assume a map controller.
+    readonly property var mapShortcuts: [
+        { sequence: "Alt+G", action: () => workspace.toggleMapOverlay("Grid") },
+        { sequence: "Alt+C", action: () => workspace.toggleMapOverlay("Coords") },
+        { sequence: "Alt+1", action: () => workspace.mapController.setDimension(0) },
+        { sequence: "Alt+2", action: () => workspace.mapController.setDimension(1) },
+        { sequence: "Alt+3", action: () => workspace.mapController.setDimension(2) },
+        { sequence: "Alt+4", action: () => workspace.openCustomDimensionDialog() },
+        { sequence: "Alt+T", action: () => workspace.mapController.setLayer(0) },
+        { sequence: "Alt+B", action: () => workspace.mapController.setLayer(1) },
+        { sequence: "Alt+S", action: () => workspace.toggleMapOverlay("SlimeChunk") },
+        { sequence: "Alt+A", action: () => workspace.toggleMapOverlay("Actors") },
+        { sequence: "Alt+V", action: () => workspace.toggleMapOverlay("Village") },
+        { sequence: "Alt+H", action: () => workspace.toggleMapOverlay("HSA") },
+        { sequence: "Alt+0", action: () => workspace.mapController.setTransparentVoid(!workspace.mapController.transparentVoid) },
+        { sequence: "Alt+F", action: () => workspace.toggleMapFilterPanel() },
+        { sequence: "Alt+D", action: () => workspace.debugVisible = !workspace.debugVisible },
+        { sequence: "Shift+R", action: () => workspace.mapController.setSelectionMode(0) },
+        { sequence: "Shift+A", action: () => workspace.mapController.setSelectionMode(1) },
+        { sequence: "Shift+S", action: () => workspace.mapController.setSelectionMode(2) },
+        { sequence: "Shift+C", action: () => canvas.clearMapSelection() },
+        { sequence: "Ctrl+C", needsSelection: true, action: () => canvas.copySelectedChunks() },
+        { sequence: "Ctrl+V", action: () => canvas.pasteAtRequestedPosition() },
+        { sequence: "Ctrl+E", needsSelection: true, action: () => canvas.openChunkRegionExport() },
+        { sequence: "Ctrl+I", action: () => canvas.openChunkImportDialog() },
+        { sequence: "Ctrl+D", needsSelection: true, action: () => canvas.deleteSelectedChunks() },
+        { sequence: "Ctrl+K", needsSelection: true, action: () => canvas.clearSelectedChunks() },
+        { sequence: "Ctrl+B", needsSelection: true, action: () => canvas.openBiomePicker() },
+        { sequence: "Ctrl+T", action: () => canvas.openScreenshotDialog() },
+        { sequence: "Ctrl+H", action: () => workspace.toggleVoxelView() },
+        { sequence: "Ctrl+G", action: () => workspace.focusGotoFields() }
+    ]
+
+    // Shortcut needs an Item parent to find its window, hence the Item wrapper.
+    Repeater {
+        model: workspace.mapShortcuts
+        delegate: Item {
+            id: shortcutHost
+            required property var modelData
+            Shortcut {
+                sequence: shortcutHost.modelData.sequence
+                enabled: workspace.mapShortcutsEnabled
+                         && (!shortcutHost.modelData.needsSelection || workspace.mapController.hasSelection)
+                onActivated: shortcutHost.modelData.action()
+            }
+        }
+    }
+
     Connections {
         target: workspace.childPages
         function onNavigated(previousRoute, nextRoute) {
@@ -65,150 +115,13 @@ Item {
         }
     }
 
-    component MapShortcut: Shortcut {
-        property bool needsSelection: false
-        enabled: workspace.mapShortcutsEnabled && (!needsSelection || workspace.mapController.hasSelection)
-    }
-
-    MapShortcut {
-        sequence: "Alt+G"
-        onActivated: workspace.toggleGrid()
-    }
-    MapShortcut {
-        sequence: "Alt+C"
-        onActivated: workspace.toggleCoordinates()
-    }
-    MapShortcut {
-        sequence: "Alt+1"
-        onActivated: workspace.setMapDimension(0)
-    }
-    MapShortcut {
-        sequence: "Alt+2"
-        onActivated: workspace.setMapDimension(1)
-    }
-    MapShortcut {
-        sequence: "Alt+3"
-        onActivated: workspace.setMapDimension(2)
-    }
-    MapShortcut {
-        sequence: "Alt+4"
-        onActivated: workspace.openCustomDimensionDialog()
-    }
-    MapShortcut {
-        sequence: "Alt+T"
-        onActivated: workspace.setMapLayer(0)
-    }
-    MapShortcut {
-        sequence: "Alt+B"
-        onActivated: workspace.setMapLayer(1)
-    }
-    MapShortcut {
-        sequence: "Alt+S"
-        onActivated: workspace.toggleSlimeChunks()
-    }
-    MapShortcut {
-        sequence: "Alt+A"
-        onActivated: workspace.toggleEntities()
-    }
-    MapShortcut {
-        sequence: "Alt+V"
-        onActivated: workspace.toggleVillages()
-    }
-    MapShortcut {
-        sequence: "Alt+H"
-        onActivated: workspace.toggleHsa()
-    }
-    MapShortcut {
-        sequence: "Alt+0"
-        onActivated: workspace.toggleTransparentVoid()
-    }
-    MapShortcut {
-        sequence: "Alt+F"
-        onActivated: workspace.toggleMapFilterPanel()
-    }
-    MapShortcut {
-        sequence: "Alt+D"
-        onActivated: workspace.toggleDebugPanels()
-    }
-    MapShortcut {
-        sequence: "Shift+R"
-        onActivated: workspace.setMapSelectionMode(0)
-    }
-    MapShortcut {
-        sequence: "Shift+A"
-        onActivated: workspace.setMapSelectionMode(1)
-    }
-    MapShortcut {
-        sequence: "Shift+S"
-        onActivated: workspace.setMapSelectionMode(2)
-    }
-    MapShortcut {
-        sequence: "Shift+C"
-        onActivated: canvas.clearMapSelection()
-    }
-    MapShortcut {
-        sequence: "Ctrl+C"
-        needsSelection: true
-        onActivated: canvas.copySelectedChunks()
-    }
-    MapShortcut {
-        sequence: "Ctrl+V"
-        onActivated: canvas.pasteAtRequestedPosition()
-    }
-    MapShortcut {
-        sequence: "Ctrl+E"
-        needsSelection: true
-        onActivated: canvas.openChunkRegionExport()
-    }
-    MapShortcut {
-        sequence: "Ctrl+I"
-        onActivated: canvas.openChunkImportDialog()
-    }
-    MapShortcut {
-        sequence: "Ctrl+D"
-        needsSelection: true
-        onActivated: canvas.deleteSelectedChunks()
-    }
-    MapShortcut {
-        sequence: "Ctrl+K"
-        needsSelection: true
-        onActivated: canvas.clearSelectedChunks()
-    }
-    MapShortcut {
-        sequence: "Ctrl+B"
-        needsSelection: true
-        onActivated: canvas.openBiomePicker()
-    }
-    MapShortcut {
-        sequence: "Ctrl+T"
-        onActivated: canvas.openScreenshotDialog()
-    }
-    MapShortcut {
-        sequence: "Ctrl+H"
-        onActivated: workspace.toggleVoxelView()
-    }
-    MapShortcut {
-        sequence: "Ctrl+G"
-        onActivated: workspace.focusGotoFields()
-    }
-
     Connections {
         target: workspace.session
         function onWorkspaceSectionChanged() {
-            restoringSection = true
-            section = session ? session.workspaceSection : 0
-            restoringSection = false
+            workspace.restoreSection()
         }
     }
 
-    function setMapToggle(toggle, enabled) {
-        if (toggle && toggle.checked !== enabled)
-            toggle.checked = enabled
-    }
-    function setMapDimension(index) {
-        if (mapController)
-            mapController.setDimension(index)
-    }
     function openCustomDimensionDialog() {
         if (!mapController)
             return
@@ -219,75 +132,20 @@ Item {
         }
         customDimensionDialog.openFor(options, mapController.dimension)
     }
-    function setMapLayer(index) {
-        if (mapController)
-            mapController.setLayer(index)
-    }
-    function setMapSelectionMode(index) {
-        if (mapController)
-            mapController.setSelectionMode(index)
-    }
-    function setGridEnabled(enabled) {
-        setMapToggle(gridToggle, enabled)
-    }
-    function toggleGrid() {
-        setGridEnabled(!gridToggle.checked)
-    }
-    function setCoordinatesEnabled(enabled) {
-        setMapToggle(coordsToggle, enabled)
-    }
-    function toggleCoordinates() {
-        setCoordinatesEnabled(!coordsToggle.checked)
-    }
-    function setSlimeChunksEnabled(enabled) {
-        setMapToggle(slimeToggle, enabled)
-    }
-    function toggleSlimeChunks() {
-        setSlimeChunksEnabled(!slimeToggle.checked)
-    }
-    function setEntitiesEnabled(enabled) {
-        setMapToggle(entitiesToggle, enabled)
-    }
-    function toggleEntities() {
-        setEntitiesEnabled(!entitiesToggle.checked)
-    }
-    function setVillagesEnabled(enabled) {
-        setMapToggle(villagesToggle, enabled)
-    }
-    function toggleVillages() {
-        setVillagesEnabled(!villagesToggle.checked)
-    }
-    function setHsaEnabled(enabled) {
-        setMapToggle(hsaToggle, enabled)
-    }
-    function toggleHsa() {
-        setHsaEnabled(!hsaToggle.checked)
-    }
-    function setTransparentVoidEnabled(enabled) {
-        if (mapController && mapController.transparentVoid !== enabled)
-            mapController.setTransparentVoid(enabled)
-    }
-    function toggleTransparentVoid() {
-        if (mapController)
-            setTransparentVoidEnabled(!mapController.transparentVoid)
+    function toggleMapOverlay(name) {
+        const overlay = overlays[name]
+        if (mapController && overlay)
+            mapController.toggleOverlay(Number(overlay.type))
     }
     function toggleLayerPanel() {
-        const opening = !layerPanelOpen
-        layerPanelOpen = opening
-        if (opening)
+        layerPanelOpen = !layerPanelOpen
+        if (layerPanelOpen)
             mapFilterPanelOpen = false
     }
     function toggleMapFilterPanel() {
-        const opening = !mapFilterPanelOpen
-        mapFilterPanelOpen = opening
-        if (opening)
+        mapFilterPanelOpen = !mapFilterPanelOpen
+        if (mapFilterPanelOpen)
             layerPanelOpen = false
-    }
-    function toggleDebugPanels() {
-        debugVisible = !debugVisible
-    }
-    function toggleSelectionTool() {
-        canvas.selectionToolActive = !canvas.selectionToolActive
     }
     function focusGotoFields() {
         xField.forceActiveFocus()
@@ -334,7 +192,10 @@ Item {
             childPages.pop()
             return
         }
-        openVoxelView()
+        if (!session || !session.voxelView || !session.voxelView.hasVoxelModel)
+            return
+        canvas.selectionToolActive = false
+        childPages.open("voxel")
     }
     function clampSidePanelWidth(value) {
         const available = Math.max(1, sectionHost.width)
@@ -354,12 +215,16 @@ Item {
         return childPages.pop()
     }
 
-    function restoreSessionState() {
+    function restoreSection() {
         restoringSection = true
         section = session ? session.workspaceSection : 0
         restoringSection = false
+    }
+    function restoreSessionState() {
+        restoreSection()
         const route = session ? session.workspaceRoute : "root"
         childPages.reset(childPages.routeDefinition(route) ? route : "root")
+        // onSectionChanged closes the panels only when leaving the map section.
         layerPanelOpen = false
         mapFilterPanelOpen = false
     }
@@ -398,14 +263,14 @@ Item {
                 terrainData: workspace.terrainData
                 globalData: workspace.session ? workspace.session.globalData : null
                 chunkEditor: workspace.session ? workspace.session.chunkEditor : null
-                showGrid: gridToggle.checked
-                showCoordinates: coordsToggle.checked
-                showEntities: entitiesToggle.checked
-                showSlimeChunks: slimeToggle.checked
-                showVillages: villagesToggle.checked
-                showHsa: hsaToggle.checked
-                showDimensionBorder: dimensionBorderToggle.checked
-                showTerrainOutline: terrainOutlineToggle.checked
+                showGrid: !!(workspace.overlays.Grid && workspace.overlays.Grid.enabled)
+                showCoordinates: !!(workspace.overlays.Coords && workspace.overlays.Coords.enabled)
+                showEntities: !!(workspace.overlays.Actors && workspace.overlays.Actors.enabled)
+                showSlimeChunks: !!(workspace.overlays.SlimeChunk && workspace.overlays.SlimeChunk.enabled)
+                showVillages: !!(workspace.overlays.Village && workspace.overlays.Village.enabled)
+                showHsa: !!(workspace.overlays.HSA && workspace.overlays.HSA.enabled)
+                showDimensionBorder: !!(workspace.overlays.DimensionBorder && workspace.overlays.DimensionBorder.enabled)
+                showTerrainOutline: !!(workspace.overlays.TerrainOutline && workspace.overlays.TerrainOutline.enabled)
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
                 onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
@@ -515,158 +380,20 @@ Item {
                 }
             }
 
-            AppCard {
+
+            MapLayerPanel {
                 id: layerPanel
-                visible: workspace.section === 0 && workspace.layerPanelOpen
+                visible: workspace.layerPanelOpen
                 z: 2
                 width: Math.max(0, Math.min(360, parent.width - Theme.gapMedium * 2))
-                readonly property real naturalHeight: inspectorColumn.height + Theme.gapLarge * 2
                 height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
                 anchors.bottom: layerToolbar.top
                 anchors.bottomMargin: Theme.gapSmall
                 anchors.left: layerToolbar.left
-                Flickable {
-                    anchors.fill: parent
-                    clip: true
-                    contentWidth: width
-                    contentHeight: inspectorColumn.height + Theme.gapLarge * 2
-                    Column {
-                        id: inspectorColumn
-                        x: Theme.gapLarge
-                        y: Theme.gapLarge
-                        width: parent.width - Theme.gapLarge * 2
-                        spacing: Theme.gapSmall
-                        Flow {
-                            width: parent.width
-                            spacing: Theme.gapSmall
-                            AppToggle {
-                                id: gridToggle
-                                text: qsTr("Grid")
-                                checked: true
-                                onToggled: workspace.setGridEnabled(checked)
-                            }
-                            AppToggle {
-                                id: coordsToggle
-                                text: qsTr("Coords")
-                                checked: false
-                                onToggled: workspace.setCoordinatesEnabled(checked)
-                            }
-                            AppToggle {
-                                id: transparentVoidToggle
-                                text: qsTr("Transparent void")
-                                enabled: !!workspace.mapController
-                                onToggled: workspace.setTransparentVoidEnabled(checked)
-                                Binding {
-                                    target: transparentVoidToggle
-                                    property: "checked"
-                                    value: !!workspace.mapController && workspace.mapController.transparentVoid
-                                }
-                            }
-                            AppToggle {
-                                id: dimensionBorderToggle
-                                text: qsTr("Dimension border")
-                                checked: false
-                                enabled: !!workspace.terrainData && workspace.terrainData.chunkCoordsEnabled
-                            }
-                            AppToggle {
-                                id: terrainOutlineToggle
-                                text: qsTr("Terrain outline")
-                                checked: false
-                            }
-                        }
-                        Text {
-                            text: qsTr("Dimension")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                        }
-                        Row {
-                            width: parent.width
-                            height: Theme.buttonHeight
-                            spacing: Theme.gapSmall
-                            AppSegmentedControl {
-                                id: dimensionBar
-                                width: Math.max(0, parent.width - customDimensionButton.width - parent.spacing)
-                                height: parent.height
-                                options: [qsTr("Overworld"), qsTr("Nether"), qsTr("The End")]
-                                currentIndex: workspace.mapController && workspace.mapController.dimension >= 0 &&
-                                              workspace.mapController.dimension < 3 ? workspace.mapController.dimension : -1
-                                onActivated: index => {
-                                    workspace.setMapDimension(index)
-                                }
-                            }
-                            AppButton {
-                                id: customDimensionButton
-                                text: qsTr("Custom")
-                                compact: workspace.compact
-                                height: parent.height
-                                active: !!workspace.mapController && (workspace.mapController.dimension < 0 ||
-                                                                      workspace.mapController.dimension > 2)
-                                onClicked: workspace.openCustomDimensionDialog()
-                            }
-                        }
-                        Text {
-                            text: qsTr("Layer")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                        }
-                        AppSegmentedControl {
-                            id: layerBar
-                            width: parent.width
-                            height: Theme.buttonHeight
-                            options: [qsTr("Terrain"), qsTr("Biomes")]
-                            currentIndex: workspace.mapController ? workspace.mapController.layer : 0
-                            onActivated: index => {
-                                workspace.setMapLayer(index)
-                            }
-                        }
-                        Text {
-                            text: qsTr("Overlays")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                        }
-                        Flow {
-                            width: parent.width
-                            spacing: Theme.gapSmall
-                            AppToggle {
-                                id: slimeToggle
-                                text: qsTr("Slime")
-                                checked: false
-                                onToggled: workspace.setSlimeChunksEnabled(checked)
-                            }
-                            AppToggle {
-                                id: entitiesToggle
-                                text: qsTr("Entities")
-                                checked: false
-                                onToggled: workspace.setEntitiesEnabled(checked)
-                            }
-                            AppToggle {
-                                id: villagesToggle
-                                text: qsTr("Villages")
-                                onToggled: workspace.setVillagesEnabled(checked)
-                            }
-                            AppToggle {
-                                id: hsaToggle
-                                text: qsTr("HSA")
-                                onToggled: workspace.setHsaEnabled(checked)
-                            }
-                        }
-                        Text {
-                            text: qsTr("Selection")
-                            color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
-                        }
-                        AppSegmentedControl {
-                            id: selectionModeControl
-                            width: parent.width
-                            height: Theme.buttonHeight
-                            options: [qsTr("Replace"), qsTr("Add"), qsTr("Subtract")]
-                            currentIndex: workspace.mapController ? workspace.mapController.selectionMode : 0
-                            onActivated: index => {
-                                workspace.setMapSelectionMode(index)
-                            }
-                        }
-                    }
-                }
+                controller: workspace.mapController
+                terrainData: workspace.terrainData
+                compact: workspace.compact
+                onCustomDimensionRequested: workspace.openCustomDimensionDialog()
             }
 
             AppCard {
@@ -723,7 +450,7 @@ Item {
 
             MapFilterPanel {
                 id: mapFilterPanel
-                visible: workspace.section === 0 && workspace.mapFilterPanelOpen
+                visible: workspace.mapFilterPanelOpen
                 z: 2
                 width: Math.max(0, Math.min(360, parent.width - Theme.gapMedium * 2))
                 height: Math.min(naturalHeight, workspace.maximumInspectorPanelHeight())
@@ -776,7 +503,7 @@ Item {
                                                                 ? workspace.mapController.selectionChunkCount : 0) :
                                                             qsTr("Selection mode")
                         selected: canvas.selectionToolActive
-                        onClicked: workspace.toggleSelectionTool()
+                        onClicked: canvas.selectionToolActive = !canvas.selectionToolActive
                     }
                 }
             }
@@ -790,113 +517,23 @@ Item {
         }
     }
 
-    Rectangle {
+    WorkspaceSidebar {
         id: desktopSidebar
         visible: !workspace.compact
         z: 1
-        width: Theme.sidebarCollapsedWidth
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        color: Theme.surface
-        border.width: 0
-        Rectangle {
-            width: Theme.borderWidth
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            color: Theme.border
-        }
-        Flickable {
-            id: desktopSidebarScroll
-            width: parent.width
-            anchors.top: parent.top
-            anchors.topMargin: Theme.gapMedium
-            anchors.bottom: desktopSidebarFooter.top
-            contentWidth: width
-            contentHeight: desktopSidebarColumn.height + Theme.gapMedium * 2
-            clip: true
-            Column {
-                id: desktopSidebarColumn
-                x: Theme.gapMedium
-                y: Theme.gapMedium
-                width: parent.width - Theme.gapMedium * 2
-                spacing: Theme.gapTiny
-                AppListRow {
-                    iconName: "map"
-                    label: qsTr("Map")
-                    compact: true
-                    selected: workspace.section === 0
-                    onClicked: workspace.section = 0
-                }
-                AppListRow {
-                    iconName: "nbt_editor"
-                    label: qsTr("Chunk editor")
-                    dirty: !!workspace.session && workspace.session.chunkEditor.dirty
-                    compact: true
-                    selected: workspace.chunkEditorOpen
-                    onClicked: workspace.toggleChunkEditor()
-                }
-                AppListRow {
-                    iconName: "structure"
-                    label: qsTr("3D view")
-                    compact: true
-                    selected: workspace.voxelViewOpen
-                    onClicked: workspace.toggleVoxelView()
-                }
-                Rectangle {
-                    width: parent.width
-                    height: Theme.borderWidth
-                    color: Theme.border
-                }
-                Repeater {
-                    model: workspace.globalSections
-                    delegate: AppListRow {
-                        required property int index
-                        required property var modelData
-                        iconName: modelData.iconName
-                        icon: modelData.shortLabel
-                        dirty: modelData.dirty
-                        label: modelData.title
-                        compact: true
-                        selected: workspace.section === index + 1
-                        onClicked: workspace.section = index + 1
-                    }
-                }
-            }
-        }
-        Rectangle {
-            id: desktopSidebarFooterLine
-            width: parent.width
-            height: Theme.borderWidth
-            anchors.bottom: desktopSidebarFooter.top
-            color: Theme.border
-        }
-        Column {
-            id: desktopSidebarFooter
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: Theme.gapMedium
-            spacing: Theme.gapSmall
-            AppIconButton {
-                x: (parent.width - width) / 2
-                iconName: workspace.session && !workspace.session.saving ? "save" : ""
-                iconText: workspace.session && workspace.session.saving ? "…" : ""
-                label: workspace.session && workspace.session.saving ? qsTr("Saving…") : qsTr("Save world")
-                dirty: !!workspace.session && workspace.session.dirty
-                visible: !!workspace.session
-                enabled: workspace.session && workspace.session.canSave
-                onClicked: workspace.saveRequested()
-            }
-            AppIconButton {
-                x: (parent.width - width) / 2
-                iconName: "exit"
-                label: qsTr("Close world")
-                danger: true
-                onClicked: workspace.closeRequested()
-            }
-        }
+        session: workspace.session
+        globalSections: workspace.globalSections
+        section: workspace.section
+        chunkEditorOpen: workspace.chunkEditorOpen
+        voxelViewOpen: workspace.voxelViewOpen
+        onSectionRequested: section => workspace.section = section
+        onChunkEditorToggleRequested: workspace.toggleChunkEditor()
+        onVoxelViewToggleRequested: workspace.toggleVoxelView()
+        onSaveRequested: workspace.saveRequested()
+        onCloseRequested: workspace.closeRequested()
     }
 
     AppCard {
@@ -920,7 +557,7 @@ Item {
                 iconName: "debug"
                 label: qsTr("Debug panels")
                 selected: workspace.debugVisible
-                onClicked: workspace.toggleDebugPanels()
+                onClicked: workspace.debugVisible = !workspace.debugVisible
             }
         }
     }
@@ -934,6 +571,6 @@ Item {
 
     CustomDimensionDialog {
         id: customDimensionDialog
-        onDimensionAccepted: dimension => workspace.setMapDimension(dimension)
+        onDimensionAccepted: dimension => workspace.mapController.setDimension(dimension)
     }
 }

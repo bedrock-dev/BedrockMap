@@ -1538,6 +1538,124 @@
     </message>
 </context>
 <context>
+    <name>MapLayerPanel</name>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Grid</source>
+        <translation type="unfinished">Grid</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Coords</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Transparent void</source>
+        <translation>Transparent void</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Dimension border</source>
+        <translation>Dimension border</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Terrain outline</source>
+        <translation>Terrain outline</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Dimension</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Overworld</source>
+        <translation type="unfinished">Overworld</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Nether</source>
+        <translation type="unfinished">Nether</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>The End</source>
+        <translation type="unfinished">The End</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Custom</source>
+        <translation>Custom</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Layer</source>
+        <translation type="unfinished">Layer</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Terrain</source>
+        <translation type="unfinished">Terrain</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Biomes</source>
+        <translation type="unfinished">Biomes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Overlays</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Slime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Entities</source>
+        <translation type="unfinished">Entities</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Villages</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>HSA</source>
+        <translation type="unfinished">HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Portal</source>
+        <translation>Portal</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Selection</source>
+        <translation type="unfinished">Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Replace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Add</source>
+        <translation type="unfinished">Add</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Subtract</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MapRenderDebugPanel</name>
     <message>
         <location filename="../src/qml/MapRenderDebugPanel.qml"/>
@@ -3671,6 +3789,39 @@ Current version: %2</translation>
     </message>
 </context>
 <context>
+    <name>WorkspaceSidebar</name>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Chunk editor</source>
+        <translation type="unfinished">Chunk editor</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>3D view</source>
+        <translation type="unfinished">3D view</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Saving…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Save world</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Close world</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>WorldCard</name>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
@@ -3913,123 +4064,13 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Terrain</source>
-        <translation type="unfinished">Terrain</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Biomes</source>
-        <translation type="unfinished">Biomes</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Grid</source>
-        <translation type="unfinished">Grid</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Coords</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Transparent void</source>
-        <translation>Transparent void</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Dimension</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Overworld</source>
-        <translation type="unfinished">Overworld</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Nether</source>
-        <translation type="unfinished">Nether</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>The End</source>
-        <translation type="unfinished">The End</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Custom</source>
-        <translation>Custom</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>This world has no custom dimensions.</source>
         <translation>This world has no custom dimensions.</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Layer</source>
-        <translation type="unfinished">Layer</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Map filters</source>
         <translation>Map filters</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Overlays</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Dimension border</source>
-        <translation>Dimension border</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Terrain outline</source>
-        <translation>Terrain outline</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Slime</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Entities</source>
-        <translation type="unfinished">Entities</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Villages</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>HSA</source>
-        <translation type="unfinished">HSA</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Selection</source>
-        <translation type="unfinished">Selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Replace</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Add</source>
-        <translation type="unfinished">Add</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Subtract</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -4043,20 +4084,13 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Chunk editor</source>
         <translation type="unfinished">Chunk editor</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
         <translation type="unfinished">3D view</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Save world</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -4065,23 +4099,8 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Close world</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Return to origin</source>
         <translation>Return to origin</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Saving…</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

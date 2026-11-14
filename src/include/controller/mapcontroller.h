@@ -32,7 +32,11 @@ class MapController final : public QObject {
     Q_PROPERTY(int dimension READ dimension NOTIFY dimensionChanged)
     Q_PROPERTY(int layer READ layer NOTIFY stateChanged)
     Q_PROPERTY(bool transparentVoid READ transparentVoid WRITE setTransparentVoid NOTIFY transparentVoidChanged)
+    /// Per-world overlay switches keyed by their magic_enum names. Each value
+    /// contains the numeric enum type and enabled state.
+    Q_PROPERTY(QVariantMap overlays READ overlays NOTIFY overlaysChanged)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged)
+    Q_PROPERTY(bool selectionDragging READ selectionDragging NOTIFY selectionChanged)
     Q_PROPERTY(int selectionMode READ selectionMode WRITE setSelectionMode NOTIFY selectionModeChanged)
     Q_PROPERTY(int selectionChunkCount READ selectionChunkCount NOTIFY selectionChanged)
     Q_PROPERTY(int selectionRectCount READ selectionRectCount NOTIFY selectionChanged)
@@ -40,17 +44,17 @@ class MapController final : public QObject {
     Q_PROPERTY(int deletedChunkCount READ deletedChunkCount NOTIFY modificationStateChanged)
     Q_PROPERTY(bool deleteOutsideAvailable READ deleteOutsideAvailable NOTIFY deleteOutsideAvailableChanged)
     Q_PROPERTY(bool operationRunning READ operationRunning NOTIFY operationChanged)
-    Q_PROPERTY(bool worldLoaded READ worldLoaded NOTIFY worldStateChanged)
     Q_PROPERTY(RegionImportController* regionImport READ regionImport CONSTANT)
 
    public:
-    explicit MapController(MapViewState* map_view_state, AppContext& context, QObject* parent = nullptr);
+    explicit MapController(MapViewState& map_view_state, AppContext& context, QObject* parent = nullptr);
     ~MapController() override;
 
     [[nodiscard]] int dimension() const;
     /// MapRenderOptions::LayerType the map is showing (0 = terrain, 1 = biomes).
     [[nodiscard]] int layer() const;
     [[nodiscard]] bool transparentVoid() const;
+    [[nodiscard]] QVariantMap overlays() const;
     [[nodiscard]] MapCameraState cameraState() const;
     [[nodiscard]] bool hasSelection() const;
     [[nodiscard]] int selectionMode() const;
@@ -66,7 +70,6 @@ class MapController final : public QObject {
     [[nodiscard]] Q_INVOKABLE bool selectionContainsChunkAt(const QPointF& view_position) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap blockInfoAt(const QPointF& view_position) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap voxelViewArea() const;
-    [[nodiscard]] bool worldLoaded() const;
     [[nodiscard]] RegionImportController* regionImport() { return &region_import_; }
     Q_INVOKABLE bool beginImportAsync(const QUrl& source, int chunkX, int chunkZ);
     Q_INVOKABLE bool beginPasteAsync(int chunkX, int chunkZ);
@@ -79,16 +82,14 @@ class MapController final : public QObject {
 
     Q_INVOKABLE void setViewportSize(const QSize& size);
     Q_INVOKABLE void setDimension(int dimension);
-    Q_INVOKABLE void setScale(qreal scale, const QPointF& anchor = {});
-    Q_INVOKABLE void zoomBy(qreal factor, const QPointF& anchor = {});
     Q_INVOKABLE void transformGesture(qreal factor, const QPointF& previous, const QPointF& position);
     Q_INVOKABLE void zoomAdjacent(int direction, const QPointF& anchor = {});
     Q_INVOKABLE void pan(qreal dx, qreal dy);
     Q_INVOKABLE void gotoBlock(int x, int z);
     Q_INVOKABLE void setLayer(int layer);
     Q_INVOKABLE void setTransparentVoid(bool enabled);
-    Q_INVOKABLE void setOther(int other, bool enabled);
-    Q_INVOKABLE bool toggleOther(int other);
+    Q_INVOKABLE void setOverlay(int type, bool enabled);
+    Q_INVOKABLE void toggleOverlay(int type);
     Q_INVOKABLE void setSelectionMode(int mode);
     Q_INVOKABLE void clearSelection();
     Q_INVOKABLE void beginSelectionDragAt(const QPointF& view_position);
@@ -115,6 +116,7 @@ class MapController final : public QObject {
    signals:
     void dimensionChanged();
     void transparentVoidChanged();
+    void overlaysChanged();
     /// High-frequency camera-only notification used by renderers during drag.
     /// It avoids reevaluating every QML property binding on each mouse move.
     void cameraMoved();
@@ -131,7 +133,6 @@ class MapController final : public QObject {
     void worldStateChanged();
 
    private:
-    [[nodiscard]] MapViewState* mapViewState() const;
     /// Re-apply the configured zoom limits for the current loader state.
     void applyZoomLimits();
 
@@ -174,7 +175,7 @@ class MapController final : public QObject {
     bool startRegionOperation(SelectionOperation operation, const QRegion& region, int dimension);
     void finishSelectionOperation();
 
-    MapViewState* map_view_state_{nullptr};
+    MapViewState& map_view_state_;
     AppContext& context_;
     RegionImportController region_import_;
     AsyncLevelLoader* loader_{nullptr};

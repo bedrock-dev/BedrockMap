@@ -68,21 +68,20 @@ namespace {
     }
 }  // namespace
 
-MapController::MapController(MapViewState* map_view_state, AppContext& context, QObject* parent)
+MapController::MapController(MapViewState& map_view_state, AppContext& context, QObject* parent)
     : QObject(parent), map_view_state_(map_view_state), context_(context), region_import_(this) {
     connect(&operation_watcher_, &QFutureWatcher<SelectionOperationResult>::finished, this, &MapController::finishSelectionOperation);
     connect(&region_import_, &RegionImportController::failed, this, &MapController::operationFailed);
-    if (!map_view_state_) return;
-    connect(map_view_state_, &MapViewState::dimChanged, this, [this] { emit dimensionChanged(); });
-    connect(map_view_state_, &MapViewState::viewChanged, this, &MapController::stateChanged);
-    connect(map_view_state_, &MapViewState::selectionChanged, this, &MapController::selectionChanged);
+    connect(&map_view_state_, &MapViewState::dimChanged, this, [this] { emit dimensionChanged(); });
+    connect(&map_view_state_, &MapViewState::viewChanged, this, &MapController::stateChanged);
+    connect(&map_view_state_, &MapViewState::selectionChanged, this, &MapController::selectionChanged);
 }
 
 MapController::~MapController() { waitForOperation(); }
 
-int MapController::dimension() const { return mapViewState() ? mapViewState()->dim() : 0; }
+int MapController::dimension() const { return map_view_state_.dim(); }
 
-int MapController::layer() const { return mapViewState() ? static_cast<int>(mapViewState()->options().layer) : 0; }
+int MapController::layer() const { return static_cast<int>(map_view_state_.options().layer); }
 
 bool MapController::transparentVoid() const { return loader_ && loader_->transparentVoid(); }
 
@@ -94,23 +93,20 @@ void MapController::setTransparentVoid(bool enabled) {
     emit stateChanged();
 }
 
-MapCameraState MapController::cameraState() const { return mapViewState() ? mapViewState()->cameraState() : MapCameraState{}; }
+MapCameraState MapController::cameraState() const { return map_view_state_.cameraState(); }
 
-bool MapController::hasSelection() const { return mapViewState() && !mapViewState()->selection().isEmpty(); }
+bool MapController::hasSelection() const { return !map_view_state_.selection().isEmpty(); }
 
 int MapController::selectionMode() const {
-    const auto* map_state = mapViewState();
-    return map_state ? static_cast<int>(map_state->selection().mode()) : 0;
+    return static_cast<int>(map_view_state_.selection().mode());
 }
 
 int MapController::selectionChunkCount() const {
-    const auto* map_state = mapViewState();
-    return map_state ? map_state->selection().chunkCount() : 0;
+    return map_view_state_.selection().chunkCount();
 }
 
 int MapController::selectionRectCount() const {
-    const auto* map_state = mapViewState();
-    return map_state ? static_cast<int>(map_state->selection().rectCount()) : 0;
+    return static_cast<int>(map_view_state_.selection().rectCount());
 }
 
 int MapController::modifiedChunkCount() const {
@@ -126,36 +122,29 @@ int MapController::deletedChunkCount() const {
 bool MapController::deleteOutsideAvailable() const { return loader_ && loader_->preloadAllChunkCoords() && loader_->chunkCoordsReady(); }
 
 bool MapController::selectionDragging() const {
-    const auto* map_state = mapViewState();
-    return map_state && map_state->selection().isDragging();
+    return map_view_state_.selection().isDragging();
 }
 
 QVector<QRect> MapController::selectionRects() const {
     QVector<QRect> result;
-    const auto* map_state = mapViewState();
-    if (!map_state) return result;
-    for (const auto& rect : map_state->selection().region()) result.append(rect);
+    for (const auto& rect : map_view_state_.selection().region()) result.append(rect);
     return result;
 }
 
 QRect MapController::selectionDragRect() const {
-    const auto* map_state = mapViewState();
-    return map_state && map_state->selection().isDragging() ? map_state->selection().dragRect() : QRect();
+    return map_view_state_.selection().isDragging() ? map_view_state_.selection().dragRect() : QRect();
 }
 
 bool MapController::selectionContainsChunkAt(const QPointF& view_position) const {
-    const auto* map_state = mapViewState();
-    if (!map_state || map_state->selection().isEmpty()) return false;
-    const auto chunk = map_state->chunkPosAt(view_position, map_state->viewportSize());
-    return map_state->selection().region().contains(QPoint(chunk.x, chunk.z));
+    if (map_view_state_.selection().isEmpty()) return false;
+    const auto chunk = map_view_state_.chunkPosAt(view_position, map_view_state_.viewportSize());
+    return map_view_state_.selection().region().contains(QPoint(chunk.x, chunk.z));
 }
 
 QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
     QVariantMap result;
-    const auto* map_state = mapViewState();
-    if (!map_state) return result;
-    const QPoint block = map_state->blockPosAt(view_position, map_state->viewportSize());
-    const int dimension = map_state->dim();
+    const QPoint block = map_view_state_.blockPosAt(view_position, map_view_state_.viewportSize());
+    const int dimension = map_view_state_.dim();
     const auto chunk_x = static_cast<int>(std::floor(block.x() / 16.0));
     const auto chunk_z = static_cast<int>(std::floor(block.y() / 16.0));
     result.insert(QStringLiteral("blockX"), block.x());
@@ -178,12 +167,9 @@ QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
 
 QVariantMap MapController::voxelViewArea() const {
     QVariantMap result;
-    const auto* map_state = mapViewState();
-    if (!map_state) return result;
-
-    QRect area = map_state->selection().region().boundingRect();
+    QRect area = map_view_state_.selection().region().boundingRect();
     if (area.isEmpty()) {
-        const auto [min_chunk, max_chunk, unused] = map_state->renderRange();
+        const auto [min_chunk, max_chunk, unused] = map_view_state_.renderRange();
         Q_UNUSED(unused);
         area = QRect(QPoint(min_chunk.x, min_chunk.z), QPoint(max_chunk.x, max_chunk.z));
     }
@@ -193,19 +179,16 @@ QVariantMap MapController::voxelViewArea() const {
     result.insert(QStringLiteral("minZ"), area.top());
     result.insert(QStringLiteral("maxX"), area.right());
     result.insert(QStringLiteral("maxZ"), area.bottom());
-    result.insert(QStringLiteral("dimension"), map_state->dim());
+    result.insert(QStringLiteral("dimension"), map_view_state_.dim());
     return result;
 }
-
-bool MapController::worldLoaded() const { return loader_ && loader_->isOpen(); }
 
 QVariantList MapController::customDimensionOptions() const {
     QVariantList result;
     if (!loader_ || !loader_->isOpen()) return result;
 
     std::vector<std::pair<std::string, int>> dimensions;
-    for (const auto& [name, dimension] : loader_->level().custom_dimension_table())
-        dimensions.emplace_back(name, dimension);
+    for (const auto& [name, dimension] : loader_->level().custom_dimension_table()) dimensions.emplace_back(name, dimension);
     std::sort(dimensions.begin(), dimensions.end(), [](const auto& lhs, const auto& rhs) {
         return QString::localeAwareCompare(QString::fromStdString(lhs.first), QString::fromStdString(rhs.first)) < 0;
     });
@@ -246,12 +229,12 @@ void MapController::refreshRegions(const QRegion& region, int dimension) {
 void MapController::applyZoomLimits() {
     const bool overview =
         loader_ && loader_->chunkOverviewEnabled() && setting::current().preloadAllChunkCoords && setting::current().chunkOverviewEnabled;
-    if (auto* map_state = mapViewState()) map_state->applyTerrainZoomLimits(overview);
+    map_view_state_.applyTerrainZoomLimits(overview);
 }
 
 void MapController::setViewportSize(const QSize& size) {
     applyZoomLimits();
-    if (auto* map_state = mapViewState()) map_state->setViewportSize(size);
+    map_view_state_.setViewportSize(size);
 }
 
 void MapController::setDimension(int dimension) {
@@ -259,104 +242,95 @@ void MapController::setDimension(int dimension) {
         if (operation_running_) return;
         region_import_.cancel();
     }
-    if (auto* map_state = mapViewState()) map_state->setDim(dimension);
-}
-
-void MapController::setScale(qreal scale_value, const QPointF& anchor) {
-    applyZoomLimits();
-    if (auto* map_state = mapViewState()) map_state->setScale(scale_value, anchor);
-}
-
-void MapController::zoomBy(qreal factor, const QPointF& anchor) {
-    applyZoomLimits();
-    if (auto* map_state = mapViewState()) map_state->zoomBy(factor, anchor);
+    map_view_state_.setDim(dimension);
 }
 
 void MapController::transformGesture(qreal factor, const QPointF& previous, const QPointF& position) {
     if (!std::isfinite(factor) || factor <= 0.0 || !std::isfinite(previous.x()) || !std::isfinite(previous.y()) ||
         !std::isfinite(position.x()) || !std::isfinite(position.y()))
         return;
-    auto* map_state = mapViewState();
-    if (!map_state) return;
     applyZoomLimits();
-    const qreal scale = map_state->scale();
+    const qreal scale = map_view_state_.scale();
     if (!std::isfinite(scale) || scale <= 0.0) return;
     // Move the old centroid onto the new one before zooming around it. Publish
     // only the combined transform so the renderer cannot observe half a pinch.
-    map_state->translate((position - previous) / scale, false);
-    map_state->zoomBy(factor, position);
+    map_view_state_.translate((position - previous) / scale, false);
+    map_view_state_.zoomBy(factor, position);
 }
 
 void MapController::zoomAdjacent(int direction, const QPointF& anchor) {
     applyZoomLimits();
-    if (auto* map_state = mapViewState()) map_state->zoomToAdjacentLevel(direction, anchor);
+    map_view_state_.zoomToAdjacentLevel(direction, anchor);
 }
 
 void MapController::pan(qreal dx, qreal dy) {
-    if (auto* map_state = mapViewState()) {
-        const qreal scale = std::abs(map_state->scale());
-        if (scale > 0.0) {
-            map_state->translate(QPointF(dx, dy) / scale, false);
-            emit cameraMoved();
-        }
+    const qreal scale = std::abs(map_view_state_.scale());
+    if (scale > 0.0) {
+        map_view_state_.translate(QPointF(dx, dy) / scale, false);
+        emit cameraMoved();
     }
 }
 
 void MapController::gotoBlock(int x, int z) {
-    auto* map_state = mapViewState();
-    if (!map_state || qFuzzyIsNull(map_state->scaleLevel())) return;
-    const QPointF view_pos = map_state->blockPosToViewPos(bl::block_pos(x, 0, z));
-    const QPointF delta = (QPointF(map_state->camera().center()) - view_pos) / std::abs(map_state->scaleLevel());
-    map_state->translate(delta);
+    if (qFuzzyIsNull(map_view_state_.scaleLevel())) return;
+    const QPointF view_pos = map_view_state_.blockPosToViewPos(bl::block_pos(x, 0, z));
+    const QPointF delta = (QPointF(map_view_state_.camera().center()) - view_pos) / std::abs(map_view_state_.scaleLevel());
+    map_view_state_.translate(delta);
 }
 
 void MapController::setLayer(int layer) {
-    if (auto* map_state = mapViewState()) map_state->setLayer(static_cast<MapRenderOptions::LayerType>(layer));
+    map_view_state_.setLayer(static_cast<MapRenderOptions::LayerType>(layer));
 }
 
-void MapController::setOther(int other, bool enabled) {
-    if (auto* map_state = mapViewState()) map_state->setOther(static_cast<MapRenderOptions::OtherType>(other), enabled);
+QVariantMap MapController::overlays() const {
+    QVariantMap result;
+    for (const auto type : magic_enum::enum_values<MapRenderOptions::OtherType>()) {
+        const auto name = magic_enum::enum_name(type);
+        QVariantMap state;
+        state.insert(QStringLiteral("type"), static_cast<int>(type));
+        state.insert(QStringLiteral("enabled"), map_view_state_.options().getOther(type));
+        result.insert(QString::fromLatin1(name.data(), static_cast<qsizetype>(name.size())), state);
+    }
+    return result;
 }
 
-bool MapController::toggleOther(int other) {
-    auto* map_state = mapViewState();
-    if (!map_state) return false;
-    const auto type = static_cast<MapRenderOptions::OtherType>(other);
-    const bool enabled = !map_state->options().getOther(type);
-    map_state->setOther(type, enabled);
-    return enabled;
+void MapController::setOverlay(int type, bool enabled) {
+    const auto overlay = magic_enum::enum_cast<MapRenderOptions::OtherType>(type);
+    if (!overlay || map_view_state_.options().getOther(*overlay) == enabled) return;
+    map_view_state_.setOther(*overlay, enabled);
+    emit overlaysChanged();
+}
+
+void MapController::toggleOverlay(int type) {
+    const auto overlay = magic_enum::enum_cast<MapRenderOptions::OtherType>(type);
+    if (!overlay) return;
+    map_view_state_.setOther(*overlay, !map_view_state_.options().getOther(*overlay));
+    emit overlaysChanged();
 }
 
 void MapController::setSelectionMode(int mode) {
-    if (auto* map_state = mapViewState()) {
-        map_state->setSelectionMode(static_cast<ChunkSelection::Mode>(mode));
-        emit selectionModeChanged();
-    }
+    map_view_state_.setSelectionMode(static_cast<ChunkSelection::Mode>(mode));
+    emit selectionModeChanged();
 }
 
-void MapController::clearSelection() {
-    if (auto* map_state = mapViewState()) map_state->clearSelection();
-}
+void MapController::clearSelection() { map_view_state_.clearSelection(); }
 
 void MapController::beginSelectionDragAt(const QPointF& view_position) {
     if (region_import_.active() || region_import_.loading() || operation_running_) return;
-    auto* map_state = mapViewState();
-    if (!map_state) return;
-    map_state->beginSelectionDrag(map_state->chunkPosAt(view_position, map_state->viewportSize()));
+    map_view_state_.beginSelectionDrag(map_view_state_.chunkPosAt(view_position, map_view_state_.viewportSize()));
 }
 
 void MapController::updateSelectionDragAt(const QPointF& view_position) {
-    auto* map_state = mapViewState();
-    if (!map_state || !map_state->selection().isDragging()) return;
-    map_state->updateSelectionDrag(map_state->chunkPosAt(view_position, map_state->viewportSize()));
+    if (!map_view_state_.selection().isDragging()) return;
+    map_view_state_.updateSelectionDrag(map_view_state_.chunkPosAt(view_position, map_view_state_.viewportSize()));
 }
 
 void MapController::finishSelectionDrag() {
-    if (auto* map_state = mapViewState(); map_state && map_state->selection().isDragging()) map_state->finishSelectionDrag();
+    if (map_view_state_.selection().isDragging()) map_view_state_.finishSelectionDrag();
 }
 
 void MapController::cancelSelectionDrag() {
-    if (auto* map_state = mapViewState(); map_state && map_state->selection().isDragging()) map_state->cancelSelectionDrag();
+    if (map_view_state_.selection().isDragging()) map_view_state_.cancelSelectionDrag();
 }
 
 bool MapController::deleteSelectionAsync() {
@@ -454,15 +428,14 @@ bool MapController::beginPasteAsync(int chunkX, int chunkZ) {
 }
 
 bool MapController::beginImportDragAt(const QPointF& position) {
-    const auto* map_state = mapViewState();
-    if (!map_state || operation_running_ || editing_blocked_) return false;
-    return region_import_.beginDrag(map_state->transformForViewport(map_state->viewportSize()).inverted().map(position));
+    if (operation_running_ || editing_blocked_) return false;
+    return region_import_.beginDrag(
+        map_view_state_.transformForViewport(map_view_state_.viewportSize()).inverted().map(position));
 }
 
 void MapController::updateImportDragAt(const QPointF& position) {
-    const auto* map_state = mapViewState();
-    if (!map_state || operation_running_ || editing_blocked_) return;
-    region_import_.updateDrag(map_state->transformForViewport(map_state->viewportSize()).inverted().map(position));
+    if (operation_running_ || editing_blocked_) return;
+    region_import_.updateDrag(map_view_state_.transformForViewport(map_view_state_.viewportSize()).inverted().map(position));
 }
 
 void MapController::endImportDrag() { region_import_.endDrag(); }
@@ -541,11 +514,10 @@ bool MapController::applyMapFilterOptions(const QVariantMap& options) {
 }
 
 bool MapController::startSelectionOperation(SelectionOperation operation) {
-    auto* map_state = mapViewState();
-    if (!map_state || map_state->selection().isEmpty() || region_import_.active() || region_import_.loading()) return false;
+    if (map_view_state_.selection().isEmpty() || region_import_.active() || region_import_.loading()) return false;
 
-    const QRegion region = map_state->selection().region();
-    const int dimension = map_state->dim();
+    const QRegion region = map_view_state_.selection().region();
+    const int dimension = map_view_state_.dim();
     return startRegionOperation(std::move(operation), region, dimension);
 }
 
@@ -602,7 +574,7 @@ void MapController::finishSelectionOperation() {
     }
     if (result.imported) {
         region_import_.cancel();
-        if (auto* map_state = mapViewState()) map_state->setSelectionRegion(completed_region);
+        map_view_state_.setSelectionRegion(completed_region);
     }
     emit operationFinished();
 }
@@ -616,5 +588,3 @@ void MapController::waitForOperation() {
 void MapController::copyText(const QString& text) const {
     if (auto* clipboard = QGuiApplication::clipboard()) clipboard->setText(text);
 }
-
-MapViewState* MapController::mapViewState() const { return map_view_state_; }

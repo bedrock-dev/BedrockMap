@@ -1538,6 +1538,124 @@
     </message>
 </context>
 <context>
+    <name>MapLayerPanel</name>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Grid</source>
+        <translation type="unfinished">网格</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Coords</source>
+        <translation>坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Transparent void</source>
+        <translation>透明虚空</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Dimension border</source>
+        <translation>维度边框</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Terrain outline</source>
+        <translation>地形边界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Dimension</source>
+        <translation>维度</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Overworld</source>
+        <translation>主世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Nether</source>
+        <translation>下界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>The End</source>
+        <translation>末地</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Custom</source>
+        <translation>自定义</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Layer</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Terrain</source>
+        <translation>地形</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Biomes</source>
+        <translation>生物群系</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Overlays</source>
+        <translation>叠加层</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Slime</source>
+        <translation>史莱姆</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Entities</source>
+        <translation>实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Villages</source>
+        <translation>村庄</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>HSA</source>
+        <translation>HSA</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Portal</source>
+        <translation>传送门</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Selection</source>
+        <translation>选择</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Subtract</source>
+        <translation>减去</translation>
+    </message>
+</context>
+<context>
     <name>MapRenderDebugPanel</name>
     <message>
         <location filename="../src/qml/MapRenderDebugPanel.qml"/>
@@ -3671,6 +3789,39 @@ Current version: %2</source>
     </message>
 </context>
 <context>
+    <name>WorkspaceSidebar</name>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Map</source>
+        <translation>地图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Chunk editor</source>
+        <translation type="unfinished">区块编辑器</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>3D view</source>
+        <translation type="unfinished">3D 视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Saving…</source>
+        <translation>正在保存……</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Save world</source>
+        <translation>保存世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorkspaceSidebar.qml"/>
+        <source>Close world</source>
+        <translation>关闭世界</translation>
+    </message>
+</context>
+<context>
     <name>WorldCard</name>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
@@ -3913,123 +4064,13 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Terrain</source>
-        <translation>地形</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Biomes</source>
-        <translation>生物群系</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Grid</source>
-        <translation type="unfinished">网格</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Coords</source>
-        <translation>坐标</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Transparent void</source>
-        <translation>透明虚空</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Dimension</source>
-        <translation>维度</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Overworld</source>
-        <translation>主世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Nether</source>
-        <translation>下界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>The End</source>
-        <translation>末地</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Custom</source>
-        <translation>自定义</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>This world has no custom dimensions.</source>
         <translation>这个世界没有自定义维度。</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Layer</source>
-        <translation>图层</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Map filters</source>
         <translation>地图过滤器</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Overlays</source>
-        <translation>叠加层</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Dimension border</source>
-        <translation>维度边框</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Terrain outline</source>
-        <translation>地形边界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Slime</source>
-        <translation>史莱姆</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Entities</source>
-        <translation>实体</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Villages</source>
-        <translation>村庄</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>HSA</source>
-        <translation>HSA</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Selection</source>
-        <translation>选择</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Replace</source>
-        <translation>替换</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Subtract</source>
-        <translation>减去</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -4043,20 +4084,13 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Chunk editor</source>
         <translation type="unfinished">区块编辑器</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
         <translation type="unfinished">3D 视图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Save world</source>
-        <translation>保存世界</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
@@ -4065,23 +4099,8 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Close world</source>
-        <translation>关闭世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Return to origin</source>
         <translation>回到原点</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Map</source>
-        <translation>地图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Saving…</source>
-        <translation>正在保存……</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

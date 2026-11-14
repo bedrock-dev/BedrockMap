@@ -55,9 +55,7 @@ class WorldSession final : public WorkspaceSession {
     bool indexLoading() const { return index_loading_; }
     bool failed() const { return state_ == State::Failed; }
     bool ready() const { return state_ == State::Succeeded && !index_loading_; }
-    bool canSave() const {
-        return ready() && !saving() && !voxel_view_.busy() && !voxel_view_.importPreviewActive();
-    }
+    bool canSave() const { return ready() && !saving() && !voxel_view_.busy() && !voxel_view_.importPreviewActive(); }
     qulonglong scannedKeys() const { return scanned_keys_; }
     qulonglong indexedChunks() const { return indexed_chunks_; }
     QString errorCode() const { return error_code_; }
