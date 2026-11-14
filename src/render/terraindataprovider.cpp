@@ -436,18 +436,16 @@ void TerrainDataProvider::processPrefetchChunk() {
     if (prefetch_region_z_ > prefetch_regions_.bottom()) prefetch_timer_.stop();
 }
 
-QVector<ActorSprite> TerrainDataProvider::actorSprites(int min_chunk_x, int min_chunk_z, int max_chunk_x, int max_chunk_z, int dimension,
-                                                       int render_style, int max_sprites) {
+QVector<ActorSprite> TerrainDataProvider::actorSprites(const ChunkArea& area, int render_style, int max_sprites) {
     QVector<ActorSprite> result;
-    if (!active_ || !loader_ || !loader_->isOpen() || max_chunk_x < min_chunk_x || max_chunk_z < min_chunk_z || max_sprites <= 0)
-        return result;
-    const int region_x0 = floorDiv(min_chunk_x, constant::RW) * constant::RW;
-    const int region_z0 = floorDiv(min_chunk_z, constant::RW) * constant::RW;
-    const int region_x1 = floorDiv(max_chunk_x, constant::RW) * constant::RW;
-    const int region_z1 = floorDiv(max_chunk_z, constant::RW) * constant::RW;
+    if (!active_ || !loader_ || !loader_->isOpen() || !area.valid() || max_sprites <= 0) return result;
+    const int region_x0 = floorDiv(area.minChunkX, constant::RW) * constant::RW;
+    const int region_z0 = floorDiv(area.minChunkZ, constant::RW) * constant::RW;
+    const int region_x1 = floorDiv(area.maxChunkX, constant::RW) * constant::RW;
+    const int region_z1 = floorDiv(area.maxChunkZ, constant::RW) * constant::RW;
     for (int z = region_z0; z <= region_z1; z += constant::RW) {
         for (int x = region_x0; x <= region_x1; x += constant::RW) {
-            const region_pos pos{x, z, dimension};
+            const region_pos pos{x, z, area.dimension};
             if (render_style == 0) {
                 for (const auto& [icon, positions] : loader_->getActorList(pos)) {
                     if (!icon) continue;
@@ -471,10 +469,10 @@ QVector<ActorSprite> TerrainDataProvider::actorSprites(int min_chunk_x, int min_
     return result;
 }
 
-QVector<OverlayRect> TerrainDataProvider::hsaRects(int min_chunk_x, int min_chunk_z, int max_chunk_x, int max_chunk_z, int dimension) {
+QVector<OverlayRect> TerrainDataProvider::hsaRects(const ChunkArea& area) {
     QVector<OverlayRect> result;
     if (overview_only_) return result;
-    if (!active_ || !loader_ || !loader_->isOpen() || max_chunk_x < min_chunk_x || max_chunk_z < min_chunk_z) return result;
+    if (!active_ || !loader_ || !loader_->isOpen() || !area.valid()) return result;
     const auto colorFor = [](bl::HSAType type) -> QColor {
         switch (type) {
             case bl::NetherFortress:
@@ -490,19 +488,19 @@ QVector<OverlayRect> TerrainDataProvider::hsaRects(int min_chunk_x, int min_chun
         }
         return QColor(0, 0, 0, 0);
     };
-    const int region_x0 = floorDiv(min_chunk_x, constant::RW) * constant::RW;
-    const int region_z0 = floorDiv(min_chunk_z, constant::RW) * constant::RW;
-    const int region_x1 = floorDiv(max_chunk_x, constant::RW) * constant::RW;
-    const int region_z1 = floorDiv(max_chunk_z, constant::RW) * constant::RW;
+    const int region_x0 = floorDiv(area.minChunkX, constant::RW) * constant::RW;
+    const int region_z0 = floorDiv(area.minChunkZ, constant::RW) * constant::RW;
+    const int region_x1 = floorDiv(area.maxChunkX, constant::RW) * constant::RW;
+    const int region_z1 = floorDiv(area.maxChunkZ, constant::RW) * constant::RW;
     for (int z = region_z0; z <= region_z1; z += constant::RW) {
         for (int x = region_x0; x <= region_x1; x += constant::RW) {
-            for (const auto& hsa : loader_->getHSAs(region_pos{x, z, dimension})) {
+            for (const auto& hsa : loader_->getHSAs(region_pos{x, z, area.dimension})) {
                 QColor outline = colorFor(hsa.type);
                 if (outline.alpha() == 0) continue;
                 QColor fill = outline;
                 fill.setAlpha(100);
                 result.push_back(OverlayRect{static_cast<float>(hsa.min_pos.x), static_cast<float>(hsa.min_pos.z),
-                                             static_cast<float>(hsa.max_pos.x + 1), static_cast<float>(hsa.max_pos.z + 1), dimension,
+                                             static_cast<float>(hsa.max_pos.x + 1), static_cast<float>(hsa.max_pos.z + 1), area.dimension,
                                              outline, fill});
             }
         }

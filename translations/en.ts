@@ -390,6 +390,7 @@
     <name>BlockVolumeController</name>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not copy the selected blocks.</source>
         <translation>Could not copy the selected blocks.</translation>
     </message>
@@ -410,6 +411,7 @@
     </message>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not generate the structure data.</source>
         <translation type="unfinished">Could not generate the structure data.</translation>
     </message>
@@ -420,6 +422,7 @@
         <translation type="unfinished">Could not export the structure: %1</translation>
     </message>
     <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not export GLB.</source>
         <translation type="unfinished"></translation>
@@ -440,6 +443,7 @@
         <translation>Could not read the import structure: %1</translation>
     </message>
     <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not build the block volume.</source>
         <translation>Could not build the block volume.</translation>
@@ -3482,12 +3486,12 @@ Current version: %2</translation>
 <context>
     <name>VoxelMesh</name>
     <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
+        <location filename="../src/render/voxelmeshexport.cpp"/>
         <source>Export path is empty.</source>
         <translation>Export path is empty.</translation>
     </message>
     <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
+        <location filename="../src/render/voxelmeshexport.cpp"/>
         <source>The selected range has no visible voxel faces.</source>
         <translation>The selected range has no visible voxel faces.</translation>
     </message>
@@ -3514,18 +3518,8 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Copying…</source>
-        <translation>Copying…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Structure copied.</source>
         <translation>Structure copied.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Confirm import</source>
-        <translation>Confirm import</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3540,34 +3534,13 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Importing…</source>
-        <translation>Importing…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Delete failed</source>
         <translation>Delete failed</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Deleting…</source>
-        <translation>Deleting…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Maximum (exclusive)</source>
-        <translation>Maximum (exclusive)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import successful</source>
         <translation type="unfinished">Import successful</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Minimum</source>
-        <translation>Minimum</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3581,97 +3554,12 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Selection</source>
-        <translation>Selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Enable selection</source>
-        <translation>Enable selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Move selection</source>
-        <translation>Move selection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Start</source>
-        <translation>Start</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>End</source>
-        <translation>End</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>View</source>
-        <translation>View</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Lock rotation</source>
-        <translation>Lock rotation</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Show axes</source>
-        <translation>Show axes</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate up</source>
-        <translation>Rotate up</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate left</source>
-        <translation>Rotate left</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Face front</source>
-        <translation>Face front</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate right</source>
-        <translation>Rotate right</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate down</source>
-        <translation>Rotate down</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Model</source>
         <translation>Model</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Compress mesh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Structure</source>
-        <translation>Structure</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Export</source>
-        <translation type="unfinished">Export</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished">Delete</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Applies to structure and clipboard operations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3692,27 +3580,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Orthographic projection</source>
-        <translation>Orthographic projection</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Include entities</source>
-        <translation>Include entities</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">Import</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Exporting…</source>
         <translation>Exporting…</translation>
     </message>
@@ -3730,34 +3597,136 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export GLB</source>
+        <translation>Export GLB</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelSelectionSection</name>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Maximum (exclusive)</source>
+        <translation>Maximum (exclusive)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Minimum</source>
+        <translation>Minimum</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Selection</source>
+        <translation>Selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Enable selection</source>
+        <translation>Enable selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Move selection</source>
+        <translation>Move selection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>End</source>
+        <translation>End</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelStructureSection</name>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Structure</source>
+        <translation>Structure</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include entities</source>
+        <translation>Include entities</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Applies to structure and clipboard operations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Old format</source>
         <translation>Old format</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>New format</source>
         <translation>New format</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Structure format</source>
         <translation>Structure format</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Importing…</source>
+        <translation>Importing…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Import</source>
+        <translation type="unfinished">Import</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Exporting…</source>
+        <translation>Exporting…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Export</source>
+        <translation type="unfinished">Export</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Copying…</source>
+        <translation>Copying…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Paste</source>
         <translation>Paste</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Export GLB</source>
-        <translation>Export GLB</translation>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Deleting…</source>
+        <translation>Deleting…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Confirm import</source>
+        <translation>Confirm import</translation>
     </message>
 </context>
 <context>
@@ -3786,6 +3755,54 @@ Current version: %2</translation>
         <location filename="../src/qml/VoxelView.qml"/>
         <source>No terrain loaded.</source>
         <translation>No terrain loaded.</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelViewSection</name>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>View</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Orthographic projection</source>
+        <translation>Orthographic projection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Lock rotation</source>
+        <translation>Lock rotation</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Show axes</source>
+        <translation>Show axes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate up</source>
+        <translation>Rotate up</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate left</source>
+        <translation>Rotate left</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Face front</source>
+        <translation>Face front</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate right</source>
+        <translation>Rotate right</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate down</source>
+        <translation>Rotate down</translation>
     </message>
 </context>
 <context>

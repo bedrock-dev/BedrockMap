@@ -15,8 +15,6 @@ Item {
     readonly property bool inputEnabled: !!root.controller && !root.controller.loading
 
     function endInteraction() {
-        if (!voxelItem)
-            return
         voxelItem.endSelectionDrag()
         voxelItem.endView()
     }
@@ -125,13 +123,11 @@ Item {
     }
 
     onControllerChanged: {
-        if (touchInput)
-            touchInput.cancelGesture()
+        touchInput.cancelGesture()
         root.endInteraction()
     }
     onVisibleChanged: if (!visible) {
-                          if (touchInput)
-                              touchInput.cancelGesture()
+                          touchInput.cancelGesture()
                           root.endInteraction()
                       }
 

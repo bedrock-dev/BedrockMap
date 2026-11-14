@@ -127,7 +127,6 @@ class ChunkEditorController : public VoxelSceneController {
     [[nodiscard]] QVariantList hsaAreas() const;
     /// Editable HSA types as {value, name} entries, in display order.
     [[nodiscard]] QVariantList hsaTypes() const;
-    [[nodiscard]] int loadProgress() const override { return load_progress_; }
     [[nodiscard]] std::shared_ptr<const VoxelSceneData> voxelScene() const override { return voxel_scene_; }
     [[nodiscard]] NbtDocumentController* entitiesDocument() { return &entities_document_; }
     [[nodiscard]] NbtDocumentController* blockEntitiesDocument() { return &block_entities_document_; }
@@ -151,7 +150,6 @@ class ChunkEditorController : public VoxelSceneController {
 
    signals:
     void chunkChanged();
-    void dataChanged();
     void dirtyChanged();
     void terrainChanged();
     void statisticsChanged();
@@ -160,7 +158,6 @@ class ChunkEditorController : public VoxelSceneController {
    private:
     void finishLoad();
     void setLoading(bool loading);
-    void setLoadProgress(int progress);
     [[nodiscard]] const ChunkTerrainLayerSnapshot* terrainLayerAt(int y) const;
 
     AsyncLevelLoader* loader_{nullptr};
@@ -181,7 +178,6 @@ class ChunkEditorController : public VoxelSceneController {
     std::shared_ptr<const ChunkStatisticsSnapshot> statistics_;
     std::vector<ChunkHsaAreaSnapshot> hsa_areas_;
     bool hsa_dirty_{false};
-    int load_progress_{0};
     std::shared_ptr<const VoxelSceneData> voxel_scene_;
     NbtDocumentController entities_document_;
     NbtDocumentController block_entities_document_;

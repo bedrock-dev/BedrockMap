@@ -390,6 +390,7 @@
     <name>BlockVolumeController</name>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not copy the selected blocks.</source>
         <translation>无法复制选中的方块。</translation>
     </message>
@@ -410,6 +411,7 @@
     </message>
     <message>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not generate the structure data.</source>
         <translation>无法生成结构数据。</translation>
     </message>
@@ -420,6 +422,7 @@
         <translation>无法导出结构：%1</translation>
     </message>
     <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not export GLB.</source>
         <translation>无法导出 GLB。</translation>
@@ -440,6 +443,7 @@
         <translation>无法读取要导入的结构：%1</translation>
     </message>
     <message>
+        <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <location filename="../src/controller/blockvolumecontroller.cpp"/>
         <source>Could not build the block volume.</source>
         <translation>无法生成方块体。</translation>
@@ -3482,12 +3486,12 @@ Current version: %2</source>
 <context>
     <name>VoxelMesh</name>
     <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
+        <location filename="../src/render/voxelmeshexport.cpp"/>
         <source>Export path is empty.</source>
         <translation>导出路径为空。</translation>
     </message>
     <message>
-        <location filename="../src/render/voxel_mesh_export.cpp"/>
+        <location filename="../src/render/voxelmeshexport.cpp"/>
         <source>The selected range has no visible voxel faces.</source>
         <translation>选中范围内没有可见体素面。</translation>
     </message>
@@ -3514,18 +3518,8 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Copying…</source>
-        <translation>正在复制…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Structure copied.</source>
         <translation>结构已复制。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Confirm import</source>
-        <translation>确认导入</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3540,34 +3534,13 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Importing…</source>
-        <translation>正在导入…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Delete failed</source>
         <translation>删除失败</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Deleting…</source>
-        <translation>正在删除…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Maximum (exclusive)</source>
-        <translation>最大坐标（不含）</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import successful</source>
         <translation>导入成功</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Minimum</source>
-        <translation>最小坐标</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3581,71 +3554,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Selection</source>
-        <translation>选区</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Enable selection</source>
-        <translation>启用选区</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Move selection</source>
-        <translation>移动选区</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Start</source>
-        <translation>起始</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>End</source>
-        <translation>结束</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>View</source>
-        <translation>视角</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Lock rotation</source>
-        <translation>锁定旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Show axes</source>
-        <translation>显示坐标轴</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate up</source>
-        <translation>向上旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate left</source>
-        <translation>向左旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Face front</source>
-        <translation>正面对准</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate right</source>
-        <translation>向右旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Rotate down</source>
-        <translation>向下旋转</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Model</source>
         <translation>模型</translation>
     </message>
@@ -3653,26 +3561,6 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Compress mesh</source>
         <translation>压缩网格</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Structure</source>
-        <translation>结构</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Export</source>
-        <translation type="unfinished">导出</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished">删除</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Applies to structure and clipboard operations.</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
@@ -3692,27 +3580,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Orthographic projection</source>
-        <translation>正交投影</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Include entities</source>
-        <translation>包含实体</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">导入</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Exporting…</source>
         <translation>正在导出…</translation>
     </message>
@@ -3730,34 +3597,136 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Export GLB</source>
+        <translation>导出 GLB</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelSelectionSection</name>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Maximum (exclusive)</source>
+        <translation>最大坐标（不含）</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Minimum</source>
+        <translation>最小坐标</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Selection</source>
+        <translation>选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Enable selection</source>
+        <translation>启用选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Move selection</source>
+        <translation>移动选区</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>Start</source>
+        <translation>起始</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelSelectionSection.qml"/>
+        <source>End</source>
+        <translation>结束</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelStructureSection</name>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Structure</source>
+        <translation>结构</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include entities</source>
+        <translation>包含实体</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Applies to structure and clipboard operations.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Old format</source>
         <translation>旧版格式</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>New format</source>
         <translation>新版格式</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Structure format</source>
         <translation>结构格式</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Importing…</source>
+        <translation>正在导入…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Import</source>
+        <translation type="unfinished">导入</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Exporting…</source>
+        <translation>正在导出…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Export</source>
+        <translation type="unfinished">导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Copying…</source>
+        <translation>正在复制…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Export GLB</source>
-        <translation>导出 GLB</translation>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Deleting…</source>
+        <translation>正在删除…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Confirm import</source>
+        <translation>确认导入</translation>
     </message>
 </context>
 <context>
@@ -3786,6 +3755,54 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelView.qml"/>
         <source>No terrain loaded.</source>
         <translation>尚未加载体素数据。</translation>
+    </message>
+</context>
+<context>
+    <name>VoxelViewSection</name>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>View</source>
+        <translation>视角</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Orthographic projection</source>
+        <translation>正交投影</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Lock rotation</source>
+        <translation>锁定旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Show axes</source>
+        <translation>显示坐标轴</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate up</source>
+        <translation>向上旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate left</source>
+        <translation>向左旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Face front</source>
+        <translation>正面对准</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate right</source>
+        <translation>向右旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <source>Rotate down</source>
+        <translation>向下旋转</translation>
     </message>
 </context>
 <context>

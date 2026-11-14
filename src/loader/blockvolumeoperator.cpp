@@ -1,6 +1,5 @@
 #include "loader/blockvolumeoperator.h"
 
-#include <QUrl>
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -10,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "io/documentio.h"
 #include "loader/asynclevelloader.h"
 #include "loguru/loguru.hpp"
 #include "mcstructure.h"
@@ -51,30 +49,6 @@ namespace {
             return true;
         };
         return read("x", position.x) && read("y", position.y) && read("z", position.z);
-    }
-
-    bool readEntityPosition(const bl::nbt::compound_tag* entity, bl::vec3& out) {
-        if (!entity) return false;
-        const auto* tag = entity->get("Pos");
-        const auto* list = tag ? tag->as<const bl::nbt::list_tag*>() : nullptr;
-        if (!list || list->value.size() < 3) return false;
-        const auto read = [](const bl::nbt::abstract_tag* value, float& result) {
-            if (const auto* v = value ? value->as<const bl::nbt::float_tag*>() : nullptr) {
-                result = v->value;
-                return true;
-            }
-            if (const auto* v = value ? value->as<const bl::nbt::double_tag*>() : nullptr) {
-                result = static_cast<float>(v->value);
-                return true;
-            }
-            return false;
-        };
-        bl::vec3 position{0.0f, 0.0f, 0.0f};
-        if (!read(list->value[0], position.x) || !read(list->value[1], position.y) || !read(list->value[2], position.z)) {
-            return false;
-        }
-        out = position;
-        return true;
     }
 
     LoadedChunks loadChunks(const QRegion& chunkRegion, AsyncLevelLoader& loader, int dim) {
@@ -144,8 +118,29 @@ namespace {
 
 QRegion BlockVolumeOperator::regionForBounds(const bl::block_box& blockBounds) { return chunkRegionForBounds(blockBounds); }
 
+std::optional<bl::vec3> BlockVolumeOperator::entityPosition(const bl::nbt::compound_tag* entity) {
+    if (!entity) return std::nullopt;
+    const auto* tag = entity->get("Pos");
+    const auto* list = tag ? tag->as<const bl::nbt::list_tag*>() : nullptr;
+    if (!list || list->value.size() < 3) return std::nullopt;
+    const auto read = [](const bl::nbt::abstract_tag* value, float& result) {
+        if (const auto* v = value ? value->as<const bl::nbt::float_tag*>() : nullptr) {
+            result = v->value;
+            return true;
+        }
+        if (const auto* v = value ? value->as<const bl::nbt::double_tag*>() : nullptr) {
+            result = static_cast<float>(v->value);
+            return true;
+        }
+        return false;
+    };
+    bl::vec3 position{0.0f, 0.0f, 0.0f};
+    if (!read(list->value[0], position.x) || !read(list->value[1], position.y) || !read(list->value[2], position.z)) return std::nullopt;
+    return position;
+}
+
 std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
-                                                            bool /*compress*/, int32_t version, bool exportEntities) {
+                                                            int32_t version, bool exportEntities) {
     if (!exportBounds.is_valid()) return {};
 
     const QRegion chunkRegion = chunkRegionForBounds(exportBounds);
@@ -205,25 +200,8 @@ std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& lo
     return builder.build().to_raw();
 }
 
-bool BlockVolumeOperator::exportWorldMcstructure(const QUrl& url, AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds,
-                                                 bool compress, int32_t version, bool exportEntities) {
-    const auto raw = exportWorldMcstructureData(loader, dim, blockBounds, compress, version, exportEntities);
-    if (raw.empty()) return false;
-
-    const QByteArray bytes(raw.data(), static_cast<qsizetype>(raw.size()));
-    const QString error = io::DocumentIo::writeBytes(url, bytes);
-    const bool saved = error.isEmpty();
-    if (saved) {
-        LOG_F(INFO, "BlockVolumeOperator: exported mcstructure to %s", url.toString(QUrl::FullyEncoded).toStdString().c_str());
-    } else {
-        LOG_F(WARNING, "BlockVolumeOperator: cannot write mcstructure to %s: %s", url.toString(QUrl::FullyEncoded).toStdString().c_str(),
-              error.toStdString().c_str());
-    }
-    return saved;
-}
-
 bool BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position,
-                                                     AsyncLevelLoader& loader, int dim, bool replaceAir, bool importEntities) {
+                                                     AsyncLevelLoader& loader, int dim, bool importEntities) {
     const bl::block_pos size = structure.size();
     if (size.x <= 0 || size.y <= 0 || size.z <= 0) return false;
 
@@ -258,7 +236,6 @@ bool BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& stru
                         for (int layer = 0; layer < static_cast<int>(structure.layer_count()); ++layer) {
                             const auto* entry = structure.block_at(layer, x - position.x, y, z - position.z);
                             if (!entry || !entry->tag) continue;
-                            if (!replaceAir && isAirBlock(entry->tag)) continue;
                             target.set_block(x - baseX, position.y + y, z - baseZ, entry->tag, layer);
                             changed = true;
                         }
@@ -273,15 +250,15 @@ bool BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& stru
                 const int worldX = position.x + local.x;
                 const int worldZ = position.z + local.z;
                 if (worldX < x0 || worldX >= x1 || worldZ < z0 || worldZ >= z1) continue;
-                if (!replaceAir && !structure.block_at(local.x, local.y, local.z)) continue;
                 target.set_block_entity(worldX - baseX, position.y + local.y, worldZ - baseZ, entity);
                 changed = true;
             }
 
             if (importEntities) {
                 for (const auto* entity : structure.entities()) {
-                    bl::vec3 source{0.0f, 0.0f, 0.0f};
-                    if (!readEntityPosition(entity, source)) continue;
+                    const auto position = entityPosition(entity);
+                    if (!position) continue;
+                    const bl::vec3 source = *position;
                     const bl::vec3 world{source.x + delta.x, source.y + delta.y, source.z + delta.z};
                     const bl::block_pos block{static_cast<int>(std::floor(world.x)), static_cast<int>(std::floor(world.y)),
                                               static_cast<int>(std::floor(world.z))};

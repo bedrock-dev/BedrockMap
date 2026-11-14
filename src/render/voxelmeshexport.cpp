@@ -14,7 +14,7 @@
 
 #include "io/documentio.h"
 #include "json/json.hpp"
-#include "render/voxel_mesh.h"
+#include "render/voxelmesh.h"
 
 namespace {
     template <typename T>
@@ -249,7 +249,7 @@ namespace {
     }
 }  // namespace
 
-bool voxel_mesh::exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, bool mergeFaces, QString* errorMessage) {
+bool VoxelMeshBuffers::exportGlb(const QUrl& url, bool mergeFaces, QString* errorMessage) const {
     auto fail = [errorMessage](const QString& message) {
         if (errorMessage) *errorMessage = message;
         return false;
@@ -257,10 +257,6 @@ bool voxel_mesh::exportGlb(const VoxelMeshBuffers& mesh, const QUrl& url, bool m
 
     if (url.isEmpty()) return fail(QCoreApplication::translate("VoxelMesh", "Export path is empty."));
 
-    const auto& opaqueVertices = mesh.opaqueVertices;
-    const auto& opaqueIndices = mesh.opaqueIndices;
-    const auto& transparentVertices = mesh.transparentVertices;
-    const auto& transparentIndices = mesh.transparentIndices;
     if ((opaqueVertices.empty() || opaqueIndices.empty()) && (transparentVertices.empty() || transparentIndices.empty())) {
         return fail(QCoreApplication::translate("VoxelMesh", "The selected range has no visible voxel faces."));
     }

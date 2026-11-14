@@ -35,6 +35,7 @@ class BlockVolumeController final : public VoxelSceneController {
     void load(BlockVolumeRequest request);
     void clearPreview();
     Q_INVOKABLE void openArea(int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ, int dimension);
+    void openArea(const ChunkArea& area);
     Q_INVOKABLE bool importStructure(const QUrl& url);
     Q_INVOKABLE bool pasteStructure();
     Q_INVOKABLE bool copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat);
@@ -49,7 +50,6 @@ class BlockVolumeController final : public VoxelSceneController {
     [[nodiscard]] std::shared_ptr<const BlockVolume> volume() const { return volume_; }
     [[nodiscard]] bool loading() const override { return operation_ == Operation::Loading; }
     [[nodiscard]] QString errorMessage() const override { return error_; }
-    [[nodiscard]] int loadProgress() const override { return load_progress_; }
     [[nodiscard]] bool busy() const { return operation_ != Operation::None; }
     [[nodiscard]] bool importPreviewActive() const { return import_volume_ != nullptr; }
     [[nodiscard]] bool importing() const { return operation_ == Operation::ImportLoading || operation_ == Operation::Importing; }
@@ -80,8 +80,10 @@ class BlockVolumeController final : public VoxelSceneController {
     enum class Operation { None, Loading, ImportLoading, Importing, Copying, Deleting, Exporting };
     /// Runs on a worker and returns the completion step for the GUI thread.
     using Task = std::function<std::function<void()>()>;
+    /// Runs on the GUI thread when a task throws; detail is the exception text, if any.
+    using Failure = std::function<void(const QString& detail)>;
 
-    void run(Operation operation, Task task);
+    void run(Operation operation, Task task, Failure onFailure);
     void finishOperation();
     void setOperation(Operation operation);
     void startLoad(BlockVolumeRequest request, bool keepScene);
@@ -90,8 +92,6 @@ class BlockVolumeController final : public VoxelSceneController {
     void applyImportLoad(const BlockVolumeLoadResult& result);
     void applyMutation(const BlockVolumeMutationResult& result, const QString& failure, bool import);
     void clearImport();
-    void setLoadProgress(int progress);
-    [[nodiscard]] std::function<void(int)> progressReporter();
     [[nodiscard]] std::optional<bl::block_box> selectionBounds(const QVector3D& minimum, const QVector3D& maximum) const;
     [[nodiscard]] static QUrl withDefaultSuffix(const QUrl& url, const QString& suffix);
 
@@ -106,7 +106,6 @@ class BlockVolumeController final : public VoxelSceneController {
     std::shared_ptr<const BlockVolume> volume_;
     std::shared_ptr<const BlockVolume> import_volume_;
     QString error_;
-    int load_progress_{0};
 };
 
 #endif  // BEDROCKMAP_BLOCKVOLUMECONTROLLER_H

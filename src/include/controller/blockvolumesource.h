@@ -10,21 +10,14 @@
 #include <variant>
 
 #include "geometry.h"
+#include "model/chunkarea.h"
 #include "nbt.h"
-#include "render/voxel_scene.h"
+#include "render/voxelmesh.h"
 
 class AsyncLevelLoader;
 namespace bl {
     class mcstructure;
 }
-
-struct ChunkArea {
-    int minChunkX{0};
-    int minChunkZ{0};
-    int maxChunkX{-1};
-    int maxChunkZ{-1};
-    int dimension{0};
-};
 
 /// What to load: an mcstructure file, raw mcstructure bytes, a parsed
 /// mcstructure root, or a chunk area of the open world.

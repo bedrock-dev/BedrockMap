@@ -20,6 +20,7 @@
 #include <unordered_set>
 
 #include "loader/chunkregion.h"
+#include "model/chunkarea.h"
 #include "render/overlay.h"
 #include "render/rendertimings.h"
 #include "render/terraintiles.h"
@@ -143,9 +144,8 @@ class TerrainDataProvider final : public QObject {
     [[nodiscard]] int blocksPerTexel() const { return blocks_per_texel_; }
     /// Actors and consolidated actor markers inside a chunk-space window. The
     /// caller owns drawing; this only snapshots the already-cached region data.
-    [[nodiscard]] QVector<ActorSprite> actorSprites(int min_chunk_x, int min_chunk_z, int max_chunk_x, int max_chunk_z, int dimension,
-                                                    int render_style, int max_sprites = 20000);
-    [[nodiscard]] QVector<OverlayRect> hsaRects(int min_chunk_x, int min_chunk_z, int max_chunk_x, int max_chunk_z, int dimension);
+    [[nodiscard]] QVector<ActorSprite> actorSprites(const ChunkArea& area, int render_style, int max_sprites = 20000);
+    [[nodiscard]] QVector<OverlayRect> hsaRects(const ChunkArea& area);
     [[nodiscard]] QImage slimeChunkImage(const region_pos& pos);
     Q_INVOKABLE void clear();
     /// Drop cached tiles whose regions intersect an edited chunk region.

@@ -11,23 +11,8 @@
 #include <vector>
 
 #include "controller/voxelscenecontroller.h"
-#include "render/voxel_mesh.h"
-#include "render/voxel_scene.h"
-
-struct VoxelRhiCameraState {
-    float yaw{45.0f};
-    float pitch{45.0f};
-    float zoom{1.0f};
-    QVector3D pan;
-    bool orthoMode{false};
-};
-
-struct VoxelRhiSelectionState {
-    bl::block_box bounds;
-    QColor color{QStringLiteral("#e641b9dc")};
-    VoxelSelectionHandle active{VoxelSelectionHandle::None};
-    bool enabled{false};
-};
+#include "model/voxelviewstate.h"
+#include "render/voxelmesh.h"
 
 class VoxelQuickItem : public QQuickRhiItem {
     Q_OBJECT
@@ -40,7 +25,6 @@ class VoxelQuickItem : public QQuickRhiItem {
     Q_PROPERTY(QVector3D modelOrigin READ modelOrigin NOTIFY sceneChanged)
     Q_PROPERTY(bool selectionEnabled READ selectionEnabled WRITE setSelectionEnabled NOTIFY selectionOptionsChanged)
     Q_PROPERTY(bool selectionMoveMode READ selectionMoveMode WRITE setSelectionMoveMode NOTIFY selectionOptionsChanged)
-    Q_PROPERTY(bool selectionLocked READ selectionLocked NOTIFY selectionOptionsChanged)
     Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor NOTIFY selectionOptionsChanged)
     Q_PROPERTY(QVector3D selectionMinimum READ selectionMinimum NOTIFY selectionChanged)
     Q_PROPERTY(QVector3D selectionMaximum READ selectionMaximum NOTIFY selectionChanged)
@@ -56,7 +40,7 @@ class VoxelQuickItem : public QQuickRhiItem {
     void setController(VoxelSceneController* controller);
     [[nodiscard]] std::shared_ptr<const VoxelSceneData> currentScene() const;
     [[nodiscard]] std::shared_ptr<const VoxelSceneData> currentOverlayScene() const;
-    [[nodiscard]] VoxelRhiCameraState cameraState() const;
+    [[nodiscard]] VoxelCameraState cameraState() const { return view_state_.camera(); }
     [[nodiscard]] bool orthoMode() const;
     void setOrthoMode(bool ortho);
     [[nodiscard]] bool rotationLocked() const;
@@ -65,12 +49,11 @@ class VoxelQuickItem : public QQuickRhiItem {
     void setShowAxes(bool enabled);
     [[nodiscard]] QVector3D modelSize() const;
     [[nodiscard]] QVector3D modelOrigin() const;
-    [[nodiscard]] VoxelRhiSelectionState selectionState() const;
+    [[nodiscard]] VoxelSelectionState selectionState() const;
     [[nodiscard]] bool selectionEnabled() const;
     void setSelectionEnabled(bool enabled);
     [[nodiscard]] bool selectionMoveMode() const;
     void setSelectionMoveMode(bool enabled);
-    [[nodiscard]] bool selectionLocked() const;
     [[nodiscard]] QColor selectionColor() const;
     void setSelectionColor(const QColor& color);
     [[nodiscard]] QVector3D selectionMinimum() const;
@@ -122,27 +105,12 @@ class VoxelQuickItem : public QQuickRhiItem {
     QMetaObject::Connection overlay_connection_;
     std::shared_ptr<const VoxelSceneData> scene_;
     std::shared_ptr<const VoxelSceneData> overlay_scene_;
-    float yaw_{45.0f};
-    float pitch_{45.0f};
-    float zoom_{1.0f};
-    QVector3D pan_;
-    QPointF last_mouse_position_;
-    bool rotating_{false};
-    bool panning_{false};
-    bool ortho_mode_{false};
-    bool rotation_locked_{false};
+    VoxelViewState view_state_;
     bool show_axes_{false};
     float saturation_{1.0f};
     float brightness_{1.0f};
-    VoxelRhiSelectionState selection_;
-    VoxelRhiSelectionState selection_before_import_;
-    VoxelSelectionDrag selection_drag_;
     QVariantList hsa_areas_qml_;
     std::shared_ptr<const std::vector<VoxelHsaArea>> hsa_areas_state_;
-    bool selection_move_mode_{false};
-    bool selection_move_mode_before_import_{false};
-    bool selection_locked_{false};
-    bool selection_allows_outside_{false};
 };
 
 #endif  // BEDROCKMAP_VOXELQUICKITEM_H

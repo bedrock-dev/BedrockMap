@@ -24,7 +24,7 @@
 #include "loader/asynclevelloader.h"
 #include "nbt.h"
 #include "raw_chunk.h"
-#include "render/voxel_mesh.h"
+#include "render/voxelmesh.h"
 
 namespace {
     constexpr qsizetype OVERSIZE_BYTES = 16 * 1024 * 1024;
@@ -135,54 +135,53 @@ namespace {
         return QColor(160, 166, 176);
     }
 
+    /// Fill the terrain snapshot and build the voxel scene in one pass, so each
+    /// block's color and biome blend are computed once.
     std::shared_ptr<VoxelSceneData> buildVoxelScene(const bl::raw_chunk& raw, const std::function<void(int)>& reportProgress,
-                                                    ChunkTerrainSnapshot* terrain = nullptr) {
+                                                    ChunkTerrainSnapshot& terrain) {
         auto chunk = std::make_unique<bl::chunk>(raw.pos());
         if (!chunk->load_from_raw_chunk(raw, bl::chunk_load_policy::Terrain | bl::chunk_load_policy::Others)) return {};
         const auto [worldMinY, worldMaxY] = raw.get_y_range();
         const int layerCount = std::max(0, worldMaxY - worldMinY + 1);
         if (layerCount == 0) return {};
 
-        if (terrain) {
-            terrain->minY = worldMinY;
-            terrain->maxY = worldMaxY;
-            terrain->layers.resize(static_cast<size_t>(layerCount));
-            for (int index = 0; index < layerCount; ++index) terrain->layers[static_cast<size_t>(index)].y = worldMinY + index;
-        }
-
+        terrain.minY = worldMinY;
+        terrain.maxY = worldMaxY;
+        terrain.layers.resize(static_cast<size_t>(layerCount));
+        VoxelGrid grid(16, layerCount, 16);
         for (int worldY = worldMinY; worldY <= worldMaxY; ++worldY) {
-            ChunkTerrainLayerSnapshot* terrainLayer = terrain ? &terrain->layers[static_cast<size_t>(worldY - worldMinY)] : nullptr;
+            const int y = worldY - worldMinY;
+            auto& terrainLayer = terrain.layers[static_cast<size_t>(y)];
+            terrainLayer.y = worldY;
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     const auto biome = chunk->get_biome(x, worldY, z);
-                    if (terrainLayer) {
-                        auto& cell = terrainLayer->cells[static_cast<size_t>(z * 16 + x)];
-                        cell.biome = static_cast<int>(biome);
-                        cell.biomeName = QString::fromStdString(bl::get_biome_name(biome));
-                        cell.biomeColor = toQColor(bl::get_biome_color(biome));
-                        for (int blockLayer = 0;; ++blockLayer) {
-                            auto* rawBlock = chunk->get_block_raw(x, worldY, z, blockLayer);
-                            if (!rawBlock) break;
-                            const auto blockInfo = chunk->get_block_with_color(x, worldY, z, blockLayer);
-                            const auto blended = bl::blend_color_with_biome(blockInfo.name, blockInfo.color, biome);
-                            const bool visibleBlock = blockInfo.name != "minecraft:air" && blockInfo.name != "minecraft:unknown";
-                            cell.blocks.push_back(ChunkTerrainBlockSnapshot{
-                                QString::fromStdString(blockInfo.name),
-                                QString::fromStdString(rawBlock->to_readable_string()),
-                                visibleBlock ? toQColor(blended) : QColor(0, 0, 0, 0),
-                            });
-                        }
+                    auto& cell = terrainLayer.cells[static_cast<size_t>(z * 16 + x)];
+                    cell.biome = static_cast<int>(biome);
+                    cell.biomeName = QString::fromStdString(bl::get_biome_name(biome));
+                    cell.biomeColor = toQColor(bl::get_biome_color(biome));
+                    for (int blockLayer = 0;; ++blockLayer) {
+                        auto* rawBlock = chunk->get_block_raw(x, worldY, z, blockLayer);
+                        if (!rawBlock) break;
+                        const auto blockInfo = chunk->get_block_with_color(x, worldY, z, blockLayer);
+                        const auto blended = bl::blend_color_with_biome(blockInfo.name, blockInfo.color, biome);
+                        const bool visibleBlock = blockInfo.name != "minecraft:air" && blockInfo.name != "minecraft:unknown";
+                        cell.blocks.push_back(ChunkTerrainBlockSnapshot{
+                            QString::fromStdString(blockInfo.name),
+                            QString::fromStdString(rawBlock->to_readable_string()),
+                            visibleBlock ? toQColor(blended) : QColor(0, 0, 0, 0),
+                        });
+                        // The 3D preview shows the primary block layer only.
+                        if (blockLayer == 0 && visibleBlock) grid.set(x, y, z, qRgba(blended.r, blended.g, blended.b, blended.a));
                     }
                 }
             }
-            if ((worldY - worldMinY) % 32 == 0) reportProgress(35 + (worldY - worldMinY) * 25 / std::max(1, layerCount));
+            if (y % 32 == 0) reportProgress(35 + y * 25 / layerCount);
         }
-        int firstWorldY = 0;
-        auto grid = voxel_mesh::createVoxelDataFromChunks({{chunk.get()}}, {}, &firstWorldY);
+        const int firstWorldY = worldMinY + grid.trimEmptyY();
         reportProgress(65);
         const QVector3D origin(raw.pos().x * 16, firstWorldY, raw.pos().z * 16);
-        const QVector3D modelSize(16.0f, static_cast<float>(grid.size()), 16.0f);
-        auto scene = makeVoxelScene(std::move(grid), origin, modelSize);
+        auto scene = VoxelSceneData::fromGrid(std::move(grid), origin);
         reportProgress(98);
         return scene;
     }
@@ -254,7 +253,7 @@ namespace {
                 appendStatistic(*snapshot->statistics, QStringLiteral("Entity[%1]").arg(hexKey), data);
             }
             snapshot->terrain = std::make_shared<ChunkTerrainSnapshot>();
-            snapshot->voxelScene = buildVoxelScene(*raw, reportProgress, snapshot->terrain.get());
+            snapshot->voxelScene = buildVoxelScene(*raw, reportProgress, *snapshot->terrain);
             snapshot->ok = true;
         } catch (const std::exception& error) {
             snapshot->error = QString::fromUtf8(error.what());
@@ -329,7 +328,6 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     setLoadProgress(0);
     setLoading(true);
     emit chunkChanged();
-    emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
     emit hsaChanged();
@@ -337,10 +335,8 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     emit statusChanged();
 
     const quint64 generation = request_generation_;
-    watcher_.setFuture(QtConcurrent::run([this, loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation] {
-        const auto reportProgress = [this](int progress) {
-            QMetaObject::invokeMethod(this, [this, progress] { setLoadProgress(progress); }, Qt::QueuedConnection);
-        };
+    watcher_.setFuture(QtConcurrent::run([loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation,
+                                          reportProgress = progressReporter()] {
         return loadChunkSnapshot(loader, pos, generation, reportProgress);
     }));
 }
@@ -365,7 +361,6 @@ void ChunkEditorController::clear() {
     setLoadProgress(0);
     emit voxelChanged();
     emit chunkChanged();
-    emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
     emit hsaChanged();
@@ -647,7 +642,6 @@ void ChunkEditorController::finishLoad() {
         [](const bl::nbt::compound_tag* root, int index, const QString&) { return blockEntityPresentation(root, index); });
     pending_ticks_document_.loadMemory(cloneRoots(snapshot->pendingTicks), {}, tr("Pts"));
     emit chunkChanged();
-    emit dataChanged();
     emit terrainChanged();
     emit statisticsChanged();
     emit hsaChanged();
@@ -660,11 +654,4 @@ void ChunkEditorController::setLoading(bool loading) {
     if (loading_ == loading) return;
     loading_ = loading;
     emit loadingChanged();
-}
-
-void ChunkEditorController::setLoadProgress(int progress) {
-    progress = std::clamp(progress, 0, 100);
-    if (load_progress_ == progress) return;
-    load_progress_ = progress;
-    emit loadProgressChanged();
 }

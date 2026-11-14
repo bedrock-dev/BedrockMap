@@ -410,9 +410,14 @@ void MapOverlayQuickItem::refreshRects() {
         const auto center = camera.center;
         const qreal half_width = width() / (2.0 * scale) + 8.0;
         const qreal half_height = height() / (2.0 * scale) + 8.0;
-        next->append(provider_->hsaRects(
-            static_cast<int>(std::floor(center.x() - half_width)), static_cast<int>(std::floor(center.y() - half_height)),
-            static_cast<int>(std::ceil(center.x() + half_width)), static_cast<int>(std::ceil(center.y() + half_height)), dimension));
+        const ChunkArea area{
+            static_cast<int>(std::floor(center.x() - half_width)),
+            static_cast<int>(std::floor(center.y() - half_height)),
+            static_cast<int>(std::ceil(center.x() + half_width)),
+            static_cast<int>(std::ceil(center.y() + half_height)),
+            dimension,
+        };
+        next->append(provider_->hsaRects(area));
     }
     {
         const QMutexLocker lock(&rects_mutex_);
@@ -440,13 +445,15 @@ void MapOverlayQuickItem::refreshEntities() {
     // The provider and region cache are keyed in chunk coordinates. Block
     // coordinates are only introduced when the actor position is projected to
     // screen space below.
-    const int min_x = static_cast<int>(std::floor(center_x - half_width));
-    const int max_x = static_cast<int>(std::ceil(center_x + half_width));
-    const int min_z = static_cast<int>(std::floor(center_z - half_height));
-    const int max_z = static_cast<int>(std::ceil(center_z + half_height));
+    const ChunkArea area{
+        static_cast<int>(std::floor(center_x - half_width)),
+        static_cast<int>(std::floor(center_z - half_height)),
+        static_cast<int>(std::ceil(center_x + half_width)),
+        static_cast<int>(std::ceil(center_z + half_height)),
+        camera.dimension,
+    };
 
-    auto next =
-        std::make_shared<QVector<ActorSprite>>(provider_->actorSprites(min_x, min_z, max_x, max_z, camera.dimension, actor_render_style_));
+    auto next = std::make_shared<QVector<ActorSprite>>(provider_->actorSprites(area, actor_render_style_));
     {
         const QMutexLocker lock(&entities_mutex_);
         entity_sprites_ = std::move(next);

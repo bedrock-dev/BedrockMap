@@ -1,11 +1,14 @@
 #ifndef BEDROCKMAP_VOXELSCENECONTROLLER_H
 #define BEDROCKMAP_VOXELSCENECONTROLLER_H
 
+#include <QMetaObject>
 #include <QObject>
 #include <QString>
+#include <algorithm>
+#include <functional>
 #include <memory>
 
-#include "render/voxel_scene.h"
+#include "render/voxelmesh.h"
 
 /// Renderer-facing contract shared by chunk previews and block volumes.
 class VoxelSceneController : public QObject {
@@ -19,7 +22,7 @@ class VoxelSceneController : public QObject {
     explicit VoxelSceneController(QObject* parent = nullptr) : QObject(parent) {}
     [[nodiscard]] virtual bool loading() const = 0;
     [[nodiscard]] virtual QString errorMessage() const = 0;
-    [[nodiscard]] virtual int loadProgress() const = 0;
+    [[nodiscard]] int loadProgress() const { return load_progress_; }
     [[nodiscard]] virtual std::shared_ptr<const VoxelSceneData> voxelScene() const = 0;
     [[nodiscard]] virtual std::shared_ptr<const VoxelSceneData> voxelOverlayScene() const { return {}; }
     [[nodiscard]] bool hasVoxelModel() const {
@@ -33,6 +36,24 @@ class VoxelSceneController : public QObject {
     void loadProgressChanged();
     void voxelChanged();
     void overlayChanged();
+
+   protected:
+    void setLoadProgress(int progress) {
+        progress = std::clamp(progress, 0, 100);
+        if (load_progress_ == progress) return;
+        load_progress_ = progress;
+        emit loadProgressChanged();
+    }
+
+    /// A progress callback safe to call from a worker; updates are queued to this object.
+    [[nodiscard]] std::function<void(int)> progressReporter() {
+        return [this](int progress) {
+            QMetaObject::invokeMethod(this, [this, progress] { setLoadProgress(progress); }, Qt::QueuedConnection);
+        };
+    }
+
+   private:
+    int load_progress_{0};
 };
 
 #endif  // BEDROCKMAP_VOXELSCENECONTROLLER_H

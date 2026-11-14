@@ -19,6 +19,7 @@
 #include "loader/chunkoperator.h"
 #include "loader/exportedregion.h"
 #include "magic-enum/magic_enum.hpp"
+#include "model/chunkarea.h"
 
 namespace {
     QVariantMap mapFilterOptions(const MapFilter& filter) {
@@ -175,11 +176,13 @@ QVariantMap MapController::voxelViewArea() const {
     }
     if (area.isEmpty()) return result;
 
-    result.insert(QStringLiteral("minX"), area.left());
-    result.insert(QStringLiteral("minZ"), area.top());
-    result.insert(QStringLiteral("maxX"), area.right());
-    result.insert(QStringLiteral("maxZ"), area.bottom());
-    result.insert(QStringLiteral("dimension"), map_view_state_.dim());
+    const ChunkArea chunks{area.left(), area.top(), area.right(), area.bottom(), map_view_state_.dim()};
+    if (!chunks.valid()) return result;
+    result.insert(QStringLiteral("minX"), chunks.minChunkX);
+    result.insert(QStringLiteral("minZ"), chunks.minChunkZ);
+    result.insert(QStringLiteral("maxX"), chunks.maxChunkX);
+    result.insert(QStringLiteral("maxZ"), chunks.maxChunkZ);
+    result.insert(QStringLiteral("dimension"), chunks.dimension);
     return result;
 }
 

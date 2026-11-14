@@ -21,9 +21,20 @@ BlockVolumeController::~BlockVolumeController() {
     if (watcher_.isRunning()) watcher_.waitForFinished();
 }
 
-void BlockVolumeController::run(Operation operation, Task task) {
+void BlockVolumeController::run(Operation operation, Task task, Failure onFailure) {
     setOperation(operation);
-    watcher_.setFuture(QtConcurrent::run(std::move(task)));
+    // Any exception escaping a task becomes its failure completion, so the
+    // operation always returns to None in finishOperation().
+    watcher_.setFuture(QtConcurrent::run([task = std::move(task), onFailure = std::move(onFailure)]() -> std::function<void()> {
+        QString detail;
+        try {
+            return task();
+        } catch (const std::exception& error) {
+            detail = QString::fromUtf8(error.what());
+        } catch (...) {
+        }
+        return [onFailure, detail] { onFailure(detail); };
+    }));
 }
 
 void BlockVolumeController::finishOperation() {
@@ -45,12 +56,6 @@ void BlockVolumeController::setOperation(Operation operation) {
     operation_ = operation;
     emit operationChanged();
     if (was_loading != loading()) emit loadingChanged();
-}
-
-std::function<void(int)> BlockVolumeController::progressReporter() {
-    return [this](int progress) {
-        QMetaObject::invokeMethod(this, [this, progress] { setLoadProgress(progress); }, Qt::QueuedConnection);
-    };
 }
 
 std::optional<bl::block_box> BlockVolumeController::selectionBounds(const QVector3D& minimum, const QVector3D& maximum) const {
@@ -86,8 +91,11 @@ void BlockVolumeController::load(BlockVolumeRequest request) {
 }
 
 void BlockVolumeController::openArea(int minChunkX, int minChunkZ, int maxChunkX, int maxChunkZ, int dimension) {
-    if (maxChunkX < minChunkX || maxChunkZ < minChunkZ) return;
-    load(ChunkArea{minChunkX, minChunkZ, maxChunkX, maxChunkZ, dimension});
+    openArea(ChunkArea{minChunkX, minChunkZ, maxChunkX, maxChunkZ, dimension});
+}
+
+void BlockVolumeController::openArea(const ChunkArea& area) {
+    if (area.valid()) load(area);
 }
 
 void BlockVolumeController::clearPreview() {
@@ -117,19 +125,19 @@ void BlockVolumeController::startLoad(BlockVolumeRequest request, bool keepScene
     emit statusChanged();
 
     auto* source = source_.get();
-    run(Operation::Loading, [this, source, request = request_, report = progressReporter()]() -> std::function<void()> {
-        BlockVolumeLoadResult result;
-        try {
-            result = source->load(request, report);
-        } catch (const std::exception& error) {
-            result = {};
-            result.error = tr("Could not build the block volume: %1").arg(QString::fromUtf8(error.what()));
-        } catch (...) {
-            result = {};
-        }
-        if (!result.valid() && result.error.isEmpty()) result.error = tr("Could not build the block volume.");
-        return [this, result] { applyLoad(result); };
-    });
+    run(
+        Operation::Loading,
+        [this, source, request = request_, report = progressReporter()]() -> std::function<void()> {
+            auto result = source->load(request, report);
+            if (!result.valid() && result.error.isEmpty()) result.error = tr("Could not build the block volume.");
+            return [this, result] { applyLoad(result); };
+        },
+        [this](const QString& detail) {
+            BlockVolumeLoadResult result;
+            result.error = detail.isEmpty() ? tr("Could not build the block volume.")
+                                            : tr("Could not build the block volume: %1").arg(detail);
+            applyLoad(result);
+        });
 }
 
 void BlockVolumeController::applyLoad(const BlockVolumeLoadResult& result) {
@@ -161,18 +169,16 @@ bool BlockVolumeController::beginImport(BlockVolumeRequest request) {
     clearImport();
     error_.clear();
     auto* source = source_.get();
-    run(Operation::ImportLoading, [this, source, request = std::move(request), report = progressReporter()]() -> std::function<void()> {
-        BlockVolumeLoadResult result;
-        try {
-            result = source->load(request, report);
-        } catch (const std::exception& error) {
-            result = {};
-            result.error = tr("Could not read the import structure: %1").arg(QString::fromUtf8(error.what()));
-        } catch (...) {
-            result = {};
-        }
-        return [this, result] { applyImportLoad(result); };
-    });
+    run(
+        Operation::ImportLoading,
+        [this, source, request = std::move(request), report = progressReporter()]() -> std::function<void()> {
+            return [this, result = source->load(request, report)] { applyImportLoad(result); };
+        },
+        [this](const QString& detail) {
+            BlockVolumeLoadResult result;
+            if (!detail.isEmpty()) result.error = tr("Could not read the import structure: %1").arg(detail);
+            applyImportLoad(result);
+        });
     return true;
 }
 
@@ -191,15 +197,10 @@ bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVecto
     const auto bounds = selectionBounds(minimum, maximum);
     if (!source_ || busy() || !bounds) return false;
     auto* source = source_.get();
-    run(Operation::Copying,
+    run(
+        Operation::Copying,
         [this, source, volume = volume_, bounds = *bounds, copyEntities, useNewFormat]() -> std::function<void()> {
-            QByteArray raw;
-            try {
-                raw = source->exportStructure(*volume, bounds, copyEntities, useNewFormat);
-            } catch (...) {
-                raw.clear();
-            }
-            return [this, raw] {
+            return [this, raw = source->exportStructure(*volume, bounds, copyEntities, useNewFormat)] {
                 if (raw.isEmpty()) {
                     emit copyFailed(tr("Could not copy the selected blocks."));
                 } else if (!context_.binaryClipboard().write(BinaryClipboard::PayloadKind::Mcstructure, raw)) {
@@ -208,7 +209,8 @@ bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVecto
                     emit copyFinished();
                 }
             };
-        });
+        },
+        [this](const QString&) { emit copyFailed(tr("Could not copy the selected blocks.")); });
     return true;
 }
 
@@ -224,16 +226,15 @@ bool BlockVolumeController::commitImport(const QVector3D& minimum, const QVector
     if (!bounds.is_valid()) return false;
 
     auto* source = source_.get();
-    run(Operation::Importing,
-        [this, source, target = volume_, import = import_volume_, bounds, importEntities]() -> std::function<void()> {
-            BlockVolumeMutationResult result;
-            try {
-                result = source->commitImport(*target, *import, bounds, importEntities);
-            } catch (...) {
-                result = {};
-            }
-            return [this, result] { applyMutation(result, tr("Could not import the structure."), true); };
-        });
+    const auto finish = [this](const BlockVolumeMutationResult& result) {
+        applyMutation(result, tr("Could not import the structure."), true);
+    };
+    run(
+        Operation::Importing,
+        [source, target = volume_, import = import_volume_, bounds, importEntities, finish]() -> std::function<void()> {
+            return [finish, result = source->commitImport(*target, *import, bounds, importEntities)] { finish(result); };
+        },
+        [finish](const QString&) { finish({}); });
     return true;
 }
 
@@ -246,15 +247,15 @@ bool BlockVolumeController::deleteBlockVolumeAsync(const QVector3D& minimum, con
     const auto bounds = selectionBounds(minimum, maximum);
     if (!blockVolumeEditingEnabled() || busy() || !bounds) return false;
     auto* source = source_.get();
-    run(Operation::Deleting, [this, source, volume = volume_, bounds = *bounds, deleteEntities]() -> std::function<void()> {
-        BlockVolumeMutationResult result;
-        try {
-            result = source->deleteBlocks(*volume, bounds, deleteEntities);
-        } catch (...) {
-            result = {};
-        }
-        return [this, result] { applyMutation(result, tr("Could not delete the selected blocks."), false); };
-    });
+    const auto finish = [this](const BlockVolumeMutationResult& result) {
+        applyMutation(result, tr("Could not delete the selected blocks."), false);
+    };
+    run(
+        Operation::Deleting,
+        [source, volume = volume_, bounds = *bounds, deleteEntities, finish]() -> std::function<void()> {
+            return [finish, result = source->deleteBlocks(*volume, bounds, deleteEntities)] { finish(result); };
+        },
+        [finish](const QString&) { finish({}); });
     return true;
 }
 
@@ -283,20 +284,21 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
     if (url.isEmpty() || !source_ || busy() || !hasVoxelModel() || !bounds) return false;
     auto* source = source_.get();
     const QUrl output = withDefaultSuffix(url, QStringLiteral("mcstructure"));
-    run(Operation::Exporting,
+    run(
+        Operation::Exporting,
         [this, source, volume = volume_, bounds = *bounds, exportEntities, useNewFormat, output]() -> std::function<void()> {
             QString error;
-            try {
-                const QByteArray raw = source->exportStructure(*volume, bounds, exportEntities, useNewFormat);
-                if (raw.isEmpty()) {
-                    error = tr("Could not generate the structure data.");
-                } else if (const QString write_error = io::DocumentIo::writeBytes(output, raw); !write_error.isEmpty()) {
-                    error = tr("Could not export the structure: %1").arg(write_error);
-                }
-            } catch (const std::exception& exception) {
-                error = tr("Could not export the structure: %1").arg(QString::fromUtf8(exception.what()));
+            const QByteArray raw = source->exportStructure(*volume, bounds, exportEntities, useNewFormat);
+            if (raw.isEmpty()) {
+                error = tr("Could not generate the structure data.");
+            } else if (const QString write_error = io::DocumentIo::writeBytes(output, raw); !write_error.isEmpty()) {
+                error = tr("Could not export the structure: %1").arg(write_error);
             }
             return [this, output, error] { emit exportFinished(output, error); };
+        },
+        [this, output](const QString& detail) {
+            emit exportFinished(output, detail.isEmpty() ? tr("Could not generate the structure data.")
+                                                         : tr("Could not export the structure: %1").arg(detail));
         });
     return true;
 }
@@ -304,20 +306,21 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
 bool BlockVolumeController::exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh) {
     const auto bounds = selectionBounds(minimum, maximum);
     const auto scene = voxelScene();
-    if (url.isEmpty() || busy() || !hasVoxelModel() || !scene->voxels || !bounds) return false;
+    if (url.isEmpty() || busy() || !hasVoxelModel() || !bounds) return false;
     const QUrl output = withDefaultSuffix(url, QStringLiteral("glb"));
     // Capture the immutable preview, so navigating or closing the session cannot
     // invalidate an export or make it read a different version of the world.
-    run(Operation::Exporting, [this, scene, bounds = *bounds, output, compressMesh]() -> std::function<void()> {
-        QString error;
-        try {
-            const auto mesh = voxel_mesh::build(*scene->voxels, bounds);
-            if (!voxel_mesh::exportGlb(mesh, output, compressMesh, &error) && error.isEmpty()) error = tr("Could not export GLB.");
-        } catch (const std::exception& exception) {
-            error = tr("Could not export GLB: %1").arg(QString::fromUtf8(exception.what()));
-        }
-        return [this, output, error] { emit exportFinished(output, error); };
-    });
+    run(
+        Operation::Exporting,
+        [this, scene, bounds = *bounds, output, compressMesh]() -> std::function<void()> {
+            QString error;
+            const auto mesh = VoxelMeshBuffers::fromGrid(scene->voxels, bounds);
+            if (!mesh.exportGlb(output, compressMesh, &error) && error.isEmpty()) error = tr("Could not export GLB.");
+            return [this, output, error] { emit exportFinished(output, error); };
+        },
+        [this, output](const QString& detail) {
+            emit exportFinished(output, detail.isEmpty() ? tr("Could not export GLB.") : tr("Could not export GLB: %1").arg(detail));
+        });
     return true;
 }
 
@@ -342,11 +345,4 @@ void BlockVolumeController::clearImport() {
     import_volume_.reset();
     emit importPreviewChanged();
     emit overlayChanged();
-}
-
-void BlockVolumeController::setLoadProgress(int progress) {
-    progress = std::clamp(progress, 0, 100);
-    if (load_progress_ == progress) return;
-    load_progress_ = progress;
-    emit loadProgressChanged();
 }

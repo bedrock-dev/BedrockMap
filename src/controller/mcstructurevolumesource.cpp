@@ -12,9 +12,10 @@
 
 #include "chunk_data_position.h"
 #include "io/documentio.h"
+#include "loader/blockvolumeoperator.h"
 #include "mcstructure.h"
 #include "nbt.h"
-#include "render/voxel_mesh.h"
+#include "render/voxelmesh.h"
 
 namespace {
     std::unique_ptr<bl::nbt::compound_tag> blockEntityAtWorldPosition(const bl::nbt::compound_tag* source,
@@ -23,28 +24,6 @@ namespace {
         auto copy = std::unique_ptr<bl::nbt::compound_tag>(static_cast<bl::nbt::compound_tag*>(source->copy()));
         bl::set_block_entity_pos(copy.get(), worldPosition);
         return copy;
-    }
-
-    std::optional<bl::vec3> entityWorldPosition(const bl::nbt::compound_tag* entity) {
-        if (!entity) return std::nullopt;
-        const auto* tag = entity->get("Pos");
-        const auto* list = tag ? tag->as<const bl::nbt::list_tag*>() : nullptr;
-        if (!list || list->value.size() < 3) return std::nullopt;
-        const auto read = [](const bl::nbt::abstract_tag* value, float& result) {
-            if (const auto* v = value ? value->as<const bl::nbt::float_tag*>() : nullptr) {
-                result = v->value;
-                return true;
-            }
-            if (const auto* v = value ? value->as<const bl::nbt::double_tag*>() : nullptr) {
-                result = static_cast<float>(v->value);
-                return true;
-            }
-            return false;
-        };
-        bl::vec3 position{0.0f, 0.0f, 0.0f};
-        return read(list->value[0], position.x) && read(list->value[1], position.y) && read(list->value[2], position.z)
-                   ? std::optional<bl::vec3>(position)
-                   : std::nullopt;
     }
 
     std::shared_ptr<bl::mcstructure> buildExportStructure(const bl::mcstructure& structure, const bl::block_box& bounds, int32_t version,
@@ -81,7 +60,7 @@ namespace {
 
         if (exportEntities) {
             for (const auto* entity : structure.entities()) {
-                const auto worldPosition = entityWorldPosition(entity);
+                const auto worldPosition = BlockVolumeOperator::entityPosition(entity);
                 if (!worldPosition) continue;
                 const auto localPosition = bl::block_pos{static_cast<int>(std::floor(worldPosition->x - origin.x)),
                                                          static_cast<int>(std::floor(worldPosition->y - origin.y)),
@@ -103,7 +82,8 @@ namespace {
         auto parsed = bl::nbt::parse_one(std::span(reinterpret_cast<const byte_t*>(raw.constData()), static_cast<size_t>(raw.size())));
         std::shared_ptr<const bl::nbt::compound_tag> root(parsed.root);
         if (!parsed || !root) {
-            error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure NBT: %1").arg(bl::nbt::parse_error_to_string(parsed.error_code));
+            error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure NBT: %1")
+                        .arg(bl::nbt::parse_error_to_string(parsed.error_code));
             return {};
         }
         return root;
@@ -128,12 +108,13 @@ namespace {
     }
 }  // namespace
 
-BlockVolumeLoadResult McstructureVolumeSource::load(const BlockVolumeRequest& request, const std::function<void(int)>& reportProgress) const {
+BlockVolumeLoadResult McstructureVolumeSource::load(const BlockVolumeRequest& request,
+                                                    const std::function<void(int)>& reportProgress) const {
     return loadStructure(request, reportProgress);
 }
 
 BlockVolumeLoadResult McstructureVolumeSource::loadStructure(const BlockVolumeRequest& request,
-                                                            const std::function<void(int)>& reportProgress) {
+                                                             const std::function<void(int)>& reportProgress) {
     BlockVolumeLoadResult result;
     try {
         reportProgress(5);
@@ -147,8 +128,7 @@ BlockVolumeLoadResult McstructureVolumeSource::loadStructure(const BlockVolumeRe
         }
         reportProgress(45);
         const auto origin = structure->origin();
-        auto scene = makeVoxelScene(voxel_mesh::createVoxelDataFromMcstructure(*structure), QVector3D(origin.x, origin.y, origin.z),
-                                    QVector3D(structure->size_x(), structure->size_y(), structure->size_z()));
+        auto scene = VoxelSceneData::fromGrid(VoxelGrid::fromMcstructure(*structure), QVector3D(origin.x, origin.y, origin.z));
         if (!scene) {
             result.error = QCoreApplication::translate("BlockVolumeController", "Invalid or unsupported mcstructure file.");
             return result;
@@ -161,7 +141,8 @@ BlockVolumeLoadResult McstructureVolumeSource::loadStructure(const BlockVolumeRe
         reportProgress(100);
     } catch (const std::exception& error) {
         result.volume.reset();
-        result.error = QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1").arg(QString::fromUtf8(error.what()));
+        result.error =
+            QCoreApplication::translate("BlockVolumeController", "Could not read the structure: %1").arg(QString::fromUtf8(error.what()));
     }
     return result;
 }
@@ -170,8 +151,8 @@ QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, c
                                                     bool useNewFormat) const {
     const auto& structure = volume.structure;
     if (!structure || !selection.is_valid()) return {};
-    const auto fullBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
-    const auto bounds = selection.normalized().intersected(fullBounds);
+    const auto gridBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
+    const auto bounds = selection.normalized().intersected(gridBounds);
     if (!bounds.is_valid()) return {};
     const auto raw = buildExportStructure(*structure, bounds, useNewFormat ? 2 : 1, exportEntities)->to_raw();
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));

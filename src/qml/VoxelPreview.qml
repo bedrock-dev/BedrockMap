@@ -16,36 +16,53 @@ Item {
     property bool exportEntities: true
     property bool exportNewFormat: false
     property bool exportCompressMesh: false
+    readonly property bool hasModel: !!controller && controller.hasVoxelModel
     readonly property bool blockVolumeEditingEnabled: !!controller && controller.blockVolumeEditingEnabled
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
-    readonly property bool importing: !!controller && controller.importing
-    readonly property bool copying: !!controller && controller.copying
     readonly property bool busy: !!controller && controller.busy
-    readonly property bool operationsEnabled: root.hasModel && !!root.controller && !root.busy && !root.importPreviewActive
+    readonly property bool sectionsEnabled: root.hasModel && !root.controller.loading
+    readonly property bool operationsEnabled: root.hasModel && !root.busy && !root.importPreviewActive
     readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
                                                || Window.activeFocusItem instanceof TextEdit
-    readonly property bool viewShortcutsEnabled: root.visible && root.hasModel && !!root.controller && !root.controller.loading &&
-                                                 !root.importPreviewActive && !root.textInputFocused
+    readonly property bool viewShortcutsEnabled: root.visible && root.sectionsEnabled && !root.importPreviewActive
+                                                 && !root.textInputFocused
+    readonly property var camera: viewport.camera
+
+    /// The selection when enabled, otherwise the whole model, in model-local coordinates.
+    function exportRange() {
+        return camera.selectionEnabled ? {
+                                             "minimum": camera.selectionMinimum,
+                                             "maximum": camera.selectionMaximum
+                                         } : {
+                                             "minimum": Qt.vector3d(0, 0, 0),
+                                             "maximum": camera.modelSize
+                                         }
+    }
+
+    function prepareExport() {
+        if (!operationsEnabled || structureExportDialog.visible || glbExportDialog.visible)
+            return false
+        const range = exportRange()
+        exportTarget = controller
+        exportMinimum = range.minimum
+        exportMaximum = range.maximum
+        return true
+    }
 
     function chooseStructureExport() {
-        if (!operationsEnabled || structureExportDialog.visible || glbExportDialog.visible)
+        if (!prepareExport())
             return
-        exportTarget = controller
-        exportMinimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
-        exportMaximum = viewport.camera.selectionEnabled ? viewport.camera.selectionMaximum : viewport.camera.modelSize
-        exportEntities = includeEntities.checked
-        exportNewFormat = structureFormat.currentIndex === 1
+        exportEntities = structureSection.includeEntities
+        exportNewFormat = structureSection.newFormat
         structureExportDialog.open()
     }
 
     function chooseGlbExport() {
-        if (!operationsEnabled || structureExportDialog.visible || glbExportDialog.visible)
+        if (!prepareExport())
             return
-        exportTarget = controller
-        exportMinimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
-        exportMaximum = viewport.camera.selectionEnabled ? viewport.camera.selectionMaximum : viewport.camera.modelSize
         exportCompressMesh = compressMesh.checked
-        const fileName = "voxel-" + [0, 1, 2].map(axis => root.worldOrigin[axis] + root.axisValue(exportMinimum, axis)).join("_")
+        const origin = camera.modelOrigin
+        const fileName = "voxel-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z + exportMinimum.z].join("_")
                 + ".glb"
         glbExportDialog.selectedFile = glbExportDialog.currentFolder.toString().length > 0
                 ? glbExportDialog.currentFolder + "/" + encodeURIComponent(fileName) : fileName
@@ -53,76 +70,30 @@ Item {
     }
 
     function deleteSelection() {
-        if (!blockVolumeEditingEnabled || !viewport.camera.selectionEnabled || !operationsEnabled)
-            return
-        controller.deleteBlockVolumeAsync(viewport.camera.selectionMinimum, viewport.camera.selectionMaximum,
-                                          includeEntities.checked)
+        if (blockVolumeEditingEnabled && camera.selectionEnabled && operationsEnabled)
+            controller.deleteBlockVolumeAsync(camera.selectionMinimum, camera.selectionMaximum, structureSection.includeEntities)
     }
 
     function chooseStructureImport() {
-        if (!blockVolumeEditingEnabled || !operationsEnabled)
-            return
-        structureImportDialog.open()
+        if (blockVolumeEditingEnabled && operationsEnabled)
+            structureImportDialog.open()
     }
 
     function confirmImport() {
-        if (!importPreviewActive || importing || !controller)
-            return
-        controller.commitImport(viewport.camera.selectionMinimum, viewport.camera.selectionMaximum,
-                                includeEntities.checked)
+        if (importPreviewActive && !controller.importing)
+            controller.commitImport(camera.selectionMinimum, camera.selectionMaximum, structureSection.includeEntities)
     }
 
     function copySelection() {
         if (!operationsEnabled)
             return
-        const minimum = viewport.camera.selectionEnabled ? viewport.camera.selectionMinimum : Qt.vector3d(0, 0, 0)
-        const maximum = viewport.camera.selectionEnabled ? viewport.camera.selectionMaximum : viewport.camera.modelSize
-        controller.copySelection(minimum, maximum, includeEntities.checked, structureFormat.currentIndex === 1)
+        const range = exportRange()
+        controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities, structureSection.newFormat)
     }
 
     function pasteStructure() {
-        if (!blockVolumeEditingEnabled || !operationsEnabled)
-            return
-        controller.pasteStructure()
-    }
-    function resetCameraView() {
-        viewport.camera.resetView()
-    }
-    function focusFrontFace() {
-        viewport.camera.focusFrontFace()
-    }
-    function rotateView(yaw, pitch) {
-        viewport.camera.rotateView(yaw, pitch)
-    }
-    function setOrthoMode(enabled) {
-        viewport.camera.orthoMode = enabled
-    }
-    function toggleOrthoMode() {
-        setOrthoMode(!viewport.camera.orthoMode)
-    }
-    function setAxesVisible(visible) {
-        viewport.showAxes = visible
-    }
-    function toggleAxes() {
-        setAxesVisible(!viewport.showAxes)
-    }
-    function setRotationLocked(locked) {
-        viewport.camera.rotationLocked = locked
-    }
-    function toggleRotationLocked() {
-        setRotationLocked(!viewport.camera.rotationLocked)
-    }
-    function setSelectionEnabled(enabled) {
-        viewport.camera.selectionEnabled = enabled
-    }
-    function toggleSelection() {
-        setSelectionEnabled(!viewport.camera.selectionEnabled)
-    }
-    function setSelectionMoveMode(enabled) {
-        viewport.camera.selectionMoveMode = enabled
-    }
-    function toggleSelectionMoveMode() {
-        setSelectionMoveMode(!viewport.camera.selectionMoveMode)
+        if (blockVolumeEditingEnabled && operationsEnabled)
+            controller.pasteStructure()
     }
 
     Connections {
@@ -139,9 +110,9 @@ Item {
         target: root.controller
         function onImportPreviewChanged() {
             if (root.importPreviewActive)
-                viewport.camera.activateImportSelection(root.controller.importSize)
+                root.camera.activateImportSelection(root.controller.importSize)
             else
-                viewport.camera.deactivateImportSelection()
+                root.camera.deactivateImportSelection()
         }
         function onImportFailed(message) {
             App.notifications.error(qsTr("Import failed"), "", message)
@@ -160,60 +131,32 @@ Item {
         }
     }
 
-    Shortcut {
-        sequence: "R"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.resetCameraView()
-    }
-    Shortcut {
-        sequence: "F"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.focusFrontFace()
-    }
-    Shortcut {
-        sequence: "O"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.toggleOrthoMode()
-    }
-    Shortcut {
-        sequence: "A"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.toggleAxes()
-    }
-    Shortcut {
-        sequence: "L"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.toggleRotationLocked()
-    }
-    Shortcut {
-        sequence: "S"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.toggleSelection()
-    }
-    Shortcut {
-        sequence: "M"
-        enabled: root.viewShortcutsEnabled && viewport.camera.selectionEnabled
-        onActivated: root.toggleSelectionMoveMode()
-    }
-    Shortcut {
-        sequence: "Left"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.rotateView(-90, 0)
-    }
-    Shortcut {
-        sequence: "Right"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.rotateView(90, 0)
-    }
-    Shortcut {
-        sequence: "Up"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.rotateView(0, -90)
-    }
-    Shortcut {
-        sequence: "Down"
-        enabled: root.viewShortcutsEnabled
-        onActivated: root.rotateView(0, 90)
+    readonly property var viewShortcuts: [
+        { sequence: "R", action: () => root.camera.resetView() },
+        { sequence: "F", action: () => root.camera.focusFrontFace() },
+        { sequence: "O", action: () => root.camera.orthoMode = !root.camera.orthoMode },
+        { sequence: "A", action: () => viewport.showAxes = !viewport.showAxes },
+        { sequence: "L", action: () => root.camera.rotationLocked = !root.camera.rotationLocked },
+        { sequence: "S", action: () => root.camera.selectionEnabled = !root.camera.selectionEnabled },
+        { sequence: "M", needsSelection: true, action: () => root.camera.selectionMoveMode = !root.camera.selectionMoveMode },
+        { sequence: "Left", action: () => root.camera.rotateView(-90, 0) },
+        { sequence: "Right", action: () => root.camera.rotateView(90, 0) },
+        { sequence: "Up", action: () => root.camera.rotateView(0, -90) },
+        { sequence: "Down", action: () => root.camera.rotateView(0, 90) }
+    ]
+
+    // Shortcut needs an Item parent to find its window, hence the Item wrapper.
+    Repeater {
+        model: root.viewShortcuts
+        delegate: Item {
+            id: shortcutHost
+            required property var modelData
+            Shortcut {
+                sequence: shortcutHost.modelData.sequence
+                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.needsSelection || root.camera.selectionEnabled)
+                onActivated: shortcutHost.modelData.action()
+            }
+        }
     }
 
     FileUrlDialog {
@@ -253,75 +196,6 @@ Item {
                                                                    root.exportCompressMesh))
                 App.notifications.error(qsTr("Export failed"))
         }
-    }
-    readonly property bool hasModel: !!controller && controller.hasVoxelModel
-    readonly property var worldOrigin: [viewport.camera.modelOrigin.x, viewport.camera.modelOrigin.y,
-        viewport.camera.modelOrigin.z]
-
-    function axisValue(vector, axis) {
-        return axis === 0 ? vector.x : axis === 1 ? vector.y : vector.z
-    }
-
-    component SelectionCoordinate: AppSpinBox {
-        required property int axis
-        property bool upperBoundary: false
-        readonly property int origin: root.worldOrigin[axis]
-        readonly property int lower: root.axisValue(viewport.camera.selectionMinimum, axis)
-        readonly property int upper: root.axisValue(viewport.camera.selectionMaximum, axis)
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.preferredWidth: 110
-        from: origin + (upperBoundary ? lower + 1 : 0)
-        to: Math.max(from, origin + (upperBoundary ? root.axisValue(viewport.camera.modelSize, axis) : upper - 1))
-        value: Math.max(from, Math.min(to, origin + (upperBoundary ? upper : lower)))
-        onValueModified: viewport.camera.setSelectionBoundary(axis, upperBoundary, value - origin)
-        Accessible.name: (upperBoundary ? qsTr("Maximum (exclusive)") : qsTr("Minimum")) + " " + ["X", "Y", "Z"][axis]
-    }
-
-    component PreviewCheckBox: AppCheckBox {
-        id: toggle
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        implicitHeight: Math.max(Theme.controlHeight, implicitContentHeight + topPadding + bottomPadding)
-        contentItem: Text {
-            leftPadding: toggle.indicator.width + toggle.spacing
-            text: toggle.text
-            color: toggle.enabled ? Theme.text : Theme.muted
-            font: toggle.font
-            verticalAlignment: Text.AlignVCenter
-            wrapMode: Text.Wrap
-        }
-    }
-
-    component PreviewSection: GroupBox {
-        id: previewSection
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.alignment: Qt.AlignTop
-        padding: Theme.gapSmall
-        topPadding: padding + implicitLabelHeight + spacing
-        spacing: Theme.gapSmall
-        label: Text {
-            x: previewSection.leftPadding
-            y: previewSection.padding
-            text: previewSection.title
-            color: Theme.text
-            font.pixelSize: Theme.fontLabel
-        }
-        background: AppCard {}
-    }
-
-    component ViewButton: AppIconButton {
-        buttonSize: Theme.iconButtonSmallSize
-        Layout.preferredWidth: controlSize
-        Layout.preferredHeight: controlSize
-    }
-
-    component OperationButton: AppButton {
-        compact: true
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.preferredWidth: 0
     }
 
     ColumnLayout {
@@ -365,9 +239,7 @@ Item {
                 }
                 background: Rectangle {
                     radius: Theme.radiusControl
-                    color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt :
-                                                                                              Theme.surface)
-
+                    color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt : Theme.surface)
                     border.width: Theme.borderWidth
                     border.color: Theme.border
                     opacity: 0.95
@@ -394,98 +266,17 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             ScrollBar.vertical: ScrollBar {}
-            GridLayout {
+            ColumnLayout {
                 id: sections
                 x: Theme.gapSmall
                 y: Theme.gapSmall
                 width: Math.max(0, controlsPanel.width - Theme.gapSmall * 2)
-                columns: 1
-                uniformCellWidths: true
-                columnSpacing: Theme.gapSmall
-                rowSpacing: Theme.gapSmall
+                spacing: Theme.gapSmall
 
-                PreviewSection {
-                    objectName: "voxelSelectionSection"
-                    title: qsTr("Selection")
-                    enabled: root.hasModel && !!root.controller && !root.controller.loading
-                    contentItem: ColumnLayout {
-                        spacing: Theme.gapSmall
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            spacing: Theme.gapSmall
-
-                            PreviewCheckBox {
-                                objectName: "voxelSelectionToggle"
-                                text: qsTr("Enable selection")
-                                enabled: !root.importPreviewActive
-                                checked: viewport.camera.selectionEnabled
-                                onToggled: root.setSelectionEnabled(checked)
-                            }
-                            PreviewCheckBox {
-                                objectName: "voxelSelectionMoveToggle"
-                                text: qsTr("Move selection")
-                                enabled: viewport.camera.selectionEnabled && !root.importPreviewActive
-                                checked: viewport.camera.selectionMoveMode
-                                onToggled: root.setSelectionMoveMode(checked)
-                            }
-                        }
-
-                        GridLayout {
-                            objectName: "voxelSelectionCoordinates"
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            enabled: viewport.camera.selectionEnabled && !root.importPreviewActive
-                            columns: 4
-                            columnSpacing: Theme.gapSmall
-                            rowSpacing: Theme.gapSmall
-
-                            Item {}
-                            Repeater {
-                                model: ["X", "Y", "Z"]
-                                delegate: Text {
-                                    required property string modelData
-                                    Layout.fillWidth: true
-                                    Layout.minimumWidth: 0
-                                    Layout.preferredWidth: 110
-                                    text: modelData
-                                    color: Theme.muted
-                                    font.pixelSize: Theme.fontCaption
-                                    horizontalAlignment: Text.AlignHCenter
-                                }
-                            }
-
-                            Text {
-                                text: qsTr("Start")
-                                color: Theme.muted
-                                font.pixelSize: Theme.fontCaption
-                            }
-                            Repeater {
-                                model: 3
-                                delegate: SelectionCoordinate {
-                                    required property int index
-                                    axis: index
-                                    objectName: "voxelSelectionMin" + ["X", "Y", "Z"][axis]
-                                }
-                            }
-
-                            Text {
-                                text: qsTr("End")
-                                color: Theme.muted
-                                font.pixelSize: Theme.fontCaption
-                            }
-                            Repeater {
-                                model: 3
-                                delegate: SelectionCoordinate {
-                                    required property int index
-                                    axis: index
-                                    upperBoundary: true
-                                    objectName: "voxelSelectionMax" + ["X", "Y", "Z"][axis]
-                                }
-                            }
-                        }
-                    }
+                VoxelSelectionSection {
+                    camera: root.camera
+                    importPreviewActive: root.importPreviewActive
+                    enabled: root.sectionsEnabled
                 }
 
                 RowLayout {
@@ -493,95 +284,19 @@ Item {
                     Layout.minimumWidth: 0
                     spacing: Theme.gapSmall
 
-                    PreviewSection {
-                        objectName: "voxelViewSection"
-                        title: qsTr("View")
+                    VoxelViewSection {
+                        view: viewport
                         Layout.fillHeight: true
-                        enabled: root.hasModel && !!root.controller && !root.controller.loading
-                        contentItem: RowLayout {
-                            objectName: "voxelViewControls"
-                            spacing: Theme.gapMedium
-
-                            ColumnLayout {
-                                objectName: "voxelViewToggles"
-                                Layout.fillWidth: true
-                                Layout.minimumWidth: 0
-                                spacing: Theme.gapSmall
-
-                                PreviewCheckBox {
-                                    objectName: "voxelOrthoToggle"
-                                    text: qsTr("Orthographic projection")
-                                    checked: viewport.camera.orthoMode
-                                    onToggled: root.setOrthoMode(checked)
-                                }
-                                PreviewCheckBox {
-                                    objectName: "voxelRotationLockToggle"
-                                    text: qsTr("Lock rotation")
-                                    checked: viewport.camera.rotationLocked
-                                    onToggled: root.setRotationLocked(checked)
-                                }
-                                PreviewCheckBox {
-                                    objectName: "voxelShowAxesToggle"
-                                    text: qsTr("Show axes")
-                                    checked: viewport.showAxes
-                                    onToggled: root.setAxesVisible(checked)
-                                }
-                            }
-
-                            GridLayout {
-                                objectName: "voxelViewDirectionPad"
-                                Layout.alignment: Qt.AlignVCenter
-                                columns: 3
-                                columnSpacing: Theme.gapSmall
-                                rowSpacing: 0
-
-                                Item {}
-                                ViewButton {
-                                    objectName: "voxelRotateUp"
-                                    iconName: "caret_up"
-                                    label: qsTr("Rotate up")
-                                    onClicked: root.rotateView(0, -90)
-                                }
-                                Item {}
-
-                                ViewButton {
-                                    objectName: "voxelRotateLeft"
-                                    iconName: "caret_left"
-                                    label: qsTr("Rotate left")
-                                    onClicked: root.rotateView(-90, 0)
-                                }
-                                ViewButton {
-                                    objectName: "voxelFaceFront"
-                                    iconName: "front"
-                                    label: qsTr("Face front")
-                                    onClicked: root.focusFrontFace()
-                                }
-                                ViewButton {
-                                    objectName: "voxelRotateRight"
-                                    iconName: "caret_right"
-                                    label: qsTr("Rotate right")
-                                    onClicked: root.rotateView(90, 0)
-                                }
-
-                                Item {}
-                                ViewButton {
-                                    objectName: "voxelRotateDown"
-                                    iconName: "caret_down"
-                                    label: qsTr("Rotate down")
-                                    onClicked: root.rotateView(0, 90)
-                                }
-                                Item {}
-                            }
-                        }
+                        enabled: root.sectionsEnabled
                     }
 
-                    PreviewSection {
+                    VoxelPreviewSection {
                         objectName: "voxelModelExportSection"
                         title: qsTr("Model")
                         Layout.fillWidth: false
                         Layout.fillHeight: true
                         Layout.minimumWidth: implicitWidth
-                        enabled: root.hasModel && !!root.controller && !root.controller.loading
+                        enabled: root.sectionsEnabled
                         contentItem: ColumnLayout {
                             spacing: Theme.gapSmall
 
@@ -602,8 +317,7 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 compact: true
-                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr(
-                                                                                         "Export GLB")
+                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr("Export GLB")
                                 enabled: root.operationsEnabled
                                 onClicked: root.chooseGlbExport()
                             }
@@ -611,107 +325,18 @@ Item {
                     }
                 }
 
-                PreviewSection {
-                    objectName: "voxelOperationsSection"
-                    title: qsTr("Structure")
-                    Layout.columnSpan: sections.columns
-                    contentItem: ColumnLayout {
-                        spacing: Theme.gapSmall
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            spacing: Theme.gapSmall
-
-                            AppCheckBox {
-                                id: includeEntities
-                                objectName: "voxelExportEntities"
-                                text: qsTr("Include entities")
-                                checked: true
-                                Accessible.description: qsTr("Applies to structure and clipboard operations.")
-                            }
-
-                            Item {
-                                Layout.fillWidth: true
-                            }
-
-                            AppComboBox {
-                                id: structureFormat
-                                objectName: "voxelExportFormat"
-                                Layout.preferredWidth: Theme.ui(Theme.touch ? 112 : 130)
-                                Layout.minimumWidth: 96
-                                model: [qsTr("Old format"), qsTr("New format")]
-                                Accessible.name: qsTr("Structure format")
-                            }
-                        }
-
-                        RowLayout {
-                            objectName: "voxelOperationActions"
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            spacing: Theme.gapSmall
-
-                            OperationButton {
-                                objectName: "voxelImportStructure"
-                                text: root.importing ? qsTr("Importing…") : qsTr("Import")
-                                visible: root.blockVolumeEditingEnabled
-                                enabled: root.operationsEnabled
-                                onClicked: root.chooseStructureImport()
-                            }
-                            OperationButton {
-                                objectName: "voxelExportStructure"
-                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr("Export")
-                                enabled: root.operationsEnabled
-                                onClicked: root.chooseStructureExport()
-                            }
-                            OperationButton {
-                                objectName: "voxelCopy"
-                                text: root.copying ? qsTr("Copying…") : qsTr("Copy")
-                                enabled: root.operationsEnabled
-                                onClicked: root.copySelection()
-                            }
-                            OperationButton {
-                                objectName: "voxelPaste"
-                                text: qsTr("Paste")
-                                visible: root.blockVolumeEditingEnabled
-                                enabled: root.operationsEnabled
-                                onClicked: root.pasteStructure()
-                            }
-                            OperationButton {
-                                objectName: "voxelDelete"
-                                text: root.controller && root.controller.deleting ? qsTr("Deleting…") : qsTr("Delete")
-                                visible: root.blockVolumeEditingEnabled
-                                enabled: root.operationsEnabled && viewport.camera.selectionEnabled
-                                onClicked: root.deleteSelection()
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            visible: root.importPreviewActive
-                            spacing: Theme.gapSmall
-
-                            Item {
-                                Layout.fillWidth: true
-                            }
-
-                            AppButton {
-                                compact: true
-                                text: qsTr("Cancel")
-                                enabled: !root.importing
-                                onClicked: root.controller.cancelImport()
-                            }
-
-                            AppButton {
-                                compact: true
-                                text: root.importing ? qsTr("Importing…") : qsTr("Confirm import")
-                                primary: true
-                                enabled: !root.importing && viewport.camera.selectionEnabled
-                                onClicked: root.confirmImport()
-                            }
-                        }
-                    }
+                VoxelStructureSection {
+                    id: structureSection
+                    controller: root.controller
+                    editingEnabled: root.blockVolumeEditingEnabled
+                    operationsEnabled: root.operationsEnabled
+                    selectionEnabled: root.camera.selectionEnabled
+                    onImportRequested: root.chooseStructureImport()
+                    onExportRequested: root.chooseStructureExport()
+                    onCopyRequested: root.copySelection()
+                    onPasteRequested: root.pasteStructure()
+                    onDeleteRequested: root.deleteSelection()
+                    onConfirmImportRequested: root.confirmImport()
                 }
             }
         }
