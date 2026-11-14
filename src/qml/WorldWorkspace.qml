@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import QtQuick.Window
 import "controls"
 
@@ -44,6 +45,7 @@ Item {
     property bool layerPanelOpen: false
     property bool mapFilterPanelOpen: false
     property bool debugVisible: false
+    property var pendingChunkOpen: null
     readonly property bool chunkEditorOpen: childPages.currentRoute === "chunk-editor"
     readonly property bool voxelViewOpen: childPages.currentRoute === "voxel"
     readonly property bool importPending: !!mapController && !!mapController.regionImport
@@ -160,12 +162,50 @@ Item {
             return
         mapController.gotoBlock(Math.round(x), Math.round(z))
     }
-    function openChunkEditor(chunkX, chunkZ, dimension) {
+    function openChunkEditorNow(chunkX, chunkZ, dimension) {
         if (!session || !session.chunkEditor)
             return
         session.chunkEditor.openChunk(chunkX, chunkZ, dimension)
         canvas.selectionToolActive = false
         childPages.open("chunk-editor")
+    }
+    function openChunkEditor(chunkX, chunkZ, dimension) {
+        if (!session || !session.chunkEditor)
+            return
+        if (session.chunkEditor.dirty) {
+            pendingChunkOpen = {
+                "chunkX": chunkX,
+                "chunkZ": chunkZ,
+                "dimension": dimension
+            }
+            chunkSwitchDialog.open()
+            return
+        }
+        openChunkEditorNow(chunkX, chunkZ, dimension)
+    }
+    function savePendingChunkOpen() {
+        if (!pendingChunkOpen || !session || !session.chunkEditor)
+            return
+        if (!session.chunkEditor.saveToCache()) {
+            App.notifications.error(qsTr("Save failed"))
+            return
+        }
+        const target = pendingChunkOpen
+        pendingChunkOpen = null
+        chunkSwitchDialog.close()
+        openChunkEditorNow(target.chunkX, target.chunkZ, target.dimension)
+    }
+    function discardPendingChunkOpen() {
+        if (!pendingChunkOpen)
+            return
+        const target = pendingChunkOpen
+        pendingChunkOpen = null
+        chunkSwitchDialog.close()
+        openChunkEditorNow(target.chunkX, target.chunkZ, target.dimension)
+    }
+    function cancelPendingChunkOpen() {
+        pendingChunkOpen = null
+        chunkSwitchDialog.close()
     }
     function toggleChunkEditor() {
         if (chunkEditorOpen) {
@@ -567,6 +607,50 @@ Item {
         z: 40
         active: !!workspace.session && workspace.session.saving
         text: qsTr("Saving world…")
+    }
+
+    AppDialog {
+        id: chunkSwitchDialog
+        title: qsTr("Unsaved changes")
+        contentItem: ColumnLayout {
+            spacing: Theme.gapMedium
+
+            Text {
+                Layout.fillWidth: true
+                text: qsTr("This chunk has unsaved changes. Save them before opening a different chunk?")
+                color: Theme.text
+                font.pixelSize: Theme.fontSubtitle
+                wrapMode: Text.WordWrap
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.gapMedium
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: workspace.cancelPendingChunkOpen()
+                }
+                AppButton {
+                    text: qsTr("Discard")
+                    danger: true
+                    onClicked: workspace.discardPendingChunkOpen()
+                }
+                AppButton {
+                    text: qsTr("Save")
+                    primary: true
+                    onClicked: workspace.savePendingChunkOpen()
+                }
+            }
+        }
+        onClosed: {
+            if (workspace.pendingChunkOpen)
+                workspace.pendingChunkOpen = null
+        }
     }
 
     CustomDimensionDialog {

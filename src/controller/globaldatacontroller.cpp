@@ -67,6 +67,7 @@ GlobalNbtSection::GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::uniq
       short_label_(std::move(policy.shortLabel)),
       icon_name_(std::move(policy.iconName)),
       count_(static_cast<int>(roots.size())),
+      show_count_(policy.showCount),
       document_(new NbtDocumentController(this)),
       context_(context) {
     document_->loadMemory(std::move(roots), raw_keys, title_, policy.presenter);
@@ -258,6 +259,7 @@ void GlobalDataController::appendLevelDatSection() {
     policy.shortLabel = QStringLiteral("LD");
     policy.iconName = QStringLiteral("level_dat");
     policy.singleRecord = true;
+    policy.showCount = false;
     policy.fixedKey = QStringLiteral("level.dat");
     level_dat_section_ = addSection(
         std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, context_, this));
@@ -311,6 +313,7 @@ void GlobalDataController::publish(std::shared_ptr<GlobalNBTLoadResult> result) 
     appendGeneralSection(std::move(portals), result->portalData.data());
 
     auto structures = make_policy(QStringLiteral("Structures"), QStringLiteral("S"), QStringLiteral("structure"));
+    structures.showCount = false;
     structures.structurePreview = true;
     structures.presenter = rootKeyPresenter(QStringLiteral("structure"));
     structures.keyResolver = structureKeyResolver();

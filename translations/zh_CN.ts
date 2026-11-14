@@ -1081,12 +1081,6 @@
     <name>Main</name>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Map</source>
-        <translation>地图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
         <source>BedrockMap</source>
         <translation>BedrockMap</translation>
     </message>
@@ -4128,6 +4122,36 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Selection mode</source>
         <translation>选区模式</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Unsaved changes</source>
+        <translation>未保存的修改</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>This chunk has unsaved changes. Save them before opening a different chunk?</source>
+        <translation>当前区块有未保存的修改。打开其他区块前是否先保存？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Discard</source>
+        <translation>放弃</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save failed</source>
+        <translation>保存失败</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

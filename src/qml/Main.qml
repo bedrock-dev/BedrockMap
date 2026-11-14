@@ -80,7 +80,7 @@ Window {
     // Save and close for the open session live in the compact title bar.
     readonly property bool sessionTitleBarActions: workspaceOpen && Theme.showTopbar && !!activeSession && !childPageOpen
     onChildPageOpenChanged: if (childPageOpen)
-                                workspaceSectionMenu.close()
+                                workspaceNavigationPanel.close()
     readonly property bool canNavigateBack: childPageOpen || (!!worldWorkspace && worldWorkspace.canGoBack)
                                             || (Theme.showTopbar && workspaceOpen)
     readonly property string shellTitle: {
@@ -93,10 +93,35 @@ Window {
     // Section 0 is the map; global data sections follow.
     readonly property var workspaceSectionEntries: {
         const entries = [{
-                             title: qsTr("Map"),
+                             title: "Map",
                              iconName: "map",
-                             label: qsTr("Map")
+                             label: "Map",
+                             kind: "section",
+                             navigationIndex: 0,
+                             dirty: false,
+                             selected: !activeSession || activeSession.titleBarNavigationIndex === 0,
+                             enabled: true
                          }]
+        const chunkEditor = activeSession ? activeSession.chunkEditor : null
+        entries.push({
+                         title: "Chunk editor",
+                         iconName: "nbt_editor",
+                         label: "Chunk editor",
+                         kind: "chunkEditor",
+                         dirty: !!chunkEditor && chunkEditor.dirty,
+                         selected: !!worldWorkspace && worldWorkspace.chunkEditorOpen,
+                         enabled: !!chunkEditor && (chunkEditor.hasChunk || chunkEditor.loading)
+                     })
+        const voxelView = activeSession ? activeSession.voxelView : null
+        entries.push({
+                         title: "3D view",
+                         iconName: "structure",
+                         label: "3D view",
+                         kind: "voxelView",
+                         dirty: false,
+                         selected: !!worldWorkspace && worldWorkspace.voxelViewOpen,
+                         enabled: !!voxelView && voxelView.hasVoxelModel
+                     })
         const sections = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationSections :
                                                                                    []
         for (let i = 0; i < sections.length; ++i) {
@@ -104,15 +129,21 @@ Window {
             entries.push({
                              title: section.title,
                              iconName: section.iconName ? section.iconName : "nbt_editor",
-                             label: section.title + (section.count > 0 ? " " + section.count : "") + (section.dirty
-                                                                                                       ? " *" : "")
+                             iconText: section.shortLabel || "",
+                             label: section.title + (section.showCount ? " " + section.count : ""),
+                             kind: "section",
+                             navigationIndex: i + 1,
+                             dirty: !!section.dirty,
+                             selected: activeSession && activeSession.titleBarNavigationIndex === i + 1,
+                             enabled: true
                          })
         }
         return entries
     }
     readonly property var workspaceSectionEntry: {
         const section = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationIndex : 0
-        return workspaceSectionEntries[section] || workspaceSectionEntries[0]
+        return workspaceSectionEntries.find(entry => entry.kind === "section" && entry.navigationIndex === section)
+                || workspaceSectionEntries[0]
     }
 
     Shortcut {
@@ -234,6 +265,20 @@ Window {
     function saveActiveSession() {
         sessionClose.save(window.activeSession)
     }
+    function activateWorkspaceSectionEntry(entry) {
+        if (!entry || entry.enabled === false || !worldWorkspace)
+            return
+        if (entry.kind === "chunkEditor") {
+            worldWorkspace.toggleChunkEditor()
+            return
+        }
+        if (entry.kind === "voxelView") {
+            worldWorkspace.toggleVoxelView()
+            return
+        }
+        if (window.activeSession && window.activeSession.titleBarNavigationVisible)
+            window.activeSession.titleBarNavigationIndex = entry.navigationIndex
+    }
     FolderUrlDialog {
         id: folderDialog
         title: qsTr("Open world folder")
@@ -241,24 +286,11 @@ Window {
         onAccepted: window.openWorldFolder(selectedUrl)
     }
 
-    AppMenu {
-        id: workspaceSectionMenu
-        parent: workspaceSectionButton
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-        readonly property real sectionItemHeight: Theme.menuItemHeight
-        Repeater {
-            model: window.workspaceSectionEntries
-            delegate: AppMenuItem {
-                required property var modelData
-                required property int index
-                text: modelData.label
-                iconName: modelData.iconName
-                implicitHeight: workspaceSectionMenu.sectionItemHeight
-                height: workspaceSectionMenu.sectionItemHeight
-                onTriggered: if (window.activeSession && window.activeSession.titleBarNavigationVisible)
-                                 window.activeSession.titleBarNavigationIndex = index
-            }
-        }
+    WorkspaceNavigationPanel {
+        id: workspaceNavigationPanel
+        items: window.workspaceSectionEntries
+        topOffset: topbar.height + Theme.gapSmall
+        onItemTriggered: item => window.activateWorkspaceSectionEntry(item)
     }
 
     onClosing: function (close) {
@@ -429,22 +461,19 @@ Window {
                         label: qsTr("Save settings")
                         onClicked: App.settings.save()
                     },
-                    AppButton {
+                    AppIconButton {
                         id: workspaceSectionButton
                         visible: window.sessionTitleBarActions && window.activeSession
                                  && window.activeSession.titleBarNavigationVisible
-                        compact: window.compactLayout
                         iconName: window.workspaceSectionEntry.iconName
-                        text: window.workspaceSectionEntry.label
-                        active: workspaceSectionMenu.opened
+                        label: window.workspaceSectionEntry.label
+                        dirty: !!window.workspaceSectionEntry.dirty
+                        selected: workspaceNavigationPanel.opened
                         onClicked: {
-                            if (workspaceSectionMenu.opened) {
-                                workspaceSectionMenu.close()
-                            } else {
-                                workspaceSectionMenu.popup(workspaceSectionButton, workspaceSectionButton.width
-                                                           - workspaceSectionMenu.width,
-                                                           workspaceSectionButton.height + 4)
-                            }
+                            if (workspaceNavigationPanel.opened)
+                                workspaceNavigationPanel.close()
+                            else
+                                workspaceNavigationPanel.open()
                         }
                     },
                     AppIconButton {

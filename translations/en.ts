@@ -1081,12 +1081,6 @@
     <name>Main</name>
     <message>
         <location filename="../src/qml/Main.qml"/>
-        <location filename="../src/qml/Main.qml"/>
-        <source>Map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/Main.qml"/>
         <source>BedrockMap</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2107,7 +2101,7 @@
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Save</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -2479,7 +2473,7 @@
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Discard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Discard</translation>
     </message>
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
@@ -2489,7 +2483,7 @@
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Save</translation>
     </message>
 </context>
 <context>
@@ -2551,7 +2545,7 @@
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Save</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
@@ -4128,6 +4122,36 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Selection mode</source>
         <translation>Selection mode</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Unsaved changes</source>
+        <translation>Unsaved changes</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>This chunk has unsaved changes. Save them before opening a different chunk?</source>
+        <translation>This chunk has unsaved changes. Save them before opening a different chunk?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Discard</source>
+        <translation>Discard</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Save failed</source>
+        <translation>Save failed</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

@@ -29,6 +29,8 @@ struct GlobalNbtPolicy {
     QString iconName;
     bool readOnly{false};
     bool singleRecord{false};
+    /// Whether navigation shows this section's record count.
+    bool showCount{true};
     bool structurePreview{false};
     bool mapPreview{false};
     QString fixedKey;
@@ -45,6 +47,7 @@ class GlobalNbtSection final : public QObject {
     Q_PROPERTY(QString shortLabel READ shortLabel CONSTANT)
     Q_PROPERTY(QString iconName READ iconName CONSTANT)
     Q_PROPERTY(int count READ count CONSTANT)
+    Q_PROPERTY(bool showCount READ showCount CONSTANT)
     Q_PROPERTY(NbtDocumentController* document READ document CONSTANT)
     Q_PROPERTY(BlockVolumeController* structurePreview READ structurePreview CONSTANT)
     Q_PROPERTY(MapItemController* mapPreview READ mapPreview CONSTANT)
@@ -58,6 +61,7 @@ class GlobalNbtSection final : public QObject {
     [[nodiscard]] QString shortLabel() const { return short_label_; }
     [[nodiscard]] QString iconName() const { return icon_name_; }
     [[nodiscard]] int count() const { return count_; }
+    [[nodiscard]] bool showCount() const { return show_count_; }
     [[nodiscard]] NbtDocumentController* document() const { return document_; }
     [[nodiscard]] BlockVolumeController* structurePreview() const { return structure_preview_.get(); }
     [[nodiscard]] MapItemController* mapPreview() const { return map_preview_.get(); }
@@ -94,6 +98,7 @@ class GlobalNbtSection final : public QObject {
     QString short_label_;
     QString icon_name_;
     int count_{0};
+    bool show_count_{true};
     NbtDocumentController* document_{nullptr};
     AppContext& context_;
     std::unique_ptr<MapItemController> map_preview_;
