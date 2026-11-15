@@ -171,6 +171,15 @@ Item {
         Qt.inputMethod.hide()
         return true
     }
+    function acceptXCoordinateInput() {
+        if (!submitCoordinates()) {
+            zField.forceActiveFocus()
+            zField.selectAll()
+        }
+    }
+    function acceptZCoordinateInput() {
+        submitCoordinates()
+    }
     function openChunkEditorNow(chunkX, chunkZ, dimension) {
         if (!session || !session.chunkEditor)
             return
@@ -481,15 +490,16 @@ Item {
                         width: workspace.compact ? 72 : 96
                         placeholderText: "X"
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
-                        enterKeyAction.enabled: true
-                        enterKeyAction.actionId: EnterKeyAction.Next
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
-                        onAccepted: {
-                            if (!workspace.submitCoordinates()) {
-                                zField.forceActiveFocus()
-                                zField.selectAll()
-                            }
+                        onAccepted: workspace.acceptXCoordinateInput()
+                        Keys.onReturnPressed: function (event) {
+                            workspace.acceptXCoordinateInput()
+                            event.accepted = true
+                        }
+                        Keys.onEnterPressed: function (event) {
+                            workspace.acceptXCoordinateInput()
+                            event.accepted = true
                         }
                     }
                     AppTextField {
@@ -497,11 +507,17 @@ Item {
                         width: workspace.compact ? 72 : 96
                         placeholderText: "Z"
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
-                        enterKeyAction.enabled: true
-                        enterKeyAction.actionId: EnterKeyAction.Go
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
-                        onAccepted: workspace.submitCoordinates()
+                        onAccepted: workspace.acceptZCoordinateInput()
+                        Keys.onReturnPressed: function (event) {
+                            workspace.acceptZCoordinateInput()
+                            event.accepted = true
+                        }
+                        Keys.onEnterPressed: function (event) {
+                            workspace.acceptZCoordinateInput()
+                            event.accepted = true
+                        }
                     }
                 }
             }

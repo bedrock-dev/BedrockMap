@@ -104,6 +104,11 @@ namespace setting {
         bool showMapDebugButton{false};
 #endif
         bool showMapStatusBar{true};
+#ifdef Q_OS_ANDROID
+        bool showMapCrosshair{true};
+#else
+        bool showMapCrosshair{false};
+#endif
         int minimumScaleLevel{2};  // Coarsest terrain zoom before the coordinate overview.
         int maximumScaleLevel{1024};
         float panInertia{0.0f};

@@ -252,6 +252,13 @@ Item {
                                 onToggled: App.settings.showMapStatusBar = checked
                             }
                         }
+                        SettingRow {
+                            label: qsTr("Show map crosshair")
+                            AppSwitch {
+                                checked: App.settings.showMapCrosshair
+                                onToggled: App.settings.showMapCrosshair = checked
+                            }
+                        }
                     }
                     SettingGroup {
                         title: qsTr("Zoom and appearance")

@@ -68,6 +68,7 @@ class MapController final : public QObject {
     [[nodiscard]] QRect selectionDragRect() const;
     [[nodiscard]] bool operationRunning() const { return operation_running_; }
     [[nodiscard]] Q_INVOKABLE bool selectionContainsChunkAt(const QPointF& view_position) const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap blockCoordinatesAt(const QPointF& view_position) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap blockInfoAt(const QPointF& view_position) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap voxelViewArea() const;
     [[nodiscard]] RegionImportController* regionImport() { return &region_import_; }

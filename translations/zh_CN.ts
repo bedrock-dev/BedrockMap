@@ -2762,6 +2762,11 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Show map crosshair</source>
+        <translation>显示地图准心</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Selection color</source>
         <translation>选区颜色</translation>
     </message>

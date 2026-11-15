@@ -34,6 +34,9 @@ Item {
     property string operationText: ""
     property bool hoverBlockActive: false
     property var hoverBlockInfo: ({})
+    readonly property bool crosshairEnabled: !!App.settings && App.settings.showMapCrosshair
+    property bool crosshairBlockActive: false
+    property var crosshairBlockInfo: ({})
     property point lastHoverPosition: Qt.point(0, 0)
     property bool hasLastHoverPosition: false
     property real panInertia: App.runtimeSettings ? App.runtimeSettings.panInertia : 0
@@ -152,6 +155,10 @@ Item {
         }
         function onCameraMoved() {
             canvas.refreshHoverBlock(false)
+            canvas.refreshCrosshairBlock(false)
+        }
+        function onStateChanged() {
+            canvas.refreshCrosshairBlock(false)
         }
         function onMapDataChanged(region, dimension) {
             if (canvas.hoverBlockActive && canvas.hoverBlockInfo.dimension === dimension)
@@ -246,6 +253,27 @@ Item {
         hoverBlockActive = false
         hasLastHoverPosition = false
         hoverBlockInfo = ({})
+    }
+    function refreshCrosshairBlock(force) {
+        if (!controller || !crosshairEnabled) {
+            crosshairBlockActive = false
+            crosshairBlockInfo = ({})
+            return
+        }
+        const info = controller.blockCoordinatesAt(Qt.point(width / 2, height / 2))
+        const blockX = Number(info.blockX)
+        const blockZ = Number(info.blockZ)
+        const dimension = Number(info.dimension)
+        if (!Number.isFinite(blockX) || !Number.isFinite(blockZ) || !Number.isFinite(dimension)) {
+            crosshairBlockActive = false
+            crosshairBlockInfo = ({})
+            return
+        }
+        if (!force && crosshairBlockActive && crosshairBlockInfo.blockX === blockX
+                && crosshairBlockInfo.blockZ === blockZ && crosshairBlockInfo.dimension === dimension)
+            return
+        crosshairBlockInfo = info
+        crosshairBlockActive = true
     }
     function beginPanGesture() {
         stopPanInertia()
@@ -398,12 +426,21 @@ Item {
             dimension: Number.isFinite(Number(source.dimension)) ? Number(source.dimension) : mapContextMenu.dimension
         }
     }
-    onWidthChanged: if (controller)
-                        controller.setViewportSize(Qt.size(width, height))
-    onHeightChanged: if (controller)
-                         controller.setViewportSize(Qt.size(width, height))
-    Component.onCompleted: if (controller)
-                               controller.setViewportSize(Qt.size(width, height))
+    onWidthChanged: {
+        if (controller)
+            controller.setViewportSize(Qt.size(width, height))
+        refreshCrosshairBlock(true)
+    }
+    onHeightChanged: {
+        if (controller)
+            controller.setViewportSize(Qt.size(width, height))
+        refreshCrosshairBlock(true)
+    }
+    Component.onCompleted: {
+        if (controller)
+            controller.setViewportSize(Qt.size(width, height))
+        refreshCrosshairBlock(true)
+    }
     onControllerChanged: {
         stopPanInertia()
         clearHoverBlock()
@@ -411,6 +448,10 @@ Item {
             mapTouchInput.cancelGesture()
         if (controller)
             controller.setViewportSize(Qt.size(width, height))
+        refreshCrosshairBlock(true)
+    }
+    onCrosshairEnabledChanged: {
+        refreshCrosshairBlock(true)
     }
     onInputRightInsetChanged: {
         stopPanInertia()
@@ -421,9 +462,13 @@ Item {
     onVisibleChanged: if (!visible) {
                           stopPanInertia()
                           clearHoverBlock()
+                          crosshairBlockActive = false
+                          crosshairBlockInfo = ({})
                           mapTouchInput.cancelGesture()
                           if (controller)
                               controller.endImportDrag()
+                      } else {
+                          refreshCrosshairBlock(true)
                       }
     onInputBlockedChanged: {
         if (!inputBlocked)
@@ -763,18 +808,26 @@ Item {
         z: 6
         readonly property real edgeMargin: Theme.gapLarge
         readonly property real innerPadding: Theme.gapMedium
+        readonly property bool isAndroid: Qt.platform.os === "android"
+        readonly property bool positionActive: canvas.crosshairEnabled ? canvas.crosshairBlockActive :
+                                                                        !isAndroid && canvas.hoverBlockActive
+        readonly property var positionInfo: canvas.crosshairEnabled ? canvas.crosshairBlockInfo :
+                                                                      canvas.hoverBlockInfo
         // Matches the height of the layer toolbar in WorldWorkspace.
         readonly property real toolbarHeight: (Theme.touch ? Theme.controlHeight : 34) + Theme.gapSmall * 2
         readonly property int statusFontSize: Theme.fontCaption
         readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
-        readonly property string positionText: canvas.hoverBlockActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
-                                                                          canvas.controller.dimension).arg(
-                                                                          canvas.hoverBlockInfo.blockX).arg(
-                                                                          canvas.hoverBlockInfo.blockZ).arg(
-                                                                          canvas.hoverBlockInfo.chunkX).arg(
-                                                                          canvas.hoverBlockInfo.chunkZ) :
-                                                                      "Dim: %1 Pos:--,--/--,--".arg(
-                                                                          canvas.controller.dimension)
+        readonly property string positionText: positionActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
+                                                                     canvas.controller.dimension).arg(
+                                                                     positionInfo.blockX).arg(
+                                                                     positionInfo.blockZ).arg(
+                                                                     positionInfo.chunkX).arg(
+                                                                     positionInfo.chunkZ) :
+                                                                 isAndroid && !canvas.crosshairEnabled ?
+                                                                     "Dim: %1 Pos:-,-/-,-".arg(
+                                                                         canvas.controller.dimension) :
+                                                                     "Dim: %1 Pos:--,--/--,--".arg(
+                                                                         canvas.controller.dimension)
         readonly property string countsText: "Sel:%1 Modify:%2 Del:%3".arg(
                                                  canvas.controller.selectionChunkCount).arg(
                                                  canvas.controller.modifiedChunkCount).arg(
@@ -839,6 +892,28 @@ Item {
                     font.pixelSize: mapStatusOverlay.statusFontSize
                 }
             }
+        }
+    }
+
+    Item {
+        id: mapCrosshair
+        anchors.centerIn: parent
+        width: Theme.ui(20)
+        height: width
+        visible: canvas.crosshairEnabled
+        z: 5
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: parent.width
+            height: 3
+            color: "#999999"
+        }
+        Rectangle {
+            anchors.centerIn: parent
+            width: 3
+            height: parent.height
+            color: "#999999"
         }
     }
 

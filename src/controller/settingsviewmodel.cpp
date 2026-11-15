@@ -164,6 +164,7 @@ void SettingsViewModel::setLeveldbXorKey(const QString& v) {
 BM_SET_BOOL(setCollapseSidebarOnStartup, collapseSidebarOnStartup, settingsChanged)
 BM_SET_BOOL(setShowMapDebugButton, showMapDebugButton, settingsChanged)
 BM_SET_BOOL(setShowMapStatusBar, showMapStatusBar, settingsChanged)
+BM_SET_BOOL(setShowMapCrosshair, showMapCrosshair, settingsChanged)
 BM_SET_INT(setFontSize, fontSize, fontSizeChanged, 6, 96)
 BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, settingsChanged)
 BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, settingsChanged)

@@ -142,7 +142,7 @@ bool MapController::selectionContainsChunkAt(const QPointF& view_position) const
     return map_view_state_.selection().region().contains(QPoint(chunk.x, chunk.z));
 }
 
-QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
+QVariantMap MapController::blockCoordinatesAt(const QPointF& view_position) const {
     QVariantMap result;
     const QPoint block = map_view_state_.blockPosAt(view_position, map_view_state_.viewportSize());
     const int dimension = map_view_state_.dim();
@@ -153,16 +153,24 @@ QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
     result.insert(QStringLiteral("chunkX"), chunk_x);
     result.insert(QStringLiteral("chunkZ"), chunk_z);
     result.insert(QStringLiteral("dimension"), dimension);
+    return result;
+}
+
+QVariantMap MapController::blockInfoAt(const QPointF& view_position) const {
+    QVariantMap result = blockCoordinatesAt(view_position);
     if (!loader_ || !loader_->isOpen()) return result;
 
-    const bl::block_pos pos(block.x(), 0, block.y());
+    const int block_x = result.value(QStringLiteral("blockX")).toInt();
+    const int block_z = result.value(QStringLiteral("blockZ")).toInt();
+    const int dimension = result.value(QStringLiteral("dimension")).toInt();
+    const bl::block_pos pos(block_x, 0, block_z);
     const std::string block_name = loader_->getBlockName(pos, dimension);
     const auto tips = loader_->getBlockTips(pos, dimension);
     result.insert(QStringLiteral("blockName"), QString::fromStdString(block_name));
     result.insert(QStringLiteral("biomeName"), QString::fromStdString(bl::get_biome_name(tips.biome)));
     result.insert(QStringLiteral("biomeId"), static_cast<int>(tips.biome));
     result.insert(QStringLiteral("altitude"), tips.height);
-    result.insert(QStringLiteral("tpCommand"), QStringLiteral("tp @s %1 ~ %2").arg(QString::number(block.x()), QString::number(block.y())));
+    result.insert(QStringLiteral("tpCommand"), QStringLiteral("tp @s %1 ~ %2").arg(QString::number(block_x), QString::number(block_z)));
     return result;
 }
 
