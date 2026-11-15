@@ -523,6 +523,15 @@
     </message>
 </context>
 <context>
+    <name>ChunkEditService</name>
+    <message>
+        <location filename="../src/loader/chunkeditservice.cpp"/>
+        <location filename="../src/loader/chunkeditservice.cpp"/>
+        <source>The world database is not open.</source>
+        <translation>The world database is not open.</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
@@ -757,6 +766,24 @@
         <location filename="../src/qml/ChunkStatsPage.qml"/>
         <source>No chunk statistics</source>
         <translation>No chunk statistics</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkStorage</name>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>Could not prepare level.dat data for saving.</source>
+        <translation>Could not prepare level.dat data for saving.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>Could not save LevelDB data: %1</source>
+        <translation>Could not save LevelDB data: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>LevelDB data was saved, but level.dat could not be written to %1: %2</source>
+        <translation>LevelDB data was saved, but level.dat could not be written to %1: %2</translation>
     </message>
 </context>
 <context>
@@ -4014,6 +4041,21 @@ Current version: %2</translation>
     <name>WorldSession</name>
     <message>
         <location filename="../src/controller/worldsession.cpp"/>
+        <source>The world database is not open.</source>
+        <translation type="unfinished">The world database is not open.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Wait for the current map operation to finish before saving.</source>
+        <translation>Wait for the current map operation to finish before saving.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Wait for the current 3D view operation to finish before saving.</source>
+        <translation>Wait for the current 3D view operation to finish before saving.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
         <source>Save chunk editor changes before saving the world.</source>
         <translation>Save chunk editor changes before saving the world.</translation>
     </message>
@@ -4117,6 +4159,11 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Return to origin</source>
         <translation>Return to origin</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Go to coordinates</source>
+        <translation>Go to coordinates</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

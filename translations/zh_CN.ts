@@ -523,6 +523,15 @@
     </message>
 </context>
 <context>
+    <name>ChunkEditService</name>
+    <message>
+        <location filename="../src/loader/chunkeditservice.cpp"/>
+        <location filename="../src/loader/chunkeditservice.cpp"/>
+        <source>The world database is not open.</source>
+        <translation>世界数据库未打开。</translation>
+    </message>
+</context>
+<context>
     <name>ChunkEditorController</name>
     <message>
         <location filename="../src/controller/chunkeditorcontroller.cpp"/>
@@ -757,6 +766,24 @@
         <location filename="../src/qml/ChunkStatsPage.qml"/>
         <source>No chunk statistics</source>
         <translation>暂无区块统计数据</translation>
+    </message>
+</context>
+<context>
+    <name>ChunkStorage</name>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>Could not prepare level.dat data for saving.</source>
+        <translation>无法准备 level.dat 保存数据。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>Could not save LevelDB data: %1</source>
+        <translation>LevelDB 数据保存失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/chunkstorage.cpp"/>
+        <source>LevelDB data was saved, but level.dat could not be written to %1: %2</source>
+        <translation>LevelDB 数据已保存，但无法将 level.dat 写入 %1：%2</translation>
     </message>
 </context>
 <context>
@@ -4014,6 +4041,21 @@ Current version: %2</source>
     <name>WorldSession</name>
     <message>
         <location filename="../src/controller/worldsession.cpp"/>
+        <source>The world database is not open.</source>
+        <translation type="unfinished">世界数据库未打开。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Wait for the current map operation to finish before saving.</source>
+        <translation>请等待当前地图操作完成后再保存。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
+        <source>Wait for the current 3D view operation to finish before saving.</source>
+        <translation>请等待当前 3D 视图操作完成后再保存。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldsession.cpp"/>
         <source>Save chunk editor changes before saving the world.</source>
         <translation>请先保存区块编辑器更改，再保存世界。</translation>
     </message>
@@ -4117,6 +4159,11 @@ Current version: %2</source>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Return to origin</source>
         <translation>回到原点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Go to coordinates</source>
+        <translation>跳转到坐标</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

@@ -170,9 +170,19 @@ void WorldSession::onOpenFinished() {
 }
 
 bool WorldSession::commit() {
-    if (closing_ || saving() || !loader_ || !loader_->isOpen() || map_controller_.operationRunning() || voxel_view_.busy() ||
-        voxel_view_.importPreviewActive())
-        return false;
+    if (closing_ || saving()) return false;
+    if (!loader_ || !loader_->isOpen()) {
+        emit saveFailed(tr("The world database is not open."));
+        return true;
+    }
+    if (map_controller_.operationRunning()) {
+        emit saveFailed(tr("Wait for the current map operation to finish before saving."));
+        return true;
+    }
+    if (voxel_view_.busy() || voxel_view_.importPreviewActive()) {
+        emit saveFailed(tr("Wait for the current 3D view operation to finish before saving."));
+        return true;
+    }
 
     if (chunk_editor_.dirty()) {
         emit saveFailed(tr("Save chunk editor changes before saving the world."));
@@ -203,10 +213,10 @@ bool WorldSession::commit() {
 
 void WorldSession::onSaveFinished() {
     if (closing_) return;
-    const bool success = save_watcher_.result();
+    const CommitResult result = save_watcher_.result();
     setSaving(false);
 
-    if (success) {
+    if (result.success) {
         global_data_.markSaved();
         pending_level_dat_.reset();
         pending_global_modifies_.clear();
@@ -218,7 +228,7 @@ void WorldSession::onSaveFinished() {
     pending_level_dat_.reset();
     pending_global_modifies_.clear();
     refreshDirty();
-    emit saveFailed(tr("Saving the world failed."));
+    emit saveFailed(result.error.isEmpty() ? tr("Saving the world failed.") : result.error);
 }
 
 void WorldSession::refreshDirty() {

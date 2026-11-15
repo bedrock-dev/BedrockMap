@@ -206,17 +206,17 @@ void AsyncLevelLoader::invalidateRegionTiles(const QRegion& chunkRegion, int dim
 
 void AsyncLevelLoader::clearChunkCache(const bl::chunk_pos& p) { edit_service_.clearChunkCache(p); }
 
-bool AsyncLevelLoader::commit() {
-    if (!edit_service_.commit()) return false;
-    emit dirtyChanged();
-    return true;
+CommitResult AsyncLevelLoader::commit() {
+    const CommitResult result = edit_service_.commit();
+    if (result.success) emit dirtyChanged();
+    return result;
 }
 
-bool AsyncLevelLoader::commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
-                                   const bl::nbt::compound_tag* levelDat) {
-    if (!edit_service_.commitEdits(globalModifies, levelDat)) return false;
-    emit dirtyChanged();
-    return true;
+CommitResult AsyncLevelLoader::commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
+                                           const bl::nbt::compound_tag* levelDat) {
+    const CommitResult result = edit_service_.commitEdits(globalModifies, levelDat);
+    if (result.success) emit dirtyChanged();
+    return result;
 }
 
 void AsyncLevelLoader::clearAllCache() {

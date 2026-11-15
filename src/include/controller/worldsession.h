@@ -13,6 +13,7 @@
 #include "controller/globaldatacontroller.h"
 #include "controller/mapcontroller.h"
 #include "controller/workspacesession.h"
+#include "loader/chunkstorage.h"
 #include "model/mapviewstate.h"
 #include "render/terraindataprovider.h"
 
@@ -113,7 +114,7 @@ class WorldSession final : public WorkspaceSession {
     std::unique_ptr<AsyncLevelLoader> loader_;
     std::unique_ptr<AsyncLevelLoader> opening_loader_;
     QFutureWatcher<OpenResult> open_watcher_;
-    QFutureWatcher<bool> save_watcher_;
+    QFutureWatcher<CommitResult> save_watcher_;
     std::unordered_map<std::string, std::string> pending_global_modifies_;
     std::unique_ptr<bl::nbt::compound_tag> pending_level_dat_;
     State state_{State::Idle};

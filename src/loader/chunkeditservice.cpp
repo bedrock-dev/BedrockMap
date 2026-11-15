@@ -1,5 +1,7 @@
 #include "loader/chunkeditservice.h"
 
+#include <QCoreApplication>
+
 #include "loguru/loguru.hpp"
 #include "render/regioncachemanager.h"
 
@@ -71,14 +73,18 @@ bool ChunkEditService::setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biom
     return putRawChunk(raw.value());
 }
 
-bool ChunkEditService::commit() {
+CommitResult ChunkEditService::commit() {
     LOG_F(INFO, "Commit chunks change");
-    if (!loaded_.load(std::memory_order_acquire)) return true;
+    if (!loaded_.load(std::memory_order_acquire)) {
+        return {false, QCoreApplication::translate("ChunkEditService", "The world database is not open.")};
+    }
     return storage_.commit();
 }
 
-bool ChunkEditService::commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
-                                   const bl::nbt::compound_tag* levelDat) {
-    if (!loaded_.load(std::memory_order_acquire)) return false;
+CommitResult ChunkEditService::commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
+                                           const bl::nbt::compound_tag* levelDat) {
+    if (!loaded_.load(std::memory_order_acquire)) {
+        return {false, QCoreApplication::translate("ChunkEditService", "The world database is not open.")};
+    }
     return storage_.commit(globalModifies, levelDat);
 }

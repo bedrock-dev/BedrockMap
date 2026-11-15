@@ -2,6 +2,7 @@
 
 #include <leveldb/write_batch.h>
 
+#include <QCoreApplication>
 #include <memory>
 
 #include "io/documentio.h"
@@ -35,10 +36,10 @@ void ChunkStorage::putRawChunk(const bl::raw_chunk& raw) {
     cache_.putChunk(raw.pos(), raw);
 }
 
-bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat) {
+CommitResult ChunkStorage::commit(const std::unordered_map<std::string, std::string>& globalModifies,
+                                  const bl::nbt::compound_tag* levelDat) {
     std::lock_guard<std::mutex> lock(mutex_);
-    last_commit_error_ = CommitError::None;
-    if (cache_.empty() && globalModifies.empty() && !levelDat) return true;
+    if (cache_.empty() && globalModifies.empty() && !levelDat) return {};
 
     leveldb::WriteBatch batch;
     if (!cache_.empty()) cache_.commit(level_, batch);
@@ -57,9 +58,8 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
     if (levelDat) {
         levelDatCopy.reset(dynamic_cast<bl::nbt::compound_tag*>(levelDat->copy()));
         if (!levelDatCopy) {
-            last_commit_error_ = CommitError::LevelDatSerialization;
             LOG_F(ERROR, "Failed to copy level.dat NBT before commit");
-            return false;
+            return {false, QCoreApplication::translate("ChunkStorage", "Could not prepare level.dat data for saving.")};
         }
         levelDatRaw = level_.dat().header() + levelDatCopy->serialize();
     }
@@ -67,9 +67,9 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
     if (!cache_.empty() || !globalModifies.empty()) {
         const auto status = level_.db()->Write(leveldb::WriteOptions(), &batch);
         if (!status.ok()) {
-            last_commit_error_ = CommitError::LevelDb;
             LOG_F(ERROR, "Failed to commit LevelDB changes: %s", status.ToString().c_str());
-            return false;
+            return {false, QCoreApplication::translate("ChunkStorage", "Could not save LevelDB data: %1")
+                               .arg(QString::fromStdString(status.ToString()))};
         }
     }
 
@@ -80,15 +80,16 @@ bool ChunkStorage::commit(const std::unordered_map<std::string, std::string>& gl
                                                          QByteArray(levelDatRaw.data(), static_cast<qsizetype>(levelDatRaw.size())), {false});
         if (!error.isEmpty()) {
             LOG_F(ERROR, "Cannot save level.dat: %s", error.toStdString().c_str());
-            last_commit_error_ = CommitError::LevelDatWrite;
             if (!cache_.empty() || !globalModifies.empty()) {
                 LOG_F(ERROR, "LevelDB changes committed, but level.dat could not be replaced; edits remain dirty for retry");
             }
-            return false;
+            return {false, QCoreApplication::translate("ChunkStorage", "LevelDB data was saved, but level.dat could not be "
+                                                                      "written to %1: %2")
+                               .arg(levelDatPath, error)};
         }
     }
 
     if (levelDatCopy) level_.dat().set_nbt(levelDatCopy.release());
     cache_.clear();
-    return true;
+    return {};
 }

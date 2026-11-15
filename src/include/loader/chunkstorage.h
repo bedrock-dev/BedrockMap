@@ -6,20 +6,21 @@
 #include <string>
 #include <unordered_map>
 
+#include <QString>
+
 #include "bedrock_level.h"
 #include "chunk.h"
 #include "loader/rawchunkcache.h"
 #include "nbt.h"
 
+/// Result of persisting world edits. A failed commit carries a user-facing reason.
+struct CommitResult {
+    bool success{true};
+    QString error;
+};
+
 class ChunkStorage {
    public:
-    enum class CommitError {
-        None,
-        LevelDb,
-        LevelDatSerialization,
-        LevelDatWrite,
-    };
-
     bool open(const std::string& path, const std::string& xor_key, std::shared_ptr<leveldb::Env> env = {}) {
         level_.set_xor_key(xor_key, std::move(env));
         return level_.open(path);
@@ -38,8 +39,6 @@ class ChunkStorage {
         std::lock_guard<std::mutex> lock(mutex_);
         return cache_.chunkCounts();
     }
-    CommitError lastCommitError() const { return last_commit_error_; }
-
     bl::chunk* getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy);
     std::optional<bl::raw_chunk> getRawChunk(const bl::chunk_pos& pos);
     void putMissing(const bl::chunk_pos& pos);
@@ -55,13 +54,13 @@ class ChunkStorage {
     // Commit chunk and global database edits as one LevelDB batch, then persist
     // an optional level.dat snapshot. LevelDB and level.dat are separate
     // stores, so a level.dat write failure is reported and dirty state remains.
-    bool commit(const std::unordered_map<std::string, std::string>& globalModifies = {}, const bl::nbt::compound_tag* levelDat = nullptr);
+    CommitResult commit(const std::unordered_map<std::string, std::string>& globalModifies = {},
+                        const bl::nbt::compound_tag* levelDat = nullptr);
 
    private:
     bl::bedrock_level level_{true};
     RawChunkCache cache_;
     mutable std::mutex mutex_;
-    CommitError last_commit_error_{CommitError::None};
 };
 
 #endif  // BEDROCKMAP_CHUNKSTORAGE_H

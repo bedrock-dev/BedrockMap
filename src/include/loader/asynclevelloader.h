@@ -178,11 +178,10 @@ class AsyncLevelLoader : public QObject {
 
     void clearChunkCache(const bl::chunk_pos& p);
 
-    bool commit();
+    CommitResult commit();
 
-    bool commitEdits(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat);
-
-    ChunkStorage::CommitError lastCommitError() const { return edit_service_.lastCommitError(); }
+    CommitResult commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
+                             const bl::nbt::compound_tag* levelDat);
 
     std::vector<QString> debugInfo();
 

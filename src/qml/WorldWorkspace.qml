@@ -493,14 +493,6 @@ Item {
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
                         onAccepted: workspace.acceptXCoordinateInput()
-                        Keys.onReturnPressed: function (event) {
-                            workspace.acceptXCoordinateInput()
-                            event.accepted = true
-                        }
-                        Keys.onEnterPressed: function (event) {
-                            workspace.acceptXCoordinateInput()
-                            event.accepted = true
-                        }
                     }
                     AppTextField {
                         id: zField
@@ -510,13 +502,14 @@ Item {
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
                         onAccepted: workspace.acceptZCoordinateInput()
-                        Keys.onReturnPressed: function (event) {
+                    }
+                    AppIconButton {
+                        visible: Qt.platform.os === "android"
+                        iconName: "caret_right"
+                        label: qsTr("Go to coordinates")
+                        onClicked: {
+                            Qt.inputMethod.commit()
                             workspace.acceptZCoordinateInput()
-                            event.accepted = true
-                        }
-                        Keys.onEnterPressed: function (event) {
-                            workspace.acceptZCoordinateInput()
-                            event.accepted = true
                         }
                     }
                 }
