@@ -154,13 +154,22 @@ Item {
         xField.selectAll()
     }
     function jumpToCoordinates() {
-        if (!mapController || xField.text.length === 0 || zField.text.length === 0)
-            return
+        if (!mapController || !xField.acceptableInput || !zField.acceptableInput)
+            return false
         const x = Number(xField.text)
         const z = Number(zField.text)
         if (!Number.isFinite(x) || !Number.isFinite(z))
-            return
+            return false
         mapController.gotoBlock(Math.round(x), Math.round(z))
+        return true
+    }
+    function submitCoordinates() {
+        if (!jumpToCoordinates())
+            return false
+        xField.focus = false
+        zField.focus = false
+        Qt.inputMethod.hide()
+        return true
     }
     function openChunkEditorNow(chunkX, chunkZ, dimension) {
         if (!session || !session.chunkEditor)
@@ -472,18 +481,27 @@ Item {
                         width: workspace.compact ? 72 : 96
                         placeholderText: "X"
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        enterKeyAction.enabled: true
+                        enterKeyAction.actionId: EnterKeyAction.Next
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
-                        onAccepted: workspace.jumpToCoordinates()
+                        onAccepted: {
+                            if (!workspace.submitCoordinates()) {
+                                zField.forceActiveFocus()
+                                zField.selectAll()
+                            }
+                        }
                     }
                     AppTextField {
                         id: zField
                         width: workspace.compact ? 72 : 96
                         placeholderText: "Z"
                         inputMethodHints: Qt.ImhFormattedNumbersOnly
+                        enterKeyAction.enabled: true
+                        enterKeyAction.actionId: EnterKeyAction.Go
                         validator: IntValidator {}
                         anchors.verticalCenter: parent.verticalCenter
-                        onAccepted: workspace.jumpToCoordinates()
+                        onAccepted: workspace.submitCoordinates()
                     }
                 }
             }
