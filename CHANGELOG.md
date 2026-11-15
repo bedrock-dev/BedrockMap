@@ -1,3 +1,55 @@
+# BedrockMap 1.5.0-beta5 更新日志
+
+发布日期：2026-11-15
+
+## 新增功能
+
+- 区块编辑器新增 HSA（硬编码出生区域）编辑，并提供 HSA 显示开关。
+- 大地图新增可配置准心，开启后使用准心位置显示实时坐标；Android 默认开启，桌面端默认关闭。
+- Android 大地图坐标输入新增跳转按钮，避免不同软键盘确认键行为不一致。
+- NBT 编辑器支持节点复制和粘贴。
+- 3D 视图不再受 256 格范围限制，并重新整理结构、选区和体素预览区域。
+- 新增地图图层面板和紧凑窗口工作区导航，改善移动端和小窗口操作。
+- 地图状态栏、维度边界和地形轮廓改为可配置，并加入对比度感知的地形轮廓渲染。
+
+## Bug 修复
+
+- 修复 NBT 编辑器复制、粘贴及部分节点操作异常。
+- 修复 3D 预览、区块编辑器和选区切换中的若干体素显示与状态同步问题。
+- 修复阴影、环境光遮蔽和地形轮廓的部分渲染问题。
+- 修复坐标输入框回车无法按预期跳转的问题。
+- 修复区块编辑器保存后地形、HSA 和实体 overlay 缓存未及时刷新的问题。
+- 世界保存失败时现在会显示具体原因，包括 LevelDB 状态、`level.dat` 路径和文件 I/O 错误。
+- 修复 Web/WASM 版本包体过大的问题。
+
+---
+
+# BedrockMap 1.5.0-beta5 Changelog
+
+Release date: 2026-11-15
+
+## New Features
+
+- Added HSA (hardcoded spawn area) editing to the chunk editor, with a visibility toggle for HSA overlays.
+- Added a configurable map crosshair that also drives the live center coordinate display. It is enabled by default on Android and disabled by default on desktop.
+- Added an Android coordinate jump button to avoid inconsistent soft-keyboard confirmation behavior.
+- Added copy and paste support to the NBT editor.
+- Removed the 256-block limit from the 3D view and reorganized its structure, selection, and voxel preview sections.
+- Added a map layer panel and compact-workspace navigation for mobile and small-window layouts.
+- Made the map status bar, dimension border, and terrain outline configurable, and added contrast-aware terrain outlines.
+
+## Bug Fixes
+
+- Fixed NBT editor copy, paste, and several node operation issues.
+- Fixed several voxel rendering and state synchronization issues in the 3D preview, chunk editor, and selection workflow.
+- Fixed rendering issues affecting shadows, ambient occlusion, and terrain outlines.
+- Fixed coordinate input fields not jumping as expected when Return is pressed.
+- Fixed terrain, HSA, and entity overlay caches not refreshing after the chunk editor saved data.
+- World save failures now report specific causes, including LevelDB status, the `level.dat` path, and file I/O errors.
+- Fixed the oversized Web/WASM distribution.
+
+---
+
 # BedrockMap 1.5.0-beta4 更新日志
 
 发布日期：2026-11-10
