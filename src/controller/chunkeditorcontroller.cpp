@@ -601,6 +601,7 @@ bool ChunkEditorController::saveToCache() {
     block_entities_document_.markPersisted();
     pending_ticks_document_.markPersisted();
     emit dirtyChanged();
+    emit chunkSavedToCache(chunk_x_, chunk_z_, dimension_);
     return true;
 }
 

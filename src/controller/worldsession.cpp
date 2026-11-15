@@ -26,6 +26,10 @@ WorldSession::WorldSession(QString path, QString title, AppContext& context, QOb
     connect(&global_data_, &GlobalDataController::dirtyChanged, this, &WorldSession::refreshDirty);
     connect(&global_data_, &GlobalDataController::sectionsChanged, this, &WorldSession::titleBarActionsChanged);
     connect(&chunk_editor_, &ChunkEditorController::dirtyChanged, this, &WorldSession::refreshDirty);
+    connect(&chunk_editor_, &ChunkEditorController::chunkSavedToCache, this,
+            [this](int chunkX, int chunkZ, int dimension) {
+                map_controller_.refreshRegions(QRegion(chunkX, chunkZ, 1, 1), dimension);
+            });
     connect(this, &WorkspaceSession::savingChanged, this, &WorldSession::canSaveChanged);
     connect(this, &WorldSession::canSaveChanged, this, &WorkspaceSession::titleBarActionsChanged);
     connect(this, &WorldSession::workspaceSectionChanged, this, &WorkspaceSession::titleBarActionsChanged);

@@ -150,6 +150,7 @@ class ChunkEditorController : public VoxelSceneController {
 
    signals:
     void chunkChanged();
+    void chunkSavedToCache(int chunkX, int chunkZ, int dimension);
     void dirtyChanged();
     void terrainChanged();
     void statisticsChanged();
