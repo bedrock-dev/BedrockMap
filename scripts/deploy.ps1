@@ -22,8 +22,18 @@ Get-ChildItem translations/*.ts | ForEach-Object { $content = (Get-Content $_ -E
 cmake -S . -B $build_dir -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 cmake --build $build_dir --config Release --parallel $jobs
 
-# Package the standalone release directory.
-$release_dir = "BedrockMap"
+# Package the standalone release directory with the same version/platform naming
+# convention as the Android distribution.
+$cache = Get-Content -LiteralPath (Join-Path $build_dir "CMakeCache.txt") -Raw
+$version = [regex]::Match($cache, '(?m)^CMAKE_PROJECT_VERSION:STATIC=([^\r\n]+)').Groups[1].Value
+$suffix = [regex]::Match($cache, '(?m)^BEDROCKMAP_VERSION_SUFFIX:STRING=([^\r\n]*)').Groups[1].Value
+$versionName = "$version$suffix"
+if (-not $version -or $versionName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+    throw "The configured application version is invalid: $versionName"
+}
+
+$packageName = "BedrockMap-$versionName-windows-x86_64"
+$release_dir = $packageName
 if (Test-Path $release_dir) {
     Remove-Item $release_dir -Recurse -Force
 }
@@ -83,14 +93,13 @@ foreach ($dll in @("libwinpthread-1.dll", "libstdc++-6.dll", "libgcc_s_seh-1.dll
     }
 }
 
-# Name the archive after the most recent version tag, e.g. BedrockMap-v1.0.0-beta10.zip
-$versionTag = git describe --tags --abbrev=0 2>$null
-if (-not $versionTag) {
-    $versionTag = "unknown"
-    Write-Warning "No git tag found; archive will be named with 'unknown'"
-}
-$archiveName = Join-Path (Split-Path -Parent $PSScriptRoot) "dist\BedrockMap-$versionTag.zip"
+# The archive and its root directory share the same versioned package name.
+$distDir = Join-Path (Split-Path -Parent $PSScriptRoot) "dist"
+[void][IO.Directory]::CreateDirectory($distDir)
+$archiveName = Join-Path $distDir "$packageName.zip"
 
 Compress-Archive -Path $release_dir -DestinationPath $archiveName -Force
-Write-Host "Archive: $archiveName"
+Write-Host "Distribution archive: $archiveName"
+Write-Host ('Archive size: {0:N2} MiB ({1:N0} bytes)' -f ((Get-Item -LiteralPath $archiveName).Length / 1MB),
+    (Get-Item -LiteralPath $archiveName).Length)
 Remove-Item -Path $release_dir -Recurse -Force
