@@ -36,6 +36,7 @@ struct GlobalNbtPolicy {
     QString fixedKey;
     NbtItemPresenter presenter;
     NbtKeyResolver keyResolver;
+    NbtImportedRootInitializer importedRootInitializer;
 };
 
 /// One expandable category in the right-hand global-data inspector. Its root is
@@ -144,8 +145,7 @@ class GlobalDataController : public QObject {
    private:
     void clearSections();
     void publish(std::shared_ptr<GlobalNBTLoadResult> result);
-    GlobalNbtSection* appendGeneralSection(GlobalNbtPolicy policy,
-                                           const std::unordered_map<std::string, bl::nbt::compound_tag*>& data,
+    GlobalNbtSection* appendGeneralSection(GlobalNbtPolicy policy, const std::unordered_map<std::string, bl::nbt::compound_tag*>& data,
                                            bool skip_portals = false);
     GlobalNbtSection* addSection(std::unique_ptr<GlobalNbtSection> section);
     void appendVillageSection(std::shared_ptr<GlobalNBTLoadResult> result);

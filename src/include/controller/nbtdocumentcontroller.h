@@ -24,12 +24,14 @@ struct NbtItemPresentation {
 
 using NbtItemPresenter = std::function<NbtItemPresentation(const bl::nbt::compound_tag*, int index, const QString& rawKey)>;
 using NbtKeyResolver = std::function<QString(bl::nbt::compound_tag*, int index, const QString& existingKey)>;
+using NbtImportedRootInitializer = std::function<QString(bl::nbt::compound_tag*, const QString& fileName)>;
 
 struct NbtStoragePolicy {
     bool singleRecord{false};
     QString fixedKey;
     NbtItemPresenter presenter;
     NbtKeyResolver keyResolver;
+    NbtImportedRootInitializer importedRootInitializer;
 };
 
 struct NbtLevelDbPlan {
@@ -100,6 +102,7 @@ class NbtDocumentController : public QObject {
     void loadMemory(std::vector<std::unique_ptr<bl::nbt::compound_tag>> roots, const QStringList& rawKeys, const QString& title = {},
                     const NbtItemPresenter& presenter = {});
     void setKeyResolver(NbtKeyResolver resolver);
+    void setImportedRootInitializer(NbtImportedRootInitializer initializer);
     void setStoragePolicy(NbtStoragePolicy policy);
     void setSingleRecord(bool single) { storage_.singleRecord = single; }
     void setSingleRecordKey(QString key) { storage_.fixedKey = std::move(key); }

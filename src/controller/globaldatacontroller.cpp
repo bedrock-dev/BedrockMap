@@ -1,6 +1,9 @@
 #include "controller/globaldatacontroller.h"
 
+#include <qurl.h>
+
 #include <QCoreApplication>
+#include <QFileInfo>
 #include <QMetaObject>
 #include <QUuid>
 #include <QtConcurrent>
@@ -9,13 +12,36 @@
 
 #include "base/appcontext.h"
 #include "controller/mcstructurevolumesource.h"
+#include "controller/nbtdocumentcontroller.h"
 #include "global.h"
 #include "loader/asynclevelloader.h"
+#include "utils.h"
 
 namespace {
+
+    const QString MC_STRUCTURE_NAME_PREFIX = "structuretemplate_mystructure:";
     NbtItemPresenter rootKeyPresenter(QString icon) {
         return [icon = std::move(icon)](const bl::nbt::compound_tag*, int, const QString& raw_key) {
             return NbtItemPresentation{raw_key, icon};
+        };
+    }
+
+    NbtItemPresenter structurePresneter(QString icon) {
+        // remove
+        return [icon = std::move(icon)](const bl::nbt::compound_tag*, int, const QString& raw_key) {
+            //  auto newKey = raw_key.startsWith(MC_STRUCTURE_NAME_PREFIX) ? raw_key.sliced(MC_STRUCTURE_NAME_PREFIX.length()) : raw_key;
+            return NbtItemPresentation{raw_key, icon};
+        };
+    }
+
+    NbtImportedRootInitializer structureRootInitializer() {
+        return [](bl::nbt::compound_tag* root, const QString& fileName) {
+            if (!root) return QString{};
+            const QString stem = QFileInfo(fileName).completeBaseName().trimmed();
+            if (stem.isEmpty()) return QString{};
+            const QString key = MC_STRUCTURE_NAME_PREFIX + stem;
+            root->set_key(key.toStdString());
+            return key;
         };
     }
 
@@ -47,9 +73,9 @@ namespace {
 
     NbtKeyResolver structureKeyResolver() {
         return [](bl::nbt::compound_tag* root, int, const QString& existing) {
-            if (existing.startsWith(QStringLiteral("structuretemplate_"))) return existing;
+            if (existing.startsWith(MC_STRUCTURE_NAME_PREFIX)) return existing;
             if (!root->get_by_path("format_version") || !root->get_by_path("size")) return QString{};
-            return QStringLiteral("structuretemplate_new_") + QUuid::createUuid().toString(QUuid::WithoutBraces);
+            return MC_STRUCTURE_NAME_PREFIX + QUuid::createUuid().toString(QUuid::WithoutBraces).slice(8);
         };
     }
 
@@ -76,6 +102,7 @@ GlobalNbtSection::GlobalNbtSection(GlobalNbtPolicy policy, std::vector<std::uniq
     document_->setSingleRecord(policy.singleRecord);
     document_->setSingleRecordKey(std::move(policy.fixedKey));
     document_->setKeyResolver(std::move(policy.keyResolver));
+    document_->setImportedRootInitializer(std::move(policy.importedRootInitializer));
     connect(document_, &NbtDocumentController::dirtyChanged, this, &GlobalNbtSection::dirtyChanged);
     if (policy.structurePreview) enableStructurePreview();
     if (policy.mapPreview) enableMapPreview();
@@ -160,8 +187,9 @@ void GlobalDataController::stopAndWait() {
     loading_ = false;
 }
 
-GlobalNbtSection* GlobalDataController::appendGeneralSection(
-    GlobalNbtPolicy policy, const std::unordered_map<std::string, bl::nbt::compound_tag*>& data, bool skip_portals) {
+GlobalNbtSection* GlobalDataController::appendGeneralSection(GlobalNbtPolicy policy,
+                                                             const std::unordered_map<std::string, bl::nbt::compound_tag*>& data,
+                                                             bool skip_portals) {
     std::vector<std::pair<std::string, bl::nbt::compound_tag*>> ordered;
     ordered.reserve(data.size());
     for (const auto& [key, tag] : data) {
@@ -228,23 +256,23 @@ void GlobalDataController::appendVillageSection(std::shared_ptr<GlobalNBTLoadRes
     policy.shortLabel = QStringLiteral("V");
     policy.iconName = QStringLiteral("villager");
     policy.presenter = [](const bl::nbt::compound_tag*, int, const QString& raw_key) {
-                                               QString label = raw_key;
-                                               if (label.startsWith(QStringLiteral("VILLAGE_"))) label.remove(0, 8);
-                                               const qsizetype separator = label.lastIndexOf(QLatin1Char('_'));
-                                               QString icon = QStringLiteral("qrc:/bedrockmap/icons/village/info.png");
-                                               if (separator >= 0) {
-                                                   const QString type = label.mid(separator + 1);
-                                                   const QString normalized = type.toLower();
-                                                   if (normalized == QStringLiteral("dwellers"))
-                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/dwellers.png");
-                                                   else if (normalized == QStringLiteral("players"))
-                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/players.png");
-                                                   else if (normalized == QStringLiteral("poi"))
-                                                       icon = QStringLiteral("qrc:/bedrockmap/icons/village/poi.png");
-                                                   label = label.left(separator) + QStringLiteral(" / ") + type;
-                                               }
-                                               return NbtItemPresentation{label, icon};
-                                           };
+        QString label = raw_key;
+        if (label.startsWith(QStringLiteral("VILLAGE_"))) label.remove(0, 8);
+        const qsizetype separator = label.lastIndexOf(QLatin1Char('_'));
+        QString icon = QStringLiteral("qrc:/bedrockmap/icons/village/info.png");
+        if (separator >= 0) {
+            const QString type = label.mid(separator + 1);
+            const QString normalized = type.toLower();
+            if (normalized == QStringLiteral("dwellers"))
+                icon = QStringLiteral("qrc:/bedrockmap/icons/village/dwellers.png");
+            else if (normalized == QStringLiteral("players"))
+                icon = QStringLiteral("qrc:/bedrockmap/icons/village/players.png");
+            else if (normalized == QStringLiteral("poi"))
+                icon = QStringLiteral("qrc:/bedrockmap/icons/village/poi.png");
+            label = label.left(separator) + QStringLiteral(" / ") + type;
+        }
+        return NbtItemPresentation{label, icon};
+    };
     addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), raw_keys, context_, this));
 }
 
@@ -261,8 +289,8 @@ void GlobalDataController::appendLevelDatSection() {
     policy.singleRecord = true;
     policy.showCount = false;
     policy.fixedKey = QStringLiteral("level.dat");
-    level_dat_section_ = addSection(
-        std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, context_, this));
+    level_dat_section_ =
+        addSection(std::make_unique<GlobalNbtSection>(std::move(policy), std::move(roots), QStringList{"level.dat"}, context_, this));
 }
 
 void GlobalDataController::collectVillageRects(GlobalNBTLoadResult& result) {
@@ -315,8 +343,9 @@ void GlobalDataController::publish(std::shared_ptr<GlobalNBTLoadResult> result) 
     auto structures = make_policy(QStringLiteral("Structures"), QStringLiteral("S"), QStringLiteral("structure"));
     structures.showCount = false;
     structures.structurePreview = true;
-    structures.presenter = rootKeyPresenter(QStringLiteral("structure"));
+    structures.presenter = structurePresneter(QStringLiteral("structure"));
     structures.keyResolver = structureKeyResolver();
+    structures.importedRootInitializer = structureRootInitializer();
     appendGeneralSection(std::move(structures), result->structuresData.data());
 
     auto maps = make_policy(QStringLiteral("Maps"), QStringLiteral("M"), QStringLiteral("map_item"));
