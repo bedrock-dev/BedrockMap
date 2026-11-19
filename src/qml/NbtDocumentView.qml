@@ -30,9 +30,11 @@ Item {
         property real rightPadding: 0
         property color textColor: Theme.text
         property alias font: recordText.font
+        readonly property bool hasIcon: icon.length > 0
+        readonly property bool usesThemeIcon: hasIcon && !icon.startsWith("qrc:/")
         implicitHeight: Math.max(Theme.iconSmallSize, recordText.implicitHeight)
-        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (recordIcon.visible ? Theme.iconSmallSize
-                                                                                                     + Theme.gapMedium : 0)
+        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (hasIcon ? Theme.iconSmallSize + Theme.gapMedium :
+                                                                                          0)
 
         Row {
             anchors.fill: parent
@@ -40,16 +42,23 @@ Item {
             anchors.rightMargin: recordLabel.rightPadding
             spacing: Theme.gapMedium
 
+            AppIcon {
+                id: themedRecordIcon
+                width: Theme.iconSmallSize
+                height: width
+                anchors.verticalCenter: parent.verticalCenter
+                visible: recordLabel.usesThemeIcon
+                name: visible ? recordLabel.icon : ""
+                iconSize: width
+                iconColor: recordLabel.textColor
+            }
             Image {
                 id: recordIcon
                 width: Theme.iconSmallSize
                 height: width
                 anchors.verticalCenter: parent.verticalCenter
-                visible: recordLabel.icon.length > 0
-                source: recordLabel.icon.length === 0 ? "" : recordLabel.icon.startsWith("qrc:/") ? recordLabel.icon :
-                                                                                                    "qrc:/bedrockmap/icons/ui/"
-                                                                                                    + recordLabel.icon
-                                                                                                    + ".svg"
+                visible: recordLabel.hasIcon && !recordLabel.usesThemeIcon
+                source: visible ? recordLabel.icon : ""
                 sourceSize.width: width * 2
                 sourceSize.height: height * 2
                 fillMode: Image.PreserveAspectFit

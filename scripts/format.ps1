@@ -6,6 +6,12 @@ param(
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
+$qtBin = if ($env:QT_ROOT) { Join-Path $env:QT_ROOT "bin" }
+if ($qtBin -and (Test-Path -LiteralPath $qtBin)) {
+    $env:PATH = "$qtBin;$env:PATH"
+}
+
+$batchSize = 200
 $extensions = @('.cpp', '.cc', '.cxx', '.c', '.h', '.hpp', '.hxx', '.inl')
 $exclude = '(^|\\)(build|build_rls|third|\.cache)(\\|$)'
 
@@ -88,11 +94,17 @@ else {
     Write-Host "Formatting $($files.Count) files..."
 
     # Batch the file list to stay well below the command line length limit.
-    $batchSize = 200
     for ($i = 0; $i -lt $files.Count; $i += $batchSize) {
         $batch = $files[$i..([Math]::Min($i + $batchSize - 1, $files.Count - 1))]
-        $output = & clang-format --style=file -i $batch 2>&1
-        if ($LASTEXITCODE -ne 0) {
+        try {
+            $output = & clang-format --style=file -i $batch 2>&1
+            $code = $LASTEXITCODE
+        }
+        catch {
+            Write-Error "clang-format could not be started: $($_.Exception.Message)"
+            exit 1
+        }
+        if ($code -ne 0) {
             $output | ForEach-Object { Write-Host $_ }
             Write-Error "clang-format reported errors."
             exit 1
@@ -122,8 +134,15 @@ else {
     Write-Host "Formatting $($qmlFiles.Count) QML files..."
     for ($i = 0; $i -lt $qmlFiles.Count; $i += $batchSize) {
         $batch = $qmlFiles[$i..([Math]::Min($i + $batchSize - 1, $qmlFiles.Count - 1))]
-        $output = & qmlformat -s $qmlConfig -i $batch 2>&1
-        if ($LASTEXITCODE -ne 0) {
+        try {
+            $output = & qmlformat -s $qmlConfig -i $batch 2>&1
+            $code = $LASTEXITCODE
+        }
+        catch {
+            Write-Error "qmlformat could not be started: $($_.Exception.Message)"
+            exit 1
+        }
+        if ($code -ne 0) {
             $output | ForEach-Object { Write-Host $_ }
             Write-Error "qmlformat reported errors."
             exit 1
