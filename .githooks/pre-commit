@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+if command -v cygpath >/dev/null 2>&1; then
+    repo_root=$(cygpath -w "$repo_root")
+fi
+
+if command -v pwsh >/dev/null 2>&1; then
+    powershell=pwsh
+elif command -v powershell.exe >/dev/null 2>&1; then
+    powershell=powershell.exe
+else
+    echo "pre-commit: PowerShell is required to run scripts/format.ps1." >&2
+    exit 1
+fi
+
+exec "$powershell" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+    -File "$repo_root/scripts/format.ps1" -ForCommit
