@@ -32,8 +32,7 @@ class ChunkEditService {
     void clearChunkCache(const bl::chunk_pos& pos);
 
     CommitResult commit();
-    CommitResult commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
-                             const bl::nbt::compound_tag* levelDat);
+    CommitResult commitEdits(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat);
 
     std::pair<int, int> chunkModifyCounts() const { return storage_.chunkModifyCounts(); }
 

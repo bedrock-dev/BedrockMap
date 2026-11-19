@@ -25,7 +25,7 @@ AppCard {
         enabled: !!panel.controller
         onToggled: {
             if (panel.controller && toggle.overlayState.type !== undefined)
-                panel.controller.setOverlay(Number(toggle.overlayState.type), toggle.checked)
+            panel.controller.setOverlay(Number(toggle.overlayState.type), toggle.checked)
         }
         Binding {
             target: toggle

@@ -175,8 +175,8 @@ VoxelGrid VoxelGrid::fromMcstructure(const bl::mcstructure& structure) {
     return grid;
 }
 
-VoxelGrid VoxelGrid::fromChunks(const std::vector<std::vector<bl::chunk*>>& chunks,
-                                const std::function<void(int)>& reportProgress, int* firstWorldY) {
+VoxelGrid VoxelGrid::fromChunks(const std::vector<std::vector<bl::chunk*>>& chunks, const std::function<void(int)>& reportProgress,
+                                int* firstWorldY) {
     if (firstWorldY) *firstWorldY = 0;
     if (chunks.empty()) return {};
     constexpr int chunkWidth = 16;

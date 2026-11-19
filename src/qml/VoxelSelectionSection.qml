@@ -46,15 +46,21 @@ VoxelPreviewSection {
             Layout.minimumWidth: 0
             spacing: Theme.gapSmall
 
-            VoxelPreviewCheckBox {
+            AppCheckBox {
                 objectName: "voxelSelectionToggle"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Enable selection")
                 enabled: !section.importPreviewActive
                 checked: section.camera.selectionEnabled
                 onToggled: section.camera.selectionEnabled = checked
             }
-            VoxelPreviewCheckBox {
+            AppCheckBox {
                 objectName: "voxelSelectionMoveToggle"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Move selection")
                 enabled: section.camera.selectionEnabled && !section.importPreviewActive
                 checked: section.camera.selectionMoveMode

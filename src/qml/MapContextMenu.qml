@@ -13,6 +13,7 @@ AppMenu {
     property bool deleteOutsideEnabled: false
     property bool inputBlocked: true
     property bool importActive: false
+    readonly property string altitudeText: root.blockInfo.altitude === undefined ? "" : root.blockInfo.altitude
 
     signal unselectRequested
     signal deleteSelectionRequested
@@ -100,7 +101,7 @@ AppMenu {
             onTriggered: root.copyTextRequested(root.blockInfo.biomeName || "")
         }
         AppMenuItem {
-            text: qsTr("Copy altitude") + " " + (root.blockInfo.altitude === undefined ? "" : root.blockInfo.altitude)
+            text: qsTr("Copy altitude") + " " + root.altitudeText
             onTriggered: {
                 if (root.blockInfo.altitude !== undefined)
                     root.copyTextRequested(String(root.blockInfo.altitude))

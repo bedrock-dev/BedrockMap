@@ -189,19 +189,24 @@ Item {
     // ZOOM_SUBDIVISIONS_PER_OCTAVE equal steps inside each
     // power of two, so a step is a fixed fraction of the current octave instead
     // of an arbitrary multiplier.
+    function zoomAnchorPoint(anchorX, anchorY) {
+        return Qt.point(anchorX === undefined ? width / 2 : anchorX, anchorY === undefined ? height / 2 : anchorY)
+    }
+    function dimensionOrContext(source) {
+        const dimension = Number(source.dimension)
+        return Number.isFinite(dimension) ? dimension : mapContextMenu.dimension
+    }
     function zoomIn(anchorX, anchorY) {
         if (!controller)
             return
         stopPanInertia()
-        controller.zoomAdjacent(1, Qt.point(anchorX === undefined ? width / 2 : anchorX, anchorY === undefined ? height
-                                                                                                                 / 2 : anchorY))
+        controller.zoomAdjacent(1, zoomAnchorPoint(anchorX, anchorY))
     }
     function zoomOut(anchorX, anchorY) {
         if (!controller)
             return
         stopPanInertia()
-        controller.zoomAdjacent(-1, Qt.point(anchorX === undefined ? width / 2 : anchorX, anchorY === undefined
-                                             ? height / 2 : anchorY))
+        controller.zoomAdjacent(-1, zoomAnchorPoint(anchorX, anchorY))
     }
     function centerOnOrigin() {
         if (!controller)
@@ -429,7 +434,7 @@ Item {
         return {
             chunkX: Math.floor(blockX / 16),
             chunkZ: Math.floor(blockZ / 16),
-            dimension: Number.isFinite(Number(source.dimension)) ? Number(source.dimension) : mapContextMenu.dimension
+            dimension: dimensionOrContext(source)
         }
     }
     onWidthChanged: {
@@ -819,22 +824,26 @@ Item {
         readonly property real edgeMargin: Theme.gapLarge
         readonly property real innerPadding: Theme.gapMedium
         readonly property bool isAndroid: Qt.platform.os === "android"
-        readonly property bool positionActive: canvas.crosshairEnabled ? canvas.crosshairBlockActive : !isAndroid
-                                                                         && canvas.hoverBlockActive
+        readonly property bool positionActive: {
+            if (canvas.crosshairEnabled)
+                return canvas.crosshairBlockActive
+            return !isAndroid && canvas.hoverBlockActive
+        }
         readonly property var positionInfo: canvas.crosshairEnabled ? canvas.crosshairBlockInfo : canvas.hoverBlockInfo
         // Matches the height of the layer toolbar in WorldWorkspace.
         readonly property real toolbarHeight: (Theme.touch ? Theme.controlHeight : 34) + Theme.gapSmall * 2
         readonly property int statusFontSize: Theme.fontCaption
         readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
-        readonly property string positionText: positionActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
-                                                                    canvas.controller.dimension).arg(
-                                                                    positionInfo.blockX).arg(positionInfo.blockZ).arg(
-                                                                    positionInfo.chunkX).arg(positionInfo.chunkZ) :
-                                                                isAndroid && !canvas.crosshairEnabled
-                                                                ? "Dim: %1 Pos:-,-/-,-".arg(
-                                                                      canvas.controller.dimension) :
-                                                                  "Dim: %1 Pos:--,--/--,--".arg(
-                                                                      canvas.controller.dimension)
+        readonly property string positionText: {
+            const dimension = canvas.controller.dimension
+            if (positionActive) {
+                return "Dim: %1 Pos:%2,%3/%4,%5".arg(dimension).arg(positionInfo.blockX).arg(positionInfo.blockZ).arg(
+                            positionInfo.chunkX).arg(positionInfo.chunkZ)
+            }
+            if (isAndroid && !canvas.crosshairEnabled)
+                return "Dim: %1 Pos:-,-/-,-".arg(dimension)
+            return "Dim: %1 Pos:--,--/--,--".arg(dimension)
+        }
         readonly property string countsText: "Sel:%1 Modify:%2 Del:%3".arg(canvas.controller.selectionChunkCount).arg(
                                                  canvas.controller.modifiedChunkCount).arg(
                                                  canvas.controller.deletedChunkCount)

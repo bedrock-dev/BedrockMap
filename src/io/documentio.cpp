@@ -53,5 +53,7 @@ namespace io {
 
     QString DocumentIo::rename(const QUrl& from, const QUrl& to) { return fileSystem().rename(from, to); }
 
-    NativeFileResult DocumentIo::openNative(const QUrl& url, NativeOpen flags, int mode) { return fileSystem().openNative(url, flags, mode); }
+    NativeFileResult DocumentIo::openNative(const QUrl& url, NativeOpen flags, int mode) {
+        return fileSystem().openNative(url, flags, mode);
+    }
 }  // namespace io

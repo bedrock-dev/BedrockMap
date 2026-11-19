@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
@@ -36,9 +38,9 @@ Item {
         onAccepted: {
             if (owner && owner === page.mapPreview && page.document && page.document.currentIndex === recordIndex) {
                 if (owner.saveImage(selectedUrl))
-                    App.notifications.info(qsTr("Save successful"))
+                App.notifications.info(qsTr("Save successful"))
                 else
-                    App.notifications.error(qsTr("Save failed"))
+                App.notifications.error(qsTr("Save failed"))
             }
             owner = null
         }
@@ -55,9 +57,9 @@ Item {
         onAccepted: {
             if (owner && owner === page.mapPreview && page.document && page.document.currentIndex === recordIndex) {
                 if (owner.replaceImage(selectedUrl))
-                    App.notifications.info(qsTr("Import successful"))
+                App.notifications.info(qsTr("Import successful"))
                 else
-                    App.notifications.error(qsTr("Import failed"))
+                App.notifications.error(qsTr("Import failed"))
             }
             owner = null
         }
@@ -118,14 +120,14 @@ Item {
             id: panes
             readonly property real editorMinimumWidth: Theme.ui(page.detailsHidden ? 200 : 420)
             readonly property real previewMinimumWidth: Theme.ui(320)
-            readonly property bool previewBeside: (page.hasStructurePreview || page.hasMapPreview)
-                                                 && width >= editorMinimumWidth + previewMinimumWidth + Theme.gapSmall
-                                                 && width >= height * 1.1
+            readonly property bool previewBeside: (page.hasStructurePreview || page.hasMapPreview) && width
+                                                  >= editorMinimumWidth + previewMinimumWidth + Theme.gapSmall && width
+                                                  >= height * 1.1
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: previewBeside ? Qt.Horizontal : Qt.Vertical
             handle: AppSplitHandle {
-                orientation: SplitView.view.orientation
+                orientation: panes.orientation
             }
 
             NbtEditorSurface {
@@ -227,8 +229,8 @@ Item {
                             Layout.minimumWidth: 0
                             text: qsTr("Modify image")
                             compact: page.compact
-                            enabled: !!page.mapPreview && !!page.document && page.document.currentIndex >= 0
-                                     && !page.document.readOnly
+                            enabled: !!page.mapPreview && !!page.document && page.document.currentIndex >= 0 &&
+                                     !page.document.readOnly
                             onClicked: {
                                 replaceMapImageDialog.owner = page.mapPreview
                                 replaceMapImageDialog.recordIndex = page.document.currentIndex
@@ -240,8 +242,8 @@ Item {
                             Layout.minimumWidth: 0
                             text: qsTr("Lock map image")
                             compact: page.compact
-                            enabled: !!page.mapPreview && !!page.document && page.document.currentIndex >= 0
-                                     && !page.document.readOnly && !page.mapPreview.locked
+                            enabled: !!page.mapPreview && !!page.document && page.document.currentIndex >= 0 &&
+                                     !page.document.readOnly && !page.mapPreview.locked
                             onClicked: page.reportMapChange(page.mapPreview, page.mapPreview.lockMap())
                         }
                     }

@@ -7,10 +7,20 @@ AbstractButton {
     property bool compact: false
 
     readonly property bool hot: hovered || pressed
+    readonly property real horizontalTextPadding: Theme.touch ? Theme.gapLarge * 2 : (root.compact ? 14 : 20)
+    readonly property real visualHeight: Theme.touch ? Math.min(root.height, Theme.controlVisualHeight) : root.height
+    readonly property color backgroundColor: {
+        if (root.checked || root.pressed)
+            return Theme.accentSoft
+        return root.hovered ? Theme.surface : Theme.surfaceAlt
+    }
+    readonly property color labelColor: {
+        if (root.checked)
+            return Theme.accent
+        return root.hot ? Theme.text : Theme.muted
+    }
 
-    implicitWidth: Math.max(Theme.ui(compact ? 54 : 68), labelText.implicitWidth + (Theme.touch ? Theme.gapLarge
-                                                                                                  * 2 : (compact ? 14 :
-                                                                                                                   20)))
+    implicitWidth: Math.max(Theme.ui(compact ? 54 : 68), labelText.implicitWidth + root.horizontalTextPadding)
     implicitHeight: Theme.touch ? Theme.controlHeight : (compact ? 24 : Theme.controlHeight)
     width: implicitWidth
     height: implicitHeight
@@ -28,9 +38,9 @@ AbstractButton {
         Rectangle {
             anchors.centerIn: parent
             width: parent.width
-            height: Theme.touch ? Math.min(root.height, Theme.controlVisualHeight) : root.height
+            height: root.visualHeight
             radius: Theme.radiusControl
-            color: root.checked || root.pressed ? Theme.accentSoft : (root.hovered ? Theme.surface : Theme.surfaceAlt)
+            color: root.backgroundColor
             border.width: root.visualFocus ? Theme.borderWidth * 3 : Theme.borderWidth
             border.color: root.checked || root.hot || root.visualFocus ? Theme.accent : Theme.border
         }
@@ -42,7 +52,7 @@ AbstractButton {
             anchors.centerIn: parent
             width: Math.max(0, root.width - Theme.gapLarge * 2)
             text: root.text
-            color: root.checked ? Theme.accent : (root.hot ? Theme.text : Theme.muted)
+            color: root.labelColor
             font.pixelSize: root.compact ? Theme.fontCaption : Theme.fontBody
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

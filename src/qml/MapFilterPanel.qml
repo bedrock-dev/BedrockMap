@@ -84,7 +84,7 @@ AppCard {
     }
 
     onVisibleChanged: if (visible)
-                           refresh()
+                          refresh()
     onControllerChanged: if (!controller && visible)
                              root.closeRequested()
 

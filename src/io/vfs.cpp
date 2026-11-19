@@ -101,7 +101,9 @@ namespace io {
             }
             QString displayName(const QUrl& url) const override { return backend(url).displayName(url); }
             bool requiresSaveAs(const QUrl& url) const override { return backend(url).requiresSaveAs(url); }
-            QString copyTree(const QUrl& source, const QUrl& destination) const override { return backend(source).copyTree(source, destination); }
+            QString copyTree(const QUrl& source, const QUrl& destination) const override {
+                return backend(source).copyTree(source, destination);
+            }
             QString resolveNativeDirectory(const QUrl& source) const override { return backend(source).resolveNativeDirectory(source); }
             StatResult stat(const QUrl& url) const override { return backend(url).stat(url); }
             ListResult list(const QUrl& url) const override { return backend(url).list(url); }
@@ -162,7 +164,9 @@ namespace io {
         return guarded([&] { return reader(*opened.file); }, "The file reader failed.");
     }
 
-    QString Vfs::copyTree(const QUrl&, const QUrl&) const { return QCoreApplication::translate("Vfs", "Directory copy is not supported for this URI."); }
+    QString Vfs::copyTree(const QUrl&, const QUrl&) const {
+        return QCoreApplication::translate("Vfs", "Directory copy is not supported for this URI.");
+    }
     QString Vfs::resolveNativeDirectory(const QUrl&) const { return {}; }
     StatResult Vfs::stat(const QUrl&) const { return {{}, unsupported()}; }
     ListResult Vfs::list(const QUrl&) const { return {{}, unsupported()}; }
@@ -305,7 +309,7 @@ namespace io {
         return QCoreApplication::translate("Vfs", "Could not rename %1 (error %2).").arg(source).arg(GetLastError());
 #else
         return ::rename(QFile::encodeName(source).constData(), QFile::encodeName(destination).constData()) == 0 ? QString{}
-                                                                                                             : errnoText(errno);
+                                                                                                                : errnoText(errno);
 #endif
     }
 

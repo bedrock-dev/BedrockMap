@@ -74,10 +74,8 @@ void FontManager::initialize(const setting::Settings& settings) {
 
 #if defined(Q_OS_ANDROID)
     static const QString uiFamily = [] {
-        const int regular_id =
-            QFontDatabase::addApplicationFont(QString::fromLatin1(constant::ANDROID_UI_FONT_REGULAR_RESOURCE));
-        if (regular_id == -1)
-            LOG_F(ERROR, "Can not load UI font %s", constant::ANDROID_UI_FONT_REGULAR_RESOURCE);
+        const int regular_id = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::ANDROID_UI_FONT_REGULAR_RESOURCE));
+        if (regular_id == -1) LOG_F(ERROR, "Can not load UI font %s", constant::ANDROID_UI_FONT_REGULAR_RESOURCE);
 
         const QStringList regular_families = QFontDatabase::applicationFontFamilies(regular_id);
         if (regular_families.isEmpty()) return QString{};
@@ -87,8 +85,7 @@ void FontManager::initialize(const setting::Settings& settings) {
     }();
 #endif
 
-    static const int monospaceFontId =
-        QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
+    static const int monospaceFontId = QFontDatabase::addApplicationFont(QString::fromLatin1(constant::MONOSPACE_FONT_RESOURCE));
     if (monospaceFontId == -1) LOG_F(WARNING, "Can not load font %s", constant::MONOSPACE_FONT_RESOURCE);
 
     QFont font = QGuiApplication::font();

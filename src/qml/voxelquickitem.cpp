@@ -37,8 +37,8 @@ namespace {
                     const std::vector<std::uint32_t>& indexData) {
             *this = {};
             if (vertexData.empty() || indexData.empty()) return;
-            vertices = createBuffer(rhi, QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
-                                    static_cast<quint32>(vertexData.size() * sizeof(float)));
+            vertices =
+                createBuffer(rhi, QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, static_cast<quint32>(vertexData.size() * sizeof(float)));
             indices = createBuffer(rhi, QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer,
                                    static_cast<quint32>(indexData.size() * sizeof(std::uint32_t)));
             if (!vertices || !indices) return;
@@ -229,9 +229,9 @@ namespace {
 
             // Handle sizes depend on the camera, so the selection is rebuilt every frame.
             if (selection_.enabled && selection_.bounds.is_valid())
-                selection_mesh_.upload(
-                    rhi, updates,
-                    VoxelOverlayMeshBuffers::fromSelection(selection_.bounds, {matrix, logical_size_}, selection_.color, selection_.active));
+                selection_mesh_.upload(rhi, updates,
+                                       VoxelOverlayMeshBuffers::fromSelection(selection_.bounds, {matrix, logical_size_}, selection_.color,
+                                                                              selection_.active));
             else
                 selection_mesh_.clear();
         }
@@ -277,7 +277,8 @@ namespace {
             };
             draw(fill_pipeline_.get(), overlay.fillCount, 0);
             draw(line_pipeline_.get(), overlay.lineCount, overlay.fillCount);
-            draw(handle_pipeline_.get(), overlay.vertexCount - overlay.fillCount - overlay.lineCount, overlay.fillCount + overlay.lineCount);
+            draw(handle_pipeline_.get(), overlay.vertexCount - overlay.fillCount - overlay.lineCount,
+                 overlay.fillCount + overlay.lineCount);
         }
 
         void releaseSceneMeshes() {
@@ -346,17 +347,11 @@ void VoxelQuickItem::setController(VoxelSceneController* controller) {
     emit controllerChanged();
 }
 
-std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentScene() const {
-    return scene_;
-}
+std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentScene() const { return scene_; }
 
-std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentOverlayScene() const {
-    return overlay_scene_;
-}
+std::shared_ptr<const VoxelSceneData> VoxelQuickItem::currentOverlayScene() const { return overlay_scene_; }
 
-bool VoxelQuickItem::orthoMode() const {
-    return view_state_.orthoMode();
-}
+bool VoxelQuickItem::orthoMode() const { return view_state_.orthoMode(); }
 
 void VoxelQuickItem::setOrthoMode(bool ortho) {
     if (!view_state_.setOrthoMode(ortho)) return;
@@ -364,9 +359,7 @@ void VoxelQuickItem::setOrthoMode(bool ortho) {
     update();
 }
 
-bool VoxelQuickItem::rotationLocked() const {
-    return view_state_.rotationLocked();
-}
+bool VoxelQuickItem::rotationLocked() const { return view_state_.rotationLocked(); }
 
 void VoxelQuickItem::setRotationLocked(bool locked) {
     if (!view_state_.setRotationLocked(locked)) return;
@@ -374,9 +367,7 @@ void VoxelQuickItem::setRotationLocked(bool locked) {
     update();
 }
 
-bool VoxelQuickItem::showAxes() const {
-    return show_axes_;
-}
+bool VoxelQuickItem::showAxes() const { return show_axes_; }
 
 void VoxelQuickItem::setShowAxes(bool enabled) {
     if (show_axes_ == enabled) return;
@@ -385,21 +376,13 @@ void VoxelQuickItem::setShowAxes(bool enabled) {
     update();
 }
 
-QVector3D VoxelQuickItem::modelSize() const {
-    return scene_ ? scene_->modelSize : QVector3D{};
-}
+QVector3D VoxelQuickItem::modelSize() const { return scene_ ? scene_->modelSize : QVector3D{}; }
 
-QVector3D VoxelQuickItem::modelOrigin() const {
-    return scene_ ? scene_->origin : QVector3D{};
-}
+QVector3D VoxelQuickItem::modelOrigin() const { return scene_ ? scene_->origin : QVector3D{}; }
 
-VoxelSelectionState VoxelQuickItem::selectionState() const {
-    return view_state_.selection();
-}
+VoxelSelectionState VoxelQuickItem::selectionState() const { return view_state_.selection(); }
 
-bool VoxelQuickItem::selectionEnabled() const {
-    return view_state_.selection().enabled;
-}
+bool VoxelQuickItem::selectionEnabled() const { return view_state_.selection().enabled; }
 
 void VoxelQuickItem::setSelectionEnabled(bool enabled) {
     if (!view_state_.setSelectionEnabled(enabled)) return;
@@ -408,9 +391,7 @@ void VoxelQuickItem::setSelectionEnabled(bool enabled) {
     update();
 }
 
-bool VoxelQuickItem::selectionMoveMode() const {
-    return view_state_.selectionMoveMode();
-}
+bool VoxelQuickItem::selectionMoveMode() const { return view_state_.selectionMoveMode(); }
 
 void VoxelQuickItem::setSelectionMoveMode(bool enabled) {
     if (!view_state_.setSelectionMoveMode(enabled)) return;
@@ -419,9 +400,7 @@ void VoxelQuickItem::setSelectionMoveMode(bool enabled) {
     update();
 }
 
-QColor VoxelQuickItem::selectionColor() const {
-    return view_state_.selection().color;
-}
+QColor VoxelQuickItem::selectionColor() const { return view_state_.selection().color; }
 
 void VoxelQuickItem::setSelectionColor(const QColor& color) {
     if (!view_state_.setSelectionColor(color)) return;
@@ -439,9 +418,7 @@ QVector3D VoxelQuickItem::selectionMaximum() const {
     return QVector3D(p.x, p.y, p.z);
 }
 
-bool VoxelQuickItem::selectionDragging() const {
-    return view_state_.selection().active != VoxelSelectionHandle::None;
-}
+bool VoxelQuickItem::selectionDragging() const { return view_state_.selection().active != VoxelSelectionHandle::None; }
 
 void VoxelQuickItem::setHsaAreas(const QVariantList& values) {
     std::vector<VoxelHsaArea> areas;
@@ -471,9 +448,7 @@ void VoxelQuickItem::setHsaAreas(const QVariantList& values) {
     update();
 }
 
-float VoxelQuickItem::saturation() const {
-    return saturation_;
-}
+float VoxelQuickItem::saturation() const { return saturation_; }
 
 void VoxelQuickItem::setSaturation(float saturation) {
     saturation = std::clamp(saturation, 0.0f, 2.0f);
@@ -483,9 +458,7 @@ void VoxelQuickItem::setSaturation(float saturation) {
     update();
 }
 
-float VoxelQuickItem::brightness() const {
-    return brightness_;
-}
+float VoxelQuickItem::brightness() const { return brightness_; }
 
 void VoxelQuickItem::setBrightness(float brightness) {
     brightness = std::clamp(brightness, 0.0f, 2.0f);
@@ -563,8 +536,7 @@ void VoxelQuickItem::syncScene() {
     if (controller_) next = controller_->voxelScene();
     // A rebuilt scene of the same volume, such as after an edit, keeps the
     // camera and selection the user is working with.
-    const bool same_volume =
-        scene_ && next && scene_->modelSize == next->modelSize && scene_->origin == next->origin;
+    const bool same_volume = scene_ && next && scene_->modelSize == next->modelSize && scene_->origin == next->origin;
     scene_ = std::move(next);
     if (same_volume)
         view_state_.cancelSelectionDrag();
@@ -589,13 +561,9 @@ void VoxelQuickItem::resetView() {
     emit viewOptionsChanged();
 }
 
-void VoxelQuickItem::beginRotate(const QPointF& position) {
-    view_state_.beginRotate(position);
-}
+void VoxelQuickItem::beginRotate(const QPointF& position) { view_state_.beginRotate(position); }
 
-void VoxelQuickItem::beginPan(const QPointF& position) {
-    view_state_.beginPan(position);
-}
+void VoxelQuickItem::beginPan(const QPointF& position) { view_state_.beginPan(position); }
 
 void VoxelQuickItem::dragView(const QPointF& position) {
     if (view_state_.dragView(position, height())) update();

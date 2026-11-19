@@ -22,8 +22,8 @@ TerrainTileSnapshot TerrainTiles::buildSnapshot(const ChunkRegion& region, const
     // The biome layer draws categorical biome colours that must not be tinted
     // again by the shader.
     QImage surface = surfaceTile(region, blocks_per_texel, layer == 0);
-    return TerrainTileSnapshot{pos,        std::max(1, blocks_per_texel), layer, colorTile(region, blocks_per_texel, layer != 0), surface,
-                               region.chunk_bit_map_.any()};
+    return TerrainTileSnapshot{pos,     std::max(1, blocks_per_texel), layer, colorTile(region, blocks_per_texel, layer != 0),
+                               surface, region.chunk_bit_map_.any()};
 }
 
 QImage TerrainTiles::colorTile(const ChunkRegion& region, int blocks_per_texel, bool biome_layer) {

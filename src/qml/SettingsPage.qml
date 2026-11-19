@@ -64,20 +64,33 @@ Item {
     readonly property var initialMapPositionValues: ["origin", "world_spawn", "player"]
     readonly property var initialMapPositionNames: [qsTr("World origin"), qsTr("World spawn"), qsTr("Local player")]
     readonly property var zoomScaleLevels: [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-    readonly property var renderBackendValues: Qt.platform.os === "android" ? ["automatic", "opengl", "vulkan"] :
-                                                                              Qt.platform.os === "windows"
-                                                                              ? ["automatic", "d3d11", "opengl",
-                                                                                 "vulkan"] : ["automatic", "opengl",
-                                                                                              "vulkan"]
-    readonly property var renderBackendNames: Qt.platform.os === "android" ? [qsTr("Automatic"), qsTr("OpenGL ES"), qsTr(
-                                                                                  "Vulkan")] : Qt.platform.os
-                                                                             === "windows" ? [qsTr("Automatic"), qsTr(
-                                                                                                  "Direct3D 11"), qsTr(
-                                                                                                  "OpenGL"), qsTr(
-                                                                                                  "Vulkan")] : [qsTr(
-                                                                                                                    "Automatic"),
-                                                                                                                qsTr("OpenGL"),
-                                                                                                                qsTr("Vulkan")]
+    readonly property var colorThemeValues: ["light", "dark", "black", "system"]
+    readonly property var renderBackendValues: {
+        if (Qt.platform.os === "android")
+            return ["automatic", "opengl", "vulkan"]
+        if (Qt.platform.os === "windows")
+            return ["automatic", "d3d11", "opengl", "vulkan"]
+        return ["automatic", "opengl", "vulkan"]
+    }
+    readonly property var renderBackendNames: {
+        if (Qt.platform.os === "android")
+            return [qsTr("Automatic"), qsTr("OpenGL ES"), qsTr("Vulkan")]
+        if (Qt.platform.os === "windows")
+            return [qsTr("Automatic"), qsTr("Direct3D 11"), qsTr("OpenGL"), qsTr("Vulkan")]
+        return [qsTr("Automatic"), qsTr("OpenGL"), qsTr("Vulkan")]
+    }
+
+    function creditNameText(credit) {
+        if (!credit.url)
+            return credit.name
+        return "<a href=\"" + credit.url + "\">" + credit.name + "</a>"
+    }
+
+    function creditLicenseText(credit) {
+        if (!credit.licenseUrl)
+            return credit.license
+        return "<a href=\"" + credit.licenseUrl + "\">" + credit.license + "</a>"
+    }
 
     FolderDialog {
         id: worldFolderDialog
@@ -152,12 +165,9 @@ Item {
                             label: qsTr("Theme")
                             AppComboBox {
                                 model: [qsTr("Light"), qsTr("Dark"), qsTr("Black"), qsTr("System")]
-                                currentIndex: App.settings.colorTheme === "light" ? 0 : App.settings.colorTheme
-                                                                                    === "dark" ? 1 :
-                                                                                                 App.settings.colorTheme
-                                                                                                 === "black" ? 2 : 3
+                                currentIndex: Math.max(0, page.colorThemeValues.indexOf(App.settings.colorTheme))
                                 onActivated: {
-                                    App.settings.colorTheme = ["light", "dark", "black", "system"][currentIndex]
+                                    App.settings.colorTheme = page.colorThemeValues[currentIndex]
                                 }
                             }
                         }
@@ -837,9 +847,7 @@ Item {
                                         Layout.preferredWidth: 0
                                         Layout.minimumWidth: 0
                                         Layout.alignment: Qt.AlignTop
-                                        text: creditRow.modelData.url ? "<a href=\"" + creditRow.modelData.url + "\">"
-                                                                        + creditRow.modelData.name + "</a>" :
-                                                                        creditRow.modelData.name
+                                        text: page.creditNameText(creditRow.modelData)
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent
@@ -852,10 +860,7 @@ Item {
                                         Layout.preferredWidth: 0
                                         Layout.minimumWidth: 0
                                         Layout.alignment: Qt.AlignTop
-                                        text: creditRow.modelData.licenseUrl ? "<a href=\""
-                                                                               + creditRow.modelData.licenseUrl + "\">"
-                                                                               + creditRow.modelData.license + "</a>" :
-                                                                               creditRow.modelData.license
+                                        text: page.creditLicenseText(creditRow.modelData)
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent

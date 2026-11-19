@@ -1,6 +1,8 @@
 #include "io/browservfs.h"
 
 #ifdef Q_OS_WASM
+#include <emscripten.h>
+
 #include <QBuffer>
 #include <QCoreApplication>
 #include <QDir>
@@ -9,7 +11,6 @@
 #include <QTemporaryFile>
 #include <QThread>
 #include <QUuid>
-#include <emscripten.h>
 #include <exception>
 #include <type_traits>
 
@@ -59,38 +60,45 @@ namespace {
                 _free(errorPtr);
             }
         };
-        input.addEventListener("cancel", () => finish("", ""), {once: true});
-        input.addEventListener("change", async () => {
-            if (!input.files.length) { finish("", ""); return; }
-            let selectedPath = "";
-            try {
-                for (const file of input.files) {
-                    const relative = file.webkitRelativePath;
-                    const parts = relative.split("/");
-                    if (parts.some(part => !part || part === "." || part === ".." || part.includes(String.fromCharCode(92)) || part.includes(String.fromCharCode(0))))
-                        throw new Error("Invalid relative file path");
-                    const selected = parts[0];
-                    if (selectedPath && selectedPath !== selected)
-                        throw new Error("Files must belong to one directory");
-                    selectedPath = selected;
-                    const path = root + "/" + relative;
-                    FS.mkdirTree(path.substring(0, path.lastIndexOf("/")));
-                    const stream = FS.open(path, "w");
-                    try {
-                        for (let offset = 0; offset < file.size; offset += 1048576) {
-                            const bytes = new Uint8Array(await file.slice(offset, offset + 1048576).arrayBuffer());
-                            if (FS.write(stream, bytes, 0, bytes.length, offset) !== bytes.length)
-                                throw new Error("Incomplete file write");
-                        }
-                    } finally {
-                        FS.close(stream);
-                    }
-                }
-                finish(selectedPath, "");
-            } catch (error) {
-                finish("", String(error));
-            }
-        }, {once: true});
+        input.addEventListener("cancel", () = > finish("", ""), {once : true});
+        input.addEventListener(
+            "change",
+            async() = >
+                      {
+                          if (!input.files.length) {
+                              finish("", "");
+                              return;
+                          }
+                          let selectedPath = "";
+                          try {
+                              for (const file of input.files) {
+                                  const relative = file.webkitRelativePath;
+                                  const parts = relative.split("/");
+                                  if (parts.some(part = > !part || part == = "." || part ==
+                                                 = ".." || part.includes(String.fromCharCode(92)) || part.includes(String.fromCharCode(0))))
+                                      throw new Error("Invalid relative file path");
+                                  const selected = parts[0];
+                                  if (selectedPath&& selectedPath != = selected) throw new Error("Files must belong to one directory");
+                                  selectedPath = selected;
+                                  const path = root + "/" + relative;
+                                  FS.mkdirTree(path.substring(0, path.lastIndexOf("/")));
+                                  const stream = FS.open(path, "w");
+                                  try {
+                                      for (let offset = 0; offset < file.size; offset += 1048576) {
+                                          const bytes = new Uint8Array(await file.slice(offset, offset + 1048576).arrayBuffer());
+                                          if (FS.write(stream, bytes, 0, bytes.length, offset) != = bytes.length)
+                                              throw new Error("Incomplete file write");
+                                      }
+                                  } finally {
+                                      FS.close(stream);
+                                  }
+                              }
+                              finish(selectedPath, "");
+                          } catch (error) {
+                              finish("", String(error));
+                          }
+                      },
+            {once : true});
         document.body.appendChild(input);
         input.click();
     });
@@ -103,7 +111,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE void bedrockmapBrowserSelection(int request, con
     if (name.isEmpty()) QDir(selection.root).removeRecursively();
     const QUrl url = name.isEmpty() ? QUrl() : QUrl::fromLocalFile(selection.root + QLatin1Char('/') + name);
     const QString detail = QString::fromUtf8(error);
-    selection.callback(url, detail.isEmpty() ? QString() : QCoreApplication::translate("BrowserVfsBackend", "Could not read selected files: %1").arg(detail));
+    selection.callback(url, detail.isEmpty()
+                                ? QString()
+                                : QCoreApplication::translate("BrowserVfsBackend", "Could not read selected files: %1").arg(detail));
 }
 
 namespace io {
@@ -124,7 +134,8 @@ namespace io {
         return onBrowserThread([&]() -> ReadResult {
             QFile file(nativeFileName(url));
             if (!file.open(QIODevice::ReadOnly)) return {{}, file.errorString()};
-            if (max_bytes >= 0 && file.size() > max_bytes) return {{}, QCoreApplication::translate("BrowserVfsBackend", "The file is too large.")};
+            if (max_bytes >= 0 && file.size() > max_bytes)
+                return {{}, QCoreApplication::translate("BrowserVfsBackend", "The file is too large.")};
             const QByteArray data = file.readAll();
             return file.error() == QFileDevice::NoError ? ReadResult{data, {}} : ReadResult{{}, file.errorString()};
         });

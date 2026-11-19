@@ -30,7 +30,9 @@ AppDialog {
         // Legacy release notes contain Chinese first, then English after "---".
         const configured = App.settings.language
         const language = !configured || configured === "system" ? Qt.locale().name : configured
-        const selected = language.toLowerCase().startsWith("zh") ? lines.slice(0, separator) : lines.slice(separator + 1)
+        const selected = language.toLowerCase().startsWith("zh") ? lines.slice(0, separator) : lines.slice(separator
+                                                                                                           + 1)
+
         return selected.join("\n").trim() || notes.trim()
     }
 

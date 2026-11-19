@@ -11,14 +11,15 @@ QtObject {
     property string rootRoute: ""
     property string titleOverride: ""
     property var history: []
+    signal navigated(string previousRoute, string nextRoute)
 
     readonly property string currentRoute: history.length > 0 ? history[history.length - 1] : ""
     readonly property var currentDefinition: routeDefinition(currentRoute)
     readonly property Component currentComponent: currentDefinition && currentDefinition.component
                                                   ? currentDefinition.component : null
     readonly property string currentTitle: titleOverride.length > 0 ? titleOverride : currentDefinition
-                                                                       && currentDefinition.title
-                                                                       ? currentDefinition.title : ""
+                                                                      && currentDefinition.title
+                                                                      ? currentDefinition.title : ""
     readonly property bool isRoot: currentRoute.length > 0 && currentRoute === rootRoute
     readonly property bool isChildOpen: currentRoute.length > 0 && currentRoute !== rootRoute
     readonly property bool canGoBack: history.length > 1
@@ -46,21 +47,29 @@ QtObject {
     function reset(route) {
         if (!known(route))
             return false
+        const previousRoute = currentRoute
         history = [route]
+        if (previousRoute !== route)
+            navigated(previousRoute, route)
         return true
     }
 
     function push(route) {
         if (!known(route) || route === currentRoute)
             return false
+        const previousRoute = currentRoute
         history = history.concat([route])
+        navigated(previousRoute, route)
         return true
     }
 
     function replace(route) {
         if (!known(route))
             return false
+        const previousRoute = currentRoute
         history = history.slice(0, -1).concat([route])
+        if (previousRoute !== route)
+            navigated(previousRoute, route)
         return true
     }
 
@@ -72,7 +81,10 @@ QtObject {
     function pop() {
         if (!canGoBack)
             return false
+        const previousRoute = currentRoute
+        const nextRoute = history[history.length - 2]
         history = history.slice(0, -1)
+        navigated(previousRoute, nextRoute)
         return true
     }
 }

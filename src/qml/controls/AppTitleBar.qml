@@ -17,13 +17,21 @@ Rectangle {
     property real rightInset: 0
     signal backRequested
 
+    readonly property int titlePixelSize: {
+        if (root.embedded)
+            return Theme.fontSubtitle
+        return Theme.compact ? Theme.fontTitle : Theme.fontDisplay
+    }
+    readonly property real titleLeftMargin: root.embedded ? root.leftInset : Theme.gapSection + root.leftInset
+    readonly property real titleRightMargin: root.embedded ? root.rightInset : Theme.gapSection + root.rightInset
+
     implicitHeight: embedded ? 48 : Theme.topbarHeight
     color: embedded ? "transparent" : Theme.surface
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: root.embedded ? root.leftInset : Theme.gapSection + root.leftInset
-        anchors.rightMargin: root.embedded ? root.rightInset : Theme.gapSection + root.rightInset
+        anchors.leftMargin: root.titleLeftMargin
+        anchors.rightMargin: root.titleRightMargin
         spacing: Theme.gapSmall
 
         AppIconButton {
@@ -43,8 +51,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.title
                 color: Theme.text
-                font.pixelSize: root.embedded ? Theme.fontSubtitle :
-                                                Theme.compact ? Theme.fontTitle : Theme.fontDisplay
+                font.pixelSize: root.titlePixelSize
                 elide: Text.ElideRight
             }
             Text {

@@ -66,7 +66,8 @@ Window {
     property var openSessions: App.openSessions
     readonly property var activeSession: App.activeSession
     readonly property var worldWorkspace: workspaceOpen && sessionHostLazy.item ? sessionHostLazy.item.worldWorkspace :
-                                                                                     null
+                                                                                  null
+
     // Child-page stack of the visible page: the open world's workspace or the
     // tools page. The shell owns the back button and title for it.
     readonly property PageGroup childPages: {
@@ -78,11 +79,12 @@ Window {
     }
     readonly property bool childPageOpen: !!childPages && childPages.isChildOpen
     // Save and close for the open session live in the compact title bar.
-    readonly property bool sessionTitleBarActions: workspaceOpen && Theme.showTopbar && !!activeSession && !childPageOpen
+    readonly property bool sessionTitleBarActions: workspaceOpen && Theme.showTopbar && !!activeSession &&
+                                                   !childPageOpen
     onChildPageOpenChanged: if (childPageOpen)
                                 workspaceNavigationPanel.close()
-    readonly property bool canNavigateBack: childPageOpen || (!!worldWorkspace && worldWorkspace.canGoBack)
-                                            || (Theme.showTopbar && workspaceOpen)
+    readonly property bool canNavigateBack: childPageOpen || (!!worldWorkspace && worldWorkspace.canGoBack) || (Theme.showTopbar
+                                                                                                                && workspaceOpen)
     readonly property string shellTitle: {
         if (childPageOpen)
             return childPages.currentTitle
@@ -92,16 +94,18 @@ Window {
     }
     // Section 0 is the map; global data sections follow.
     readonly property var workspaceSectionEntries: {
-        const entries = [{
-                             title: "Map",
-                             iconName: "map",
-                             label: "Map",
-                             kind: "section",
-                             navigationIndex: 0,
-                             dirty: false,
-                             selected: !activeSession || activeSession.titleBarNavigationIndex === 0,
-                             enabled: true
-                         }]
+        const entries = [
+                  {
+                      title: "Map",
+                      iconName: "map",
+                      label: "Map",
+                      kind: "section",
+                      navigationIndex: 0,
+                      dirty: false,
+                      selected: !activeSession || activeSession.titleBarNavigationIndex === 0,
+                      enabled: true
+                  }
+              ]
         const chunkEditor = activeSession ? activeSession.chunkEditor : null
         entries.push({
                          title: "Chunk editor",
@@ -122,8 +126,8 @@ Window {
                          selected: !!worldWorkspace && worldWorkspace.voxelViewOpen,
                          enabled: !!voxelView && voxelView.hasVoxelModel
                      })
-        const sections = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationSections :
-                                                                                   []
+        const sections = activeSession && activeSession.titleBarNavigationVisible
+              ? activeSession.titleBarNavigationSections : []
         for (let i = 0; i < sections.length; ++i) {
             const section = sections[i]
             entries.push({
@@ -141,7 +145,8 @@ Window {
         return entries
     }
     readonly property var workspaceSectionEntry: {
-        const section = activeSession && activeSession.titleBarNavigationVisible ? activeSession.titleBarNavigationIndex : 0
+        const section = activeSession && activeSession.titleBarNavigationVisible
+              ? activeSession.titleBarNavigationIndex : 0
         return workspaceSectionEntries.find(entry => entry.kind === "section" && entry.navigationIndex === section)
                 || workspaceSectionEntries[0]
     }
@@ -360,8 +365,8 @@ Window {
             })
         }
         function onSettingsSaved() {
-            App.notifications.info(
-                        qsTr("Settings saved. All settings except language and font will take effect after restarting the application."))
+            App.notifications.info(qsTr(
+                                       "Settings saved. All settings except language and font will take effect after restarting the application."))
         }
         function onErrorChanged(message) {
             App.notifications.error(message)
@@ -457,6 +462,7 @@ Window {
                     AppIconButton {
                         visible: Theme.showTopbar && window.currentPage === window.navigation.pageSettings &&
                                  !window.workspaceOpen
+
                         iconName: "save"
                         label: qsTr("Save settings")
                         onClicked: App.settings.save()

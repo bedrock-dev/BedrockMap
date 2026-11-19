@@ -82,8 +82,7 @@ WorkspaceSession* WorkspaceSessionModel::at(int index) const {
 
 int WorkspaceSessionModel::indexOf(WorkspaceSession* session) const { return sessions_.indexOf(session); }
 
-SessionController::SessionController(AppContext& context, QObject* parent)
-    : QObject(parent), open_sessions_(this), context_(context) {}
+SessionController::SessionController(AppContext& context, QObject* parent) : QObject(parent), open_sessions_(this), context_(context) {}
 
 SessionController::~SessionController() {
     for (auto& session : sessions_) session->close();

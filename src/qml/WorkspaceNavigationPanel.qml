@@ -46,8 +46,11 @@ Popup {
 
         background: Rectangle {
             radius: Theme.radiusControl
-            color: item.modelData.selected ? Theme.accentSoft : (item.hovered || item.pressed ? Theme.surfaceAlt :
-                                                                                                "transparent")
+            color: {
+                if (item.modelData.selected)
+                return Theme.accentSoft
+                return item.hovered || item.pressed ? Theme.surfaceAlt : "transparent"
+            }
 
             border.width: item.modelData.selected || item.visualFocus ? Theme.borderWidth : 0
             border.color: Theme.accent

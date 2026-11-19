@@ -41,12 +41,12 @@ Item {
         acceptedButtons: Qt.LeftButton
         onActiveChanged: {
             if (active)
-                voxelItem.beginRotate(centroid.position)
+            voxelItem.beginRotate(centroid.position)
             else
-                voxelItem.endView()
+            voxelItem.endView()
         }
         onTranslationChanged: if (active)
-                                  voxelItem.dragView(centroid.position)
+        voxelItem.dragView(centroid.position)
     }
 
     DragHandler {
@@ -56,12 +56,12 @@ Item {
         acceptedButtons: Qt.RightButton
         onActiveChanged: {
             if (active)
-                voxelItem.beginPan(centroid.position)
+            voxelItem.beginPan(centroid.position)
             else
-                voxelItem.endView()
+            voxelItem.endView()
         }
         onTranslationChanged: if (active)
-                                  voxelItem.dragView(centroid.position)
+        voxelItem.dragView(centroid.position)
     }
 
     WheelHandler {
@@ -101,10 +101,10 @@ Item {
         onContactStarted: {
             root.endInteraction()
             if (pointCount === 1)
-                voxelItem.beginSelectionDrag(startPosition, 22)
+            voxelItem.beginSelectionDrag(startPosition, 22)
         }
         onPointCountChanged: if (pointCount === 0)
-                                 root.endInteraction()
+        root.endInteraction()
         onManipulationStarted: function (points, position) {
             if (points === 1 && !voxelItem.selectionDragging)
                 voxelItem.beginRotate(position)
@@ -127,9 +127,9 @@ Item {
         root.endInteraction()
     }
     onVisibleChanged: if (!visible) {
-                          touchInput.cancelGesture()
-                          root.endInteraction()
-                      }
+        touchInput.cancelGesture()
+        root.endInteraction()
+    }
 
     Connections {
         target: root.controller

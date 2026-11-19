@@ -16,6 +16,25 @@ AbstractButton {
     // Keep the visual icon independent from the larger touch target.
     readonly property real iconSize: Theme.touch ? Theme.iconSize : Math.min(20, Math.max(15, root.buttonSize - 16))
     readonly property bool hot: hovered || pressed
+    readonly property real visualWidth: Theme.touch ? Math.min(root.width, Theme.controlVisualHeight) : root.width
+    readonly property real visualHeight: Theme.touch ? Math.min(root.height, Theme.controlVisualHeight) : root.height
+    readonly property color backgroundColor: {
+        if (root.selected)
+            return Theme.accentSoft
+        if (!root.hot)
+            return "transparent"
+        return root.danger ? Theme.dangerSoft : Theme.surfaceAlt
+    }
+    readonly property real visualBorderWidth: {
+        if (root.visualFocus)
+            return Theme.borderWidth * 3
+        return root.selected ? Theme.borderWidth : 0
+    }
+    readonly property color iconColor: {
+        if (root.danger)
+            return Theme.danger
+        return root.selected ? Theme.accent : Theme.text
+    }
 
     width: controlSize
     height: controlSize
@@ -33,12 +52,11 @@ AbstractButton {
     background: Item {
         Rectangle {
             anchors.centerIn: parent
-            width: Theme.touch ? Math.min(root.width, Theme.controlVisualHeight) : root.width
-            height: Theme.touch ? Math.min(root.height, Theme.controlVisualHeight) : root.height
+            width: root.visualWidth
+            height: root.visualHeight
             radius: Theme.radiusControl
-            color: root.selected ? Theme.accentSoft : (root.hot ? (root.danger ? Theme.dangerSoft : Theme.surfaceAlt) :
-                                                                  "transparent")
-            border.width: root.visualFocus ? Theme.borderWidth * 3 : (root.selected ? Theme.borderWidth : 0)
+            color: root.backgroundColor
+            border.width: root.visualBorderWidth
             border.color: Theme.accent
         }
     }
@@ -51,7 +69,7 @@ AbstractButton {
             name: root.iconName
             fallback: root.iconText
             iconSize: root.iconSize
-            iconColor: root.danger ? Theme.danger : (root.selected ? Theme.accent : Theme.text)
+            iconColor: root.iconColor
             AppDirtyIndicator {
                 id: dirtyIndicator
                 dirty: root.dirty

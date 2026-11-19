@@ -67,12 +67,12 @@ AppCard {
                 width: parent.width
                 spacing: Theme.gapSmall
                 Text {
+                    readonly property real badgeSpace: card.xorMarked ? listBadge.implicitWidth + parent.spacing : 0
                     text: card.title
                     color: Theme.text
                     font.pixelSize: Theme.fontLabel
                     elide: Text.ElideRight
-                    width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? listBadge.implicitWidth
-                                                                                                + parent.spacing : 0)))
+                    width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
                 }
                 Text {
                     id: listBadge
@@ -137,12 +137,12 @@ AppCard {
                 width: parent.width
                 spacing: Theme.gapSmall
                 Text {
+                    readonly property real badgeSpace: card.xorMarked ? gridBadge.implicitWidth + parent.spacing : 0
                     text: card.title
                     color: Theme.text
                     font.pixelSize: Theme.fontSubtitle
                     elide: Text.ElideRight
-                    width: Math.min(implicitWidth, Math.max(0, parent.width - (card.xorMarked ? gridBadge.implicitWidth
-                                                                                                + parent.spacing : 0)))
+                    width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
                 }
                 Text {
                     id: gridBadge

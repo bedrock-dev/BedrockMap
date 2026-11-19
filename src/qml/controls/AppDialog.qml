@@ -9,15 +9,17 @@ Dialog {
     property real preferredWidth: Theme.ui(430)
     property real preferredHeight: -1
     readonly property real windowMargin: Theme.gapSection
+    readonly property real maximumDialogWidth: parent ? parent.width - windowMargin * 2 : preferredWidth
+    readonly property real maximumDialogHeight: parent ? parent.height - windowMargin * 2 : implicitHeight
+    readonly property real requestedHeight: preferredHeight >= 0 ? preferredHeight : implicitHeight
 
     modal: true
     parent: Overlay.overlay
     closePolicy: Popup.CloseOnEscape
-    width: Math.min(preferredWidth, parent ? parent.width - windowMargin * 2 : preferredWidth)
-    height: Math.min(preferredHeight >= 0 ? preferredHeight : implicitHeight, parent ? parent.height - windowMargin * 2 :
-                                                                                       implicitHeight)
-    x: parent ? Math.round((parent.width - width) / 2) : 0
-    y: parent ? Math.round((parent.height - height) / 2) : 0
+    width: Math.min(root.preferredWidth, root.maximumDialogWidth)
+    height: Math.min(root.requestedHeight, root.maximumDialogHeight)
+    x: parent ? Math.round((parent.width - root.width) / 2) : 0
+    y: parent ? Math.round((parent.height - root.height) / 2) : 0
     padding: Theme.gapLarge
 
     background: Rectangle {

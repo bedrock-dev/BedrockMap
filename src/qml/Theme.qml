@@ -47,8 +47,9 @@ QtObject {
     readonly property int menuItemHeight: touch ? controlHeight : 30
     readonly property int treeRowHeight: touch ? controlHeight : 28
     readonly property int settingRowHeight: touch ? Math.max(ui(44), controlHeight + ui(4)) : (compact ? 36 : 38)
-    readonly property int sessionRowHeight: touch ? Math.max(ui(56), controlHeight + ui(8), fontSubtitle + fontCaption
-                                                             + gapTiny + gapLarge * 2) : (compact ? 52 : 64)
+    readonly property int touchSessionRowHeight: Math.max(ui(56), controlHeight + ui(8), fontSubtitle + fontCaption
+                                                          + gapTiny + gapLarge * 2)
+    readonly property int sessionRowHeight: touch ? touchSessionRowHeight : (compact ? 52 : 64)
     readonly property int iconButtonSize: ui(34)
     readonly property int iconButtonSmallSize: ui(28)
     readonly property int dirtyIndicatorSize: touch ? ui(10) : 9
@@ -66,17 +67,24 @@ QtObject {
     readonly property real sidebarWidth: ui(232)
     readonly property real sidebarCollapsedWidth: ui(52)
     readonly property real sidebarCollapsedItemSize: sidebarCollapsedWidth - gapMedium * 2
-    readonly property real bottomNavigationHeight: touch ? Math.max(ui(56), iconSize + fontCaption + ui(22)) : (compact
-                                                                                                                ? 64 : 72)
+    readonly property real touchBottomNavigationHeight: Math.max(ui(56), iconSize + fontCaption + ui(22))
+    readonly property real bottomNavigationHeight: touch ? touchBottomNavigationHeight : (compact ? 64 : 72)
     readonly property real topbarHeight: touch ? Math.max(ui(52), controlHeight + ui(8)) : (compact ? 52 : 72)
 
     readonly property real fontScale: App.settings.fontSize / 12.0
     readonly property bool systemDark: Application.styleHints.colorScheme !== Qt.Light
     readonly property bool black: App.settings.colorTheme === "black"
-    readonly property bool dark: black || App.settings.colorTheme === "dark" || (App.settings.colorTheme
-                                                                                 === "system" && systemDark)
+    readonly property bool dark: {
+        if (black || App.settings.colorTheme === "dark")
+        return true
+        return App.settings.colorTheme === "system" && systemDark
+    }
 
-    readonly property var palette: black ? blackPalette : dark ? darkPalette : lightPalette
+    readonly property var palette: {
+        if (black)
+        return blackPalette
+        return dark ? darkPalette : lightPalette
+    }
     readonly property var blackPalette: themeWith({
                                                       background: "#000000",
                                                       surface: "#080808",

@@ -4,6 +4,7 @@ import QtQuick.Controls
 
 CheckBox {
     id: root
+    property bool wrapText: false
 
     implicitHeight: Math.max(Theme.controlHeight, implicitContentHeight + topPadding + bottomPadding)
     font.pixelSize: Theme.fontSubtitle
@@ -14,6 +15,7 @@ CheckBox {
         color: root.enabled ? Theme.text : Theme.muted
         font: root.font
         verticalAlignment: Text.AlignVCenter
+        wrapMode: root.wrapText ? Text.Wrap : Text.NoWrap
     }
     indicator: Rectangle {
         x: root.leftPadding

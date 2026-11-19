@@ -23,9 +23,9 @@ Item {
     readonly property bool sectionsEnabled: root.hasModel && !root.controller.loading
     readonly property bool operationsEnabled: root.hasModel && !root.busy && !root.importPreviewActive
     readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
-                                               || Window.activeFocusItem instanceof TextEdit
-    readonly property bool viewShortcutsEnabled: root.visible && root.sectionsEnabled && !root.importPreviewActive
-                                                 && !root.textInputFocused
+                                             || Window.activeFocusItem instanceof TextEdit
+    readonly property bool viewShortcutsEnabled: root.visible && root.sectionsEnabled && !root.importPreviewActive &&
+                                                 !root.textInputFocused
     readonly property var camera: viewport.camera
 
     /// The selection when enabled, otherwise the whole model, in model-local coordinates.
@@ -34,9 +34,9 @@ Item {
                                              "minimum": camera.selectionMinimum,
                                              "maximum": camera.selectionMaximum
                                          } : {
-                                             "minimum": Qt.vector3d(0, 0, 0),
-                                             "maximum": camera.modelSize
-                                         }
+            "minimum": Qt.vector3d(0, 0, 0),
+            "maximum": camera.modelSize
+        }
     }
 
     function prepareExport() {
@@ -62,8 +62,8 @@ Item {
             return
         exportCompressMesh = compressMesh.checked
         const origin = camera.modelOrigin
-        const fileName = "voxel-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z + exportMinimum.z].join("_")
-                + ".glb"
+        const fileName = "voxel-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z
+                                     + exportMinimum.z].join("_") + ".glb"
         glbExportDialog.selectedFile = glbExportDialog.currentFolder.toString().length > 0
                 ? glbExportDialog.currentFolder + "/" + encodeURIComponent(fileName) : fileName
         glbExportDialog.open()
@@ -71,7 +71,8 @@ Item {
 
     function deleteSelection() {
         if (blockVolumeEditingEnabled && camera.selectionEnabled && operationsEnabled)
-            controller.deleteBlockVolumeAsync(camera.selectionMinimum, camera.selectionMaximum, structureSection.includeEntities)
+            controller.deleteBlockVolumeAsync(camera.selectionMinimum, camera.selectionMaximum,
+                                              structureSection.includeEntities)
     }
 
     function chooseStructureImport() {
@@ -88,7 +89,8 @@ Item {
         if (!operationsEnabled)
             return
         const range = exportRange()
-        controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities, structureSection.newFormat)
+        controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities,
+                                 structureSection.newFormat)
     }
 
     function pasteStructure() {
@@ -132,17 +134,51 @@ Item {
     }
 
     readonly property var viewShortcuts: [
-        { sequence: "R", action: () => root.camera.resetView() },
-        { sequence: "F", action: () => root.camera.focusFrontFace() },
-        { sequence: "O", action: () => root.camera.orthoMode = !root.camera.orthoMode },
-        { sequence: "A", action: () => viewport.showAxes = !viewport.showAxes },
-        { sequence: "L", action: () => root.camera.rotationLocked = !root.camera.rotationLocked },
-        { sequence: "S", action: () => root.camera.selectionEnabled = !root.camera.selectionEnabled },
-        { sequence: "M", needsSelection: true, action: () => root.camera.selectionMoveMode = !root.camera.selectionMoveMode },
-        { sequence: "Left", action: () => root.camera.rotateView(-90, 0) },
-        { sequence: "Right", action: () => root.camera.rotateView(90, 0) },
-        { sequence: "Up", action: () => root.camera.rotateView(0, -90) },
-        { sequence: "Down", action: () => root.camera.rotateView(0, 90) }
+        {
+            sequence: "R",
+            action: () => root.camera.resetView()
+        },
+        {
+            sequence: "F",
+            action: () => root.camera.focusFrontFace()
+        },
+        {
+            sequence: "O",
+            action: () => root.camera.orthoMode = !root.camera.orthoMode
+        },
+        {
+            sequence: "A",
+            action: () => viewport.showAxes = !viewport.showAxes
+        },
+        {
+            sequence: "L",
+            action: () => root.camera.rotationLocked = !root.camera.rotationLocked
+        },
+        {
+            sequence: "S",
+            action: () => root.camera.selectionEnabled = !root.camera.selectionEnabled
+        },
+        {
+            sequence: "M",
+            needsSelection: true,
+            action: () => root.camera.selectionMoveMode = !root.camera.selectionMoveMode
+        },
+        {
+            sequence: "Left",
+            action: () => root.camera.rotateView(-90, 0)
+        },
+        {
+            sequence: "Right",
+            action: () => root.camera.rotateView(90, 0)
+        },
+        {
+            sequence: "Up",
+            action: () => root.camera.rotateView(0, -90)
+        },
+        {
+            sequence: "Down",
+            action: () => root.camera.rotateView(0, 90)
+        }
     ]
 
     // Shortcut needs an Item parent to find its window, hence the Item wrapper.
@@ -153,7 +189,8 @@ Item {
             required property var modelData
             Shortcut {
                 sequence: shortcutHost.modelData.sequence
-                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.needsSelection || root.camera.selectionEnabled)
+                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.needsSelection
+                                                       || root.camera.selectionEnabled)
                 onActivated: shortcutHost.modelData.action()
             }
         }
@@ -239,7 +276,9 @@ Item {
                 }
                 background: Rectangle {
                     radius: Theme.radiusControl
-                    color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt : Theme.surface)
+                    color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt :
+                                                                                              Theme.surface)
+
                     border.width: Theme.borderWidth
                     border.color: Theme.border
                     opacity: 0.95
@@ -317,7 +356,8 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
                                 compact: true
-                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr("Export GLB")
+                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr(
+                                                                                         "Export GLB")
                                 enabled: root.operationsEnabled
                                 onClicked: root.chooseGlbExport()
                             }

@@ -18,7 +18,6 @@ namespace io {
         [[nodiscard]] QString readStream(const QUrl& url, const StreamReader& reader) const override;
         [[nodiscard]] QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {}) const override;
         [[nodiscard]] QString displayName(const QUrl& url) const override;
-
     };
 }  // namespace io
 #endif

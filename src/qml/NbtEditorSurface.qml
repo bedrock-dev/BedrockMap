@@ -30,8 +30,11 @@ Item {
     NbtTagDialog {
         id: tagDialog
         onCommitRequested: function (type, key, value) {
-            const ok = tagDialog.mode === 0 ? root.document.treeModel.addChild(tagDialog.sourceRow, type, key, value) :
-                                              root.document.treeModel.updateNode(tagDialog.sourceRow, key, value)
+            let ok = false
+            if (tagDialog.mode === 0)
+                ok = root.document.treeModel.addChild(tagDialog.sourceRow, type, key, value)
+            else
+                ok = root.document.treeModel.updateNode(tagDialog.sourceRow, key, value)
             if (!ok) {
                 App.notifications.error(root.document.treeModel.lastError)
                 return
@@ -84,8 +87,8 @@ Item {
             onTriggered: clearDialog.open()
         }
         AppMenuSeparator {
-            visible: (addAction.visible || editAction.visible || removeAction.visible || clearAction.visible) &&
-                     (copyAction.visible || pasteAction.visible)
+            visible: (addAction.visible || editAction.visible || removeAction.visible || clearAction.visible) && (
+                         copyAction.visible || pasteAction.visible)
         }
         AppMenuItem {
             id: copyAction

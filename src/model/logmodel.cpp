@@ -83,7 +83,7 @@ LogModel::LogModel(int& argc, char** argv, QObject* parent) : QAbstractListModel
 #ifdef Q_OS_ANDROID
     QJniEnvironment env;
     if (env.registerNativeMethods("io/github/hhhxiao/bedrockmap/AppLog", {{"onMessage", "(ILjava/lang/String;Ljava/lang/String;)V",
-                                                             reinterpret_cast<void*>(onAndroidLogMessage)}})) {
+                                                                           reinterpret_cast<void*>(onAndroidLogMessage)}})) {
         QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/AppLog", "setNativeEnabled", "(Z)V", jboolean(true));
     }
     env.checkAndClearExceptions();

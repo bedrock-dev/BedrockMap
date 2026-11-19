@@ -28,20 +28,29 @@ VoxelPreviewSection {
             Layout.minimumWidth: 0
             spacing: Theme.gapSmall
 
-            VoxelPreviewCheckBox {
+            AppCheckBox {
                 objectName: "voxelOrthoToggle"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Orthographic projection")
                 checked: section.camera.orthoMode
                 onToggled: section.camera.orthoMode = checked
             }
-            VoxelPreviewCheckBox {
+            AppCheckBox {
                 objectName: "voxelRotationLockToggle"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Lock rotation")
                 checked: section.camera.rotationLocked
                 onToggled: section.camera.rotationLocked = checked
             }
-            VoxelPreviewCheckBox {
+            AppCheckBox {
                 objectName: "voxelShowAxesToggle"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Show axes")
                 checked: section.view.showAxes
                 onToggled: section.view.showAxes = checked

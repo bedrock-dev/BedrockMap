@@ -34,7 +34,6 @@ Item {
         onOpenRequested: (worldPath, worldTitle) => root.openRequested(worldPath, worldTitle)
         onDeleteRequested: (worldPath, worldTitle) => root.deleteRequested(worldPath, worldTitle)
         onExportRequested: (worldPath, worldTitle) => root.exportRequested(worldPath, worldTitle)
-        onExportAndOpenRequested: (worldPath, worldTitle) => root.exportAndOpenRequested(worldPath,
-                                                                                       worldTitle)
+        onExportAndOpenRequested: (worldPath, worldTitle) => root.exportAndOpenRequested(worldPath, worldTitle)
     }
 }

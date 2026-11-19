@@ -8,23 +8,27 @@ Rectangle {
     id: root
     property var controller
     property bool headerVisible: true
-    readonly property string headerTitle: controller && controller.hasChunk ? qsTr("Chunk %1, %2").arg(
-                                                                                  controller.chunkX).arg(
-                                                                                  controller.chunkZ) : qsTr(
-                                                                                  "Chunk editor")
-    readonly property string headerSubtitle: controller && controller.hasChunk ? qsTr("Dimension %1 · Y %2").arg(
-                                                                                     controller.dimension).arg(
-                                                                                     controller.yRange) : (controller
-                                                                                                           && controller.loading
-                                                                                                           ? qsTr("Loading chunk data…") :
-                                                                                                             qsTr("No chunk selected"))
+    readonly property string headerTitle: {
+        if (!root.controller || !root.controller.hasChunk)
+            return qsTr("Chunk editor")
+        return qsTr("Chunk %1, %2").arg(root.controller.chunkX).arg(root.controller.chunkZ)
+    }
+    readonly property string headerSubtitle: {
+        if (!root.controller)
+            return qsTr("No chunk selected")
+        if (root.controller.hasChunk)
+            return qsTr("Dimension %1 · Y %2").arg(root.controller.dimension).arg(root.controller.yRange)
+        return root.controller.loading ? qsTr("Loading chunk data…") : qsTr("No chunk selected")
+    }
+    function dirtySuffix(document) {
+        return document && document.dirty ? " *" : ""
+    }
     property int category: 0
-    readonly property var categoryNames: [qsTr("3D"), qsTr("Terrain"), qsTr("Entities") + (root.controller
-                                                                                           && root.controller.entitiesDocument.dirty
-                                                                                           ? " *" : ""), qsTr(
-            "Block entities") + (root.controller && root.controller.blockEntitiesDocument.dirty ? " *" : ""), qsTr(
-            "Pts") + (root.controller && root.controller.pendingTicksDocument.dirty ? " *" : ""), qsTr("HSA"), qsTr(
-            "Stats")]
+    readonly property var categoryNames: [qsTr("3D"), qsTr("Terrain"), qsTr("Entities") + dirtySuffix(root.controller
+                                                                                                      ? root.controller.entitiesDocument :
+                                                                                                        null), qsTr(
+            "Block entities") + dirtySuffix(root.controller ? root.controller.blockEntitiesDocument : null), qsTr("Pts")
+        + dirtySuffix(root.controller ? root.controller.pendingTicksDocument : null), qsTr("HSA"), qsTr("Stats")]
     signal closeRequested
 
     color: Theme.surface

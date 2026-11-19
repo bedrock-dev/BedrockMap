@@ -55,7 +55,8 @@ void FileUrlDialog::onShow(QPlatformDialogHelper* dialog) {
     auto* fileDialog = qobject_cast<QPlatformFileDialogHelper*>(dialog);
     if (fileMode() == SaveFile && fileDialog && fileDialog->selectedFiles().isEmpty()) {
         const QString suffix = defaultSuffix();
-        fileDialog->selectFile(QUrl::fromLocalFile(QStringLiteral("/document") + (suffix.isEmpty() ? QString() : QLatin1Char('.') + suffix)));
+        fileDialog->selectFile(
+            QUrl::fromLocalFile(QStringLiteral("/document") + (suffix.isEmpty() ? QString() : QLatin1Char('.') + suffix)));
     }
 }
 #endif

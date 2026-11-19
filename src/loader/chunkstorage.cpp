@@ -76,15 +76,16 @@ CommitResult ChunkStorage::commit(const std::unordered_map<std::string, std::str
     if (levelDat) {
         // level.dat is an ordinary file, so it goes through the VFS rather than LevelDB's Env.
         const auto levelDatPath = QString::fromStdString(level_.root_path() + "/" + bl::bedrock_level::LEVEL_DATA);
-        const QString error = io::DocumentIo::writeBytes(QUrl::fromLocalFile(levelDatPath),
-                                                         QByteArray(levelDatRaw.data(), static_cast<qsizetype>(levelDatRaw.size())), {false});
+        const QString error = io::DocumentIo::writeBytes(
+            QUrl::fromLocalFile(levelDatPath), QByteArray(levelDatRaw.data(), static_cast<qsizetype>(levelDatRaw.size())), {false});
         if (!error.isEmpty()) {
             LOG_F(ERROR, "Cannot save level.dat: %s", error.toStdString().c_str());
             if (!cache_.empty() || !globalModifies.empty()) {
                 LOG_F(ERROR, "LevelDB changes committed, but level.dat could not be replaced; edits remain dirty for retry");
             }
-            return {false, QCoreApplication::translate("ChunkStorage", "LevelDB data was saved, but level.dat could not be "
-                                                                      "written to %1: %2")
+            return {false, QCoreApplication::translate("ChunkStorage",
+                                                       "LevelDB data was saved, but level.dat could not be "
+                                                       "written to %1: %2")
                                .arg(levelDatPath, error)};
         }
     }

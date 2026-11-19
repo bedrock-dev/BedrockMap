@@ -112,12 +112,10 @@ Item {
                         wrapMode: Text.Wrap
                     }
                     Repeater {
-                        model: [
-                            qsTr("All files access: lets the app scan, read and save worlds in shared storage."),
+                        model: [qsTr("All files access: lets the app scan, read and save worlds in shared storage."),
                             qsTr("Shizuku: provides access to additional world directories through the Shizuku service, depending on Android restrictions and how the service is running."),
                             qsTr("Root: lets the app read and save worlds in protected directories on rooted devices."),
-                            qsTr("All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.")
-                        ]
+                            qsTr("All of these permissions are optional. You can use the app normally without granting them: import worlds or files for editing, then export the results.")]
                         delegate: Label {
                             required property string modelData
                             Layout.fillWidth: true

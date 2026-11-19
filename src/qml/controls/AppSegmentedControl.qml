@@ -9,8 +9,8 @@ Rectangle {
     readonly property int optionCount: options.length
     readonly property real buttonWidth: optionCount > 0 ? Math.max(Theme.ui(48), (width - Theme.gapTiny * 2
                                                                                   - Theme.gapTiny * Math.max(0,
-                                                                                                           optionCount
-                                                                                                           - 1)) / optionCount) :
+                                                                                                             optionCount
+                                                                                                             - 1)) / optionCount) :
                                                           0
     signal activated(int index)
 
@@ -81,8 +81,7 @@ Rectangle {
                     required property int index
                     text: modelData
                     compact: true
-                    ghost: true
-                    bordered: false
+                    flat: true
                     active: root.currentIndex === index
                     width: root.fitLabels ? implicitWidth : root.buttonWidth
                     height: row.height

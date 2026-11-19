@@ -383,8 +383,8 @@ namespace platform {
 #if defined(Q_OS_ANDROID)
         const auto context = QNativeInterface::QAndroidApplication::context();
         if (!context.isValid()) return false;
-        return QJniObject::callStaticMethod<jboolean>("io/github/hhhxiao/bedrockmap/StoragePermission", "hasAccess", "(Landroid/content/Context;)Z",
-                                                      context.object());
+        return QJniObject::callStaticMethod<jboolean>("io/github/hhhxiao/bedrockmap/StoragePermission", "hasAccess",
+                                                      "(Landroid/content/Context;)Z", context.object());
 #else
         return true;
 #endif
@@ -394,12 +394,14 @@ namespace platform {
 #if defined(Q_OS_ANDROID)
         const auto context = QNativeInterface::QAndroidApplication::context();
         if (!context.isValid()) return;
-        QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/StoragePermission", "request", "(Landroid/content/Context;)V", context.object());
+        QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/StoragePermission", "request", "(Landroid/content/Context;)V",
+                                           context.object());
 #endif
     }
     QString shizukuPermission() {
 #if defined(Q_OS_ANDROID)
-        const auto status = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/ShizukuPermission", "status", "()Ljava/lang/String;");
+        const auto status =
+            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/ShizukuPermission", "status", "()Ljava/lang/String;");
         QJniEnvironment env;
         if (!env.checkAndClearExceptions() && status.isValid()) return status.toString();
 #endif
@@ -416,7 +418,8 @@ namespace platform {
 
     QString rootPermission() {
 #if defined(Q_OS_ANDROID)
-        const auto status = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/RootPermission", "status", "()Ljava/lang/String;");
+        const auto status =
+            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/RootPermission", "status", "()Ljava/lang/String;");
         QJniEnvironment env;
         if (!env.checkAndClearExceptions() && status.isValid()) return status.toString();
 #endif
@@ -427,7 +430,8 @@ namespace platform {
 #if defined(Q_OS_ANDROID)
         const auto context = QNativeInterface::QAndroidApplication::context();
         if (!context.isValid()) return;
-        QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/RootPermission", "request", "(Landroid/content/Context;)V", context.object());
+        QJniObject::callStaticMethod<void>("io/github/hhhxiao/bedrockmap/RootPermission", "request", "(Landroid/content/Context;)V",
+                                           context.object());
         QJniEnvironment env;
         env.checkAndClearExceptions();
 #endif

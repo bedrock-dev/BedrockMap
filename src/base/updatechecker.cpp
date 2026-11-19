@@ -37,9 +37,9 @@ void UpdateChecker::checkForUpdates() {
     fetch_watcher_.setFuture(QtConcurrent::run([url = apiUrl(), userAgent] {
         const auto javaUrl = QJniObject::fromString(url);
         const auto javaAgent = QJniObject::fromString(userAgent);
-        const auto response = QJniObject::callStaticObjectMethod(
-            "io/github/hhhxiao/bedrockmap/UpdateRequest", "fetch", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-            javaUrl.object<jstring>(), javaAgent.object<jstring>());
+        const auto response = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/UpdateRequest", "fetch",
+                                                                 "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                                                                 javaUrl.object<jstring>(), javaAgent.object<jstring>());
         return response.isValid() ? response.toString().toUtf8() : QByteArray{};
     }));
 #else

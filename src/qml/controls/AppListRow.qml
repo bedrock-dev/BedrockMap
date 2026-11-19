@@ -14,21 +14,22 @@ Rectangle {
     property bool stacked: false
     signal clicked
 
-    readonly property real labelHeight: Theme.fontSubtitle + (detail.length > 0 ? Theme.fontBody + Theme.gapTiny : 0)
-    readonly property real rowHeight: Theme.ui(detail.length > 0 ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 :
-                                                                                                                46))
+    readonly property bool hasDetail: detail.length > 0
+    readonly property real labelHeight: Theme.fontSubtitle + (hasDetail ? Theme.fontBody + Theme.gapTiny : 0)
+    readonly property real rowHeight: Theme.ui(hasDetail ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 : 46))
+    readonly property real stackedHeight: Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
+                                                   + Theme.gapSmall + Theme.gapLarge * 2)
+    readonly property real touchRowHeight: Math.max(Theme.controlHeight, labelHeight + Theme.gapLarge * 2)
+    readonly property real regularRowHeight: Theme.touch ? touchRowHeight : 0
     readonly property bool activeBackdrop: selected || ((mouse.pressed || mouse.containsMouse) && interactive)
-    readonly property color activeBackdropColor: selected ? Theme.accentSoft : (activeBackdrop ? Theme.surfaceAlt :
-                                                                                              "transparent")
+    readonly property color activeBackdropColor: {
+        if (root.selected)
+            return Theme.accentSoft
+        return root.activeBackdrop ? Theme.surfaceAlt : "transparent"
+    }
 
     implicitWidth: parent ? parent.width : 0
-    implicitHeight: stacked ? Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
-                                       + Theme.gapSmall + Theme.gapLarge * 2) : Math.max(rowHeight, Theme.touch
-                                                                                            ? Math.max(
-                                                                                                  Theme.controlHeight,
-                                                                                                  labelHeight
-                                                                                                  + Theme.gapLarge
-                                                                                                  * 2) : 0)
+    implicitHeight: stacked ? root.stackedHeight : Math.max(root.rowHeight, root.regularRowHeight)
     height: implicitHeight
     radius: Theme.radiusCard
     color: compact ? "transparent" : activeBackdropColor
@@ -82,7 +83,7 @@ Rectangle {
                 elide: Text.ElideRight
             }
             Text {
-                visible: root.detail.length > 0
+                visible: root.hasDetail
                 width: parent.width
                 text: root.detail
                 color: Theme.muted
@@ -123,7 +124,7 @@ Rectangle {
     }
 
     Text {
-        visible: root.detail.length > 0 && root.interactive && !root.compact && !root.stacked
+        visible: root.hasDetail && root.interactive && !root.compact && !root.stacked
         anchors.right: parent.right
         anchors.rightMargin: Theme.gapLarge
         anchors.verticalCenter: parent.verticalCenter

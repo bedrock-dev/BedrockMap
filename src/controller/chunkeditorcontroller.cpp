@@ -335,10 +335,9 @@ void ChunkEditorController::openChunk(int chunkX, int chunkZ, int dimension) {
     emit statusChanged();
 
     const quint64 generation = request_generation_;
-    watcher_.setFuture(QtConcurrent::run([loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation,
-                                          reportProgress = progressReporter()] {
-        return loadChunkSnapshot(loader, pos, generation, reportProgress);
-    }));
+    watcher_.setFuture(
+        QtConcurrent::run([loader = loader_, pos = bl::chunk_pos(chunkX, chunkZ, dimension), generation,
+                           reportProgress = progressReporter()] { return loadChunkSnapshot(loader, pos, generation, reportProgress); }));
 }
 
 void ChunkEditorController::clear() {
@@ -480,8 +479,7 @@ int ChunkEditorController::addHsa(int type, int minX, int minY, int minZ, int ma
 }
 
 bool ChunkEditorController::setHsaBounds(int index, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-    if (!has_chunk_ || index < 0 || index >= static_cast<int>(hsa_areas_.size()) || minX > maxX || minY > maxY || minZ > maxZ)
-        return false;
+    if (!has_chunk_ || index < 0 || index >= static_cast<int>(hsa_areas_.size()) || minX > maxX || minY > maxY || minZ > maxZ) return false;
     auto& area = hsa_areas_[static_cast<size_t>(index)];
     if (area.minX == minX && area.minY == minY && area.minZ == minZ && area.maxX == maxX && area.maxY == maxY && area.maxZ == maxZ)
         return true;

@@ -19,6 +19,10 @@ Item {
                                                          uploadState.implicitWidth, viewportState.implicitWidth)
     readonly property real preferredPanelWidth: Math.min(560, Math.max(debugActions.implicitWidth + Theme.gapMedium,
                                                                        summaryContentWidth + Theme.gapMedium * 2))
+    readonly property string zoomScaleText: root.mapOverlay ? root.mapOverlay.viewScale.toFixed(2) : "-"
+    readonly property string blockScaleText: root.mapOverlay ? (Math.abs(root.mapOverlay.viewScale) / 16).toFixed(2) :
+                                                               "-"
+    readonly property string memoryUsageText: root.terrainData ? root.terrainData.memoryUsageMiB.toFixed(1) : "-"
 
     function snapshot() {
         return timingHeading.text + "\n" + rendererInfo.text + "\n" + timingZoom.text + "\n" + atlasState.text + "\n" + uploadState.text
@@ -130,12 +134,8 @@ Item {
                     color: Theme.overlayText
                     font: root.panelFont
                     wrapMode: Text.Wrap
-                    text: "Zoom %1 px/chunk | %2 px/block | LOD %3 blocks/texel".arg(root.mapOverlay
-                                                                                     ? root.mapOverlay.viewScale.toFixed(
-                                                                                           2) : "-").arg(
-                              root.mapOverlay ? (Math.abs(root.mapOverlay.viewScale) / 16).toFixed(2) : "-").arg(
-                              root.terrainLayer.blocksPerTexel)
-
+                    text: "Zoom %1 px/chunk | %2 px/block | LOD %3 blocks/texel".arg(root.zoomScaleText).arg(
+                              root.blockScaleText).arg(root.terrainLayer.blocksPerTexel)
                 }
                 Text {
                     id: atlasState
@@ -182,8 +182,10 @@ Item {
         id: loaderPanel
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.topMargin: parent.width < renderPanel.width + implicitWidth + Theme.gapLarge * 2 ? renderPanel.y + renderPanel.height
-                                                                                   + Theme.gapMedium : renderPanel.y
+        anchors.topMargin: parent.width < renderPanel.width + implicitWidth + Theme.gapLarge * 2 ? renderPanel.y
+                                                                                                   + renderPanel.height
+                                                                                                   + Theme.gapMedium :
+                                                                                                   renderPanel.y
         anchors.leftMargin: Theme.gapLarge
         implicitWidth: loaderColumn.implicitWidth + Theme.gapMedium * 2
         implicitHeight: loaderColumn.implicitHeight + Theme.gapMedium * 2
@@ -221,8 +223,7 @@ Item {
             }
             Text {
                 id: memoryUsage
-                text: qsTr("Memory usage: %1 MiB").arg(root.terrainData ? root.terrainData.memoryUsageMiB.toFixed(1) :
-                                                                          "-")
+                text: qsTr("Memory usage: %1 MiB").arg(root.memoryUsageText)
 
                 color: Theme.overlayText
                 font: root.panelFont

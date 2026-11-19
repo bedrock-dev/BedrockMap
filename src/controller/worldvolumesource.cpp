@@ -94,7 +94,7 @@ BlockVolumeMutationResult WorldVolumeSource::commitImport(const BlockVolume& tar
     result.region = BlockVolumeOperator::regionForBounds(worldBounds);
     result.dimension = target.dimension;
     result.success = !result.region.isEmpty() && BlockVolumeOperator::importMcstructureIntoWorld(*import.structure, worldPosition, *loader_,
-                                                                                                target.dimension, importEntities);
+                                                                                                 target.dimension, importEntities);
     return result;
 }
 

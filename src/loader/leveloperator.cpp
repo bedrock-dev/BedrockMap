@@ -150,14 +150,11 @@ namespace {
 
     QString importDirectoryStem(const QString& display_name) {
         QString stem = display_name.trimmed();
-        if (stem.endsWith(QStringLiteral(".mcworld"), Qt::CaseInsensitive))
-            stem.chop(8);
+        if (stem.endsWith(QStringLiteral(".mcworld"), Qt::CaseInsensitive)) stem.chop(8);
         stem.replace(QRegularExpression(QStringLiteral(R"([\\/:*?"<>|\x00-\x1f])")), QStringLiteral("_"));
         stem = stem.left(96).trimmed();
-        while (stem.startsWith(QLatin1Char('.')) || stem.startsWith(QLatin1Char(' ')))
-            stem.remove(0, 1);
-        while (stem.endsWith(QLatin1Char('.')) || stem.endsWith(QLatin1Char(' ')))
-            stem.chop(1);
+        while (stem.startsWith(QLatin1Char('.')) || stem.startsWith(QLatin1Char(' '))) stem.remove(0, 1);
+        while (stem.endsWith(QLatin1Char('.')) || stem.endsWith(QLatin1Char(' '))) stem.chop(1);
         return stem.isEmpty() ? QStringLiteral("World") : stem;
     }
 
@@ -237,8 +234,7 @@ QString LevelOperator::resolveContentWorldFolder(const QUrl& source) {
     const QString resolved = io::DocumentIo::resolveNativeDirectory(source);
     if (!resolved.isEmpty() && isCompleteWorld(resolved)) return resolved;
     // Reuse an existing internal copy when direct access is unavailable.
-    const QString target =
-        targetForSource(io::DocumentIo::identifier(source), io::DocumentIo::displayName(source));
+    const QString target = targetForSource(io::DocumentIo::identifier(source), io::DocumentIo::displayName(source));
     return !target.isEmpty() && isCompleteWorld(target) ? target : QString{};
 }
 

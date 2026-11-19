@@ -69,8 +69,7 @@ namespace {
             if (!clipboard || data.isEmpty()) return false;
 
             const QString next_marker =
-                QStringLiteral("BedrockMap/clipboard:v2:%1:%2")
-                    .arg(kindName(kind), QUuid::createUuid().toString(QUuid::WithoutBraces));
+                QStringLiteral("BedrockMap/clipboard:v2:%1:%2").arg(kindName(kind), QUuid::createUuid().toString(QUuid::WithoutBraces));
             data_ = data;
             kind_ = kind;
             marker_ = next_marker;

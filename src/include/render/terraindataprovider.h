@@ -219,8 +219,7 @@ class TerrainDataProvider final : public QObject {
     void deliverSnapshot(const TerrainTileKey& key, quint64 sourceRevision, const QImage& color, const QImage& surface, bool hasChunks);
     [[nodiscard]] bool enqueueTile(const region_pos& pos);
     void onRegionReady(const region_pos& pos);
-    void onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& surface,
-                          bool hasChunks);
+    void onRegionSnapshot(const region_pos& pos, int blocksPerTexel, int layer, const QImage& color, const QImage& surface, bool hasChunks);
     void onTileFinished(quint64 generation, int regionX, int regionZ, int dimension, int blocksPerTexel, int layer, qulonglong sourceToken,
                         bool cache_only, const QImage& color, const QImage& surface, bool hasChunks);
     void maybeCompleteCatchUp();

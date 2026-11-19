@@ -117,7 +117,8 @@ namespace {
         appendUsers(appData, false);
 
         if (!scanLeviPath) return;
-        const auto config = io::DocumentIo::readAll(fileUrl(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json"))), 1 << 20);
+        const auto config =
+            io::DocumentIo::readAll(fileUrl(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json"))), 1 << 20);
         if (!config.ok()) return;
         const auto doc = QJsonDocument::fromJson(config.data);
         const QString baseRoot = doc.object().value(QStringLiteral("base_root")).toString();

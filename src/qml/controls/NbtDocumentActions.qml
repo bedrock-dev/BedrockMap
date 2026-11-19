@@ -47,12 +47,18 @@ Item {
         if (!root.document.save())
             App.notifications.error(qsTr("Save failed"))
     }
+    function selectedSaveFile(dialog, fileName) {
+        const folder = dialog.currentFolder.toString()
+        if (folder.length === 0)
+            return fileName
+        return folder + "/" + encodeURIComponent(fileName)
+    }
+
     function openSaveDialog() {
         if (!root.document)
             return
         const filename = root.document.suggestedSaveFileName()
-        saveDialog.selectedFile = saveDialog.currentFolder.toString().length > 0
-                ? saveDialog.currentFolder + "/" + encodeURIComponent(filename) : filename
+        saveDialog.selectedFile = selectedSaveFile(saveDialog, filename)
         saveDialog.open()
     }
 

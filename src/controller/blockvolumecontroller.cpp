@@ -63,8 +63,8 @@ std::optional<bl::block_box> BlockVolumeController::selectionBounds(const QVecto
     if (!scene) return std::nullopt;
     // Validate before converting floating-point QML coordinates to integers.
     for (int axis = 0; axis < 3; ++axis) {
-        if (!std::isfinite(minimum[axis]) || !std::isfinite(maximum[axis]) || minimum[axis] < 0 ||
-            maximum[axis] > scene->modelSize[axis] || minimum[axis] >= maximum[axis])
+        if (!std::isfinite(minimum[axis]) || !std::isfinite(maximum[axis]) || minimum[axis] < 0 || maximum[axis] > scene->modelSize[axis] ||
+            minimum[axis] >= maximum[axis])
             return std::nullopt;
     }
     const bl::block_box bounds{{qRound(minimum.x()), qRound(minimum.y()), qRound(minimum.z())},
@@ -134,8 +134,8 @@ void BlockVolumeController::startLoad(BlockVolumeRequest request, bool keepScene
         },
         [this](const QString& detail) {
             BlockVolumeLoadResult result;
-            result.error = detail.isEmpty() ? tr("Could not build the block volume.")
-                                            : tr("Could not build the block volume: %1").arg(detail);
+            result.error =
+                detail.isEmpty() ? tr("Could not build the block volume.") : tr("Could not build the block volume: %1").arg(detail);
             applyLoad(result);
         });
 }

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
@@ -22,7 +24,7 @@ Item {
         objectName: "mcstructurePanes"
         orientation: page.stacked ? Qt.Vertical : Qt.Horizontal
         handle: AppSplitHandle {
-            orientation: SplitView.view.orientation
+            orientation: panes.orientation
         }
 
         NbtEditorSurface {

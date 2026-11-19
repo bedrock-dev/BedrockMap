@@ -104,8 +104,8 @@ namespace io {
 
         // Write a sibling and rename it over the target, so a failed writer
         // leaves the existing file intact (same contract as QSaveFile).
-        const QString temporary = QDir(parent).filePath(QStringLiteral(".%1.%2.tmp")
-                                                            .arg(QFileInfo(path).fileName(), QUuid::createUuid().toString(QUuid::Id128).left(12)));
+        const QString temporary = QDir(parent).filePath(
+            QStringLiteral(".%1.%2.tmp").arg(QFileInfo(path).fileName(), QUuid::createUuid().toString(QUuid::Id128).left(12)));
         const QUrl temporaryUrl = QUrl::fromLocalFile(temporary);
         const auto opened = openNative(temporaryUrl, NativeOpen::Write | NativeOpen::Create | NativeOpen::Exclusive, 0660);
         if (!opened.ok()) return opened.error;

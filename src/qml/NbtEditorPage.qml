@@ -10,6 +10,8 @@ Item {
     property bool compact: Theme.compact
     property string itemFilter: ""
     readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.gapLarge
+    readonly property real fileToolbarHeight: document.hasDocument ? fileToolbar.implicitHeight
+                                                                     + toolbarVerticalPadding * 2 + 1 : 0
     signal closeRequested
     signal saveRequested
 
@@ -32,8 +34,7 @@ Item {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: document.hasDocument ? fileToolbar.implicitHeight + page.toolbarVerticalPadding * 2
-                                                           + 1 : 0
+            Layout.preferredHeight: page.fileToolbarHeight
             color: Theme.surface
 
             ColumnLayout {

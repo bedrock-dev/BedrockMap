@@ -39,9 +39,10 @@ namespace io {
         const auto context = QNativeInterface::QAndroidApplication::context();
         const auto sourceString = QJniObject::fromString(source.toString(QUrl::FullyEncoded));
         const auto destinationString = QJniObject::fromString(destination.toLocalFile());
-        const auto result = QJniObject::callStaticObjectMethod(
-            "io/github/hhhxiao/bedrockmap/SafTreeIo", "copyTree", "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-            context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
+        const auto result =
+            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/SafTreeIo", "copyTree",
+                                               "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                                               context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
         QJniEnvironment env;
         if (env.checkAndClearExceptions() || !result.isValid()) return QStringLiteral("Cannot access the selected Android folder.");
         return result.toString();

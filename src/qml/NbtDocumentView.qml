@@ -16,6 +16,7 @@ Item {
     property int selectedRow: -1
     property var filteredItems: filterItems()
     readonly property int compactToolbarHeight: Theme.controlHeight
+    readonly property int rootCount: root.document ? root.document.rootCount : 0
     // Record navigation depends on the available editor width, independently
     // of the shell mode and font scaling used by the toolbars.
     readonly property bool singleColumn: !detailsHidden && width < 420
@@ -32,9 +33,9 @@ Item {
         property alias font: recordText.font
         readonly property bool hasIcon: icon.length > 0
         readonly property bool usesThemeIcon: hasIcon && !icon.startsWith("qrc:/")
+        readonly property real iconSpace: hasIcon ? Theme.iconSmallSize + Theme.gapMedium : 0
         implicitHeight: Math.max(Theme.iconSmallSize, recordText.implicitHeight)
-        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + (hasIcon ? Theme.iconSmallSize + Theme.gapMedium :
-                                                                                          0)
+        implicitWidth: leftPadding + rightPadding + recordText.implicitWidth + iconSpace
 
         Row {
             anchors.fill: parent
@@ -212,7 +213,7 @@ Item {
                         spacing: Theme.gapSmall
                         Text {
                             Layout.fillWidth: true
-                            text: root.itemListTitle + " (" + (root.document ? root.document.rootCount : 0) + ")"
+                            text: root.itemListTitle + " (" + root.rootCount + ")"
                             color: Theme.text
                             font.pixelSize: Theme.fontBody
                         }
@@ -231,16 +232,17 @@ Item {
                                 width: ListView.view.width
                                 height: Theme.menuItemHeight
                                 radius: Theme.radiusSmall
-                                color: root.document && modelData.sourceIndex === root.document.currentIndex
-                                       ? Theme.accentSoft : (itemMouse.pressed ? Theme.surfaceAlt : "transparent")
+                                readonly property bool current: root.document && modelData.sourceIndex
+                                                                === root.document.currentIndex
+                                color: current ? Theme.accentSoft : (itemMouse.pressed ? Theme.surfaceAlt :
+                                                                                         "transparent")
                                 RecordLabel {
                                     anchors.fill: parent
                                     leftPadding: Theme.gapMedium
                                     rightPadding: Theme.gapMedium
                                     label: modelData.label
                                     icon: modelData.icon
-                                    textColor: root.document && modelData.sourceIndex === root.document.currentIndex
-                                               ? Theme.accent : Theme.text
+                                    textColor: current ? Theme.accent : Theme.text
                                     font.family: "JetBrains Mono"
                                     font.pixelSize: Theme.fontBody
                                 }
@@ -297,9 +299,10 @@ Item {
                         spacing: Theme.gapSmall
                         GridLayout {
                             id: nodeToolbar
+                            readonly property bool twoColumn: width >= 120 * Theme.metricScale
+                                                              + treeActions.implicitWidth + columnSpacing
                             Layout.fillWidth: true
-                            columns: width >= 120 * Theme.metricScale + treeActions.implicitWidth + columnSpacing ? 2 :
-                                                                                                                    1
+                            columns: twoColumn ? 2 : 1
                             columnSpacing: Theme.gapSmall
                             rowSpacing: Theme.gapSmall
 

@@ -40,11 +40,17 @@ Item {
         return false
     }
 
+    function selectedSaveFile(dialog, fileName) {
+        const folder = dialog.currentFolder.toString()
+        if (folder.length === 0)
+            return fileName
+        return folder + "/" + encodeURIComponent(fileName)
+    }
+
     function openSaveAs(session) {
         saveAsSession = session
         const filename = session.document.suggestedSaveFileName()
-        saveAsDialog.selectedFile = saveAsDialog.currentFolder.toString().length > 0
-                ? saveAsDialog.currentFolder + "/" + encodeURIComponent(filename) : filename
+        saveAsDialog.selectedFile = selectedSaveFile(saveAsDialog, filename)
         saveAsDialog.open()
     }
 

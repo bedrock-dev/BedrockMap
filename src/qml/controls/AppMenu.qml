@@ -7,10 +7,14 @@ Menu {
     id: root
     // Popup visibility and the generated submenu entry have separate lifetimes.
     property bool menuItemVisible: true
+    readonly property real preferredWidth: contentItem ? contentItem.implicitWidth + leftPadding + rightPadding :
+                                                         Theme.ui(190)
+    readonly property real maximumMenuHeight: Screen.height - Theme.ui(48)
+    readonly property real preferredHeight: contentItem ? contentItem.implicitHeight + topPadding + bottomPadding :
+                                                          Theme.controlHeight
 
-    width: Math.max(Theme.ui(190), contentItem ? contentItem.implicitWidth + leftPadding + rightPadding : Theme.ui(190))
-    height: contentItem ? Math.min(contentItem.implicitHeight + topPadding + bottomPadding, Screen.height - Theme.ui(
-                                       48)) : Theme.controlHeight
+    width: Math.max(Theme.ui(190), root.preferredWidth)
+    height: contentItem ? Math.min(root.preferredHeight, root.maximumMenuHeight) : Theme.controlHeight
     padding: Theme.gapSmall
     margins: 0
     overlap: 1

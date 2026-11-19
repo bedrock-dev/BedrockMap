@@ -107,9 +107,8 @@ AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context
             connect(nbt->document(), &NbtDocumentController::saved, this, [this] { notifications_.info(tr("Save successful")); });
         } else if (auto* world = qobject_cast<WorldSession*>(session)) {
             connect(world, &WorldSession::saved, this, [this] { notifications_.info(tr("Save successful")); });
-            connect(world, &WorldSession::saveFailed, this, [this](const QString& message) {
-                notifications_.error(message.isEmpty() ? tr("Save failed") : message);
-            });
+            connect(world, &WorldSession::saveFailed, this,
+                    [this](const QString& message) { notifications_.error(message.isEmpty() ? tr("Save failed") : message); });
         }
     });
     connect(&sessions_, &SessionController::sessionsChanged, this, [this] {
@@ -192,8 +191,8 @@ void AppController::requestRootPermission() { platform::requestRootPermission();
 
 void AppController::refreshPermissions() {
     const QString currentShizukuPermission = shizukuPermission();
-    const bool shizukuJustGranted = last_shizuku_permission_ != QStringLiteral("Granted") &&
-                                    currentShizukuPermission == QStringLiteral("Granted");
+    const bool shizukuJustGranted =
+        last_shizuku_permission_ != QStringLiteral("Granted") && currentShizukuPermission == QStringLiteral("Granted");
     last_shizuku_permission_ = currentShizukuPermission;
     emit permissionsChanged();
     if (shizukuJustGranted) worlds_.refresh();

@@ -85,9 +85,12 @@ int NbtTreeModel::rowCount(const QModelIndex& parent) const {
 }
 
 QHash<int, QByteArray> NbtTreeModel::roleNames() const {
-    return {{KeyRole, "key"},       {TypeRole, "tagType"},    {TypeNameRole, "typeName"},       {ValueRole, "value"},
-            {DepthRole, "depth"},   {HasChildrenRole, "hasChildren"}, {ExpandedRole, "expanded"}, {CanAddRole, "canAdd"},
-            {CanEditRole, "canEdit"}, {CanRemoveRole, "canRemove"}, {CanClearRole, "canClear"}};
+    return {{KeyRole, "key"},           {TypeRole, "tagType"},
+            {TypeNameRole, "typeName"}, {ValueRole, "value"},
+            {DepthRole, "depth"},       {HasChildrenRole, "hasChildren"},
+            {ExpandedRole, "expanded"}, {CanAddRole, "canAdd"},
+            {CanEditRole, "canEdit"},   {CanRemoveRole, "canRemove"},
+            {CanClearRole, "canClear"}};
 }
 
 QVariant NbtTreeModel::data(const QModelIndex& index, int role) const {

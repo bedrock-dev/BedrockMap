@@ -1,12 +1,11 @@
 #ifndef BEDROCKMAP_CHUNKSTORAGE_H
 #define BEDROCKMAP_CHUNKSTORAGE_H
 
+#include <QString>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
-
-#include <QString>
 
 #include "bedrock_level.h"
 #include "chunk.h"

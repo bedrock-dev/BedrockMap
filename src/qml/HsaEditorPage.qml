@@ -23,7 +23,7 @@ Item {
         const result = []
         for (const area of root.hsaAreas) {
             if (root.hiddenIndices.indexOf(Number(area.index)) >= 0)
-                continue
+            continue
             const box = root.localBox(area)
             result.push({
                             minX: box.minimum.x,
@@ -43,16 +43,18 @@ Item {
     function localBox(area) {
         const origin = viewport.camera.modelOrigin
         return {
-            "minimum": Qt.vector3d(Number(area.minX) - origin.x, Number(area.minY) - origin.y, Number(area.minZ) - origin.z),
-            "maximum": Qt.vector3d(Number(area.maxX) - origin.x + 1, Number(area.maxY) - origin.y + 1,
-                                   Number(area.maxZ) - origin.z + 1)
+            "minimum": Qt.vector3d(Number(area.minX) - origin.x, Number(area.minY) - origin.y, Number(area.minZ)
+                                   - origin.z),
+            "maximum": Qt.vector3d(Number(area.maxX) - origin.x + 1, Number(area.maxY) - origin.y + 1, Number(
+                                       area.maxZ) - origin.z + 1)
         }
     }
 
     function worldBounds(minimum, maximum) {
         const origin = viewport.camera.modelOrigin
         return [Math.round(minimum.x + origin.x), Math.round(minimum.y + origin.y), Math.round(minimum.z + origin.z),
-                Math.round(maximum.x + origin.x) - 1, Math.round(maximum.y + origin.y) - 1, Math.round(maximum.z + origin.z) - 1]
+                Math.round(maximum.x + origin.x) - 1, Math.round(maximum.y + origin.y) - 1, Math.round(maximum.z
+                                                                                                       + origin.z) - 1]
     }
 
     function coordinateText(x, y, z) {
@@ -75,12 +77,16 @@ Item {
     function addHsa() {
         if (!root.controller || !root.controller.hasVoxelModel)
             return
-        const index = root.controller.addHsa(root.hsaTypeValues[0],
-                                             ...root.worldBounds(Qt.vector3d(0, 0, 0), viewport.camera.modelSize))
+        const index = root.controller.addHsa(root.hsaTypeValues[0], ...root.worldBounds(Qt.vector3d(0, 0, 0),
+                                                                                        viewport.camera.modelSize))
         if (index < 0)
             return
         root.hiddenIndices = root.hiddenIndices.filter(value => value !== index)
         Qt.callLater(() => areaList.positionViewAtEnd())
+    }
+
+    function adjustedHiddenIndex(value, index) {
+        return value > index ? value - 1 : value
     }
 
     function deleteHsa(index) {
@@ -90,7 +96,8 @@ Item {
             root.stopEditing()
         else if (root.editingIndex > index)
             root.editingIndex -= 1
-        root.hiddenIndices = root.hiddenIndices.filter(value => value !== index).map(value => value > index ? value - 1 : value)
+        root.hiddenIndices = root.hiddenIndices.filter(value => value !== index).map(value => adjustedHiddenIndex(value,
+                                                                                                                  index))
         root.controller.removeHsa(index)
     }
 
@@ -102,7 +109,7 @@ Item {
             return
         }
         if (root.hiddenIndices.indexOf(index) >= 0)
-            root.setHsaVisible(index, true)
+            root.setHsaVisible(index, true);
 
         // Move the box while no area is being edited, so these selection
         // changes are not committed back into the previous area.
@@ -135,7 +142,7 @@ Item {
 
     onControllerChanged: resetEditorState()
     onVisibleChanged: if (!visible)
-                          stopEditing()
+    stopEditing()
 
     Connections {
         target: root.controller
@@ -157,18 +164,21 @@ Item {
         target: viewport.camera
         function onSelectionInteractionChanged() {
             const camera = viewport.camera
-            if (camera.selectionDragging || root.editingIndex < 0 || !camera.selectionEnabled || !root.hsaAreas[root.editingIndex])
+            if (camera.selectionDragging || root.editingIndex < 0 || !camera.selectionEnabled ||
+                    !root.hsaAreas[root.editingIndex])
                 return
-            root.controller.setHsaBounds(root.editingIndex, ...root.worldBounds(camera.selectionMinimum, camera.selectionMaximum))
+            root.controller.setHsaBounds(root.editingIndex, ...root.worldBounds(camera.selectionMinimum,
+                                                                                camera.selectionMaximum))
         }
     }
 
     SplitView {
+        id: splitView
         anchors.fill: parent
         orientation: Qt.Vertical
 
         handle: AppSplitHandle {
-            orientation: SplitView.view.orientation
+            orientation: splitView.orientation
         }
 
         VoxelView {
@@ -272,9 +282,8 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 0
                                     text: root.coordinateText(areaRow.modelData.minX, areaRow.modelData.minY,
-                                                              areaRow.modelData.minZ) + "  ~  "
-                                          + root.coordinateText(areaRow.modelData.maxX, areaRow.modelData.maxY,
-                                                                areaRow.modelData.maxZ)
+                                                              areaRow.modelData.minZ) + "  ~  " + root.coordinateText(
+                                              areaRow.modelData.maxX, areaRow.modelData.maxY, areaRow.modelData.maxZ)
                                     color: areaRow.areaVisible ? Theme.text : Theme.muted
                                     font.pixelSize: Theme.fontCaption
                                     elide: Text.ElideMiddle

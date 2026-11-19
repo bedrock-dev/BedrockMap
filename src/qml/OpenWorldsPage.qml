@@ -38,15 +38,20 @@ Item {
                     required property bool dirty
                     required property string kind
                     readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
+                    readonly property color rowColor: {
+                        if (active)
+                            return Theme.accentSoft
+                        if (rowMouse.pressed || rowMouse.containsMouse)
+                            return Theme.surfaceAlt
+                        return Theme.compact ? "transparent" : Theme.surface
+                    }
+                    readonly property real rowBorderWidth: active || !Theme.compact ? Theme.borderWidth : 0
 
                     width: body.width
                     height: Theme.sessionRowHeight
                     radius: Theme.radiusCard
-                    color: active ? Theme.accentSoft : ((rowMouse.pressed || rowMouse.containsMouse) ? Theme.surfaceAlt :
-                                                                                                       (Theme.compact
-                                                                                                        ? "transparent" :
-                                                                                                          Theme.surface))
-                    border.width: active ? Theme.borderWidth : (Theme.compact ? 0 : Theme.borderWidth)
+                    color: rowColor
+                    border.width: rowBorderWidth
                     border.color: active ? Theme.accent : Theme.border
 
                     Row {

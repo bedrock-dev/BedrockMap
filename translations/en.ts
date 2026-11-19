@@ -641,6 +641,7 @@
     </message>
     <message>
         <location filename="../src/qml/ChunkEditorPanel.qml"/>
+        <location filename="../src/qml/ChunkEditorPanel.qml"/>
         <source>No chunk selected</source>
         <translation>No chunk selected</translation>
     </message>

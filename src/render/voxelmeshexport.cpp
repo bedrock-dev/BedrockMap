@@ -182,7 +182,8 @@ namespace {
         colorData.reserve(static_cast<qsizetype>(vertexCount * 4));
         indexData.reserve(static_cast<qsizetype>(mesh.indices.size() * (shortIndices ? sizeof(std::uint16_t) : sizeof(std::uint32_t))));
 
-        std::array<float, 3> minimum{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        std::array<float, 3> minimum{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
+                                     std::numeric_limits<float>::max()};
         std::array<float, 3> maximum{std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(),
                                      std::numeric_limits<float>::lowest()};
         for (const auto& vertex : mesh.vertices) {

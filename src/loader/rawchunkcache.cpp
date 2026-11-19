@@ -15,9 +15,7 @@ std::pair<int, int> RawChunkCache::chunkCounts() const {
     return {empty, nonEmpty};
 }
 
-void RawChunkCache::putChunk(const bl::chunk_pos& pos, const bl::raw_chunk& chunk) {
-    cache_.insert_or_assign(pos, CachedChunk{chunk});
-}
+void RawChunkCache::putChunk(const bl::chunk_pos& pos, const bl::raw_chunk& chunk) { cache_.insert_or_assign(pos, CachedChunk{chunk}); }
 
 bl::chunk* RawChunkCache::getChunk(const bl::chunk_pos& pos, bl::chunk_load_policy policy) const {
     auto it = cache_.find(pos);

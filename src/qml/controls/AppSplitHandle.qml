@@ -7,6 +7,8 @@ Rectangle {
     required property int orientation
 
     readonly property bool horizontal: orientation === Qt.Horizontal
+    readonly property bool handlePressed: SplitHandle.pressed
+    readonly property bool handleHovered: SplitHandle.hovered
     implicitWidth: Theme.gapSmall
     implicitHeight: Theme.gapSmall
     color: "transparent"
@@ -20,6 +22,6 @@ Rectangle {
         width: root.horizontal ? Math.max(1, Theme.ui(3)) : Math.max(0, parent.width - Theme.gapSmall * 2)
         height: root.horizontal ? Math.max(0, parent.height - Theme.gapSmall * 2) : Math.max(1, Theme.ui(3))
         radius: Math.min(width, height) / 2
-        color: SplitHandle.pressed || SplitHandle.hovered ? Theme.accent : Theme.border
+        color: root.handlePressed || root.handleHovered ? Theme.accent : Theme.border
     }
 }

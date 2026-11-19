@@ -42,56 +42,148 @@ Item {
     property int section: 0
     property bool restoringSection: false
     property bool compact: Theme.compact
+    readonly property int selectionChunkCount: mapController ? mapController.selectionChunkCount : 0
     property bool layerPanelOpen: false
     property bool mapFilterPanelOpen: false
     property bool debugVisible: false
     property var pendingChunkOpen: null
     readonly property bool chunkEditorOpen: childPages.currentRoute === "chunk-editor"
     readonly property bool voxelViewOpen: childPages.currentRoute === "voxel"
-    readonly property bool importPending: !!mapController && !!mapController.regionImport
-                                          && (mapController.regionImport.active || mapController.regionImport.loading)
+    readonly property bool importPending: !!mapController && !!mapController.regionImport && (
+                                              mapController.regionImport.active || mapController.regionImport.loading)
     // Back first cancels a pending region import, then closes the child page.
     readonly property bool canGoBack: importPending || childPages.isChildOpen
     readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
-                                               || Window.activeFocusItem instanceof TextEdit
-    readonly property bool mapShortcutsEnabled: section === 0 && !childPages.isChildOpen && !!mapController
-                                                && !mapController.operationRunning && !importPending
-                                                && !textInputFocused
+                                             || Window.activeFocusItem instanceof TextEdit
+    readonly property bool mapShortcutsEnabled: section === 0 && !childPages.isChildOpen && !!mapController &&
+                                                !mapController.operationRunning && !importPending && !textInputFocused
     property real sidePanelWidth: 0
     signal closeRequested
     signal saveRequested
 
     // Map shortcuts only fire while mapShortcutsEnabled, so actions may assume a map controller.
     readonly property var mapShortcuts: [
-        { sequence: "Alt+G", action: () => workspace.toggleMapOverlay("Grid") },
-        { sequence: "Alt+C", action: () => workspace.toggleMapOverlay("Coords") },
-        { sequence: "Alt+1", action: () => workspace.mapController.setDimension(0) },
-        { sequence: "Alt+2", action: () => workspace.mapController.setDimension(1) },
-        { sequence: "Alt+3", action: () => workspace.mapController.setDimension(2) },
-        { sequence: "Alt+4", action: () => workspace.openCustomDimensionDialog() },
-        { sequence: "Alt+T", action: () => workspace.mapController.setLayer(0) },
-        { sequence: "Alt+B", action: () => workspace.mapController.setLayer(1) },
-        { sequence: "Alt+S", action: () => workspace.toggleMapOverlay("SlimeChunk") },
-        { sequence: "Alt+A", action: () => workspace.toggleMapOverlay("Actors") },
-        { sequence: "Alt+V", action: () => workspace.toggleMapOverlay("Village") },
-        { sequence: "Alt+H", action: () => workspace.toggleMapOverlay("HSA") },
-        { sequence: "Alt+0", action: () => workspace.mapController.setTransparentVoid(!workspace.mapController.transparentVoid) },
-        { sequence: "Alt+F", action: () => workspace.toggleMapFilterPanel() },
-        { sequence: "Alt+D", action: () => workspace.debugVisible = !workspace.debugVisible },
-        { sequence: "Shift+R", action: () => workspace.mapController.setSelectionMode(0) },
-        { sequence: "Shift+A", action: () => workspace.mapController.setSelectionMode(1) },
-        { sequence: "Shift+S", action: () => workspace.mapController.setSelectionMode(2) },
-        { sequence: "Shift+C", action: () => canvas.clearMapSelection() },
-        { sequence: "Ctrl+C", needsSelection: true, action: () => canvas.copySelectedChunks() },
-        { sequence: "Ctrl+V", action: () => canvas.pasteAtRequestedPosition() },
-        { sequence: "Ctrl+E", needsSelection: true, action: () => canvas.openChunkRegionExport() },
-        { sequence: "Ctrl+I", action: () => canvas.openChunkImportDialog() },
-        { sequence: "Ctrl+D", needsSelection: true, action: () => canvas.deleteSelectedChunks() },
-        { sequence: "Ctrl+K", needsSelection: true, action: () => canvas.clearSelectedChunks() },
-        { sequence: "Ctrl+B", needsSelection: true, action: () => canvas.openBiomePicker() },
-        { sequence: "Ctrl+T", action: () => canvas.openScreenshotDialog() },
-        { sequence: "Ctrl+H", action: () => workspace.toggleVoxelView() },
-        { sequence: "Ctrl+G", action: () => workspace.focusGotoFields() }
+        {
+            sequence: "Alt+G",
+            action: () => workspace.toggleMapOverlay("Grid")
+        },
+        {
+            sequence: "Alt+C",
+            action: () => workspace.toggleMapOverlay("Coords")
+        },
+        {
+            sequence: "Alt+1",
+            action: () => workspace.mapController.setDimension(0)
+        },
+        {
+            sequence: "Alt+2",
+            action: () => workspace.mapController.setDimension(1)
+        },
+        {
+            sequence: "Alt+3",
+            action: () => workspace.mapController.setDimension(2)
+        },
+        {
+            sequence: "Alt+4",
+            action: () => workspace.openCustomDimensionDialog()
+        },
+        {
+            sequence: "Alt+T",
+            action: () => workspace.mapController.setLayer(0)
+        },
+        {
+            sequence: "Alt+B",
+            action: () => workspace.mapController.setLayer(1)
+        },
+        {
+            sequence: "Alt+S",
+            action: () => workspace.toggleMapOverlay("SlimeChunk")
+        },
+        {
+            sequence: "Alt+A",
+            action: () => workspace.toggleMapOverlay("Actors")
+        },
+        {
+            sequence: "Alt+V",
+            action: () => workspace.toggleMapOverlay("Village")
+        },
+        {
+            sequence: "Alt+H",
+            action: () => workspace.toggleMapOverlay("HSA")
+        },
+        {
+            sequence: "Alt+0",
+            action: () => workspace.mapController.setTransparentVoid(!workspace.mapController.transparentVoid)
+        },
+        {
+            sequence: "Alt+F",
+            action: () => workspace.toggleMapFilterPanel()
+        },
+        {
+            sequence: "Alt+D",
+            action: () => workspace.debugVisible = !workspace.debugVisible
+        },
+        {
+            sequence: "Shift+R",
+            action: () => workspace.mapController.setSelectionMode(0)
+        },
+        {
+            sequence: "Shift+A",
+            action: () => workspace.mapController.setSelectionMode(1)
+        },
+        {
+            sequence: "Shift+S",
+            action: () => workspace.mapController.setSelectionMode(2)
+        },
+        {
+            sequence: "Shift+C",
+            action: () => canvas.clearMapSelection()
+        },
+        {
+            sequence: "Ctrl+C",
+            needsSelection: true,
+            action: () => canvas.copySelectedChunks()
+        },
+        {
+            sequence: "Ctrl+V",
+            action: () => canvas.pasteAtRequestedPosition()
+        },
+        {
+            sequence: "Ctrl+E",
+            needsSelection: true,
+            action: () => canvas.openChunkRegionExport()
+        },
+        {
+            sequence: "Ctrl+I",
+            action: () => canvas.openChunkImportDialog()
+        },
+        {
+            sequence: "Ctrl+D",
+            needsSelection: true,
+            action: () => canvas.deleteSelectedChunks()
+        },
+        {
+            sequence: "Ctrl+K",
+            needsSelection: true,
+            action: () => canvas.clearSelectedChunks()
+        },
+        {
+            sequence: "Ctrl+B",
+            needsSelection: true,
+            action: () => canvas.openBiomePicker()
+        },
+        {
+            sequence: "Ctrl+T",
+            action: () => canvas.openScreenshotDialog()
+        },
+        {
+            sequence: "Ctrl+H",
+            action: () => workspace.toggleVoxelView()
+        },
+        {
+            sequence: "Ctrl+G",
+            action: () => workspace.focusGotoFields()
+        }
     ]
 
     // Shortcut needs an Item parent to find its window, hence the Item wrapper.
@@ -102,8 +194,8 @@ Item {
             required property var modelData
             Shortcut {
                 sequence: shortcutHost.modelData.sequence
-                enabled: workspace.mapShortcutsEnabled
-                         && (!shortcutHost.modelData.needsSelection || workspace.mapController.hasSelection)
+                enabled: workspace.mapShortcutsEnabled && (!shortcutHost.modelData.needsSelection
+                                                           || workspace.mapController.hasSelection)
                 onActivated: shortcutHost.modelData.action()
             }
         }
@@ -327,10 +419,12 @@ Item {
                 showSlimeChunks: !!(workspace.overlays.SlimeChunk && workspace.overlays.SlimeChunk.enabled)
                 showVillages: !!(workspace.overlays.Village && workspace.overlays.Village.enabled)
                 showHsa: !!(workspace.overlays.HSA && workspace.overlays.HSA.enabled)
-                showDimensionBorder: !!(workspace.overlays.DimensionBorder && workspace.overlays.DimensionBorder.enabled)
+                showDimensionBorder: !!(workspace.overlays.DimensionBorder
+                                        && workspace.overlays.DimensionBorder.enabled)
                 showTerrainOutline: !!(workspace.overlays.TerrainOutline && workspace.overlays.TerrainOutline.enabled)
                 showRenderDebug: workspace.debugVisible && App.runtimeSettings.showMapDebugButton
-                onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ, dimension)
+                onChunkEditorRequested: (chunkX, chunkZ, dimension) => workspace.openChunkEditor(chunkX, chunkZ,
+                                                                                                 dimension)
                 onVoxelViewRequested: function (chunkX, chunkZ, dimension) {
                     workspace.openVoxelView()
                 }
@@ -437,7 +531,6 @@ Item {
                     }
                 }
             }
-
 
             MapLayerPanel {
                 id: layerPanel
@@ -566,9 +659,7 @@ Item {
                         enabled: !canvas.importActive && !canvas.inputBlocked
                         iconName: "selection"
                         label: canvas.selectionToolActive ? qsTr("Exit selection mode (%1 chunks)").arg(
-                                                                workspace.mapController
-                                                                ? workspace.mapController.selectionChunkCount : 0) :
-                                                            qsTr("Selection mode")
+                                                                workspace.selectionChunkCount) : qsTr("Selection mode")
                         selected: canvas.selectionToolActive
                         onClicked: canvas.selectionToolActive = !canvas.selectionToolActive
                     }
