@@ -28,9 +28,9 @@ namespace {
 
     NbtItemPresenter structurePresneter(QString icon) {
         // remove
-        return [icon = std::move(icon)](const bl::nbt::compound_tag*, int, const QString& raw_key) {
-            //  auto newKey = raw_key.startsWith(MC_STRUCTURE_NAME_PREFIX) ? raw_key.sliced(MC_STRUCTURE_NAME_PREFIX.length()) : raw_key;
-            return NbtItemPresentation{raw_key, icon};
+        return [icon = std::move(icon)](const bl::nbt::compound_tag*, int, const QString& rawKey) {
+            auto newKey = rawKey.startsWith(MC_STRUCTURE_NAME_PREFIX) ? rawKey.sliced(MC_STRUCTURE_NAME_PREFIX.length()) : rawKey;
+            return NbtItemPresentation{newKey, icon};
         };
     }
 
