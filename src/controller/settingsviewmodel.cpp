@@ -70,6 +70,12 @@ void SettingsViewModel::setTileColorScheme(const QString& v) {
     values_.tileColorScheme = v;
     emit settingsChanged();
 }
+void SettingsViewModel::setInitialMapPosition(const QString& v) {
+    if (v != QStringLiteral("origin") && v != QStringLiteral("world_spawn") && v != QStringLiteral("player")) return;
+    if (values_.initialMapPosition == v) return;
+    values_.initialMapPosition = v;
+    emit settingsChanged();
+}
 void SettingsViewModel::setAccentColor(const QString& v) {
     // An empty value clears the override; anything else has to be a colour the
     // QML side can use, so invalid text is ignored instead of being persisted.

@@ -2,7 +2,6 @@
 #define BEDROCKMAP_BLOCKVOLUMEOPERATOR_H
 
 #include <QRegion>
-#include <optional>
 #include <string>
 
 #include "bedrock_key.h"
@@ -22,8 +21,8 @@ class BlockVolumeOperator {
     [[nodiscard]] static QRegion regionForBounds(const bl::block_box& blockBounds);
 
     /// Serialize selected chunks as an mcstructure payload.
-    static std::string exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds,
-                                                  int32_t version = 1, bool exportEntities = false);
+    static std::string exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, int32_t version = 1,
+                                                  bool exportEntities = false);
 
     /// Import an mcstructure at a world position. Air in the structure replaces world blocks.
     static bool importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position, AsyncLevelLoader& loader,
@@ -31,9 +30,6 @@ class BlockVolumeOperator {
 
     /// Clear blocks inside a world-space box. Entity removal is reserved for a future chunk API.
     static bool deleteWorldBlocks(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, bool deleteEntities = false);
-
-    /// The "Pos" of an entity tag, stored as float or double.
-    [[nodiscard]] static std::optional<bl::vec3> entityPosition(const bl::nbt::compound_tag* entity);
 };
 
 #endif  // BEDROCKMAP_BLOCKVOLUMEOPERATOR_H

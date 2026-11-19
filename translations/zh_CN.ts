@@ -2779,8 +2779,33 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World origin</source>
+        <translation>主世界坐标原点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World spawn</source>
+        <translation>世界出生点</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Local player</source>
+        <translation>本地玩家</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Black</source>
         <translation>纯黑</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Initial view</source>
+        <translation>初始视图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Initial map position</source>
+        <translation>初始地图位置</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

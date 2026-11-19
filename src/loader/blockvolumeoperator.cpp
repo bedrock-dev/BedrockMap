@@ -5,10 +5,12 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "actor.h"
 #include "loader/asynclevelloader.h"
 #include "loguru/loguru.hpp"
 #include "mcstructure.h"
@@ -117,27 +119,6 @@ namespace {
 }  // namespace
 
 QRegion BlockVolumeOperator::regionForBounds(const bl::block_box& blockBounds) { return chunkRegionForBounds(blockBounds); }
-
-std::optional<bl::vec3> BlockVolumeOperator::entityPosition(const bl::nbt::compound_tag* entity) {
-    if (!entity) return std::nullopt;
-    const auto* tag = entity->get("Pos");
-    const auto* list = tag ? tag->as<const bl::nbt::list_tag*>() : nullptr;
-    if (!list || list->value.size() < 3) return std::nullopt;
-    const auto read = [](const bl::nbt::abstract_tag* value, float& result) {
-        if (const auto* v = value ? value->as<const bl::nbt::float_tag*>() : nullptr) {
-            result = v->value;
-            return true;
-        }
-        if (const auto* v = value ? value->as<const bl::nbt::double_tag*>() : nullptr) {
-            result = static_cast<float>(v->value);
-            return true;
-        }
-        return false;
-    };
-    bl::vec3 position{0.0f, 0.0f, 0.0f};
-    if (!read(list->value[0], position.x) || !read(list->value[1], position.y) || !read(list->value[2], position.z)) return std::nullopt;
-    return position;
-}
 
 std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
                                                             int32_t version, bool exportEntities) {
@@ -256,7 +237,7 @@ bool BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& stru
 
             if (importEntities) {
                 for (const auto* entity : structure.entities()) {
-                    const auto position = entityPosition(entity);
+                    const auto position = bl::actor::position_from_nbt(entity);
                     if (!position) continue;
                     const bl::vec3 source = *position;
                     const bl::vec3 world{source.x + delta.x, source.y + delta.y, source.z + delta.z};

@@ -98,17 +98,11 @@ MapCameraState MapController::cameraState() const { return map_view_state_.camer
 
 bool MapController::hasSelection() const { return !map_view_state_.selection().isEmpty(); }
 
-int MapController::selectionMode() const {
-    return static_cast<int>(map_view_state_.selection().mode());
-}
+int MapController::selectionMode() const { return static_cast<int>(map_view_state_.selection().mode()); }
 
-int MapController::selectionChunkCount() const {
-    return map_view_state_.selection().chunkCount();
-}
+int MapController::selectionChunkCount() const { return map_view_state_.selection().chunkCount(); }
 
-int MapController::selectionRectCount() const {
-    return static_cast<int>(map_view_state_.selection().rectCount());
-}
+int MapController::selectionRectCount() const { return static_cast<int>(map_view_state_.selection().rectCount()); }
 
 int MapController::modifiedChunkCount() const {
     if (!loader_) return 0;
@@ -122,9 +116,7 @@ int MapController::deletedChunkCount() const {
 
 bool MapController::deleteOutsideAvailable() const { return loader_ && loader_->preloadAllChunkCoords() && loader_->chunkCoordsReady(); }
 
-bool MapController::selectionDragging() const {
-    return map_view_state_.selection().isDragging();
-}
+bool MapController::selectionDragging() const { return map_view_state_.selection().isDragging(); }
 
 QVector<QRect> MapController::selectionRects() const {
     QVector<QRect> result;
@@ -218,6 +210,7 @@ void MapController::setLevelLoader(AsyncLevelLoader* loader) {
     region_import_.cancel();
     if (loader_) disconnect(loader_, nullptr, this, nullptr);
     loader_ = loader;
+    initial_position_applied_ = false;
     if (loader_) {
         connect(loader_, &AsyncLevelLoader::chunkCoordsPreloadFinished, this, [this] {
             emit deleteOutsideAvailableChanged();
@@ -282,16 +275,37 @@ void MapController::pan(qreal dx, qreal dy) {
     }
 }
 
-void MapController::gotoBlock(int x, int z) {
-    if (qFuzzyIsNull(map_view_state_.scaleLevel())) return;
-    const QPointF view_pos = map_view_state_.blockPosToViewPos(bl::block_pos(x, 0, z));
-    const QPointF delta = (QPointF(map_view_state_.camera().center()) - view_pos) / std::abs(map_view_state_.scaleLevel());
-    map_view_state_.translate(delta);
+void MapController::gotoBlock(int x, int z) { (void)centerOnBlockPosition(x, z); }
+
+bool MapController::centerOnInitialMapPosition() {
+    if (initial_position_applied_) return true;
+    if (!loader_ || !loader_->isOpen()) return false;
+
+    QPointF position{0.0, 0.0};
+    const QString mode = setting::current().initialMapPosition;
+    if (mode == QStringLiteral("world_spawn")) {
+        if (const auto spawn = loader_->worldSpawnPosition()) position = QPointF(spawn->x, spawn->z);
+    } else if (mode == QStringLiteral("player")) {
+        if (const auto player = loader_->localPlayerPosition()) position = QPointF(player->x, player->z);
+    }
+
+    if (!centerOnBlockPosition(position.x(), position.y())) return false;
+    initial_position_applied_ = true;
+    return true;
 }
 
-void MapController::setLayer(int layer) {
-    map_view_state_.setLayer(static_cast<MapRenderOptions::LayerType>(layer));
+bool MapController::centerOnBlockPosition(qreal x, qreal z) {
+    const qreal scale = std::abs(map_view_state_.scaleLevel());
+    const QSize size = map_view_state_.viewportSize();
+    if (size.isEmpty() || !std::isfinite(scale) || scale <= 0.0) return false;
+
+    const QPointF viewPosition = map_view_state_.worldToView().map(QPointF(x / 16.0, z / 16.0));
+    const QPointF viewCenter(size.width() / 2.0, size.height() / 2.0);
+    map_view_state_.translate((viewCenter - viewPosition) / scale);
+    return true;
 }
+
+void MapController::setLayer(int layer) { map_view_state_.setLayer(static_cast<MapRenderOptions::LayerType>(layer)); }
 
 QVariantMap MapController::overlays() const {
     QVariantMap result;
@@ -440,8 +454,7 @@ bool MapController::beginPasteAsync(int chunkX, int chunkZ) {
 
 bool MapController::beginImportDragAt(const QPointF& position) {
     if (operation_running_ || editing_blocked_) return false;
-    return region_import_.beginDrag(
-        map_view_state_.transformForViewport(map_view_state_.viewportSize()).inverted().map(position));
+    return region_import_.beginDrag(map_view_state_.transformForViewport(map_view_state_.viewportSize()).inverted().map(position));
 }
 
 void MapController::updateImportDragAt(const QPointF& position) {

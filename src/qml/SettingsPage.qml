@@ -61,6 +61,8 @@ Item {
     ]
     readonly property var categoryNames: [qsTr("Interface"), qsTr("Map"), qsTr("Cache"), qsTr("Rendering"), qsTr("Misc"),
         qsTranslate("AboutDialog", "aboutDialog.title.about")]
+    readonly property var initialMapPositionValues: ["origin", "world_spawn", "player"]
+    readonly property var initialMapPositionNames: [qsTr("World origin"), qsTr("World spawn"), qsTr("Local player")]
     readonly property var zoomScaleLevels: [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
     readonly property var renderBackendValues: Qt.platform.os === "android" ? ["automatic", "opengl", "vulkan"] :
                                                                               Qt.platform.os === "windows"
@@ -151,7 +153,8 @@ Item {
                             AppComboBox {
                                 model: [qsTr("Light"), qsTr("Dark"), qsTr("Black"), qsTr("System")]
                                 currentIndex: App.settings.colorTheme === "light" ? 0 : App.settings.colorTheme
-                                                                                    === "dark" ? 1 : App.settings.colorTheme
+                                                                                    === "dark" ? 1 :
+                                                                                                 App.settings.colorTheme
                                                                                                  === "black" ? 2 : 3
                                 onActivated: {
                                     App.settings.colorTheme = ["light", "dark", "black", "system"][currentIndex]
@@ -236,6 +239,19 @@ Item {
                     visible: page.category === 1
                     Layout.fillWidth: true
                     spacing: Theme.gapMedium
+                    SettingGroup {
+                        title: qsTr("Initial view")
+                        SettingRow {
+                            label: qsTr("Initial map position")
+                            AppComboBox {
+                                model: page.initialMapPositionNames
+                                currentIndex: Math.max(0, page.initialMapPositionValues.indexOf(
+                                                           App.settings.initialMapPosition))
+                                onActivated: App.settings.initialMapPosition
+                                             = page.initialMapPositionValues[currentIndex]
+                            }
+                        }
+                    }
                     SettingGroup {
                         title: qsTr("Interface")
                         SettingRow {
@@ -717,7 +733,8 @@ Item {
                                 }
                                 Text {
                                     Layout.fillWidth: true
-                                    text: Qt.application.version + "  ·  " + qsTranslate("AboutDialog", "aboutDialog.copyright")
+                                    text: Qt.application.version + "  ·  " + qsTranslate("AboutDialog",
+                                                                                         "aboutDialog.copyright")
                                     color: Theme.muted
                                     font.pixelSize: Theme.fontBody
                                     wrapMode: Text.WordWrap
@@ -821,7 +838,8 @@ Item {
                                         Layout.minimumWidth: 0
                                         Layout.alignment: Qt.AlignTop
                                         text: creditRow.modelData.url ? "<a href=\"" + creditRow.modelData.url + "\">"
-                                                                      + creditRow.modelData.name + "</a>" : creditRow.modelData.name
+                                                                        + creditRow.modelData.name + "</a>" :
+                                                                        creditRow.modelData.name
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent
@@ -834,9 +852,10 @@ Item {
                                         Layout.preferredWidth: 0
                                         Layout.minimumWidth: 0
                                         Layout.alignment: Qt.AlignTop
-                                        text: creditRow.modelData.licenseUrl ? "<a href=\"" + creditRow.modelData.licenseUrl
-                                                                             + "\">" + creditRow.modelData.license + "</a>" :
-                                                                             creditRow.modelData.license
+                                        text: creditRow.modelData.licenseUrl ? "<a href=\""
+                                                                               + creditRow.modelData.licenseUrl + "\">"
+                                                                               + creditRow.modelData.license + "</a>" :
+                                                                               creditRow.modelData.license
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent
@@ -963,5 +982,4 @@ Item {
         Accessible.role: Accessible.Link
         Accessible.name: person.role.length > 0 ? person.name + ", " + person.role : person.name
     }
-
 }

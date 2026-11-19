@@ -166,6 +166,7 @@ Item {
         }
         function onWorldStateChanged() {
             canvas.refreshHoverBlock(true)
+            canvas.applyInitialMapPosition()
         }
     }
 
@@ -207,6 +208,10 @@ Item {
             return
         stopPanInertia()
         controller.gotoBlock(0, 0)
+    }
+    function applyInitialMapPosition() {
+        if (controller && width > 0 && height > 0)
+            controller.centerOnInitialMapPosition()
     }
     function beginMapDrag() {
         terrainLayer.setDragActive(true)
@@ -269,8 +274,8 @@ Item {
             crosshairBlockInfo = ({})
             return
         }
-        if (!force && crosshairBlockActive && crosshairBlockInfo.blockX === blockX
-                && crosshairBlockInfo.blockZ === blockZ && crosshairBlockInfo.dimension === dimension)
+        if (!force && crosshairBlockActive && crosshairBlockInfo.blockX === blockX && crosshairBlockInfo.blockZ
+                === blockZ && crosshairBlockInfo.dimension === dimension)
             return
         crosshairBlockInfo = info
         crosshairBlockActive = true
@@ -349,7 +354,8 @@ Item {
             operationText = qsTr("Deleting selected chunks…")
     }
     function deleteChunksOutsideSelection() {
-        if (!controller || !controller.hasSelection || controller.operationRunning || !controller.deleteOutsideAvailable)
+        if (!controller || !controller.hasSelection || controller.operationRunning ||
+                !controller.deleteOutsideAvailable)
             return
         if (controller.deleteOutsideSelectionAsync())
             operationText = qsTr("Deleting chunks outside the selection…")
@@ -429,16 +435,19 @@ Item {
     onWidthChanged: {
         if (controller)
             controller.setViewportSize(Qt.size(width, height))
+        applyInitialMapPosition()
         refreshCrosshairBlock(true)
     }
     onHeightChanged: {
         if (controller)
             controller.setViewportSize(Qt.size(width, height))
+        applyInitialMapPosition()
         refreshCrosshairBlock(true)
     }
     Component.onCompleted: {
         if (controller)
             controller.setViewportSize(Qt.size(width, height))
+        applyInitialMapPosition()
         refreshCrosshairBlock(true)
     }
     onControllerChanged: {
@@ -448,6 +457,7 @@ Item {
             mapTouchInput.cancelGesture()
         if (controller)
             controller.setViewportSize(Qt.size(width, height))
+        applyInitialMapPosition()
         refreshCrosshairBlock(true)
     }
     onCrosshairEnabledChanged: {
@@ -809,27 +819,23 @@ Item {
         readonly property real edgeMargin: Theme.gapLarge
         readonly property real innerPadding: Theme.gapMedium
         readonly property bool isAndroid: Qt.platform.os === "android"
-        readonly property bool positionActive: canvas.crosshairEnabled ? canvas.crosshairBlockActive :
-                                                                        !isAndroid && canvas.hoverBlockActive
-        readonly property var positionInfo: canvas.crosshairEnabled ? canvas.crosshairBlockInfo :
-                                                                      canvas.hoverBlockInfo
+        readonly property bool positionActive: canvas.crosshairEnabled ? canvas.crosshairBlockActive : !isAndroid
+                                                                         && canvas.hoverBlockActive
+        readonly property var positionInfo: canvas.crosshairEnabled ? canvas.crosshairBlockInfo : canvas.hoverBlockInfo
         // Matches the height of the layer toolbar in WorldWorkspace.
         readonly property real toolbarHeight: (Theme.touch ? Theme.controlHeight : 34) + Theme.gapSmall * 2
         readonly property int statusFontSize: Theme.fontCaption
         readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
         readonly property string positionText: positionActive ? "Dim: %1 Pos:%2,%3/%4,%5".arg(
-                                                                     canvas.controller.dimension).arg(
-                                                                     positionInfo.blockX).arg(
-                                                                     positionInfo.blockZ).arg(
-                                                                     positionInfo.chunkX).arg(
-                                                                     positionInfo.chunkZ) :
-                                                                 isAndroid && !canvas.crosshairEnabled ?
-                                                                     "Dim: %1 Pos:-,-/-,-".arg(
-                                                                         canvas.controller.dimension) :
-                                                                     "Dim: %1 Pos:--,--/--,--".arg(
-                                                                         canvas.controller.dimension)
-        readonly property string countsText: "Sel:%1 Modify:%2 Del:%3".arg(
-                                                 canvas.controller.selectionChunkCount).arg(
+                                                                    canvas.controller.dimension).arg(
+                                                                    positionInfo.blockX).arg(positionInfo.blockZ).arg(
+                                                                    positionInfo.chunkX).arg(positionInfo.chunkZ) :
+                                                                isAndroid && !canvas.crosshairEnabled
+                                                                ? "Dim: %1 Pos:-,-/-,-".arg(
+                                                                      canvas.controller.dimension) :
+                                                                  "Dim: %1 Pos:--,--/--,--".arg(
+                                                                      canvas.controller.dimension)
+        readonly property string countsText: "Sel:%1 Modify:%2 Del:%3".arg(canvas.controller.selectionChunkCount).arg(
                                                  canvas.controller.modifiedChunkCount).arg(
                                                  canvas.controller.deletedChunkCount)
         readonly property real contentWidth: Math.max(positionMetrics.advanceWidth, countsMetrics.advanceWidth)

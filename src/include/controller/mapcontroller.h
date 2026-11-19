@@ -87,6 +87,7 @@ class MapController final : public QObject {
     Q_INVOKABLE void zoomAdjacent(int direction, const QPointF& anchor = {});
     Q_INVOKABLE void pan(qreal dx, qreal dy);
     Q_INVOKABLE void gotoBlock(int x, int z);
+    Q_INVOKABLE bool centerOnInitialMapPosition();
     Q_INVOKABLE void setLayer(int layer);
     Q_INVOKABLE void setTransparentVoid(bool enabled);
     Q_INVOKABLE void setOverlay(int type, bool enabled);
@@ -136,6 +137,7 @@ class MapController final : public QObject {
    private:
     /// Re-apply the configured zoom limits for the current loader state.
     void applyZoomLimits();
+    [[nodiscard]] bool centerOnBlockPosition(qreal x, qreal z);
 
     struct SelectionOperationResult {
         enum class RefreshTarget {
@@ -185,6 +187,7 @@ class MapController final : public QObject {
     QRegion operation_region_;
     int operation_dimension_{0};
     bool editing_blocked_{false};
+    bool initial_position_applied_{false};
 };
 
 #endif  // BEDROCKMAP_MAPCONTROLLER_H

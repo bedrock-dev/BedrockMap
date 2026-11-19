@@ -14,11 +14,23 @@
 #include <string_view>
 #include <vector>
 
+#include "actor.h"
 #include "base/config.h"
 #include "bedrock_key.h"
 #include "chunk.h"
+#include "level_dat.h"
 #include "loader/chunkregion.h"
 #include "loguru/loguru.hpp"
+
+namespace {
+    std::optional<bl::vec3> readLocalPlayerPosition(bl::bedrock_level& level) {
+        std::string raw;
+        if (!level.load_raw("~local_player", raw)) return std::nullopt;
+        bl::actor actor;
+        if (!actor.load(reinterpret_cast<const byte_t*>(raw.data()), raw.size())) return std::nullopt;
+        return actor.pos();
+    }
+}  // namespace
 
 AsyncLevelLoader::AsyncLevelLoader(ResourceManager* resources)
     : region_scheduler_(this, resources),
@@ -73,8 +85,14 @@ ChunkRegion* AsyncLevelLoader::peekRegion(const region_pos& p, bool& empty) {
 }
 
 bool AsyncLevelLoader::open(const std::string& path, const std::string& xor_key, std::shared_ptr<leveldb::Env> env) {
+    world_spawn_position_.reset();
+    local_player_position_.reset();
     this->loaded_ = this->storage_.open(path, xor_key, std::move(env));
     if (this->loaded_) {
+        if (const auto spawn = storage_.level().dat().spawn_position()) {
+            world_spawn_position_ = bl::vec3(spawn->x, spawn->y, spawn->z);
+        }
+        local_player_position_ = readLocalPlayerPosition(storage_.level());
         if (this->preload_all_chunk_coords_) {
             LOG_F(INFO, "Start loading all chunk cooords");
             chunk_coords_service_.start(storage_.level(), {}, chunk_overview_enabled_);
@@ -90,6 +108,8 @@ void AsyncLevelLoader::close() {
     if (this->thread() != QThread::currentThread()) {
         if (!loaded_.exchange(false, std::memory_order_acq_rel)) return;
         LOG_F(INFO, "Try close level");
+        world_spawn_position_.reset();
+        local_player_position_.reset();
         region_scheduler_.clear();
         chunk_coords_service_.close();
         storage_.close();
@@ -102,6 +122,8 @@ void AsyncLevelLoader::closeImpl() {
     if (!this->loaded_) return;
     LOG_F(INFO, "Try close level");
     this->loaded_ = false;
+    world_spawn_position_.reset();
+    local_player_position_.reset();
     region_scheduler_.clear();
     chunk_coords_service_.close();
     this->storage_.close();  // close the level

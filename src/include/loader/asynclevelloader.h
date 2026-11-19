@@ -123,6 +123,10 @@ class AsyncLevelLoader : public QObject {
 
     const ChunkCoordsIndex& chunkCoords() const { return chunk_coords_service_.index(); }
 
+    /// Positions cached while opening the LevelDB, in block coordinates.
+    [[nodiscard]] std::optional<bl::vec3> worldSpawnPosition() const { return world_spawn_position_; }
+    [[nodiscard]] std::optional<bl::vec3> localPlayerPosition() const { return local_player_position_; }
+
     [[nodiscard]] std::optional<ChunkCoordsBoundingBox> chunkCoordsBoundingBox(int dimension) const {
         if (!preload_all_chunk_coords_ || !chunk_coords_service_.ready()) return std::nullopt;
         return chunk_coords_service_.boundingBox(dimension);
@@ -180,8 +184,7 @@ class AsyncLevelLoader : public QObject {
 
     CommitResult commit();
 
-    CommitResult commitEdits(const std::unordered_map<std::string, std::string>& globalModifies,
-                             const bl::nbt::compound_tag* levelDat);
+    CommitResult commitEdits(const std::unordered_map<std::string, std::string>& globalModifies, const bl::nbt::compound_tag* levelDat);
 
     std::vector<QString> debugInfo();
 
@@ -215,6 +218,8 @@ class AsyncLevelLoader : public QObject {
     quint64 next_region_revision_{0};
     bool preload_all_chunk_coords_{false};
     bool chunk_overview_enabled_{false};
+    std::optional<bl::vec3> world_spawn_position_;
+    std::optional<bl::vec3> local_player_position_;
     ChunkCoordsService chunk_coords_service_;
     ChunkEditService edit_service_;
 

@@ -2779,8 +2779,33 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World origin</source>
+        <translation>World origin</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>World spawn</source>
+        <translation>World spawn</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Local player</source>
+        <translation>Local player</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Black</source>
         <translation>Black</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Initial view</source>
+        <translation>Initial view</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Initial map position</source>
+        <translation>Initial map position</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

@@ -36,8 +36,7 @@ namespace constant {
     static_assert(COORDS_REGION_SIZE % RW == 0, "COORDS_REGION_SIZE must be a multiple of RW");
     inline constexpr int GRID_WIDTH = 32;
     inline constexpr int DEFAULT_FONT_POINT_SIZE = 14;
-    inline constexpr const char* ANDROID_UI_FONT_REGULAR_RESOURCE =
-        ":/bedrockmap/fonts/MiSans-Regular.ttf";
+    inline constexpr const char* ANDROID_UI_FONT_REGULAR_RESOURCE = ":/bedrockmap/fonts/MiSans-Regular.ttf";
     inline constexpr const char* MONOSPACE_FONT_RESOURCE = ":/bedrockmap/fonts/JetBrainsMono-Regular.ttf";
 
     // Floor zoom for the whole-world overview mode, derived from region size.
@@ -73,7 +72,7 @@ namespace setting {
 #else
         float gpuAoStrength{0.15f};  // Ambient occlusion strength.
 #endif
-        int gpuAoSteps{8};  // Samples per direction; 2, 4 or 8.
+        int gpuAoSteps{8};                 // Samples per direction; 2, 4 or 8.
         float gpuBevelStrength{1.0f};      // Bevel depth.
         float gpuBevelWidth{1.0f};         // Bevel width multiplier.
         float gpuSaturation{1.05f};        // Output saturation.
@@ -109,7 +108,8 @@ namespace setting {
 #else
         bool showMapCrosshair{false};
 #endif
-        int minimumScaleLevel{2};  // Coarsest terrain zoom before the coordinate overview.
+        QString initialMapPosition{"origin"};  // origin, world_spawn or player.
+        int minimumScaleLevel{2};              // Coarsest terrain zoom before the coordinate overview.
         int maximumScaleLevel{1024};
         float panInertia{0.0f};
         QString gridLineColor{"#bbbbbb"};
@@ -162,9 +162,7 @@ namespace setting {
         return scale;
     }
 
-    constexpr int normalizeAoSteps(int value) {
-        return value <= 2 ? 2 : value <= 4 ? 4 : 8;
-    }
+    constexpr int normalizeAoSteps(int value) { return value <= 2 ? 2 : value <= 4 ? 4 : 8; }
 
     /// Process-lifetime settings snapshot used by runtime consumers.
     [[nodiscard]] const Settings& current();

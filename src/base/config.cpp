@@ -130,9 +130,7 @@ void setting::init() {
     setting::load();
 }
 
-void setting::load() {
-    mutableSettings() = read();
-}
+void setting::load() { mutableSettings() = read(); }
 
 setting::Settings setting::read() {
     QSettings s(app_paths::configFile(), QSettings::IniFormat);
@@ -155,6 +153,11 @@ setting::Settings setting::read() {
     loaded.showMapDebugButton = s.value("show_debug_button", loaded.showMapDebugButton).toBool();
     loaded.showMapStatusBar = s.value("show_status_bar", loaded.showMapStatusBar).toBool();
     loaded.showMapCrosshair = s.value("show_crosshair", loaded.showMapCrosshair).toBool();
+    const QString initial_map_position = s.value("initial_position", loaded.initialMapPosition).toString();
+    if (initial_map_position == QStringLiteral("origin") || initial_map_position == QStringLiteral("world_spawn") ||
+        initial_map_position == QStringLiteral("player")) {
+        loaded.initialMapPosition = initial_map_position;
+    }
     loaded.minimumScaleLevel = normalizeZoomScale(s.value("min_scale_level", loaded.minimumScaleLevel).toInt());
     loaded.maximumScaleLevel =
         std::max(loaded.minimumScaleLevel, normalizeZoomScale(s.value("max_scale_level", loaded.maximumScaleLevel).toInt()));
@@ -297,6 +300,7 @@ QString setting::save(const Settings& values) {
     s.setValue("show_debug_button", values.showMapDebugButton);
     s.setValue("show_status_bar", values.showMapStatusBar);
     s.setValue("show_crosshair", values.showMapCrosshair);
+    s.setValue("initial_position", values.initialMapPosition);
     s.setValue("min_scale_level", values.minimumScaleLevel);
     s.setValue("max_scale_level", values.maximumScaleLevel);
     s.setValue("pan_inertia", values.panInertia);

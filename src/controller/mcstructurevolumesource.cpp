@@ -10,6 +10,7 @@
 #include <variant>
 #include <vector>
 
+#include "actor.h"
 #include "chunk_data_position.h"
 #include "io/documentio.h"
 #include "loader/blockvolumeoperator.h"
@@ -60,7 +61,7 @@ namespace {
 
         if (exportEntities) {
             for (const auto* entity : structure.entities()) {
-                const auto worldPosition = BlockVolumeOperator::entityPosition(entity);
+                const auto worldPosition = bl::actor::position_from_nbt(entity);
                 if (!worldPosition) continue;
                 const auto localPosition = bl::block_pos{static_cast<int>(std::floor(worldPosition->x - origin.x)),
                                                          static_cast<int>(std::floor(worldPosition->y - origin.y)),
