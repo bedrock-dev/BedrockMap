@@ -61,7 +61,7 @@ AbstractButton {
             anchors.centerIn: parent
             width: parent.width
             height: Math.max(0, Math.min(root.height, root.visualHeight))
-            radius: Theme.radiusControl
+            radius: Theme.radiusMedium
             color: root.backgroundColor
             border.width: root.visualBorderWidth
             border.color: root.visualBorderColor
@@ -80,7 +80,7 @@ AbstractButton {
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.text
                 color: root.contentColor
-                font.pixelSize: root.compact ? Theme.fontCaption : Theme.fontSubtitle
+                font.pixelSize: root.compact ? Theme.fontSmall : Theme.fontMedium
                 elide: Text.ElideRight
             }
         }

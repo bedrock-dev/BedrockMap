@@ -43,7 +43,7 @@ AppDialog {
             text: qsTr("New version: %1\nCurrent version: %2").arg(root.newVersion).arg(Qt.application.version)
             textFormat: Text.PlainText
             color: Theme.text
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
             wrapMode: Text.Wrap
         }
         ScrollView {

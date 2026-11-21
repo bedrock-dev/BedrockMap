@@ -26,7 +26,7 @@ Item {
                 text: App.openSessions.count === 1 ? qsTr("1 session open") : qsTr("%1 sessions open").arg(
                                                          App.openSessions.count)
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
             }
 
             Repeater {
@@ -49,7 +49,7 @@ Item {
 
                     width: body.width
                     height: Theme.sessionRowHeight
-                    radius: Theme.radiusCard
+                    radius: Theme.radiusLarge
                     color: rowColor
                     border.width: rowBorderWidth
                     border.color: active ? Theme.accent : Theme.border
@@ -62,7 +62,7 @@ Item {
                         Rectangle {
                             width: Theme.ui(34)
                             height: width
-                            radius: Theme.radiusControl
+                            radius: Theme.radiusMedium
                             color: active ? Theme.accent : Theme.accentSoft
                             anchors.verticalCenter: parent.verticalCenter
                             AppIcon {
@@ -85,14 +85,14 @@ Item {
                                 width: parent.width
                                 text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
                                 color: active ? Theme.accent : Theme.text
-                                font.pixelSize: Theme.fontSubtitle
+                                font.pixelSize: Theme.fontMedium
                                 elide: Text.ElideRight
                             }
                             Text {
                                 width: parent.width
                                 text: path
                                 color: Theme.muted
-                                font.pixelSize: Theme.fontCaption
+                                font.pixelSize: Theme.fontSmall
                                 elide: Text.ElideMiddle
                             }
                         }
@@ -124,7 +124,7 @@ Item {
                 visible: App.openSessions.count === 0
                 width: parent.width
                 height: 96
-                radius: Theme.radiusCard
+                radius: Theme.radiusLarge
                 color: Theme.surface
                 border.color: Theme.border
                 Column {
@@ -134,13 +134,13 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: qsTr("No open sessions")
                         color: Theme.text
-                        font.pixelSize: Theme.fontSubtitle
+                        font.pixelSize: Theme.fontMedium
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: qsTr("Open a world or NBT document from the Welcome page.")
                         color: Theme.muted
-                        font.pixelSize: Theme.fontBody
+                        font.pixelSize: Theme.fontMedium
                     }
                 }
             }

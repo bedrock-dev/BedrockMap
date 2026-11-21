@@ -85,7 +85,7 @@ Item {
             Text {
                 text: qsTr("Y")
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
             }
             AppSpinBox {
                 id: ySpin
@@ -114,7 +114,7 @@ Item {
             Text {
                 text: qsTr("Layer")
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
             }
             AppSpinBox {
                 id: layerSpin

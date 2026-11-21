@@ -737,7 +737,7 @@ Item {
                 Layout.fillWidth: true
                 text: qsTr("This chunk has unsaved changes. Save them before opening a different chunk?")
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 wrapMode: Text.WordWrap
             }
 

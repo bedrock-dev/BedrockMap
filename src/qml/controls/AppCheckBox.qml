@@ -7,7 +7,7 @@ CheckBox {
     property bool wrapText: false
 
     implicitHeight: Math.max(Theme.controlHeight, implicitContentHeight + topPadding + bottomPadding)
-    font.pixelSize: Theme.fontSubtitle
+    font.pixelSize: Theme.fontMedium
     spacing: Theme.gapMedium
     contentItem: Text {
         leftPadding: root.indicator.width + root.spacing
@@ -31,7 +31,7 @@ CheckBox {
             visible: root.checked
             text: "✓"
             color: Theme.accent
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: Theme.fontMedium
         }
     }
 }

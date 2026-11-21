@@ -36,7 +36,7 @@ AppCard {
 
     component SectionLabel: Text {
         color: Theme.muted
-        font.pixelSize: Theme.fontCaption
+        font.pixelSize: Theme.fontSmall
     }
 
     Flickable {

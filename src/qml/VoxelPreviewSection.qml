@@ -18,7 +18,7 @@ GroupBox {
         y: section.padding
         text: section.title
         color: Theme.text
-        font.pixelSize: Theme.fontLabel
+        font.pixelSize: Theme.fontLarge
     }
     background: AppCard {}
 }

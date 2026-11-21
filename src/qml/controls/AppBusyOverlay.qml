@@ -29,7 +29,7 @@ Rectangle {
                 width: parent.width
                 text: root.text.length > 0 ? root.text : qsTr("Working…")
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -38,7 +38,7 @@ Rectangle {
                 visible: root.detail.length > 0
                 text: root.detail
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideMiddle
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -73,7 +73,7 @@ Rectangle {
                 width: parent.width
                 text: qsTr("Please wait…")
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 horizontalAlignment: Text.AlignHCenter
             }
         }

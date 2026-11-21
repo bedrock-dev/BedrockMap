@@ -39,7 +39,7 @@ AppDialog {
                         text: modelData
                         textFormat: Text.PlainText
                         color: Theme.text
-                        font.pixelSize: Theme.fontSubtitle
+                        font.pixelSize: Theme.fontMedium
                         wrapMode: Text.Wrap
                     }
                 }

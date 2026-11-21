@@ -32,7 +32,7 @@ Item {
                     text: session && session.indexLoading ? qsTr("Building world coordinate index") : qsTr(
                                                                 "Opening world")
                     color: Theme.text
-                    font.pixelSize: Theme.fontHeading
+                    font.pixelSize: Theme.fontHuge
                     horizontalAlignment: Text.AlignHCenter
                 }
                 Text {
@@ -41,7 +41,7 @@ Item {
                                                                 "The map will be available when indexing is complete.") :
                                                             qsTr("Opening LevelDB and preparing the world...")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                 }
@@ -92,7 +92,7 @@ Item {
                                                                 session.scannedKeys).arg(session.indexedChunks) : qsTr(
                                                                 "Please wait...")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

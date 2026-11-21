@@ -44,7 +44,7 @@ Rectangle {
             visible: !root.collapsed && App.openSessions.count > 0
             text: root.navigation.pages[root.navigation.pageSessions].title
             color: Theme.muted
-            font.pixelSize: Theme.fontCaption
+            font.pixelSize: Theme.fontSmall
             leftPadding: Theme.gapMedium
         }
     }
@@ -72,7 +72,7 @@ Rectangle {
             readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
             width: openWorldList.width
             height: Theme.touch ? Theme.controlHeight : (root.collapsed ? Theme.sidebarCollapsedItemSize : 40)
-            radius: Theme.radiusControl
+            radius: Theme.radiusMedium
             color: active ? Theme.accentSoft : ((openWorldMouse.pressed || openWorldMouse.containsMouse)
                                                 ? Theme.surfaceAlt : "transparent")
             Row {
@@ -97,7 +97,7 @@ Rectangle {
                     visible: !root.collapsed
                     text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
                     color: active ? Theme.accent : Theme.text
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     elide: Text.ElideRight
                     width: Math.max(0, openWorldList.width - 48)
                     anchors.verticalCenter: parent.verticalCenter

@@ -45,7 +45,7 @@ Rectangle {
             width: Math.max(0, parent.width - Theme.gapSmall)
             text: root.label
             color: Theme.muted
-            font.pixelSize: Theme.fontCaption
+            font.pixelSize: Theme.fontSmall
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }

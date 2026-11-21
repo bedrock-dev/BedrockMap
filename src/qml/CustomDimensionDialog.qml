@@ -102,14 +102,14 @@ AppDialog {
                             Layout.fillWidth: true
                             text: dimensionOption.modelData.name
                             color: Theme.text
-                            font.pixelSize: Theme.fontSubtitle
+                            font.pixelSize: Theme.fontMedium
                             elide: Text.ElideRight
                         }
 
                         Text {
                             text: qsTr("ID: %1").arg(dimensionOption.modelData.id)
                             color: Theme.muted
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                         }
                     }
                 }

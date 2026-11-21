@@ -131,7 +131,7 @@ AppDialog {
                                 Layout.preferredWidth: 42
                                 text: biomeOption.modelData.value
                                 color: Theme.muted
-                                font.pixelSize: Theme.fontSubtitle
+                                font.pixelSize: Theme.fontMedium
                                 horizontalAlignment: Text.AlignRight
                                 verticalAlignment: Text.AlignVCenter
                             }
@@ -140,7 +140,7 @@ AppDialog {
                                 Layout.fillWidth: true
                                 text: biomeOption.modelData.name
                                 color: Theme.text
-                                font.pixelSize: Theme.fontSubtitle
+                                font.pixelSize: Theme.fontMedium
                                 verticalAlignment: Text.AlignVCenter
                                 elide: Text.ElideRight
                             }

@@ -30,7 +30,7 @@ Rectangle {
 
     implicitHeight: Theme.segmentedHeight
     implicitWidth: fitLabels ? row.implicitWidth + Theme.gapTiny * 2 : 0
-    radius: Theme.radiusControl
+    radius: Theme.radiusMedium
     color: Theme.surfaceAlt
     border.width: Theme.borderWidth
     border.color: Theme.border

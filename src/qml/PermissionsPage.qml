@@ -108,7 +108,7 @@ Item {
                         Layout.fillWidth: true
                         text: qsTr("What are these permissions for?")
                         color: Theme.text
-                        font.pixelSize: Theme.fontLabel
+                        font.pixelSize: Theme.fontLarge
                         wrapMode: Text.Wrap
                     }
                     Repeater {
@@ -121,7 +121,7 @@ Item {
                             Layout.fillWidth: true
                             text: modelData
                             color: Theme.text
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                             wrapMode: Text.Wrap
                         }
                     }
@@ -153,7 +153,7 @@ Item {
                 Layout.fillWidth: true
                 text: entry.title
                 color: Theme.text
-                font.pixelSize: Theme.fontLabel
+                font.pixelSize: Theme.fontLarge
                 wrapMode: Text.Wrap
             }
             Label {
@@ -161,7 +161,7 @@ Item {
                 visible: entry.detail.length > 0
                 text: entry.detail
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 wrapMode: Text.Wrap
             }
             RowLayout {
@@ -170,7 +170,7 @@ Item {
                     Layout.fillWidth: true
                     text: entry.status
                     color: entry.granted ? Theme.accent : Theme.muted
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     wrapMode: Text.Wrap
                 }
                 AppButton {

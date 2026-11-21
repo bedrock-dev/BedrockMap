@@ -23,7 +23,7 @@ Dialog {
     padding: Theme.gapLarge
 
     background: Rectangle {
-        radius: Theme.radiusCard
+        radius: Theme.radiusLarge
         color: Theme.surface
         border.width: Theme.borderWidth
         border.color: Theme.border
@@ -39,7 +39,7 @@ Dialog {
             verticalAlignment: Text.AlignVCenter
             text: root.title
             color: Theme.text
-            font.pixelSize: Theme.fontLabel
+            font.pixelSize: Theme.fontLarge
             elide: Text.ElideRight
         }
     }

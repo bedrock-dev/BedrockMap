@@ -19,8 +19,8 @@ Rectangle {
 
     readonly property int titlePixelSize: {
         if (root.embedded)
-            return Theme.fontSubtitle
-        return Theme.compact ? Theme.fontTitle : Theme.fontDisplay
+            return Theme.fontMedium
+        return Theme.compact ? Theme.fontExtraLarge : Theme.fontHuge
     }
     readonly property real titleLeftMargin: root.embedded ? root.leftInset : Theme.gapSection + root.leftInset
     readonly property real titleRightMargin: root.embedded ? root.rightInset : Theme.gapSection + root.rightInset
@@ -59,7 +59,7 @@ Rectangle {
                 visible: root.subtitle.length > 0
                 text: root.subtitle
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideRight
             }
         }

@@ -8,7 +8,7 @@ SpinBox {
     readonly property real arrowWidth: Theme.spinBoxArrowWidth
     implicitWidth: Theme.ui(110)
     implicitHeight: Theme.controlHeight
-    font.pixelSize: Theme.fontSubtitle
+    font.pixelSize: Theme.fontMedium
     editable: true
     contentItem: TextInput {
         text: root.textFromValue(root.value, root.locale)
@@ -34,7 +34,7 @@ SpinBox {
             anchors.centerIn: parent
             text: "+"
             color: root.enabled ? Theme.text : Theme.muted
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
         }
     }
     down.indicator: Rectangle {
@@ -48,13 +48,13 @@ SpinBox {
             anchors.centerIn: parent
             text: "\u2212"
             color: root.enabled ? Theme.text : Theme.muted
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
         }
     }
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
         height: root.height - y * 2
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border

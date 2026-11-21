@@ -146,7 +146,7 @@ Item {
                         Layout.fillWidth: true
                         text: page.categoryNames[page.category]
                         color: Theme.text
-                        font.pixelSize: Theme.fontHeading
+                        font.pixelSize: Theme.fontHuge
                     }
                     AppButton {
                         visible: !page.compact
@@ -454,20 +454,20 @@ Item {
                                 Text {
                                     text: qsTranslate("WorldSource", modelData.label)
                                     color: Theme.text
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                 }
                                 Text {
                                     Layout.fillWidth: true
                                     text: modelData.path
                                     color: Theme.muted
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                     elide: Text.ElideMiddle
                                 }
                                 Text {
                                     visible: !modelData.path
                                     text: qsTr("Not configured")
                                     color: Theme.warning
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                 }
                                 AppIconButton {
                                     visible: modelData.removable
@@ -718,7 +718,7 @@ Item {
                                 Layout.preferredWidth: Theme.ui(64)
                                 Layout.preferredHeight: Theme.ui(64)
                                 Layout.alignment: Qt.AlignTop
-                                radius: Theme.radiusCard
+                                radius: Theme.radiusLarge
                                 color: Theme.accentSoft
                                 Image {
                                     anchors.centerIn: parent
@@ -738,7 +738,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: Qt.application.name
                                     color: Theme.text
-                                    font.pixelSize: Theme.fontHeading
+                                    font.pixelSize: Theme.fontHuge
                                     wrapMode: Text.Wrap
                                 }
                                 Text {
@@ -746,7 +746,7 @@ Item {
                                     text: Qt.application.version + "  ·  " + qsTranslate("AboutDialog",
                                                                                          "aboutDialog.copyright")
                                     color: Theme.muted
-                                    font.pixelSize: Theme.fontBody
+                                    font.pixelSize: Theme.fontMedium
                                     wrapMode: Text.WordWrap
                                 }
                             }
@@ -756,7 +756,7 @@ Item {
                             Layout.topMargin: Theme.gapSmall
                             text: qsTranslate("AboutDialog", "aboutDialog.description")
                             color: Theme.text
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                             lineHeight: 1.3
                             wrapMode: Text.WordWrap
                         }
@@ -825,14 +825,14 @@ Item {
                                     Layout.preferredWidth: 0
                                     text: qsTr("Component")
                                     color: Theme.muted
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                 }
                                 Text {
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 0
                                     text: qsTr("License")
                                     color: Theme.muted
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                 }
                             }
                             Repeater {
@@ -851,7 +851,7 @@ Item {
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent
-                                        font.pixelSize: Theme.fontBody
+                                        font.pixelSize: Theme.fontMedium
                                         wrapMode: Text.Wrap
                                         onLinkActivated: link => Qt.openUrlExternally(link)
                                     }
@@ -864,7 +864,7 @@ Item {
                                         textFormat: Text.StyledText
                                         color: Theme.text
                                         linkColor: Theme.accent
-                                        font.pixelSize: Theme.fontBody
+                                        font.pixelSize: Theme.fontMedium
                                         wrapMode: Text.Wrap
                                         onLinkActivated: link => Qt.openUrlExternally(link)
                                     }
@@ -890,7 +890,7 @@ Item {
             y: Theme.gapLarge
             text: title
             color: Theme.text
-            font.pixelSize: Theme.fontLabel
+            font.pixelSize: Theme.fontLarge
         }
         ColumnLayout {
             id: body
@@ -911,7 +911,7 @@ Item {
         Label {
             text: label
             color: Theme.text
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
             Layout.fillWidth: true
             Layout.minimumWidth: 80
             verticalAlignment: Text.AlignVCenter
@@ -927,7 +927,7 @@ Item {
         property bool primary: false
         Layout.fillWidth: true
         implicitHeight: personRow.implicitHeight + Theme.gapSmall * 2
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         color: personMouse.containsMouse ? Theme.surfaceAlt : "transparent"
 
         RowLayout {
@@ -949,7 +949,7 @@ Item {
                     anchors.centerIn: parent
                     text: person.name.charAt(0).toUpperCase()
                     color: person.primary ? Theme.accent : Theme.muted
-                    font.pixelSize: person.primary ? Theme.fontTitle : Theme.fontSubtitle
+                    font.pixelSize: person.primary ? Theme.fontExtraLarge : Theme.fontMedium
                 }
             }
             ColumnLayout {
@@ -959,7 +959,7 @@ Item {
                     Layout.fillWidth: true
                     text: person.name
                     color: Theme.text
-                    font.pixelSize: person.primary ? Theme.fontLabel : Theme.fontSubtitle
+                    font.pixelSize: person.primary ? Theme.fontLarge : Theme.fontMedium
                     elide: Text.ElideRight
                 }
                 Text {
@@ -967,14 +967,14 @@ Item {
                     visible: person.role.length > 0
                     text: person.role
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     elide: Text.ElideRight
                 }
             }
             Text {
                 text: "›"
                 color: personMouse.containsMouse ? Theme.accent : Theme.muted
-                font.pixelSize: Theme.fontHeading
+                font.pixelSize: Theme.fontHuge
             }
         }
         MouseArea {

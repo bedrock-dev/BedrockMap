@@ -142,7 +142,7 @@ Rectangle {
         visible: root.controller && root.controller.errorMessage.length > 0 && !root.controller.loading
         text: root.controller ? root.controller.errorMessage : ""
         color: Theme.danger
-        font.pixelSize: Theme.fontBody
+        font.pixelSize: Theme.fontMedium
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap
         z: 21

@@ -111,7 +111,7 @@ AppCard {
                     Layout.fillWidth: true
                     text: qsTr("Blocks")
                     color: Theme.text
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                 }
 
                 AppSegmentedControl {
@@ -138,7 +138,7 @@ AppCard {
                     Layout.fillWidth: true
                     text: qsTr("Biomes")
                     color: Theme.text
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                 }
 
                 AppSegmentedControl {
@@ -165,7 +165,7 @@ AppCard {
                     Layout.fillWidth: true
                     text: qsTr("Entities")
                     color: Theme.text
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                 }
 
                 AppSegmentedControl {

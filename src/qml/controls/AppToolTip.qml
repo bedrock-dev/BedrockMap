@@ -13,7 +13,7 @@ ToolTip {
     contentItem: Text {
         text: root.text
         color: Theme.text
-        font.pixelSize: Theme.fontCaption
+        font.pixelSize: Theme.fontSmall
         wrapMode: Text.Wrap
     }
     background: Rectangle {

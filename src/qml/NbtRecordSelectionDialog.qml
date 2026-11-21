@@ -90,7 +90,7 @@ AppDialog {
                 Layout.fillWidth: true
                 text: qsTr("%1 of %2 records selected").arg(root.selectedCount).arg(root.items.length)
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
             }
             DialogButton {

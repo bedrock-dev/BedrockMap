@@ -59,7 +59,7 @@ Item {
 
                 width: column.width
                 height: body.height + Theme.gapLarge * 2
-                radius: Theme.radiusCard
+                radius: Theme.radiusLarge
                 // Severity is the card's own colour — tinted fill, full-tone
                 // border — rather than a bar glued to its left edge, which read
                 // as a stray scrollbar. Same pairing the worlds page uses for
@@ -147,7 +147,7 @@ Item {
                             text: card.source
                             visible: card.source.length > 0
                             color: root.levelColor(card.level)
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                             elide: Text.ElideRight
                             width: Math.min(implicitWidth, body.width - repeatBadge.width - Theme.gapMedium)
                         }
@@ -156,7 +156,7 @@ Item {
                             text: qsTr("×%1").arg(card.repeat)
                             visible: card.repeat > 1
                             color: Theme.muted
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                         }
                     }
 
@@ -167,7 +167,7 @@ Item {
                         // One tier above the metadata lines and still inside the
                         // theme's ladder, so the message reads as the content of
                         // the card without shouting.
-                        font.pixelSize: Theme.fontSubtitle
+                        font.pixelSize: Theme.fontMedium
                         wrapMode: Text.WordWrap
                     }
 
@@ -176,7 +176,7 @@ Item {
                         text: card.detail
                         visible: card.detail.length > 0
                         color: Theme.muted
-                        font.pixelSize: Theme.fontBody
+                        font.pixelSize: Theme.fontMedium
                         elide: Text.ElideMiddle
                     }
                 }

@@ -98,13 +98,13 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTr("NBT editor")
                     color: Theme.text
-                    font.pixelSize: Theme.fontTitle
+                    font.pixelSize: Theme.fontExtraLarge
                 }
                 Text {
                     Layout.fillWidth: true
                     text: qsTr("Import an NBT, NBTS, mcstructure or palette file to inspect and edit its tree.")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
                 }

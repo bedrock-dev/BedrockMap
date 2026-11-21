@@ -89,13 +89,13 @@ Item {
             id: titleText
             text: parent.title
             color: Theme.text
-            font.pixelSize: Theme.fontLabel
+            font.pixelSize: Theme.fontLarge
         }
         Text {
             anchors.baseline: titleText.baseline
             text: parent.count
             color: Theme.muted
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: Theme.fontMedium
         }
     }
 
@@ -176,7 +176,7 @@ Item {
                 anchors.centerIn: parent
                 text: qsTr("No worlds")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
             }
         }
     }
@@ -195,7 +195,7 @@ Item {
             Text {
                 text: qsTr("Getting Started")
                 color: Theme.text
-                font.pixelSize: Theme.fontDisplay
+                font.pixelSize: Theme.fontHuge
             }
             Flow {
                 id: welcomeActions
@@ -240,7 +240,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Worlds")
                     color: Theme.text
-                    font.pixelSize: Theme.fontHeading
+                    font.pixelSize: Theme.fontHuge
                 }
                 Row {
                     id: worldsActions
@@ -285,7 +285,7 @@ Item {
                                                                                            && App.worlds.loading)
                 width: parent.width
                 height: 62
-                radius: Theme.radiusCard
+                radius: Theme.radiusLarge
                 color: emptyMouse.pressed ? Theme.surfaceAlt : Theme.surface
                 border.color: Theme.border
                 Row {
@@ -312,12 +312,12 @@ Item {
                         Text {
                             text: qsTr("No worlds yet")
                             color: Theme.text
-                            font.pixelSize: Theme.fontSubtitle
+                            font.pixelSize: Theme.fontMedium
                         }
                         Text {
                             text: qsTr("Open a Bedrock world folder to add one")
                             color: Theme.muted
-                            font.pixelSize: Theme.fontBody
+                            font.pixelSize: Theme.fontMedium
                         }
                     }
                 }

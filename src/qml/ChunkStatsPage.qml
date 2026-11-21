@@ -45,27 +45,27 @@ AppCard {
                     Layout.fillWidth: true
                     text: qsTr("Name")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     elide: Text.ElideRight
                 }
                 Text {
                     Layout.preferredWidth: 58
                     text: qsTr("Size")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     horizontalAlignment: Text.AlignRight
                 }
                 Text {
                     Layout.preferredWidth: 70
                     text: qsTr("Hash")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                 }
                 Text {
                     Layout.preferredWidth: 138
                     text: qsTr("Actions")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                 }
             }
         }
@@ -98,7 +98,7 @@ AppCard {
                         Layout.minimumWidth: 0
                         text: modelData.name
                         color: Theme.text
-                        font.pixelSize: Theme.fontCaption
+                        font.pixelSize: Theme.fontSmall
                         elide: Text.ElideMiddle
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -106,14 +106,14 @@ AppCard {
                         Layout.preferredWidth: 58
                         text: String(modelData.size)
                         color: Theme.muted
-                        font.pixelSize: Theme.fontCaption
+                        font.pixelSize: Theme.fontSmall
                         horizontalAlignment: Text.AlignRight
                     }
                     Text {
                         Layout.preferredWidth: 70
                         text: modelData.hash
                         color: Theme.muted
-                        font.pixelSize: Theme.fontCaption
+                        font.pixelSize: Theme.fontSmall
                     }
                     AppButton {
                         Layout.preferredWidth: 68
@@ -140,6 +140,6 @@ AppCard {
         visible: root.statistics.length === 0 && !(root.controller && root.controller.loading)
         text: qsTr("No chunk statistics")
         color: Theme.muted
-        font.pixelSize: Theme.fontBody
+        font.pixelSize: Theme.fontMedium
     }
 }

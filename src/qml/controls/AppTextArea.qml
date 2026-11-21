@@ -7,7 +7,7 @@ TextArea {
 
     implicitWidth: Theme.ui(170)
     implicitHeight: Math.max(Theme.ui(72), Theme.controlHeight)
-    font.pixelSize: Theme.fontSubtitle
+    font.pixelSize: Theme.fontMedium
     color: Theme.text
     placeholderTextColor: Theme.muted
     selectionColor: Theme.accent
@@ -15,7 +15,7 @@ TextArea {
     wrapMode: TextEdit.Wrap
     selectByMouse: true
     background: Rectangle {
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border

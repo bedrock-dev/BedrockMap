@@ -8,7 +8,7 @@ Rectangle {
     property bool hovered: false
     property bool danger: false
 
-    radius: Theme.radiusCard
+    radius: Theme.radiusLarge
     color: selected ? Theme.accentSoft : (interactive && hovered ? Theme.surfaceAlt : Theme.surface)
     border.width: Theme.borderWidth
     border.color: danger ? Theme.danger : (selected || (interactive && hovered) ? Theme.accent : Theme.border)

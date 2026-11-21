@@ -68,7 +68,7 @@ Item {
                                               root.regionImport.chunkCount).arg(root.regionImport.width).arg(
                                               root.regionImport.height) : ""
                 color: Theme.text
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideMiddle
             }
             RowLayout {

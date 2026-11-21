@@ -209,7 +209,7 @@ Item {
             Text {
                 text: shortcutSection.heading
                 color: Theme.text
-                font.pixelSize: Theme.fontLabel
+                font.pixelSize: Theme.fontLarge
             }
             Repeater {
                 model: shortcutSection.entries
@@ -223,7 +223,7 @@ Item {
                         Layout.fillWidth: true
                         text: modelData.description
                         color: Theme.muted
-                        font.pixelSize: Theme.fontBody
+                        font.pixelSize: Theme.fontMedium
                         wrapMode: Text.WordWrap
                     }
                     Rectangle {
@@ -237,7 +237,7 @@ Item {
                             anchors.centerIn: parent
                             text: modelData.sequence
                             color: Theme.accent
-                            font.pixelSize: Theme.fontCaption
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
                 }
@@ -266,7 +266,7 @@ Item {
                     width: parent.width
                     text: qsTr("Available shortcuts for the current Qt Quick interface.")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                     wrapMode: Text.WordWrap
                 }
             }

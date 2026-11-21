@@ -33,7 +33,7 @@ VoxelPreviewSection {
 
     component AxisCaption: Text {
         color: Theme.muted
-        font.pixelSize: Theme.fontCaption
+        font.pixelSize: Theme.fontSmall
     }
 
     objectName: "voxelSelectionSection"

@@ -7,7 +7,7 @@ ComboBox {
 
     implicitWidth: Theme.ui(190)
     implicitHeight: Theme.controlHeight
-    font.pixelSize: Theme.fontSubtitle
+    font.pixelSize: Theme.fontMedium
     contentItem: Text {
         leftPadding: Theme.gapLarge
         rightPadding: Theme.gapLarge
@@ -24,7 +24,7 @@ ComboBox {
     background: Rectangle {
         y: Theme.touch ? Math.max(0, (root.height - Theme.controlVisualHeight) / 2) : 0
         height: root.height - y * 2
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         color: Theme.surfaceAlt
         border.width: Theme.borderWidth
         border.color: root.activeFocus ? Theme.accent : Theme.border
@@ -43,7 +43,7 @@ ComboBox {
             rightPadding: Theme.gapLarge
             text: option.text
             color: Theme.text
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
         }
@@ -58,7 +58,7 @@ ComboBox {
         implicitHeight: Math.min(contentItem.implicitHeight + padding * 2, Theme.ui(260))
         padding: Theme.gapSmall
         background: Rectangle {
-            radius: Theme.radiusControl
+            radius: Theme.radiusMedium
             color: Theme.surface
             border.width: Theme.borderWidth
             border.color: Theme.border

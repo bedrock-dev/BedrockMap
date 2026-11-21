@@ -202,7 +202,7 @@ Item {
                             visible: mapImage.status === Image.Null || mapImage.status === Image.Error
                             text: qsTr("No map image available")
                             color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
+                            font.pixelSize: Theme.fontSmall
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                         }

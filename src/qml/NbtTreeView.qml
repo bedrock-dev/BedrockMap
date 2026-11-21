@@ -60,7 +60,7 @@ Item {
                 visible: row.hasChildren
                 text: row.expanded ? "▾" : "▸"
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -92,7 +92,7 @@ Item {
                 text: row.key
                 color: Theme.text
                 font.family: "JetBrains Mono"
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
                 wrapMode: Text.NoWrap
                 maximumLineCount: 1
@@ -123,7 +123,7 @@ Item {
                 text: row.value
                 color: Theme.muted
                 font.family: "JetBrains Mono"
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
                 wrapMode: Text.NoWrap
                 maximumLineCount: 1

@@ -216,20 +216,20 @@ Item {
                             Layout.preferredWidth: 120
                             text: qsTr("Type")
                             color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
+                            font.pixelSize: Theme.fontSmall
                         }
                         Text {
                             Layout.fillWidth: true
                             text: qsTr("Range")
                             color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
+                            font.pixelSize: Theme.fontSmall
                             elide: Text.ElideRight
                         }
                         Text {
                             Layout.preferredWidth: root.deleteColumnWidth
                             text: qsTr("Delete")
                             color: Theme.muted
-                            font.pixelSize: Theme.fontCaption
+                            font.pixelSize: Theme.fontSmall
                             horizontalAlignment: Text.AlignHCenter
                         }
                     }
@@ -285,7 +285,7 @@ Item {
                                                               areaRow.modelData.minZ) + "  ~  " + root.coordinateText(
                                               areaRow.modelData.maxX, areaRow.modelData.maxY, areaRow.modelData.maxZ)
                                     color: areaRow.areaVisible ? Theme.text : Theme.muted
-                                    font.pixelSize: Theme.fontCaption
+                                    font.pixelSize: Theme.fontSmall
                                     elide: Text.ElideMiddle
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -344,7 +344,7 @@ Item {
                 visible: root.hsaAreas.length === 0 && !(root.controller && root.controller.loading)
                 text: qsTr("No hardcoded spawn areas in this chunk.")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
             }
         }
     }

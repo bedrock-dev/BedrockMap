@@ -832,7 +832,7 @@ Item {
         readonly property var positionInfo: canvas.crosshairEnabled ? canvas.crosshairBlockInfo : canvas.hoverBlockInfo
         // Matches the height of the layer toolbar in WorldWorkspace.
         readonly property real toolbarHeight: (Theme.touch ? Theme.controlHeight : 34) + Theme.gapSmall * 2
-        readonly property int statusFontSize: Theme.fontCaption
+        readonly property int statusFontSize: Theme.fontSmall
         readonly property real availableWidth: Math.max(0, parent.width - canvas.inputRightInset - edgeMargin * 2)
         readonly property string positionText: {
             const dimension = canvas.controller.dimension
@@ -853,7 +853,7 @@ Item {
         x: Math.max(edgeMargin, parent.width - canvas.inputRightInset - edgeMargin - width)
         y: Math.max(edgeMargin, parent.height - importPlacementOverlay.reservedHeight - edgeMargin - height)
         color: Theme.surface
-        radius: Theme.radiusCard
+        radius: Theme.radiusLarge
         border.width: Theme.borderWidth
         border.color: Theme.border
         clip: true

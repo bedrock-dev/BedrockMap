@@ -53,7 +53,7 @@ MenuItem {
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
             color: root.labelColor
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: Theme.fontMedium
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
         }
@@ -64,7 +64,7 @@ MenuItem {
             visible: root.hasSubMenu
             text: "›"
             color: Theme.muted
-            font.pixelSize: Theme.fontBody
+            font.pixelSize: Theme.fontMedium
         }
     }
     arrow: Item {

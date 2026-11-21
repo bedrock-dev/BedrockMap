@@ -92,7 +92,7 @@ AppDialog {
             Text {
                 text: qsTr("Key")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 Layout.preferredWidth: 54
             }
             AppTextField {
@@ -108,7 +108,7 @@ AppDialog {
             Text {
                 text: qsTr("Type")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 Layout.preferredWidth: 54
             }
             AppComboBox {
@@ -138,7 +138,7 @@ AppDialog {
                         rightPadding: Theme.gapLarge
                         label: typeOption.text
                         tagType: root.typeIds[typeOption.index]
-                        font.pixelSize: Theme.fontSubtitle
+                        font.pixelSize: Theme.fontMedium
                     }
                     background: Rectangle {
                         radius: Theme.radiusSmall
@@ -156,15 +156,15 @@ AppDialog {
                 Layout.topMargin: Theme.gapTiny
                 text: qsTr("Value")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
             }
             ScrollView {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.max(64, Math.round(Theme.fontBody * 3.6))
+                Layout.preferredHeight: Math.max(64, Math.round(Theme.fontMedium * 3.6))
                 padding: 0
                 clip: true
                 background: Rectangle {
-                    radius: Theme.radiusControl
+                    radius: Theme.radiusMedium
                     color: Theme.surfaceAlt
                 }
                 TextArea {
@@ -172,7 +172,7 @@ AppDialog {
                     text: root.tagValue
                     enabled: root.tagType !== 9 && root.tagType !== 10
                     font.family: "JetBrains Mono"
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     color: Theme.text
                     placeholderText: root.tagType === 9 || root.tagType === 10 ? qsTr(
                                                                                      "Container children are edited in the tree") :
@@ -181,7 +181,7 @@ AppDialog {
                     selectByMouse: true
                     onTextChanged: root.tagValue = text
                     background: Rectangle {
-                        radius: Theme.radiusControl
+                        radius: Theme.radiusMedium
                         color: Theme.surfaceAlt
                         border.width: Theme.borderWidth
                         border.color: valueField.activeFocus ? Theme.accent : Theme.border

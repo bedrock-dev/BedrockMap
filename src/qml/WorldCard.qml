@@ -24,7 +24,7 @@ AppCard {
 
     component WorldThumbnail: Rectangle {
         color: Theme.surfaceAlt
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         clip: true
         AppIcon {
             anchors.centerIn: parent
@@ -70,7 +70,7 @@ AppCard {
                     readonly property real badgeSpace: card.xorMarked ? listBadge.implicitWidth + parent.spacing : 0
                     text: card.title
                     color: Theme.text
-                    font.pixelSize: Theme.fontLabel
+                    font.pixelSize: Theme.fontLarge
                     elide: Text.ElideRight
                     width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
                 }
@@ -79,7 +79,7 @@ AppCard {
                     visible: card.xorMarked
                     text: "[XOR]"
                     color: Theme.danger
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                 }
             }
             Row {
@@ -89,7 +89,7 @@ AppCard {
                     id: listVersionText
                     text: card.versionText || qsTr("Unknown version")
                     color: Theme.accent
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     width: Math.min(implicitWidth, Math.max(0, parent.width * 0.55))
                     elide: Text.ElideRight
                 }
@@ -101,7 +101,7 @@ AppCard {
                     width: Math.max(0, parent.width - listVersionText.width - parent.spacing * 2 - 8)
                     text: (card.tag || qsTr("Unknown time")) + "  ·  " + (card.sizeText || "0 B")
                     color: Theme.muted
-                    font.pixelSize: Theme.fontBody
+                    font.pixelSize: Theme.fontMedium
                     elide: Text.ElideRight
                 }
             }
@@ -109,7 +109,7 @@ AppCard {
                 text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
                       + card.pathText
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideMiddle
                 width: parent.width
             }
@@ -140,7 +140,7 @@ AppCard {
                     readonly property real badgeSpace: card.xorMarked ? gridBadge.implicitWidth + parent.spacing : 0
                     text: card.title
                     color: Theme.text
-                    font.pixelSize: Theme.fontSubtitle
+                    font.pixelSize: Theme.fontMedium
                     elide: Text.ElideRight
                     width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
                 }
@@ -149,7 +149,7 @@ AppCard {
                     visible: card.xorMarked
                     text: "[XOR]"
                     color: Theme.danger
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                 }
             }
             Row {
@@ -159,20 +159,20 @@ AppCard {
                     id: gridVersionText
                     text: card.versionText || qsTr("Unknown")
                     color: Theme.accent
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     width: Math.min(implicitWidth, Math.max(0, parent.width * 0.6))
                     elide: Text.ElideRight
                 }
                 Text {
                     text: "•"
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                 }
                 Text {
                     width: Math.max(0, parent.width - gridVersionText.width - parent.spacing * 2 - 8)
                     text: card.sizeText || "0 B"
                     color: Theme.muted
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     elide: Text.ElideRight
                 }
             }
@@ -181,7 +181,7 @@ AppCard {
                 text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
                       + card.tag
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideRight
             }
         }

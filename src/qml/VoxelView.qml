@@ -160,7 +160,7 @@ Item {
                 text: root.controller ? qsTr("Building voxel terrain… %1%").arg(root.controller.loadProgress) : qsTr(
                                             "Building voxel terrain…")
                 color: Theme.overlayText
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
             }
             ProgressBar {
                 Layout.fillWidth: true
@@ -177,7 +177,7 @@ Item {
         text: root.controller && root.controller.errorMessage.length > 0 ? root.controller.errorMessage : qsTr(
                                                                                "No terrain loaded.")
         color: Theme.muted
-        font.pixelSize: Theme.fontSubtitle
+        font.pixelSize: Theme.fontMedium
     }
 
     Text {
@@ -197,6 +197,6 @@ Item {
         wrapMode: Text.Wrap
         text: areaInfo
         color: "#aab3c0"
-        font.pixelSize: Theme.fontCaption
+        font.pixelSize: Theme.fontSmall
     }
 }

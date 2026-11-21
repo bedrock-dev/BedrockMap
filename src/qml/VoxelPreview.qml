@@ -270,12 +270,12 @@ Item {
                 contentItem: Text {
                     text: controlsToggle.text
                     color: Theme.text
-                    font.pixelSize: Theme.fontLabel
+                    font.pixelSize: Theme.fontLarge
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
                 background: Rectangle {
-                    radius: Theme.radiusControl
+                    radius: Theme.radiusMedium
                     color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt :
                                                                                               Theme.surface)
 

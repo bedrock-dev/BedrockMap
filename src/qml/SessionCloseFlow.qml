@@ -144,14 +144,14 @@ Item {
                 visible: !!root.closingSession
                 text: root.closingSession ? (root.closingSession.title || qsTr("Untitled world")) : ""
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
             }
             Text {
                 width: parent.width
                 text: qsTr("Save changes before closing this session?")
                 color: Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 wrapMode: Text.WordWrap
             }
             Row {

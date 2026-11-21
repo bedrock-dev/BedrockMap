@@ -45,7 +45,7 @@ Popup {
         Keys.onEnterPressed: clicked()
 
         background: Rectangle {
-            radius: Theme.radiusControl
+            radius: Theme.radiusMedium
             color: {
                 if (item.modelData.selected)
                 return Theme.accentSoft
@@ -89,7 +89,7 @@ Popup {
                     width: parent.width
                     text: item.modelData.label
                     color: item.modelData.selected ? Theme.accent : Theme.text
-                    font.pixelSize: Theme.fontCaption
+                    font.pixelSize: Theme.fontSmall
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
                     maximumLineCount: 2

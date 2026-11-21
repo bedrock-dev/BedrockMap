@@ -197,7 +197,7 @@ Item {
                         rightPadding: Theme.gapLarge
                         label: recordOption.text
                         icon: recordOption.modelData.icon
-                        font.pixelSize: Theme.fontSubtitle
+                        font.pixelSize: Theme.fontMedium
                     }
                     background: Rectangle {
                         radius: Theme.radiusSmall
@@ -226,7 +226,7 @@ Item {
                 visible: !root.document || root.document.rootCount === 0
                 text: qsTr("No records")
                 color: Theme.muted
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
             }
 
             RowLayout {
@@ -251,7 +251,7 @@ Item {
                                 Layout.fillWidth: true
                                 text: root.itemListTitle + " (" + root.rootCount + ")"
                                 color: Theme.text
-                                font.pixelSize: Theme.fontBody
+                                font.pixelSize: Theme.fontMedium
                                 elide: Text.ElideRight
                             }
                             AppIconButton {
@@ -291,7 +291,7 @@ Item {
                                     icon: recordRow.modelData.icon
                                     textColor: recordRow.current ? Theme.accent : Theme.text
                                     font.family: "JetBrains Mono"
-                                    font.pixelSize: Theme.fontBody
+                                    font.pixelSize: Theme.fontMedium
                                 }
                                 MouseArea {
                                     id: itemMouse
@@ -337,7 +337,7 @@ Item {
                     visible: !root.detailsHidden
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    radius: root.compact ? 0 : Theme.radiusCard
+                    radius: root.compact ? 0 : Theme.radiusLarge
                     color: root.compact ? "transparent" : Theme.surface
                     border.width: root.compact ? 0 : Theme.borderWidth
                     ColumnLayout {

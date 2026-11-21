@@ -38,7 +38,7 @@ QtObject {
     readonly property int sliderHandleSize: touch ? ui(18) : 14
     readonly property int sliderTrackHeight: ui(4)
     readonly property int spinBoxArrowWidth: touch ? ui(28) : 20
-    readonly property int controlVisualHeight: touch ? Math.max(ui(32), fontSubtitle + ui(12)) : 28
+    readonly property int controlVisualHeight: touch ? Math.max(ui(32), fontMedium + ui(12)) : 28
     readonly property int controlHeight: touch ? Math.max(touchTarget, controlVisualHeight) : 28
     readonly property int buttonHeight: touch ? controlHeight : 32
     readonly property int compactButtonHeight: touch ? controlHeight : 28
@@ -47,7 +47,7 @@ QtObject {
     readonly property int menuItemHeight: touch ? controlHeight : 30
     readonly property int treeRowHeight: touch ? controlHeight : 28
     readonly property int settingRowHeight: touch ? Math.max(ui(44), controlHeight + ui(4)) : (compact ? 36 : 38)
-    readonly property int touchSessionRowHeight: Math.max(ui(56), controlHeight + ui(8), fontSubtitle + fontCaption
+    readonly property int touchSessionRowHeight: Math.max(ui(56), controlHeight + ui(8), fontMedium + fontSmall
                                                           + gapTiny + gapLarge * 2)
     readonly property int sessionRowHeight: touch ? touchSessionRowHeight : (compact ? 52 : 64)
     readonly property int iconButtonSize: ui(34)
@@ -67,7 +67,7 @@ QtObject {
     readonly property real sidebarWidth: ui(232)
     readonly property real sidebarCollapsedWidth: ui(52)
     readonly property real sidebarCollapsedItemSize: sidebarCollapsedWidth - gapMedium * 2
-    readonly property real touchBottomNavigationHeight: Math.max(ui(56), iconSize + fontCaption + ui(22))
+    readonly property real touchBottomNavigationHeight: Math.max(ui(56), iconSize + fontSmall + ui(22))
     readonly property real bottomNavigationHeight: touch ? touchBottomNavigationHeight : (compact ? 64 : 72)
     readonly property real topbarHeight: touch ? Math.max(ui(52), controlHeight + ui(8)) : (compact ? 52 : 72)
 
@@ -174,16 +174,13 @@ QtObject {
     readonly property real metricScale: palette.metricScale
     readonly property real borderWidth: palette.borderWidth
     readonly property int radiusSmall: palette.radiusSmall
-    readonly property int radiusControl: palette.radiusControl
-    readonly property int radiusCard: palette.radiusCard
-    readonly property int radiusPill: palette.radiusPill
-    readonly property int fontCaption: palette.fontCaption
-    readonly property int fontBody: palette.fontBody
-    readonly property int fontSubtitle: palette.fontSubtitle
-    readonly property int fontLabel: palette.fontLabel
-    readonly property int fontTitle: palette.fontTitle
-    readonly property int fontHeading: palette.fontHeading
-    readonly property int fontDisplay: palette.fontDisplay
+    readonly property int radiusMedium: palette.radiusMedium
+    readonly property int radiusLarge: palette.radiusLarge
+    readonly property int fontSmall: palette.fontSmall
+    readonly property int fontMedium: palette.fontMedium
+    readonly property int fontLarge: palette.fontLarge
+    readonly property int fontExtraLarge: palette.fontExtraLarge
+    readonly property int fontHuge: palette.fontHuge
 
     function themeWith(palette) {
         const scale = fontScale
@@ -191,17 +188,14 @@ QtObject {
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
                                  borderWidth: 0.5,
-                                 radiusSmall: ui(5),
-                                 radiusControl: ui(8),
-                                 radiusCard: ui(10),
-                                 radiusPill: ui(17),
-                                 fontCaption: text(10),
-                                 fontBody: text(11),
-                                 fontSubtitle: text(12),
-                                 fontLabel: text(14),
-                                 fontTitle: text(17),
-                                 fontHeading: text(22),
-                                 fontDisplay: text(25)
+                                 radiusSmall: ui(4),
+                                 radiusMedium: ui(8),
+                                 radiusLarge: ui(12),
+                                 fontSmall: text(10),
+                                 fontMedium: text(12),
+                                 fontLarge: text(14),
+                                 fontExtraLarge: text(18),
+                                 fontHuge: text(24)
                              })
     }
 

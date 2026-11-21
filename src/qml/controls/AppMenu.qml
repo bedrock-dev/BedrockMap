@@ -45,7 +45,7 @@ Menu {
     }
 
     background: Rectangle {
-        radius: Theme.radiusControl
+        radius: Theme.radiusMedium
         color: Theme.surface
         border.width: Theme.borderWidth
         border.color: Theme.border

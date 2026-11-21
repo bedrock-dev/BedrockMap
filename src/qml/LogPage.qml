@@ -7,7 +7,7 @@ import "controls"
 
 Control {
     id: page
-    font.pixelSize: Theme.fontBody
+    font.pixelSize: Theme.fontMedium
     palette.window: Theme.surface
     palette.base: Theme.surface
     palette.text: Theme.text
@@ -183,7 +183,7 @@ Control {
                 visible: App.logs.count === 0
                 text: App.logs.storedCount > 0 ? qsTr("No matching logs") : qsTr("No logs")
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
             }
         }
         Rectangle {
@@ -200,14 +200,14 @@ Control {
                 text: qsTr("%1 displayed / %2 retained | %3 older entries omitted").arg(App.logs.count).arg(
                           App.logs.storedCount).arg(App.logs.omittedCount)
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 wrapMode: Text.WordWrap
             }
             Label {
                 Layout.fillWidth: true
                 text: App.logs.logFile
                 color: Theme.muted
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 elide: Text.ElideMiddle
                 AppToolTip {
                     text: App.logs.logFile

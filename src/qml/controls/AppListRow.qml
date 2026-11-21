@@ -15,9 +15,9 @@ Rectangle {
     signal clicked
 
     readonly property bool hasDetail: detail.length > 0
-    readonly property real labelHeight: Theme.fontSubtitle + (hasDetail ? Theme.fontBody + Theme.gapTiny : 0)
+    readonly property real labelHeight: Theme.fontMedium + (hasDetail ? Theme.fontMedium + Theme.gapTiny : 0)
     readonly property real rowHeight: Theme.ui(hasDetail ? (Theme.compact ? 54 : 68) : (Theme.compact ? 42 : 46))
-    readonly property real stackedHeight: Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontSubtitle
+    readonly property real stackedHeight: Math.max(Theme.ui(Theme.compact ? 64 : 72), Theme.iconLargeSize + Theme.fontMedium
                                                    + Theme.gapSmall + Theme.gapLarge * 2)
     readonly property real touchRowHeight: Math.max(Theme.controlHeight, labelHeight + Theme.gapLarge * 2)
     readonly property real regularRowHeight: Theme.touch ? touchRowHeight : 0
@@ -31,7 +31,7 @@ Rectangle {
     implicitWidth: parent ? parent.width : 0
     implicitHeight: stacked ? root.stackedHeight : Math.max(root.rowHeight, root.regularRowHeight)
     height: implicitHeight
-    radius: Theme.radiusCard
+    radius: Theme.radiusLarge
     color: compact ? "transparent" : activeBackdropColor
     border.width: 0
     opacity: enabled ? 1.0 : 0.5
@@ -41,7 +41,7 @@ Rectangle {
         width: Math.min(root.width, root.height)
         height: width
         anchors.centerIn: parent
-        radius: Theme.radiusCard
+        radius: Theme.radiusLarge
         color: root.activeBackdropColor
     }
 
@@ -79,7 +79,7 @@ Rectangle {
                 width: parent.width
                 text: root.label
                 color: root.selected ? Theme.accent : Theme.text
-                font.pixelSize: Theme.fontSubtitle
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
             }
             Text {
@@ -87,7 +87,7 @@ Rectangle {
                 width: parent.width
                 text: root.detail
                 color: Theme.muted
-                font.pixelSize: Theme.fontBody
+                font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
                 maximumLineCount: 1
             }
@@ -117,7 +117,7 @@ Rectangle {
             width: Math.max(0, root.width - Theme.gapLarge * 2)
             text: root.label
             color: root.selected ? Theme.accent : Theme.text
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }
@@ -130,7 +130,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         text: "›"
         color: Theme.accent
-        font.pixelSize: Theme.fontHeading
+        font.pixelSize: Theme.fontHuge
     }
 
     MouseArea {

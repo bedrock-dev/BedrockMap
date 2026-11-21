@@ -31,7 +31,7 @@ AppDialog {
             Layout.fillWidth: true
             text: root.message
             color: Theme.text
-            font.pixelSize: Theme.fontSubtitle
+            font.pixelSize: Theme.fontMedium
             wrapMode: Text.WordWrap
         }
         RowLayout {

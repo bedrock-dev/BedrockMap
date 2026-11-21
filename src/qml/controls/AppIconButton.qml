@@ -54,7 +54,7 @@ AbstractButton {
             anchors.centerIn: parent
             width: root.visualWidth
             height: root.visualHeight
-            radius: Theme.radiusControl
+            radius: Theme.radiusMedium
             color: root.backgroundColor
             border.width: root.visualBorderWidth
             border.color: Theme.accent
