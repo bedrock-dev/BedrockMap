@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Controls
@@ -12,6 +14,7 @@ Item {
     property bool showItemList: true
     property bool detailsHidden: false
     property string filterText
+    property bool filterRegex: false
     property real itemListWidth: 190
     property int selectedRow: -1
     property var filteredItems: filterItems()
@@ -81,10 +84,20 @@ Item {
     function filterItems() {
         const labels = root.document ? root.document.itemLabels : []
         const icons = root.document ? root.document.itemIcons : []
-        const needle = root.filterText.trim().toLowerCase()
+        const pattern = root.filterText.trim()
+        const needle = pattern.toLowerCase()
         const result = []
+        let expression = null
+        if (root.filterRegex && pattern.length > 0) {
+            try {
+                expression = new RegExp(pattern, "i")
+            } catch (error) {
+                return result
+            }
+        }
         for (let i = 0; i < labels.length; ++i) {
-            if (needle.length === 0 || String(labels[i]).toLowerCase().indexOf(needle) >= 0)
+            const label = String(labels[i])
+            if (needle.length === 0 || (expression ? expression.test(label) : label.toLowerCase().indexOf(needle) >= 0))
                 result.push({
                                 label: labels[i],
                                 icon: icons[i] || "",
@@ -100,6 +113,12 @@ Item {
             if (root.filteredItems[i].sourceIndex === root.document.currentIndex)
                 return i
         return -1
+    }
+    function openAdvancedRecordSelection() {
+        advancedRecordDialog.openFor(root.document, root.filteredItems.map(item => ({
+            text: item.label,
+            value: item.sourceIndex
+        })))
     }
     onWidthChanged: itemListWidth = clampItemListWidth(itemListWidth)
 
@@ -124,6 +143,11 @@ Item {
             else if (root.selectedRow >= first)
                 root.selectedRow = -1
         }
+    }
+
+    NbtRecordSelectionDialog {
+        id: advancedRecordDialog
+        title: qsTr("Select records")
     }
 
     ColumnLayout {
@@ -181,7 +205,15 @@ Item {
                     }
                 }
                 onActivated: if (root.document && currentIndex >= 0)
-                                 root.document.selectItem(root.filteredItems[currentIndex].sourceIndex)
+                root.document.selectItem(root.filteredItems[currentIndex].sourceIndex)
+            }
+            AppIconButton {
+                iconName: "tools"
+                label: qsTr("Select multiple records")
+                buttonSize: root.compactToolbarHeight
+                Layout.preferredWidth: controlSize
+                Layout.preferredHeight: controlSize
+                onClicked: root.openAdvancedRecordSelection()
             }
         }
 
@@ -211,11 +243,25 @@ Item {
                         anchors.fill: parent
                         anchors.margins: Theme.gapLarge
                         spacing: Theme.gapSmall
-                        Text {
+                        RowLayout {
                             Layout.fillWidth: true
-                            text: root.itemListTitle + " (" + root.rootCount + ")"
-                            color: Theme.text
-                            font.pixelSize: Theme.fontBody
+                            spacing: Theme.gapSmall
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: root.itemListTitle + " (" + root.rootCount + ")"
+                                color: Theme.text
+                                font.pixelSize: Theme.fontBody
+                                elide: Text.ElideRight
+                            }
+                            AppIconButton {
+                                iconName: "tools"
+                                label: qsTr("Select multiple records")
+                                buttonSize: Theme.iconButtonSmallSize
+                                Layout.preferredWidth: controlSize
+                                Layout.preferredHeight: controlSize
+                                onClicked: root.openAdvancedRecordSelection()
+                            }
                         }
                         ListView {
                             Layout.fillWidth: true
@@ -227,6 +273,7 @@ Item {
                                 policy: ScrollBar.AsNeeded
                             }
                             delegate: Rectangle {
+                                id: recordRow
                                 required property int index
                                 required property var modelData
                                 width: ListView.view.width
@@ -240,9 +287,9 @@ Item {
                                     anchors.fill: parent
                                     leftPadding: Theme.gapMedium
                                     rightPadding: Theme.gapMedium
-                                    label: modelData.label
-                                    icon: modelData.icon
-                                    textColor: current ? Theme.accent : Theme.text
+                                    label: recordRow.modelData.label
+                                    icon: recordRow.modelData.icon
+                                    textColor: recordRow.current ? Theme.accent : Theme.text
                                     font.family: "JetBrains Mono"
                                     font.pixelSize: Theme.fontBody
                                 }
@@ -250,7 +297,7 @@ Item {
                                     id: itemMouse
                                     anchors.fill: parent
                                     onClicked: if (root.document)
-                                                   root.document.selectItem(modelData.sourceIndex)
+                                    root.document.selectItem(recordRow.modelData.sourceIndex)
                                 }
                             }
                         }
@@ -281,7 +328,7 @@ Item {
                         target: null
                         property real startWidth: 0
                         onActiveChanged: if (active)
-                                             startWidth = root.itemListWidth
+                        startWidth = root.itemListWidth
                         onTranslationChanged: root.itemListWidth = root.clampItemListWidth(startWidth + translation.x)
                     }
                 }
@@ -314,7 +361,7 @@ Item {
                                 placeholderText: qsTr("Search nodes")
                                 text: root.document ? root.document.treeModel.searchText : ""
                                 onTextEdited: if (root.document)
-                                                  root.document.treeModel.searchText = text
+                                root.document.treeModel.searchText = text
                             }
                             RowLayout {
                                 id: treeActions
@@ -326,7 +373,7 @@ Item {
                                     checked: root.document ? root.document.treeModel.hexMode : false
                                     enabled: root.document && root.document.hasDocument
                                     onToggled: if (root.document)
-                                                   root.document.treeModel.hexMode = checked
+                                    root.document.treeModel.hexMode = checked
                                 }
                                 AppIconButton {
                                     iconText: "▾"
@@ -336,7 +383,7 @@ Item {
                                     Layout.preferredHeight: controlSize
                                     enabled: root.document && root.document.hasDocument
                                     onClicked: if (root.document)
-                                                   root.document.treeModel.expandAll()
+                                    root.document.treeModel.expandAll()
                                 }
                                 AppIconButton {
                                     iconText: "▸"
@@ -346,7 +393,7 @@ Item {
                                     Layout.preferredHeight: controlSize
                                     enabled: root.document && root.document.hasDocument
                                     onClicked: if (root.document)
-                                                   root.document.treeModel.collapseAll()
+                                    root.document.treeModel.collapseAll()
                                 }
                             }
                         }

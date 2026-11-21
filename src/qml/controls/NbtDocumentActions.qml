@@ -29,10 +29,6 @@ Item {
         if (root.document)
             exportDialog.open()
     }
-    function openExportCurrent() {
-        if (root.document && root.document.currentIndex >= 0)
-            exportCurrentDialog.open()
-    }
     function saveDocument() {
         if (!root.document || !root.document.hasDocument || root.document.readOnly || !root.allowSave)
             return
@@ -98,17 +94,6 @@ Item {
         defaultSuffix: "nbt"
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: if (!root.document.exportFile(selectedUrl))
-                        App.notifications.error(qsTr("Export failed"))
-                    else
-                        App.notifications.info(qsTr("Export successful"))
-    }
-    FileUrlDialog {
-        id: exportCurrentDialog
-        title: qsTr("Export current NBT record")
-        fileMode: FileDialog.SaveFile
-        defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: if (!root.document.exportCurrent(selectedUrl))
                         App.notifications.error(qsTr("Export failed"))
                     else
                         App.notifications.info(qsTr("Export successful"))

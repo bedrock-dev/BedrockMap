@@ -1743,12 +1743,10 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
         <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
     </message>
     <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1770,15 +1768,18 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export failed</source>
         <translation>导出失败</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export successful</source>
         <translation>导出成功</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1797,11 +1798,6 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Export current NBT record</source>
-        <translation>导出当前 NBT 记录</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Clear all records</source>
         <translation>清空所有记录</translation>
     </message>
@@ -1809,11 +1805,6 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Remove all records from this NBT section? This cannot be undone.</source>
         <translation>从此 NBT 分区中移除所有记录？此操作无法撤销。</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Clear</source>
-        <translation>清空</translation>
     </message>
 </context>
 <context>
@@ -1852,6 +1843,17 @@
         <location filename="../src/qml/NbtDocumentView.qml"/>
         <source>Records</source>
         <translation>记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Select records</source>
+        <translation>选择记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Select multiple records</source>
+        <translation>选择多条记录</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
@@ -1959,6 +1961,80 @@
         <location filename="../src/qml/NbtEditorSurface.qml"/>
         <source>Paste</source>
         <translation>粘贴</translation>
+    </message>
+</context>
+<context>
+    <name>NbtRecordSelectionDialog</name>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export selected records</source>
+        <translation>导出选中的记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>NBT files (*.nbt *.nbts)</source>
+        <translation>NBT 文件 (*.nbt *.nbts)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export failed</source>
+        <translation>导出失败</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export successful</source>
+        <translation>导出成功</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete selected records</source>
+        <translation>删除选中的记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete %1 selected records?</source>
+        <translation>删除选中的 %1 条记录？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete failed</source>
+        <translation>删除失败</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>%1 of %2 records selected</source>
+        <translation>已选择 %1 / %2 条记录</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Select all</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Invert</source>
+        <translation>反选</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
     </message>
 </context>
 <context>
@@ -2093,18 +2169,18 @@
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Delete</source>
-        <translation>删除</translation>
+        <source>Search (regular expression)</source>
+        <translation>搜索（正则表达式）</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Clear</source>
-        <translation>清空</translation>
+        <source>Use plain text search</source>
+        <translation>使用普通文本搜索</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Export</source>
-        <translation>导出</translation>
+        <source>Use regular expression search</source>
+        <translation>使用正则表达式搜索</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -2123,8 +2199,13 @@
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Export current</source>
-        <translation>导出当前</translation>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Clear</source>
+        <translation>清空</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>

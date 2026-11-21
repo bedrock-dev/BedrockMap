@@ -1743,12 +1743,10 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
         <translation type="unfinished">NBT files (*.nbt *.nbts *.mcstructure *.palette)</translation>
     </message>
     <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1770,15 +1768,18 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export failed</source>
         <translation>Export failed</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Export successful</source>
         <translation>Export successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
+        <source>Clear</source>
+        <translation>Clear</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1797,11 +1798,6 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Export current NBT record</source>
-        <translation type="unfinished">Export current NBT record</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Clear all records</source>
         <translation type="unfinished">Clear all records</translation>
     </message>
@@ -1809,11 +1805,6 @@
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Remove all records from this NBT section? This cannot be undone.</source>
         <translation type="unfinished">Remove all records from this NBT section? This cannot be undone.</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Clear</source>
-        <translation type="unfinished">Clear</translation>
     </message>
 </context>
 <context>
@@ -1852,6 +1843,17 @@
         <location filename="../src/qml/NbtDocumentView.qml"/>
         <source>Records</source>
         <translation type="unfinished">Records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Select records</source>
+        <translation>Select records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <location filename="../src/qml/NbtDocumentView.qml"/>
+        <source>Select multiple records</source>
+        <translation>Select multiple records</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtDocumentView.qml"/>
@@ -1959,6 +1961,80 @@
         <location filename="../src/qml/NbtEditorSurface.qml"/>
         <source>Paste</source>
         <translation type="unfinished">Paste</translation>
+    </message>
+</context>
+<context>
+    <name>NbtRecordSelectionDialog</name>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export selected records</source>
+        <translation>Export selected records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>NBT files (*.nbt *.nbts)</source>
+        <translation>NBT files (*.nbt *.nbts)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>All files (*)</source>
+        <translation>All files (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export failed</source>
+        <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export successful</source>
+        <translation>Export successful</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete selected records</source>
+        <translation>Delete selected records</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete %1 selected records?</source>
+        <translation>Delete %1 selected records?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Delete failed</source>
+        <translation>Delete failed</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>%1 of %2 records selected</source>
+        <translation>%1 of %2 records selected</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Select all</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Invert</source>
+        <translation>Invert</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
+        <source>Export</source>
+        <translation>Export</translation>
     </message>
 </context>
 <context>
@@ -2093,18 +2169,18 @@
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished">Delete</translation>
+        <source>Search (regular expression)</source>
+        <translation>Search (regular expression)</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Clear</source>
-        <translation type="unfinished">Clear</translation>
+        <source>Use plain text search</source>
+        <translation>Use plain text search</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Export</source>
-        <translation type="unfinished">Export</translation>
+        <source>Use regular expression search</source>
+        <translation>Use regular expression search</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
@@ -2123,8 +2199,13 @@
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>
-        <source>Export current</source>
-        <translation>Export current</translation>
+        <source>Export</source>
+        <translation>Export</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NbtToolbar.qml"/>
+        <source>Clear</source>
+        <translation>Clear</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtToolbar.qml"/>

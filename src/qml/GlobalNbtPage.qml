@@ -11,6 +11,7 @@ Item {
     id: page
     property var section
     property string itemFilter: ""
+    property bool itemFilterRegex: false
     property var document: section ? section.document : null
     readonly property var structurePreview: section ? section.structurePreview : null
     readonly property bool hasStructurePreview: !!structurePreview
@@ -98,18 +99,18 @@ Item {
             allowClose: false
             allowImport: !page.singleRecord
             allowReplace: page.singleRecord
-            allowExportCurrent: !page.singleRecord
-            allowAddRemove: !page.singleRecord
+            allowAdd: !page.singleRecord
             allowClear: !page.singleRecord
             showSearch: !page.singleRecord
+            regexSearch: page.itemFilterRegex
             allowDetailsToggle: !page.singleRecord
             detailsHidden: page.detailsHidden
             onDetailsToggleRequested: page.detailsHidden = !page.detailsHidden
             searchText: page.itemFilter
+            onRegexSearchToggleRequested: page.itemFilterRegex = !page.itemFilterRegex
             onImportRequested: documentActions.openImport()
             onReplaceRequested: documentActions.openReplace()
             onExportRequested: documentActions.openExport()
-            onExportCurrentRequested: documentActions.openExportCurrent()
             onClearRequested: documentActions.openClear()
             onSearchTextEdited: function (text) {
                 page.itemFilter = text
@@ -138,6 +139,7 @@ Item {
                 document: page.document
                 compact: page.compact
                 filterText: page.itemFilter
+                filterRegex: page.itemFilterRegex
                 itemListTitle: qsTr("Records")
                 showItemList: !page.singleRecord
                 detailsHidden: page.detailsHidden

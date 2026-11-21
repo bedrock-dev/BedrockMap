@@ -5,11 +5,24 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QUrl>
+#include <algorithm>
 #include <utility>
 
 #include "io/documentio.h"
 #include "model/nbttreemodel.h"
 #include "nbt.h"
+
+namespace {
+    QList<int> normalizedItemIndices(const QList<int>& values, int itemCount) {
+        QSet<int> unique;
+        for (const int index : values) {
+            if (index >= 0 && index < itemCount) unique.insert(index);
+        }
+        QList<int> result = unique.values();
+        std::sort(result.begin(), result.end());
+        return result;
+    }
+}  // namespace
 
 NbtDocumentController::NbtDocumentController(QObject* parent) : QObject(parent), tree_model_(new NbtTreeModel(this)) {
     connect(tree_model_, &NbtTreeModel::documentChanged, this, [this] {
@@ -335,14 +348,21 @@ bool NbtDocumentController::exportFile(const QUrl& url) {
     return true;
 }
 
-bool NbtDocumentController::exportCurrent(const QUrl& url) {
-    if (current_index_ < 0 || current_index_ >= static_cast<int>(items_.size()) || !items_[static_cast<size_t>(current_index_)].root) {
-        setError(QStringLiteral("There is no current NBT record to export."));
+bool NbtDocumentController::exportItems(const QList<int>& indices, const QUrl& url) {
+    const QList<int> selected = normalizedItemIndices(indices, rootCount());
+    if (selected.isEmpty()) {
+        setError(QStringLiteral("There are no selected NBT records to export."));
         return false;
     }
-    const std::string data = items_[static_cast<size_t>(current_index_)].root->serialize();
-    const QString error = io::DocumentIo::writeBytes(url, QByteArray(data.data(), static_cast<qsizetype>(data.size())));
-    if (!error.isEmpty()) {
+
+    QByteArray output;
+    for (const int index : selected) {
+        const auto& root = items_[static_cast<size_t>(index)].root;
+        if (!root) continue;
+        const std::string data = root->serialize();
+        output.append(data.data(), static_cast<qsizetype>(data.size()));
+    }
+    if (const QString error = io::DocumentIo::writeBytes(url, output); !error.isEmpty()) {
         setError(QStringLiteral("Cannot write NBT file: %1").arg(error));
         return false;
     }
@@ -558,15 +578,51 @@ int NbtDocumentController::addItem() {
 
 bool NbtDocumentController::removeItem(int index) {
     if (read_only_ || index < 0 || index >= static_cast<int>(items_.size())) return false;
+    return removeItems(QList<int>{index});
+}
+
+bool NbtDocumentController::removeItems(const QList<int>& indices) {
+    const QList<int> selected = normalizedItemIndices(indices, rootCount());
+    if (read_only_ || selected.isEmpty()) return false;
+
+    QSet<int> removed;
+    for (const int index : selected) removed.insert(index);
+    std::vector<Item> kept;
+    kept.reserve(items_.size() - static_cast<size_t>(selected.size()));
+    std::vector<int> newIndexForOld(items_.size(), -1);
+    int newCurrent = -1;
+
     loading_ = true;
-    // Detach borrowed tags while the old roots are still alive.
     tree_model_->setRoot(nullptr);
-    items_.erase(items_.begin() + index);
-    if (current_index_ >= static_cast<int>(items_.size()))
-        current_index_ = static_cast<int>(items_.size()) - 1;
-    else if (current_index_ > index)
-        --current_index_;
-    tree_model_->setRoot(current_index_ >= 0 ? items_[current_index_].root.get() : nullptr);
+    for (size_t i = 0; i < items_.size(); ++i) {
+        const int oldIndex = static_cast<int>(i);
+        if (removed.contains(oldIndex)) continue;
+        newIndexForOld[i] = static_cast<int>(kept.size());
+        if (oldIndex == current_index_) newCurrent = static_cast<int>(kept.size());
+        kept.push_back(std::move(items_[i]));
+    }
+
+    if (newCurrent < 0 && !kept.empty()) {
+        for (int i = current_index_ + 1; i < static_cast<int>(items_.size()); ++i) {
+            if (newIndexForOld[static_cast<size_t>(i)] >= 0) {
+                newCurrent = newIndexForOld[static_cast<size_t>(i)];
+                break;
+            }
+        }
+    }
+    if (newCurrent < 0 && !kept.empty()) {
+        for (int i = std::min(current_index_ - 1, static_cast<int>(items_.size()) - 1); i >= 0; --i) {
+            if (newIndexForOld[static_cast<size_t>(i)] >= 0) {
+                newCurrent = newIndexForOld[static_cast<size_t>(i)];
+                break;
+            }
+        }
+    }
+    if (newCurrent < 0 && !kept.empty()) newCurrent = 0;
+
+    items_ = std::move(kept);
+    current_index_ = newCurrent;
+    tree_model_->setRoot(current_index_ >= 0 ? items_[static_cast<size_t>(current_index_)].root.get() : nullptr);
     loading_ = false;
     markDirty();
     emit itemsChanged();

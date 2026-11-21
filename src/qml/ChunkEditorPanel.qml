@@ -152,6 +152,7 @@ Rectangle {
         id: nbtPage
         property var document
         property string itemFilter
+        property bool itemFilterRegex: false
 
         NbtDocumentActions {
             id: documentActions
@@ -168,12 +169,13 @@ Rectangle {
                 document: nbtPage.document
                 allowSave: false
                 allowClose: false
-                allowAddRemove: true
+                allowAdd: true
                 showSearch: true
+                regexSearch: nbtPage.itemFilterRegex
                 searchText: nbtPage.itemFilter
+                onRegexSearchToggleRequested: nbtPage.itemFilterRegex = !nbtPage.itemFilterRegex
                 onImportRequested: documentActions.openImport()
                 onExportRequested: documentActions.openExport()
-                onExportCurrentRequested: documentActions.openExportCurrent()
                 onClearRequested: documentActions.openClear()
                 onSearchTextEdited: function (text) {
                     nbtPage.itemFilter = text
@@ -185,6 +187,7 @@ Rectangle {
                 Layout.fillHeight: true
                 document: nbtPage.document
                 filterText: nbtPage.itemFilter
+                filterRegex: nbtPage.itemFilterRegex
                 itemListTitle: qsTr("Records")
                 showItemList: true
             }

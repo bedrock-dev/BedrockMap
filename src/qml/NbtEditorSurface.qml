@@ -9,6 +9,7 @@ Item {
     property var document
     property bool compact: Theme.compact
     property string filterText
+    property bool filterRegex: false
     property string itemListTitle: qsTr("NBT roots")
     property bool showItemList: true
     property bool detailsHidden: false
@@ -141,6 +142,7 @@ Item {
         document: root.document
         compact: root.compact
         filterText: root.filterText
+        filterRegex: root.filterRegex
         itemListTitle: root.itemListTitle
         showItemList: root.showItemList
         detailsHidden: root.detailsHidden

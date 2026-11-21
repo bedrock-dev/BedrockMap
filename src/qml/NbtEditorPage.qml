@@ -9,6 +9,7 @@ Item {
     property var document
     property bool compact: Theme.compact
     property string itemFilter: ""
+    property bool itemFilterRegex: false
     readonly property real toolbarVerticalPadding: Theme.touch ? Theme.gapSmall : Theme.gapLarge
     readonly property real fileToolbarHeight: document.hasDocument ? fileToolbar.implicitHeight
                                                                      + toolbarVerticalPadding * 2 + 1 : 0
@@ -63,12 +64,13 @@ Item {
                         allowClose: true
                         showSearch: false
                         searchText: page.itemFilter
+                        regexSearch: page.itemFilterRegex
+                        onRegexSearchToggleRequested: page.itemFilterRegex = !page.itemFilterRegex
                         onSearchTextEdited: function (text) {
                             page.itemFilter = text
                         }
                         onImportRequested: documentActions.openImport()
                         onExportRequested: documentActions.openExport()
-                        onExportCurrentRequested: documentActions.openExportCurrent()
                         onClearRequested: documentActions.openClear()
                         onSaveRequested: page.saveRequested()
                         onCloseRequested: page.closeRequested()
@@ -127,6 +129,7 @@ Item {
                 document: page.document
                 compact: page.compact
                 filterText: page.itemFilter
+                filterRegex: page.itemFilterRegex
                 itemListTitle: qsTr("NBT roots")
             }
         }

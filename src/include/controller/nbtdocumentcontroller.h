@@ -1,6 +1,7 @@
 #ifndef BEDROCKMAP_NBTDOCUMENTCONTROLLER_H
 #define BEDROCKMAP_NBTDOCUMENTCONTROLLER_H
 
+#include <QList>
 #include <QObject>
 #include <QStringList>
 #include <QUrl>
@@ -116,11 +117,12 @@ class NbtDocumentController : public QObject {
     Q_INVOKABLE bool importFile(const QUrl& url);
     Q_INVOKABLE bool replaceFile(const QUrl& url);
     Q_INVOKABLE bool exportFile(const QUrl& url);
-    Q_INVOKABLE bool exportCurrent(const QUrl& url);
+    Q_INVOKABLE bool exportItems(const QList<int>& indices, const QUrl& url);
     Q_INVOKABLE void createNew();
     Q_INVOKABLE void selectItem(int index);
     Q_INVOKABLE int addItem();
     Q_INVOKABLE bool removeItem(int index);
+    Q_INVOKABLE bool removeItems(const QList<int>& indices);
     Q_INVOKABLE bool clearContents();
     void setReadOnly(bool read_only);
     void setClipboard(BinaryClipboard* clipboard) { tree_model_->setClipboard(clipboard); }

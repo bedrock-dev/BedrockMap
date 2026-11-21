@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import BedrockMap 1.0
 import QtQuick
 import QtQuick.Layouts
@@ -9,14 +11,14 @@ Rectangle {
     property bool allowImport: true
     property bool allowReplace: false
     property bool allowExport: true
-    property bool allowExportCurrent: true
     property bool allowSave: true
     property bool allowClose: true
-    property bool allowAddRemove: true
-    property bool allowClear: allowAddRemove
+    property bool allowAdd: true
+    property bool allowClear: allowAdd
     property bool showSearch: true
     property bool allowDetailsToggle: false
     property bool detailsHidden: false
+    property bool regexSearch: false
     property bool compact: Theme.compact
     // Save and Close sit in the toolbar unless the host shows them elsewhere.
     property bool inlineFileActions: !compact
@@ -24,11 +26,11 @@ Rectangle {
     signal importRequested
     signal replaceRequested
     signal exportRequested
-    signal exportCurrentRequested
     signal clearRequested
     signal saveRequested
     signal closeRequested
     signal searchTextEdited(string text)
+    signal regexSearchToggleRequested
     signal detailsToggleRequested
 
     readonly property real gap: Theme.gapSmall
@@ -39,30 +41,27 @@ Rectangle {
     readonly property int importActionCount: root.allowImport ? 1 : 0
     readonly property int replaceActionCount: root.allowReplace ? 1 : 0
     readonly property int exportActionCount: root.allowExport ? 1 : 0
-    readonly property int exportCurrentActionCount: root.allowExportCurrent ? 1 : 0
-    readonly property int addRemoveActionCount: root.allowAddRemove ? 2 : 0
+    readonly property int addActionCount: root.allowAdd ? 1 : 0
     readonly property int clearActionCount: root.allowClear ? 1 : 0
     readonly property int saveActionCount: root.inlineFileActions && root.allowSave ? 1 : 0
     readonly property int closeActionCount: root.inlineFileActions && root.allowClose ? 1 : 0
-    readonly property int actionCount: importActionCount + replaceActionCount + exportActionCount
-                                       + exportCurrentActionCount + addRemoveActionCount + clearActionCount
-                                       + saveActionCount + closeActionCount
+    readonly property int actionCount: importActionCount + replaceActionCount + exportActionCount + addActionCount
+                                       + clearActionCount + saveActionCount + closeActionCount
     readonly property real importButtonWidth: root.allowImport ? importButton.implicitWidth : 0
     readonly property real replaceButtonWidth: root.allowReplace ? replaceButton.implicitWidth : 0
     readonly property real exportButtonWidth: root.allowExport ? exportButton.implicitWidth : 0
-    readonly property real exportCurrentButtonWidth: root.allowExportCurrent ? exportCurrentButton.implicitWidth : 0
-    readonly property real addRemoveButtonWidth: root.allowAddRemove ? Math.max(addButton.implicitWidth,
-                                                                                deleteButton.implicitWidth) : 0
+    readonly property real addButtonWidth: root.allowAdd ? addButton.implicitWidth : 0
     readonly property real clearButtonWidth: root.allowClear ? clearButton.implicitWidth : 0
     readonly property real saveButtonWidth: root.saveActionCount > 0 ? saveButton.implicitWidth : 0
     readonly property real closeButtonWidth: root.closeActionCount > 0 ? closeButton.implicitWidth : 0
     readonly property real naturalButtonWidth: Math.max(importButtonWidth, replaceButtonWidth, exportButtonWidth,
-                                                        exportCurrentButtonWidth, addRemoveButtonWidth, clearButtonWidth,
-                                                        saveButtonWidth, closeButtonWidth)
+                                                        addButtonWidth, clearButtonWidth, saveButtonWidth,
+                                                        closeButtonWidth)
     readonly property real naturalActionsWidth: actionCount * naturalButtonWidth + Math.max(0, actionCount - 1) * gap
     readonly property real detailsToggleSpace: root.allowDetailsToggle ? detailsToggle.controlSize + root.gap : 0
-    readonly property real inlineSearchMinimumWidth: 160 * Theme.metricScale + detailsToggleSpace + root.gap
-                                                     + naturalActionsWidth
+    readonly property real regexSearchSpace: root.showSearch ? root.searchHeight + root.gap : 0
+    readonly property real inlineSearchMinimumWidth: 160 * Theme.metricScale + regexSearchSpace + detailsToggleSpace
+                                                     + root.gap + naturalActionsWidth
     // Measure this toolbar, including translated labels, rather than the window.
     readonly property bool inlineSearch: root.showSearch && root.actionCount > 0 && root.width
                                          >= root.inlineSearchMinimumWidth
@@ -98,8 +97,17 @@ Rectangle {
             Layout.minimumWidth: 0
             Layout.preferredHeight: root.searchHeight
             text: root.searchText
-            placeholderText: qsTr("Search")
+            placeholderText: root.regexSearch ? qsTr("Search (regular expression)") : qsTr("Search")
             onTextEdited: root.searchTextEdited(text)
+        }
+        AppIconButton {
+            iconText: ".*"
+            label: root.regexSearch ? qsTr("Use plain text search") : qsTr("Use regular expression search")
+            selected: root.regexSearch
+            buttonSize: root.searchHeight
+            Layout.preferredWidth: controlSize
+            Layout.preferredHeight: controlSize
+            onClicked: root.regexSearchToggleRequested()
         }
         AppIconButton {
             id: detailsToggle
@@ -149,27 +157,12 @@ Rectangle {
             onClicked: root.exportRequested()
         }
         ActionButton {
-            id: exportCurrentButton
-            text: qsTr("Export current")
-            visible: root.allowExportCurrent
-            enabled: !!root.document && root.document.rootCount > 0 && root.document.currentIndex >= 0
-            onClicked: root.exportCurrentRequested()
-        }
-        ActionButton {
             id: addButton
             text: qsTr("Add")
-            visible: root.allowAddRemove
+            visible: root.allowAdd
             enabled: root.document && !root.document.readOnly
             onClicked: if (root.document)
-                           root.document.addItem()
-        }
-        ActionButton {
-            id: deleteButton
-            text: qsTr("Delete")
-            visible: root.allowAddRemove
-            enabled: root.document && !root.document.readOnly && root.document.rootCount > 0
-            onClicked: if (root.document)
-                           root.document.removeItem(root.document.currentIndex)
+            root.document.addItem()
         }
         ActionButton {
             id: clearButton
