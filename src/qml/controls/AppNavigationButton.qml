@@ -10,35 +10,41 @@ Rectangle {
     signal clicked
 
     readonly property color activeColor: root.selected ? Theme.accent : Theme.muted
-    readonly property color backgroundColor: {
-        if (root.selected || mouse.pressed)
-            return Theme.accentSoft
-        return mouse.containsMouse ? Theme.surfaceAlt : "transparent"
-    }
+    readonly property bool hot: mouse.pressed || mouse.containsMouse
+    readonly property real iconSlotSize: Theme.touch ? Theme.ui(40) : Theme.ui(34)
 
     width: parent.width
     height: parent.height
-    radius: Theme.radiusCard
-    color: root.backgroundColor
+    color: "transparent"
 
     Column {
         anchors.centerIn: parent
         width: parent.width
         spacing: Theme.gapTiny
-        AppIcon {
+        Item {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Theme.iconSize
+            width: root.iconSlotSize
             height: width
-            name: root.iconName
-            fallback: root.icon
-            iconSize: width
-            iconColor: root.activeColor
+            Rectangle {
+                anchors.fill: parent
+                radius: width / 2
+                color: root.hot && !root.selected ? Theme.surfaceAlt : "transparent"
+            }
+            AppIcon {
+                anchors.centerIn: parent
+                width: Theme.iconSize
+                height: width
+                name: root.iconName
+                fallback: root.icon
+                iconSize: width
+                iconColor: root.activeColor
+            }
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Math.max(0, parent.width - Theme.gapSmall)
             text: root.label
-            color: root.activeColor
+            color: Theme.muted
             font.pixelSize: Theme.fontCaption
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

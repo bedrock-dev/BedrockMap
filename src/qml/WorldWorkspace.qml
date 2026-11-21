@@ -598,7 +598,7 @@ Item {
                     }
                     AppIconButton {
                         visible: Qt.platform.os === "android"
-                        iconName: "caret_right"
+                        iconName: "enter"
                         label: qsTr("Go to coordinates")
                         onClicked: {
                             Qt.inputMethod.commit()

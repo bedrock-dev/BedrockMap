@@ -224,7 +224,7 @@ Item {
                     width: welcomeActions.actionWidth
                     height: Theme.touch ? implicitHeight : (Theme.compact ? 64 : 68)
                     stacked: Theme.compact
-                    iconName: "nbt_editor"
+                    iconName: "new_file"
                     label: qsTr("New NBT document")
                     detail: Theme.compact ? "" : qsTr("Create an empty NBT document")
                     onClicked: page.newNbtRequested()
