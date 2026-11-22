@@ -24,7 +24,7 @@ ToolTip {
     }
 
     onShownChanged: {
-        if (shown)
+        if (shown && !Theme.touch)
             root.show(root.text)
         else
             root.hide()

@@ -43,7 +43,7 @@ AbstractButton {
             radius: Theme.radiusMedium
             color: root.backgroundColor
             border.width: root.visualFocus ? Theme.borderWidth * 3 : Theme.borderWidth
-            border.color: root.checked || root.hot || root.visualFocus ? Theme.accent : Theme.border
+            border.color: root.checked || root.visualFocus ? Theme.accent : Theme.border
         }
     }
 

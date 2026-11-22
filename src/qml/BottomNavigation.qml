@@ -17,7 +17,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.leftMargin: Theme.gapMedium
         anchors.rightMargin: Theme.gapMedium
-        anchors.topMargin: Theme.gapMedium
+        anchors.topMargin: Theme.gapSmall
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Theme.gapMedium + root.bottomInset
         Repeater {

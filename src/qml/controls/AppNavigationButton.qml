@@ -11,7 +11,7 @@ AbstractButton {
 
     readonly property color activeColor: root.selected ? Theme.accent : Theme.muted
     readonly property bool hot: pressed || hovered
-    readonly property real iconSlotSize: Theme.touch ? Theme.ui(40) : Theme.ui(34)
+    readonly property real iconSlotSize: Theme.touch ? Theme.ui(36) : Theme.ui(34)
 
     width: parent.width
     height: parent.height
@@ -32,7 +32,7 @@ AbstractButton {
     contentItem: Column {
         width: parent.width
         anchors.centerIn: parent
-        spacing: Theme.gapTiny
+        spacing: 0
         Item {
             anchors.horizontalCenter: parent.horizontalCenter
             width: root.iconSlotSize

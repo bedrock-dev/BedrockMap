@@ -6,6 +6,7 @@ ScrollBar {
     id: root
 
     policy: ScrollBar.AsNeeded
+    visible: size > 0 && size < 1
     contentItem: Rectangle {
         implicitWidth: Theme.ui(6)
         implicitHeight: Theme.ui(6)

@@ -187,9 +187,9 @@ Item {
         ScrollBar.vertical: AppScrollBar {}
         Column {
             id: body
-            x: Theme.gapSection
+            x: Theme.compact ? Theme.gapMedium : Theme.gapSection
             y: Theme.gapMedium
-            width: parent.width - Theme.gapSection * 2
+            width: parent.width - body.x * 2
             spacing: Theme.gapMedium
 
             Text {
@@ -197,14 +197,16 @@ Item {
                 color: Theme.text
                 font.pixelSize: Theme.fontHuge
             }
-            Flow {
+            Row {
                 id: welcomeActions
                 width: parent.width
                 spacing: Theme.gapMedium
                 readonly property real minimumActionWidth: Theme.ui(180)
-                readonly property int actionColumns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (
-                                                                                            minimumActionWidth
-                                                                                            + spacing))))
+                readonly property int actionColumns: {
+                    if (Theme.compact)
+                        return 3
+                    return Math.max(1, Math.min(3, Math.floor((width + spacing) / (minimumActionWidth + spacing))))
+                }
                 readonly property real actionWidth: (width - spacing * (actionColumns - 1)) / actionColumns
                 AppListRow {
                     width: welcomeActions.actionWidth

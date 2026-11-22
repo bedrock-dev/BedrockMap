@@ -52,7 +52,7 @@ AbstractButton {
                 height: width
                 radius: root.railMode ? width / 2 : Theme.radiusMedium
                 anchors.verticalCenter: parent.verticalCenter
-                color: root.active ? Theme.accent : Theme.accentSoft
+                color: root.active ? Theme.accentSoft : "transparent"
 
                 AppIcon {
                     anchors.centerIn: parent
@@ -60,7 +60,7 @@ AbstractButton {
                     height: width
                     name: root.iconName
                     iconSize: width
-                    iconColor: root.active ? Theme.onAccent : Theme.accent
+                    iconColor: root.active ? Theme.accent : Theme.muted
                 }
                 AppDirtyIndicator {
                     id: dirtyIndicator

@@ -479,8 +479,9 @@ Window {
         id: mobileNav
         navigation: window.navigation
         visible: Theme.showBottomNavigation
-        height: Theme.bottomNavigationHeight + window.safeBottom
-        bottomInset: window.safeBottom
+        readonly property real gestureBottomMargin: Theme.touch ? Theme.gapSmall : 0
+        height: Theme.bottomNavigationHeight + window.safeBottom + mobileNav.gestureBottomMargin
+        bottomInset: window.safeBottom + mobileNav.gestureBottomMargin
         anchors.left: parent.left
         anchors.leftMargin: window.safeLeft
         anchors.right: parent.right
