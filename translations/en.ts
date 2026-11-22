@@ -2540,7 +2540,6 @@
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Save failed</source>
         <translation>Save failed</translation>
     </message>
@@ -2561,10 +2560,21 @@
     </message>
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Confirm save</source>
+        <translation>Confirm save</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save the pending in-memory changes?</source>
+        <translation>Save the pending in-memory changes?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Unsaved changes</source>
         <translation>Unsaved changes</translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Untitled world</source>
         <translation type="unfinished"></translation>
@@ -2575,6 +2585,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
@@ -2590,6 +2601,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Save</source>
         <translation type="unfinished">Save</translation>

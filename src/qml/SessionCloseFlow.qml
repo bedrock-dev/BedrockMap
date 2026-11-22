@@ -4,34 +4,80 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import "controls"
 
-// Saving sessions, the unsaved-changes prompt for closing a session, and the
-// window close sequence that prompts for every dirty session in turn.
+// Centralizes confirmed saves, the unsaved-changes prompt for closing a session,
+// and the window close sequence that prompts for every dirty session in turn.
 Item {
     id: root
+    // Session and intent waiting for the save confirmation dialog.
+    property var pendingSaveSession: null
+    property string pendingSaveIntent: "manual"
     // Session shown in the unsaved-changes prompt.
     property var closingSession: null
     // Session waiting for the Save As dialog. It closes after saving when it is
     // also closingSession.
     property var saveAsSession: null
+    property string saveAsIntent: "manual"
+    // Prevents a normal asynchronous save from completing an unrelated close.
+    property bool closeSaveInProgress: false
     // Set while closing the window walks through the dirty sessions.
     property bool closingWindow: false
     signal windowCloseReady
 
-    function save(session) {
+    function intentRequiresClose(intent) {
+        return intent === "closeSession" || intent === "closeWindow"
+    }
+
+    function save(session, intent) {
         if (!session)
+            return false
+        if (session.saving || saveConfirmation.opened)
+            return false
+        pendingSaveSession = session
+        pendingSaveIntent = intent || "manual"
+        saveConfirmation.open()
+        return true
+    }
+
+    function cancelPendingSave() {
+        pendingSaveSession = null
+        pendingSaveIntent = "manual"
+        saveConfirmation.close()
+    }
+
+    function confirmPendingSave() {
+        const session = pendingSaveSession
+        const intent = pendingSaveIntent
+        pendingSaveSession = null
+        pendingSaveIntent = "manual"
+        saveConfirmation.close()
+        if (session)
+            beginSave(session, intent)
+    }
+
+    function beginSave(session, intent) {
+        if (!session || session.saving)
             return
         if (session.document && session.document.requiresSaveAs) {
-            openSaveAs(session)
+            openSaveAs(session, intent)
             return
         }
-        if (!session.commit())
+        closeSaveInProgress = intentRequiresClose(intent)
+        if (!session.commit()) {
+            closeSaveInProgress = false
             App.notifications.error(qsTr("Save failed"))
+            return
+        }
+        // Synchronous saves and no-op commits do not emit saved(), so close the
+        // originating prompt here. Asynchronous world saves remain open until
+        // saved() or saveFailed() arrives.
+        if (intentRequiresClose(intent) && session === closingSession && !session.saving)
+            completeSessionClose()
     }
 
     /// Returns true when the window may close now. Otherwise prompts for each
     /// dirty session and emits windowCloseReady() once all are resolved.
     function requestWindowClose() {
-        if (closingWindow)
+        if (closingWindow || saveConfirmation.opened || pendingSaveSession)
             return false
         if (App.firstDirtySessionIndex() < 0)
             return true
@@ -47,8 +93,9 @@ Item {
         return folder + "/" + encodeURIComponent(fileName)
     }
 
-    function openSaveAs(session) {
+    function openSaveAs(session, intent) {
         saveAsSession = session
+        saveAsIntent = intent || "manual"
         const filename = session.document.suggestedSaveFileName()
         saveAsDialog.selectedFile = selectedSaveFile(saveAsDialog, filename)
         saveAsDialog.open()
@@ -73,6 +120,7 @@ Item {
         const session = closingSession
         if (!session)
             return
+        closeSaveInProgress = false
         closingSession = null
         App.discardSessionObject(session)
         // onClosed() continues the window close sequence after the prompt has
@@ -81,6 +129,7 @@ Item {
     }
 
     function abortClose() {
+        closeSaveInProgress = false
         closingSession = null
         closingWindow = false
         closePrompt.close()
@@ -89,12 +138,14 @@ Item {
     Connections {
         target: App
         function onSessionCloseRequested(session) {
+            root.closeSaveInProgress = false
             root.closingSession = session
             closePrompt.open()
         }
     }
     Connections {
-        target: root.closingSession && root.closingSession.saveCompletesAsynchronously ? root.closingSession : null
+        target: root.closingSession && root.closeSaveInProgress && root.closingSession.saveCompletesAsynchronously
+                ? root.closingSession : null
         function onSaved() {
             root.completeSessionClose()
         }
@@ -111,17 +162,65 @@ Item {
         nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
         onAccepted: {
             const session = root.saveAsSession
+            const intent = root.saveAsIntent
             root.saveAsSession = null
+            root.saveAsIntent = "manual"
             if (!session || !session.document)
                 return
             if (!session.document.saveAs(selectedUrl)) {
                 App.notifications.error(qsTr("Save failed"))
                 return
             }
-            if (session === root.closingSession)
+            if (root.intentRequiresClose(intent) && session === root.closingSession)
                 root.completeSessionClose()
         }
-        onRejected: root.saveAsSession = null
+        onRejected: {
+            root.saveAsSession = null
+            root.saveAsIntent = "manual"
+        }
+    }
+
+    AppDialog {
+        id: saveConfirmation
+        title: qsTr("Confirm save")
+        onClosed: {
+            if (root.pendingSaveSession) {
+                root.pendingSaveSession = null
+                root.pendingSaveIntent = "manual"
+            }
+        }
+        contentItem: Column {
+            spacing: Theme.gapMedium
+            Text {
+                width: parent.width
+                visible: !!root.pendingSaveSession
+                text: root.pendingSaveSession ? (root.pendingSaveSession.title || qsTr("Untitled world")) : ""
+                color: Theme.text
+                font.pixelSize: Theme.fontMedium
+                elide: Text.ElideRight
+            }
+            Text {
+                width: parent.width
+                text: qsTr("Save the pending in-memory changes?")
+                color: Theme.text
+                font.pixelSize: Theme.fontMedium
+                wrapMode: Text.WordWrap
+            }
+            Row {
+                anchors.right: parent.right
+                spacing: Theme.gapMedium
+                AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: root.cancelPendingSave()
+                }
+                AppButton {
+                    text: qsTr("Save")
+                    primary: true
+                    enabled: !!root.pendingSaveSession && !root.pendingSaveSession.saving
+                    onClicked: root.confirmPendingSave()
+                }
+            }
+        }
     }
 
     AppDialog {
@@ -170,21 +269,7 @@ Item {
                     primary: true
                     text: root.closingSession && root.closingSession.saving ? qsTr("Saving…") : qsTr("Save")
                     enabled: !!root.closingSession && !root.closingSession.saving
-                    onClicked: {
-                        const session = root.closingSession
-                        if (!session)
-                            return
-                        if (session.document && session.document.requiresSaveAs) {
-                            root.openSaveAs(session)
-                            return
-                        }
-                        if (!session.commit()) {
-                            App.notifications.error(qsTr("Save failed"))
-                            return
-                        }
-                        if (!session.saveCompletesAsynchronously)
-                            root.completeSessionClose()
-                    }
+                    onClicked: root.save(root.closingSession, root.closingWindow ? "closeWindow" : "closeSession")
                 }
             }
         }

@@ -2540,7 +2540,6 @@
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Save failed</source>
         <translation>保存失败</translation>
     </message>
@@ -2561,10 +2560,21 @@
     </message>
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Confirm save</source>
+        <translation>确认保存</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
+        <source>Save the pending in-memory changes?</source>
+        <translation>是否保存当前内存中的更改？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Unsaved changes</source>
         <translation>未保存的更改</translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Untitled world</source>
         <translation>未命名世界</translation>
@@ -2575,6 +2585,7 @@
         <translation>关闭此会话前是否保存更改？</translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Cancel</source>
         <translation>取消</translation>
@@ -2590,6 +2601,7 @@
         <translation>正在保存……</translation>
     </message>
     <message>
+        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Save</source>
         <translation>保存</translation>
