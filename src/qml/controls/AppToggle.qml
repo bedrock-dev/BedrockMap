@@ -20,7 +20,8 @@ AbstractButton {
         return root.hot ? Theme.text : Theme.muted
     }
 
-    implicitWidth: Math.max(Theme.ui(compact ? 54 : 68), labelText.implicitWidth + root.horizontalTextPadding)
+    implicitWidth: Math.max(Theme.ui(compact ? 54 : 68), Math.ceil(labelMetrics.advanceWidth)
+                            + root.horizontalTextPadding)
     implicitHeight: Theme.touch ? Theme.controlHeight : (compact ? 24 : Theme.controlHeight)
     width: implicitWidth
     height: implicitHeight
@@ -50,13 +51,19 @@ AbstractButton {
         Text {
             id: labelText
             anchors.centerIn: parent
-            width: Math.max(0, root.width - Theme.gapLarge * 2)
+            width: Math.max(0, root.width - root.horizontalTextPadding)
             text: root.text
             color: root.labelColor
             font.pixelSize: root.compact ? Theme.fontSmall : Theme.fontMedium
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }
+    }
+
+    TextMetrics {
+        id: labelMetrics
+        font.pixelSize: root.compact ? Theme.fontSmall : Theme.fontMedium
+        text: root.text
     }
 
     HoverHandler {

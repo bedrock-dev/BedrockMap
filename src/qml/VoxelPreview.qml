@@ -235,14 +235,20 @@ Item {
         }
     }
 
-    ColumnLayout {
+    SplitView {
+        id: previewSplitView
         anchors.fill: parent
-        spacing: 0
+        orientation: Qt.Vertical
+
+        handle: AppSplitHandle {
+            orientation: previewSplitView.orientation
+            visible: root.controlsVisible
+        }
 
         Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: Math.min(160, root.height * 0.5)
+            SplitView.fillWidth: true
+            SplitView.fillHeight: true
+            SplitView.minimumHeight: Math.min(Theme.ui(160), root.height * 0.5)
 
             VoxelView {
                 id: viewport
@@ -251,54 +257,33 @@ Item {
                 controller: root.controller
             }
 
-            ToolButton {
-                id: controlsToggle
-                objectName: "voxelControlsToggle"
-                anchors.bottom: parent.bottom
+            AppCard {
+                id: controlsToolbar
                 anchors.right: parent.right
-                anchors.margins: Theme.gapSmall
+                anchors.bottom: parent.bottom
+                anchors.margins: Theme.gapLarge
                 z: 1
-                implicitWidth: Math.max(36, Theme.touch ? Theme.controlHeight : 0)
-                implicitHeight: implicitWidth
-                text: root.controlsVisible ? "▼" : "▲"
-                Accessible.name: root.controlsVisible ? qsTr("Hide controls panel") : qsTr("Show controls panel")
-                AppToolTip {
-                    text: controlsToggle.Accessible.name
-                    shown: controlsToggle.hovered
-                }
-                onClicked: root.controlsVisible = !root.controlsVisible
-                contentItem: Text {
-                    text: controlsToggle.text
-                    color: Theme.text
-                    font.pixelSize: Theme.fontLarge
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                background: Rectangle {
-                    radius: Theme.radiusMedium
-                    color: controlsToggle.down ? Theme.accentSoft : (controlsToggle.hovered ? Theme.surfaceAlt :
-                                                                                              Theme.surface)
+                width: controlsToggle.width + Theme.gapSmall * 2
+                height: controlsToggle.height + Theme.gapSmall * 2
 
-                    border.width: Theme.borderWidth
-                    border.color: Theme.border
-                    opacity: 0.95
+                AppIconButton {
+                    id: controlsToggle
+                    objectName: "voxelControlsToggle"
+                    anchors.centerIn: parent
+                    iconName: root.controlsVisible ? "caret_down" : "caret_up"
+                    label: root.controlsVisible ? qsTr("Hide controls panel") : qsTr("Show controls panel")
+                    onClicked: root.controlsVisible = !root.controlsVisible
                 }
             }
-        }
-
-        Rectangle {
-            visible: root.controlsVisible
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            color: Theme.border
         }
 
         Flickable {
             id: controlsPanel
             objectName: "voxelControlsPanel"
             visible: root.controlsVisible
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(root.height * 0.45, contentHeight)
+            SplitView.fillWidth: true
+            SplitView.minimumHeight: Math.min(Theme.ui(120), root.height * 0.35)
+            SplitView.preferredHeight: Math.min(root.height * 0.45, contentHeight)
             contentWidth: width
             contentHeight: sections.implicitHeight + Theme.gapSmall * 2
             flickableDirection: Flickable.VerticalFlick
@@ -318,49 +303,31 @@ Item {
                     enabled: root.sectionsEnabled
                 }
 
-                RowLayout {
+                VoxelPreviewSection {
+                    objectName: "voxelModelExportSection"
+                    title: qsTr("Model")
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    spacing: Theme.gapSmall
+                    enabled: root.sectionsEnabled
+                    contentItem: RowLayout {
+                        spacing: Theme.gapSmall
 
-                    VoxelViewSection {
-                        view: viewport
-                        Layout.fillHeight: true
-                        enabled: root.sectionsEnabled
-                    }
+                        AppCheckBox {
+                            id: compressMesh
+                            objectName: "voxelCompressMesh"
+                            Layout.fillWidth: true
+                            text: qsTr("Compress mesh")
+                            checked: false
+                        }
 
-                    VoxelPreviewSection {
-                        objectName: "voxelModelExportSection"
-                        title: qsTr("Model")
-                        Layout.fillWidth: false
-                        Layout.fillHeight: true
-                        Layout.minimumWidth: implicitWidth
-                        enabled: root.sectionsEnabled
-                        contentItem: ColumnLayout {
-                            spacing: Theme.gapSmall
-
-                            AppCheckBox {
-                                id: compressMesh
-                                objectName: "voxelCompressMesh"
-                                Layout.fillWidth: true
-                                text: qsTr("Compress mesh")
-                                checked: false
-                            }
-
-                            Item {
-                                Layout.fillHeight: true
-                            }
-
-                            AppButton {
-                                objectName: "voxelExportGlb"
-                                Layout.fillWidth: true
-                                Layout.minimumWidth: 0
-                                compact: true
-                                text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr(
-                                                                                         "Export GLB")
-                                enabled: root.operationsEnabled
-                                onClicked: root.chooseGlbExport()
-                            }
+                        AppButton {
+                            objectName: "voxelExportGlb"
+                            Layout.preferredWidth: implicitWidth
+                            Layout.minimumWidth: 0
+                            compact: true
+                            text: root.controller && root.controller.exporting ? qsTr("Exporting…") : qsTr("Export GLB")
+                            enabled: root.operationsEnabled
+                            onClicked: root.chooseGlbExport()
                         }
                     }
                 }

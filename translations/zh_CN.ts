@@ -3891,51 +3891,61 @@ Current version: %2</source>
     </message>
 </context>
 <context>
-    <name>VoxelViewSection</name>
+    <name>VoxelViewportOverlay</name>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>View</source>
-        <translation>视角</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Show direction controls</source>
+        <translation>显示方向控制器</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Orthographic projection</source>
-        <translation>正交投影</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Reset view</source>
+        <translation>重置视角</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Lock rotation</source>
-        <translation>锁定旋转</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>View settings</source>
+        <translation>视角设置</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Show axes</source>
-        <translation>显示坐标轴</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate up</source>
         <translation>向上旋转</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate left</source>
         <translation>向左旋转</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Face front</source>
         <translation>正面对准</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate right</source>
         <translation>向右旋转</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate down</source>
         <translation>向下旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Orthographic projection</source>
+        <translation>正交投影</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Lock rotation</source>
+        <translation>锁定旋转</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Show axes</source>
+        <translation>显示坐标轴</translation>
     </message>
 </context>
 <context>

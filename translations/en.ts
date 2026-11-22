@@ -3891,51 +3891,61 @@ Current version: %2</translation>
     </message>
 </context>
 <context>
-    <name>VoxelViewSection</name>
+    <name>VoxelViewportOverlay</name>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>View</source>
-        <translation>View</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Show direction controls</source>
+        <translation>Show direction controls</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Orthographic projection</source>
-        <translation>Orthographic projection</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Reset view</source>
+        <translation>Reset view</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Lock rotation</source>
-        <translation>Lock rotation</translation>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>View settings</source>
+        <translation>View settings</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
-        <source>Show axes</source>
-        <translation>Show axes</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate up</source>
         <translation>Rotate up</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate left</source>
         <translation>Rotate left</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Face front</source>
         <translation>Face front</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate right</source>
         <translation>Rotate right</translation>
     </message>
     <message>
-        <location filename="../src/qml/VoxelViewSection.qml"/>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate down</source>
         <translation>Rotate down</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Orthographic projection</source>
+        <translation>Orthographic projection</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Lock rotation</source>
+        <translation>Lock rotation</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelViewportOverlay.qml"/>
+        <source>Show axes</source>
+        <translation>Show axes</translation>
     </message>
 </context>
 <context>

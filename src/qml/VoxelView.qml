@@ -12,6 +12,7 @@ Item {
     property alias camera: voxelItem
     property var hsaAreas: []
     property alias showAxes: voxelItem.showAxes
+    property bool viewControlsVisible: true
     readonly property bool inputEnabled: !!root.controller && !root.controller.loading
 
     function endInteraction() {
@@ -191,12 +192,18 @@ Item {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.top: parent.top
         anchors.margins: Theme.gapMedium
         visible: areaInfo.length > 0 && (!root.controller || !root.controller.loading)
         wrapMode: Text.Wrap
         text: areaInfo
         color: "#aab3c0"
         font.pixelSize: Theme.fontSmall
+    }
+
+    VoxelViewportOverlay {
+        anchors.fill: parent
+        view: root
+        controlsVisible: root.viewControlsVisible && !!root.controller && root.controller.hasVoxelModel
     }
 }
