@@ -27,6 +27,14 @@ Item {
         if (!ok)
             App.notifications.error(controller.lastError)
     }
+    function openMapImageSave() {
+        const recordIndex = page.document ? page.document.currentIndex : -1
+        saveMapImageDialog.owner = page.mapPreview
+        saveMapImageDialog.recordIndex = recordIndex
+        const fileName = "map-image-" + (recordIndex >= 0 ? recordIndex + 1 : "current")
+        saveMapImageDialog.selectedFile = FileDialogSupport.selectedUrlWithSuffix(saveMapImageDialog, fileName, "png")
+        saveMapImageDialog.open()
+    }
 
     FileUrlDialog {
         id: saveMapImageDialog
@@ -35,13 +43,13 @@ Item {
         title: qsTr("Save image")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "png"
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: FileDialogSupport.pngFilters
         onAccepted: {
             if (owner && owner === page.mapPreview && page.document && page.document.currentIndex === recordIndex) {
                 if (owner.saveImage(selectedUrl))
                 App.notifications.info(qsTr("Save successful"))
                 else
-                App.notifications.error(qsTr("Save failed"))
+                AppErrorReporter.report(qsTr("Save failed"), owner)
             }
             owner = null
         }
@@ -54,13 +62,13 @@ Item {
         property int recordIndex: -1
         title: qsTr("Modify image")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.imageFilters
         onAccepted: {
             if (owner && owner === page.mapPreview && page.document && page.document.currentIndex === recordIndex) {
                 if (owner.replaceImage(selectedUrl))
                 App.notifications.info(qsTr("Import successful"))
                 else
-                App.notifications.error(qsTr("Import failed"))
+                AppErrorReporter.report(qsTr("Import failed"), owner)
             }
             owner = null
         }
@@ -82,7 +90,6 @@ Item {
     NbtDocumentActions {
         id: documentActions
         document: page.document
-        allowSave: false
         allowReplace: page.singleRecord
     }
 
@@ -220,11 +227,7 @@ Item {
                             text: qsTr("Save image")
                             compact: page.compact
                             enabled: !!page.mapPreview && page.mapPreview.hasImage
-                            onClicked: {
-                                saveMapImageDialog.owner = page.mapPreview
-                                saveMapImageDialog.recordIndex = page.document.currentIndex
-                                saveMapImageDialog.open()
-                            }
+                            onClicked: page.openMapImageSave()
                         }
                         AppButton {
                             Layout.fillWidth: true

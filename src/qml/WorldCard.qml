@@ -6,7 +6,9 @@ import "controls"
 AppCard {
     id: card
     interactive: true
-    hovered: hover.containsMouse || hover.pressed || actionsButton.hovered || cardMenu.visible
+    hovered: openButton.hovered || actionsButton.hovered || cardMenu.visible
+    border.width: openButton.visualFocus ? Theme.borderWidth * 3 : Theme.borderWidth
+    border.color: openButton.visualFocus ? Theme.accent : (selected || hovered ? Theme.accent : Theme.border)
     signal openRequested(string path, string title)
     signal deleteRequested(string path, string title)
     signal exportRequested(string path, string title)
@@ -46,6 +48,82 @@ AppCard {
         }
     }
 
+    component WorldDetails: Column {
+        id: details
+        property string title
+        property string versionText
+        property string tag
+        property string sizeText
+        property string sourceText
+        property string pathText
+        property bool xorMarked
+        property bool compact
+        property bool showPath
+
+        readonly property string versionLabel: versionText || qsTr("Unknown version")
+        readonly property string timeLabel: tag || qsTr("Unknown time")
+        readonly property string sizeLabel: sizeText || "0 B"
+        readonly property string sourceLabel: sourceText ? qsTranslate("WorldSource", sourceText) : qsTr("Bedrock")
+        readonly property int titleSize: compact ? Theme.fontMedium : Theme.fontLarge
+        readonly property int secondarySize: compact ? Theme.fontSmall : Theme.fontMedium
+
+        spacing: Theme.gapSmall
+
+        Row {
+            width: parent.width
+            spacing: Theme.gapSmall
+            Text {
+                readonly property real badgeSpace: details.xorMarked ? badge.implicitWidth + parent.spacing : 0
+                text: details.title
+                color: Theme.text
+                font.pixelSize: details.titleSize
+                elide: Text.ElideRight
+                width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
+            }
+            Text {
+                id: badge
+                visible: details.xorMarked
+                text: "[XOR]"
+                color: Theme.danger
+                font.pixelSize: details.secondarySize
+            }
+        }
+
+        Row {
+            width: parent.width
+            spacing: Theme.gapSmall
+            Text {
+                id: versionLabelText
+                text: details.versionLabel
+                color: Theme.accent
+                font.pixelSize: details.secondarySize
+                width: Math.min(implicitWidth, Math.max(0, parent.width * (details.compact ? 0.5 : 0.55)))
+                elide: Text.ElideRight
+            }
+            Text {
+                text: "•"
+                color: Theme.muted
+                font.pixelSize: details.secondarySize
+            }
+            Text {
+                width: Math.max(0, parent.width - versionLabelText.width - parent.spacing * 2 - 8)
+                text: details.timeLabel + " · " + details.sizeLabel
+                color: Theme.muted
+                font.pixelSize: details.secondarySize
+                elide: Text.ElideRight
+            }
+        }
+
+        Text {
+            width: parent.width
+            text: details.showPath && details.pathText.length > 0 ? details.sourceLabel + "  ·  " + details.pathText :
+                                                                    details.sourceLabel
+            color: Theme.muted
+            font.pixelSize: details.secondarySize
+            elide: details.compact ? Text.ElideRight : Text.ElideMiddle
+        }
+    }
+
     Row {
         visible: !card.gridMode
         anchors.fill: parent
@@ -58,61 +136,18 @@ AppCard {
             height: parent.height
         }
 
-        Column {
+        WorldDetails {
             anchors.verticalCenter: parent.verticalCenter
             width: Math.max(0, parent.width - listThumbnail.width - actionsButton.width - Theme.gapLarge * 2)
-            spacing: Theme.gapSmall
-
-            Row {
-                width: parent.width
-                spacing: Theme.gapSmall
-                Text {
-                    readonly property real badgeSpace: card.xorMarked ? listBadge.implicitWidth + parent.spacing : 0
-                    text: card.title
-                    color: Theme.text
-                    font.pixelSize: Theme.fontLarge
-                    elide: Text.ElideRight
-                    width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
-                }
-                Text {
-                    id: listBadge
-                    visible: card.xorMarked
-                    text: "[XOR]"
-                    color: Theme.danger
-                    font.pixelSize: Theme.fontMedium
-                }
-            }
-            Row {
-                width: parent.width
-                spacing: Theme.gapMedium
-                Text {
-                    id: listVersionText
-                    text: card.versionText || qsTr("Unknown version")
-                    color: Theme.accent
-                    font.pixelSize: Theme.fontMedium
-                    width: Math.min(implicitWidth, Math.max(0, parent.width * 0.55))
-                    elide: Text.ElideRight
-                }
-                Text {
-                    text: "•"
-                    color: Theme.muted
-                }
-                Text {
-                    width: Math.max(0, parent.width - listVersionText.width - parent.spacing * 2 - 8)
-                    text: (card.tag || qsTr("Unknown time")) + "  ·  " + (card.sizeText || "0 B")
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontMedium
-                    elide: Text.ElideRight
-                }
-            }
-            Text {
-                text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
-                      + card.pathText
-                color: Theme.muted
-                font.pixelSize: Theme.fontSmall
-                elide: Text.ElideMiddle
-                width: parent.width
-            }
+            title: card.title
+            versionText: card.versionText
+            tag: card.tag
+            sizeText: card.sizeText
+            sourceText: card.sourceText
+            pathText: card.pathText
+            xorMarked: card.xorMarked
+            compact: false
+            showPath: true
         }
     }
 
@@ -128,76 +163,47 @@ AppCard {
             height: Math.round((Theme.compact ? 88 : 92) * Theme.metricScale)
         }
 
-        Column {
+        WorldDetails {
             id: gridDetails
             width: Math.max(0, parent.width - actionsButton.width - Theme.gapSmall)
-            spacing: Theme.gapSmall
-
-            Row {
-                width: parent.width
-                spacing: Theme.gapSmall
-                Text {
-                    readonly property real badgeSpace: card.xorMarked ? gridBadge.implicitWidth + parent.spacing : 0
-                    text: card.title
-                    color: Theme.text
-                    font.pixelSize: Theme.fontMedium
-                    elide: Text.ElideRight
-                    width: Math.min(implicitWidth, Math.max(0, parent.width - badgeSpace))
-                }
-                Text {
-                    id: gridBadge
-                    visible: card.xorMarked
-                    text: "[XOR]"
-                    color: Theme.danger
-                    font.pixelSize: Theme.fontSmall
-                }
-            }
-            Row {
-                width: parent.width
-                spacing: Theme.gapSmall
-                Text {
-                    id: gridVersionText
-                    text: card.versionText || qsTr("Unknown")
-                    color: Theme.accent
-                    font.pixelSize: Theme.fontSmall
-                    width: Math.min(implicitWidth, Math.max(0, parent.width * 0.6))
-                    elide: Text.ElideRight
-                }
-                Text {
-                    text: "•"
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontSmall
-                }
-                Text {
-                    width: Math.max(0, parent.width - gridVersionText.width - parent.spacing * 2 - 8)
-                    text: card.sizeText || "0 B"
-                    color: Theme.muted
-                    font.pixelSize: Theme.fontSmall
-                    elide: Text.ElideRight
-                }
-            }
-            Text {
-                width: parent.width
-                text: (card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock")) + "  ·  "
-                      + card.tag
-                color: Theme.muted
-                font.pixelSize: Theme.fontSmall
-                elide: Text.ElideRight
-            }
+            title: card.title
+            versionText: card.versionText
+            tag: card.tag
+            sizeText: card.sizeText
+            sourceText: card.sourceText
+            pathText: card.pathText
+            xorMarked: card.xorMarked
+            compact: true
+            showPath: false
         }
     }
 
-    MouseArea {
-        id: hover
+    AbstractButton {
+        id: openButton
         anchors.fill: parent
         hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: mouse => {
-            if (mouse.button === Qt.RightButton)
-                cardMenu.popup()
-            else
-                card.openRequested(card.pathText, card.title)
+        focusPolicy: Qt.TabFocus
+        background: null
+        contentItem: Item {}
+
+        Keys.onReturnPressed: animateClick()
+        Keys.onEnterPressed: animateClick()
+        onClicked: card.openRequested(card.pathText, card.title)
+
+        TapHandler {
+            acceptedButtons: Qt.RightButton
+            acceptedDevices: PointerDevice.Mouse
+            onTapped: cardMenu.popup()
         }
+
+        HoverHandler {
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        Accessible.name: card.title
+        Accessible.description: qsTr("%1, %2, %3").arg(card.versionText || qsTr("Unknown version")).arg(card.sizeText
+                                                                                                        || "0 B").arg(
+                                    card.sourceText ? qsTranslate("WorldSource", card.sourceText) : qsTr("Bedrock"))
     }
 
     AppIconButton {

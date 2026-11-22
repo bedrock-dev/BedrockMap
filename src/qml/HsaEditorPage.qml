@@ -245,7 +245,7 @@ Item {
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
                     spacing: 0
-                    ScrollBar.vertical: ScrollBar {}
+                    ScrollBar.vertical: AppScrollBar {}
 
                     delegate: Item {
                         id: areaRow

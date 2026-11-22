@@ -359,11 +359,6 @@
     </message>
     <message>
         <location filename="../src/qml/AppSidebar.qml"/>
-        <source>Untitled world</source>
-        <translation>未命名世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AppSidebar.qml"/>
         <source>Dark mode</source>
         <translation>暗色模式</translation>
     </message>
@@ -715,16 +710,6 @@
     </message>
     <message>
         <location filename="../src/qml/ChunkStatsPage.qml"/>
-        <source>Binary files (*.bin)</source>
-        <translation>二进制文件 (*.bin)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkStatsPage.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ChunkStatsPage.qml"/>
         <source>Export failed</source>
         <translation>导出失败</translation>
     </message>
@@ -862,6 +847,69 @@
     </message>
 </context>
 <context>
+    <name>FileDialogSupport</name>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Binary files (*.bin)</source>
+        <translation>二进制文件 (*.bin)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>GLB models (*.glb)</source>
+        <translation>GLB 模型 (*.glb)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Images (*.png *.jpg *.jpeg *.bmp *.webp)</source>
+        <translation>图像 (*.png *.jpg *.jpeg *.bmp *.webp)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Log files (*.log *.txt)</source>
+        <translation>日志文件 (*.log *.txt)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Minecraft structures (*.mcstructure)</source>
+        <translation>Minecraft 结构文件 (*.mcstructure)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Minecraft worlds (*.mcworld)</source>
+        <translation>我的世界存档 (*.mcworld)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>Minecraft 文件 (*.mcworld *.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
+        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>NBT files (*.nbt *.nbts)</source>
+        <translation>NBT 文件 (*.nbt *.nbts)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>PNG images (*.png)</source>
+        <translation>PNG 图像 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/FileDialogSupport.qml"/>
+        <source>BedrockMap regions (*.bchks)</source>
+        <translation>BedrockMap 区域 (*.bchks)</translation>
+    </message>
+</context>
+<context>
     <name>GlobalDataController</name>
     <message>
         <location filename="../src/controller/globaldatacontroller.cpp"/>
@@ -889,11 +937,6 @@
     </message>
     <message>
         <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>PNG images (*.png)</source>
-        <translation>PNG 图像 (*.png)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Save successful</source>
         <translation>保存成功</translation>
     </message>
@@ -907,16 +950,6 @@
         <location filename="../src/qml/GlobalNbtPage.qml"/>
         <source>Modify image</source>
         <translation>修改图像</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>Images (*.png *.jpg *.jpeg *.bmp *.webp)</source>
-        <translation>图像 (*.png *.jpg *.jpeg *.bmp *.webp)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/GlobalNbtPage.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../src/qml/GlobalNbtPage.qml"/>
@@ -1011,11 +1044,6 @@
         <location filename="../src/qml/LogPage.qml"/>
         <source>Export logs</source>
         <translation>导出日志</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/LogPage.qml"/>
-        <source>Log files (*.log *.txt)</source>
-        <translation>日志文件 (*.log *.txt)</translation>
     </message>
     <message>
         <location filename="../src/qml/LogPage.qml"/>
@@ -1216,12 +1244,6 @@
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>BedrockMap regions (*.bchks)</source>
-        <translation>BedrockMap 区域 (*.bchks)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
         <source>Import chunks</source>
         <translation>导入区块</translation>
     </message>
@@ -1234,11 +1256,6 @@
         <location filename="../src/qml/MapCanvas.qml"/>
         <source>Save screenshot</source>
         <translation type="unfinished">保存截图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/MapCanvas.qml"/>
-        <source>PNG images (*.png)</source>
-        <translation type="unfinished">PNG 图像 (*.png)</translation>
     </message>
     <message>
         <location filename="../src/qml/MapCanvas.qml"/>
@@ -1447,14 +1464,10 @@
     </message>
     <message>
         <location filename="../src/qml/MapFilterPanel.qml"/>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Exclude</source>
         <translation>排除</translation>
     </message>
     <message>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
-        <location filename="../src/qml/MapFilterPanel.qml"/>
         <location filename="../src/qml/MapFilterPanel.qml"/>
         <source>Include</source>
         <translation>包含</translation>
@@ -1589,6 +1602,11 @@
         <location filename="../src/qml/MapLayerPanel.qml"/>
         <source>Terrain outline</source>
         <translation>地形边界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/MapLayerPanel.qml"/>
+        <source>Debug panels</source>
+        <translation>调试面板</translation>
     </message>
     <message>
         <location filename="../src/qml/MapLayerPanel.qml"/>
@@ -1729,30 +1747,8 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Save failed</source>
-        <translation>保存失败</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
         <source>Import NBT file</source>
         <translation>导入 NBT 文件</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1783,13 +1779,13 @@
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Replace NBT record</source>
-        <translation>替换 NBT 记录</translation>
+        <source>Clear failed</source>
+        <translation>清空失败</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
-        <source>Save NBT file</source>
-        <translation>保存 NBT 文件</translation>
+        <source>Replace NBT record</source>
+        <translation>替换 NBT 记录</translation>
     </message>
     <message>
         <location filename="../src/qml/controls/NbtDocumentActions.qml"/>
@@ -1969,16 +1965,6 @@
         <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
         <source>Export selected records</source>
         <translation>导出选中的记录</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
-        <source>NBT files (*.nbt *.nbts)</source>
-        <translation>NBT 文件 (*.nbt *.nbts)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../src/qml/NbtRecordSelectionDialog.qml"/>
@@ -2282,6 +2268,11 @@
     <name>NotificationStack</name>
     <message>
         <location filename="../src/qml/NotificationStack.qml"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/NotificationStack.qml"/>
         <source>×%1</source>
         <translation>×%1</translation>
     </message>
@@ -2330,16 +2321,6 @@
         <location filename="../src/qml/OpenWorldsPage.qml"/>
         <source>%1 sessions open</source>
         <translation>已打开 %1 个会话</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/OpenWorldsPage.qml"/>
-        <source>Untitled world</source>
-        <translation>未命名世界</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/OpenWorldsPage.qml"/>
-        <source>Close session</source>
-        <translation>关闭会话</translation>
     </message>
     <message>
         <location filename="../src/qml/OpenWorldsPage.qml"/>
@@ -2550,16 +2531,6 @@
     </message>
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <source>NBT files (*.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation>NBT 文件 (*.nbt *.nbts *.mcstructure *.palette)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Confirm save</source>
         <translation>确认保存</translation>
     </message>
@@ -2572,12 +2543,6 @@
         <location filename="../src/qml/SessionCloseFlow.qml"/>
         <source>Unsaved changes</source>
         <translation>未保存的更改</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <location filename="../src/qml/SessionCloseFlow.qml"/>
-        <source>Untitled world</source>
-        <translation>未命名世界</translation>
     </message>
     <message>
         <location filename="../src/qml/SessionCloseFlow.qml"/>
@@ -2628,6 +2593,37 @@
         <location filename="../src/controller/sessioncontroller.cpp"/>
         <source>Could not open %1 (%2).</source>
         <translation>无法打开 %1（%2）。</translation>
+    </message>
+</context>
+<context>
+    <name>SessionKindRegistry</name>
+    <message>
+        <location filename="../src/qml/SessionKindRegistry.qml"/>
+        <source>Untitled world</source>
+        <translation>未命名世界</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionKindRegistry.qml"/>
+        <source>Untitled NBT document</source>
+        <translation>未命名 NBT 文档</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionKindRegistry.qml"/>
+        <source>Untitled structure</source>
+        <translation>未命名结构</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SessionKindRegistry.qml"/>
+        <source>Untitled</source>
+        <translation>未命名</translation>
+    </message>
+</context>
+<context>
+    <name>SessionListRow</name>
+    <message>
+        <location filename="../src/qml/controls/SessionListRow.qml"/>
+        <source>Close session</source>
+        <translation>关闭会话</translation>
     </message>
 </context>
 <context>
@@ -3161,224 +3157,219 @@
 <context>
     <name>ShortcutsPage</name>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Open world</source>
         <translation>打开世界</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Open file</source>
         <translation>打开文件</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>New NBT document</source>
         <translation>新建 NBT 文档</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Save active document</source>
         <translation>保存当前文档</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Close active session</source>
         <translation>关闭当前会话</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Exit BedrockMap</source>
         <translation>退出 BedrockMap</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Open settings</source>
         <translation>打开设置</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle grid</source>
         <translation>切换网格</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle coordinates</source>
         <translation>切换坐标</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Overworld</source>
         <translation>主世界</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Nether</source>
         <translation>下界</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>The End</source>
         <translation>末地</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Custom dimension</source>
         <translation>自定义维度</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Terrain layer</source>
         <translation>地形图层</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Biome layer</source>
         <translation>生物群系图层</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle slime chunks</source>
         <translation>切换史莱姆区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle entities</source>
         <translation>切换实体</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle villages</source>
         <translation>切换村庄</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle HSA</source>
         <translation>切换 HSA</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle transparent void</source>
         <translation>切换透明虚空</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle map filters</source>
         <translation>切换地图过滤器</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle debug panels</source>
         <translation>切换调试面板</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Replace selection mode</source>
         <translation>替换选择模式</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Add selection mode</source>
         <translation>添加选择模式</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Subtract selection mode</source>
         <translation>减去选择模式</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Clear selection</source>
         <translation>清除选区</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Copy selected chunks</source>
         <translation>复制所选区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Paste chunks</source>
         <translation>粘贴区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Export selected chunks</source>
         <translation>导出所选区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Import chunks</source>
         <translation>导入区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Delete selected chunks</source>
         <translation>删除所选区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Clear selected chunks</source>
         <translation>清空所选区块</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Edit selection biome</source>
         <translation>编辑选区的生物群系</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Save map screenshot</source>
         <translation>保存地图截图</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Open 3D view</source>
         <translation>打开 3D 视图</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Go to coordinates</source>
         <translation>跳转到坐标</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Reset camera</source>
         <translation>重置相机</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Face front</source>
         <translation>正面对准</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle orthographic projection</source>
         <translation>切换正交投影</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle axes</source>
         <translation>切换坐标轴</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle rotation lock</source>
         <translation>切换旋转锁定</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle selection</source>
         <translation>切换选择</translation>
     </message>
     <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <source>Toggle selection move mode</source>
         <translation>切换选区移动模式</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/ShortcutsPage.qml"/>
-        <source>Rotate view with arrow keys</source>
-        <translation>使用方向键旋转视图</translation>
     </message>
     <message>
         <location filename="../src/qml/ShortcutsPage.qml"/>
@@ -3714,17 +3705,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>Minecraft structures (*.mcstructure)</source>
-        <translation type="unfinished">Minecraft 结构文件 (*.mcstructure)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
-        <source>GLB models (*.glb)</source>
-        <translation>GLB 模型 (*.glb)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Exporting…</source>
         <translation>正在导出…</translation>
     </message>
@@ -3920,11 +3900,13 @@ Current version: %2</source>
         <translation>视角设置</translation>
     </message>
     <message>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate up</source>
         <translation>向上旋转</translation>
     </message>
     <message>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate left</source>
         <translation>向左旋转</translation>
@@ -3935,11 +3917,13 @@ Current version: %2</source>
         <translation>正面对准</translation>
     </message>
     <message>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate right</source>
         <translation>向右旋转</translation>
     </message>
     <message>
+        <location filename="../src/qml/ShortcutRegistry.qml"/>
         <location filename="../src/qml/VoxelViewportOverlay.qml"/>
         <source>Rotate down</source>
         <translation>向下旋转</translation>
@@ -3964,21 +3948,6 @@ Current version: %2</source>
     <name>WorkspaceSidebar</name>
     <message>
         <location filename="../src/qml/WorkspaceSidebar.qml"/>
-        <source>Map</source>
-        <translation>地图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorkspaceSidebar.qml"/>
-        <source>Chunk editor</source>
-        <translation type="unfinished">区块编辑器</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorkspaceSidebar.qml"/>
-        <source>3D view</source>
-        <translation type="unfinished">3D 视图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorkspaceSidebar.qml"/>
         <source>Saving…</source>
         <translation>正在保存……</translation>
     </message>
@@ -3997,6 +3966,7 @@ Current version: %2</source>
     <name>WorldCard</name>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Unknown version</source>
         <translation>未知版本</translation>
     </message>
@@ -4013,8 +3983,8 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
-        <source>Unknown</source>
-        <translation>未知</translation>
+        <source>%1, %2, %3</source>
+        <translation>%1，%2，%3</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
@@ -4052,11 +4022,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>All files (*)</source>
-        <translation>所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>No worlds</source>
         <translation>没有世界</translation>
     </message>
@@ -4082,18 +4047,8 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Minecraft worlds (*.mcworld)</source>
-        <translation>我的世界存档 (*.mcworld)</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Export as mcworld</source>
         <translation>导出为 mcworld</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldListPage.qml"/>
-        <source>Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -4246,6 +4201,12 @@ Current version: %2</source>
     <name>WorldWorkspace</name>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Map</source>
+        <translation>地图</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Layers</source>
         <translation>图层</translation>
     </message>
@@ -4271,18 +4232,17 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>Chunk editor</source>
         <translation type="unfinished">区块编辑器</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
         <source>3D view</source>
         <translation type="unfinished">3D 视图</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/WorldWorkspace.qml"/>
-        <source>Debug panels</source>
-        <translation>调试面板</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>

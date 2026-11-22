@@ -11,16 +11,23 @@ AppCard {
     property int pendingExportRow: -1
     readonly property var statistics: controller ? controller.statistics : []
 
+    function openExportDialog(row, name) {
+        root.pendingExportRow = row
+        const fileName = FileDialogSupport.sanitizedFileName(name, "chunk-statistic")
+        exportDialog.selectedFile = FileDialogSupport.selectedUrlWithSuffix(exportDialog, fileName, "bin")
+        exportDialog.open()
+    }
+
     FileUrlDialog {
         id: exportDialog
         title: qsTr("Export binary data")
         fileMode: FileDialog.SaveFile
-        nameFilters: [qsTr("Binary files (*.bin)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.binaryFilters
         onAccepted: {
             const row = root.pendingExportRow
             root.pendingExportRow = -1
             if (!root.controller || !root.controller.exportStatistic(row, selectedUrl))
-                App.notifications.error(qsTr("Export failed"))
+                AppErrorReporter.report(qsTr("Export failed"), root.controller)
             else
                 App.notifications.info(qsTr("Export successful"))
         }
@@ -125,10 +132,7 @@ AppCard {
                         Layout.preferredWidth: 60
                         text: qsTr("Export")
                         compact: true
-                        onClicked: {
-                            root.pendingExportRow = modelData.index
-                            exportDialog.open()
-                        }
+                        onClicked: root.openExportDialog(modelData.index, modelData.name)
                     }
                 }
             }

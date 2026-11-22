@@ -5,13 +5,11 @@ import BedrockMap 1.0
 Item {
     id: root
     property var document
-    property bool allowSave: true
     property bool allowReplace: false
-    property bool externalSave: false
-    signal saveRequested
 
-    function report(error) {
-        App.notifications.error(error || (root.document ? root.document.lastError : qsTr("No NBT document is open.")))
+    function report(title, error) {
+        const fallback = root.document ? "" : qsTr("No NBT document is open.")
+        AppErrorReporter.report(title, root.document, error || fallback)
     }
     function openImport() {
         if (root.document && !root.document.readOnly)
@@ -26,45 +24,19 @@ Item {
             clearDialog.open()
     }
     function openExport() {
-        if (root.document)
-            exportDialog.open()
-    }
-    function saveDocument() {
-        if (!root.document || !root.document.hasDocument || root.document.readOnly || !root.allowSave)
-            return
-        if (root.externalSave) {
-            root.saveRequested()
-            return
-        }
-        if (root.document.requiresSaveAs) {
-            root.openSaveDialog()
-            return
-        }
-        if (!root.document.save())
-            App.notifications.error(qsTr("Save failed"))
-    }
-    function selectedSaveFile(dialog, fileName) {
-        const folder = dialog.currentFolder.toString()
-        if (folder.length === 0)
-            return fileName
-        return folder + "/" + encodeURIComponent(fileName)
-    }
-
-    function openSaveDialog() {
         if (!root.document)
             return
-        const filename = root.document.suggestedSaveFileName()
-        saveDialog.selectedFile = selectedSaveFile(saveDialog, filename)
-        saveDialog.open()
+        const fileName = root.document.suggestedSaveFileName()
+        exportDialog.selectedFile = FileDialogSupport.selectedUrl(exportDialog, fileName)
+        exportDialog.open()
     }
-
     FileUrlDialog {
         id: importDialog
         title: qsTr("Import NBT file")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.nbtFilters
         onAccepted: if (!root.document.importFile(selectedUrl))
-                        App.notifications.error(qsTr("Import failed"))
+                        root.report(qsTr("Import failed"))
                     else
                         App.notifications.info(qsTr("Import successful"))
     }
@@ -72,29 +44,20 @@ Item {
         id: replaceDialog
         title: qsTr("Replace NBT record")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.nbtFilters
         onAccepted: if (!root.document.replaceFile(selectedUrl))
-                        App.notifications.error(qsTr("Import failed"))
+                        root.report(qsTr("Import failed"))
                     else
                         App.notifications.info(qsTr("Import successful"))
-    }
-    FileUrlDialog {
-        id: saveDialog
-        title: qsTr("Save NBT file")
-        fileMode: FileDialog.SaveFile
-        defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
-        onAccepted: if (!root.document.saveAs(selectedUrl))
-                        App.notifications.error(qsTr("Save failed"))
     }
     FileUrlDialog {
         id: exportDialog
         title: qsTr("Export NBT file")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.nbtFilters
         onAccepted: if (!root.document.exportFile(selectedUrl))
-                        App.notifications.error(qsTr("Export failed"))
+                        root.report(qsTr("Export failed"))
                     else
                         App.notifications.info(qsTr("Export successful"))
     }
@@ -105,6 +68,6 @@ Item {
         confirmText: qsTr("Clear")
         danger: true
         onConfirmed: if (!root.document.clearContents())
-                         root.report()
+                         root.report(qsTr("Clear failed"))
     }
 }

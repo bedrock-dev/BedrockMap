@@ -82,6 +82,7 @@ class NbtDocumentController : public QObject {
     [[nodiscard]] NbtTreeModel* treeModel() const { return tree_model_; }
     [[nodiscard]] QStringList itemLabels() const;
     [[nodiscard]] QStringList itemIcons() const;
+    [[nodiscard]] NbtItemPresentation itemPresentation(int index) const;
     [[nodiscard]] int currentIndex() const { return current_index_; }
     [[nodiscard]] int rootCount() const { return static_cast<int>(items_.size()); }
     [[nodiscard]] Mode mode() const { return mode_; }

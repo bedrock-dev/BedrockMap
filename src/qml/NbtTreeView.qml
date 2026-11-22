@@ -22,7 +22,7 @@ Item {
         clip: true
         model: root.model
         boundsBehavior: Flickable.StopAtBounds
-        ScrollBar.vertical: ScrollBar {}
+        ScrollBar.vertical: AppScrollBar {}
 
         delegate: Rectangle {
             id: row

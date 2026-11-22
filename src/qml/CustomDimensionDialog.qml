@@ -59,19 +59,7 @@ AppDialog {
                 spacing: Theme.gapTiny
                 model: root.dimensions
                 boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: ScrollBar {
-                    id: dimensionScrollBar
-                    policy: ScrollBar.AsNeeded
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                    contentItem: Rectangle {
-                        implicitWidth: 6
-                        radius: Theme.radiusSmall
-                        color: Theme.border
-                        opacity: dimensionScrollBar.pressed || dimensionScrollBar.hovered ? 1.0 : 0.6
-                    }
-                }
+                ScrollBar.vertical: AppScrollBar {}
 
                 delegate: ItemDelegate {
                     id: dimensionOption

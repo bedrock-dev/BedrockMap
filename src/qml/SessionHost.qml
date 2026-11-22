@@ -42,7 +42,7 @@ Item {
     }
 
     function syncSession() {
-        if (!activeSession)
+        if (!activeSession || !SessionKindRegistry.definition(activeSession.kind))
             return
         if (activeSession.kind === "nbt")
             nbtSession = activeSession

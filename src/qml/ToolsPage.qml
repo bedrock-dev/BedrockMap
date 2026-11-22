@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
@@ -16,6 +17,7 @@ Item {
         visible: pageGroup.isRoot
         contentHeight: column.height + Theme.gapSection
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
         Column {
             id: column
             x: Theme.gapSection

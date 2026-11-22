@@ -116,7 +116,7 @@ Rectangle {
             enabled: root.controller && root.controller.hasChunk && root.controller.dirty
             onClicked: {
                 if (!root.controller.saveToCache()) {
-                    App.notifications.error(qsTr("Save failed"))
+                    AppErrorReporter.report(qsTr("Save failed"), root.controller)
                     return
                 }
                 App.notifications.info(qsTr("Save successful"))
@@ -157,7 +157,6 @@ Rectangle {
         NbtDocumentActions {
             id: documentActions
             document: nbtPage.document
-            allowSave: false
         }
 
         ColumnLayout {

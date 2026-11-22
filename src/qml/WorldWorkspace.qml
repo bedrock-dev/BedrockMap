@@ -61,142 +61,194 @@ Item {
     signal closeRequested
     signal saveRequested
 
-    // Map shortcuts only fire while mapShortcutsEnabled, so actions may assume a map controller.
-    readonly property var mapShortcuts: [
-        {
-            sequence: "Alt+G",
-            action: () => workspace.toggleMapOverlay("Grid")
-        },
-        {
-            sequence: "Alt+C",
-            action: () => workspace.toggleMapOverlay("Coords")
-        },
-        {
-            sequence: "Alt+1",
-            action: () => workspace.mapController.setDimension(0)
-        },
-        {
-            sequence: "Alt+2",
-            action: () => workspace.mapController.setDimension(1)
-        },
-        {
-            sequence: "Alt+3",
-            action: () => workspace.mapController.setDimension(2)
-        },
-        {
-            sequence: "Alt+4",
-            action: () => workspace.openCustomDimensionDialog()
-        },
-        {
-            sequence: "Alt+T",
-            action: () => workspace.mapController.setLayer(0)
-        },
-        {
-            sequence: "Alt+B",
-            action: () => workspace.mapController.setLayer(1)
-        },
-        {
-            sequence: "Alt+S",
-            action: () => workspace.toggleMapOverlay("SlimeChunk")
-        },
-        {
-            sequence: "Alt+A",
-            action: () => workspace.toggleMapOverlay("Actors")
-        },
-        {
-            sequence: "Alt+V",
-            action: () => workspace.toggleMapOverlay("Village")
-        },
-        {
-            sequence: "Alt+H",
-            action: () => workspace.toggleMapOverlay("HSA")
-        },
-        {
-            sequence: "Alt+0",
-            action: () => workspace.mapController.setTransparentVoid(!workspace.mapController.transparentVoid)
-        },
-        {
-            sequence: "Alt+F",
-            action: () => workspace.toggleMapFilterPanel()
-        },
-        {
-            sequence: "Alt+D",
-            action: () => workspace.debugVisible = !workspace.debugVisible
-        },
-        {
-            sequence: "Shift+R",
-            action: () => workspace.mapController.setSelectionMode(0)
-        },
-        {
-            sequence: "Shift+A",
-            action: () => workspace.mapController.setSelectionMode(1)
-        },
-        {
-            sequence: "Shift+S",
-            action: () => workspace.mapController.setSelectionMode(2)
-        },
-        {
-            sequence: "Shift+C",
-            action: () => canvas.clearMapSelection()
-        },
-        {
-            sequence: "Ctrl+C",
-            needsSelection: true,
-            action: () => canvas.copySelectedChunks()
-        },
-        {
-            sequence: "Ctrl+V",
-            action: () => canvas.pasteAtRequestedPosition()
-        },
-        {
-            sequence: "Ctrl+E",
-            needsSelection: true,
-            action: () => canvas.openChunkRegionExport()
-        },
-        {
-            sequence: "Ctrl+I",
-            action: () => canvas.openChunkImportDialog()
-        },
-        {
-            sequence: "Ctrl+D",
-            needsSelection: true,
-            action: () => canvas.deleteSelectedChunks()
-        },
-        {
-            sequence: "Ctrl+K",
-            needsSelection: true,
-            action: () => canvas.clearSelectedChunks()
-        },
-        {
-            sequence: "Ctrl+B",
-            needsSelection: true,
-            action: () => canvas.openBiomePicker()
-        },
-        {
-            sequence: "Ctrl+T",
-            action: () => canvas.openScreenshotDialog()
-        },
-        {
-            sequence: "Ctrl+H",
-            action: () => workspace.toggleVoxelView()
-        },
-        {
-            sequence: "Ctrl+G",
-            action: () => workspace.focusGotoFields()
+    readonly property var workspaceEntries: {
+        const entries = [
+                  {
+                      id: "map",
+                      kind: "section",
+                      title: qsTr("Map"),
+                      label: qsTr("Map"),
+                      iconName: "map",
+                      iconText: "",
+                      navigationIndex: 0,
+                      dirty: false,
+                      selected: !session || session.titleBarNavigationIndex === 0,
+                      enabled: true,
+                      beginGroup: false
+                  }
+              ]
+        const chunkEditor = session ? session.chunkEditor : null
+        entries.push({
+                         id: "chunk-editor",
+                         kind: "chunkEditor",
+                         title: qsTr("Chunk editor"),
+                         label: qsTr("Chunk editor"),
+                         iconName: "nbt_editor",
+                         iconText: "",
+                         dirty: !!chunkEditor && chunkEditor.dirty,
+                         selected: workspace.chunkEditorOpen,
+                         enabled: !!chunkEditor && (chunkEditor.hasChunk || chunkEditor.loading),
+                         beginGroup: false
+                     })
+        const voxelView = session ? session.voxelView : null
+        entries.push({
+                         id: "voxel-view",
+                         kind: "voxelView",
+                         title: qsTr("3D view"),
+                         label: qsTr("3D view"),
+                         iconName: "structure",
+                         iconText: "",
+                         dirty: false,
+                         selected: workspace.voxelViewOpen,
+                         enabled: !!voxelView && voxelView.hasVoxelModel,
+                         beginGroup: false
+                     })
+        const sections = session && session.titleBarNavigationVisible ? session.titleBarNavigationSections : []
+        for (let i = 0; i < sections.length; ++i) {
+            const section = sections[i]
+            entries.push({
+                             id: "section-" + i,
+                             kind: "section",
+                             title: section.title,
+                             label: section.title + (section.showCount ? " " + section.count : ""),
+                             iconName: section.iconName ? section.iconName : "nbt_editor",
+                             iconText: section.shortLabel || "",
+                             navigationIndex: i + 1,
+                             dirty: !!section.dirty,
+                             selected: !!session && session.titleBarNavigationIndex === i + 1,
+                             enabled: true,
+                             beginGroup: i === 0
+                         })
         }
-    ]
+        return entries
+    }
+    readonly property var currentWorkspaceEntry: {
+        const selected = workspaceEntries.find(entry => entry.selected)
+        return selected || workspaceEntries[0] || null
+    }
+
+    function activateWorkspaceEntry(entry) {
+        if (!entry || entry.enabled === false)
+            return
+        if (entry.kind === "chunkEditor") {
+            toggleChunkEditor()
+            return
+        }
+        if (entry.kind === "voxelView") {
+            toggleVoxelView()
+            return
+        }
+        if (session && session.titleBarNavigationVisible)
+            session.titleBarNavigationIndex = entry.navigationIndex
+    }
+
+    readonly property var workspaceShortcutEntries: ShortcutRegistry.map.concat(ShortcutRegistry.chunk)
+
+    // Shortcut definitions are shared, while their actions remain owned by the
+    // workspace that has access to the current map controller and canvas.
+    function runWorkspaceShortcut(command) {
+        switch (command) {
+        case "toggleGrid":
+            toggleMapOverlay("Grid")
+            return
+        case "toggleCoordinates":
+            toggleMapOverlay("Coords")
+            return
+        case "dimensionOverworld":
+            mapController.setDimension(0)
+            return
+        case "dimensionNether":
+            mapController.setDimension(1)
+            return
+        case "dimensionEnd":
+            mapController.setDimension(2)
+            return
+        case "dimensionCustom":
+            openCustomDimensionDialog()
+            return
+        case "layerTerrain":
+            mapController.setLayer(0)
+            return
+        case "layerBiome":
+            mapController.setLayer(1)
+            return
+        case "toggleSlime":
+            toggleMapOverlay("SlimeChunk")
+            return
+        case "toggleEntities":
+            toggleMapOverlay("Actors")
+            return
+        case "toggleVillages":
+            toggleMapOverlay("Village")
+            return
+        case "toggleHsa":
+            toggleMapOverlay("HSA")
+            return
+        case "toggleTransparentVoid":
+            mapController.setTransparentVoid(!mapController.transparentVoid)
+            return
+        case "toggleFilters":
+            toggleMapFilterPanel()
+            return
+        case "toggleDebug":
+            debugVisible = !debugVisible
+            return
+        case "selectionReplace":
+            mapController.setSelectionMode(0)
+            return
+        case "selectionAdd":
+            mapController.setSelectionMode(1)
+            return
+        case "selectionSubtract":
+            mapController.setSelectionMode(2)
+            return
+        case "clearSelection":
+            canvas.clearMapSelection()
+            return
+        case "copySelection":
+            canvas.copySelectedChunks()
+            return
+        case "pasteSelection":
+            canvas.pasteAtRequestedPosition()
+            return
+        case "exportSelection":
+            canvas.openChunkRegionExport()
+            return
+        case "importSelection":
+            canvas.openChunkImportDialog()
+            return
+        case "deleteSelection":
+            canvas.deleteSelectedChunks()
+            return
+        case "clearChunks":
+            canvas.clearSelectedChunks()
+            return
+        case "editBiome":
+            canvas.openBiomePicker()
+            return
+        case "screenshot":
+            canvas.openScreenshotDialog()
+            return
+        case "openVoxel":
+            toggleVoxelView()
+            return
+        case "focusCoordinates":
+            focusGotoFields()
+            return
+        }
+    }
 
     // Shortcut needs an Item parent to find its window, hence the Item wrapper.
     Repeater {
-        model: workspace.mapShortcuts
+        model: workspace.workspaceShortcutEntries
         delegate: Item {
             id: shortcutHost
             required property var modelData
             Shortcut {
                 sequence: shortcutHost.modelData.sequence
-                enabled: workspace.mapShortcutsEnabled && (!shortcutHost.modelData.needsSelection
+                enabled: workspace.mapShortcutsEnabled && (!shortcutHost.modelData.requiresSelection
                                                            || workspace.mapController.hasSelection)
-                onActivated: shortcutHost.modelData.action()
+                onActivated: workspace.runWorkspaceShortcut(shortcutHost.modelData.command)
             }
         }
     }
@@ -297,7 +349,7 @@ Item {
         if (!pendingChunkOpen || !session || !session.chunkEditor)
             return
         if (!session.chunkEditor.saveToCache()) {
-            App.notifications.error(qsTr("Save failed"))
+            AppErrorReporter.report(qsTr("Save failed"), session.chunkEditor)
             return
         }
         const target = pendingChunkOpen
@@ -544,7 +596,10 @@ Item {
                 controller: workspace.mapController
                 terrainData: workspace.terrainData
                 compact: workspace.compact
+                debugVisible: workspace.debugVisible
+                showDebugToggle: App.runtimeSettings.showMapDebugButton
                 onCustomDimensionRequested: workspace.openCustomDimensionDialog()
+                onDebugToggleRequested: workspace.debugVisible = !workspace.debugVisible
             }
 
             AppCard {
@@ -683,41 +738,10 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         session: workspace.session
-        globalSections: workspace.globalSections
-        section: workspace.section
-        chunkEditorOpen: workspace.chunkEditorOpen
-        voxelViewOpen: workspace.voxelViewOpen
-        onSectionRequested: section => workspace.section = section
-        onChunkEditorToggleRequested: workspace.toggleChunkEditor()
-        onVoxelViewToggleRequested: workspace.toggleVoxelView()
+        entries: workspace.workspaceEntries
+        onEntryRequested: entry => workspace.activateWorkspaceEntry(entry)
         onSaveRequested: workspace.saveRequested()
         onCloseRequested: workspace.closeRequested()
-    }
-
-    AppCard {
-        id: workspaceToolbar
-        z: 7
-        visible: App.runtimeSettings.showMapDebugButton && workspace.section === 0 && !workspace.chunkEditorOpen &&
-                 !workspace.voxelViewOpen
-        readonly property real toolbarPadding: Theme.gapSmall
-        width: workspaceToolbarRow.width + toolbarPadding * 2
-        height: workspaceToolbarRow.height + toolbarPadding * 2
-        anchors.top: parent.top
-        anchors.right: workspace.compact ? parent.right : desktopSidebar.left
-        anchors.margins: Theme.gapLarge
-        Row {
-            id: workspaceToolbarRow
-            x: workspaceToolbar.toolbarPadding
-            height: Theme.touch ? Theme.controlHeight : 34
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.gapTiny
-            AppIconButton {
-                iconName: "debug"
-                label: qsTr("Debug panels")
-                selected: workspace.debugVisible
-                onClicked: workspace.debugVisible = !workspace.debugVisible
-            }
-        }
     }
 
     AppBusyOverlay {

@@ -68,6 +68,8 @@ Window {
     readonly property var worldWorkspace: workspaceOpen && sessionHostLazy.item ? sessionHostLazy.item.worldWorkspace :
                                                                                   null
 
+    readonly property var currentWorkspaceEntry: worldWorkspace ? worldWorkspace.currentWorkspaceEntry : null
+
     // Child-page stack of the visible page: the open world's workspace or the
     // tools page. The shell owns the back button and title for it.
     readonly property PageGroup childPages: {
@@ -89,103 +91,45 @@ Window {
         if (childPageOpen)
             return childPages.currentTitle
         if (workspaceOpen)
-            return activeSession ? activeSession.title + (activeSession.dirty ? " *" : "") : qsTr("Open world")
+            return activeSession ? (activeSession.title || SessionKindRegistry.untitledTitle(activeSession.kind)) + (
+                                       activeSession.dirty ? " *" : "") : qsTr("Open world")
         return window.navigation.pages[currentPage].title
     }
-    // Section 0 is the map; global data sections follow.
-    readonly property var workspaceSectionEntries: {
-        const entries = [
-                  {
-                      title: "Map",
-                      iconName: "map",
-                      label: "Map",
-                      kind: "section",
-                      navigationIndex: 0,
-                      dirty: false,
-                      selected: !activeSession || activeSession.titleBarNavigationIndex === 0,
-                      enabled: true
-                  }
-              ]
-        const chunkEditor = activeSession ? activeSession.chunkEditor : null
-        entries.push({
-                         title: "Chunk editor",
-                         iconName: "nbt_editor",
-                         label: "Chunk editor",
-                         kind: "chunkEditor",
-                         dirty: !!chunkEditor && chunkEditor.dirty,
-                         selected: !!worldWorkspace && worldWorkspace.chunkEditorOpen,
-                         enabled: !!chunkEditor && (chunkEditor.hasChunk || chunkEditor.loading)
-                     })
-        const voxelView = activeSession ? activeSession.voxelView : null
-        entries.push({
-                         title: "3D view",
-                         iconName: "structure",
-                         label: "3D view",
-                         kind: "voxelView",
-                         dirty: false,
-                         selected: !!worldWorkspace && worldWorkspace.voxelViewOpen,
-                         enabled: !!voxelView && voxelView.hasVoxelModel
-                     })
-        const sections = activeSession && activeSession.titleBarNavigationVisible
-              ? activeSession.titleBarNavigationSections : []
-        for (let i = 0; i < sections.length; ++i) {
-            const section = sections[i]
-            entries.push({
-                             title: section.title,
-                             iconName: section.iconName ? section.iconName : "nbt_editor",
-                             iconText: section.shortLabel || "",
-                             label: section.title + (section.showCount ? " " + section.count : ""),
-                             kind: "section",
-                             navigationIndex: i + 1,
-                             dirty: !!section.dirty,
-                             selected: activeSession && activeSession.titleBarNavigationIndex === i + 1,
-                             enabled: true
-                         })
-        }
-        return entries
-    }
-    readonly property var workspaceSectionEntry: {
-        const section = activeSession && activeSession.titleBarNavigationVisible
-              ? activeSession.titleBarNavigationIndex : 0
-        return workspaceSectionEntries.find(entry => entry.kind === "section" && entry.navigationIndex === section)
-                || workspaceSectionEntries[0]
-    }
-
     Shortcut {
         sequences: [StandardKey.Back]
         enabled: window.canNavigateBack
         onActivated: window.navigateBack()
     }
     Shortcut {
-        sequence: "Ctrl+O"
+        sequence: ShortcutRegistry.sequence("app", "openWorld")
         enabled: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds && !App.importingWorld
         onActivated: window.openWorldDialog()
     }
     Shortcut {
-        sequence: "Ctrl+Shift+O"
+        sequence: ShortcutRegistry.sequence("app", "openFile")
         enabled: !window.workspaceOpen && window.currentPage === window.navigation.pageWorlds && !!worldsPageLazy.item
         onActivated: window.openFileDialog()
     }
     Shortcut {
-        sequence: "Ctrl+N"
+        sequence: ShortcutRegistry.sequence("app", "newNbtDocument")
         onActivated: window.newNbtDocument()
     }
     Shortcut {
-        sequence: "Ctrl+S"
+        sequence: ShortcutRegistry.sequence("app", "saveActiveSession")
         enabled: window.workspaceOpen && !!window.activeSession && !window.activeSession.saving
         onActivated: window.saveActiveSession()
     }
     Shortcut {
-        sequence: "Ctrl+W"
+        sequence: ShortcutRegistry.sequence("app", "closeActiveSession")
         enabled: window.workspaceOpen
         onActivated: window.closeActiveSession()
     }
     Shortcut {
-        sequence: "Ctrl+Q"
+        sequence: ShortcutRegistry.sequence("app", "quitApplication")
         onActivated: window.quitApplication()
     }
     Shortcut {
-        sequence: "Ctrl+,"
+        sequence: ShortcutRegistry.sequence("app", "openSettings")
         enabled: !window.workspaceOpen
         onActivated: window.openSettingsPage()
     }
@@ -270,20 +214,6 @@ Window {
     function saveActiveSession() {
         sessionClose.save(window.activeSession)
     }
-    function activateWorkspaceSectionEntry(entry) {
-        if (!entry || entry.enabled === false || !worldWorkspace)
-            return
-        if (entry.kind === "chunkEditor") {
-            worldWorkspace.toggleChunkEditor()
-            return
-        }
-        if (entry.kind === "voxelView") {
-            worldWorkspace.toggleVoxelView()
-            return
-        }
-        if (window.activeSession && window.activeSession.titleBarNavigationVisible)
-            window.activeSession.titleBarNavigationIndex = entry.navigationIndex
-    }
     FolderUrlDialog {
         id: folderDialog
         title: qsTr("Open world folder")
@@ -293,9 +223,12 @@ Window {
 
     WorkspaceNavigationPanel {
         id: workspaceNavigationPanel
-        items: window.workspaceSectionEntries
+        items: window.worldWorkspace ? window.worldWorkspace.workspaceEntries : []
         topOffset: topbar.height + Theme.gapSmall
-        onItemTriggered: item => window.activateWorkspaceSectionEntry(item)
+        onItemTriggered: item => {
+            if (window.worldWorkspace)
+                window.worldWorkspace.activateWorkspaceEntry(item)
+        }
     }
 
     onClosing: function (close) {
@@ -469,11 +402,12 @@ Window {
                     },
                     AppIconButton {
                         id: workspaceSectionButton
-                        visible: window.sessionTitleBarActions && window.activeSession
+                        visible: window.sessionTitleBarActions && !!window.currentWorkspaceEntry
                                  && window.activeSession.titleBarNavigationVisible
-                        iconName: window.workspaceSectionEntry.iconName
-                        label: window.workspaceSectionEntry.label
-                        dirty: !!window.workspaceSectionEntry.dirty
+                        iconName: window.currentWorkspaceEntry ? window.currentWorkspaceEntry.iconName : ""
+                        iconText: window.currentWorkspaceEntry ? window.currentWorkspaceEntry.iconText : ""
+                        label: window.currentWorkspaceEntry ? window.currentWorkspaceEntry.label : ""
+                        dirty: !!window.currentWorkspaceEntry && !!window.currentWorkspaceEntry.dirty
                         selected: workspaceNavigationPanel.opened
                         onClicked: {
                             if (workspaceNavigationPanel.opened)

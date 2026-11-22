@@ -63,74 +63,13 @@ Rectangle {
         clip: true
         spacing: Theme.gapTiny
         model: App.openSessions
-        delegate: Rectangle {
-            id: sessionRow
-            required property int sessionIndex
-            required property string title
-            required property bool dirty
-            required property string kind
-            readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
+        delegate: SessionListRow {
             width: openWorldList.width
-            height: Theme.touch ? Theme.controlHeight : (root.collapsed ? Theme.sidebarCollapsedItemSize : 40)
-            radius: Theme.radiusMedium
-            color: active ? Theme.accentSoft : ((openWorldMouse.pressed || openWorldMouse.containsMouse)
-                                                ? Theme.surfaceAlt : "transparent")
-            Row {
-                x: root.collapsed ? (parent.width - width) / 2 : 10
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.gapMedium
-                AppIcon {
-                    width: 14
-                    height: 14
-                    name: kind === "mcstructure" ? "structure" : kind === "nbt" ? "nbt_editor" : "map"
-                    iconSize: width
-                    iconColor: active ? Theme.accent : Theme.muted
-                    AppDirtyIndicator {
-                        id: sessionDirtyIndicator
-                        dirty: sessionRow.dirty && root.collapsed
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                        anchors.margins: -Theme.gapTiny
-                    }
-                }
-                Text {
-                    visible: !root.collapsed
-                    text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
-                    color: active ? Theme.accent : Theme.text
-                    font.pixelSize: Theme.fontMedium
-                    elide: Text.ElideRight
-                    width: Math.max(0, openWorldList.width - 48)
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-            MouseArea {
-                id: openWorldMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: App.selectWorkspace(sessionIndex)
-            }
-            AppIcon {
-                visible: !root.collapsed
-                anchors.right: parent.right
-                anchors.rightMargin: Theme.gapMedium
-                anchors.verticalCenter: parent.verticalCenter
-                width: 16
-                height: 16
-                name: "close"
-                iconSize: width
-                iconColor: (openWorldClose.pressed || openWorldClose.containsMouse) ? Theme.danger : Theme.muted
-                MouseArea {
-                    id: openWorldClose
-                    anchors.fill: parent
-                    anchors.margins: -Theme.gapSmall
-                    hoverEnabled: true
-                    onClicked: root.closeSessionRequested(sessionIndex)
-                }
-            }
-            AppToolTip {
-                text: title + (sessionRow.dirty ? "\n" + sessionDirtyIndicator.description : "")
-                shown: root.collapsed && openWorldMouse.containsMouse
-            }
+            preferredHeight: Theme.touch ? Theme.controlHeight : (root.collapsed ? Theme.sidebarCollapsedItemSize : 40)
+            railMode: root.collapsed
+            showPath: false
+            active: App.workspaceOpen && sessionIndex === App.workspaceIndex
+            onCloseRequested: root.closeSessionRequested(sessionIndex)
         }
     }
 

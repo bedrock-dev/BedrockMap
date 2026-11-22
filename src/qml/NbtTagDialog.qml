@@ -163,6 +163,7 @@ AppDialog {
                 Layout.preferredHeight: Math.max(64, Math.round(Theme.fontMedium * 3.6))
                 padding: 0
                 clip: true
+                ScrollBar.vertical: AppScrollBar {}
                 background: Rectangle {
                     radius: Theme.radiusMedium
                     color: Theme.surfaceAlt

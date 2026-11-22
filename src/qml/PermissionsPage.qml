@@ -16,6 +16,7 @@ Item {
         anchors.margins: Theme.gapSection
         contentWidth: availableWidth
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
 
         ColumnLayout {
             width: scroll.availableWidth

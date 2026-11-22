@@ -38,7 +38,8 @@ QtObject {
     readonly property int sliderHandleSize: touch ? ui(18) : 14
     readonly property int sliderTrackHeight: ui(4)
     readonly property int spinBoxArrowWidth: touch ? ui(28) : 20
-    readonly property int controlVisualHeight: touch ? Math.max(ui(32), fontMedium + ui(12)) : 28
+    // Keep touch hit areas large without inflating the visible control surface.
+    readonly property int controlVisualHeight: Math.max(ui(28), fontMedium + ui(8))
     readonly property int controlHeight: touch ? Math.max(touchTarget, controlVisualHeight) : 28
     readonly property int buttonHeight: touch ? controlHeight : 32
     readonly property int compactButtonHeight: touch ? controlHeight : 28
@@ -46,8 +47,8 @@ QtObject {
                                                    controlHeight + gapTiny * 2
     readonly property int menuItemHeight: touch ? controlHeight : 30
     readonly property int treeRowHeight: touch ? controlHeight : 28
-    readonly property int settingRowHeight: touch ? Math.max(ui(44), controlHeight + ui(4)) : (compact ? 36 : 38)
-    readonly property int touchSessionRowHeight: Math.max(ui(56), controlHeight + ui(8), fontMedium + fontSmall
+    readonly property int settingRowHeight: compact ? 36 : 38
+    readonly property int touchSessionRowHeight: Math.max(ui(52), controlHeight + ui(8), fontMedium + fontSmall
                                                           + gapTiny + gapLarge * 2)
     readonly property int sessionRowHeight: touch ? touchSessionRowHeight : (compact ? 52 : 64)
     readonly property int iconButtonSize: ui(34)
@@ -184,7 +185,9 @@ QtObject {
 
     function themeWith(palette) {
         const scale = fontScale
-        const text = base => Math.max(8, Math.round(base * scale))
+        // Only the two small text tiers need a mobile readability bump. Larger
+        // headings stay unchanged, and geometry does not scale with this tweak.
+        const text = base => Math.max(8, Math.round(base * scale) + (touch && base <= 12 ? 1 : 0))
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
                                  borderWidth: 0.5,

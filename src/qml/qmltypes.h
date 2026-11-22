@@ -10,6 +10,7 @@
 #include "controller/mapcontroller.h"
 #include "controller/mapitemcontroller.h"
 #include "controller/nbtdocumentcontroller.h"
+#include "controller/nbtrecordfiltermodel.h"
 #include "controller/regionimportcontroller.h"
 #include "controller/runtimesettings.h"
 #include "controller/sessioncontroller.h"
@@ -35,6 +36,12 @@ struct NbtTreeModelQml {
     Q_GADGET
     QML_FOREIGN(NbtTreeModel)
     QML_NAMED_ELEMENT(NbtTreeModel)
+};
+
+struct NbtRecordFilterModelQml {
+    Q_GADGET
+    QML_FOREIGN(NbtRecordFilterModel)
+    QML_NAMED_ELEMENT(NbtRecordFilterModel)
 };
 
 struct RegionImportControllerQml {

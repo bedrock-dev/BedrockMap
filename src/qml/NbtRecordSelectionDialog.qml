@@ -42,6 +42,11 @@ AppDialog {
         const current = selectedValues
         selectedValues = items.map(item => item.value).filter(value => current.indexOf(value) < 0)
     }
+    function openExportDialog() {
+        const fileName = root.selectedCount > 1 ? "records.nbts" : "record.nbt"
+        exportDialog.selectedFile = FileDialogSupport.selectedUrl(exportDialog, fileName)
+        exportDialog.open()
+    }
 
     component DialogButton: AppButton {
         compact: true
@@ -54,10 +59,10 @@ AppDialog {
         title: qsTr("Export selected records")
         fileMode: FileDialog.SaveFile
         defaultSuffix: root.selectedCount > 1 ? "nbts" : "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.nbtRecordFilters
         onAccepted: {
             if (!root.document || !root.document.exportItems(root.selectedValues, selectedUrl)) {
-                App.notifications.error(qsTr("Export failed"))
+                AppErrorReporter.report(qsTr("Export failed"), root.document)
                 return
             }
             App.notifications.info(qsTr("Export successful"))
@@ -72,7 +77,7 @@ AppDialog {
         danger: true
         onConfirmed: {
             if (!root.document || !root.document.removeItems(root.selectedValues)) {
-                App.notifications.error(qsTr("Delete failed"))
+                AppErrorReporter.report(qsTr("Delete failed"), root.document)
                 return
             }
             root.close()
@@ -110,9 +115,7 @@ AppDialog {
             clip: true
             model: root.items
             boundsBehavior: Flickable.StopAtBounds
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
+            ScrollBar.vertical: AppScrollBar {}
             delegate: AppCheckBox {
                 id: recordCheckBox
                 required property int index
@@ -144,7 +147,7 @@ AppDialog {
                 text: qsTr("Export")
                 primary: true
                 enabled: root.selectedCount > 0 && !!root.document
-                onClicked: exportDialog.open()
+                onClicked: root.openExportDialog()
             }
             DialogButton {
                 text: qsTr("Delete")

@@ -18,20 +18,13 @@ Control {
     palette.highlightedText: Theme.onAccent
     palette.placeholderText: Theme.muted
 
-    function selectedExportFile(dialog, fileName) {
-        const folder = dialog.currentFolder.toString()
-        if (folder.length === 0)
-            return fileName
-        return folder + "/" + encodeURIComponent(fileName)
-    }
-
     function openLogExport() {
         const logPath = App.logs.logFile
         const separator = Math.max(logPath.lastIndexOf("/"), logPath.lastIndexOf("\\"))
         const existingName = logPath.length > 0 ? logPath.substring(separator + 1) : ""
         const timestamp = Qt.formatDateTime(new Date(), "yyyyMMdd-HHmmss")
         const fileName = existingName.length > 0 ? existingName : "BedrockMap-logs-" + timestamp + ".log"
-        exportDialog.selectedFile = selectedExportFile(exportDialog, fileName)
+        exportDialog.selectedFile = FileDialogSupport.selectedUrl(exportDialog, fileName)
         exportDialog.open()
     }
 
@@ -44,10 +37,10 @@ Control {
         title: qsTr("Export logs")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "log"
-        nameFilters: [qsTr("Log files (*.log *.txt)")]
+        nameFilters: FileDialogSupport.logFilters
         onAccepted: {
             if (!App.logs.save(selectedUrl))
-                App.notifications.error(qsTr("Export failed"))
+                AppErrorReporter.report(qsTr("Export failed"), App.logs)
             else
                 App.notifications.info(qsTr("Export successful"))
         }
@@ -109,18 +102,21 @@ Control {
                 }
                 AppButton {
                     text: qsTr("Copy")
+                    compact: true
                     enabled: App.logs.count > 0
                     onClicked: App.logs.copyAll()
                     tooltip: qsTr("Copy displayed logs")
                 }
                 AppButton {
                     text: qsTr("Export")
+                    compact: true
                     enabled: App.logs.logFile.length > 0 || App.logs.storedCount > 0
                     onClicked: page.openLogExport()
                     tooltip: qsTr("Export the complete log file")
                 }
                 AppButton {
                     text: qsTr("Clear")
+                    compact: true
                     enabled: App.logs.storedCount > 0
                     onClicked: App.logs.clear()
                     tooltip: qsTr("Clear the view; keep the log file")
@@ -143,7 +139,7 @@ Control {
                 contentWidth: width
                 contentHeight: message.height + Theme.gapMedium * 2
                 boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: ScrollBar {}
+                ScrollBar.vertical: AppScrollBar {}
                 onMovementStarted: followTail = false
                 Component.onCompleted: scrollToEnd()
 

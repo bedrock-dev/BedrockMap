@@ -22,6 +22,7 @@ AppDialog {
             contentHeight: noticeContent.implicitHeight
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical: AppScrollBar {}
             ColumnLayout {
                 id: noticeContent
                 width: noticeScroll.availableWidth

@@ -1,195 +1,11 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import BedrockMap 1.0
 import "controls"
 
 Item {
     id: page
-
-    readonly property var globalShortcuts: [
-        {
-            description: qsTr("Open world"),
-            sequence: "Ctrl+O"
-        },
-        {
-            description: qsTr("Open file"),
-            sequence: "Ctrl+Shift+O"
-        },
-        {
-            description: qsTr("New NBT document"),
-            sequence: "Ctrl+N"
-        },
-        {
-            description: qsTr("Save active document"),
-            sequence: "Ctrl+S"
-        },
-        {
-            description: qsTr("Close active session"),
-            sequence: "Ctrl+W"
-        },
-        {
-            description: qsTr("Exit BedrockMap"),
-            sequence: "Ctrl+Q"
-        },
-        {
-            description: qsTr("Open settings"),
-            sequence: "Ctrl+,"
-        }
-    ]
-    readonly property var mapShortcuts: [
-        {
-            description: qsTr("Toggle grid"),
-            sequence: "Alt+G"
-        },
-        {
-            description: qsTr("Toggle coordinates"),
-            sequence: "Alt+C"
-        },
-        {
-            description: qsTr("Overworld"),
-            sequence: "Alt+1"
-        },
-        {
-            description: qsTr("Nether"),
-            sequence: "Alt+2"
-        },
-        {
-            description: qsTr("The End"),
-            sequence: "Alt+3"
-        },
-        {
-            description: qsTr("Custom dimension"),
-            sequence: "Alt+4"
-        },
-        {
-            description: qsTr("Terrain layer"),
-            sequence: "Alt+T"
-        },
-        {
-            description: qsTr("Biome layer"),
-            sequence: "Alt+B"
-        },
-        {
-            description: qsTr("Toggle slime chunks"),
-            sequence: "Alt+S"
-        },
-        {
-            description: qsTr("Toggle entities"),
-            sequence: "Alt+A"
-        },
-        {
-            description: qsTr("Toggle villages"),
-            sequence: "Alt+V"
-        },
-        {
-            description: qsTr("Toggle HSA"),
-            sequence: "Alt+H"
-        },
-        {
-            description: qsTr("Toggle transparent void"),
-            sequence: "Alt+0"
-        },
-        {
-            description: qsTr("Toggle map filters"),
-            sequence: "Alt+F"
-        },
-        {
-            description: qsTr("Toggle debug panels"),
-            sequence: "Alt+D"
-        }
-    ]
-    readonly property var chunkShortcuts: [
-        {
-            description: qsTr("Replace selection mode"),
-            sequence: "Shift+R"
-        },
-        {
-            description: qsTr("Add selection mode"),
-            sequence: "Shift+A"
-        },
-        {
-            description: qsTr("Subtract selection mode"),
-            sequence: "Shift+S"
-        },
-        {
-            description: qsTr("Clear selection"),
-            sequence: "Shift+C"
-        },
-        {
-            description: qsTr("Copy selected chunks"),
-            sequence: "Ctrl+C"
-        },
-        {
-            description: qsTr("Paste chunks"),
-            sequence: "Ctrl+V"
-        },
-        {
-            description: qsTr("Export selected chunks"),
-            sequence: "Ctrl+E"
-        },
-        {
-            description: qsTr("Import chunks"),
-            sequence: "Ctrl+I"
-        },
-        {
-            description: qsTr("Delete selected chunks"),
-            sequence: "Ctrl+D"
-        },
-        {
-            description: qsTr("Clear selected chunks"),
-            sequence: "Ctrl+K"
-        },
-        {
-            description: qsTr("Edit selection biome"),
-            sequence: "Ctrl+B"
-        },
-        {
-            description: qsTr("Save map screenshot"),
-            sequence: "Ctrl+T"
-        },
-        {
-            description: qsTr("Open 3D view"),
-            sequence: "Ctrl+H"
-        },
-        {
-            description: qsTr("Go to coordinates"),
-            sequence: "Ctrl+G"
-        }
-    ]
-    readonly property var voxelShortcuts: [
-        {
-            description: qsTr("Reset camera"),
-            sequence: "R"
-        },
-        {
-            description: qsTr("Face front"),
-            sequence: "F"
-        },
-        {
-            description: qsTr("Toggle orthographic projection"),
-            sequence: "O"
-        },
-        {
-            description: qsTr("Toggle axes"),
-            sequence: "A"
-        },
-        {
-            description: qsTr("Toggle rotation lock"),
-            sequence: "L"
-        },
-        {
-            description: qsTr("Toggle selection"),
-            sequence: "S"
-        },
-        {
-            description: qsTr("Toggle selection move mode"),
-            sequence: "M"
-        },
-        {
-            description: qsTr("Rotate view with arrow keys"),
-            sequence: "↑ ↓ ← →"
-        }
-    ]
 
     component ShortcutSection: AppCard {
         id: shortcutSection
@@ -250,6 +66,7 @@ Item {
         contentWidth: width
         contentHeight: body.implicitHeight + Theme.gapSection * 2
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
 
         Column {
             id: body
@@ -281,11 +98,11 @@ Item {
 
                     ShortcutSection {
                         heading: qsTr("Global")
-                        entries: page.globalShortcuts
+                        entries: ShortcutRegistry.app
                     }
                     ShortcutSection {
                         heading: qsTr("Selection and chunks")
-                        entries: page.chunkShortcuts
+                        entries: ShortcutRegistry.chunk
                     }
                 }
 
@@ -295,11 +112,11 @@ Item {
 
                     ShortcutSection {
                         heading: qsTr("Map view")
-                        entries: page.mapShortcuts
+                        entries: ShortcutRegistry.map
                     }
                     ShortcutSection {
                         heading: qsTr("3D view")
-                        entries: page.voxelShortcuts
+                        entries: ShortcutRegistry.voxel
                     }
                 }
             }

@@ -203,7 +203,14 @@ foreach(qml_file IN LISTS QML_SOURCE_FILES)
     file(RELATIVE_PATH qml_alias "${PROJECT_SOURCE_DIR}/src/qml" "${qml_file}")
     set_source_files_properties("${qml_file}" PROPERTIES QT_RESOURCE_ALIAS "${qml_alias}")
 endforeach()
-set_source_files_properties(src/qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(
+    src/qml/AppErrorReporter.qml
+    src/qml/FileDialogSupport.qml
+    src/qml/SessionKindRegistry.qml
+    src/qml/ShortcutRegistry.qml
+    src/qml/Theme.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
 
 qt_add_qml_module(BedrockMap
     URI BedrockMap

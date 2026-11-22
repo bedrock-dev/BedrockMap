@@ -81,19 +81,7 @@ AppDialog {
                 spacing: Theme.gapTiny
                 model: root.options
                 boundsBehavior: Flickable.StopAtBounds
-                ScrollBar.vertical: ScrollBar {
-                    id: biomeScrollBar
-                    policy: ScrollBar.AsNeeded
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                    contentItem: Rectangle {
-                        implicitWidth: 6
-                        radius: Theme.radiusSmall
-                        color: Theme.border
-                        opacity: biomeScrollBar.pressed || biomeScrollBar.hovered ? 1.0 : 0.6
-                    }
-                }
+                ScrollBar.vertical: AppScrollBar {}
 
                 delegate: ItemDelegate {
                     id: biomeOption

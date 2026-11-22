@@ -105,6 +105,7 @@ Item {
             contentWidth: Math.max(width, timingTree.implicitWidth)
             contentHeight: renderColumn.implicitHeight
             clip: true
+            ScrollBar.vertical: AppScrollBar {}
 
             Column {
                 id: renderColumn

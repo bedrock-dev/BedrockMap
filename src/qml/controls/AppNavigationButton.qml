@@ -1,25 +1,37 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 
-Rectangle {
+AbstractButton {
     id: root
-    property string icon
+    property string fallbackIcon
     property string iconName
     property string label
     property bool selected: false
-    signal clicked
 
     readonly property color activeColor: root.selected ? Theme.accent : Theme.muted
-    readonly property bool hot: mouse.pressed || mouse.containsMouse
+    readonly property bool hot: pressed || hovered
     readonly property real iconSlotSize: Theme.touch ? Theme.ui(40) : Theme.ui(34)
 
     width: parent.width
     height: parent.height
-    color: "transparent"
+    padding: 0
+    hoverEnabled: true
+    focusPolicy: Qt.TabFocus
 
-    Column {
-        anchors.centerIn: parent
+    Keys.onReturnPressed: animateClick()
+    Keys.onEnterPressed: animateClick()
+
+    background: Rectangle {
+        radius: Theme.radiusMedium
+        color: root.visualFocus ? Theme.accentSoft : "transparent"
+        border.width: root.visualFocus ? Theme.borderWidth * 3 : 0
+        border.color: Theme.accent
+    }
+
+    contentItem: Column {
         width: parent.width
+        anchors.centerIn: parent
         spacing: Theme.gapTiny
         Item {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -35,7 +47,7 @@ Rectangle {
                 width: Theme.iconSize
                 height: width
                 name: root.iconName
-                fallback: root.icon
+                fallback: root.fallbackIcon
                 iconSize: width
                 iconColor: root.activeColor
             }
@@ -44,21 +56,18 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Math.max(0, parent.width - Theme.gapSmall)
             text: root.label
-            color: Theme.muted
+            color: root.selected ? Theme.accent : Theme.muted
             font.pixelSize: Theme.fontSmall
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
         }
     }
 
-    MouseArea {
-        id: mouse
-        anchors.fill: parent
-        hoverEnabled: true
+    HoverHandler {
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
     }
 
-    Accessible.role: Accessible.Button
-    Accessible.name: label
+    Accessible.name: root.label
+    Accessible.checkable: true
+    Accessible.checked: root.selected
 }

@@ -56,6 +56,7 @@ AppDialog {
             contentHeight: notesText.implicitHeight
             clip: true
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical: AppScrollBar {}
             AppTextArea {
                 id: notesText
                 width: notesScroll.availableWidth

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import "controls"
 
 // Dimension, layer, overlay and selection-mode options for one world's map.
@@ -11,10 +12,13 @@ AppCard {
     property var controller: null
     property var terrainData: null
     property bool compact: false
+    property bool debugVisible: false
+    property bool showDebugToggle: false
     readonly property var overlays: controller ? controller.overlays : ({})
     readonly property real naturalHeight: inspectorColumn.height + Theme.gapLarge * 2
 
     signal customDimensionRequested
+    signal debugToggleRequested
 
     // Clicking a checkable button breaks a plain `checked` binding, so the
     // state is re-applied from the controller through a Binding instead.
@@ -44,6 +48,7 @@ AppCard {
         clip: true
         contentWidth: width
         contentHeight: panel.naturalHeight
+        ScrollBar.vertical: AppScrollBar {}
         Column {
             id: inspectorColumn
             x: Theme.gapLarge
@@ -80,6 +85,17 @@ AppCard {
                 OverlayToggle {
                     overlay: "TerrainOutline"
                     text: qsTr("Terrain outline")
+                }
+                AppToggle {
+                    id: debugToggle
+                    visible: panel.showDebugToggle
+                    text: qsTr("Debug panels")
+                    onToggled: panel.debugToggleRequested()
+                    Binding {
+                        target: debugToggle
+                        property: "checked"
+                        value: panel.debugVisible
+                    }
                 }
             }
             SectionLabel {

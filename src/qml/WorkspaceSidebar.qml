@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import "controls"
 
 // Desktop navigation rail: map, child pages, global NBT sections, save and close.
@@ -7,14 +8,9 @@ Rectangle {
     id: sidebar
 
     property var session: null
-    property var globalSections: []
-    property int section: 0
-    property bool chunkEditorOpen: false
-    property bool voxelViewOpen: false
+    property var entries: []
 
-    signal sectionRequested(int section)
-    signal chunkEditorToggleRequested
-    signal voxelViewToggleRequested
+    signal entryRequested(var entry)
     signal saveRequested
     signal closeRequested
 
@@ -37,51 +33,38 @@ Rectangle {
         contentWidth: width
         contentHeight: navigationColumn.height + Theme.gapMedium * 2
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
         Column {
             id: navigationColumn
             x: Theme.gapMedium
             y: Theme.gapMedium
             width: parent.width - Theme.gapMedium * 2
             spacing: Theme.gapTiny
-            AppListRow {
-                iconName: "map"
-                label: qsTr("Map")
-                compact: true
-                selected: sidebar.section === 0
-                onClicked: sidebar.sectionRequested(0)
-            }
-            AppListRow {
-                iconName: "nbt_editor"
-                label: qsTr("Chunk editor")
-                dirty: !!sidebar.session && sidebar.session.chunkEditor.dirty
-                compact: true
-                selected: sidebar.chunkEditorOpen
-                onClicked: sidebar.chunkEditorToggleRequested()
-            }
-            AppListRow {
-                iconName: "structure"
-                label: qsTr("3D view")
-                compact: true
-                selected: sidebar.voxelViewOpen
-                onClicked: sidebar.voxelViewToggleRequested()
-            }
-            Rectangle {
-                width: parent.width
-                height: Theme.borderWidth
-                color: Theme.border
-            }
             Repeater {
-                model: sidebar.globalSections
-                delegate: AppListRow {
+                model: sidebar.entries
+                delegate: Column {
                     required property int index
                     required property var modelData
-                    iconName: modelData.iconName
-                    icon: modelData.shortLabel
-                    dirty: modelData.dirty
-                    label: modelData.title
-                    compact: true
-                    selected: sidebar.section === index + 1
-                    onClicked: sidebar.sectionRequested(index + 1)
+
+                    width: navigationColumn.width
+                    spacing: Theme.gapTiny
+                    Rectangle {
+                        visible: modelData.beginGroup && index > 0
+                        width: parent.width
+                        height: Theme.borderWidth
+                        color: Theme.border
+                    }
+                    AppListRow {
+                        width: parent.width
+                        iconName: modelData.iconName
+                        fallbackIcon: modelData.iconText || ""
+                        dirty: !!modelData.dirty
+                        label: modelData.label
+                        compact: true
+                        selected: !!modelData.selected
+                        enabled: modelData.enabled !== false
+                        onClicked: sidebar.entryRequested(modelData)
+                    }
                 }
             }
         }

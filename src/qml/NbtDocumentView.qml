@@ -17,7 +17,6 @@ Item {
     property bool filterRegex: false
     property real itemListWidth: 190
     property int selectedRow: -1
-    property var filteredItems: filterItems()
     readonly property int compactToolbarHeight: Theme.controlHeight
     readonly property int rootCount: root.document ? root.document.rootCount : 0
     // Record navigation depends on the available editor width, independently
@@ -25,6 +24,13 @@ Item {
     readonly property bool singleColumn: !detailsHidden && width < 420
     signal editRequested(int row)
     signal contextRequested(int row, real sceneX, real sceneY)
+
+    NbtRecordFilterModel {
+        id: recordFilter
+        document: root.document
+        filterText: root.filterText
+        filterRegex: root.filterRegex
+    }
 
     component RecordLabel: Item {
         id: recordLabel
@@ -81,44 +87,9 @@ Item {
     function clampItemListWidth(value) {
         return Math.max(120, Math.min(value, Math.max(120, width - 260)))
     }
-    function filterItems() {
-        const labels = root.document ? root.document.itemLabels : []
-        const icons = root.document ? root.document.itemIcons : []
-        const pattern = root.filterText.trim()
-        const needle = pattern.toLowerCase()
-        const result = []
-        let expression = null
-        if (root.filterRegex && pattern.length > 0) {
-            try {
-                expression = new RegExp(pattern, "i")
-            } catch (error) {
-                return result
-            }
-        }
-        for (let i = 0; i < labels.length; ++i) {
-            const label = String(labels[i])
-            if (needle.length === 0 || (expression ? expression.test(label) : label.toLowerCase().indexOf(needle) >= 0))
-                result.push({
-                                label: labels[i],
-                                icon: icons[i] || "",
-                                sourceIndex: i
-                            })
-        }
-        return result
-    }
-    function currentFilteredIndex() {
-        if (!root.document)
-            return -1
-        for (let i = 0; i < root.filteredItems.length; ++i)
-            if (root.filteredItems[i].sourceIndex === root.document.currentIndex)
-                return i
-        return -1
-    }
     function openAdvancedRecordSelection() {
-        advancedRecordDialog.openFor(root.document, root.filteredItems.map(item => ({
-            text: item.label,
-            value: item.sourceIndex
-        })))
+        recordFilter.flushFilter()
+        advancedRecordDialog.openFor(root.document, recordFilter.dialogItems())
     }
     onWidthChanged: itemListWidth = clampItemListWidth(itemListWidth)
 
@@ -173,30 +144,31 @@ Item {
                 Layout.minimumHeight: root.compactToolbarHeight
                 Layout.maximumHeight: root.compactToolbarHeight
                 Layout.alignment: Qt.AlignVCenter
-                model: root.filteredItems
+                model: recordFilter
                 textRole: "label"
-                currentIndex: root.currentFilteredIndex()
+                valueRole: "sourceIndex"
                 contentItem: RecordLabel {
                     leftPadding: Theme.gapLarge
                     rightPadding: Theme.gapLarge
                     label: recordSelector.displayText
-                    icon: recordSelector.currentIndex >= 0 && recordSelector.currentIndex < root.filteredItems.length
-                          ? root.filteredItems[recordSelector.currentIndex].icon : ""
+                    icon: recordFilter.currentIcon
                     font: recordSelector.font
                 }
                 delegate: ItemDelegate {
                     id: recordOption
                     required property int index
-                    required property var modelData
+                    required property string label
+                    required property string itemIcon
+                    required property int sourceIndex
                     width: recordSelector.width
                     implicitHeight: Theme.controlHeight
                     highlighted: recordSelector.highlightedIndex === index
-                    text: modelData.label
+                    text: label
                     contentItem: RecordLabel {
                         leftPadding: Theme.gapLarge
                         rightPadding: Theme.gapLarge
                         label: recordOption.text
-                        icon: recordOption.modelData.icon
+                        icon: recordOption.itemIcon
                         font.pixelSize: Theme.fontMedium
                     }
                     background: Rectangle {
@@ -205,7 +177,12 @@ Item {
                     }
                 }
                 onActivated: if (root.document && currentIndex >= 0)
-                root.document.selectItem(root.filteredItems[currentIndex].sourceIndex)
+                root.document.selectItem(recordFilter.sourceIndexAt(currentIndex))
+            }
+            Binding {
+                target: recordSelector
+                property: "currentIndex"
+                value: recordFilter.currentIndex
             }
             AppIconButton {
                 iconName: "tools"
@@ -267,19 +244,19 @@ Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             clip: true
-                            model: root.filteredItems
+                            model: recordFilter
                             boundsBehavior: Flickable.StopAtBounds
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
-                            }
+                            ScrollBar.vertical: AppScrollBar {}
                             delegate: Rectangle {
                                 id: recordRow
                                 required property int index
-                                required property var modelData
+                                required property string label
+                                required property string itemIcon
+                                required property int sourceIndex
                                 width: ListView.view.width
                                 height: Theme.menuItemHeight
                                 radius: Theme.radiusSmall
-                                readonly property bool current: root.document && modelData.sourceIndex
+                                readonly property bool current: root.document && sourceIndex
                                                                 === root.document.currentIndex
                                 color: current ? Theme.accentSoft : (itemMouse.pressed ? Theme.surfaceAlt :
                                                                                          "transparent")
@@ -287,8 +264,8 @@ Item {
                                     anchors.fill: parent
                                     leftPadding: Theme.gapMedium
                                     rightPadding: Theme.gapMedium
-                                    label: recordRow.modelData.label
-                                    icon: recordRow.modelData.icon
+                                    label: recordRow.label
+                                    icon: recordRow.itemIcon
                                     textColor: recordRow.current ? Theme.accent : Theme.text
                                     font.family: "JetBrains Mono"
                                     font.pixelSize: Theme.fontMedium
@@ -297,7 +274,7 @@ Item {
                                     id: itemMouse
                                     anchors.fill: parent
                                     onClicked: if (root.document)
-                                    root.document.selectItem(recordRow.modelData.sourceIndex)
+                                    root.document.selectItem(recordRow.sourceIndex)
                                 }
                             }
                         }

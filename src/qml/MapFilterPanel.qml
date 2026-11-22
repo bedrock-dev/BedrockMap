@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
@@ -53,9 +54,9 @@ AppCard {
         actorBlackMode = options.actorBlackMode !== undefined ? Boolean(options.actorBlackMode) : true
         layerEnabled = options.layerEnabled !== undefined ? Boolean(options.layerEnabled) : false
         fixedLayer = options.layer !== undefined ? Number(options.layer) : 64
-        blockField.text = formatList(options.blockList)
-        biomeField.text = formatList(options.biomeList)
-        actorField.text = formatList(options.actorList)
+        blockFilter.text = formatList(options.blockList)
+        biomeFilter.text = formatList(options.biomeList)
+        actorFilter.text = formatList(options.actorList)
     }
 
     function refresh() {
@@ -71,16 +72,56 @@ AppCard {
             return
         const applied = controller.applyMapFilterOptions({
                                                              blockBlackMode: blockBlackMode,
-                                                             blockList: splitList(blockField.text),
+                                                             blockList: splitList(blockFilter.text),
                                                              biomeBlackMode: biomeBlackMode,
-                                                             biomeList: splitBiomeIds(biomeField.text),
+                                                             biomeList: splitBiomeIds(biomeFilter.text),
                                                              actorBlackMode: actorBlackMode,
-                                                             actorList: splitList(actorField.text),
+                                                             actorList: splitList(actorFilter.text),
                                                              layerEnabled: layerEnabled,
                                                              layer: fixedLayer
                                                          })
         if (applied)
             root.closeRequested()
+    }
+
+    component FilterEditor: ColumnLayout {
+        id: editor
+
+        property string title
+        property string placeholderText
+        property bool blackMode
+        property alias text: field.text
+        signal modeChanged(bool blackMode)
+
+        Layout.fillWidth: true
+        spacing: Theme.gapSmall
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.gapSmall
+
+            Text {
+                Layout.fillWidth: true
+                text: editor.title
+                color: Theme.text
+                font.pixelSize: Theme.fontMedium
+            }
+
+            AppSegmentedControl {
+                Layout.preferredWidth: 142
+                Layout.preferredHeight: Theme.buttonHeight
+                options: [qsTr("Exclude"), qsTr("Include")]
+                currentIndex: editor.blackMode ? 0 : 1
+                onActivated: index => editor.modeChanged(index === 0)
+            }
+        }
+
+        AppTextArea {
+            id: field
+            Layout.fillWidth: true
+            Layout.preferredHeight: 72
+            placeholderText: editor.placeholderText
+        }
     }
 
     onVisibleChanged: if (visible)
@@ -95,6 +136,7 @@ AppCard {
         contentHeight: popupColumn.implicitHeight + Theme.gapLarge * 2
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: AppScrollBar {}
 
         ColumnLayout {
             id: popupColumn
@@ -103,85 +145,28 @@ AppCard {
             width: contentFlick.width - Theme.gapLarge * 2
             spacing: Theme.gapMedium
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Theme.gapSmall
-
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Blocks")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontMedium
-                }
-
-                AppSegmentedControl {
-                    Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.buttonHeight
-                    options: [qsTr("Exclude"), qsTr("Include")]
-                    currentIndex: root.blockBlackMode ? 0 : 1
-                    onActivated: index => root.blockBlackMode = index === 0
-                }
-            }
-
-            AppTextArea {
-                id: blockField
-                Layout.fillWidth: true
-                Layout.preferredHeight: 72
+            FilterEditor {
+                id: blockFilter
+                title: qsTr("Blocks")
                 placeholderText: qsTr("Block IDs, separated by commas")
+                blackMode: root.blockBlackMode
+                onModeChanged: blackMode => root.blockBlackMode = blackMode
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Theme.gapSmall
-
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Biomes")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontMedium
-                }
-
-                AppSegmentedControl {
-                    Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.buttonHeight
-                    options: [qsTr("Exclude"), qsTr("Include")]
-                    currentIndex: root.biomeBlackMode ? 0 : 1
-                    onActivated: index => root.biomeBlackMode = index === 0
-                }
-            }
-
-            AppTextArea {
-                id: biomeField
-                Layout.fillWidth: true
-                Layout.preferredHeight: 72
+            FilterEditor {
+                id: biomeFilter
+                title: qsTr("Biomes")
                 placeholderText: qsTr("Biome IDs, separated by commas")
+                blackMode: root.biomeBlackMode
+                onModeChanged: blackMode => root.biomeBlackMode = blackMode
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Theme.gapSmall
-
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("Entities")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontMedium
-                }
-
-                AppSegmentedControl {
-                    Layout.preferredWidth: 142
-                    Layout.preferredHeight: Theme.buttonHeight
-                    options: [qsTr("Exclude"), qsTr("Include")]
-                    currentIndex: root.actorBlackMode ? 0 : 1
-                    onActivated: index => root.actorBlackMode = index === 0
-                }
-            }
-
-            AppTextArea {
-                id: actorField
-                Layout.fillWidth: true
-                Layout.preferredHeight: 72
+            FilterEditor {
+                id: actorFilter
+                title: qsTr("Entities")
                 placeholderText: qsTr("Entity keys, separated by commas")
+                blackMode: root.actorBlackMode
+                onModeChanged: blackMode => root.actorBlackMode = blackMode
             }
 
             Rectangle {

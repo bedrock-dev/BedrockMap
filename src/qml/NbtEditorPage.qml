@@ -19,9 +19,6 @@ Item {
     NbtDocumentActions {
         id: documentActions
         document: page.document
-        allowSave: true
-        externalSave: true
-        onSaveRequested: page.saveRequested()
     }
 
     Rectangle {

@@ -1,6 +1,7 @@
 import BedrockMap 1.0
 import QtCore
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Dialogs
 import "controls"
 
@@ -34,9 +35,8 @@ Item {
 
     function chooseWorldExport(path, title) {
         exportWorldDialog.worldPath = path
-        const fileName = title.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_").replace(/[. ]+$/, "") || "world"
-        exportWorldDialog.selectedFile = exportWorldDialog.currentFolder + "/" + encodeURIComponent(fileName)
-                + ".mcworld"
+        const fileName = FileDialogSupport.sanitizedFileName(title, "world")
+        exportWorldDialog.selectedFile = FileDialogSupport.selectedUrlWithSuffix(exportWorldDialog, fileName, "mcworld")
         exportWorldDialog.open()
     }
 
@@ -47,7 +47,7 @@ Item {
         fileMode: FileDialog.SaveFile
         currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         defaultSuffix: "mcworld"
-        nameFilters: [qsTr("Minecraft worlds (*.mcworld)")]
+        nameFilters: FileDialogSupport.mcworldFilters
         onAccepted: {
             const path = worldPath
             worldPath = ""
@@ -77,7 +77,7 @@ Item {
         id: openFileDialog
         title: qsTr("Open file")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("Minecraft files (*.mcworld *.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.minecraftFileFilters
         onAccepted: App.openFile(selectedUrl)
     }
 
@@ -97,6 +97,13 @@ Item {
             color: Theme.muted
             font.pixelSize: Theme.fontMedium
         }
+    }
+
+    component WorldDelegate: WorldCardDelegate {
+        onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
+        onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
+        onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
+        onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
     }
 
     component WorldSection: Column {
@@ -143,14 +150,10 @@ Item {
             cellWidth: Math.max(1, width / Math.max(1, Math.floor(width / Math.round(230 * Theme.metricScale))))
             cellHeight: Math.round((Theme.compact ? 166 : 178) * Theme.metricScale)
             model: section.worlds
-            delegate: WorldCardDelegate {
+            delegate: WorldDelegate {
                 width: GridView.view.cellWidth
                 height: GridView.view.cellHeight
                 gridMode: true
-                onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
-                onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
-                onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
-                onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
             }
         }
 
@@ -162,14 +165,10 @@ Item {
             interactive: false
             spacing: Theme.gapLarge
             model: section.worlds
-            delegate: WorldCardDelegate {
+            delegate: WorldDelegate {
                 width: ListView.view.width
                 height: Math.round((Theme.compact ? 76 : 92) * Theme.metricScale)
                 gridMode: false
-                onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
-                onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
-                onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
-                onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
             }
             Text {
                 visible: listView.count === 0
@@ -185,6 +184,7 @@ Item {
         anchors.fill: parent
         contentHeight: body.height + Theme.gapSection
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
         Column {
             id: body
             x: Theme.gapSection
@@ -201,7 +201,11 @@ Item {
                 id: welcomeActions
                 width: parent.width
                 spacing: Theme.gapMedium
-                readonly property real actionWidth: (width - spacing * 2) / 3
+                readonly property real minimumActionWidth: Theme.ui(180)
+                readonly property int actionColumns: Math.max(1, Math.min(3, Math.floor((width + spacing) / (
+                                                                                            minimumActionWidth
+                                                                                            + spacing))))
+                readonly property real actionWidth: (width - spacing * (actionColumns - 1)) / actionColumns
                 AppListRow {
                     width: welcomeActions.actionWidth
                     height: Theme.touch ? implicitHeight : (Theme.compact ? 64 : 68)

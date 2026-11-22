@@ -54,6 +54,10 @@ Item {
             return
         exportEntities = structureSection.includeEntities
         exportNewFormat = structureSection.newFormat
+        const origin = camera.modelOrigin
+        const fileName = "structure-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z
+                                         + exportMinimum.z].join("_") + ".mcstructure"
+        structureExportDialog.selectedFile = FileDialogSupport.selectedUrl(structureExportDialog, fileName)
         structureExportDialog.open()
     }
 
@@ -64,8 +68,7 @@ Item {
         const origin = camera.modelOrigin
         const fileName = "voxel-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z
                                      + exportMinimum.z].join("_") + ".glb"
-        glbExportDialog.selectedFile = glbExportDialog.currentFolder.toString().length > 0
-                ? glbExportDialog.currentFolder + "/" + encodeURIComponent(fileName) : fileName
+        glbExportDialog.selectedFile = FileDialogSupport.selectedUrl(glbExportDialog, fileName)
         glbExportDialog.open()
     }
 
@@ -133,65 +136,55 @@ Item {
         }
     }
 
-    readonly property var viewShortcuts: [
-        {
-            sequence: "R",
-            action: () => root.camera.resetView()
-        },
-        {
-            sequence: "F",
-            action: () => root.camera.focusFrontFace()
-        },
-        {
-            sequence: "O",
-            action: () => root.camera.orthoMode = !root.camera.orthoMode
-        },
-        {
-            sequence: "A",
-            action: () => viewport.showAxes = !viewport.showAxes
-        },
-        {
-            sequence: "L",
-            action: () => root.camera.rotationLocked = !root.camera.rotationLocked
-        },
-        {
-            sequence: "S",
-            action: () => root.camera.selectionEnabled = !root.camera.selectionEnabled
-        },
-        {
-            sequence: "M",
-            needsSelection: true,
-            action: () => root.camera.selectionMoveMode = !root.camera.selectionMoveMode
-        },
-        {
-            sequence: "Left",
-            action: () => root.camera.rotateView(-90, 0)
-        },
-        {
-            sequence: "Right",
-            action: () => root.camera.rotateView(90, 0)
-        },
-        {
-            sequence: "Up",
-            action: () => root.camera.rotateView(0, -90)
-        },
-        {
-            sequence: "Down",
-            action: () => root.camera.rotateView(0, 90)
+    function runViewShortcut(command) {
+        switch (command) {
+        case "resetCamera":
+            camera.resetView()
+            return
+        case "faceFront":
+            camera.focusFrontFace()
+            return
+        case "toggleOrthographic":
+            camera.orthoMode = !camera.orthoMode
+            return
+        case "toggleAxes":
+            viewport.showAxes = !viewport.showAxes
+            return
+        case "toggleRotationLock":
+            camera.rotationLocked = !camera.rotationLocked
+            return
+        case "toggleSelection":
+            camera.selectionEnabled = !camera.selectionEnabled
+            return
+        case "toggleSelectionMove":
+            camera.selectionMoveMode = !camera.selectionMoveMode
+            return
+        case "rotateLeft":
+            camera.rotateView(-90, 0)
+            return
+        case "rotateRight":
+            camera.rotateView(90, 0)
+            return
+        case "rotateUp":
+            camera.rotateView(0, -90)
+            return
+        case "rotateDown":
+            camera.rotateView(0, 90)
+            return
         }
-    ]
+    }
 
     // Shortcut needs an Item parent to find its window, hence the Item wrapper.
     Repeater {
-        model: root.viewShortcuts
+        model: ShortcutRegistry.voxel
         delegate: Item {
             id: shortcutHost
             required property var modelData
             Shortcut {
                 sequence: shortcutHost.modelData.sequence
-                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.needsSelection
+                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.requiresSelection
                                                        || root.camera.selectionEnabled)
-                onActivated: shortcutHost.modelData.action()
+                onActivated: root.runViewShortcut(shortcutHost.modelData.command)
             }
         }
     }
@@ -201,10 +194,10 @@ Item {
         objectName: "voxelStructureImportDialog"
         title: qsTr("Import structure")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("Minecraft structures (*.mcstructure)")]
+        nameFilters: FileDialogSupport.mcstructureFilters
         onAccepted: {
             if (!root.controller || !root.controller.importStructure(selectedUrl))
-                App.notifications.error(qsTr("Import failed"))
+                AppErrorReporter.report(qsTr("Import failed"), root.controller)
         }
     }
 
@@ -214,11 +207,11 @@ Item {
         title: qsTr("Export structure")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "mcstructure"
-        nameFilters: [qsTr("Minecraft structures (*.mcstructure)")]
+        nameFilters: FileDialogSupport.mcstructureFilters
         onAccepted: {
             if (!root.exportTarget || !root.exportTarget.exportMcstructure(selectedUrl, root.exportMinimum, root.exportMaximum,
                                                                            root.exportEntities, root.exportNewFormat))
-                App.notifications.error(qsTr("Export failed"))
+                AppErrorReporter.report(qsTr("Export failed"), root.exportTarget)
         }
     }
     FileUrlDialog {
@@ -227,11 +220,11 @@ Item {
         title: qsTr("Export GLB")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "glb"
-        nameFilters: [qsTr("GLB models (*.glb)")]
+        nameFilters: FileDialogSupport.glbFilters
         onAccepted: {
             if (!root.exportTarget || !root.exportTarget.exportGlb(selectedUrl, root.exportMinimum, root.exportMaximum,
                                                                    root.exportCompressMesh))
-                App.notifications.error(qsTr("Export failed"))
+                AppErrorReporter.report(qsTr("Export failed"), root.exportTarget)
         }
     }
 
@@ -289,7 +282,7 @@ Item {
             flickableDirection: Flickable.VerticalFlick
             boundsBehavior: Flickable.StopAtBounds
             clip: true
-            ScrollBar.vertical: ScrollBar {}
+            ScrollBar.vertical: AppScrollBar {}
             ColumnLayout {
                 id: sections
                 x: Theme.gapSmall

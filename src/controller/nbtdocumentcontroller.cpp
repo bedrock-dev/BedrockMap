@@ -58,6 +58,12 @@ QStringList NbtDocumentController::itemIcons() const {
     return icons;
 }
 
+NbtItemPresentation NbtDocumentController::itemPresentation(int index) const {
+    if (index < 0 || index >= static_cast<int>(items_.size())) return {};
+    const Item& item = items_[static_cast<size_t>(index)];
+    return {item.label.isEmpty() ? QString::number(index) : item.label, item.icon};
+}
+
 QString NbtDocumentController::documentTitle() const {
     if (!document_title_.isEmpty()) return document_title_;
     return file_url_.isEmpty() ? QStringLiteral("Untitled") : io::DocumentIo::displayName(file_url_);

@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import "controls"
 
 Item {
@@ -13,6 +14,7 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         interactive: contentHeight > height
         clip: true
+        ScrollBar.vertical: AppScrollBar {}
 
         Column {
             id: body
@@ -31,92 +33,13 @@ Item {
 
             Repeater {
                 model: App.openSessions
-                delegate: Rectangle {
-                    required property int sessionIndex
-                    required property string title
-                    required property string path
-                    required property bool dirty
-                    required property string kind
-                    readonly property bool active: App.workspaceOpen && sessionIndex === App.workspaceIndex
-                    readonly property color rowColor: {
-                        if (active)
-                            return Theme.accentSoft
-                        if (rowMouse.pressed || rowMouse.containsMouse)
-                            return Theme.surfaceAlt
-                        return Theme.compact ? "transparent" : Theme.surface
-                    }
-                    readonly property real rowBorderWidth: active || !Theme.compact ? Theme.borderWidth : 0
-
+                delegate: SessionListRow {
                     width: body.width
-                    height: Theme.sessionRowHeight
-                    radius: Theme.radiusLarge
-                    color: rowColor
-                    border.width: rowBorderWidth
-                    border.color: active ? Theme.accent : Theme.border
-
-                    Row {
-                        anchors.fill: parent
-                        anchors.margins: Theme.gapLarge
-                        spacing: Theme.gapMedium
-
-                        Rectangle {
-                            width: Theme.ui(34)
-                            height: width
-                            radius: Theme.radiusMedium
-                            color: active ? Theme.accent : Theme.accentSoft
-                            anchors.verticalCenter: parent.verticalCenter
-                            AppIcon {
-                                anchors.centerIn: parent
-                                width: Theme.iconSize
-                                height: width
-                                name: kind === "mcstructure" ? "structure" : kind === "nbt" ? "nbt_editor" :
-                                                                                              "opened_world_list"
-                                iconSize: width
-                                iconColor: active ? Theme.onAccent : Theme.accent
-                            }
-                        }
-
-                        Column {
-                            width: Math.max(0, parent.width - Theme.ui(34) - parent.spacing - closeButton.controlSize
-                                            - Theme.gapSmall)
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: Theme.gapTiny
-                            Text {
-                                width: parent.width
-                                text: (title || qsTr("Untitled world")) + (dirty ? " *" : "")
-                                color: active ? Theme.accent : Theme.text
-                                font.pixelSize: Theme.fontMedium
-                                elide: Text.ElideRight
-                            }
-                            Text {
-                                width: parent.width
-                                text: path
-                                color: Theme.muted
-                                font.pixelSize: Theme.fontSmall
-                                elide: Text.ElideMiddle
-                            }
-                        }
-                    }
-
-                    MouseArea {
-                        id: rowMouse
-                        anchors.fill: parent
-                        anchors.rightMargin: closeButton.width + closeButton.anchors.rightMargin
-                        hoverEnabled: true
-                        onClicked: App.selectWorkspace(sessionIndex)
-                    }
-
-                    AppIconButton {
-                        id: closeButton
-                        anchors.right: parent.right
-                        anchors.rightMargin: Theme.gapSmall
-                        anchors.verticalCenter: parent.verticalCenter
-                        iconName: "close"
-                        label: qsTr("Close session")
-                        buttonSize: Theme.iconButtonSmallSize
-                        danger: true
-                        onClicked: App.closeSession(sessionIndex)
-                    }
+                    preferredHeight: Theme.sessionRowHeight
+                    pageMode: true
+                    showPath: true
+                    active: App.workspaceOpen && sessionIndex === App.workspaceIndex
+                    onCloseRequested: App.closeSession(sessionIndex)
                 }
             }
 

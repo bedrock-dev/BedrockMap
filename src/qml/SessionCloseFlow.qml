@@ -64,7 +64,7 @@ Item {
         closeSaveInProgress = intentRequiresClose(intent)
         if (!session.commit()) {
             closeSaveInProgress = false
-            App.notifications.error(qsTr("Save failed"))
+            AppErrorReporter.report(qsTr("Save failed"), session.document || session)
             return
         }
         // Synchronous saves and no-op commits do not emit saved(), so close the
@@ -86,18 +86,11 @@ Item {
         return false
     }
 
-    function selectedSaveFile(dialog, fileName) {
-        const folder = dialog.currentFolder.toString()
-        if (folder.length === 0)
-            return fileName
-        return folder + "/" + encodeURIComponent(fileName)
-    }
-
     function openSaveAs(session, intent) {
         saveAsSession = session
         saveAsIntent = intent || "manual"
         const filename = session.document.suggestedSaveFileName()
-        saveAsDialog.selectedFile = selectedSaveFile(saveAsDialog, filename)
+        saveAsDialog.selectedFile = FileDialogSupport.selectedUrl(saveAsDialog, filename)
         saveAsDialog.open()
     }
 
@@ -159,7 +152,7 @@ Item {
         title: qsTr("Save NBT file")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "nbt"
-        nameFilters: [qsTr("NBT files (*.nbt *.nbts *.mcstructure *.palette)"), qsTr("All files (*)")]
+        nameFilters: FileDialogSupport.nbtFilters
         onAccepted: {
             const session = root.saveAsSession
             const intent = root.saveAsIntent
@@ -168,7 +161,7 @@ Item {
             if (!session || !session.document)
                 return
             if (!session.document.saveAs(selectedUrl)) {
-                App.notifications.error(qsTr("Save failed"))
+                AppErrorReporter.report(qsTr("Save failed"), session.document)
                 return
             }
             if (root.intentRequiresClose(intent) && session === root.closingSession)
@@ -194,7 +187,8 @@ Item {
             Text {
                 width: parent.width
                 visible: !!root.pendingSaveSession
-                text: root.pendingSaveSession ? (root.pendingSaveSession.title || qsTr("Untitled world")) : ""
+                text: root.pendingSaveSession ? (root.pendingSaveSession.title || SessionKindRegistry.untitledTitle(
+                                                     root.pendingSaveSession.kind)) : ""
                 color: Theme.text
                 font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight
@@ -241,7 +235,8 @@ Item {
             Text {
                 width: parent.width
                 visible: !!root.closingSession
-                text: root.closingSession ? (root.closingSession.title || qsTr("Untitled world")) : ""
+                text: root.closingSession ? (root.closingSession.title || SessionKindRegistry.untitledTitle(
+                                                 root.closingSession.kind)) : ""
                 color: Theme.text
                 font.pixelSize: Theme.fontMedium
                 elide: Text.ElideRight

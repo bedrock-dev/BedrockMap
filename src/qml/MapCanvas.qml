@@ -44,6 +44,9 @@ Item {
     property real lastPanSampleMs: 0
     property real lastPanMotionMs: 0
     property real lastInertiaTickMs: 0
+    // Avoid repeated QML-to-C++ calls after the controller has applied its
+    // one-time initial camera position for the current session.
+    property var initialPositionController: null
     signal chunkEditorRequested(int chunkX, int chunkZ, int dimension)
     signal voxelViewRequested(int chunkX, int chunkZ, int dimension)
     /// Both debug panels use the platform font.
@@ -61,7 +64,7 @@ Item {
         id: importDialog
         title: qsTr("Import chunks")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("BedrockMap regions (*.bchks)")]
+        nameFilters: FileDialogSupport.regionFilters
         property int targetX: 0
         property int targetZ: 0
         property int dimension: 0
@@ -79,7 +82,7 @@ Item {
         title: qsTr("Export selected chunks")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "bchks"
-        nameFilters: [qsTr("BedrockMap regions (*.bchks)")]
+        nameFilters: FileDialogSupport.regionFilters
         onAccepted: if (canvas.controller && canvas.controller.exportSelectionAsync(selectedUrl))
                         canvas.operationText = qsTr("Exporting selected chunks…")
     }
@@ -89,7 +92,7 @@ Item {
         title: qsTr("Save screenshot")
         fileMode: FileDialog.SaveFile
         defaultSuffix: "png"
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: FileDialogSupport.pngFilters
         onAccepted: canvas.saveScreenshot(selectedUrl)
     }
 
@@ -148,7 +151,7 @@ Item {
         }
         function onOperationFailed(message) {
             canvas.operationText = ""
-            App.notifications.error(qsTr("Map operation failed"))
+            App.notifications.error(qsTr("Map operation failed"), "", String(message || ""))
         }
         function onDimensionChanged() {
             canvas.refreshHoverBlock(true)
@@ -214,9 +217,16 @@ Item {
         stopPanInertia()
         controller.gotoBlock(0, 0)
     }
+    function updateViewport() {
+        if (controller)
+            controller.setViewportSize(Qt.size(width, height))
+        refreshCrosshairBlock(true)
+    }
     function applyInitialMapPosition() {
-        if (controller && width > 0 && height > 0)
-            controller.centerOnInitialMapPosition()
+        if (!controller || initialPositionController === controller || width <= 0 || height <= 0)
+            return
+        if (controller.centerOnInitialMapPosition())
+            initialPositionController = controller
     }
     function beginMapDrag() {
         terrainLayer.setDragActive(true)
@@ -387,11 +397,11 @@ Item {
         importDialog.open()
     }
     function openChunkRegionExport() {
-        exportDialog.selectedFile = exportDialog.currentFolder + "/chunkregion.bchks"
+        exportDialog.selectedFile = FileDialogSupport.selectedUrl(exportDialog, "chunkregion.bchks")
         exportDialog.open()
     }
     function openScreenshotDialog() {
-        screenshotDialog.selectedFile = screenshotDialog.currentFolder + "/map-screenshot.png"
+        screenshotDialog.selectedFile = FileDialogSupport.selectedUrl(screenshotDialog, "map-screenshot.png")
         screenshotDialog.open()
     }
     function saveScreenshot(targetFile) {
@@ -438,32 +448,25 @@ Item {
         }
     }
     onWidthChanged: {
-        if (controller)
-            controller.setViewportSize(Qt.size(width, height))
+        updateViewport()
         applyInitialMapPosition()
-        refreshCrosshairBlock(true)
     }
     onHeightChanged: {
-        if (controller)
-            controller.setViewportSize(Qt.size(width, height))
+        updateViewport()
         applyInitialMapPosition()
-        refreshCrosshairBlock(true)
     }
     Component.onCompleted: {
-        if (controller)
-            controller.setViewportSize(Qt.size(width, height))
+        updateViewport()
         applyInitialMapPosition()
-        refreshCrosshairBlock(true)
     }
     onControllerChanged: {
         stopPanInertia()
         clearHoverBlock()
+        initialPositionController = null
         if (mapTouchInput)
             mapTouchInput.cancelGesture()
-        if (controller)
-            controller.setViewportSize(Qt.size(width, height))
+        updateViewport()
         applyInitialMapPosition()
-        refreshCrosshairBlock(true)
     }
     onCrosshairEnabledChanged: {
         refreshCrosshairBlock(true)
