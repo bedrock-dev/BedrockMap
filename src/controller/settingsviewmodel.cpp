@@ -90,6 +90,12 @@ void SettingsViewModel::setAccentColor(const QString& v) {
     values_.accentColor = trimmed;
     emit accentColorChanged();
 }
+void SettingsViewModel::setBackgroundImage(const QString& v) {
+    const QString trimmed = v.trimmed();
+    if (values_.backgroundImage == trimmed) return;
+    values_.backgroundImage = trimmed;
+    emit settingsChanged();
+}
 void SettingsViewModel::setLanguage(const QString& v) {
     if (values_.language == v) return;
     values_.language = v;
@@ -172,6 +178,7 @@ BM_SET_BOOL(setShowMapDebugButton, showMapDebugButton, settingsChanged)
 BM_SET_BOOL(setShowMapStatusBar, showMapStatusBar, settingsChanged)
 BM_SET_BOOL(setShowMapCrosshair, showMapCrosshair, settingsChanged)
 BM_SET_INT(setFontSize, fontSize, fontSizeChanged, 6, 96)
+BM_SET_DOUBLE(setBackgroundImageOpacity, backgroundImageOpacity, settingsChanged, 0.0, 1.0)
 BM_SET_BOOL(setGpuOrthographicView, gpuOrthographicView, settingsChanged)
 BM_SET_BOOL(setChunkOverviewEnabled, chunkOverviewEnabled, settingsChanged)
 BM_SET_DOUBLE(setGpuShadowStrength, gpuShadowStrength, settingsChanged, 0.0, 1.0)

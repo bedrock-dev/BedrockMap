@@ -60,8 +60,10 @@ namespace setting {
         QString colorTheme{"system"};
         bool collapseSidebarOnStartup{false};  // Start the QML sidebar collapsed when enabled.
         int fontSize{-1};
-        QString accentColor;  // Empty keeps the built-in theme accent.
-        QString language;     // Empty auto-detects from the system locale.
+        QString accentColor;      // Empty keeps the built-in theme accent.
+        QString backgroundImage;  // Local file or provider URL; empty disables it.
+        double backgroundImageOpacity{0.35};
+        QString language;  // Empty auto-detects from the system locale.
 
         // Rendering
         // Qt Quick RHI backend: automatic, opengl, vulkan or d3d11.

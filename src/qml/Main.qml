@@ -142,6 +142,16 @@ Window {
         readonly property real safeBottom: SafeArea.margins.bottom
         readonly property real safeLeft: SafeArea.margins.left
         readonly property real safeRight: SafeArea.margins.right
+        Image {
+            anchors.fill: parent
+            source: App.settings.backgroundImage
+            sourceSize: Qt.size(window.width, window.height)
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            cache: true
+            visible: App.settings.backgroundImage.length > 0 && status === Image.Ready
+            opacity: App.settings.backgroundImageOpacity
+        }
     }
 
     function openWorld(path, title) {

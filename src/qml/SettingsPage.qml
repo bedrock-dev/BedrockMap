@@ -101,9 +101,17 @@ Item {
         }
     }
 
+    FileUrlDialog {
+        id: backgroundImageDialog
+        title: qsTr("Choose background image")
+        fileMode: FileDialog.OpenFile
+        nameFilters: FileDialogSupport.imageFilters
+        onAccepted: App.settings.backgroundImage = selectedUrl.toString()
+    }
+
     Rectangle {
         anchors.fill: parent
-        color: Theme.background
+        color: "transparent"
     }
     ColumnLayout {
         id: shell
@@ -225,6 +233,71 @@ Item {
                                         value: App.settings.accentColor
                                         restoreMode: Binding.RestoreBindingOrValue
                                     }
+                                }
+                            }
+                        }
+                    }
+                    SettingGroup {
+                        title: qsTr("Experimental background")
+                        SettingRow {
+                            label: qsTr("Image path")
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: Theme.ui(260)
+                                Layout.minimumWidth: 0
+                                spacing: Theme.gapSmall
+                                Label {
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 0
+                                    Layout.minimumWidth: 0
+                                    text: App.settings.backgroundImage.length > 0 ? App.settings.backgroundImage : qsTr(
+                                                                                        "No image")
+                                    color: Theme.muted
+                                    font.pixelSize: Theme.fontSmall
+                                    elide: Text.ElideMiddle
+                                }
+                                AppButton {
+                                    text: qsTr("Choose")
+                                    compact: page.compact
+                                    onClicked: backgroundImageDialog.open()
+                                }
+                                AppIconButton {
+                                    visible: App.settings.backgroundImage.length > 0
+                                    iconName: "close"
+                                    label: qsTr("Clear background image")
+                                    danger: true
+                                    onClicked: App.settings.backgroundImage = ""
+                                }
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Opacity")
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: Theme.ui(260)
+                                Layout.minimumWidth: 0
+                                spacing: Theme.gapSmall
+                                AppSlider {
+                                    id: backgroundOpacitySlider
+                                    Layout.fillWidth: true
+                                    enabled: App.settings.backgroundImage.length > 0
+                                    from: 0
+                                    to: 1
+                                    stepSize: 0.05
+                                    onMoved: App.settings.backgroundImageOpacity = value
+                                }
+                                Binding {
+                                    target: backgroundOpacitySlider
+                                    property: "value"
+                                    value: App.settings.backgroundImageOpacity
+                                    restoreMode: Binding.RestoreBindingOrValue
+                                }
+                                Label {
+                                    Layout.preferredWidth: Theme.ui(42)
+                                    text: Math.round(App.settings.backgroundImageOpacity * 100) + "%"
+                                    color: Theme.text
+                                    font.pixelSize: Theme.fontSmall
+                                    horizontalAlignment: Text.AlignRight
                                 }
                             }
                         }

@@ -2718,6 +2718,11 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Image path</source>
+        <translation>Image path</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Secret key</source>
         <translation>Secret key</translation>
     </message>
@@ -2884,8 +2889,38 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Choose background image</source>
+        <translation>Choose background image</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Black</source>
         <translation>Black</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Experimental background</source>
+        <translation>Experimental background</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>No image</source>
+        <translation>No image</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Choose</source>
+        <translation>Choose</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Clear background image</source>
+        <translation>Clear background image</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/SettingsPage.qml"/>
+        <source>Opacity</source>
+        <translation>Opacity</translation>
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>

@@ -30,6 +30,8 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(int defaultFontSize READ defaultFontSize CONSTANT)
     /// Accent override for the whole UI; an empty string keeps the theme default.
     Q_PROPERTY(QString accentColor READ accentColor WRITE setAccentColor NOTIFY accentColorChanged)
+    Q_PROPERTY(QString backgroundImage READ backgroundImage WRITE setBackgroundImage NOTIFY settingsChanged)
+    Q_PROPERTY(double backgroundImageOpacity READ backgroundImageOpacity WRITE setBackgroundImageOpacity NOTIFY settingsChanged)
     Q_PROPERTY(bool gpuOrthographicView READ gpuOrthographicView WRITE setGpuOrthographicView NOTIFY settingsChanged)
     Q_PROPERTY(double gpuShadowStrength READ gpuShadowStrength WRITE setGpuShadowStrength NOTIFY settingsChanged)
     Q_PROPERTY(double gpuAoStrength READ gpuAoStrength WRITE setGpuAoStrength NOTIFY settingsChanged)
@@ -89,6 +91,8 @@ class SettingsViewModel final : public QObject {
     int fontSize() const { return values_.fontSize > 0 ? values_.fontSize : defaultFontSize(); }
     int defaultFontSize() const;
     QString accentColor() const { return values_.accentColor; }
+    QString backgroundImage() const { return values_.backgroundImage; }
+    double backgroundImageOpacity() const { return values_.backgroundImageOpacity; }
     bool gpuOrthographicView() const { return values_.gpuOrthographicView; }
     double gpuShadowStrength() const { return values_.gpuShadowStrength; }
     double gpuAoStrength() const { return values_.gpuAoStrength; }
@@ -149,6 +153,8 @@ class SettingsViewModel final : public QObject {
     void setLeveldbXorKey(const QString& value);
     void setFontSize(int value);
     void setAccentColor(const QString& value);
+    void setBackgroundImage(const QString& value);
+    void setBackgroundImageOpacity(double value);
     void setGpuOrthographicView(bool value);
     void setGpuShadowStrength(double value);
     void setGpuAoStrength(double value);
