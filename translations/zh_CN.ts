@@ -1323,7 +1323,7 @@
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>
         <source>Selection operations</source>
-        <translation type="unfinished">选择操作</translation>
+        <translation>选区操作</translation>
     </message>
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>
@@ -1357,13 +1357,13 @@
     </message>
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>
-        <source>Paste</source>
-        <translation type="unfinished">粘贴</translation>
+        <source>Paste selection</source>
+        <translation>粘贴选区</translation>
     </message>
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>
-        <source>Import</source>
-        <translation type="unfinished">导入</translation>
+        <source>Import selection</source>
+        <translation>导入选区</translation>
     </message>
     <message>
         <location filename="../src/qml/MapContextMenu.qml"/>

@@ -551,14 +551,6 @@ Item {
                     radius: width / 2
                     color: splitterMouse.pressed || splitterMouse.containsMouse ? Theme.accent : Theme.border
                 }
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: Theme.ui(3)
-                    height: Math.min(56, parent.height * 0.25)
-                    radius: width / 2
-                    color: splitterMouse.pressed || splitterMouse.containsMouse ? Theme.accent : Theme.muted
-                    opacity: 0.75
-                }
 
                 MouseArea {
                     id: splitterMouse

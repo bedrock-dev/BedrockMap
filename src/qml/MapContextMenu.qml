@@ -76,13 +76,13 @@ AppMenu {
     }
 
     AppMenuItem {
-        text: qsTr("Paste")
+        text: qsTr("Paste selection")
         enabled: !root.inputBlocked && !root.importActive
         onTriggered: root.pasteRequested()
     }
 
     AppMenuItem {
-        text: qsTr("Import")
+        text: qsTr("Import selection")
         enabled: !root.inputBlocked && !root.importActive
         onTriggered: root.importRequested()
     }
