@@ -23,6 +23,7 @@
 #include "io/documentio.h"
 #include "loader/asynclevelloader.h"
 #include "nbt.h"
+#include "palette.h"
 #include "raw_chunk.h"
 #include "render/voxelmesh.h"
 
@@ -165,7 +166,7 @@ namespace {
                         if (!rawBlock) break;
                         const auto blockInfo = chunk->get_block_with_color(x, worldY, z, blockLayer);
                         const auto blended = bl::blend_color_with_biome(blockInfo.name, blockInfo.color, biome);
-                        const bool visibleBlock = blockInfo.name != "minecraft:air" && blockInfo.name != "minecraft:unknown";
+                        const bool visibleBlock = !bl::is_air_block_name(blockInfo.name) && blockInfo.name != "minecraft:unknown";
                         cell.blocks.push_back(ChunkTerrainBlockSnapshot{
                             QString::fromStdString(blockInfo.name),
                             QString::fromStdString(rawBlock->to_readable_string()),

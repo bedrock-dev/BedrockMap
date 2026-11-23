@@ -15,6 +15,7 @@
 #include "color.h"
 #include "data_3d.h"
 #include "loader/asynclevelloader.h"
+#include "palette.h"
 #include "render/rendertimings.h"
 #include "render/terraintiles.h"
 #include "sub_chunk.h"
@@ -95,7 +96,7 @@ namespace {
                         --y;
                         continue;
                     }
-                    if (found && block != "minecraft:air" && block != "minecraft:water") {
+                    if (found && !bl::is_air_block_name(block) && block != "minecraft:water") {
                         solid_y = y;
                         break;
                     }

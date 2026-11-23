@@ -1,10 +1,12 @@
 #ifndef BEDROCKMAP_MAPFILTER_H
 #define BEDROCKMAP_MAPFILTER_H
 
+#include <algorithm>
 #include <string>
 #include <unordered_set>
 
 #include "loguru/loguru.hpp"
+#include "palette.h"
 
 /// Filters which biomes/blocks/actors get loaded for a region.
 struct MapFilter {
@@ -19,8 +21,9 @@ struct MapFilter {
 
     // Block filter is the default: only excludes air and unknown in blacklist mode.
     [[nodiscard]] bool isBlockFilterDefault() const {
-        return block_black_mode_ && !enable_layer_ && blocks_list_.size() == 2 && blocks_list_.count("minecraft:air") &&
-               blocks_list_.count("minecraft:unknown");
+        const bool hasAir =
+            std::any_of(blocks_list_.begin(), blocks_list_.end(), [](const std::string& name) { return bl::is_air_block_name(name); });
+        return block_black_mode_ && !enable_layer_ && blocks_list_.size() == 2 && hasAir && blocks_list_.count("minecraft:unknown");
     }
 
     void print() {

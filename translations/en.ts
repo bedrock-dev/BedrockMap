@@ -3809,11 +3809,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Include entities</source>
-        <translation>Include entities</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Importing…</source>
         <translation>Importing…</translation>
@@ -3872,6 +3867,11 @@ Current version: %2</translation>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Paste</source>
         <translation>Paste</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include entities</source>
+        <translation>Include entities</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>

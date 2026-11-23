@@ -44,6 +44,12 @@ struct BlockVolumeMutationResult {
     int dimension{0};
 };
 
+struct StructureExportOptions {
+    bool includeEntities{false};
+    bool includeAir{true};
+    bool useNewFormat{false};
+};
+
 /// Backend-specific data access for the shared block-volume controller.
 /// Loads run on worker threads and must not depend on earlier requests.
 class BlockVolumeSource {
@@ -54,8 +60,8 @@ class BlockVolumeSource {
     virtual void setLevelLoader(AsyncLevelLoader*) {}
     [[nodiscard]] virtual BlockVolumeLoadResult load(const BlockVolumeRequest& request,
                                                      const std::function<void(int)>& reportProgress) const = 0;
-    [[nodiscard]] virtual QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds, bool exportEntities,
-                                                     bool useNewFormat) const = 0;
+    [[nodiscard]] virtual QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds,
+                                                     const StructureExportOptions& options) const = 0;
     [[nodiscard]] virtual BlockVolumeMutationResult commitImport(const BlockVolume&, const BlockVolume&, const bl::block_box&, bool) {
         return {};
     }

@@ -148,13 +148,13 @@ BlockVolumeLoadResult McstructureVolumeSource::loadStructure(const BlockVolumeRe
     return result;
 }
 
-QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, const bl::block_box& selection, bool exportEntities,
-                                                    bool useNewFormat) const {
+QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, const bl::block_box& selection,
+                                                    const StructureExportOptions& options) const {
     const auto& structure = volume.structure;
     if (!structure || !selection.is_valid()) return {};
     const auto gridBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
     const auto bounds = selection.normalized().intersected(gridBounds);
     if (!bounds.is_valid()) return {};
-    const auto raw = buildExportStructure(*structure, bounds, useNewFormat ? 2 : 1, exportEntities)->to_raw();
+    const auto raw = buildExportStructure(*structure, bounds, options.useNewFormat ? 2 : 1, options.includeEntities)->to_raw();
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }

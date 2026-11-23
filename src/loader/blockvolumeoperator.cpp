@@ -14,6 +14,7 @@
 #include "loader/asynclevelloader.h"
 #include "loguru/loguru.hpp"
 #include "mcstructure.h"
+#include "palette.h"
 
 namespace {
 
@@ -38,7 +39,7 @@ namespace {
         const auto* nameTag = block->get("name");
         const auto* name = nameTag ? nameTag->as<const bl::nbt::string_tag*>() : nullptr;
         if (!name) return true;
-        return name->value == "minecraft:air" || name->value == "minecraft:unknown";
+        return bl::is_air_block_name(name->value) || name->value == "minecraft:unknown";
     }
 
     bool readBlockEntityPosition(const bl::nbt::compound_tag* entity, bl::block_pos& position) {

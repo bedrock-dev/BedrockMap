@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "binary_io.h"
+#include "palette.h"
 
 namespace {
     // A bounded little-endian NBT cursor. Palette entries are variable length;
@@ -143,6 +144,6 @@ chunkcoords_blocks::Sample chunkcoords_blocks::sampleBlock(std::string_view valu
         name = {};
         if (!cursor.blockName(name)) return {};
     }
-    const bool air = name == "minecraft:air" || name == "minecraft:cave_air" || name == "minecraft:void_air";
+    const bool air = bl::is_air_block_name(name);
     return {air ? Status::Empty : Status::Found, world_y, name};
 }

@@ -13,8 +13,8 @@ class WorldVolumeSource final : public BlockVolumeSource {
     void setLevelLoader(AsyncLevelLoader* loader) override { loader_ = loader; }
     [[nodiscard]] BlockVolumeLoadResult load(const BlockVolumeRequest& request,
                                              const std::function<void(int)>& reportProgress) const override;
-    [[nodiscard]] QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds, bool exportEntities,
-                                             bool useNewFormat) const override;
+    [[nodiscard]] QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds,
+                                             const StructureExportOptions& options) const override;
     [[nodiscard]] BlockVolumeMutationResult commitImport(const BlockVolume& target, const BlockVolume& import,
                                                          const bl::block_box& localBounds, bool importEntities) override;
     [[nodiscard]] BlockVolumeMutationResult deleteBlocks(const BlockVolume& volume, const bl::block_box& localBounds,

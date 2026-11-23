@@ -197,10 +197,11 @@ bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVecto
     const auto bounds = selectionBounds(minimum, maximum);
     if (!source_ || busy() || !bounds) return false;
     auto* source = source_.get();
+    const StructureExportOptions options{.includeEntities = copyEntities, .useNewFormat = useNewFormat};
     run(
         Operation::Copying,
-        [this, source, volume = volume_, bounds = *bounds, copyEntities, useNewFormat]() -> std::function<void()> {
-            return [this, raw = source->exportStructure(*volume, bounds, copyEntities, useNewFormat)] {
+        [this, source, volume = volume_, bounds = *bounds, options]() -> std::function<void()> {
+            return [this, raw = source->exportStructure(*volume, bounds, options)] {
                 if (raw.isEmpty()) {
                     emit copyFailed(tr("Could not copy the selected blocks."));
                 } else if (!context_.binaryClipboard().write(BinaryClipboard::PayloadKind::Mcstructure, raw)) {
@@ -284,11 +285,12 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
     if (url.isEmpty() || !source_ || busy() || !hasVoxelModel() || !bounds) return false;
     auto* source = source_.get();
     const QUrl output = withDefaultSuffix(url, QStringLiteral("mcstructure"));
+    const StructureExportOptions options{.includeEntities = exportEntities, .useNewFormat = useNewFormat};
     run(
         Operation::Exporting,
-        [this, source, volume = volume_, bounds = *bounds, exportEntities, useNewFormat, output]() -> std::function<void()> {
+        [this, source, volume = volume_, bounds = *bounds, options, output]() -> std::function<void()> {
             QString error;
-            const QByteArray raw = source->exportStructure(*volume, bounds, exportEntities, useNewFormat);
+            const QByteArray raw = source->exportStructure(*volume, bounds, options);
             if (raw.isEmpty()) {
                 error = tr("Could not generate the structure data.");
             } else if (const QString write_error = io::DocumentIo::writeBytes(output, raw); !write_error.isEmpty()) {

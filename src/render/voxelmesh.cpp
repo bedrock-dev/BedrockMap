@@ -9,6 +9,7 @@
 #include "chunk.h"
 #include "color.h"
 #include "mcstructure.h"
+#include "palette.h"
 
 int VoxelGrid::trimEmptyY() {
     const auto layer = static_cast<std::ptrdiff_t>(size_x_) * size_z_;
@@ -164,7 +165,7 @@ VoxelGrid VoxelGrid::fromMcstructure(const bl::mcstructure& structure) {
         for (int y = 0; y < sy; ++y) {
             for (int z = 0; z < sz; ++z) {
                 const auto* block = structure.block_at(x, y, z);
-                if (!block || block->name == "minecraft:air" || block->name == "minecraft:unknown") continue;
+                if (!block || bl::is_air_block_name(block->name) || block->name == "minecraft:unknown") continue;
                 const auto baseColor = bl::get_block_by_name_tag(block->name);
                 // mcstructure files do not carry biome data; use plains as a stable preview biome.
                 const auto c = bl::blend_color_with_biome(block->name, baseColor, bl::biome::plains);
@@ -209,9 +210,10 @@ VoxelGrid VoxelGrid::fromChunks(const std::vector<std::vector<bl::chunk*>>& chun
                 for (int x = 0; x < chunkWidth; ++x) {
                     for (int z = 0; z < chunkWidth; ++z) {
                         const auto info = chunk->get_block_with_color(x, worldY, z);
-                        if (info.name == "minecraft:unknown" || info.name == "minecraft:air") continue;
-                        const auto c = bl::blend_color_with_biome(info.name, info.color, chunk->get_biome(x, worldY, z));
-                        grid.set(chunkX * chunkWidth + x, y, static_cast<int>(chunkZ) * chunkWidth + z, qRgba(c.r, c.g, c.b, c.a));
+                        if (!bl::is_air_block_name(info.name) && info.name != "minecraft:unknown") {
+                            const auto c = bl::blend_color_with_biome(info.name, info.color, chunk->get_biome(x, worldY, z));
+                            grid.set(chunkX * chunkWidth + x, y, static_cast<int>(chunkZ) * chunkWidth + z, qRgba(c.r, c.g, c.b, c.a));
+                        }
                     }
                 }
             }
