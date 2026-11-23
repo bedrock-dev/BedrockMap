@@ -36,14 +36,14 @@ AbstractButton {
     readonly property real visualBorderWidth: {
         if (root.visualFocus)
             return Theme.borderWidth * 3
-        return root.flat ? 0 : Theme.borderWidth
+        return root.primary ? Theme.borderWidth : 0
     }
     readonly property color visualBorderColor: {
         if (root.visualFocus || root.primary)
             return Theme.accent
         if (root.danger)
             return Theme.danger
-        return root.active || root.hot ? Theme.accent : Theme.border
+        return Theme.border
     }
     implicitWidth: Math.max(Theme.ui(compact ? 60 : 82), label.implicitWidth + Theme.gapLarge * 2)
     implicitHeight: compact ? Theme.compactButtonHeight : Theme.buttonHeight

@@ -8,7 +8,7 @@ AppCard {
     interactive: true
     hovered: openButton.hovered || actionsButton.hovered || cardMenu.visible
     border.width: openButton.visualFocus ? Theme.borderWidth * 3 : Theme.borderWidth
-    border.color: openButton.visualFocus ? Theme.accent : (selected || hovered ? Theme.accent : Theme.border)
+    border.color: openButton.visualFocus ? Theme.accent : (selected ? Theme.accent : Theme.border)
     signal openRequested(string path, string title)
     signal deleteRequested(string path, string title)
     signal exportRequested(string path, string title)

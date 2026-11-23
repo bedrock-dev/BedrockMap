@@ -191,9 +191,9 @@ QtObject {
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
                                  borderWidth: 0.5,
-                                 radiusSmall: ui(4),
-                                 radiusMedium: ui(8),
-                                 radiusLarge: ui(12),
+                                 radiusSmall: ui(3),
+                                 radiusMedium: ui(6),
+                                 radiusLarge: ui(8),
                                  fontSmall: text(10),
                                  fontMedium: text(12),
                                  fontLarge: text(14),
