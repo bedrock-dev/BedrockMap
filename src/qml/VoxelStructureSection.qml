@@ -1,5 +1,6 @@
 import BedrockMap 1.0
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import "controls"
 
@@ -14,7 +15,9 @@ VoxelPreviewSection {
     readonly property bool importPreviewActive: !!controller && controller.importPreviewActive
     readonly property bool importing: !!controller && controller.importing
     readonly property bool includeEntities: includeEntitiesBox.checked
-    readonly property bool newFormat: structureFormat.currentIndex === 1
+    readonly property bool includeAir: includeAirBox.checked
+    readonly property bool replaceNonAirBlocks: replaceNonAirBlocksBox.checked
+    readonly property bool newFormat: newFormatBox.checked
 
     signal importRequested
     signal exportRequested
@@ -35,30 +38,53 @@ VoxelPreviewSection {
     contentItem: ColumnLayout {
         spacing: Theme.gapSmall
 
-        RowLayout {
+        GridLayout {
+            columns: 2
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            spacing: Theme.gapSmall
+            columnSpacing: Theme.gapSmall
+            rowSpacing: Theme.gapSmall
 
             AppCheckBox {
                 id: includeEntitiesBox
                 objectName: "voxelExportEntities"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
                 text: qsTr("Include entities")
                 checked: true
-                Accessible.description: qsTr("Applies to structure and clipboard operations.")
+                Accessible.description: qsTr("Applies to all structure operations.")
             }
 
-            Item {
+            AppCheckBox {
+                id: includeAirBox
+                objectName: "voxelIncludeAir"
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
+                text: qsTr("Include air when exporting")
+                checked: true
             }
 
-            AppComboBox {
-                id: structureFormat
-                objectName: "voxelExportFormat"
-                Layout.preferredWidth: Theme.ui(Theme.touch ? 112 : 130)
-                Layout.minimumWidth: 96
-                model: [qsTr("Old format"), qsTr("New format")]
-                Accessible.name: qsTr("Structure format")
+            AppCheckBox {
+                id: replaceNonAirBlocksBox
+                objectName: "voxelReplaceNonAirBlocks"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
+                text: qsTr("Replace non-air blocks when importing")
+                checked: true
+                visible: section.editingEnabled
+            }
+
+            AppCheckBox {
+                id: newFormatBox
+                objectName: "voxelExportNewFormat"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
+                text: qsTr("Use new format when exporting")
+                checked: false
             }
         }
 
@@ -68,13 +94,6 @@ VoxelPreviewSection {
             Layout.minimumWidth: 0
             spacing: Theme.gapSmall
 
-            OperationButton {
-                objectName: "voxelImportStructure"
-                text: section.importing ? qsTr("Importing…") : qsTr("Import")
-                visible: section.editingEnabled
-                enabled: section.operationsEnabled
-                onClicked: section.importRequested()
-            }
             OperationButton {
                 objectName: "voxelExportStructure"
                 text: section.controller && section.controller.exporting ? qsTr("Exporting…") : qsTr("Export")
@@ -88,16 +107,24 @@ VoxelPreviewSection {
                 onClicked: section.copyRequested()
             }
             OperationButton {
-                objectName: "voxelPaste"
-                text: qsTr("Paste")
+                objectName: "voxelImportStructure"
                 visible: section.editingEnabled
+                text: section.importing ? qsTr("Importing…") : qsTr("Import")
+                enabled: section.operationsEnabled
+                onClicked: section.importRequested()
+            }
+            OperationButton {
+                objectName: "voxelPaste"
+                visible: section.editingEnabled
+                text: qsTr("Paste")
                 enabled: section.operationsEnabled
                 onClicked: section.pasteRequested()
             }
             OperationButton {
                 objectName: "voxelDelete"
-                text: section.controller && section.controller.deleting ? qsTr("Deleting…") : qsTr("Delete")
                 visible: section.editingEnabled
+                danger: true
+                text: section.controller && section.controller.deleting ? qsTr("Deleting…") : qsTr("Delete")
                 enabled: section.operationsEnabled && section.selectionEnabled
                 onClicked: section.deleteRequested()
             }

@@ -3814,26 +3814,6 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Applies to structure and clipboard operations.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Old format</source>
-        <translation>旧版格式</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>New format</source>
-        <translation>新版格式</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Structure format</source>
-        <translation>结构格式</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Importing…</source>
         <translation>正在导入…</translation>
@@ -3847,6 +3827,21 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Exporting…</source>
         <translation>正在导出…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Applies to all structure operations.</source>
+        <translation>适用于所有结构操作。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include air when exporting</source>
+        <translation>导出时包含空气</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Use new format when exporting</source>
+        <translation>使用新版格式导出</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
@@ -3865,6 +3860,16 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Replace non-air blocks when importing</source>
+        <translation>导入时替换非空气方块</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">删除</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
@@ -3872,11 +3877,6 @@ Current version: %2</source>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Deleting…</source>
         <translation>正在删除…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished">删除</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>

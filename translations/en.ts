@@ -3814,26 +3814,6 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Applies to structure and clipboard operations.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Old format</source>
-        <translation>Old format</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>New format</source>
-        <translation>New format</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Structure format</source>
-        <translation>Structure format</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Importing…</source>
         <translation>Importing…</translation>
@@ -3847,6 +3827,21 @@ Current version: %2</translation>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Exporting…</source>
         <translation>Exporting…</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Applies to all structure operations.</source>
+        <translation>Applies to all structure operations.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include air when exporting</source>
+        <translation>Include air when exporting</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Use new format when exporting</source>
+        <translation>Use new format when exporting</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
@@ -3865,6 +3860,16 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Replace non-air blocks when importing</source>
+        <translation>Replace non-air blocks when importing</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Paste</source>
         <translation>Paste</translation>
     </message>
@@ -3872,11 +3877,6 @@ Current version: %2</translation>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Deleting…</source>
         <translation>Deleting…</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/VoxelStructureSection.qml"/>
-        <source>Delete</source>
-        <translation type="unfinished">Delete</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>

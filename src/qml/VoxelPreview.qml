@@ -296,6 +296,22 @@ Item {
                     enabled: root.sectionsEnabled
                 }
 
+                VoxelStructureSection {
+                    id: structureSection
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    controller: root.controller
+                    editingEnabled: root.blockVolumeEditingEnabled
+                    operationsEnabled: root.operationsEnabled
+                    selectionEnabled: root.camera.selectionEnabled
+                    onImportRequested: root.chooseStructureImport()
+                    onExportRequested: root.chooseStructureExport()
+                    onCopyRequested: root.copySelection()
+                    onPasteRequested: root.pasteStructure()
+                    onDeleteRequested: root.deleteSelection()
+                    onConfirmImportRequested: root.confirmImport()
+                }
+
                 VoxelPreviewSection {
                     objectName: "voxelModelExportSection"
                     title: qsTr("Model")
@@ -323,20 +339,6 @@ Item {
                             onClicked: root.chooseGlbExport()
                         }
                     }
-                }
-
-                VoxelStructureSection {
-                    id: structureSection
-                    controller: root.controller
-                    editingEnabled: root.blockVolumeEditingEnabled
-                    operationsEnabled: root.operationsEnabled
-                    selectionEnabled: root.camera.selectionEnabled
-                    onImportRequested: root.chooseStructureImport()
-                    onExportRequested: root.chooseStructureExport()
-                    onCopyRequested: root.copySelection()
-                    onPasteRequested: root.pasteStructure()
-                    onDeleteRequested: root.deleteSelection()
-                    onConfirmImportRequested: root.confirmImport()
                 }
             }
         }
