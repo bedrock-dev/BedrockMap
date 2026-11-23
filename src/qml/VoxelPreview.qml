@@ -14,6 +14,7 @@ Item {
     property vector3d exportMinimum
     property vector3d exportMaximum
     property bool exportEntities: true
+    property bool exportIncludeAir: true
     property bool exportNewFormat: false
     property bool exportCompressMesh: false
     readonly property bool hasModel: !!controller && controller.hasVoxelModel
@@ -53,6 +54,7 @@ Item {
         if (!prepareExport())
             return
         exportEntities = structureSection.includeEntities
+        exportIncludeAir = structureSection.includeAir
         exportNewFormat = structureSection.newFormat
         const origin = camera.modelOrigin
         const fileName = "structure-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z
@@ -92,8 +94,9 @@ Item {
         if (!operationsEnabled)
             return
         const range = exportRange()
-        controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities,
-                                 structureSection.newFormat)
+        if (!controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities,
+                                      structureSection.newFormat, structureSection.includeAir))
+            App.notifications.error(qsTr("Copy failed"), "", qsTr("Could not copy the selected blocks."))
     }
 
     function pasteStructure() {
@@ -210,7 +213,8 @@ Item {
         nameFilters: FileDialogSupport.mcstructureFilters
         onAccepted: {
             if (!root.exportTarget || !root.exportTarget.exportMcstructure(selectedUrl, root.exportMinimum, root.exportMaximum,
-                                                                           root.exportEntities, root.exportNewFormat))
+                                                                           root.exportEntities, root.exportNewFormat,
+                                                                           root.exportIncludeAir))
                 AppErrorReporter.report(qsTr("Export failed"), root.exportTarget)
         }
     }

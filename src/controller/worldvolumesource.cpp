@@ -79,8 +79,9 @@ BlockVolumeLoadResult WorldVolumeSource::load(const BlockVolumeRequest& request,
 QByteArray WorldVolumeSource::exportStructure(const BlockVolume& volume, const bl::block_box& localBounds,
                                               const StructureExportOptions& options) const {
     if (!loader_ || !loader_->isOpen() || !volume.scene) return {};
-    const auto raw = BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(originOf(volume)),
-                                                                     options.useNewFormat ? 2 : 1, options.includeEntities);
+    const auto raw =
+        BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(originOf(volume)),
+                                                        options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir);
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }
 

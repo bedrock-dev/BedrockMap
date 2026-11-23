@@ -28,7 +28,7 @@ namespace {
     }
 
     std::shared_ptr<bl::mcstructure> buildExportStructure(const bl::mcstructure& structure, const bl::block_box& bounds, int32_t version,
-                                                          bool exportEntities) {
+                                                          bool exportEntities, bool exportAir) {
         const auto origin = structure.origin();
         const bl::block_pos newOrigin = origin + bounds.min_pos;
         bl::mcstructure_builder builder({bounds.size_x(), bounds.size_y(), bounds.size_z()}, newOrigin, version);
@@ -41,12 +41,15 @@ namespace {
                         if (idx < 0) continue;
                         const auto* entry = structure.palette_entry_at(static_cast<size_t>(idx));
                         if (!entry || !entry->tag) continue;
+                        if (!exportAir && bl::is_air_block_name(entry->name)) continue;
+                        if (entry->name == "minecraft:unknown") continue;
                         builder.set_block(layer, bl::block_pos{x, y, z} - bounds.min_pos, entry->tag);
                     }
                 }
             }
         }
 
+        // Block entities belong to their blocks and are independent of the actor option.
         const auto& blockEntities = structure.block_entities();
         for (size_t i = 0; i < blockEntities.size(); ++i) {
             const auto* entity = blockEntities[i];
@@ -155,6 +158,7 @@ QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, c
     const auto gridBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
     const auto bounds = selection.normalized().intersected(gridBounds);
     if (!bounds.is_valid()) return {};
-    const auto raw = buildExportStructure(*structure, bounds, options.useNewFormat ? 2 : 1, options.includeEntities)->to_raw();
+    const auto raw =
+        buildExportStructure(*structure, bounds, options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir)->to_raw();
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }

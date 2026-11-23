@@ -193,11 +193,16 @@ void BlockVolumeController::applyImportLoad(const BlockVolumeLoadResult& result)
     emit overlayChanged();
 }
 
-bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat) {
+bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
+                                          bool includeAir) {
+    return copySelection(minimum, maximum,
+                         StructureExportOptions{.includeEntities = copyEntities, .includeAir = includeAir, .useNewFormat = useNewFormat});
+}
+
+bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options) {
     const auto bounds = selectionBounds(minimum, maximum);
-    if (!source_ || busy() || !bounds) return false;
+    if (!source_ || !volume_ || !hasVoxelModel() || busy() || !bounds) return false;
     auto* source = source_.get();
-    const StructureExportOptions options{.includeEntities = copyEntities, .useNewFormat = useNewFormat};
     run(
         Operation::Copying,
         [this, source, volume = volume_, bounds = *bounds, options]() -> std::function<void()> {
@@ -280,12 +285,18 @@ void BlockVolumeController::applyMutation(const BlockVolumeMutationResult& resul
 }
 
 bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
-                                              bool useNewFormat) {
+                                              bool useNewFormat, bool includeAir) {
+    return exportMcstructure(
+        url, minimum, maximum,
+        StructureExportOptions{.includeEntities = exportEntities, .includeAir = includeAir, .useNewFormat = useNewFormat});
+}
+
+bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum,
+                                              const StructureExportOptions& options) {
     const auto bounds = selectionBounds(minimum, maximum);
     if (url.isEmpty() || !source_ || busy() || !hasVoxelModel() || !bounds) return false;
     auto* source = source_.get();
     const QUrl output = withDefaultSuffix(url, QStringLiteral("mcstructure"));
-    const StructureExportOptions options{.includeEntities = exportEntities, .useNewFormat = useNewFormat};
     run(
         Operation::Exporting,
         [this, source, volume = volume_, bounds = *bounds, options, output]() -> std::function<void()> {

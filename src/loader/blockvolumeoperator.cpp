@@ -122,16 +122,20 @@ namespace {
 QRegion BlockVolumeOperator::regionForBounds(const bl::block_box& blockBounds) { return chunkRegionForBounds(blockBounds); }
 
 std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
-                                                            int32_t version, bool exportEntities) {
+                                                            int32_t version, bool exportEntities, bool exportAir) {
     if (!exportBounds.is_valid()) return {};
 
     const QRegion chunkRegion = chunkRegionForBounds(exportBounds);
     const auto chunks = loadChunks(chunkRegion, loader, dim);
-    if (chunks.empty()) return {};
+    if (chunks.empty() && !exportAir) return {};
 
     const bl::block_pos origin = exportBounds.min_pos;
     const bl::block_pos size{exportBounds.size_x(), exportBounds.size_y(), exportBounds.size_z()};
     bl::mcstructure_builder builder(size, origin, version);
+    if (exportAir) {
+        const auto air = makeAirBlock();
+        builder.fill_blocks(bl::block_box::from_min_and_size({0, 0, 0}, size.x, size.y, size.z), air.get());
+    }
 
     for (const auto& [key, chunk] : chunks) {
         if (!chunk) continue;
@@ -153,6 +157,7 @@ std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& lo
             }
         }
 
+        // Block entities belong to their blocks and are independent of the actor option.
         for (const auto* entity : chunk->block_entities()) {
             bl::block_pos worldPosition;
             if (!readBlockEntityPosition(entity, worldPosition)) continue;

@@ -38,11 +38,14 @@ class BlockVolumeController final : public VoxelSceneController {
     void openArea(const ChunkArea& area);
     Q_INVOKABLE bool importStructure(const QUrl& url);
     Q_INVOKABLE bool pasteStructure();
-    Q_INVOKABLE bool copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat);
+    Q_INVOKABLE bool copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
+                                   bool includeAir);
     Q_INVOKABLE bool commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities);
     Q_INVOKABLE void cancelImport();
     Q_INVOKABLE bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
-                                       bool useNewFormat);
+                                       bool useNewFormat, bool includeAir);
+    bool copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
+    bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
     Q_INVOKABLE bool exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh);
     Q_INVOKABLE bool deleteBlockVolumeAsync(const QVector3D& minimum, const QVector3D& maximum, bool deleteEntities);
     void setLoader(AsyncLevelLoader* loader);
