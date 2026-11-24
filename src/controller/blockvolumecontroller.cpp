@@ -193,6 +193,21 @@ void BlockVolumeController::applyImportLoad(const BlockVolumeLoadResult& result)
     emit overlayChanged();
 }
 
+bool BlockVolumeController::beginStructureExport(Operation operation, const QVector3D& minimum, const QVector3D& maximum,
+                                                 const StructureExportOptions& options, StructureExportCompletion completion,
+                                                 Failure onFailure) {
+    const auto bounds = selectionBounds(minimum, maximum);
+    if (!source_ || !volume_ || !hasVoxelModel() || busy() || !bounds) return false;
+    auto* source = source_.get();
+    run(
+        operation,
+        [source, volume = volume_, bounds = *bounds, options, completion = std::move(completion)]() -> std::function<void()> {
+            return completion(source->exportStructure(*volume, bounds, options));
+        },
+        std::move(onFailure));
+    return true;
+}
+
 bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
                                           bool includeAir) {
     return copySelection(minimum, maximum,
@@ -200,13 +215,10 @@ bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVecto
 }
 
 bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options) {
-    const auto bounds = selectionBounds(minimum, maximum);
-    if (!source_ || !volume_ || !hasVoxelModel() || busy() || !bounds) return false;
-    auto* source = source_.get();
-    run(
-        Operation::Copying,
-        [this, source, volume = volume_, bounds = *bounds, options]() -> std::function<void()> {
-            return [this, raw = source->exportStructure(*volume, bounds, options)] {
+    return beginStructureExport(
+        Operation::Copying, minimum, maximum, options,
+        [this](QByteArray raw) -> std::function<void()> {
+            return [this, raw = std::move(raw)] {
                 if (raw.isEmpty()) {
                     emit copyFailed(tr("Could not copy the selected blocks."));
                 } else if (!context_.binaryClipboard().write(BinaryClipboard::PayloadKind::Mcstructure, raw)) {
@@ -217,10 +229,15 @@ bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVecto
             };
         },
         [this](const QString&) { emit copyFailed(tr("Could not copy the selected blocks.")); });
-    return true;
 }
 
-bool BlockVolumeController::commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities) {
+bool BlockVolumeController::commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities,
+                                         bool replaceNonAirBlocks) {
+    return commitImport(minimum, maximum,
+                        StructureImportOptions{.includeEntities = importEntities, .replaceNonAirBlocks = replaceNonAirBlocks});
+}
+
+bool BlockVolumeController::commitImport(const QVector3D& minimum, const QVector3D& maximum, const StructureImportOptions& options) {
     if (!source_ || !volume_ || !import_volume_ || busy()) return false;
     for (int axis = 0; axis < 3; ++axis) {
         if (!std::isfinite(minimum[axis]) || !std::isfinite(maximum[axis]) ||
@@ -237,8 +254,8 @@ bool BlockVolumeController::commitImport(const QVector3D& minimum, const QVector
     };
     run(
         Operation::Importing,
-        [source, target = volume_, import = import_volume_, bounds, importEntities, finish]() -> std::function<void()> {
-            return [finish, result = source->commitImport(*target, *import, bounds, importEntities)] { finish(result); };
+        [source, target = volume_, import = import_volume_, bounds, options, finish]() -> std::function<void()> {
+            return [finish, result = source->commitImport(*target, *import, bounds, options)] { finish(result); };
         },
         [finish](const QString&) { finish({}); });
     return true;
@@ -267,10 +284,11 @@ bool BlockVolumeController::deleteBlockVolumeAsync(const QVector3D& minimum, con
 
 void BlockVolumeController::applyMutation(const BlockVolumeMutationResult& result, const QString& failure, bool import) {
     if (!result.success) {
+        const QString message = result.error.isEmpty() ? failure : result.error;
         if (import)
-            emit importFailed(failure);
+            emit importFailed(message);
         else
-            emit deleteFailed(failure);
+            emit deleteFailed(message);
         return;
     }
     if (import) {
@@ -293,15 +311,12 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
 
 bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum,
                                               const StructureExportOptions& options) {
-    const auto bounds = selectionBounds(minimum, maximum);
-    if (url.isEmpty() || !source_ || busy() || !hasVoxelModel() || !bounds) return false;
-    auto* source = source_.get();
+    if (url.isEmpty()) return false;
     const QUrl output = withDefaultSuffix(url, QStringLiteral("mcstructure"));
-    run(
-        Operation::Exporting,
-        [this, source, volume = volume_, bounds = *bounds, options, output]() -> std::function<void()> {
+    return beginStructureExport(
+        Operation::Exporting, minimum, maximum, options,
+        [this, output](QByteArray raw) -> std::function<void()> {
             QString error;
-            const QByteArray raw = source->exportStructure(*volume, bounds, options);
             if (raw.isEmpty()) {
                 error = tr("Could not generate the structure data.");
             } else if (const QString write_error = io::DocumentIo::writeBytes(output, raw); !write_error.isEmpty()) {
@@ -313,7 +328,6 @@ bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& 
             emit exportFinished(output, detail.isEmpty() ? tr("Could not generate the structure data.")
                                                          : tr("Could not export the structure: %1").arg(detail));
         });
-    return true;
 }
 
 bool BlockVolumeController::exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh) {

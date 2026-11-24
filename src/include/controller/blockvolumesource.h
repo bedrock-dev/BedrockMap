@@ -10,6 +10,7 @@
 #include <variant>
 
 #include "geometry.h"
+#include "loader/blockvolumemutation.h"
 #include "model/chunkarea.h"
 #include "nbt.h"
 #include "render/voxelmesh.h"
@@ -29,6 +30,12 @@ struct BlockVolume {
     std::shared_ptr<const bl::mcstructure> structure;
     std::shared_ptr<const bl::nbt::compound_tag> root;
     int dimension{0};
+
+    [[nodiscard]] bl::block_pos blockOrigin() const {
+        if (!scene) return {};
+        const auto& origin = scene->origin;
+        return {qRound(origin.x()), qRound(origin.y()), qRound(origin.z())};
+    }
 };
 
 struct BlockVolumeLoadResult {
@@ -38,17 +45,16 @@ struct BlockVolumeLoadResult {
     [[nodiscard]] bool valid() const { return volume && volume->scene && error.isEmpty(); }
 };
 
-struct BlockVolumeMutationResult {
-    bool success{false};
-    QRegion region;
-    int dimension{0};
-};
-
 struct StructureExportOptions {
     /// Includes actors; block entities remain attached to exported blocks.
     bool includeEntities{false};
     bool includeAir{true};
     bool useNewFormat{false};
+};
+
+struct StructureImportOptions {
+    bool includeEntities{true};
+    bool replaceNonAirBlocks{true};
 };
 
 /// Backend-specific data access for the shared block-volume controller.
@@ -63,7 +69,8 @@ class BlockVolumeSource {
                                                      const std::function<void(int)>& reportProgress) const = 0;
     [[nodiscard]] virtual QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds,
                                                      const StructureExportOptions& options) const = 0;
-    [[nodiscard]] virtual BlockVolumeMutationResult commitImport(const BlockVolume&, const BlockVolume&, const bl::block_box&, bool) {
+    [[nodiscard]] virtual BlockVolumeMutationResult commitImport(const BlockVolume&, const BlockVolume&, const bl::block_box&,
+                                                                 const StructureImportOptions&) {
         return {};
     }
     [[nodiscard]] virtual BlockVolumeMutationResult deleteBlocks(const BlockVolume&, const bl::block_box&, bool) { return {}; }

@@ -1,7 +1,9 @@
-# Qt translation files — lupdate 输出 LF，接受 LF 避免每次构建后 git 报 warning
+# Keep every text file LF in the repository and in working trees.
+* text=auto eol=lf
+
+# Qt translation files: lupdate emits LF.
 *.ts text eol=lf
 
-# Keep source and build files LF on every platform.
 *.c text eol=lf
 *.cc text eol=lf
 *.cpp text eol=lf
@@ -13,3 +15,14 @@
 *.js text eol=lf
 *.cmake text eol=lf
 CMakeLists.txt text eol=lf
+
+# Binary assets must never be normalized or diffed as text.
+*.a binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.png binary
+*.ttf binary
+*.webp binary
+*.woff binary
+*.woff2 binary

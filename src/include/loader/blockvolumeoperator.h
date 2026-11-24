@@ -2,9 +2,11 @@
 #define BEDROCKMAP_BLOCKVOLUMEOPERATOR_H
 
 #include <QRegion>
+#include <QString>
 #include <string>
 
 #include "bedrock_key.h"
+#include "loader/blockvolumemutation.h"
 #include "nbt.h"
 
 namespace bl {
@@ -25,8 +27,9 @@ class BlockVolumeOperator {
                                                   bool exportEntities = false, bool exportAir = true);
 
     /// Import an mcstructure at a world position. Air in the structure replaces world blocks.
-    static bool importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position, AsyncLevelLoader& loader,
-                                           int dim, bool importEntities = true);
+    static BlockVolumeMutationResult importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position,
+                                                                AsyncLevelLoader& loader, int dim, bool importEntities,
+                                                                bool replaceNonAirBlocks);
 
     /// Clear blocks inside a world-space box. Entity removal is reserved for a future chunk API.
     static bool deleteWorldBlocks(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, bool deleteEntities = false);

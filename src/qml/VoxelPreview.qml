@@ -87,7 +87,8 @@ Item {
 
     function confirmImport() {
         if (importPreviewActive && !controller.importing)
-            controller.commitImport(camera.selectionMinimum, camera.selectionMaximum, structureSection.includeEntities)
+            controller.commitImport(camera.selectionMinimum, camera.selectionMaximum, structureSection.includeEntities,
+                                    structureSection.replaceNonAirBlocks)
     }
 
     function copySelection() {

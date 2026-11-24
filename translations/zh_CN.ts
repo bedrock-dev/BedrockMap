@@ -485,6 +485,49 @@
     </message>
 </context>
 <context>
+    <name>BlockVolumeOperator</name>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The structure has an invalid size.</source>
+        <translation>结构尺寸无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The import range does not cover a valid chunk region.</source>
+        <translation>导入范围未覆盖有效的区块区域。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) does not exist.</source>
+        <translation>目标区块（%1，%2）不存在。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) could not be read.</source>
+        <translation>无法读取目标区块（%1，%2）。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) could not be parsed.</source>
+        <translation>无法解析目标区块（%1，%2）。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Could not replace a target block column.</source>
+        <translation>无法替换目标方块列。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The structure did not change any target blocks.</source>
+        <translation>该结构没有改变任何目标方块。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Could not update the in-memory chunk cache.</source>
+        <translation>无法更新内存区块缓存。</translation>
+    </message>
+</context>
+<context>
     <name>BrowserVfsBackend</name>
     <message>
         <location filename="../src/io/browservfs.cpp"/>
@@ -3710,6 +3753,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Could not copy the selected blocks.</source>
+        <translation>无法复制选中的方块。</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import successful</source>
         <translation>导入成功</translation>
     </message>
@@ -4230,6 +4278,19 @@ Current version: %2</source>
         <location filename="../src/loader/worldsource.cpp"/>
         <source>External</source>
         <translation>外部</translation>
+    </message>
+</context>
+<context>
+    <name>WorldVolumeSource</name>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
+        <source>The target world or import structure is invalid.</source>
+        <translation>目标世界或导入结构无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
+        <source>The import range exceeds the current 3D preview X/Z bounds.</source>
+        <translation>导入范围超出当前 3D 预览的 X/Z 边界。</translation>
     </message>
 </context>
 <context>

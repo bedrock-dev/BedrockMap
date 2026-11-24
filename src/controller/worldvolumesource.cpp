@@ -48,13 +48,6 @@ namespace {
     }
 }  // namespace
 
-namespace {
-    bl::block_pos originOf(const BlockVolume& volume) {
-        const auto& origin = volume.scene->origin;
-        return {qRound(origin.x()), qRound(origin.y()), qRound(origin.z())};
-    }
-}  // namespace
-
 BlockVolumeLoadResult WorldVolumeSource::load(const BlockVolumeRequest& request, const std::function<void(int)>& reportProgress) const {
     const auto* area = std::get_if<ChunkArea>(&request);
     if (!area) return McstructureVolumeSource::loadStructure(request, reportProgress);
@@ -80,30 +73,33 @@ QByteArray WorldVolumeSource::exportStructure(const BlockVolume& volume, const b
                                               const StructureExportOptions& options) const {
     if (!loader_ || !loader_->isOpen() || !volume.scene) return {};
     const auto raw =
-        BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(originOf(volume)),
+        BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(volume.blockOrigin()),
                                                         options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir);
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }
 
 BlockVolumeMutationResult WorldVolumeSource::commitImport(const BlockVolume& target, const BlockVolume& import,
-                                                          const bl::block_box& localBounds, bool importEntities) {
+                                                          const bl::block_box& localBounds, const StructureImportOptions& options) {
     BlockVolumeMutationResult result;
-    if (!loader_ || !loader_->isOpen() || !target.scene || !import.structure || !localBounds.is_valid()) return result;
-    const auto worldPosition = originOf(target) + localBounds.min_pos;
-    const auto worldBounds =
-        bl::block_box::from_min_and_size(worldPosition, localBounds.size_x(), localBounds.size_y(), localBounds.size_z());
-    result.region = BlockVolumeOperator::regionForBounds(worldBounds);
-    result.dimension = target.dimension;
-    result.success = !result.region.isEmpty() && BlockVolumeOperator::importMcstructureIntoWorld(*import.structure, worldPosition, *loader_,
-                                                                                                 target.dimension, importEntities);
-    return result;
+    if (!loader_ || !loader_->isOpen() || !target.scene || !import.structure || !localBounds.is_valid()) {
+        result.error = QCoreApplication::translate("WorldVolumeSource", "The target world or import structure is invalid.");
+        return result;
+    }
+    if (localBounds.min_pos.x < 0 || localBounds.max_pos.x > target.scene->modelSize.x() || localBounds.min_pos.z < 0 ||
+        localBounds.max_pos.z > target.scene->modelSize.z()) {
+        result.error = QCoreApplication::translate("WorldVolumeSource", "The import range exceeds the current 3D preview X/Z bounds.");
+        return result;
+    }
+    const auto worldPosition = target.blockOrigin() + localBounds.min_pos;
+    return BlockVolumeOperator::importMcstructureIntoWorld(*import.structure, worldPosition, *loader_, target.dimension,
+                                                           options.includeEntities, options.replaceNonAirBlocks);
 }
 
 BlockVolumeMutationResult WorldVolumeSource::deleteBlocks(const BlockVolume& volume, const bl::block_box& localBounds,
                                                           bool deleteEntities) {
     BlockVolumeMutationResult result;
     if (!loader_ || !loader_->isOpen() || !volume.scene || !localBounds.is_valid()) return result;
-    const auto worldBounds = localBounds.translated(originOf(volume));
+    const auto worldBounds = localBounds.translated(volume.blockOrigin());
     result.region = BlockVolumeOperator::regionForBounds(worldBounds);
     result.dimension = volume.dimension;
     result.success =

@@ -1,12 +1,15 @@
 #include "loader/blockvolumeoperator.h"
 
+#include <QCoreApplication>
 #include <algorithm>
 #include <cmath>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -187,91 +190,154 @@ std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& lo
     return builder.build().to_raw();
 }
 
-bool BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position,
-                                                     AsyncLevelLoader& loader, int dim, bool importEntities) {
+BlockVolumeMutationResult BlockVolumeOperator::importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position,
+                                                                          AsyncLevelLoader& loader, int dim, bool importEntities,
+                                                                          bool replaceNonAirBlocks) {
+    BlockVolumeMutationResult result;
+    result.dimension = dim;
+    const auto fail = [&result](const QString& message) {
+        result.success = false;
+        result.error = message;
+        return result;
+    };
     const bl::block_pos size = structure.size();
-    if (size.x <= 0 || size.y <= 0 || size.z <= 0) return false;
+    if (size.x <= 0 || size.y <= 0 || size.z <= 0) {
+        return fail(QCoreApplication::translate("BlockVolumeOperator", "The structure has an invalid size."));
+    }
 
     const auto firstChunk = bl::block_pos{position.x, 0, position.z}.to_chunk_pos();
     const auto lastChunk = bl::block_pos{position.x + size.x - 1, 0, position.z + size.z - 1}.to_chunk_pos();
     const auto placedBounds = bl::block_box::from_min_and_size(position, size.x, size.y, size.z);
+    result.region = regionForBounds(placedBounds);
+    if (result.region.isEmpty()) {
+        return fail(QCoreApplication::translate("BlockVolumeOperator", "The import range does not cover a valid chunk region."));
+    }
     const bl::block_pos delta = position - structure.origin();
+    const auto air = makeAirBlock();
 
-    std::vector<bl::chunk_pos> edited;
+    std::map<bl::chunk_pos, std::unique_ptr<bl::chunk>> targets;
     for (int cx = firstChunk.x; cx <= lastChunk.x; ++cx) {
         for (int cz = firstChunk.z; cz <= lastChunk.z; ++cz) {
             const bl::chunk_pos cp(cx, cz, dim);
+            if (loader.isChunkAbsent(cp)) {
+                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) is absent, aborting import", cx, cz);
+                return fail(QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) does not exist.").arg(cx).arg(cz));
+            }
             auto raw = loader.getRawChunk(cp);
             if (!raw.has_value()) {
-                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) is not in the level, skipping import", cx, cz);
-                continue;
+                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) could not be read, aborting import", cx, cz);
+                return fail(QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) could not be read.").arg(cx).arg(cz));
             }
-            bl::chunk target(cp);
-            if (!target.load_from_raw_chunk(raw.value())) continue;
-
-            const int baseX = cx * 16;
-            const int baseZ = cz * 16;
-            const int x0 = std::max(position.x, baseX);
-            const int x1 = std::min(position.x + size.x, baseX + 16);
-            const int z0 = std::max(position.z, baseZ);
-            const int z1 = std::min(position.z + size.z, baseZ + 16);
-
-            bool changed = false;
-            for (int x = x0; x < x1; ++x) {
-                for (int z = z0; z < z1; ++z) {
-                    for (int y = 0; y < size.y; ++y) {
-                        for (int layer = 0; layer < static_cast<int>(structure.layer_count()); ++layer) {
-                            const auto* entry = structure.block_at(layer, x - position.x, y, z - position.z);
-                            if (!entry || !entry->tag) continue;
-                            target.set_block(x - baseX, position.y + y, z - baseZ, entry->tag, layer);
-                            changed = true;
-                        }
-                    }
-                }
+            auto target = std::make_unique<bl::chunk>(cp);
+            if (!target->load_from_raw_chunk(raw.value())) {
+                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) could not be parsed, aborting import", cx, cz);
+                return fail(
+                    QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) could not be parsed.").arg(cx).arg(cz));
             }
-
-            for (size_t i = 0; i < structure.block_entity_count(); ++i) {
-                const auto* entity = structure.block_entities()[i];
-                if (!entity) continue;
-                const auto local = structure.block_entity_local_position(i);
-                const int worldX = position.x + local.x;
-                const int worldZ = position.z + local.z;
-                if (worldX < x0 || worldX >= x1 || worldZ < z0 || worldZ >= z1) continue;
-                target.set_block_entity(worldX - baseX, position.y + local.y, worldZ - baseZ, entity);
-                changed = true;
-            }
-
-            if (importEntities) {
-                for (const auto* entity : structure.entities()) {
-                    const auto position = bl::actor::position_from_nbt(entity);
-                    if (!position) continue;
-                    const bl::vec3 source = *position;
-                    const bl::vec3 world{source.x + delta.x, source.y + delta.y, source.z + delta.z};
-                    const bl::block_pos block{static_cast<int>(std::floor(world.x)), static_cast<int>(std::floor(world.y)),
-                                              static_cast<int>(std::floor(world.z))};
-                    if (!placedBounds.contains(block)) continue;
-                    const auto entityChunk = block.to_chunk_pos();
-                    if (entityChunk.x != cx || entityChunk.z != cz) continue;
-                    if (!target.add_actor(loader.level(), entity, world)) {
-                        LOG_F(WARNING, "BlockVolumeOperator: skipping a structure entity with no usable id");
-                        continue;
-                    }
-                    changed = true;
-                }
-            }
-
-            if (!changed) continue;
-
-            loader.putRawChunk(target.to_raw_chunk());
-            edited.push_back(cp);
+            targets.emplace(cp, std::move(target));
         }
     }
 
-    if (edited.empty()) return false;
+    std::set<std::tuple<int, int, int>> acceptedColumns;
+    std::set<std::tuple<int, int, int>> importedBlockEntityPositions;
+    std::vector<bl::chunk_pos> edited;
+    for (auto& [cp, target] : targets) {
+        const int baseX = cp.x * 16;
+        const int baseZ = cp.z * 16;
+        const int x0 = std::max(position.x, baseX);
+        const int x1 = std::min(position.x + size.x, baseX + 16);
+        const int z0 = std::max(position.z, baseZ);
+        const int z1 = std::min(position.z + size.z, baseZ + 16);
+
+        bool changed = false;
+        for (int x = x0; x < x1; ++x) {
+            for (int z = z0; z < z1; ++z) {
+                for (int y = 0; y < size.y; ++y) {
+                    std::vector<const bl::nbt::compound_tag*> layers;
+                    layers.reserve(structure.layer_count());
+                    bool hasEntry = false;
+                    for (int layer = 0; layer < static_cast<int>(structure.layer_count()); ++layer) {
+                        const auto* entry = structure.block_at(layer, x - position.x, y, z - position.z);
+                        layers.push_back(entry ? entry->tag : nullptr);
+                        hasEntry = hasEntry || (entry && entry->tag);
+                    }
+                    if (!hasEntry) continue;
+
+                    const int worldY = position.y + y;
+                    if (!replaceNonAirBlocks && target->is_block_column_non_air(x - baseX, worldY, z - baseZ)) continue;
+                    if (!target->replace_block_column(x - baseX, worldY, z - baseZ, layers, air.get())) {
+                        return fail(QCoreApplication::translate("BlockVolumeOperator", "Could not replace a target block column."));
+                    }
+                    acceptedColumns.emplace(x, worldY, z);
+                    changed = true;
+                }
+            }
+        }
+
+        for (size_t i = 0; i < structure.block_entity_count(); ++i) {
+            const auto* entity = structure.block_entities()[i];
+            if (!entity) continue;
+            const auto local = structure.block_entity_local_position(i);
+            const int worldX = position.x + local.x;
+            const int worldY = position.y + local.y;
+            const int worldZ = position.z + local.z;
+            if (worldX < x0 || worldX >= x1 || worldZ < z0 || worldZ >= z1) continue;
+            if (!acceptedColumns.contains({worldX, worldY, worldZ})) continue;
+            target->set_block_entity(worldX - baseX, worldY, worldZ - baseZ, entity);
+            importedBlockEntityPositions.emplace(worldX, worldY, worldZ);
+            changed = true;
+        }
+
+        if (importEntities) {
+            for (const auto* entity : structure.entities()) {
+                const auto entityPosition = bl::actor::position_from_nbt(entity);
+                if (!entityPosition) continue;
+                const bl::vec3 source = *entityPosition;
+                const bl::vec3 world{source.x + delta.x, source.y + delta.y, source.z + delta.z};
+                const bl::block_pos block{static_cast<int>(std::floor(world.x)), static_cast<int>(std::floor(world.y)),
+                                          static_cast<int>(std::floor(world.z))};
+                if (!placedBounds.contains(block)) continue;
+                const auto entityChunk = block.to_chunk_pos();
+                if (entityChunk.x != cp.x || entityChunk.z != cp.z) continue;
+                if (!target->add_actor(loader.level(), entity, world)) {
+                    LOG_F(WARNING, "BlockVolumeOperator: skipping a structure entity with no usable id");
+                    continue;
+                }
+                changed = true;
+            }
+        }
+
+        if (!changed) continue;
+
+        edited.push_back(cp);
+    }
+
+    for (const auto& [worldX, worldY, worldZ] : acceptedColumns) {
+        if (importedBlockEntityPositions.contains({worldX, worldY, worldZ})) continue;
+        const auto chunkOffset = bl::block_pos{worldX, worldY, worldZ}.to_chunk_pos();
+        const bl::chunk_pos cp(chunkOffset.x, chunkOffset.z, dim);
+        const auto target = targets.find(cp);
+        if (target == targets.end()) continue;
+        target->second->remove_block_entity(worldX - cp.x * 16, worldY, worldZ - cp.z * 16);
+    }
+
+    if (edited.empty()) {
+        return fail(QCoreApplication::translate("BlockVolumeOperator", "The structure did not change any target blocks."));
+    }
+
+    std::vector<bl::raw_chunk> staged;
+    staged.reserve(edited.size());
+    for (const auto& cp : edited) staged.push_back(targets.at(cp)->to_raw_chunk());
+    if (!loader.putRawChunks(staged)) {
+        return fail(QCoreApplication::translate("BlockVolumeOperator", "Could not update the in-memory chunk cache."));
+    }
+
     loader.invalidateRegionTiles(edited);
     LOG_F(INFO, "BlockVolumeOperator: imported mcstructure (%d x %d x %d) at (%d, %d, %d) into %llu chunks", size.x, size.y, size.z,
           position.x, position.y, position.z, static_cast<unsigned long long>(edited.size()));
-    return true;
+    result.success = true;
+    result.error.clear();
+    return result;
 }
 
 bool BlockVolumeOperator::deleteWorldBlocks(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, bool deleteEntities) {

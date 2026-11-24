@@ -148,6 +148,12 @@ bool AsyncLevelLoader::putRawChunk(const bl::raw_chunk& raw) {
     return true;
 }
 
+bool AsyncLevelLoader::putRawChunks(std::span<const bl::raw_chunk> chunks) {
+    if (!edit_service_.putRawChunks(chunks)) return false;
+    emit dirtyChanged();
+    return true;
+}
+
 void AsyncLevelLoader::setRenderViewport(const region_pos& minRegion, const region_pos& maxRegion) {
     if (!loaded_.load(std::memory_order_acquire) || !render_active_) return;
     region_scheduler_.setViewport(minRegion, maxRegion);

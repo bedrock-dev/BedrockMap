@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <optional>
+#include <span>
 #include <unordered_map>
 #include <utility>
 
@@ -26,6 +27,7 @@ class ChunkEditService {
 
     bool deleteChunk(const bl::chunk_pos& pos);
     bool putRawChunk(const bl::raw_chunk& raw);
+    bool putRawChunks(std::span<const bl::raw_chunk> chunks);
     bool createVoid(const bl::chunk_pos& pos);
     bool setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biome);
 

@@ -16,7 +16,7 @@ class WorldVolumeSource final : public BlockVolumeSource {
     [[nodiscard]] QByteArray exportStructure(const BlockVolume& volume, const bl::block_box& localBounds,
                                              const StructureExportOptions& options) const override;
     [[nodiscard]] BlockVolumeMutationResult commitImport(const BlockVolume& target, const BlockVolume& import,
-                                                         const bl::block_box& localBounds, bool importEntities) override;
+                                                         const bl::block_box& localBounds, const StructureImportOptions& options) override;
     [[nodiscard]] BlockVolumeMutationResult deleteBlocks(const BlockVolume& volume, const bl::block_box& localBounds,
                                                          bool deleteEntities) override;
 

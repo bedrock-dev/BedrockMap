@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -167,6 +168,7 @@ class AsyncLevelLoader : public QObject {
     /// Emit one aggregated dirty notification after a bulk mutation.
     void notifyDirtyChanged();
     bool putRawChunk(const bl::raw_chunk& raw);
+    bool putRawChunks(std::span<const bl::raw_chunk> chunks);
 
     bool createVoid(const bl::chunk_pos& p);
 

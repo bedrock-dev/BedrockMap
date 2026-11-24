@@ -49,6 +49,16 @@ bool ChunkEditService::putRawChunk(const bl::raw_chunk& raw) {
     return true;
 }
 
+bool ChunkEditService::putRawChunks(std::span<const bl::raw_chunk> chunks) {
+    if (!canEdit()) return false;
+    for (const auto& raw : chunks) storage_.putRawChunk(raw);
+    for (const auto& raw : chunks) {
+        markChanged(raw.pos(), true);
+        coords_service_.updateOverview(raw);
+    }
+    return true;
+}
+
 bool ChunkEditService::createVoid(const bl::chunk_pos& pos) {
     if (!canEdit()) return false;
     auto raw = getRawChunk(pos);

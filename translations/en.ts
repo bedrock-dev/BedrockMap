@@ -485,6 +485,49 @@
     </message>
 </context>
 <context>
+    <name>BlockVolumeOperator</name>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The structure has an invalid size.</source>
+        <translation>The structure has an invalid size.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The import range does not cover a valid chunk region.</source>
+        <translation>The import range does not cover a valid chunk region.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) does not exist.</source>
+        <translation>Target chunk (%1, %2) does not exist.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) could not be read.</source>
+        <translation>Target chunk (%1, %2) could not be read.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Target chunk (%1, %2) could not be parsed.</source>
+        <translation>Target chunk (%1, %2) could not be parsed.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Could not replace a target block column.</source>
+        <translation>Could not replace a target block column.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>The structure did not change any target blocks.</source>
+        <translation>The structure did not change any target blocks.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/blockvolumeoperator.cpp"/>
+        <source>Could not update the in-memory chunk cache.</source>
+        <translation>Could not update the in-memory chunk cache.</translation>
+    </message>
+</context>
+<context>
     <name>BrowserVfsBackend</name>
     <message>
         <location filename="../src/io/browservfs.cpp"/>
@@ -3710,6 +3753,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <source>Could not copy the selected blocks.</source>
+        <translation>Could not copy the selected blocks.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Import successful</source>
         <translation type="unfinished">Import successful</translation>
     </message>
@@ -4230,6 +4278,19 @@ Current version: %2</translation>
         <location filename="../src/loader/worldsource.cpp"/>
         <source>External</source>
         <translation>External</translation>
+    </message>
+</context>
+<context>
+    <name>WorldVolumeSource</name>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
+        <source>The target world or import structure is invalid.</source>
+        <translation>The target world or import structure is invalid.</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/worldvolumesource.cpp"/>
+        <source>The import range exceeds the current 3D preview X/Z bounds.</source>
+        <translation>The import range exceeds the current 3D preview X/Z bounds.</translation>
     </message>
 </context>
 <context>

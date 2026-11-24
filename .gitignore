@@ -98,5 +98,6 @@ docs/*
 !docs/architecture-review.md
 !docs/qmlWorldRendering.md
 !docs/nativeDirtyState.md
+!docs/voxelStructureIO.md
 dist
 AGENTS.md

@@ -40,12 +40,13 @@ class BlockVolumeController final : public VoxelSceneController {
     Q_INVOKABLE bool pasteStructure();
     Q_INVOKABLE bool copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
                                    bool includeAir);
-    Q_INVOKABLE bool commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities);
+    Q_INVOKABLE bool commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities, bool replaceNonAirBlocks);
     Q_INVOKABLE void cancelImport();
     Q_INVOKABLE bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
                                        bool useNewFormat, bool includeAir);
     bool copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
     bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
+    bool commitImport(const QVector3D& minimum, const QVector3D& maximum, const StructureImportOptions& options);
     Q_INVOKABLE bool exportGlb(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool compressMesh);
     Q_INVOKABLE bool deleteBlockVolumeAsync(const QVector3D& minimum, const QVector3D& maximum, bool deleteEntities);
     void setLoader(AsyncLevelLoader* loader);
@@ -85,8 +86,12 @@ class BlockVolumeController final : public VoxelSceneController {
     using Task = std::function<std::function<void()>()>;
     /// Runs on the GUI thread when a task throws; detail is the exception text, if any.
     using Failure = std::function<void(const QString& detail)>;
+    /// Runs on the worker after structure bytes are generated and returns the GUI completion step.
+    using StructureExportCompletion = std::function<std::function<void()>(QByteArray)>;
 
     void run(Operation operation, Task task, Failure onFailure);
+    bool beginStructureExport(Operation operation, const QVector3D& minimum, const QVector3D& maximum,
+                              const StructureExportOptions& options, StructureExportCompletion completion, Failure onFailure);
     void finishOperation();
     void setOperation(Operation operation);
     void startLoad(BlockVolumeRequest request, bool keepScene);
