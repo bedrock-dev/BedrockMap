@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSet>
@@ -79,8 +80,7 @@ namespace {
         return info;
     }
 
-#ifdef Q_OS_WIN
-    void appendMinecraftPaths(std::vector<WorldSource>& sources, bool scanLeviPath) {
+    void appendWindowsWorldSources(std::vector<WorldSource>& sources, bool scanLeviPath) {
         const QString games = QStringLiteral("games/com.mojang/minecraftWorlds");
         QSet<QString> seen;
         const auto append = [&](WorldSource source) {
@@ -105,7 +105,7 @@ namespace {
         append(
             {.path = QDir(appData).filePath(QStringLiteral("MinecraftPC_Netease_PB/minecraftWorlds")), .kind = WorldSourceKind::NetEase});
 
-        const auto appendUsers = [&](const QString& base, bool levi) {
+        const auto appendUserWorldSources = [&](const QString& base, bool levi) {
             for (bool preview : {false, true}) {
                 const QString product = preview ? QStringLiteral("Minecraft Bedrock Preview") : QStringLiteral("Minecraft Bedrock");
                 for (const auto& user : childDirectories(QDir(base).filePath(product + QStringLiteral("/Users")))) {
@@ -114,20 +114,43 @@ namespace {
                 }
             }
         };
-        appendUsers(appData, false);
+        appendUserWorldSources(appData, false);
 
         if (!scanLeviPath) return;
-        const auto config =
-            io::DocumentIo::readAll(fileUrl(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json"))), 1 << 20);
-        if (!config.ok()) return;
-        const auto doc = QJsonDocument::fromJson(config.data);
-        const QString baseRoot = doc.object().value(QStringLiteral("base_root")).toString();
-        if (baseRoot.isEmpty()) return;
-        for (const auto& version : childDirectories(QDir(baseRoot).filePath(QStringLiteral("versions")))) {
-            appendUsers(version, true);
+        QStringList leviRoots;
+        const auto appendConfiguredRoot = [&](const QString& configPath) {
+            const auto config = io::DocumentIo::readAll(fileUrl(configPath), 1 << 20);
+            if (!config.ok()) return;
+            const auto doc = QJsonDocument::fromJson(config.data);
+            const QString root = doc.object().value(QStringLiteral("base_root")).toString();
+            if (!root.isEmpty() && !leviRoots.contains(root, Qt::CaseInsensitive)) leviRoots.push_back(root);
+        };
+        appendConfiguredRoot(QDir(appData).filePath(QStringLiteral("LeviLauncher.exe/config.json")));
+
+        if (!local.isEmpty()) {
+            const QString instances = QDir(local).filePath(QStringLiteral("LeviLauncher/Instances"));
+            if (!leviRoots.contains(instances, Qt::CaseInsensitive)) leviRoots.push_back(instances);
+        }
+
+        for (const auto& root : leviRoots) {
+            for (const auto& version : childDirectories(QDir(root).filePath(QStringLiteral("versions")))) {
+                appendUserWorldSources(version, true);
+            }
+            if (QFileInfo(root).fileName().compare(QStringLiteral("Instances"), Qt::CaseInsensitive) == 0) {
+                for (const auto& instance : childDirectories(root)) appendUserWorldSources(instance, true);
+            }
         }
     }
-#endif
+
+    void appendAndroidWorldSources(std::vector<WorldSource>& sources) {
+        sources.push_back({.path = QStringLiteral("/data/user/0/com.mojang.minecraftpe/games/com.mojang/minecraftWorlds"),
+                           .kind = WorldSourceKind::AndroidLegacy});
+        sources.push_back({.path = QStringLiteral("/data/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
+                           .kind = WorldSourceKind::AndroidReleaseInternal});
+        sources.push_back(
+            {.path = QStringLiteral("/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
+             .kind = WorldSourceKind::AndroidReleaseExternal});
+    }
 }  // namespace
 
 std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool scanLeviPath) {
@@ -136,20 +159,13 @@ std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool s
     if (!appData.isEmpty()) {
         sources.push_back({.path = QDir(appData).filePath(QStringLiteral("worlds")), .kind = WorldSourceKind::AppInternal});
     }
-#ifdef Q_OS_WIN
-    appendMinecraftPaths(sources, scanLeviPath);
+#if defined(Q_OS_WIN)
+    appendWindowsWorldSources(sources, scanLeviPath);
+#elif defined(Q_OS_ANDROID)
+    Q_UNUSED(scanLeviPath);
+    appendAndroidWorldSources(sources);
 #else
     Q_UNUSED(scanLeviPath);
-#endif
-
-#ifdef Q_OS_ANDROID
-    sources.push_back({.path = QStringLiteral("/data/user/0/com.mojang.minecraftpe/games/com.mojang/minecraftWorlds"),
-                       .kind = WorldSourceKind::AndroidLegacy});
-    sources.push_back({.path = QStringLiteral("/data/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
-                       .kind = WorldSourceKind::AndroidReleaseInternal});
-    sources.push_back(
-        {.path = QStringLiteral("/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/minecraftWorlds"),
-         .kind = WorldSourceKind::AndroidReleaseExternal});
 #endif
 
     QSet<QString> seen;
