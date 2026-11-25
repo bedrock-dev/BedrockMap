@@ -3727,6 +3727,7 @@ Current version: %2</source>
     <name>VoxelPreview</name>
     <message>
         <location filename="../src/qml/VoxelPreview.qml"/>
+        <location filename="../src/qml/VoxelPreview.qml"/>
         <source>Copy failed</source>
         <translation>复制失败</translation>
     </message>
@@ -3878,8 +3879,18 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Advanced options</source>
+        <translation>高级选项</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
         <source>Include air when exporting</source>
         <translation>导出时包含空气</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/VoxelStructureSection.qml"/>
+        <source>Include structure void when exporting</source>
+        <translation>导出时包含结构空位</translation>
     </message>
     <message>
         <location filename="../src/qml/VoxelStructureSection.qml"/>
@@ -4295,6 +4306,11 @@ Current version: %2</source>
 </context>
 <context>
     <name>WorldWorkspace</name>
+    <message>
+        <location filename="../src/qml/WorldWorkspace.qml"/>
+        <source>Confirm or cancel the current import before rebuilding the 3D view.</source>
+        <translation>请先确认或取消当前导入，再重新生成 3D 区域。</translation>
+    </message>
     <message>
         <location filename="../src/qml/WorldWorkspace.qml"/>
         <location filename="../src/qml/WorldWorkspace.qml"/>

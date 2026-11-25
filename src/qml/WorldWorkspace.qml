@@ -382,6 +382,10 @@ Item {
     function openVoxelView() {
         if (!mapController || !session || !session.voxelView)
             return
+        if (session.voxelView.importing || session.voxelView.importPreviewActive) {
+            App.notifications.warning(qsTr("Confirm or cancel the current import before rebuilding the 3D view."))
+            return
+        }
         const area = mapController.voxelViewArea()
         if (!area || area.minX === undefined)
             return

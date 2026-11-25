@@ -74,7 +74,8 @@ QByteArray WorldVolumeSource::exportStructure(const BlockVolume& volume, const b
     if (!loader_ || !loader_->isOpen() || !volume.scene) return {};
     const auto raw =
         BlockVolumeOperator::exportWorldMcstructureData(*loader_, volume.dimension, localBounds.translated(volume.blockOrigin()),
-                                                        options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir);
+                                                        options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir,
+                                                        options.includeStructureVoid);
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }
 

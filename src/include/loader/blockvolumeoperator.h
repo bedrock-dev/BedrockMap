@@ -24,7 +24,8 @@ class BlockVolumeOperator {
 
     /// Serialize selected chunks as an mcstructure payload.
     static std::string exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& blockBounds, int32_t version = 1,
-                                                  bool exportEntities = false, bool exportAir = true);
+                                                  bool exportEntities = false, bool includeAir = true,
+                                                  bool includeStructureVoid = false);
 
     /// Import an mcstructure at a world position. Air in the structure replaces world blocks.
     static BlockVolumeMutationResult importMcstructureIntoWorld(const bl::mcstructure& structure, const bl::block_pos& position,

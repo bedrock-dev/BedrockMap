@@ -15,6 +15,7 @@ Item {
     property vector3d exportMaximum
     property bool exportEntities: true
     property bool exportIncludeAir: true
+    property bool exportIncludeStructureVoid: false
     property bool exportNewFormat: false
     property bool exportCompressMesh: false
     readonly property bool hasModel: !!controller && controller.hasVoxelModel
@@ -25,9 +26,16 @@ Item {
     readonly property bool operationsEnabled: root.hasModel && !root.busy && !root.importPreviewActive
     readonly property bool textInputFocused: Window.activeFocusItem instanceof TextInput
                                              || Window.activeFocusItem instanceof TextEdit
-    readonly property bool viewShortcutsEnabled: root.visible && root.sectionsEnabled && !root.importPreviewActive &&
-                                                 !root.textInputFocused
+    readonly property bool viewShortcutsEnabled: root.visible && root.sectionsEnabled && !root.textInputFocused
     readonly property var camera: viewport.camera
+
+    function shortcutEnabled(command, requiresSelection) {
+        if (!viewShortcutsEnabled)
+            return false
+        if (importPreviewActive && (command === "toggleSelection" || command === "toggleSelectionMove"))
+            return false
+        return !requiresSelection || camera.selectionEnabled
+    }
 
     /// The selection when enabled, otherwise the whole model, in model-local coordinates.
     function exportRange() {
@@ -55,6 +63,7 @@ Item {
             return
         exportEntities = structureSection.includeEntities
         exportIncludeAir = structureSection.includeAir
+        exportIncludeStructureVoid = structureSection.includeStructureVoid
         exportNewFormat = structureSection.newFormat
         const origin = camera.modelOrigin
         const fileName = "structure-" + [origin.x + exportMinimum.x, origin.y + exportMinimum.y, origin.z
@@ -96,7 +105,8 @@ Item {
             return
         const range = exportRange()
         if (!controller.copySelection(range.minimum, range.maximum, structureSection.includeEntities,
-                                      structureSection.newFormat, structureSection.includeAir))
+                                      structureSection.newFormat, structureSection.includeAir,
+                                      structureSection.includeStructureVoid))
             App.notifications.error(qsTr("Copy failed"), "", qsTr("Could not copy the selected blocks."))
     }
 
@@ -186,8 +196,7 @@ Item {
             required property var modelData
             Shortcut {
                 sequence: shortcutHost.modelData.sequence
-                enabled: root.viewShortcutsEnabled && (!shortcutHost.modelData.requiresSelection
-                                                       || root.camera.selectionEnabled)
+                enabled: root.shortcutEnabled(shortcutHost.modelData.command, shortcutHost.modelData.requiresSelection)
                 onActivated: root.runViewShortcut(shortcutHost.modelData.command)
             }
         }
@@ -215,7 +224,7 @@ Item {
         onAccepted: {
             if (!root.exportTarget || !root.exportTarget.exportMcstructure(selectedUrl, root.exportMinimum, root.exportMaximum,
                                                                            root.exportEntities, root.exportNewFormat,
-                                                                           root.exportIncludeAir))
+                                                                           root.exportIncludeAir, root.exportIncludeStructureVoid))
                 AppErrorReporter.report(qsTr("Export failed"), root.exportTarget)
         }
     }

@@ -16,6 +16,7 @@ VoxelPreviewSection {
     readonly property bool importing: !!controller && controller.importing
     readonly property bool includeEntities: includeEntitiesBox.checked
     readonly property bool includeAir: includeAirBox.checked
+    readonly property bool includeStructureVoid: includeStructureVoidBox.checked
     readonly property bool replaceNonAirBlocks: replaceNonAirBlocksBox.checked
     readonly property bool newFormat: newFormatBox.checked
 
@@ -57,6 +58,16 @@ VoxelPreviewSection {
             }
 
             AppCheckBox {
+                id: advancedOptionsBox
+                objectName: "voxelAdvancedOptions"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
+                text: qsTr("Advanced options")
+                checked: false
+            }
+
+            AppCheckBox {
                 id: includeAirBox
                 objectName: "voxelIncludeAir"
                 Layout.fillWidth: true
@@ -64,17 +75,18 @@ VoxelPreviewSection {
                 wrapText: true
                 text: qsTr("Include air when exporting")
                 checked: true
+                visible: advancedOptionsBox.checked
             }
 
             AppCheckBox {
-                id: replaceNonAirBlocksBox
-                objectName: "voxelReplaceNonAirBlocks"
+                id: includeStructureVoidBox
+                objectName: "voxelIncludeStructureVoid"
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 wrapText: true
-                text: qsTr("Replace non-air blocks when importing")
-                checked: true
-                visible: section.editingEnabled
+                text: qsTr("Include structure void when exporting")
+                checked: false
+                visible: advancedOptionsBox.checked
             }
 
             AppCheckBox {
@@ -85,6 +97,18 @@ VoxelPreviewSection {
                 wrapText: true
                 text: qsTr("Use new format when exporting")
                 checked: false
+                visible: advancedOptionsBox.checked
+            }
+
+            AppCheckBox {
+                id: replaceNonAirBlocksBox
+                objectName: "voxelReplaceNonAirBlocks"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                wrapText: true
+                text: qsTr("Replace non-air blocks when importing")
+                checked: true
+                visible: advancedOptionsBox.checked && section.editingEnabled
             }
         }
 

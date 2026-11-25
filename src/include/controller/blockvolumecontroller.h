@@ -39,11 +39,11 @@ class BlockVolumeController final : public VoxelSceneController {
     Q_INVOKABLE bool importStructure(const QUrl& url);
     Q_INVOKABLE bool pasteStructure();
     Q_INVOKABLE bool copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
-                                   bool includeAir);
+                                   bool includeAir, bool includeStructureVoid);
     Q_INVOKABLE bool commitImport(const QVector3D& minimum, const QVector3D& maximum, bool importEntities, bool replaceNonAirBlocks);
     Q_INVOKABLE void cancelImport();
     Q_INVOKABLE bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
-                                       bool useNewFormat, bool includeAir);
+                                       bool useNewFormat, bool includeAir, bool includeStructureVoid);
     bool copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
     bool exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options);
     bool commitImport(const QVector3D& minimum, const QVector3D& maximum, const StructureImportOptions& options);

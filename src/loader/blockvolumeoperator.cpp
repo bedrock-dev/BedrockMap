@@ -9,6 +9,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -37,12 +38,16 @@ namespace {
         }
     }
 
-    bool isAirBlock(const bl::nbt::compound_tag* block) {
-        if (!block) return true;
+    std::string_view blockName(const bl::nbt::compound_tag* block) {
+        static constexpr std::string_view unknown = "minecraft:unknown";
+        if (!block) return unknown;
         const auto* nameTag = block->get("name");
         const auto* name = nameTag ? nameTag->as<const bl::nbt::string_tag*>() : nullptr;
-        if (!name) return true;
-        return bl::is_air_block_name(name->value) || name->value == "minecraft:unknown";
+        return name ? std::string_view(name->value) : unknown;
+    }
+
+    bool isAirBlockName(std::string_view name) {
+        return bl::is_air_block_name(name) || name == "minecraft:unknown";
     }
 
     bool readBlockEntityPosition(const bl::nbt::compound_tag* entity, bl::block_pos& position) {
@@ -125,17 +130,18 @@ namespace {
 QRegion BlockVolumeOperator::regionForBounds(const bl::block_box& blockBounds) { return chunkRegionForBounds(blockBounds); }
 
 std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& loader, int dim, const bl::block_box& exportBounds,
-                                                            int32_t version, bool exportEntities, bool exportAir) {
+                                                            int32_t version, bool exportEntities, bool includeAir,
+                                                            bool includeStructureVoid) {
     if (!exportBounds.is_valid()) return {};
 
     const QRegion chunkRegion = chunkRegionForBounds(exportBounds);
     const auto chunks = loadChunks(chunkRegion, loader, dim);
-    if (chunks.empty() && !exportAir) return {};
+    if (chunks.empty() && !includeAir) return {};
 
     const bl::block_pos origin = exportBounds.min_pos;
     const bl::block_pos size{exportBounds.size_x(), exportBounds.size_y(), exportBounds.size_z()};
     bl::mcstructure_builder builder(size, origin, version);
-    if (exportAir) {
+    if (includeAir) {
         const auto air = makeAirBlock();
         builder.fill_blocks(bl::block_box::from_min_and_size({0, 0, 0}, size.x, size.y, size.z), air.get());
     }
@@ -153,7 +159,11 @@ std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& lo
                     for (int layer = 0;; ++layer) {
                         const auto* block = chunk->get_block_raw(x - baseX, y, z - baseZ, layer);
                         if (!block) break;
-                        if (isAirBlock(block)) continue;
+                        const auto name = blockName(block);
+                        if (isAirBlockName(name) ||
+                            (!includeStructureVoid && bl::is_structure_void_block_name(name))) {
+                            continue;
+                        }
                         builder.set_block(layer, {x - origin.x, y - origin.y, z - origin.z}, block);
                     }
                 }

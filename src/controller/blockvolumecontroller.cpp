@@ -95,6 +95,7 @@ void BlockVolumeController::openArea(int minChunkX, int minChunkZ, int maxChunkX
 }
 
 void BlockVolumeController::openArea(const ChunkArea& area) {
+    if (importPreviewActive()) return;
     if (area.valid()) load(area);
 }
 
@@ -209,9 +210,13 @@ bool BlockVolumeController::beginStructureExport(Operation operation, const QVec
 }
 
 bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, bool copyEntities, bool useNewFormat,
-                                          bool includeAir) {
-    return copySelection(minimum, maximum,
-                         StructureExportOptions{.includeEntities = copyEntities, .includeAir = includeAir, .useNewFormat = useNewFormat});
+                                          bool includeAir, bool includeStructureVoid) {
+    return copySelection(
+        minimum, maximum,
+        StructureExportOptions{.includeEntities = copyEntities,
+                               .includeAir = includeAir,
+                               .includeStructureVoid = includeStructureVoid,
+                               .useNewFormat = useNewFormat});
 }
 
 bool BlockVolumeController::copySelection(const QVector3D& minimum, const QVector3D& maximum, const StructureExportOptions& options) {
@@ -303,10 +308,13 @@ void BlockVolumeController::applyMutation(const BlockVolumeMutationResult& resul
 }
 
 bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum, bool exportEntities,
-                                              bool useNewFormat, bool includeAir) {
+                                              bool useNewFormat, bool includeAir, bool includeStructureVoid) {
     return exportMcstructure(
         url, minimum, maximum,
-        StructureExportOptions{.includeEntities = exportEntities, .includeAir = includeAir, .useNewFormat = useNewFormat});
+        StructureExportOptions{.includeEntities = exportEntities,
+                               .includeAir = includeAir,
+                               .includeStructureVoid = includeStructureVoid,
+                               .useNewFormat = useNewFormat});
 }
 
 bool BlockVolumeController::exportMcstructure(const QUrl& url, const QVector3D& minimum, const QVector3D& maximum,

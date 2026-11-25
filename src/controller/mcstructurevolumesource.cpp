@@ -28,7 +28,7 @@ namespace {
     }
 
     std::shared_ptr<bl::mcstructure> buildExportStructure(const bl::mcstructure& structure, const bl::block_box& bounds, int32_t version,
-                                                          bool exportEntities, bool exportAir) {
+                                                          bool includeEntities, bool includeAir, bool includeStructureVoid) {
         const auto origin = structure.origin();
         const bl::block_pos newOrigin = origin + bounds.min_pos;
         bl::mcstructure_builder builder({bounds.size_x(), bounds.size_y(), bounds.size_z()}, newOrigin, version);
@@ -41,7 +41,8 @@ namespace {
                         if (idx < 0) continue;
                         const auto* entry = structure.palette_entry_at(static_cast<size_t>(idx));
                         if (!entry || !entry->tag) continue;
-                        if (!exportAir && bl::is_air_block_name(entry->name)) continue;
+                        if (!includeAir && bl::is_air_block_name(entry->name)) continue;
+                        if (!includeStructureVoid && bl::is_structure_void_block_name(entry->name)) continue;
                         if (entry->name == "minecraft:unknown") continue;
                         builder.set_block(layer, bl::block_pos{x, y, z} - bounds.min_pos, entry->tag);
                     }
@@ -62,7 +63,7 @@ namespace {
             builder.set_block_entity(newLocalPos, adjustedEntity.get());
         }
 
-        if (exportEntities) {
+        if (includeEntities) {
             for (const auto* entity : structure.entities()) {
                 const auto worldPosition = bl::actor::position_from_nbt(entity);
                 if (!worldPosition) continue;
@@ -158,7 +159,8 @@ QByteArray McstructureVolumeSource::exportStructure(const BlockVolume& volume, c
     const auto gridBounds = bl::block_box::from_min_and_size({0, 0, 0}, structure->size_x(), structure->size_y(), structure->size_z());
     const auto bounds = selection.normalized().intersected(gridBounds);
     if (!bounds.is_valid()) return {};
-    const auto raw =
-        buildExportStructure(*structure, bounds, options.useNewFormat ? 2 : 1, options.includeEntities, options.includeAir)->to_raw();
+    const auto exported = buildExportStructure(*structure, bounds, options.useNewFormat ? 2 : 1, options.includeEntities,
+                                               options.includeAir, options.includeStructureVoid);
+    const auto raw = exported->to_raw();
     return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
 }

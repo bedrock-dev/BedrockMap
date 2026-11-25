@@ -49,6 +49,7 @@ struct StructureExportOptions {
     /// Includes actors; block entities remain attached to exported blocks.
     bool includeEntities{false};
     bool includeAir{true};
+    bool includeStructureVoid{false};
     bool useNewFormat{false};
 };
 
