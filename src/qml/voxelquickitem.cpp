@@ -148,6 +148,7 @@ namespace {
             transparent_pipeline_ = createPipeline(true, true, QRhiGraphicsPipeline::Triangles, QRhiGraphicsPipeline::Less);
             fill_pipeline_ = createPipeline(true, true, QRhiGraphicsPipeline::Triangles, QRhiGraphicsPipeline::LessOrEqual);
             line_pipeline_ = createPipeline(true, false, QRhiGraphicsPipeline::Lines, QRhiGraphicsPipeline::Always);
+            grid_pipeline_ = createPipeline(true, true, QRhiGraphicsPipeline::Lines, QRhiGraphicsPipeline::LessOrEqual);
             handle_pipeline_ = createPipeline(true, false, QRhiGraphicsPipeline::Triangles, QRhiGraphicsPipeline::Always);
         }
 
@@ -183,6 +184,7 @@ namespace {
                 drawIndexed(command_buffer, opaque_pipeline_.get(), sceneBindings, opaque_);
                 drawIndexed(command_buffer, transparent_pipeline_.get(), sceneBindings, transparent_);
                 if (import_scene_) drawIndexed(command_buffer, transparent_pipeline_.get(), import_uniforms_.bindings.get(), import_);
+                drawGrid(command_buffer, grid_);
                 drawOverlay(command_buffer, hsa_);
                 drawOverlay(command_buffer, axes_);
                 drawOverlay(command_buffer, selection_mesh_);
@@ -216,7 +218,12 @@ namespace {
                 axes_model_size_ = {};
             } else if (axes_model_size_ != scene_->modelSize || !axes_.vertexCount) {
                 axes_model_size_ = scene_->modelSize;
-                axes_.upload(rhi, updates, VoxelOverlayMeshBuffers::fromAxes(scene_->modelSize));
+                axes_.upload(rhi, updates, VoxelOverlayMeshBuffers::makeAxes(scene_->modelSize));
+            }
+
+            if (grid_model_size_ != scene_->modelSize || !grid_.vertexCount) {
+                grid_model_size_ = scene_->modelSize;
+                grid_.upload(rhi, updates, VoxelOverlayMeshBuffers::makeChunkGrid(scene_->modelSize));
             }
 
             if (!hsa_areas_ || hsa_areas_->empty()) {
@@ -224,14 +231,14 @@ namespace {
                 uploaded_hsa_areas_.reset();
             } else if (hsa_areas_ != uploaded_hsa_areas_) {
                 uploaded_hsa_areas_ = hsa_areas_;
-                hsa_.upload(rhi, updates, VoxelOverlayMeshBuffers::fromHsaAreas(*hsa_areas_));
+                hsa_.upload(rhi, updates, VoxelOverlayMeshBuffers::makeHsaAreas(*hsa_areas_));
             }
 
             // Handle sizes depend on the camera, so the selection is rebuilt every frame.
             if (selection_.enabled && selection_.bounds.is_valid())
                 selection_mesh_.upload(rhi, updates,
-                                       VoxelOverlayMeshBuffers::fromSelection(selection_.bounds, {matrix, logical_size_}, selection_.color,
-                                                                              selection_.active));
+                                       VoxelOverlayMeshBuffers::makeSelection(selection_.bounds, {matrix, logical_size_},
+                                                                              selection_.color, selection_.active));
             else
                 selection_mesh_.clear();
         }
@@ -281,17 +288,28 @@ namespace {
                  overlay.fillCount + overlay.lineCount);
         }
 
+        void drawGrid(QRhiCommandBuffer* command_buffer, const OverlayBuffer& grid) const {
+            if (!grid_pipeline_ || !grid.lineCount) return;
+            const QRhiCommandBuffer::VertexInput input(grid.buffer.get(), 0);
+            command_buffer->setGraphicsPipeline(grid_pipeline_.get());
+            command_buffer->setShaderResources(scene_uniforms_.bindings.get());
+            command_buffer->setVertexInput(0, 1, &input);
+            command_buffer->draw(grid.lineCount, 1, 0);
+        }
+
         void releaseSceneMeshes() {
             opaque_ = {};
             transparent_ = {};
             import_ = {};
             hsa_.clear();
             axes_.clear();
+            grid_.clear();
             selection_mesh_.clear();
             uploaded_scene_.reset();
             uploaded_import_scene_.reset();
             uploaded_hsa_areas_.reset();
             axes_model_size_ = {};
+            grid_model_size_ = {};
         }
 
         // State copied from the item in synchronize().
@@ -311,6 +329,7 @@ namespace {
         std::shared_ptr<const VoxelSceneData> uploaded_import_scene_;
         std::shared_ptr<const std::vector<VoxelHsaArea>> uploaded_hsa_areas_;
         QVector3D axes_model_size_;
+        QVector3D grid_model_size_;
 
         UniformBinding scene_uniforms_;
         UniformBinding import_uniforms_;
@@ -318,12 +337,14 @@ namespace {
         RhiPipeline transparent_pipeline_;
         RhiPipeline fill_pipeline_;
         RhiPipeline line_pipeline_;
+        RhiPipeline grid_pipeline_;
         RhiPipeline handle_pipeline_;
         IndexedMesh opaque_;
         IndexedMesh transparent_;
         IndexedMesh import_;
         OverlayBuffer hsa_;
         OverlayBuffer axes_;
+        OverlayBuffer grid_;
         OverlayBuffer selection_mesh_;
     };
 }  // namespace

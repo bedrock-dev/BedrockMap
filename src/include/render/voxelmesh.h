@@ -89,10 +89,12 @@ struct VoxelOverlayMeshBuffers {
     std::uint32_t lineCount{0};
 
     /// Colored X/Y/Z lines from the model origin (lineCount only).
-    [[nodiscard]] static VoxelOverlayMeshBuffers fromAxes(const QVector3D& modelSize);
-    [[nodiscard]] static VoxelOverlayMeshBuffers fromSelection(const bl::block_box& bounds, const VoxelSelectionView& view,
+    [[nodiscard]] static VoxelOverlayMeshBuffers makeAxes(const QVector3D& modelSize);
+    /// Chunk-aligned grid lines on the model's bottom plane (lineCount only).
+    [[nodiscard]] static VoxelOverlayMeshBuffers makeChunkGrid(const QVector3D& modelSize);
+    [[nodiscard]] static VoxelOverlayMeshBuffers makeSelection(const bl::block_box& bounds, const VoxelSelectionView& view,
                                                                const QColor& color, VoxelSelectionHandle active);
-    [[nodiscard]] static VoxelOverlayMeshBuffers fromHsaAreas(const std::vector<VoxelHsaArea>& areas);
+    [[nodiscard]] static VoxelOverlayMeshBuffers makeHsaAreas(const std::vector<VoxelHsaArea>& areas);
 
     [[nodiscard]] std::uint32_t vertexCount() const { return static_cast<std::uint32_t>(vertices.size() / VOXEL_VERTEX_FLOATS); }
 };

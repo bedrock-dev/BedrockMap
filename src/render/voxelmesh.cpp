@@ -227,7 +227,7 @@ VoxelGrid VoxelGrid::fromChunks(const std::vector<std::vector<bl::chunk*>>& chun
     return grid;
 }
 
-VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::fromAxes(const QVector3D& modelSize) {
+VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeAxes(const QVector3D& modelSize) {
     VoxelOverlayMeshBuffers result;
     for (int axis = 0; axis < 3; ++axis) {
         QColor color = AXIS_COLORS[axis];
@@ -241,7 +241,43 @@ VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::fromAxes(const QVector3D& model
     return result;
 }
 
-VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::fromSelection(const bl::block_box& bounds, const VoxelSelectionView& view,
+VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeChunkGrid(const QVector3D& modelSize) {
+    VoxelOverlayMeshBuffers result;
+    constexpr float CHUNK_SIZE = 16.0f;
+    constexpr float CELL_SIZE = 4.0f;
+    constexpr float GRID_Y = -0.01f;
+    constexpr float MARGIN = CHUNK_SIZE;
+    const QColor minorColor(100, 112, 128, 75);
+    const QColor chunkColor(130, 145, 165, 145);
+    const auto divisions = [](float minimum, float maximum, float step) {
+        std::vector<float> values;
+        for (float value = minimum; value < maximum; value += step) values.push_back(value);
+        if (values.empty() || values.back() != maximum) values.push_back(maximum);
+        return values;
+    };
+    const auto isChunkLine = [](float value, float spacing) {
+        const float remainder = std::fmod(value, spacing);
+        return std::abs(remainder) < 0.001f || std::abs(remainder) > spacing - 0.001f;
+    };
+    const float minX = -MARGIN;
+    const float maxX = modelSize.x() + MARGIN;
+    const float minZ = -MARGIN;
+    const float maxZ = modelSize.z() + MARGIN;
+    for (const float x : divisions(minX, maxX, CELL_SIZE)) {
+        const auto& color = isChunkLine(x, CHUNK_SIZE) ? chunkColor : minorColor;
+        appendOverlayVertex(result.vertices, QVector3D(x, GRID_Y, minZ), color);
+        appendOverlayVertex(result.vertices, QVector3D(x, GRID_Y, maxZ), color);
+    }
+    for (const float z : divisions(minZ, maxZ, CELL_SIZE)) {
+        const auto& color = isChunkLine(z, CHUNK_SIZE) ? chunkColor : minorColor;
+        appendOverlayVertex(result.vertices, QVector3D(minX, GRID_Y, z), color);
+        appendOverlayVertex(result.vertices, QVector3D(maxX, GRID_Y, z), color);
+    }
+    result.lineCount = result.vertexCount();
+    return result;
+}
+
+VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeSelection(const bl::block_box& bounds, const VoxelSelectionView& view,
                                                                const QColor& selectionColor, VoxelSelectionHandle active) {
     VoxelOverlayMeshBuffers result;
     if (!bounds.is_valid()) return result;
@@ -281,7 +317,7 @@ VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::fromSelection(const bl::block_b
     return result;
 }
 
-VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::fromHsaAreas(const std::vector<VoxelHsaArea>& areas) {
+VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeHsaAreas(const std::vector<VoxelHsaArea>& areas) {
     VoxelOverlayMeshBuffers result;
     const auto drawable = [](const VoxelHsaArea& area) { return area.bounds.is_valid() && area.color.isValid(); };
     for (const auto& area : areas) {
