@@ -555,14 +555,17 @@ QQuickRhiItemRenderer* VoxelQuickItem::createRenderer() { return new VoxelRhiRen
 void VoxelQuickItem::syncScene() {
     std::shared_ptr<const VoxelSceneData> next;
     if (controller_) next = controller_->voxelScene();
+    const auto next_selection_bounds = next ? next->selectionBounds() : std::nullopt;
+    const bool next_has_voxels = next && next->voxels.bounds().has_value();
     // A rebuilt scene of the same volume, such as after an edit, keeps the
     // camera and selection the user is working with.
-    const bool same_volume = scene_ && next && scene_->modelSize == next->modelSize && scene_->origin == next->origin;
+    const bool same_volume =
+        scene_ && next && next_has_voxels && scene_->modelSize == next->modelSize && scene_->origin == next->origin;
     scene_ = std::move(next);
     if (same_volume)
         view_state_.cancelSelectionDrag();
     else
-        view_state_.resetForScene(scene_ ? scene_->voxels.bounds().value_or(bl::block_box{}) : bl::block_box{});
+        view_state_.resetForScene(next_selection_bounds.value_or(bl::block_box{}));
     emit sceneChanged();
     emit selectionChanged();
     emit selectionInteractionChanged();

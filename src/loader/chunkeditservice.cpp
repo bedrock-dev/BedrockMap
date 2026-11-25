@@ -59,6 +59,15 @@ bool ChunkEditService::putRawChunks(std::span<const bl::raw_chunk> chunks) {
     return true;
 }
 
+bl::raw_chunk ChunkEditService::makeVoidRawChunk(const bl::chunk_pos& pos) const {
+    const auto format = storage_.level().chunk_format();
+    bl::raw_chunk created(pos);
+    created.set_chunk_format(format);
+    const auto marker = bl::is_new_chunk_format(format) ? bl::chunk_key::VersionNew : bl::chunk_key::VersionOld;
+    created.set_normal(marker, std::string(1, static_cast<char>(format)));
+    return created;
+}
+
 bool ChunkEditService::createVoid(const bl::chunk_pos& pos) {
     if (!canEdit()) return false;
     auto raw = getRawChunk(pos);
@@ -67,12 +76,7 @@ bool ChunkEditService::createVoid(const bl::chunk_pos& pos) {
         return putRawChunk(raw.value());
     }
 
-    const auto format = storage_.level().chunk_format();
-    bl::raw_chunk created(pos);
-    created.set_chunk_format(format);
-    const auto marker = bl::is_new_chunk_format(format) ? bl::chunk_key::VersionNew : bl::chunk_key::VersionOld;
-    created.set_normal(marker, std::string(1, static_cast<char>(format)));
-    return putRawChunk(created);
+    return putRawChunk(makeVoidRawChunk(pos));
 }
 
 bool ChunkEditService::setRawChunkBiome(const bl::chunk_pos& pos, bl::biome biome) {

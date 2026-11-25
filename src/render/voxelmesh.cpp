@@ -246,7 +246,6 @@ VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeChunkGrid(const QVector3D& 
     constexpr float CHUNK_SIZE = 16.0f;
     constexpr float CELL_SIZE = 4.0f;
     constexpr float GRID_Y = -0.01f;
-    constexpr float MARGIN = CHUNK_SIZE;
     const QColor minorColor(100, 112, 128, 75);
     const QColor chunkColor(130, 145, 165, 145);
     const auto divisions = [](float minimum, float maximum, float step) {
@@ -259,10 +258,10 @@ VoxelOverlayMeshBuffers VoxelOverlayMeshBuffers::makeChunkGrid(const QVector3D& 
         const float remainder = std::fmod(value, spacing);
         return std::abs(remainder) < 0.001f || std::abs(remainder) > spacing - 0.001f;
     };
-    const float minX = -MARGIN;
-    const float maxX = modelSize.x() + MARGIN;
-    const float minZ = -MARGIN;
-    const float maxZ = modelSize.z() + MARGIN;
+    constexpr float minX = 0.0f;
+    constexpr float minZ = 0.0f;
+    const float maxX = modelSize.x();
+    const float maxZ = modelSize.z();
     for (const float x : divisions(minX, maxX, CELL_SIZE)) {
         const auto& color = isChunkLine(x, CHUNK_SIZE) ? chunkColor : minorColor;
         appendOverlayVertex(result.vertices, QVector3D(x, GRID_Y, minZ), color);
@@ -372,4 +371,19 @@ std::shared_ptr<VoxelSceneData> VoxelSceneData::fromGrid(VoxelGrid grid, const Q
     scene->voxels = std::move(grid);
     scene->origin = origin;
     return scene;
+}
+
+std::shared_ptr<VoxelSceneData> VoxelSceneData::makeEmpty(const QVector3D& modelSize, const QVector3D& origin) {
+    if (modelSize.x() <= 0.0f || modelSize.y() <= 0.0f || modelSize.z() <= 0.0f) return {};
+    auto scene = std::make_shared<VoxelSceneData>();
+    scene->modelSize = modelSize;
+    scene->origin = origin;
+    return scene;
+}
+
+std::optional<bl::block_box> VoxelSceneData::selectionBounds() const {
+    if (const auto bounds = voxels.bounds()) return bounds;
+    if (modelSize.x() <= 0.0f || modelSize.y() <= 0.0f || modelSize.z() <= 0.0f) return std::nullopt;
+    return bl::block_box::from_min_and_size({0, 0, 0}, static_cast<int>(std::round(modelSize.x())),
+                                            static_cast<int>(std::round(modelSize.y())), static_cast<int>(std::round(modelSize.z())));
 }

@@ -170,6 +170,7 @@ class AsyncLevelLoader : public QObject {
     bool putRawChunk(const bl::raw_chunk& raw);
     bool putRawChunks(std::span<const bl::raw_chunk> chunks);
 
+    [[nodiscard]] bl::raw_chunk makeVoidRawChunk(const bl::chunk_pos& p) const;
     bool createVoid(const bl::chunk_pos& p);
 
     bool setRawChunkBiome(const bl::chunk_pos& p, bl::biome biome);

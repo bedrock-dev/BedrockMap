@@ -498,11 +498,6 @@
     </message>
     <message>
         <location filename="../src/loader/blockvolumeoperator.cpp"/>
-        <source>Target chunk (%1, %2) does not exist.</source>
-        <translation>Target chunk (%1, %2) does not exist.</translation>
-    </message>
-    <message>
-        <location filename="../src/loader/blockvolumeoperator.cpp"/>
         <source>Target chunk (%1, %2) could not be read.</source>
         <translation>Target chunk (%1, %2) could not be read.</translation>
     </message>

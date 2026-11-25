@@ -110,6 +110,10 @@ struct VoxelSceneData {
 
     /// Build a scene sized to the populated grid. Returns null for an empty grid.
     [[nodiscard]] static std::shared_ptr<VoxelSceneData> fromGrid(VoxelGrid grid, const QVector3D& origin);
+    /// Build a renderable scene with no voxels, for a valid but empty world area.
+    [[nodiscard]] static std::shared_ptr<VoxelSceneData> makeEmpty(const QVector3D& modelSize, const QVector3D& origin);
+    /// Initial selection bounds; empty scenes use their full X/Z extent with a one-block Y range.
+    [[nodiscard]] std::optional<bl::block_box> selectionBounds() const;
 };
 
 #endif  // BEDROCKMAP_VOXEL_MESH_H

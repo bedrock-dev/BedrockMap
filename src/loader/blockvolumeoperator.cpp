@@ -136,7 +136,6 @@ std::string BlockVolumeOperator::exportWorldMcstructureData(AsyncLevelLoader& lo
 
     const QRegion chunkRegion = chunkRegionForBounds(exportBounds);
     const auto chunks = loadChunks(chunkRegion, loader, dim);
-    if (chunks.empty() && !includeAir) return {};
 
     const bl::block_pos origin = exportBounds.min_pos;
     const bl::block_pos size{exportBounds.size_x(), exportBounds.size_y(), exportBounds.size_z()};
@@ -229,14 +228,15 @@ BlockVolumeMutationResult BlockVolumeOperator::importMcstructureIntoWorld(const 
     for (int cx = firstChunk.x; cx <= lastChunk.x; ++cx) {
         for (int cz = firstChunk.z; cz <= lastChunk.z; ++cz) {
             const bl::chunk_pos cp(cx, cz, dim);
-            if (loader.isChunkAbsent(cp)) {
-                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) is absent, aborting import", cx, cz);
-                return fail(QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) does not exist.").arg(cx).arg(cz));
-            }
             auto raw = loader.getRawChunk(cp);
             if (!raw.has_value()) {
-                LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) could not be read, aborting import", cx, cz);
-                return fail(QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) could not be read.").arg(cx).arg(cz));
+                if (!loader.isChunkAbsent(cp)) {
+                    LOG_F(WARNING, "BlockVolumeOperator: chunk (%d, %d) could not be read, aborting import", cx, cz);
+                    return fail(
+                        QCoreApplication::translate("BlockVolumeOperator", "Target chunk (%1, %2) could not be read.").arg(cx).arg(cz));
+                }
+                raw = loader.makeVoidRawChunk(cp);
+                LOG_F(INFO, "BlockVolumeOperator: creating void chunk (%d, %d) for import", cx, cz);
             }
             auto target = std::make_unique<bl::chunk>(cp);
             if (!target->load_from_raw_chunk(raw.value())) {

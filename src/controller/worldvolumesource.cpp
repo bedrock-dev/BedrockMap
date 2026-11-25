@@ -42,7 +42,8 @@ namespace {
         chunks.clear();
         reportProgress(70);
         const QVector3D origin(area.minChunkX * 16, firstWorldY, area.minChunkZ * 16);
-        auto scene = VoxelSceneData::fromGrid(std::move(grid), origin);
+        auto scene = grid.empty() ? VoxelSceneData::makeEmpty(QVector3D(columns * 16, 1, rows * 16), origin)
+                                  : VoxelSceneData::fromGrid(std::move(grid), origin);
         reportProgress(100);
         return scene;
     }
