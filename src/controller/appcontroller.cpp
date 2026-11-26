@@ -1,5 +1,6 @@
 #include "controller/appcontroller.h"
 
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDesktopServices>
@@ -34,6 +35,18 @@
 
 namespace {
     QPointer<AppController> applicationController;
+
+    bool hasZipSignature(const QUrl& url) {
+        QByteArray header;
+        const QString error = io::DocumentIo::readStream(url, [&header](QIODevice& device) {
+            header = device.read(4);
+            return QString{};
+        });
+        if (!error.isEmpty()) return false;
+        return header.startsWith(QByteArrayLiteral("PK\x03\x04")) || header.startsWith(QByteArrayLiteral("PK\x05\x06")) ||
+               header.startsWith(QByteArrayLiteral("PK\x07\x08"));
+    }
+
 #ifdef Q_OS_ANDROID
     void onPermissionStateChanged(JNIEnv*, jclass) {
         auto* app = QCoreApplication::instance();
@@ -413,6 +426,8 @@ void AppController::openFile(const QUrl& url) {
     const QString fileName = io::DocumentIo::displayName(url);
     const QString suffix = QFileInfo(fileName).suffix();
     if (suffix.compare(QStringLiteral("mcworld"), Qt::CaseInsensitive) == 0)
+        openMcworldFile(url);
+    else if (hasZipSignature(url))
         openMcworldFile(url);
     else if (suffix.compare(QStringLiteral("mcstructure"), Qt::CaseInsensitive) == 0)
         openMcstructureFile(url);
