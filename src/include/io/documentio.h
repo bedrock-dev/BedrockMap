@@ -18,7 +18,6 @@ namespace io {
         [[nodiscard]] static QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {});
         [[nodiscard]] static QString writePng(const QUrl& url, const QImage& image);
         [[nodiscard]] static bool hasZipSignature(const QUrl& url);
-        [[nodiscard]] static bool isDirectoryEmpty(const QUrl& url);
         [[nodiscard]] static QString displayName(const QUrl& url);
         [[nodiscard]] static bool requiresSaveAs(const QUrl& url);
         [[nodiscard]] static QString identifier(const QUrl& url);

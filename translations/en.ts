@@ -4249,6 +4249,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Could not inspect the selected folder.</source>
+        <translation>Could not inspect the selected folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
         <source>Export to a non-empty folder?</source>
         <translation>Export to a non-empty folder?</translation>
     </message>

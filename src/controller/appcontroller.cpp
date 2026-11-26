@@ -325,14 +325,16 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
     startWorldExport(source, target, WorldExportKind::Mcworld, false);
 }
 
-bool AppController::exportFolderIsEmpty(const QUrl& destination) const {
+QString AppController::exportFolderState(const QUrl& destination) const {
     QUrl localDestination = destination;
     if (platform::isContentUri(destination)) {
         const QString path = io::DocumentIo::resolveNativeDirectory(destination);
-        if (path.isEmpty()) return false;
+        if (path.isEmpty()) return QStringLiteral("unavailable");
         localDestination = QUrl::fromLocalFile(path);
     }
-    return io::DocumentIo::isDirectoryEmpty(localDestination);
+    const auto entries = io::DocumentIo::list(localDestination);
+    if (!entries.ok()) return QStringLiteral("unavailable");
+    return entries.names.isEmpty() ? QStringLiteral("empty") : QStringLiteral("nonempty");
 }
 
 void AppController::exportWorldFolder(const QString& path, const QUrl& destination) {

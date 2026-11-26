@@ -86,7 +86,7 @@ class AppController final : public QObject {
     /// Called after the frontend confirms permanent deletion of an internal world.
     Q_INVOKABLE void deleteWorld(const QString& path);
     Q_INVOKABLE void exportWorld(const QString& path, const QUrl& destination);
-    Q_INVOKABLE bool exportFolderIsEmpty(const QUrl& destination) const;
+    Q_INVOKABLE QString exportFolderState(const QUrl& destination) const;
     Q_INVOKABLE void exportWorldFolder(const QString& path, const QUrl& destination);
     /// Exports to app cache and opens Android's application chooser.
     Q_INVOKABLE void exportAndOpenWorld(const QString& path, const QString& title);

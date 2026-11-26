@@ -76,8 +76,13 @@ Item {
             worldTitle = ""
             if (destination.toString().length === 0)
                 return
-            if (App.exportFolderIsEmpty(destination)) {
+            const folderState = App.exportFolderState(destination)
+            if (folderState === "empty") {
                 App.exportWorldFolder(path, destination)
+                return
+            }
+            if (folderState === "unavailable") {
+                App.notifications.error(qsTr("Could not inspect the selected folder."), destination.toString())
                 return
             }
             exportFolderConfirm.worldPath = path
@@ -97,7 +102,8 @@ Item {
         property string worldTitle
         property url destination
         title: qsTr("Export to a non-empty folder?")
-        message: qsTr('Export "%1" into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.\n\n%2\n\nContinue?').arg(
+        message: qsTr(
+                     'Export "%1" into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.\n\n%2\n\nContinue?').arg(
                      worldTitle).arg(destination.toString())
         confirmText: qsTr("Export")
         danger: true

@@ -40,11 +40,6 @@ namespace io {
                header.startsWith(QByteArrayLiteral("PK\x07\x08"));
     }
 
-    bool DocumentIo::isDirectoryEmpty(const QUrl& url) {
-        const auto entries = list(url);
-        return entries.ok() && entries.names.isEmpty();
-    }
-
     QString DocumentIo::displayName(const QUrl& url) { return fileSystem().displayName(url); }
 
     bool DocumentIo::requiresSaveAs(const QUrl& url) { return url.isEmpty() || fileSystem().requiresSaveAs(url); }
