@@ -1,17 +1,13 @@
 #include "controller/appcontroller.h"
 
-#include <QByteArray>
 #include <QCoreApplication>
 #include <QDateTime>
-#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QImage>
-#include <QImageWriter>
 #include <QPointer>
 #include <QRegularExpression>
-#include <QSettings>
 #include <QUrl>
 #include <QtConcurrent>
 #include <exception>
@@ -35,17 +31,6 @@
 
 namespace {
     QPointer<AppController> applicationController;
-
-    bool hasZipSignature(const QUrl& url) {
-        QByteArray header;
-        const QString error = io::DocumentIo::readStream(url, [&header](QIODevice& device) {
-            header = device.read(4);
-            return QString{};
-        });
-        if (!error.isEmpty()) return false;
-        return header.startsWith(QByteArrayLiteral("PK\x03\x04")) || header.startsWith(QByteArrayLiteral("PK\x05\x06")) ||
-               header.startsWith(QByteArrayLiteral("PK\x07\x08"));
-    }
 
 #ifdef Q_OS_ANDROID
     void onPermissionStateChanged(JNIEnv*, jclass) {
@@ -91,8 +76,6 @@ AppController::AppController(std::unique_ptr<LogModel> logs, AppContext& context
     if (applicationController) qFatal("Only one AppController can exist");
     if (!logs_) qFatal("AppController requires an initialized log model");
     applicationController = this;
-    QSettings startupSettings(app_paths::configFile(), QSettings::IniFormat);
-    startup_notice_required_ = !startupSettings.value(QStringLiteral("Startup/notice_acknowledged"), false).toBool();
     logs_->setParent(this);
     connect(&update_checker_, &UpdateChecker::updateAvailable, this,
             [this](const QString& version, const QString& notes, const QString& url) {
@@ -144,15 +127,6 @@ AppController::~AppController() {
 AppController* AppController::instance() { return applicationController; }
 
 ResourceManager& AppController::resources() const { return context_.resources(); }
-
-void AppController::acknowledgeStartupNotice() {
-    if (!startup_notice_required_) return;
-    QSettings startupSettings(app_paths::configFile(), QSettings::IniFormat);
-    startupSettings.setValue(QStringLiteral("Startup/notice_acknowledged"), true);
-    startupSettings.sync();
-    startup_notice_required_ = false;
-    emit startupNoticeRequiredChanged();
-}
 
 void AppController::checkForUpdates(bool manual) {
     if (!manual && !settings_.checkUpdate()) return;
@@ -262,11 +236,7 @@ void AppController::copyWorldToInternal(const QUrl& url) { importWorldToInternal
 
 bool AppController::saveImage(const QUrl& destination, const QImage& image) {
     if (destination.isEmpty() || image.isNull()) return false;
-    const QString error = io::DocumentIo::writeStream(destination, [&image](QIODevice& device) {
-        QImageWriter writer(&device, "PNG");
-        return writer.write(image) ? QString() : writer.errorString();
-    });
-    return error.isEmpty();
+    return io::DocumentIo::writePng(destination, image).isEmpty();
 }
 
 void AppController::openMcworldFile(const QUrl& url) { importWorldToInternal(url, true); }
@@ -353,7 +323,23 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
         if (QFileInfo(targetPath).suffix().isEmpty()) targetPath += QStringLiteral(".mcworld");
         target = QUrl::fromLocalFile(targetPath);
     }
-    startWorldExport(source, target, false);
+    startWorldExport(source, target, WorldExportKind::Mcworld, false);
+}
+
+bool AppController::exportFolderIsEmpty(const QUrl& destination) const { return io::DocumentIo::isDirectoryEmpty(destination); }
+
+void AppController::exportWorldFolder(const QString& path, const QUrl& destination) {
+    if (!checkWorldFileOperationIdle()) return;
+    if (importing_world_) {
+        notifications_.warning(tr("Wait for the current world import to finish."));
+        return;
+    }
+    const QString source = platform::normalizeLocalPath(path);
+    if (source.isEmpty() || destination.isEmpty()) {
+        notifications_.error(tr("Export failed"), {}, tr("No export destination was provided."));
+        return;
+    }
+    startWorldExport(source, destination, WorldExportKind::Folder, false);
 }
 
 void AppController::exportAndOpenWorld(const QString& path, const QString& title) {
@@ -383,10 +369,10 @@ void AppController::exportAndOpenWorld(const QString& path, const QString& title
     const QString timestamp = QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-HHmmss-zzz"));
     const QUrl target =
         QUrl::fromLocalFile(QDir(export_root).filePath(export_name + QLatin1Char('-') + timestamp + QStringLiteral(".mcworld")));
-    startWorldExport(source, target, true);
+    startWorldExport(source, target, WorldExportKind::Mcworld, true);
 }
 
-void AppController::startWorldExport(const QString& source, const QUrl& target, bool open_after_export) {
+void AppController::startWorldExport(const QString& source, const QUrl& target, WorldExportKind kind, bool open_after_export) {
     if (hasOpenSessionInWorld(source)) {
         notifications_.warning(tr("Close the world and any files inside it before exporting it."));
         return;
@@ -419,7 +405,9 @@ void AppController::startWorldExport(const QString& source, const QUrl& target, 
             notifications_.error(tr("Export failed"), export_name, error);
         }
     });
-    export_watcher_.setFuture(QtConcurrent::run([source, target] { return LevelOperator::exportMcworld(source, target); }));
+    export_watcher_.setFuture(QtConcurrent::run([source, target, kind] {
+        return kind == WorldExportKind::Folder ? LevelOperator::exportFolder(source, target) : LevelOperator::exportMcworld(source, target);
+    }));
 }
 
 void AppController::openFile(const QUrl& url) {
@@ -427,7 +415,7 @@ void AppController::openFile(const QUrl& url) {
     const QString suffix = QFileInfo(fileName).suffix();
     if (suffix.compare(QStringLiteral("mcworld"), Qt::CaseInsensitive) == 0)
         openMcworldFile(url);
-    else if (hasZipSignature(url))
+    else if (io::DocumentIo::hasZipSignature(url))
         openMcworldFile(url);
     else if (suffix.compare(QStringLiteral("mcstructure"), Qt::CaseInsensitive) == 0)
         openMcstructureFile(url);
@@ -514,14 +502,7 @@ void AppController::discardSessionObject(QObject* session) {
 }
 
 void AppController::revealPath(const QString& path) {
-    const QFileInfo info(path);
-    const QString target = info.isDir() ? info.absoluteFilePath() : info.absolutePath();
-    if (target.isEmpty() || !QFileInfo(target).isDir()) {
-        notifications_.warning(tr("Could not open the containing folder."), {}, path);
-        return;
-    }
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(target)))
-        notifications_.warning(tr("Could not open the containing folder."), {}, target);
+    if (!platform::revealInFileManager(path)) notifications_.warning(tr("Could not open the containing folder."), {}, path);
 }
 
 bool AppController::requestCloseFirstDirtySession() {
@@ -533,8 +514,7 @@ bool AppController::requestCloseFirstDirtySession() {
 
 void AppController::openConfigDirectory() {
     const QString path = app_paths::configDirectory();
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path)))
-        notifications_.warning(tr("Could not open the configuration folder."), {}, path);
+    if (!platform::openDirectory(path)) notifications_.warning(tr("Could not open the configuration folder."), {}, path);
 }
 
 void AppController::setWorkspaceOpen(bool open) {

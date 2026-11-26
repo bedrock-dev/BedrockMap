@@ -1,6 +1,7 @@
 #include "base/platform.h"
 
 #include <QCoreApplication>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
@@ -262,6 +263,17 @@ namespace platform {
         return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
     }
 
+    bool revealInFileManager(const QString& path) {
+        const QFileInfo info(path);
+        const QString target = info.isDir() ? info.absoluteFilePath() : info.absolutePath();
+        return !target.isEmpty() && QFileInfo(target).isDir() && QDesktopServices::openUrl(QUrl::fromLocalFile(target));
+    }
+
+    bool openDirectory(const QString& path) {
+        const QFileInfo info(path);
+        return info.isDir() && QDesktopServices::openUrl(QUrl::fromLocalFile(info.absoluteFilePath()));
+    }
+
     QString fileDisplayName(const QString& input) {
         if (input.isEmpty()) return {};
         const QUrl url(input);
@@ -303,6 +315,43 @@ namespace platform {
 #else
         Q_UNUSED(url);
         return {};
+#endif
+    }
+
+    bool isContentDirectoryEmpty(const QUrl& url) {
+#ifdef Q_OS_ANDROID
+        if (!isContentUri(url)) return false;
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
+        const jboolean result = QJniObject::callStaticMethod<jboolean>("io/github/hhhxiao/bedrockmap/SafTreeIo", "isTreeEmpty",
+                                                                       "(Landroid/content/Context;Ljava/lang/String;)Z", context.object(),
+                                                                       source.object<jstring>());
+        QJniEnvironment env;
+        return !env.checkAndClearExceptions() && result;
+#else
+        Q_UNUSED(url);
+        return false;
+#endif
+    }
+
+    QString copyLocalDirectoryToContentTree(const QString& source, const QUrl& destination) {
+#ifdef Q_OS_ANDROID
+        if (!isContentUri(destination)) return QCoreApplication::translate("platform", "The export destination is not a folder.");
+        const auto context = QNativeInterface::QAndroidApplication::context();
+        const auto sourceString = QJniObject::fromString(source);
+        const auto destinationString = QJniObject::fromString(destination.toString(QUrl::FullyEncoded));
+        const auto result =
+            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/SafTreeIo", "copyLocalTree",
+                                               "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                                               context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
+        QJniEnvironment env;
+        if (env.checkAndClearExceptions() || !result.isValid())
+            return QCoreApplication::translate("platform", "Cannot access the selected Android folder.");
+        return result.toString();
+#else
+        Q_UNUSED(source);
+        Q_UNUSED(destination);
+        return QCoreApplication::translate("platform", "Folder export to a content URI is only supported on Android.");
 #endif
     }
 

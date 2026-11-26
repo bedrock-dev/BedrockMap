@@ -12,6 +12,10 @@ namespace platform {
     /// Resolves a local path or file URL; returns empty for provider URLs.
     [[nodiscard]] QString normalizeLocalPath(const QString& input);
 
+    /// Opens a local file's containing folder or a local directory.
+    [[nodiscard]] bool revealInFileManager(const QString& path);
+    [[nodiscard]] bool openDirectory(const QString& path);
+
     /// Queries the provider's display name for content URIs, or a local filename.
     /// Falls back to the URI name or original input when metadata is unavailable.
     [[nodiscard]] QString fileDisplayName(const QString& input);
@@ -24,6 +28,13 @@ namespace platform {
     /// Resolves an Android SAF directory to a native path using existing access.
     /// Returns empty when the provider or current permissions prevent resolution.
     [[nodiscard]] QString resolveContentDirectory(const QUrl& url);
+
+    /// Returns true only when an Android SAF tree has no child documents.
+    [[nodiscard]] bool isContentDirectoryEmpty(const QUrl& url);
+
+    /// Copies a local directory into the selected Android SAF tree.
+    /// Existing names are replaced while unrelated destination documents remain.
+    [[nodiscard]] QString copyLocalDirectoryToContentTree(const QString& source, const QUrl& destination);
 
     /// Opens a temporary local export through the Android application chooser.
     /// Returns an error, empty on success, or an unsupported error elsewhere.

@@ -69,6 +69,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(QString gpuGrassHeightColor READ gpuGrassHeightColor WRITE setGpuGrassHeightColor NOTIFY settingsChanged)
     Q_PROPERTY(bool checkUpdate READ checkUpdate WRITE setCheckUpdate NOTIFY settingsChanged)
     Q_PROPERTY(bool scanLeviPath READ scanLeviPath WRITE setScanLeviPath NOTIFY settingsChanged)
+    Q_PROPERTY(bool startupNoticeRequired READ startupNoticeRequired NOTIFY startupNoticeRequiredChanged)
     Q_PROPERTY(QStringList customWorldPaths READ customWorldPaths NOTIFY settingsChanged)
     Q_PROPERTY(QVariantList worldSources READ worldSources NOTIFY settingsChanged)
 
@@ -130,10 +131,12 @@ class SettingsViewModel final : public QObject {
     QString gpuGrassHeightColor() const { return values_.gpuGrassHeightColor; }
     bool checkUpdate() const { return values_.checkUpdate; }
     bool scanLeviPath() const { return values_.scanLeviPath; }
+    bool startupNoticeRequired() const { return startup_notice_required_; }
     QStringList customWorldPaths() const { return values_.customWorldPaths; }
     QVariantList worldSources() const;
 
     Q_INVOKABLE bool save();
+    Q_INVOKABLE void acknowledgeStartupNotice();
     /// Persists only the custom world folder list, leaving unrelated pending
     /// settings untouched.
     Q_INVOKABLE bool saveWorldSources();
@@ -203,11 +206,13 @@ class SettingsViewModel final : public QObject {
     void accentColorChanged();
     void settingsChanged();
     void settingsSaved();
+    void startupNoticeRequiredChanged();
     void errorChanged(const QString& message);
 
    private:
     void emitAllChanged();
     setting::Settings values_;
+    bool startup_notice_required_{true};
 };
 
 #endif

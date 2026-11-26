@@ -4,14 +4,19 @@
 #include <QFont>
 #include <QFontInfo>
 #include <QGuiApplication>
+#include <QSettings>
 #include <QVariantMap>
 #include <algorithm>
 
+#include "base/apppaths.h"
 #include "base/config.h"
 #include "base/platform.h"
 #include "loader/worldsource.h"
 
-SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_(setting::current()) {}
+SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_(setting::current()) {
+    QSettings settings(app_paths::configFile(), QSettings::IniFormat);
+    startup_notice_required_ = !settings.value(QStringLiteral("Startup/notice_acknowledged"), false).toBool();
+}
 
 void SettingsViewModel::emitAllChanged() {
     emit colorThemeChanged();
@@ -43,6 +48,16 @@ bool SettingsViewModel::saveWorldSources() {
     emit settingsSaved();
     return true;
 }
+
+void SettingsViewModel::acknowledgeStartupNotice() {
+    if (!startup_notice_required_) return;
+    QSettings settings(app_paths::configFile(), QSettings::IniFormat);
+    settings.setValue(QStringLiteral("Startup/notice_acknowledged"), true);
+    settings.sync();
+    startup_notice_required_ = false;
+    emit startupNoticeRequiredChanged();
+}
+
 void SettingsViewModel::reset() {
     values_ = setting::Settings{};
     emitAllChanged();

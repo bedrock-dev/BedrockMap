@@ -104,12 +104,18 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot replace destination entry: %1</source>
+        <translation>无法替换目标条目：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot create import directory: %1</source>
         <translation>无法创建导入目录：%1</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>The source world changed while copying. Close Minecraft and try again.</source>
         <translation>复制期间原世界发生了变化。请关闭 Minecraft 后重试。</translation>
@@ -138,10 +144,27 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>Close Minecraft and other programs using this world before exporting.
 %1</source>
         <translation>导出前请关闭 Minecraft 及其他正在使用此世界的程序。
 %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The export destination is not a folder.</source>
+        <translation>导出目标不是文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Choose an export folder outside the source world.</source>
+        <translation>请选择源世界文件夹之外的导出文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The exported folder does not contain a valid level.dat file and db directory.</source>
+        <translation>导出的文件夹不包含有效的 level.dat 文件和 db 目录。</translation>
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
@@ -152,6 +175,7 @@
         <translation>无法创建世界导入目录。</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>The selected directory must contain a valid level.dat file and a db directory.</source>
@@ -212,6 +236,7 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Wait for the current world import to finish.</source>
         <translation>请等待当前世界导入完成。</translation>
     </message>
@@ -247,8 +272,14 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export failed</source>
         <translation>导出失败</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>No export destination was provided.</source>
+        <translation>未提供导出目标。</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -331,7 +362,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Could not open the containing folder.</source>
         <translation type="unfinished"></translation>
@@ -882,6 +912,14 @@
         <location filename="../src/qml/CustomDimensionDialog.qml"/>
         <source>Apply</source>
         <translation>应用</translation>
+    </message>
+</context>
+<context>
+    <name>DocumentIo</name>
+    <message>
+        <location filename="../src/io/documentio.cpp"/>
+        <source>The image or destination is invalid.</source>
+        <translation>图片或目标位置无效。</translation>
     </message>
 </context>
 <context>
@@ -4092,6 +4130,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <source>Export to folder</source>
+        <translation>导出到文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Export and open</source>
         <translation>导出并打开</translation>
     </message>
@@ -4138,6 +4181,34 @@ Current version: %2</source>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Export as mcworld</source>
         <translation>导出为 mcworld</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Choose export folder</source>
+        <translation>选择导出文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export to a non-empty folder?</source>
+        <translation>导出到非空文件夹？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export &quot;%1&quot; into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.
+
+%2
+
+Continue?</source>
+        <translation>将“%1”导出到所选文件夹吗？该文件夹不为空。同名文件将被替换，其他文件会保留。
+
+%2
+
+继续吗？</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export</source>
+        <translation>导出</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -4413,6 +4484,21 @@ Current version: %2</source>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>文档提供方未返回文件描述符。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The export destination is not a folder.</source>
+        <translation>导出目标不是文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Cannot access the selected Android folder.</source>
+        <translation>无法访问所选 Android 文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Folder export to a content URI is only supported on Android.</source>
+        <translation>仅 Android 支持导出到 content URI 文件夹。</translation>
     </message>
     <message>
         <location filename="../src/base/platform.cpp"/>

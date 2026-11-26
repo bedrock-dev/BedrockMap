@@ -59,6 +59,12 @@ namespace {
 
     QUrl fileUrl(const QString& path) { return QUrl::fromLocalFile(path); }
 
+    bool pathContains(const QString& root, const QString& path) {
+        const QString relative = QDir(root).relativeFilePath(path);
+        return relative == QStringLiteral(".") || (relative != QStringLiteral("..") && !relative.startsWith(QStringLiteral("../")) &&
+                                                   !relative.startsWith(QStringLiteral("..\\")) && !QDir::isAbsolutePath(relative));
+    }
+
     QString archiveWorldDirectory(const QString& source, const QString& relative, WorldArchive& archive, int depth = 0) {
         if (depth > 64) return QCoreApplication::translate("AppController", "Directory nesting is too deep.");
         const auto children = io::DocumentIo::list(fileUrl(source));
@@ -177,10 +183,17 @@ namespace {
             const auto& info = status.info;
             if (info.isLink || (!info.isFile && !info.isDirectory))
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(from);
+            const auto destination = io::DocumentIo::stat(fileUrl(to));
+            if (!destination.ok()) return destination.error;
+            if (destination.info.exists &&
+                (destination.info.isLink || destination.info.isDirectory != info.isDirectory || destination.info.isFile != info.isFile))
+                return QCoreApplication::translate("AppController", "Cannot replace destination entry: %1").arg(to);
             if (info.isDirectory) {
-                if (const QString error = io::DocumentIo::makeDirectory(fileUrl(to), false); !error.isEmpty())
-                    return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to) + QLatin1Char('\n') +
-                           error;
+                if (!destination.info.exists) {
+                    if (const QString error = io::DocumentIo::makeDirectory(fileUrl(to), false); !error.isEmpty())
+                        return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(to) +
+                               QLatin1Char('\n') + error;
+                }
                 const QString error = copyWorldDirectory(from, to, depth + 1);
                 if (!error.isEmpty()) return error;
                 continue;
@@ -206,6 +219,11 @@ namespace {
                 return QString();
             });
             if (!writeError.isEmpty()) return to + ": " + writeError;
+            const auto after = io::DocumentIo::stat(fileUrl(from));
+            if (!after.ok()) return after.error;
+            if (after.info.size != info.size || after.info.modified != info.modified)
+                return QCoreApplication::translate("AppController",
+                                                   "The source world changed while copying. Close Minecraft and try again.");
         }
         return {};
     }
@@ -426,6 +444,60 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
             }
             return QString();
         });
+    } catch (const std::exception& error) {
+        return QString::fromUtf8(error.what());
+    }
+}
+
+QString LevelOperator::exportFolder(const QString& source, const QUrl& destination) {
+    try {
+        bl::level_dat dat;
+        if (!loadLevelDat(source, dat))
+            return QCoreApplication::translate("AppController",
+                                               "The selected directory must contain a valid level.dat file and a db directory.");
+
+        QString localTarget;
+        if (destination.isLocalFile()) {
+            localTarget = platform::normalizeLocalPath(destination.toLocalFile());
+        } else if (platform::isContentUri(destination)) {
+            localTarget = platform::resolveContentDirectory(destination);
+        } else {
+            return QCoreApplication::translate("AppController", "The export destination is not a folder.");
+        }
+
+        const QString canonicalSource = QFileInfo(source).canonicalFilePath();
+        if (!localTarget.isEmpty()) {
+            const QFileInfo targetInfo(localTarget);
+            if (targetInfo.isSymLink() || targetInfo.isJunction() || !targetInfo.isDir())
+                return QCoreApplication::translate("AppController", "The export destination is not a folder.");
+            const QString canonicalTarget = targetInfo.canonicalFilePath();
+            if (canonicalSource.isEmpty() || canonicalTarget.isEmpty() || pathContains(canonicalSource, canonicalTarget) ||
+                pathContains(canonicalTarget, canonicalSource))
+                return QCoreApplication::translate("AppController", "Choose an export folder outside the source world.");
+            localTarget = canonicalTarget;
+        }
+
+        platform::WorldEnv env;
+        leveldb::FileLock* rawLock = nullptr;
+        if (!io::isPrivilegedPath(source)) {
+            const auto status = env.LockFile(source.toStdString() + "/db/LOCK", &rawLock);
+            if (!status.ok())
+                return QCoreApplication::translate("AppController",
+                                                   "Close Minecraft and other programs using this world before exporting.\n%1")
+                    .arg(QString::fromStdString(status.ToString()));
+        }
+        const auto unlock = [&env](leveldb::FileLock* lock) {
+            if (lock) env.UnlockFile(lock);
+        };
+        const std::unique_ptr<leveldb::FileLock, decltype(unlock)> lock(rawLock, unlock);
+
+        if (localTarget.isEmpty()) return platform::copyLocalDirectoryToContentTree(source, destination);
+
+        if (const QString error = copyWorldDirectory(source, localTarget); !error.isEmpty()) return error;
+        if (!isCompleteWorld(localTarget))
+            return QCoreApplication::translate("AppController",
+                                               "The exported folder does not contain a valid level.dat file and db directory.");
+        return {};
     } catch (const std::exception& error) {
         return QString::fromUtf8(error.what());
     }

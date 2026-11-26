@@ -54,7 +54,7 @@ Window {
     Component.onCompleted: {
         sidebarCollapsed = App.runtimeSettings.collapseSidebarOnStartup
         Qt.callLater(function () {
-            if (App.startupNoticeRequired)
+            if (App.settings.startupNoticeRequired)
                 startupNoticeDialog.open()
             else
                 App.checkForUpdates()
@@ -254,7 +254,7 @@ Window {
     }
     StartupNoticeDialog {
         id: startupNoticeDialog
-        onAccepted: App.acknowledgeStartupNotice()
+        onAccepted: App.settings.acknowledgeStartupNotice()
         onClosed: App.checkForUpdates()
     }
     Connections {

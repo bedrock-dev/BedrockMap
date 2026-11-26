@@ -40,6 +40,12 @@ Item {
         exportWorldDialog.open()
     }
 
+    function chooseWorldFolderExport(path, title) {
+        exportFolderDialog.worldPath = path
+        exportFolderDialog.worldTitle = title
+        exportFolderDialog.open()
+    }
+
     FileUrlDialog {
         id: exportWorldDialog
         property string worldPath
@@ -54,6 +60,60 @@ Item {
             App.exportWorld(path, selectedUrl)
         }
         onRejected: worldPath = ""
+    }
+
+    FolderUrlDialog {
+        id: exportFolderDialog
+        property string worldPath
+        property string worldTitle
+        title: qsTr("Choose export folder")
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: {
+            const path = worldPath
+            const title = worldTitle
+            const destination = selectedUrl
+            worldPath = ""
+            worldTitle = ""
+            if (destination.toString().length === 0)
+                return
+            if (App.exportFolderIsEmpty(destination)) {
+                App.exportWorldFolder(path, destination)
+                return
+            }
+            exportFolderConfirm.worldPath = path
+            exportFolderConfirm.worldTitle = title
+            exportFolderConfirm.destination = destination
+            exportFolderConfirm.open()
+        }
+        onRejected: {
+            worldPath = ""
+            worldTitle = ""
+        }
+    }
+
+    ConfirmDialog {
+        id: exportFolderConfirm
+        property string worldPath
+        property string worldTitle
+        property url destination
+        title: qsTr("Export to a non-empty folder?")
+        message: qsTr('Export "%1" into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.\n\n%2\n\nContinue?').arg(
+                     worldTitle).arg(destination.toString())
+        confirmText: qsTr("Export")
+        danger: true
+        onConfirmed: {
+            const path = worldPath
+            const target = destination
+            worldPath = ""
+            worldTitle = ""
+            destination = ""
+            App.exportWorldFolder(path, target)
+        }
+        onCancelled: {
+            worldPath = ""
+            worldTitle = ""
+            destination = ""
+        }
     }
 
     ConfirmDialog {
@@ -103,6 +163,7 @@ Item {
         onOpenRequested: (worldPath, worldTitle) => page.openWorld(worldPath, worldTitle)
         onDeleteRequested: (worldPath, worldTitle) => page.confirmWorldDeletion(worldPath, worldTitle)
         onExportRequested: (worldPath, worldTitle) => page.chooseWorldExport(worldPath, worldTitle)
+        onExportFolderRequested: (worldPath, worldTitle) => page.chooseWorldFolderExport(worldPath, worldTitle)
         onExportAndOpenRequested: (worldPath, worldTitle) => App.exportAndOpenWorld(worldPath, worldTitle)
     }
 

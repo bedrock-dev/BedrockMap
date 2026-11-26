@@ -39,7 +39,6 @@ class AppController final : public QObject {
     Q_PROPERTY(bool deletingWorld READ deletingWorld NOTIFY deletingWorldChanged)
     Q_PROPERTY(bool exportingWorld READ exportingWorld NOTIFY exportingWorldChanged)
     Q_PROPERTY(bool checkingForUpdates READ checkingForUpdates NOTIFY checkingForUpdatesChanged)
-    Q_PROPERTY(bool startupNoticeRequired READ startupNoticeRequired NOTIFY startupNoticeRequiredChanged)
     Q_PROPERTY(bool allFilesPermission READ allFilesPermission NOTIFY permissionsChanged)
     Q_PROPERTY(QString shizukuPermission READ shizukuPermission NOTIFY permissionsChanged)
     Q_PROPERTY(QString rootPermission READ rootPermission NOTIFY permissionsChanged)
@@ -67,8 +66,6 @@ class AppController final : public QObject {
     [[nodiscard]] bool deletingWorld() const { return deleting_world_; }
     [[nodiscard]] bool exportingWorld() const { return exporting_world_; }
     [[nodiscard]] bool checkingForUpdates() const { return checking_for_updates_; }
-    [[nodiscard]] bool startupNoticeRequired() const { return startup_notice_required_; }
-    Q_INVOKABLE void acknowledgeStartupNotice();
     [[nodiscard]] bool allFilesPermission() const;
     Q_INVOKABLE void requestAllFilesPermission();
     [[nodiscard]] QString shizukuPermission() const;
@@ -89,6 +86,8 @@ class AppController final : public QObject {
     /// Called after the frontend confirms permanent deletion of an internal world.
     Q_INVOKABLE void deleteWorld(const QString& path);
     Q_INVOKABLE void exportWorld(const QString& path, const QUrl& destination);
+    Q_INVOKABLE bool exportFolderIsEmpty(const QUrl& destination) const;
+    Q_INVOKABLE void exportWorldFolder(const QString& path, const QUrl& destination);
     /// Exports to app cache and opens Android's application chooser.
     Q_INVOKABLE void exportAndOpenWorld(const QString& path, const QString& title);
     /// Dispatches a standalone file to world import, structure preview or NBT.
@@ -119,7 +118,6 @@ class AppController final : public QObject {
     void deletingWorldChanged();
     void exportingWorldChanged();
     void checkingForUpdatesChanged();
-    void startupNoticeRequiredChanged();
     void permissionsChanged();
     void worldCopyRequested(const QUrl& url);
     void sessionCloseRequested(QObject* session, int index);
@@ -127,11 +125,13 @@ class AppController final : public QObject {
     void updateAvailable(const QString& newVersion, const QString& releaseNotes, const QString& htmlUrl);
 
    private:
+    enum class WorldExportKind { Mcworld, Folder };
+
     void finishUpdateCheck();
     void setWorkspaceOpen(bool open);
     void setWorldTask(const QString& title, const QString& detail);
     void importWorldToInternal(const QUrl& url, bool archive);
-    void startWorldExport(const QString& source, const QUrl& target, bool open_after_export);
+    void startWorldExport(const QString& source, const QUrl& target, WorldExportKind kind, bool open_after_export);
     [[nodiscard]] bool checkWorldFileOperationIdle();
     [[nodiscard]] bool hasOpenSessionInWorld(const QString& path);
 
@@ -145,7 +145,6 @@ class AppController final : public QObject {
     UpdateChecker update_checker_;
     bool checking_for_updates_{false};
     bool manual_update_check_{false};
-    bool startup_notice_required_{true};
     int current_page_{0};
     bool workspace_open_{false};
     QString last_shizuku_permission_;

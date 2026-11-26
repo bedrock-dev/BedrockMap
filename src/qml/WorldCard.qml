@@ -12,6 +12,7 @@ AppCard {
     signal openRequested(string path, string title)
     signal deleteRequested(string path, string title)
     signal exportRequested(string path, string title)
+    signal exportFolderRequested(string path, string title)
     signal exportAndOpenRequested(string path, string title)
     property string title
     property string versionText
@@ -232,6 +233,12 @@ AppCard {
             enabled: !App.exportingWorld && !App.importingWorld && !App.deletingWorld
             text: qsTr("Export as mcworld")
             onTriggered: card.exportRequested(card.pathText, card.title)
+        }
+        AppMenuItem {
+            visible: Qt.platform.os !== "wasm"
+            enabled: !App.exportingWorld && !App.importingWorld && !App.deletingWorld
+            text: qsTr("Export to folder")
+            onTriggered: card.exportFolderRequested(card.pathText, card.title)
         }
         AppMenuItem {
             visible: Qt.platform.os === "android"

@@ -47,6 +47,10 @@ class LevelOperator {
     /// Packages a closed world as a .mcworld ZIP on a worker. Destination may
     /// be a local path or Android content URI; returns an error or empty on success.
     [[nodiscard]] static QString exportMcworld(const QString& source, const QUrl& destination);
+
+    /// Copies a closed world directly into an existing folder on a worker.
+    /// Existing names are replaced while unrelated destination entries remain.
+    [[nodiscard]] static QString exportFolder(const QString& source, const QUrl& destination);
 };
 
 #endif  // BEDROCKMAP_LEVELOPERATOR_H

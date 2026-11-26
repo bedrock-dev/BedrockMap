@@ -104,12 +104,18 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Cannot replace destination entry: %1</source>
+        <translation>Cannot replace destination entry: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot create import directory: %1</source>
         <translation>Cannot create import directory: %1</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>The source world changed while copying. Close Minecraft and try again.</source>
         <translation>The source world changed while copying. Close Minecraft and try again.</translation>
@@ -138,10 +144,27 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>Close Minecraft and other programs using this world before exporting.
 %1</source>
         <translation>Close Minecraft and other programs using this world before exporting.
 %1</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The export destination is not a folder.</source>
+        <translation>The export destination is not a folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Choose an export folder outside the source world.</source>
+        <translation>Choose an export folder outside the source world.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
+        <source>The exported folder does not contain a valid level.dat file and db directory.</source>
+        <translation>The exported folder does not contain a valid level.dat file and db directory.</translation>
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
@@ -152,6 +175,7 @@
         <translation>Cannot create the world import directory.</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>The selected directory must contain a valid level.dat file and a db directory.</source>
@@ -212,6 +236,7 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Wait for the current world import to finish.</source>
         <translation>Wait for the current world import to finish.</translation>
     </message>
@@ -247,8 +272,14 @@
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
+        <location filename="../src/controller/appcontroller.cpp"/>
         <source>Export failed</source>
         <translation>Export failed</translation>
+    </message>
+    <message>
+        <location filename="../src/controller/appcontroller.cpp"/>
+        <source>No export destination was provided.</source>
+        <translation>No export destination was provided.</translation>
     </message>
     <message>
         <location filename="../src/controller/appcontroller.cpp"/>
@@ -331,7 +362,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/controller/appcontroller.cpp"/>
         <location filename="../src/controller/appcontroller.cpp"/>
         <source>Could not open the containing folder.</source>
         <translation type="unfinished"></translation>
@@ -882,6 +912,14 @@
         <location filename="../src/qml/CustomDimensionDialog.qml"/>
         <source>Apply</source>
         <translation>Apply</translation>
+    </message>
+</context>
+<context>
+    <name>DocumentIo</name>
+    <message>
+        <location filename="../src/io/documentio.cpp"/>
+        <source>The image or destination is invalid.</source>
+        <translation>The image or destination is invalid.</translation>
     </message>
 </context>
 <context>
@@ -4092,6 +4130,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldCard.qml"/>
+        <source>Export to folder</source>
+        <translation>Export to folder</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldCard.qml"/>
         <source>Export and open</source>
         <translation>Export and open</translation>
     </message>
@@ -4138,6 +4181,34 @@ Current version: %2</translation>
         <location filename="../src/qml/WorldListPage.qml"/>
         <source>Export as mcworld</source>
         <translation>Export as mcworld</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Choose export folder</source>
+        <translation>Choose export folder</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export to a non-empty folder?</source>
+        <translation>Export to a non-empty folder?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export &quot;%1&quot; into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.
+
+%2
+
+Continue?</source>
+        <translation>Export &quot;%1&quot; into the selected folder? The folder is not empty. Existing files with matching names will be replaced; other files will remain.
+
+%2
+
+Continue?</translation>
+    </message>
+    <message>
+        <location filename="../src/qml/WorldListPage.qml"/>
+        <source>Export</source>
+        <translation>Export</translation>
     </message>
     <message>
         <location filename="../src/qml/WorldListPage.qml"/>
@@ -4413,6 +4484,21 @@ Current version: %2</translation>
         <location filename="../src/base/platform.cpp"/>
         <source>The document provider returned no file descriptor.</source>
         <translation>The document provider returned no file descriptor.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>The export destination is not a folder.</source>
+        <translation>The export destination is not a folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Cannot access the selected Android folder.</source>
+        <translation>Cannot access the selected Android folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/base/platform.cpp"/>
+        <source>Folder export to a content URI is only supported on Android.</source>
+        <translation>Folder export to a content URI is only supported on Android.</translation>
     </message>
     <message>
         <location filename="../src/base/platform.cpp"/>

@@ -3,6 +3,8 @@
 
 #include "io/vfs.h"
 
+class QImage;
+
 namespace io {
     /// URI-aware file and directory operations for every external, non-LevelDB path.
     class DocumentIo final {
@@ -14,6 +16,9 @@ namespace io {
         [[nodiscard]] static QString readStream(const QUrl& url, const StreamReader& reader);
         [[nodiscard]] static QString writeBytes(const QUrl& url, const QByteArray& bytes, const WriteOptions& options = {});
         [[nodiscard]] static QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {});
+        [[nodiscard]] static QString writePng(const QUrl& url, const QImage& image);
+        [[nodiscard]] static bool hasZipSignature(const QUrl& url);
+        [[nodiscard]] static bool isDirectoryEmpty(const QUrl& url);
         [[nodiscard]] static QString displayName(const QUrl& url);
         [[nodiscard]] static bool requiresSaveAs(const QUrl& url);
         [[nodiscard]] static QString identifier(const QUrl& url);

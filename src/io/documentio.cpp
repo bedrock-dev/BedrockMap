@@ -1,7 +1,13 @@
 #include "io/documentio.h"
 
+#include <QByteArray>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QImage>
+#include <QImageWriter>
+
+#include "base/platform.h"
 
 namespace io {
     OpenReadResult DocumentIo::openRead(const QUrl& url) { return fileSystem().openRead(url); }
@@ -17,6 +23,33 @@ namespace io {
 
     QString DocumentIo::writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options) {
         return fileSystem().writeStream(url, writer, options);
+    }
+
+    QString DocumentIo::writePng(const QUrl& url, const QImage& image) {
+        if (url.isEmpty() || image.isNull()) return QCoreApplication::translate("DocumentIo", "The image or destination is invalid.");
+        return writeStream(url, [&image](QIODevice& device) {
+            QImageWriter writer(&device, "PNG");
+            return writer.write(image) ? QString() : writer.errorString();
+        });
+    }
+
+    bool DocumentIo::hasZipSignature(const QUrl& url) {
+        QByteArray header;
+        const QString error = readStream(url, [&header](QIODevice& device) {
+            header = device.read(4);
+            return QString{};
+        });
+        if (!error.isEmpty()) return false;
+        return header.startsWith(QByteArrayLiteral("PK\x03\x04")) || header.startsWith(QByteArrayLiteral("PK\x05\x06")) ||
+               header.startsWith(QByteArrayLiteral("PK\x07\x08"));
+    }
+
+    bool DocumentIo::isDirectoryEmpty(const QUrl& url) {
+        if (url.isLocalFile()) {
+            const auto entries = list(url);
+            return entries.ok() && entries.names.isEmpty();
+        }
+        return platform::isContentUri(url) && platform::isContentDirectoryEmpty(url);
     }
 
     QString DocumentIo::displayName(const QUrl& url) { return fileSystem().displayName(url); }
