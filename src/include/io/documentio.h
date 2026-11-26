@@ -22,12 +22,14 @@ namespace io {
         [[nodiscard]] static QString displayName(const QUrl& url);
         [[nodiscard]] static bool requiresSaveAs(const QUrl& url);
         [[nodiscard]] static QString identifier(const QUrl& url);
-        [[nodiscard]] static QString copyTree(const QUrl& source, const QUrl& destination);
+        [[nodiscard]] static QString canonicalLocalPath(const QString& input);
+        [[nodiscard]] static QString canonicalLocalPath(const QUrl& url);
+        [[nodiscard]] static QString copyDirectory(const QUrl& source, const QUrl& destination);
         [[nodiscard]] static QString resolveNativeDirectory(const QUrl& source);
         [[nodiscard]] static StatResult stat(const QUrl& url);
         [[nodiscard]] static ListResult list(const QUrl& url);
         [[nodiscard]] static QString makeDirectory(const QUrl& url, bool recursive = true);
-        [[nodiscard]] static QString remove(const QUrl& url);
+        [[nodiscard]] static QString remove(const QUrl& url, bool recursive = false);
         [[nodiscard]] static QString rename(const QUrl& from, const QUrl& to);
         [[nodiscard]] static NativeFileResult openNative(const QUrl& url, NativeOpen flags, int mode = 0644);
     };

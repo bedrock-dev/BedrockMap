@@ -8,6 +8,7 @@
 #include <QStandardPaths>
 #include <algorithm>
 #include <exception>
+#include <utility>
 
 #include "io/browservfs.h"
 #include "io/privilegedvfs.h"
@@ -36,18 +37,6 @@ namespace io {
     namespace {
         QString unsupported() { return QCoreApplication::translate("Vfs", "This operation is not supported for this location."); }
 
-        QUrl localUrl(const QUrl& url) {
-            if (url.isLocalFile()) return url;
-            const QString text = url.toString();
-#ifdef Q_OS_WIN
-            const bool drivePath = text.size() >= 2 && text.at(0).isLetter() && text.at(1) == QLatin1Char(':');
-#else
-            const bool drivePath = false;
-#endif
-            if (url.scheme().isEmpty() || drivePath) return QUrl::fromLocalFile(text);
-            return {};
-        }
-
 #ifndef Q_OS_WIN
         QString errnoText(int error) { return QString::fromLocal8Bit(std::strerror(error)); }
 #endif
@@ -61,6 +50,12 @@ namespace io {
             } catch (...) {
                 return QCoreApplication::translate("Vfs", failure);
             }
+        }
+
+        QString cleanResolvedPath(QString path) {
+            if (path.isEmpty()) return {};
+            path = QDir::fromNativeSeparators(path);
+            return QDir::cleanPath(path);
         }
 
 #ifdef Q_OS_ANDROID
@@ -101,14 +96,17 @@ namespace io {
             }
             QString displayName(const QUrl& url) const override { return backend(url).displayName(url); }
             bool requiresSaveAs(const QUrl& url) const override { return backend(url).requiresSaveAs(url); }
-            QString copyTree(const QUrl& source, const QUrl& destination) const override {
-                return backend(source).copyTree(source, destination);
+            QString copyDirectory(const QUrl& source, const QUrl& destination) const override {
+#ifdef Q_OS_ANDROID
+                if (saf_tree_.supports(source) && destination.isLocalFile()) return saf_tree_.copyDirectory(source, destination);
+#endif
+                return QCoreApplication::translate("Vfs", "Cannot copy directories between these storage locations.");
             }
             QString resolveNativeDirectory(const QUrl& source) const override { return backend(source).resolveNativeDirectory(source); }
             StatResult stat(const QUrl& url) const override { return backend(url).stat(url); }
             ListResult list(const QUrl& url) const override { return backend(url).list(url); }
             QString makeDirectory(const QUrl& url, bool recursive) const override { return backend(url).makeDirectory(url, recursive); }
-            QString remove(const QUrl& url) const override { return backend(url).remove(url); }
+            QString remove(const QUrl& url, bool recursive) const override { return backend(url).remove(url, recursive); }
             QString rename(const QUrl& from, const QUrl& to) const override {
                 const Vfs& source = backend(from);
                 if (&source != &backend(to)) return QCoreApplication::translate("Vfs", "Cannot move files between storage locations.");
@@ -123,7 +121,7 @@ namespace io {
 #ifdef Q_OS_WASM
                 if (browser_.supports(url)) return browser_;
 #endif
-                if (const QString path = LocalVfsBackend::resolveLocalPath(url); !path.isEmpty()) {
+                if (const QString path = resolveLocalPath(url); !path.isEmpty()) {
 #ifdef Q_OS_ANDROID
                     // Route by path policy rather than probing local access:
                     // Android/data can look accessible but list as empty.
@@ -131,7 +129,10 @@ namespace io {
 #endif
                     return local_;
                 }
-                return saf_tree_.supports(url) ? static_cast<const Vfs&>(saf_tree_) : content_;
+#ifdef Q_OS_ANDROID
+                if (saf_tree_.supports(url)) return saf_tree_;
+#endif
+                return content_;
             }
 
 #ifdef Q_OS_WASM
@@ -142,7 +143,9 @@ namespace io {
 #endif
             LocalVfsBackend local_;
             ContentDocumentVfsBackend content_;
+#ifdef Q_OS_ANDROID
             SafTreeVfsBackend saf_tree_;
+#endif
         };
     }  // namespace
 
@@ -164,22 +167,16 @@ namespace io {
         return guarded([&] { return reader(*opened.file); }, "The file reader failed.");
     }
 
-    QString Vfs::copyTree(const QUrl&, const QUrl&) const {
+    QString Vfs::copyDirectory(const QUrl&, const QUrl&) const {
         return QCoreApplication::translate("Vfs", "Directory copy is not supported for this URI.");
     }
     QString Vfs::resolveNativeDirectory(const QUrl&) const { return {}; }
     StatResult Vfs::stat(const QUrl&) const { return {{}, unsupported()}; }
     ListResult Vfs::list(const QUrl&) const { return {{}, unsupported()}; }
     QString Vfs::makeDirectory(const QUrl&, bool) const { return unsupported(); }
-    QString Vfs::remove(const QUrl&) const { return unsupported(); }
+    QString Vfs::remove(const QUrl&, bool) const { return unsupported(); }
     QString Vfs::rename(const QUrl&, const QUrl&) const { return unsupported(); }
     NativeFileResult Vfs::openNative(const QUrl&, NativeOpen, int) const { return {-1, unsupported()}; }
-
-    QString LocalVfsBackend::resolveLocalPath(const QUrl& url) {
-        const QUrl local = localUrl(url);
-        if (!local.isValid() || !local.isLocalFile() || local.hasQuery() || local.hasFragment()) return {};
-        return QDir::cleanPath(local.toLocalFile());
-    }
 
     bool LocalVfsBackend::supports(const QUrl& url) const { return !resolveLocalPath(url).isEmpty(); }
 
@@ -283,11 +280,15 @@ namespace io {
         return created ? QString{} : QCoreApplication::translate("Vfs", "Could not create directory: %1").arg(path);
     }
 
-    QString LocalVfsBackend::remove(const QUrl& url) const {
+    QString LocalVfsBackend::remove(const QUrl& url, bool recursive) const {
         const QString path = resolveLocalPath(url);
         if (path.isEmpty()) return QCoreApplication::translate("Vfs", "The local file path is invalid.");
-#ifdef Q_OS_WIN
         const QFileInfo info(path);
+        if (recursive && info.isDir() && !info.isSymLink() && !info.isJunction()) {
+            return QDir(path).removeRecursively() ? QString{}
+                                                  : QCoreApplication::translate("Vfs", "Could not remove directory: %1").arg(path);
+        }
+#ifdef Q_OS_WIN
         const bool directory = info.isDir() && !info.isSymLink() && !info.isJunction();
         const auto native = reinterpret_cast<LPCWSTR>(QDir::toNativeSeparators(path).utf16());
         if (directory ? RemoveDirectoryW(native) : DeleteFileW(native)) return {};
@@ -339,6 +340,45 @@ namespace io {
         if (descriptor < 0) return {-1, errnoText(errno)};
         return {descriptor, {}};
 #endif
+    }
+
+    QString resolveLocalPath(const QString& input) {
+        if (input.isEmpty()) return {};
+        QString path = input;
+#ifdef Q_OS_WIN
+        const bool drivePath = input.size() >= 2 && input.at(0).isLetter() && input.at(1) == QLatin1Char(':');
+#else
+        constexpr bool drivePath = false;
+#endif
+        if (!drivePath) {
+            const QUrl url(input);
+            if (!url.scheme().isEmpty()) {
+                if (!url.isValid() || !url.isLocalFile() || url.hasQuery() || url.hasFragment()) return {};
+                path = url.toLocalFile();
+            }
+        }
+        return cleanResolvedPath(std::move(path));
+    }
+
+    QString resolveLocalPath(const QUrl& url) {
+        if (!url.isValid() || !url.isLocalFile() || url.hasQuery() || url.hasFragment()) return {};
+        return cleanResolvedPath(url.toLocalFile());
+    }
+
+    QString canonicalLocalPath(const QString& input) {
+        const QString path = resolveLocalPath(input);
+        if (path.isEmpty()) return {};
+        const QFileInfo info(path);
+        const QString canonical = info.canonicalFilePath();
+        return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
+    }
+
+    QString canonicalLocalPath(const QUrl& url) {
+        const QString path = resolveLocalPath(url);
+        if (path.isEmpty()) return {};
+        const QFileInfo info(path);
+        const QString canonical = info.canonicalFilePath();
+        return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
     }
 
     bool isPrivilegedPath(const QString& path) {

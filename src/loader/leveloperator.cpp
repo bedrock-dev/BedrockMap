@@ -9,16 +9,21 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QScopeGuard>
 #include <QSet>
 #include <QStandardPaths>
-#include <QTemporaryDir>
-#include <QTemporaryFile>
 #include <QUrl>
+#include <QUuid>
 #include <cstdint>
 #include <exception>
 #include <limits>
 #include <memory>
 #include <vector>
+#ifdef Q_OS_WIN
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "base/platform.h"
 #include "base/worldenv.h"
@@ -58,6 +63,28 @@ namespace {
     }
 
     QUrl fileUrl(const QString& path) { return QUrl::fromLocalFile(path); }
+
+    QString uniquePath(const QString& parent, const QString& prefix) {
+        return QDir(parent).filePath(prefix + QLatin1Char('-') + QUuid::createUuid().toString(QUuid::WithoutBraces));
+    }
+
+    QUrl uniqueTemporaryFileUrl(const QString& prefix) {
+        QString root = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+        if (root.isEmpty()) root = QDir::tempPath();
+        return fileUrl(uniquePath(root, prefix));
+    }
+
+    void removeIfExists(const QUrl& url, bool recursive = false) {
+        const auto status = io::DocumentIo::stat(url);
+        if (status.ok() && status.info.exists) static_cast<void>(io::DocumentIo::remove(url, recursive));
+    }
+
+    void removeDatabaseTransientFiles(const QString& staging_root) {
+        const QDir database(QDir(staging_root).filePath(QStringLiteral("db")));
+        removeIfExists(fileUrl(database.filePath(QStringLiteral("LOCK"))));
+        removeIfExists(fileUrl(database.filePath(QStringLiteral("LOG"))));
+        removeIfExists(fileUrl(database.filePath(QStringLiteral("LOG.old"))));
+    }
 
     bool pathContains(const QString& root, const QString& path) {
         const QString relative = QDir(root).relativeFilePath(path);
@@ -126,30 +153,32 @@ namespace {
     QString internalWorldPath(const QString& path) {
         const QString root = internalWorldsRoot();
         if (root.isEmpty() || path.isEmpty()) return {};
-        const QFileInfo rootInfo(root);
-        const QFileInfo worldInfo(path);
-        if (!rootInfo.isDir() || rootInfo.isSymLink() || rootInfo.isJunction() || !worldInfo.isDir() || worldInfo.isSymLink() ||
-            worldInfo.isJunction())
+        const QUrl rootUrl = fileUrl(root);
+        const QUrl worldUrl = fileUrl(path);
+        const auto rootStatus = io::DocumentIo::stat(rootUrl);
+        const auto worldStatus = io::DocumentIo::stat(worldUrl);
+        if (!rootStatus.ok() || !rootStatus.info.exists || !rootStatus.info.isDirectory || rootStatus.info.isLink || !worldStatus.ok() ||
+            !worldStatus.info.exists || !worldStatus.info.isDirectory || worldStatus.info.isLink)
             return {};
-        const QString canonicalRoot = rootInfo.canonicalFilePath();
-        const QString canonicalWorld = worldInfo.canonicalFilePath();
-        if (canonicalRoot.isEmpty() || canonicalWorld.isEmpty() || QDir(canonicalRoot) != QFileInfo(canonicalWorld).dir() ||
-            QDir(canonicalRoot) != worldInfo.dir())
-            return {};
+        const QString canonicalRoot = io::DocumentIo::identifier(rootUrl);
+        const QString canonicalWorld = io::DocumentIo::identifier(worldUrl);
+        if (canonicalRoot.isEmpty() || canonicalWorld.isEmpty() || QDir(canonicalRoot) != QFileInfo(canonicalWorld).dir()) return {};
         return canonicalWorld;
     }
 
     QString prepareImportTarget(const QString& target) {
-        const QFileInfo info(target);
-        if (!info.exists() && !info.isSymLink()) return {};
-        if (info.isSymLink() || info.isJunction() || !info.isDir() || LevelOperator::isCompleteWorld(target))
+        const auto status = io::DocumentIo::stat(fileUrl(target));
+        if (!status.ok()) return status.error;
+        if (!status.info.exists) return {};
+        if (status.info.isLink || !status.info.isDirectory || LevelOperator::isCompleteWorld(target))
             return QCoreApplication::translate("AppController", "The internal copy already exists and cannot be replaced.");
 
         // Failed imports from older versions could leave a partial directory at the
         // deterministic target. Remove only validated direct children of the app's
         // internal worlds root before publishing the new copy.
         const QString internal = internalWorldPath(target);
-        if (internal.isEmpty() || !QDir(internal).removeRecursively())
+        if (internal.isEmpty()) return QCoreApplication::translate("AppController", "Cannot remove the incomplete internal copy.");
+        if (const QString error = io::DocumentIo::remove(fileUrl(internal), true); !error.isEmpty())
             return QCoreApplication::translate("AppController", "Cannot remove the incomplete internal copy.");
         return {};
     }
@@ -243,7 +272,7 @@ QString LevelOperator::deleteInternalWorld(const QString& path) {
     // The worlds root itself and paths outside its direct children are rejected.
     const QString target = internalWorldPath(path);
     if (target.isEmpty()) return QCoreApplication::translate("AppController", "Only worlds in the app's internal storage can be deleted.");
-    if (!QDir(target).removeRecursively())
+    if (const QString error = io::DocumentIo::remove(fileUrl(target), true); !error.isEmpty())
         return QCoreApplication::translate("AppController", "Could not delete the world completely. Some files may remain.");
     return {};
 }
@@ -277,29 +306,34 @@ bool LevelOperator::loadLevelDat(const QString& path, bl::level_dat& dat) {
 QString LevelOperator::copyToInternal(const QUrl& source, const QString& target) {
     if (const QString error = prepareImportTarget(target); !error.isEmpty()) return error;
     const QString parent = QFileInfo(target).absolutePath();
-    if (!QDir().mkpath(parent)) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
-    QTemporaryDir staging(QDir(parent).filePath(QStringLiteral(".import-XXXXXX")));
-    if (!staging.isValid()) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    if (const QString error = io::DocumentIo::makeDirectory(fileUrl(parent)); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    const QString staging_path = uniquePath(parent, QStringLiteral(".import"));
+    const QUrl staging_url = fileUrl(staging_path);
+    if (const QString error = io::DocumentIo::makeDirectory(staging_url, false); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    bool published = false;
+    const auto cleanup = qScopeGuard([&] {
+        if (!published) removeIfExists(staging_url, true);
+    });
 
     if (!source.isLocalFile()) {
-        const QString error = io::DocumentIo::copyTree(source, QUrl::fromLocalFile(staging.path()));
+        const QString error = io::DocumentIo::copyDirectory(source, staging_url);
         if (!error.isEmpty()) return error;
-        QDir database(QDir(staging.path()).filePath(QStringLiteral("db")));
-        database.remove(QStringLiteral("LOCK"));
-        database.remove(QStringLiteral("LOG"));
-        database.remove(QStringLiteral("LOG.old"));
     } else {
-        const QString error = copyWorldDirectory(source.toLocalFile(), staging.path());
+        const QString error = copyWorldDirectory(source.toLocalFile(), staging_path);
         if (!error.isEmpty()) return error;
     }
+    removeDatabaseTransientFiles(staging_path);
 
-    if (!isCompleteWorld(staging.path())) {
+    if (!isCompleteWorld(staging_path)) {
         return QCoreApplication::translate("AppController",
                                            "The selected directory must contain a valid level.dat file and a db directory.");
     }
     if (const QString error = prepareImportTarget(target); !error.isEmpty()) return error;
-    if (!QDir().rename(staging.path(), target)) return QCoreApplication::translate("AppController", "Cannot save the imported world.");
-    staging.setAutoRemove(false);
+    if (const QString error = io::DocumentIo::rename(staging_url, fileUrl(target)); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot save the imported world.");
+    published = true;
     return {};
 }
 
@@ -309,18 +343,25 @@ QString LevelOperator::extractToInternal(const QUrl& source, const QString& targ
     if (!opened.ok()) return sourceLabel + ": " + opened.error;
     // Some SAF providers return a pipe. ZIP directory lookup needs a seekable
     // device, so spool only those inputs to disk instead of holding them in RAM.
-    QTemporaryFile seekableInput;
+    QUrl spool_url;
+    io::OpenReadResult spooled;
+    const auto remove_spool = qScopeGuard([&] { removeIfExists(spool_url); });
     QIODevice* archiveInput = opened.file.get();
     if (opened.file->isSequential()) {
-        if (!seekableInput.open()) return seekableInput.errorString();
-        for (;;) {
-            const QByteArray block = opened.file->read(65536);
-            if (opened.file->error() != QFileDevice::NoError) return sourceLabel + ": " + opened.file->errorString();
-            if (block.isEmpty()) break;
-            if (seekableInput.write(block) != block.size()) return seekableInput.errorString();
-        }
-        if (!seekableInput.flush() || !seekableInput.seek(0)) return seekableInput.errorString();
-        archiveInput = &seekableInput;
+        spool_url = uniqueTemporaryFileUrl(QStringLiteral("bedrockmap-archive"));
+        const QString write_error = io::DocumentIo::writeStream(spool_url, [&](QIODevice& output) {
+            for (;;) {
+                const QByteArray block = opened.file->read(65536);
+                if (opened.file->error() != QFileDevice::NoError) return opened.file->errorString();
+                if (block.isEmpty()) break;
+                if (output.write(block) != block.size()) return output.errorString();
+            }
+            return QString{};
+        });
+        if (!write_error.isEmpty()) return sourceLabel + ": " + write_error;
+        spooled = io::DocumentIo::openRead(spool_url);
+        if (!spooled.ok()) return sourceLabel + ": " + spooled.error;
+        archiveInput = spooled.file.get();
     }
     // QZipReader uses signed 32-bit offsets and sizes internally.
     if (archiveInput->size() <= 0 || archiveInput->size() > std::numeric_limits<int>::max())
@@ -332,12 +373,18 @@ QString LevelOperator::extractToInternal(const QUrl& source, const QString& targ
 
     if (const QString error = prepareImportTarget(target); !error.isEmpty()) return error;
     const QString parent = QFileInfo(target).absolutePath();
-    if (!QDir().mkpath(parent)) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
-    QTemporaryDir staging(QDir(parent).filePath(QStringLiteral(".import-XXXXXX")));
-    if (!staging.isValid()) return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    if (const QString error = io::DocumentIo::makeDirectory(fileUrl(parent)); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    const QString staging_path = uniquePath(parent, QStringLiteral(".import"));
+    const QUrl staging_url = fileUrl(staging_path);
+    if (const QString error = io::DocumentIo::makeDirectory(staging_url, false); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot create the world import directory.");
+    bool published = false;
+    const auto cleanup = qScopeGuard([&] {
+        if (!published) removeIfExists(staging_url, true);
+    });
 
     const QSet<QString> directories = archiveDirectories(entries);
-    const QDir destination(staging.path());
     for (const auto& entry : entries) {
         const QString path = QDir::cleanPath(entry.filePath);
         const bool isDirectory = entry.isDir || directories.contains(path);
@@ -355,36 +402,34 @@ QString LevelOperator::extractToInternal(const QUrl& source, const QString& targ
                 return QCoreApplication::translate("AppController", "Unsupported file in world directory: %1").arg(entry.filePath);
         }
 
-        const QString outputPath = destination.filePath(path);
+        const QString outputPath = QDir(staging_path).filePath(path);
+        const QUrl outputUrl = fileUrl(outputPath);
         if (isDirectory) {
-            if (!QDir().mkpath(outputPath))
+            if (!io::DocumentIo::makeDirectory(outputUrl).isEmpty())
                 return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(outputPath);
             continue;
         }
         if (entry.size < 0 || entry.size > std::numeric_limits<int>::max())
             return QCoreApplication::translate("AppController", "The world archive contains an unsupported or damaged file: %1")
                 .arg(entry.filePath);
-        if (!QDir().mkpath(QFileInfo(outputPath).absolutePath()))
+        if (!io::DocumentIo::makeDirectory(fileUrl(QFileInfo(outputPath).absolutePath())).isEmpty())
             return QCoreApplication::translate("AppController", "Cannot create import directory: %1").arg(outputPath);
 
         const QByteArray data = archive.fileData(entry.filePath);
         const bool inputError = archiveInput == opened.file.get() ? opened.file->error() != QFileDevice::NoError
-                                                                  : seekableInput.error() != QFileDevice::NoError;
+                                                                  : spooled.file->error() != QFileDevice::NoError;
         if (archive.status() != QZipReader::NoError || inputError || data.size() != entry.size)
             return QCoreApplication::translate("AppController", "The world archive contains an unsupported or damaged file: %1")
                 .arg(entry.filePath);
-        if (const QString error = io::DocumentIo::writeBytes(QUrl::fromLocalFile(outputPath), data); !error.isEmpty())
-            return outputPath + ": " + error;
+        if (const QString error = io::DocumentIo::writeBytes(outputUrl, data); !error.isEmpty()) return outputPath + ": " + error;
     }
-    QDir database(destination.filePath(QStringLiteral("db")));
-    database.remove(QStringLiteral("LOCK"));
-    database.remove(QStringLiteral("LOG"));
-    database.remove(QStringLiteral("LOG.old"));
-    if (!isCompleteWorld(staging.path()))
+    removeDatabaseTransientFiles(staging_path);
+    if (!isCompleteWorld(staging_path))
         return QCoreApplication::translate("AppController", "The world archive does not contain a valid level.dat file and db directory.");
     if (const QString error = prepareImportTarget(target); !error.isEmpty()) return error;
-    if (!QDir().rename(staging.path(), target)) return QCoreApplication::translate("AppController", "Cannot save the imported world.");
-    staging.setAutoRemove(false);
+    if (const QString error = io::DocumentIo::rename(staging_url, fileUrl(target)); !error.isEmpty())
+        return QCoreApplication::translate("AppController", "Cannot save the imported world.");
+    published = true;
     return {};
 }
 
@@ -392,9 +437,13 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
     try {
         if (destination.isLocalFile()) {
             const QFileInfo outputInfo(destination.toLocalFile());
-            const QString parent = outputInfo.dir().canonicalPath();
-            const QString resolved = outputInfo.exists() ? outputInfo.canonicalFilePath() : QDir(parent).filePath(outputInfo.fileName());
-            const QString relative = QDir(source).relativeFilePath(resolved);
+            const auto targetStatus = io::DocumentIo::stat(destination);
+            if (!targetStatus.ok()) return targetStatus.error;
+            const QString parent = io::DocumentIo::identifier(fileUrl(outputInfo.absolutePath()));
+            const QString resolved =
+                targetStatus.info.exists ? io::DocumentIo::identifier(destination) : QDir(parent).filePath(outputInfo.fileName());
+            const QString canonicalSource = io::DocumentIo::identifier(fileUrl(source));
+            const QString relative = QDir(canonicalSource).relativeFilePath(resolved);
             if (relative != QStringLiteral("..") && !relative.startsWith(QStringLiteral("../")) && !QDir::isAbsolutePath(relative))
                 return QCoreApplication::translate("AppController", "Save the archive outside the source world folder.");
         }
@@ -423,8 +472,21 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
 
         // Always finish the seekable archive before touching the chosen output.
         // This also supports SAF providers which expose only a sequential pipe.
-        QTemporaryFile temporary;
-        if (!temporary.open()) return temporary.errorString();
+        const QUrl temporary_url = uniqueTemporaryFileUrl(QStringLiteral("bedrockmap-world"));
+        const auto remove_temporary = qScopeGuard([&] { removeIfExists(temporary_url); });
+        const auto temporary_native = io::DocumentIo::openNative(
+            temporary_url, io::NativeOpen::Read | io::NativeOpen::Write | io::NativeOpen::Create | io::NativeOpen::Truncate, 0600);
+        if (!temporary_native.ok()) return temporary_native.error;
+        QFile temporary;
+        if (!temporary.open(temporary_native.descriptor, QIODevice::ReadWrite, QFileDevice::AutoCloseHandle)) {
+            const QString error = temporary.errorString();
+#ifdef Q_OS_WIN
+            _close(temporary_native.descriptor);
+#else
+            ::close(temporary_native.descriptor);
+#endif
+            return error;
+        }
         QZipWriter writer(&temporary);
         WorldArchive archive{writer};
         const QString error = archiveWorldDirectory(source, {}, archive);
@@ -432,14 +494,17 @@ QString LevelOperator::exportMcworld(const QString& source, const QUrl& destinat
         writer.close();
         if (writer.status() != QZipWriter::NoError || temporary.error() != QFileDevice::NoError)
             return QCoreApplication::translate("AppController", "Could not write the world archive.");
-        // QZipWriter may close its device after finalizing the central directory.
-        if (!temporary.isOpen() && !temporary.open()) return temporary.errorString();
-        if (!temporary.flush() || !temporary.seek(0)) return temporary.errorString();
+        if (temporary.isOpen()) {
+            if (!temporary.flush()) return temporary.errorString();
+            temporary.close();
+        }
+        auto spooled = io::DocumentIo::openRead(temporary_url);
+        if (!spooled.ok()) return spooled.error;
 
-        return io::DocumentIo::writeStream(destination, [&temporary](QIODevice& output) {
-            while (!temporary.atEnd()) {
-                const QByteArray block = temporary.read(65536);
-                if (temporary.error() != QFileDevice::NoError) return temporary.errorString();
+        return io::DocumentIo::writeStream(destination, [&spooled](QIODevice& output) {
+            while (!spooled.file->atEnd()) {
+                const QByteArray block = spooled.file->read(65536);
+                if (spooled.file->error() != QFileDevice::NoError) return spooled.file->errorString();
                 if (output.write(block) != block.size()) return output.errorString();
             }
             return QString();
@@ -458,19 +523,20 @@ QString LevelOperator::exportFolder(const QString& source, const QUrl& destinati
 
         QString localTarget;
         if (destination.isLocalFile()) {
-            localTarget = platform::normalizeLocalPath(destination.toLocalFile());
+            localTarget = io::DocumentIo::identifier(destination);
         } else if (platform::isContentUri(destination)) {
-            localTarget = platform::resolveContentDirectory(destination);
+            localTarget = io::DocumentIo::resolveNativeDirectory(destination);
         } else {
             return QCoreApplication::translate("AppController", "The export destination is not a folder.");
         }
 
-        const QString canonicalSource = QFileInfo(source).canonicalFilePath();
+        const QString canonicalSource = io::DocumentIo::identifier(fileUrl(source));
         if (!localTarget.isEmpty()) {
-            const QFileInfo targetInfo(localTarget);
-            if (targetInfo.isSymLink() || targetInfo.isJunction() || !targetInfo.isDir())
+            const QUrl targetUrl = fileUrl(localTarget);
+            const auto targetStatus = io::DocumentIo::stat(targetUrl);
+            if (!targetStatus.ok() || !targetStatus.info.exists || targetStatus.info.isLink || !targetStatus.info.isDirectory)
                 return QCoreApplication::translate("AppController", "The export destination is not a folder.");
-            const QString canonicalTarget = targetInfo.canonicalFilePath();
+            const QString canonicalTarget = io::DocumentIo::identifier(targetUrl);
             if (canonicalSource.isEmpty() || canonicalTarget.isEmpty() || pathContains(canonicalSource, canonicalTarget) ||
                 pathContains(canonicalTarget, canonicalSource))
                 return QCoreApplication::translate("AppController", "Choose an export folder outside the source world.");
@@ -491,7 +557,8 @@ QString LevelOperator::exportFolder(const QString& source, const QUrl& destinati
         };
         const std::unique_ptr<leveldb::FileLock, decltype(unlock)> lock(rawLock, unlock);
 
-        if (localTarget.isEmpty()) return platform::copyLocalDirectoryToContentTree(source, destination);
+        if (localTarget.isEmpty())
+            return QCoreApplication::translate("AppController", "Folder export requires access to global shared storage.");
 
         if (const QString error = copyWorldDirectory(source, localTarget); !error.isEmpty()) return error;
         if (!isCompleteWorld(localTarget))

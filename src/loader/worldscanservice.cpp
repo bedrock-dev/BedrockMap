@@ -10,6 +10,7 @@
 
 #include "base/config.h"
 #include "base/platform.h"
+#include "io/documentio.h"
 #include "loader/worldsource.h"
 
 namespace {
@@ -29,7 +30,7 @@ namespace {
         QHash<QString, std::size_t> seen;
         for (const auto& source : sources) {
             for (auto& info : scanWorldSource(source)) {
-                const auto path = platform::normalizeLocalPath(QString::fromStdString(info.path));
+                const auto path = io::DocumentIo::canonicalLocalPath(QString::fromStdString(info.path));
                 if (path.isEmpty() || seen.contains(path)) continue;
                 seen.insert(path, result.worlds.size());
                 info.path = path.toStdString();
@@ -38,7 +39,7 @@ namespace {
         }
         QSet<QString> recent_seen;
         for (const auto& path : recentPaths) {
-            const QString normalized = platform::normalizeLocalPath(path);
+            const QString normalized = io::DocumentIo::canonicalLocalPath(path);
             if (!normalized.isEmpty() && !recent_seen.contains(normalized)) {
                 recent_seen.insert(normalized);
                 const auto found = seen.constFind(normalized);

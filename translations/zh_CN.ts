@@ -163,6 +163,11 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Folder export requires access to global shared storage.</source>
+        <translation>导出到文件夹需要访问全局共享存储。</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>The exported folder does not contain a valid level.dat file and db directory.</source>
         <translation>导出的文件夹不包含有效的 level.dat 文件和 db 目录。</translation>
     </message>
@@ -187,6 +192,7 @@
         <translation>内部副本已存在，无法覆盖。</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot remove the incomplete internal copy.</source>
         <translation>无法删除未完成导入的内部副本。</translation>
@@ -3674,6 +3680,11 @@ Current version: %2</source>
         <translation>本地文件路径无效。</translation>
     </message>
     <message>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <source>Recursive removal is not supported here.</source>
+        <translation>此处不支持递归删除。</translation>
+    </message>
+    <message>
         <location filename="../src/io/vfs.cpp"/>
         <source>This operation is not supported for this location.</source>
         <translation>此位置不支持该操作。</translation>
@@ -3716,6 +3727,11 @@ Current version: %2</source>
     </message>
     <message>
         <location filename="../src/io/vfs.cpp"/>
+        <source>Could not remove directory: %1</source>
+        <translation>无法删除目录：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
         <source>Could not remove %1 (error %2).</source>
         <translation>无法删除 %1（错误 %2）。</translation>
     </message>
@@ -3728,6 +3744,50 @@ Current version: %2</source>
         <location filename="../src/io/vfs.cpp"/>
         <source>Could not open %1.</source>
         <translation>无法打开 %1。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The Android activity is unavailable.</source>
+        <translation type="unfinished">Android 活动不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Cannot access the selected Android folder.</source>
+        <translation type="unfinished">无法访问所选 Android 文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The selected tree is a directory, not a document.</source>
+        <translation>所选目录树是文件夹，不是文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The selected document is unavailable.</source>
+        <translation>所选文档不可用。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>SAF directories are read-only.</source>
+        <translation>SAF 文件夹为只读。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Cannot copy directories between these storage locations.</source>
+        <translation>无法在这些存储位置之间复制目录。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Invalid tree metadata.</source>
+        <translation>目录树元数据无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Invalid directory listing.</source>
+        <translation>目录列表无效。</translation>
     </message>
 </context>
 <context>
@@ -4479,27 +4539,15 @@ Continue?</source>
     </message>
 </context>
 <context>
-    <name>platform</name>
+    <name>io</name>
     <message>
-        <location filename="../src/base/platform.cpp"/>
+        <location filename="../src/io/androidcontentio.cpp"/>
         <source>The document provider returned no file descriptor.</source>
-        <translation>文档提供方未返回文件描述符。</translation>
+        <translation type="unfinished">文档提供方未返回文件描述符。</translation>
     </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>The export destination is not a folder.</source>
-        <translation>导出目标不是文件夹。</translation>
-    </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>Cannot access the selected Android folder.</source>
-        <translation>无法访问所选 Android 文件夹。</translation>
-    </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>Folder export to a content URI is only supported on Android.</source>
-        <translation>仅 Android 支持导出到 content URI 文件夹。</translation>
-    </message>
+</context>
+<context>
+    <name>platform</name>
     <message>
         <location filename="../src/base/platform.cpp"/>
         <source>The exported file is not local.</source>

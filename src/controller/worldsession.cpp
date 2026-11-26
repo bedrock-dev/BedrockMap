@@ -7,12 +7,13 @@
 #include "base/platform.h"
 #include "base/worldenv.h"
 #include "controller/worldvolumesource.h"
+#include "io/documentio.h"
 #include "loader/asynclevelloader.h"
 #include "loader/leveldbxor.h"
 #include "nbt.h"
 
 WorldSession::WorldSession(QString path, QString title, AppContext& context, QObject* parent)
-    : WorkspaceSession(QStringLiteral("world"), platform::normalizeLocalPath(path),
+    : WorkspaceSession(QStringLiteral("world"), io::DocumentIo::canonicalLocalPath(path),
                        title.isEmpty() ? QStringLiteral("World workspace") : std::move(title), parent),
       context_(context),
       map_view_state_(this),

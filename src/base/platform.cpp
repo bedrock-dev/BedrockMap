@@ -2,18 +2,14 @@
 
 #include <QCoreApplication>
 #include <QDesktopServices>
-#include <QDir>
 #include <QFileInfo>
 #include <QUrl>
 
 #if defined(Q_OS_ANDROID)
-#include <unistd.h>
-
 #include <QCoreApplication>
 #include <QFile>
 #include <QJniEnvironment>
 #include <QJniObject>
-#include <QScopeGuard>
 #endif
 
 #if defined(_WIN32)
@@ -188,81 +184,6 @@ namespace platform {
 
     bool isContentUri(const QUrl& url) { return url.scheme() == QStringLiteral("content"); }
 
-    QString openDocumentFile(QFile& file, QIODevice::OpenMode mode) {
-#ifdef Q_OS_ANDROID
-        const QUrl url(file.fileName());
-        if (isContentUri(url)) {
-            const QJniObject context(QNativeInterface::QAndroidApplication::context());
-            const auto resolver = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-            const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
-            const auto uri = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/DocumentMetadata", "grantedUri",
-                                                                "(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;",
-                                                                context.object(), source.object<jstring>());
-            QString access = QStringLiteral("r");
-            if (mode & QIODevice::WriteOnly) {
-                access = mode & QIODevice::ReadOnly ? QStringLiteral("rw") : QStringLiteral("w");
-                if (mode & QIODevice::Append)
-                    access += QLatin1Char('a');
-                else if (mode & QIODevice::Truncate)
-                    access += QLatin1Char('t');
-            }
-            const auto accessString = QJniObject::fromString(access);
-            QJniEnvironment env;
-            const auto exceptionMessage = [&env]() -> QString {
-                if (!env->ExceptionCheck()) return {};
-                const auto exception = env->ExceptionOccurred();
-                env->ExceptionClear();
-                return QJniObject::fromLocalRef(exception).callObjectMethod<jstring>("toString").toString();
-            };
-            // Qt 6.11 rebuilds document IDs before checking permissions, which
-            // changes e.g. literal parentheses to %28/%29 and loses the grant.
-            // ContentResolver must receive the original provider URI instead.
-            const auto openMethod = env->GetMethodID(resolver.objectClass(), "openFileDescriptor",
-                                                     "(Landroid/net/Uri;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;");
-            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
-            const auto descriptorObject = env->CallObjectMethod(resolver.object(), openMethod, uri.object(), accessString.object());
-            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
-            const auto descriptor = QJniObject::fromLocalRef(descriptorObject);
-            const auto missingDescriptor = [] {
-                return QCoreApplication::translate("platform", "The document provider returned no file descriptor.");
-            };
-            if (!descriptor.isValid()) return missingDescriptor();
-            const auto closeDescriptor = qScopeGuard([&descriptor] { descriptor.callMethod<void>("close"); });
-            const auto detachMethod = env->GetMethodID(descriptor.objectClass(), "detachFd", "()I");
-            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
-            const int fd = env->CallIntMethod(descriptor.object(), detachMethod);
-            if (const QString error = exceptionMessage(); !error.isEmpty()) return error;
-            if (fd < 0) return missingDescriptor();
-            if (file.open(fd, mode, QFileDevice::AutoCloseHandle)) return {};
-            const QString error = file.errorString();
-            ::close(fd);
-            return error;
-        }
-#endif
-        return file.open(mode) ? QString() : file.errorString();
-    }
-
-    QString normalizeLocalPath(const QString& input) {
-        if (input.isEmpty()) return {};
-        QString path = input;
-#ifdef Q_OS_WIN
-        const bool drivePath = input.size() >= 2 && input.at(0).isLetter() && input.at(1) == QLatin1Char(':');
-#else
-        const bool drivePath = false;
-#endif
-        if (!drivePath) {
-            const QUrl url(input);
-            if (!url.scheme().isEmpty()) {
-                if (!url.isValid() || !url.isLocalFile() || url.hasQuery() || url.hasFragment()) return {};
-                path = url.toLocalFile();
-            }
-        }
-        if (path.isEmpty()) return {};
-        const QFileInfo info(QDir::fromNativeSeparators(path));
-        const QString canonical = info.canonicalFilePath();
-        return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
-    }
-
     bool revealInFileManager(const QString& path) {
         const QFileInfo info(path);
         const QString target = info.isDir() ? info.absoluteFilePath() : info.absolutePath();
@@ -272,87 +193,6 @@ namespace platform {
     bool openDirectory(const QString& path) {
         const QFileInfo info(path);
         return info.isDir() && QDesktopServices::openUrl(QUrl::fromLocalFile(info.absoluteFilePath()));
-    }
-
-    QString fileDisplayName(const QString& input) {
-        if (input.isEmpty()) return {};
-        const QUrl url(input);
-        const QString path = url.isLocalFile() ? url.toLocalFile() : input;
-#ifdef Q_OS_ANDROID
-        if (isContentUri(url)) {
-            const auto context = QNativeInterface::QAndroidApplication::context();
-            const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
-            const auto result = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/DocumentMetadata", "displayName",
-                                                                   "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                                   context.object(), source.object<jstring>());
-            QJniEnvironment env;
-            if (!env.checkAndClearExceptions() && result.isValid()) {
-                const QString name = result.toString();
-                if (!name.isEmpty()) return name;
-            }
-        }
-#endif
-        const QString name = QFileInfo(path).fileName();
-        if (!name.isEmpty()) return name;
-        if (isContentUri(url)) {
-            const QString uriName = QFileInfo(url.fileName()).fileName();
-            if (!uriName.isEmpty()) return uriName;
-        }
-        return input;
-    }
-
-    QString resolveContentDirectory(const QUrl& url) {
-#ifdef Q_OS_ANDROID
-        if (!isContentUri(url) || !hasAllFilesPermission()) return {};
-        const auto context = QNativeInterface::QAndroidApplication::context();
-        const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
-        const auto result = QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/SafTreeIo", "resolveTreePath",
-                                                               "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                               context.object(), source.object<jstring>());
-        QJniEnvironment env;
-        if (env.checkAndClearExceptions() || !result.isValid()) return {};
-        return result.toString();
-#else
-        Q_UNUSED(url);
-        return {};
-#endif
-    }
-
-    bool isContentDirectoryEmpty(const QUrl& url) {
-#ifdef Q_OS_ANDROID
-        if (!isContentUri(url)) return false;
-        const auto context = QNativeInterface::QAndroidApplication::context();
-        const auto source = QJniObject::fromString(url.toString(QUrl::FullyEncoded));
-        const jboolean result = QJniObject::callStaticMethod<jboolean>("io/github/hhhxiao/bedrockmap/SafTreeIo", "isTreeEmpty",
-                                                                       "(Landroid/content/Context;Ljava/lang/String;)Z", context.object(),
-                                                                       source.object<jstring>());
-        QJniEnvironment env;
-        return !env.checkAndClearExceptions() && result;
-#else
-        Q_UNUSED(url);
-        return false;
-#endif
-    }
-
-    QString copyLocalDirectoryToContentTree(const QString& source, const QUrl& destination) {
-#ifdef Q_OS_ANDROID
-        if (!isContentUri(destination)) return QCoreApplication::translate("platform", "The export destination is not a folder.");
-        const auto context = QNativeInterface::QAndroidApplication::context();
-        const auto sourceString = QJniObject::fromString(source);
-        const auto destinationString = QJniObject::fromString(destination.toString(QUrl::FullyEncoded));
-        const auto result =
-            QJniObject::callStaticObjectMethod("io/github/hhhxiao/bedrockmap/SafTreeIo", "copyLocalTree",
-                                               "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
-                                               context.object(), sourceString.object<jstring>(), destinationString.object<jstring>());
-        QJniEnvironment env;
-        if (env.checkAndClearExceptions() || !result.isValid())
-            return QCoreApplication::translate("platform", "Cannot access the selected Android folder.");
-        return result.toString();
-#else
-        Q_UNUSED(source);
-        Q_UNUSED(destination);
-        return QCoreApplication::translate("platform", "Folder export to a content URI is only supported on Android.");
-#endif
     }
 
     QString openExportedWorld(const QUrl& url, const QString& chooserTitle) {

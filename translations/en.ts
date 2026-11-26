@@ -163,6 +163,11 @@
     </message>
     <message>
         <location filename="../src/loader/leveloperator.cpp"/>
+        <source>Folder export requires access to global shared storage.</source>
+        <translation>Folder export requires access to global shared storage.</translation>
+    </message>
+    <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <source>The exported folder does not contain a valid level.dat file and db directory.</source>
         <translation>The exported folder does not contain a valid level.dat file and db directory.</translation>
     </message>
@@ -187,6 +192,7 @@
         <translation>The internal copy already exists and cannot be replaced.</translation>
     </message>
     <message>
+        <location filename="../src/loader/leveloperator.cpp"/>
         <location filename="../src/loader/leveloperator.cpp"/>
         <source>Cannot remove the incomplete internal copy.</source>
         <translation>Cannot remove the incomplete internal copy.</translation>
@@ -3674,6 +3680,11 @@ Current version: %2</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/io/privilegedvfs.cpp"/>
+        <source>Recursive removal is not supported here.</source>
+        <translation>Recursive removal is not supported here.</translation>
+    </message>
+    <message>
         <location filename="../src/io/vfs.cpp"/>
         <source>This operation is not supported for this location.</source>
         <translation type="unfinished"></translation>
@@ -3716,6 +3727,11 @@ Current version: %2</translation>
     </message>
     <message>
         <location filename="../src/io/vfs.cpp"/>
+        <source>Could not remove directory: %1</source>
+        <translation>Could not remove directory: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/io/vfs.cpp"/>
         <source>Could not remove %1 (error %2).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3728,6 +3744,50 @@ Current version: %2</translation>
         <location filename="../src/io/vfs.cpp"/>
         <source>Could not open %1.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The Android activity is unavailable.</source>
+        <translation type="unfinished">The Android activity is unavailable.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Cannot access the selected Android folder.</source>
+        <translation type="unfinished">Cannot access the selected Android folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The selected tree is a directory, not a document.</source>
+        <translation>The selected tree is a directory, not a document.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>The selected document is unavailable.</source>
+        <translation>The selected document is unavailable.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>SAF directories are read-only.</source>
+        <translation>SAF directories are read-only.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/vfs.cpp"/>
+        <source>Cannot copy directories between these storage locations.</source>
+        <translation>Cannot copy directories between these storage locations.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Invalid tree metadata.</source>
+        <translation>Invalid tree metadata.</translation>
+    </message>
+    <message>
+        <location filename="../src/io/saftreevfs.cpp"/>
+        <source>Invalid directory listing.</source>
+        <translation>Invalid directory listing.</translation>
     </message>
 </context>
 <context>
@@ -4479,27 +4539,15 @@ Continue?</translation>
     </message>
 </context>
 <context>
-    <name>platform</name>
+    <name>io</name>
     <message>
-        <location filename="../src/base/platform.cpp"/>
+        <location filename="../src/io/androidcontentio.cpp"/>
         <source>The document provider returned no file descriptor.</source>
-        <translation>The document provider returned no file descriptor.</translation>
+        <translation type="unfinished">The document provider returned no file descriptor.</translation>
     </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>The export destination is not a folder.</source>
-        <translation>The export destination is not a folder.</translation>
-    </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>Cannot access the selected Android folder.</source>
-        <translation>Cannot access the selected Android folder.</translation>
-    </message>
-    <message>
-        <location filename="../src/base/platform.cpp"/>
-        <source>Folder export to a content URI is only supported on Android.</source>
-        <translation>Folder export to a content URI is only supported on Android.</translation>
-    </message>
+</context>
+<context>
+    <name>platform</name>
     <message>
         <location filename="../src/base/platform.cpp"/>
         <source>The exported file is not local.</source>

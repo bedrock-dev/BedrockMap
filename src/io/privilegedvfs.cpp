@@ -220,7 +220,8 @@ namespace io {
         return {};
     }
 
-    QString PrivilegedVfsBackend::remove(const QUrl& url) const {
+    QString PrivilegedVfsBackend::remove(const QUrl& url, bool recursive) const {
+        if (recursive) return QCoreApplication::translate("Vfs", "Recursive removal is not supported here.");
         const QString path = pathOf(url);
         if (path.isEmpty()) return invalidPath();
         const int result = pathStatus("remove", path);

@@ -97,7 +97,7 @@ namespace io {
         [[nodiscard]] virtual QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {}) const = 0;
         [[nodiscard]] virtual QString displayName(const QUrl& url) const = 0;
         [[nodiscard]] virtual bool requiresSaveAs(const QUrl&) const { return false; }
-        [[nodiscard]] virtual QString copyTree(const QUrl& source, const QUrl& destination) const;
+        [[nodiscard]] virtual QString copyDirectory(const QUrl& source, const QUrl& destination) const;
         [[nodiscard]] virtual QString resolveNativeDirectory(const QUrl& source) const;
 
         /// Does not follow a final symbolic link.
@@ -106,7 +106,7 @@ namespace io {
         /// Succeeds when the directory already exists.
         [[nodiscard]] virtual QString makeDirectory(const QUrl& url, bool recursive = true) const;
         /// Removes a file, link or empty directory.
-        [[nodiscard]] virtual QString remove(const QUrl& url) const;
+        [[nodiscard]] virtual QString remove(const QUrl& url, bool recursive = false) const;
         /// Replaces an existing destination file atomically where the backend allows it.
         [[nodiscard]] virtual QString rename(const QUrl& from, const QUrl& to) const;
         [[nodiscard]] virtual NativeFileResult openNative(const QUrl& url, NativeOpen flags, int mode = 0644) const;
@@ -122,12 +122,9 @@ namespace io {
         [[nodiscard]] StatResult stat(const QUrl& url) const override;
         [[nodiscard]] ListResult list(const QUrl& url) const override;
         [[nodiscard]] QString makeDirectory(const QUrl& url, bool recursive = true) const override;
-        [[nodiscard]] QString remove(const QUrl& url) const override;
+        [[nodiscard]] QString remove(const QUrl& url, bool recursive = false) const override;
         [[nodiscard]] QString rename(const QUrl& from, const QUrl& to) const override;
         [[nodiscard]] NativeFileResult openNative(const QUrl& url, NativeOpen flags, int mode = 0644) const override;
-
-        /// Clean local path for a file URL or plain path; empty for other URLs.
-        [[nodiscard]] static QString resolveLocalPath(const QUrl& url);
     };
 
     class ContentDocumentVfsBackend final : public Vfs {
@@ -137,20 +134,31 @@ namespace io {
         [[nodiscard]] QString displayName(const QUrl& url) const override;
     };
 
+#ifdef Q_OS_ANDROID
     class SafTreeVfsBackend final : public Vfs {
        public:
         [[nodiscard]] bool supports(const QUrl& url) const;
         [[nodiscard]] OpenReadResult openRead(const QUrl& url) const override;
         [[nodiscard]] QString writeStream(const QUrl& url, const StreamWriter& writer, const WriteOptions& options = {}) const override;
         [[nodiscard]] QString displayName(const QUrl& url) const override;
-        [[nodiscard]] QString copyTree(const QUrl& source, const QUrl& destination) const override;
+        [[nodiscard]] QString copyDirectory(const QUrl& source, const QUrl& destination) const override;
         [[nodiscard]] QString resolveNativeDirectory(const QUrl& source) const override;
+        [[nodiscard]] StatResult stat(const QUrl& url) const override;
+        [[nodiscard]] ListResult list(const QUrl& url) const override;
     };
+#endif
 
     /// Local paths that ordinary app access cannot reach on this platform
     /// (Android/data and other apps' private data). Such paths use the
     /// privileged backend when Shizuku or root is authorized.
     [[nodiscard]] bool isPrivilegedPath(const QString& path);
+
+    /// Cleans a local path or file URL without querying the filesystem.
+    [[nodiscard]] QString resolveLocalPath(const QString& input);
+    [[nodiscard]] QString resolveLocalPath(const QUrl& url);
+    /// Resolves and canonicalizes an existing local path when possible.
+    [[nodiscard]] QString canonicalLocalPath(const QString& input);
+    [[nodiscard]] QString canonicalLocalPath(const QUrl& url);
 
     /// Shared URI-aware router used by DocumentIo.
     [[nodiscard]] Vfs& fileSystem();

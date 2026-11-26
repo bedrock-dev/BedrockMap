@@ -276,7 +276,7 @@ bool LogModel::save(const QUrl& destination) {
     if ((!destination.isLocalFile() && !platform::isContentUri(destination)) || destination.isEmpty()) {
         error_ = tr("The selected log destination is not supported.");
     } else if (destination.isLocalFile() && !log_file_.isEmpty() &&
-               platform::normalizeLocalPath(destination.toLocalFile()) == platform::normalizeLocalPath(log_file_)) {
+               io::DocumentIo::canonicalLocalPath(destination.toLocalFile()) == io::DocumentIo::canonicalLocalPath(log_file_)) {
         error_ = tr("Choose a different file from the active log file.");
     } else {
         loguru::flush();

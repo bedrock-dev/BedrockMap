@@ -3,7 +3,6 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QImage>
 #include <QPointer>
@@ -192,7 +191,7 @@ void AppController::selectWorkspace(int index) {
 }
 bool AppController::isWorldFolder(const QUrl& url) const {
     if (!url.isLocalFile()) return false;
-    const QString target = platform::normalizeLocalPath(url.toLocalFile());
+    const QString target = io::DocumentIo::canonicalLocalPath(url.toLocalFile());
     // A synchronous local check for desktop drag-and-drop. Opening the database,
     // including privileged Android access, runs on the session's open worker.
     return !target.isEmpty() && LevelOperator::isCompleteWorld(target);
@@ -261,7 +260,7 @@ bool AppController::hasOpenSessionInWorld(const QString& path) {
 #endif
     for (int i = 0; i < sessions_.sessions()->count(); ++i) {
         const auto* session = sessions_.sessions()->at(i);
-        const QString openPath = platform::normalizeLocalPath(session->path());
+        const QString openPath = io::DocumentIo::canonicalLocalPath(session->path());
         if (openPath.compare(path, caseSensitivity) == 0 || openPath.startsWith(path + QLatin1Char('/'), caseSensitivity)) return true;
     }
     return false;
@@ -273,7 +272,7 @@ void AppController::deleteWorld(const QString& path) {
         notifications_.warning(tr("Wait for the current world import to finish."));
         return;
     }
-    const QString target = platform::normalizeLocalPath(path);
+    const QString target = io::DocumentIo::canonicalLocalPath(path);
     if (!LevelOperator::isInternalWorld(target)) {
         notifications_.error(tr("Only worlds in the app's internal storage can be deleted."));
         return;
@@ -308,14 +307,14 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
         notifications_.warning(tr("Wait for the current world import to finish."));
         return;
     }
-    const QString source = platform::normalizeLocalPath(path);
+    const QString source = io::DocumentIo::canonicalLocalPath(path);
     if (source.isEmpty() || destination.isEmpty()) {
         notifications_.error(tr("Export failed"));
         return;
     }
     QUrl target = destination;
     if (target.isLocalFile()) {
-        QString targetPath = platform::normalizeLocalPath(target.toLocalFile());
+        QString targetPath = io::DocumentIo::canonicalLocalPath(target.toLocalFile());
         if (targetPath.isEmpty()) {
             notifications_.error(tr("Export failed"));
             return;
@@ -326,7 +325,15 @@ void AppController::exportWorld(const QString& path, const QUrl& destination) {
     startWorldExport(source, target, WorldExportKind::Mcworld, false);
 }
 
-bool AppController::exportFolderIsEmpty(const QUrl& destination) const { return io::DocumentIo::isDirectoryEmpty(destination); }
+bool AppController::exportFolderIsEmpty(const QUrl& destination) const {
+    QUrl localDestination = destination;
+    if (platform::isContentUri(destination)) {
+        const QString path = io::DocumentIo::resolveNativeDirectory(destination);
+        if (path.isEmpty()) return false;
+        localDestination = QUrl::fromLocalFile(path);
+    }
+    return io::DocumentIo::isDirectoryEmpty(localDestination);
+}
 
 void AppController::exportWorldFolder(const QString& path, const QUrl& destination) {
     if (!checkWorldFileOperationIdle()) return;
@@ -334,7 +341,7 @@ void AppController::exportWorldFolder(const QString& path, const QUrl& destinati
         notifications_.warning(tr("Wait for the current world import to finish."));
         return;
     }
-    const QString source = platform::normalizeLocalPath(path);
+    const QString source = io::DocumentIo::canonicalLocalPath(path);
     if (source.isEmpty() || destination.isEmpty()) {
         notifications_.error(tr("Export failed"), {}, tr("No export destination was provided."));
         return;
@@ -344,20 +351,27 @@ void AppController::exportWorldFolder(const QString& path, const QUrl& destinati
 
 void AppController::exportAndOpenWorld(const QString& path, const QString& title) {
     if (!checkWorldFileOperationIdle()) return;
-    const QString source = platform::normalizeLocalPath(path);
+    const QString source = io::DocumentIo::canonicalLocalPath(path);
     if (source.isEmpty()) {
         notifications_.error(tr("Export failed"));
         return;
     }
 
     const QString export_root = QDir(app_paths::cacheDirectory()).filePath(QStringLiteral("world_exports"));
-    if (!QDir().mkpath(export_root)) {
+    const QUrl export_root_url = QUrl::fromLocalFile(export_root);
+    if (const QString error = io::DocumentIo::makeDirectory(export_root_url); !error.isEmpty()) {
         notifications_.error(tr("Export failed"), {}, tr("Could not create the temporary export directory."));
         return;
     }
-    const QDateTime expires_before = QDateTime::currentDateTime().addDays(-1);
-    for (const auto& info : QDir(export_root).entryInfoList({QStringLiteral("*.mcworld")}, QDir::Files)) {
-        if (info.lastModified() < expires_before) QFile::remove(info.absoluteFilePath());
+    const qint64 expires_before = QDateTime::currentDateTime().addDays(-1).toSecsSinceEpoch();
+    const auto cached_exports = io::DocumentIo::list(export_root_url);
+    if (cached_exports.ok()) {
+        for (const QString& name : cached_exports.names) {
+            if (!name.endsWith(QStringLiteral(".mcworld"), Qt::CaseInsensitive)) continue;
+            const QUrl file_url = QUrl::fromLocalFile(QDir(export_root).filePath(name));
+            const auto info = io::DocumentIo::stat(file_url);
+            if (info.ok() && info.info.exists && info.info.modified < expires_before) static_cast<void>(io::DocumentIo::remove(file_url));
+        }
     }
 
     QString export_name = title.trimmed();

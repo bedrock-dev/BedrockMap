@@ -1,17 +1,16 @@
 #include "loader/recentworldstore.h"
 
-#include <QDir>
 #include <QFileInfo>
 #include <QSettings>
 
 #include "base/apppaths.h"
-#include "base/platform.h"
+#include "io/documentio.h"
 #include "loguru/loguru.hpp"
 
 RecentWorldStore::RecentWorldStore() : file_path_(app_paths::recentFile()) { load(); }
 
 void RecentWorldStore::add(const QString& path) {
-    const QString target = platform::normalizeLocalPath(path);
+    const QString target = io::DocumentIo::canonicalLocalPath(path);
     if (target.isEmpty()) return;
     paths_.removeAll(target);
     paths_.prepend(target);
@@ -22,7 +21,10 @@ int RecentWorldStore::pruneMissing() {
     const auto before = paths_.size();
     paths_.removeIf([](const QString& path) {
         // An inaccessible parent is not evidence that the world was deleted.
-        return !QDir(path).exists() && QDir(QFileInfo(path).absolutePath()).isReadable();
+        const auto world = io::DocumentIo::stat(QUrl::fromLocalFile(path));
+        if (!world.ok() || world.info.exists) return false;
+        const auto parent = io::DocumentIo::stat(QUrl::fromLocalFile(QFileInfo(path).absolutePath()));
+        return parent.ok() && parent.info.exists && parent.info.isDirectory;
     });
     if (paths_.size() != before) save();
     return before - paths_.size();
@@ -34,7 +36,7 @@ void RecentWorldStore::load() {
     const int size = settings.beginReadArray(QStringLiteral("RecentWorlds"));
     for (int i = 0; i < size; ++i) {
         settings.setArrayIndex(i);
-        const QString path = platform::normalizeLocalPath(settings.value(QStringLiteral("path")).toString());
+        const QString path = io::DocumentIo::canonicalLocalPath(settings.value(QStringLiteral("path")).toString());
         if (path.isEmpty()) continue;
         if (!paths_.contains(path) && paths_.size() < MaxHistory) paths_.append(path);
     }

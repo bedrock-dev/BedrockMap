@@ -4,13 +4,14 @@
 #include <exception>
 
 #include "base/platform.h"
+#include "io/androidcontentio.h"
 #include "io/vfs.h"
 
 namespace io {
     OpenReadResult ContentDocumentVfsBackend::openRead(const QUrl& url) const {
         if (!platform::isContentUri(url)) return {{}, QCoreApplication::translate("Vfs", "The URI is not a content document.")};
         auto file = std::make_unique<QFile>(url.toString(QUrl::FullyEncoded));
-        if (const QString error = platform::openDocumentFile(*file, QIODevice::ReadOnly); !error.isEmpty()) return {{}, error};
+        if (const QString error = detail::openContentDocument(*file, QIODevice::ReadOnly); !error.isEmpty()) return {{}, error};
         return {std::move(file), {}};
     }
 
@@ -32,7 +33,7 @@ namespace io {
         if (!staging.flush() || !staging.seek(0)) return staging.errorString();
 
         QFile file(url.toString(QUrl::FullyEncoded));
-        if (const QString error = platform::openDocumentFile(file, QIODevice::WriteOnly | QIODevice::Truncate); !error.isEmpty())
+        if (const QString error = detail::openContentDocument(file, QIODevice::WriteOnly | QIODevice::Truncate); !error.isEmpty())
             return error;
         while (!staging.atEnd()) {
             const QByteArray block = staging.read(256 * 1024);
@@ -44,7 +45,5 @@ namespace io {
         return file.error() == QFileDevice::NoError ? QString() : file.errorString();
     }
 
-    QString ContentDocumentVfsBackend::displayName(const QUrl& url) const {
-        return platform::fileDisplayName(url.toString(QUrl::FullyEncoded));
-    }
+    QString ContentDocumentVfsBackend::displayName(const QUrl& url) const { return detail::contentDisplayName(url); }
 }  // namespace io

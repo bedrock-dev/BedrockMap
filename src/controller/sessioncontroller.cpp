@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "base/appcontext.h"
-#include "base/platform.h"
 #include "controller/mcstructuresession.h"
 #include "controller/nbtsession.h"
 #include "io/documentio.h"
@@ -104,7 +103,7 @@ WorkspaceSession* SessionController::firstDirtySession() const {
 }
 
 WorkspaceSession* SessionController::openWorld(const QString& path, const QString& title) {
-    const QString target = platform::normalizeLocalPath(path);
+    const QString target = io::DocumentIo::canonicalLocalPath(path);
     if (target.isEmpty()) {
         emit warningOccurred(tr("World path is not available."), {});
         return nullptr;

@@ -2,8 +2,6 @@
 #define BEDROCKMAP_CLIPBOARDDATA_H
 
 #include <QByteArray>
-#include <QFile>
-#include <QFileInfo>
 #include <QMimeData>
 #include <QStringList>
 #include <QUrl>
@@ -16,26 +14,7 @@ namespace clipboard_data {
     inline constexpr char NBT_TAG_MIME_TYPE[] = "application/x-bedrockmap-nbt";
     inline constexpr char NBT_TAG_TEXT_PREFIX[] = "BedrockMap/nbt:v1:";
 
-    inline QByteArray read(const QMimeData* mimeData, const char* mimeType, const QStringList& fileExtensions) {
-        if (!mimeData) return {};
-
-        const auto raw = mimeData->data(QString::fromLatin1(mimeType));
-        if (!raw.isEmpty()) return raw;
-
-        for (const auto& url : mimeData->urls()) {
-            if (!url.isLocalFile()) continue;
-
-            const QFileInfo fileInfo(url.toLocalFile());
-            if (!fileInfo.isFile() || !fileExtensions.contains(fileInfo.suffix(), Qt::CaseInsensitive)) continue;
-
-            QFile file(fileInfo.filePath());
-            if (!file.open(QIODevice::ReadOnly)) continue;
-
-            const auto fileData = file.readAll();
-            if (!fileData.isEmpty()) return fileData;
-        }
-        return {};
-    }
+    QByteArray read(const QMimeData* mimeData, const char* mimeType, const QStringList& fileExtensions);
 
     inline void write(QMimeData& mimeData, const char* mimeType, const QByteArray& raw) {
         mimeData.setData(QString::fromLatin1(mimeType), raw);

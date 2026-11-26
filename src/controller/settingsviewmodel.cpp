@@ -10,7 +10,7 @@
 
 #include "base/apppaths.h"
 #include "base/config.h"
-#include "base/platform.h"
+#include "io/documentio.h"
 #include "loader/worldsource.h"
 
 SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_(setting::current()) {
@@ -250,20 +250,20 @@ void SettingsViewModel::setScanLeviPath(bool v) {
 }
 
 void SettingsViewModel::addCustomWorldPath(const QString& path) {
-    const QString normalized = platform::normalizeLocalPath(path.trimmed());
+    const QString normalized = io::DocumentIo::canonicalLocalPath(path.trimmed());
     if (normalized.isEmpty()) return;
     for (const auto& existing : values_.customWorldPaths) {
-        if (platform::normalizeLocalPath(existing) == normalized) return;
+        if (io::DocumentIo::canonicalLocalPath(existing) == normalized) return;
     }
     values_.customWorldPaths.append(normalized);
     emit settingsChanged();
 }
 
 void SettingsViewModel::removeCustomWorldPath(const QString& path) {
-    const QString normalized = platform::normalizeLocalPath(path.trimmed());
+    const QString normalized = io::DocumentIo::canonicalLocalPath(path.trimmed());
     if (normalized.isEmpty()) return;
     for (int i = 0; i < values_.customWorldPaths.size(); ++i) {
-        if (platform::normalizeLocalPath(values_.customWorldPaths.at(i)) == normalized) {
+        if (io::DocumentIo::canonicalLocalPath(values_.customWorldPaths.at(i)) == normalized) {
             values_.customWorldPaths.removeAt(i);
             emit settingsChanged();
             return;

@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/platform.h"
 #include "io/documentio.h"
 #include "level_dat.h"
 #include "loader/leveldbxor.h"
@@ -84,7 +83,7 @@ namespace {
         const QString games = QStringLiteral("games/com.mojang/minecraftWorlds");
         QSet<QString> seen;
         const auto append = [&](WorldSource source) {
-            source.path = platform::normalizeLocalPath(source.path);
+            source.path = io::DocumentIo::canonicalLocalPath(source.path);
             if (source.path.isEmpty() || seen.contains(source.path)) return;
             seen.insert(source.path);
             sources.push_back(std::move(source));
@@ -170,7 +169,7 @@ std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool s
 
     QSet<QString> seen;
     for (const auto& path : customPaths) {
-        const QString normalized = platform::normalizeLocalPath(path);
+        const QString normalized = io::DocumentIo::canonicalLocalPath(path);
         if (normalized.isEmpty() || seen.contains(normalized)) continue;
         seen.insert(normalized);
         sources.push_back({.path = normalized, .kind = WorldSourceKind::External});
@@ -179,7 +178,7 @@ std::vector<WorldSource> makeWorldSources(const QStringList& customPaths, bool s
 }
 
 WorldMetadata readWorldMetadata(const QString& path) {
-    const auto normalized = platform::normalizeLocalPath(path);
+    const auto normalized = io::DocumentIo::canonicalLocalPath(path);
     if (normalized.isEmpty()) return {};
     return readMetadata(normalized);
 }

@@ -20,7 +20,7 @@ namespace io {
         [[nodiscard]] StatResult stat(const QUrl& url) const override;
         [[nodiscard]] ListResult list(const QUrl& url) const override;
         [[nodiscard]] QString makeDirectory(const QUrl& url, bool recursive = true) const override;
-        [[nodiscard]] QString remove(const QUrl& url) const override;
+        [[nodiscard]] QString remove(const QUrl& url, bool recursive = false) const override;
         [[nodiscard]] QString rename(const QUrl& from, const QUrl& to) const override;
         [[nodiscard]] NativeFileResult openNative(const QUrl& url, NativeOpen flags, int mode = 0644) const override;
     };

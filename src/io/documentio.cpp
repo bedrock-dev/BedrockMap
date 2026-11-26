@@ -2,12 +2,8 @@
 
 #include <QByteArray>
 #include <QCoreApplication>
-#include <QDir>
-#include <QFileInfo>
 #include <QImage>
 #include <QImageWriter>
-
-#include "base/platform.h"
 
 namespace io {
     OpenReadResult DocumentIo::openRead(const QUrl& url) { return fileSystem().openRead(url); }
@@ -45,11 +41,8 @@ namespace io {
     }
 
     bool DocumentIo::isDirectoryEmpty(const QUrl& url) {
-        if (url.isLocalFile()) {
-            const auto entries = list(url);
-            return entries.ok() && entries.names.isEmpty();
-        }
-        return platform::isContentUri(url) && platform::isContentDirectoryEmpty(url);
+        const auto entries = list(url);
+        return entries.ok() && entries.names.isEmpty();
     }
 
     QString DocumentIo::displayName(const QUrl& url) { return fileSystem().displayName(url); }
@@ -65,14 +58,16 @@ namespace io {
         const bool drivePath = false;
 #endif
         if (!url.isLocalFile() && !url.scheme().isEmpty() && !drivePath) return text;
-        const QString localPath = url.isLocalFile() ? url.toLocalFile() : text;
-        const QString path = QDir::cleanPath(localPath);
-        const QFileInfo info(path);
-        const QString canonical = info.canonicalFilePath();
-        return canonical.isEmpty() ? info.absoluteFilePath() : canonical;
+        return io::canonicalLocalPath(url);
     }
 
-    QString DocumentIo::copyTree(const QUrl& source, const QUrl& destination) { return fileSystem().copyTree(source, destination); }
+    QString DocumentIo::canonicalLocalPath(const QString& input) { return io::canonicalLocalPath(input); }
+
+    QString DocumentIo::canonicalLocalPath(const QUrl& url) { return io::canonicalLocalPath(url); }
+
+    QString DocumentIo::copyDirectory(const QUrl& source, const QUrl& destination) {
+        return fileSystem().copyDirectory(source, destination);
+    }
 
     QString DocumentIo::resolveNativeDirectory(const QUrl& source) { return fileSystem().resolveNativeDirectory(source); }
 
@@ -82,11 +77,12 @@ namespace io {
 
     QString DocumentIo::makeDirectory(const QUrl& url, bool recursive) { return fileSystem().makeDirectory(url, recursive); }
 
-    QString DocumentIo::remove(const QUrl& url) { return fileSystem().remove(url); }
+    QString DocumentIo::remove(const QUrl& url, bool recursive) { return fileSystem().remove(url, recursive); }
 
     QString DocumentIo::rename(const QUrl& from, const QUrl& to) { return fileSystem().rename(from, to); }
 
     NativeFileResult DocumentIo::openNative(const QUrl& url, NativeOpen flags, int mode) {
         return fileSystem().openNative(url, flags, mode);
     }
+
 }  // namespace io
