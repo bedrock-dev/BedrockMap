@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QVariantMap>
 #include <algorithm>
+#include <cmath>
 
 #include "base/apppaths.h"
 #include "base/config.h"
@@ -242,6 +243,13 @@ BM_SET_DOUBLE(setGpuGrassHeightBase, gpuGrassHeightBase, settingsChanged, -128.0
 BM_SET_DOUBLE(setGpuGrassHeightRange, gpuGrassHeightRange, settingsChanged, 1.0, 512.0)
 BM_SET_STRING(setGpuGrassHeightColor, gpuGrassHeightColor, settingsChanged)
 BM_SET_BOOL(setCheckUpdate, checkUpdate, settingsChanged)
+
+void SettingsViewModel::setBorderWidth(double value) {
+    value = std::round(std::clamp(value, 0.0, 1.0) * 10.0) / 10.0;
+    if (qFuzzyCompare(values_.borderWidth + 1.0, value + 1.0)) return;
+    values_.borderWidth = value;
+    emit settingsChanged();
+}
 
 void SettingsViewModel::setScanLeviPath(bool v) {
     if (values_.scanLeviPath == v) return;

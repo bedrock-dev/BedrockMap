@@ -11,6 +11,7 @@ AbstractButton {
     property bool compact: false
     property bool flat: false
     property real visualHeight: Theme.touch ? Theme.controlVisualHeight : height
+    property real cornerRadius: Theme.radiusMedium
 
     readonly property bool hot: hovered || pressed
     readonly property color contentColor: {
@@ -36,7 +37,7 @@ AbstractButton {
     readonly property real visualBorderWidth: {
         if (root.visualFocus)
             return Theme.borderWidth * 3
-        return root.primary ? Theme.borderWidth : 0
+        return Theme.borderWidth
     }
     readonly property color visualBorderColor: {
         if (root.visualFocus || root.primary)
@@ -61,7 +62,7 @@ AbstractButton {
             anchors.centerIn: parent
             width: parent.width
             height: Math.max(0, Math.min(root.height, root.visualHeight))
-            radius: Theme.radiusMedium
+            radius: root.cornerRadius
             color: root.backgroundColor
             border.width: root.visualBorderWidth
             border.color: root.visualBorderColor

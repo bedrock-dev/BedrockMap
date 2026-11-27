@@ -190,7 +190,7 @@ QtObject {
         const text = base => Math.max(8, Math.round(base * scale) + (touch && base <= 12 ? 1 : 0))
         return Object.assign({}, palette, accentTones(palette), {
                                  metricScale: Math.max(1.0, scale) * uiScale,
-                                 borderWidth: 0.5,
+                                 borderWidth: App.settings.borderWidth * uiScale,
                                  radiusSmall: ui(3),
                                  radiusMedium: ui(6),
                                  radiusLarge: ui(8),

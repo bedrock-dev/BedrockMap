@@ -18,6 +18,7 @@
 #include <QFile>
 #include <QString>
 #include <algorithm>
+#include <cmath>
 #include <string>
 
 #include "base/apppaths.h"
@@ -145,6 +146,7 @@ setting::Settings setting::read() {
     loaded.colorTheme = s.value("theme", loaded.colorTheme).toString();
     loaded.collapseSidebarOnStartup = s.value("collapse_sidebar_on_startup", loaded.collapseSidebarOnStartup).toBool();
     loaded.fontSize = s.value("font_size", loaded.fontSize).toInt();
+    loaded.borderWidth = std::round(std::clamp(s.value("border_width", loaded.borderWidth).toDouble(), 0.0, 1.0) * 10.0) / 10.0;
     loaded.accentColor = s.value("accent_color", loaded.accentColor).toString();
     loaded.backgroundImage = s.value("background_image", loaded.backgroundImage).toString();
     loaded.backgroundImageOpacity = std::clamp(s.value("background_image_opacity", loaded.backgroundImageOpacity).toDouble(), 0.0, 1.0);
@@ -273,6 +275,7 @@ QString setting::save(const Settings& values) {
     s.setValue("collapse_sidebar_on_startup", values.collapseSidebarOnStartup);
     s.remove("font_family");
     s.setValue("font_size", values.fontSize);
+    s.setValue("border_width", values.borderWidth);
     s.setValue("accent_color", values.accentColor);
     s.setValue("background_image", values.backgroundImage);
     s.setValue("background_image_opacity", values.backgroundImageOpacity);

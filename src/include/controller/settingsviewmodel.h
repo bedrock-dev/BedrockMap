@@ -25,6 +25,7 @@ class SettingsViewModel final : public QObject {
     Q_PROPERTY(int leveldbXorMode READ leveldbXorMode WRITE setLeveldbXorMode NOTIFY settingsChanged)
     Q_PROPERTY(QString leveldbXorKey READ leveldbXorKey WRITE setLeveldbXorKey NOTIFY settingsChanged)
     Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
+    Q_PROPERTY(double borderWidth READ borderWidth WRITE setBorderWidth NOTIFY settingsChanged)
     /// Point size the platform falls back to while fontSize leaves the size open
     /// (-1); the UI shows the resulting effective size instead of the sentinel.
     Q_PROPERTY(int defaultFontSize READ defaultFontSize CONSTANT)
@@ -90,6 +91,7 @@ class SettingsViewModel final : public QObject {
     QString leveldbXorKey() const { return values_.leveldbXorKey; }
     /// Effective point size, i.e. what the settings page shows and edits.
     int fontSize() const { return values_.fontSize > 0 ? values_.fontSize : defaultFontSize(); }
+    double borderWidth() const { return values_.borderWidth; }
     int defaultFontSize() const;
     QString accentColor() const { return values_.accentColor; }
     QString backgroundImage() const { return values_.backgroundImage; }
@@ -155,6 +157,7 @@ class SettingsViewModel final : public QObject {
     void setLeveldbXorMode(int value);
     void setLeveldbXorKey(const QString& value);
     void setFontSize(int value);
+    void setBorderWidth(double value);
     void setAccentColor(const QString& value);
     void setBackgroundImage(const QString& value);
     void setBackgroundImageOpacity(double value);

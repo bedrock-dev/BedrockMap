@@ -53,6 +53,7 @@ Item {
                         anchors.fill: parent
                         radius: height / 2
                         color: Theme.surfaceAlt
+                        border.width: Theme.borderWidth
                         border.color: Theme.border
                     }
                     Rectangle {

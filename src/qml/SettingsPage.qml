@@ -175,6 +175,37 @@ Item {
                             from: 6
                             to: 96
                         }
+                        SettingRow {
+                            label: qsTr("Border width")
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: Theme.ui(260)
+                                Layout.minimumWidth: 0
+                                spacing: Theme.gapSmall
+                                AppSlider {
+                                    id: borderWidthSlider
+                                    Layout.fillWidth: true
+                                    from: 0
+                                    to: 1
+                                    stepSize: 0.1
+                                    snapMode: Slider.SnapAlways
+                                    onMoved: App.settings.borderWidth = value
+                                }
+                                Binding {
+                                    target: borderWidthSlider
+                                    property: "value"
+                                    value: App.settings.borderWidth
+                                    restoreMode: Binding.RestoreBindingOrValue
+                                }
+                                Label {
+                                    Layout.preferredWidth: Theme.ui(32)
+                                    text: Number(App.settings.borderWidth).toFixed(1)
+                                    color: Theme.text
+                                    font.pixelSize: Theme.fontSmall
+                                    horizontalAlignment: Text.AlignRight
+                                }
+                            }
+                        }
                         SettingSwitchRow {
                             label: qsTr("Collapse sidebar on startup")
                             setting: "collapseSidebarOnStartup"

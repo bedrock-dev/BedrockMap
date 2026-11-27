@@ -30,7 +30,7 @@ Rectangle {
 
     implicitHeight: Theme.segmentedHeight
     implicitWidth: fitLabels ? row.implicitWidth + Theme.gapTiny * 2 : 0
-    radius: Theme.radiusMedium
+    radius: Theme.radiusLarge
     color: Theme.surfaceAlt
     border.width: Theme.borderWidth
     border.color: Theme.border
@@ -85,6 +85,7 @@ Rectangle {
                     active: root.currentIndex === index
                     width: root.fitLabels ? implicitWidth : root.buttonWidth
                     height: row.height
+                    cornerRadius: Theme.radiusLarge
                     visualHeight: Theme.touch ? height - Theme.gapTiny * 2 : height
                     onClicked: root.activated(index)
                 }

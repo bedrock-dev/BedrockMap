@@ -360,6 +360,7 @@ Item {
                 height: 62
                 radius: Theme.radiusLarge
                 color: emptyMouse.pressed ? Theme.surfaceAlt : Theme.surface
+                border.width: Theme.borderWidth
                 border.color: Theme.border
                 Row {
                     anchors.fill: parent

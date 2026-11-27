@@ -60,6 +60,7 @@ namespace setting {
         QString colorTheme{"system"};
         bool collapseSidebarOnStartup{false};  // Start the QML sidebar collapsed when enabled.
         int fontSize{-1};
+        double borderWidth{0.0};  // Shared QML surface and control border width.
         QString accentColor;      // Empty keeps the built-in theme accent.
         QString backgroundImage;  // Local file or provider URL; empty disables it.
         double backgroundImageOpacity{0.35};

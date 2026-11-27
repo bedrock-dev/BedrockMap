@@ -49,6 +49,7 @@ Item {
                 height: 96
                 radius: Theme.radiusLarge
                 color: Theme.surface
+                border.width: Theme.borderWidth
                 border.color: Theme.border
                 Column {
                     anchors.centerIn: parent

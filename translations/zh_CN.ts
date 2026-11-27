@@ -3056,6 +3056,7 @@
     </message>
     <message>
         <location filename="../src/qml/SettingsPage.qml"/>
+        <location filename="../src/qml/SettingsPage.qml"/>
         <source>Border width</source>
         <translation>边框宽度</translation>
     </message>
