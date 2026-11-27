@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QUrl>
 #include <QVariantList>
 
 #include "base/config.h"
@@ -143,6 +144,8 @@ class SettingsViewModel final : public QObject {
     /// settings untouched.
     Q_INVOKABLE bool saveWorldSources();
     Q_INVOKABLE void reset();
+    Q_INVOKABLE QString importBackgroundImage(const QUrl& source);
+    Q_INVOKABLE QString clearBackgroundImage();
     void setColorTheme(const QString& value);
     void setCollapseSidebarOnStartup(bool value);
     void setShowMapDebugButton(bool value);

@@ -2152,6 +2152,10 @@
         <translation>Add world folder</translation>
     </message>
     <message>
+        <source>Background image</source>
+        <translation>Background image</translation>
+    </message>
+    <message>
         <source>Save</source>
         <translation type="unfinished">Save</translation>
     </message>
@@ -2248,12 +2252,28 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Afdian</source>
+        <translation>Afdian</translation>
+    </message>
+    <message>
+        <source>Support ongoing development</source>
+        <translation>Support ongoing development</translation>
+    </message>
+    <message>
         <source>Open-source credits</source>
         <translation>Open-source credits</translation>
     </message>
     <message>
         <source>Don&apos;t check for updates on startup</source>
         <translation>Don&apos;t check for updates on startup</translation>
+    </message>
+    <message>
+        <source>Support</source>
+        <translation>Support</translation>
+    </message>
+    <message>
+        <source>Star BedrockMap on GitHub</source>
+        <translation>Star BedrockMap on GitHub</translation>
     </message>
     <message>
         <source>Component</source>
@@ -2334,10 +2354,6 @@
     <message>
         <source>Black</source>
         <translation>Black</translation>
-    </message>
-    <message>
-        <source>Experimental background</source>
-        <translation>Experimental background</translation>
     </message>
     <message>
         <source>No image</source>
@@ -2566,6 +2582,13 @@
     <message>
         <source>Marker color</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SettingsViewModel</name>
+    <message>
+        <source>Could not import the background image: %1</source>
+        <translation>Could not import the background image: %1</translation>
     </message>
 </context>
 <context>

@@ -2152,6 +2152,10 @@
         <translation>添加世界目录</translation>
     </message>
     <message>
+        <source>Background image</source>
+        <translation>背景图片</translation>
+    </message>
+    <message>
         <source>Save</source>
         <translation type="unfinished">保存</translation>
     </message>
@@ -2248,12 +2252,28 @@
         <translation>贡献者</translation>
     </message>
     <message>
+        <source>Afdian</source>
+        <translation>爱发电</translation>
+    </message>
+    <message>
+        <source>Support ongoing development</source>
+        <translation>支持项目持续开发</translation>
+    </message>
+    <message>
         <source>Open-source credits</source>
         <translation>开源致谢</translation>
     </message>
     <message>
         <source>Don&apos;t check for updates on startup</source>
         <translation>启动时不自动检查更新</translation>
+    </message>
+    <message>
+        <source>Support</source>
+        <translation>支持</translation>
+    </message>
+    <message>
+        <source>Star BedrockMap on GitHub</source>
+        <translation>在 GitHub 上点亮 Star</translation>
     </message>
     <message>
         <source>Component</source>
@@ -2334,10 +2354,6 @@
     <message>
         <source>Black</source>
         <translation>纯黑</translation>
-    </message>
-    <message>
-        <source>Experimental background</source>
-        <translation>实验性背景</translation>
     </message>
     <message>
         <source>No image</source>
@@ -2566,6 +2582,13 @@
     <message>
         <source>Marker color</source>
         <translation>标记颜色</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsViewModel</name>
+    <message>
+        <source>Could not import the background image: %1</source>
+        <translation>无法导入背景图片：%1</translation>
     </message>
 </context>
 <context>

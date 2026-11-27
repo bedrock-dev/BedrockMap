@@ -82,6 +82,7 @@ Rectangle {
                     text: modelData
                     compact: true
                     flat: true
+                    showBorder: false
                     active: root.currentIndex === index
                     width: root.fitLabels ? implicitWidth : root.buttonWidth
                     height: row.height

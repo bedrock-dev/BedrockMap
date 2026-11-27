@@ -1,6 +1,7 @@
 #include "controller/settingsviewmodel.h"
 
 #include <QColor>
+#include <QDateTime>
 #include <QFont>
 #include <QFontInfo>
 #include <QGuiApplication>
@@ -13,6 +14,12 @@
 #include "base/config.h"
 #include "io/documentio.h"
 #include "loader/worldsource.h"
+
+namespace {
+    constexpr qint64 kMaximumBackgroundImageBytes = 64LL * 1024 * 1024;
+
+    QUrl backgroundImageLocation() { return QUrl::fromLocalFile(app_paths::configDirectory() + QStringLiteral("/background.img")); }
+}  // namespace
 
 SettingsViewModel::SettingsViewModel(QObject* parent) : QObject(parent), values_(setting::current()) {
     QSettings settings(app_paths::configFile(), QSettings::IniFormat);
@@ -63,6 +70,30 @@ void SettingsViewModel::reset() {
     values_ = setting::Settings{};
     emitAllChanged();
 }
+
+QString SettingsViewModel::importBackgroundImage(const QUrl& source) {
+    const io::ReadResult result = io::DocumentIo::readAll(source, kMaximumBackgroundImageBytes);
+    if (!result.ok()) return tr("Could not import the background image: %1").arg(result.error);
+
+    const QUrl destination = backgroundImageLocation();
+    const QString error = io::DocumentIo::writeBytes(destination, result.data);
+    if (!error.isEmpty()) return tr("Could not import the background image: %1").arg(error);
+
+    values_.backgroundImage = destination.toString() + QStringLiteral("?v=") + QString::number(QDateTime::currentMSecsSinceEpoch());
+    emit settingsChanged();
+    return {};
+}
+
+QString SettingsViewModel::clearBackgroundImage() {
+    if (!values_.backgroundImage.isEmpty()) {
+        values_.backgroundImage.clear();
+        emit settingsChanged();
+    }
+    const QUrl location = backgroundImageLocation();
+    const io::StatResult stat = io::DocumentIo::stat(location);
+    return stat.info.exists ? io::DocumentIo::remove(location) : QString{};
+}
+
 QVariantList SettingsViewModel::worldSources() const {
     QVariantList result;
     for (const auto& source : makeWorldSources(values_.customWorldPaths, values_.scanLeviPath)) {

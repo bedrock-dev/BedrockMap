@@ -106,7 +106,11 @@ Item {
         title: qsTr("Choose background image")
         fileMode: FileDialog.OpenFile
         nameFilters: FileDialogSupport.imageFilters
-        onAccepted: App.settings.backgroundImage = selectedUrl.toString()
+        onAccepted: {
+            const error = App.settings.importBackgroundImage(selectedUrl)
+            if (error.length > 0)
+                App.notifications.error(qsTr("Background image"), "", error)
+        }
     }
 
     Rectangle {
@@ -269,7 +273,7 @@ Item {
                         }
                     }
                     SettingGroup {
-                        title: qsTr("Experimental background")
+                        title: qsTr("Background image")
                         SettingRow {
                             label: qsTr("Image path")
                             RowLayout {
@@ -281,7 +285,8 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 0
                                     Layout.minimumWidth: 0
-                                    text: App.settings.backgroundImage.length > 0 ? App.settings.backgroundImage : qsTr(
+                                    text: App.settings.backgroundImage.length > 0 ? App.settings.backgroundImage.replace(
+                                                                                        /\?v=\d+$/, "") : qsTr(
                                                                                         "No image")
                                     color: Theme.muted
                                     font.pixelSize: Theme.fontSmall
@@ -297,7 +302,11 @@ Item {
                                     iconName: "close"
                                     label: qsTr("Clear background image")
                                     danger: true
-                                    onClicked: App.settings.backgroundImage = ""
+                                    onClicked: {
+                                        const error = App.settings.clearBackgroundImage()
+                                        if (error.length > 0)
+                                            App.notifications.error(qsTr("Background image"), "", error)
+                                    }
                                 }
                             }
                         }
@@ -745,29 +754,54 @@ Item {
                             restoreMode: Binding.RestoreBindingOrValue
                         }
                     }
-                    SettingGroup {
-                        title: qsTr("Developers")
-                        PersonRow {
-                            primary: true
-                            name: "hhhxiao"
-                            url: "https://github.com/hhhxiao"
-                        }
-                        Rectangle {
+                    GridLayout {
+                        Layout.fillWidth: true
+                        columns: page.compact ? 1 : 2
+                        columnSpacing: Theme.gapLarge
+                        rowSpacing: Theme.gapLarge
+                        SettingGroup {
                             Layout.fillWidth: true
-                            Layout.topMargin: Theme.gapSmall
-                            Layout.bottomMargin: Theme.gapSmall
-                            implicitHeight: Theme.borderWidth
-                            color: Theme.border
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: 0
+                            title: qsTr("Developers")
+                            PersonRow {
+                                primary: true
+                                name: "hhhxiao"
+                                url: "https://github.com/hhhxiao"
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.topMargin: Theme.gapSmall
+                                Layout.bottomMargin: Theme.gapSmall
+                                implicitHeight: Theme.borderWidth
+                                color: Theme.border
+                            }
+                            PersonRow {
+                                name: "INTZOT"
+                                role: qsTr("Contributor")
+                                url: "https://space.bilibili.com/382492603"
+                            }
+                            PersonRow {
+                                name: "OEOTYAN"
+                                role: qsTr("Contributor")
+                                url: "https://github.com/OEOTYAN"
+                            }
                         }
-                        PersonRow {
-                            name: "INTZOT"
-                            role: qsTr("Contributor")
-                            url: "https://space.bilibili.com/382492603"
-                        }
-                        PersonRow {
-                            name: "OEOTYAN"
-                            role: qsTr("Contributor")
-                            url: "https://github.com/OEOTYAN"
+                        SettingGroup {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: 0
+                            title: qsTr("Support")
+                            PersonRow {
+                                name: "GitHub"
+                                role: qsTr("Star BedrockMap on GitHub")
+                                url: "https://github.com/bedrock-dev/BedrockMap"
+                            }
+                            PersonRow {
+                                name: qsTr("Afdian")
+                                role: qsTr("Support ongoing development")
+                                url: "https://afdian.com/a/hhhxiao"
+                            }
                         }
                     }
                     SettingGroup {

@@ -10,6 +10,7 @@ AbstractButton {
     property bool active: false
     property bool compact: false
     property bool flat: false
+    property bool showBorder: true
     property real visualHeight: Theme.touch ? Theme.controlVisualHeight : height
     property real cornerRadius: Theme.radiusMedium
 
@@ -35,6 +36,8 @@ AbstractButton {
         return root.hot ? Theme.surface : Theme.surfaceAlt
     }
     readonly property real visualBorderWidth: {
+        if (!root.showBorder)
+            return 0
         if (root.visualFocus)
             return Theme.borderWidth * 3
         return Theme.borderWidth

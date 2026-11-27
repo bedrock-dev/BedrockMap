@@ -37,8 +37,8 @@ AbstractButton {
         color: root.active ? Theme.accentSoft : (root.hovered || root.pressed ? Theme.surfaceAlt : (root.pageMode
                                                                                                     ? Theme.surface :
                                                                                                       "transparent"))
-        border.width: root.visualFocus ? Theme.borderWidth * 3 : (root.active || root.pageMode ? Theme.borderWidth : 0)
-        border.color: root.visualFocus || root.active ? Theme.accent : Theme.border
+        border.width: root.visualFocus ? Theme.borderWidth * 3 : (root.pageMode ? Theme.borderWidth : 0)
+        border.color: root.visualFocus ? Theme.accent : Theme.border
     }
 
     contentItem: Item {
@@ -53,6 +53,7 @@ AbstractButton {
                 radius: root.railMode ? width / 2 : Theme.radiusMedium
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.active ? Theme.accentSoft : "transparent"
+                border.width: 0
 
                 AppIcon {
                     anchors.centerIn: parent
