@@ -254,15 +254,17 @@ namespace platform {
         if (!GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) return 0.0;
         return static_cast<double>(pmc.WorkingSetSize) / (1024.0 * 1024.0);
 #elif defined(Q_OS_ANDROID)
-        QFile statm(QStringLiteral("/proc/self/statm"));
-        if (!statm.open(QIODevice::ReadOnly)) return 0.0;
-        const auto fields = statm.readAll().simplified().split(' ');
-        if (fields.size() < 2) return 0.0;
-        bool ok = false;
-        const auto residentPages = fields[1].toULongLong(&ok);
-        const long pageSize = sysconf(_SC_PAGESIZE);
-        if (!ok || pageSize <= 0) return 0.0;
-        return static_cast<double>(residentPages) * static_cast<double>(pageSize) / (1024.0 * 1024.0);
+        QFile status(QStringLiteral("/proc/self/status"));
+        if (!status.open(QIODevice::ReadOnly)) return 0.0;
+        for (const QByteArray& line : status.readAll().split('\n')) {
+            if (!line.startsWith("VmRSS:")) continue;
+            const auto fields = line.simplified().split(' ');
+            if (fields.size() < 2) return 0.0;
+            bool ok = false;
+            const double kibibytes = fields[1].toDouble(&ok);
+            return ok ? kibibytes / 1024.0 : 0.0;
+        }
+        return 0.0;
 #else
         return 0.0;
 #endif

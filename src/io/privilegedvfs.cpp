@@ -22,7 +22,7 @@ namespace io {
 
         QString errnoText(int error) { return QString::fromLocal8Bit(std::strerror(error)); }
 
-        QString pathOf(const QUrl& url) { return LocalVfsBackend::resolveLocalPath(url); }
+        QString pathOf(const QUrl& url) { return resolveLocalPath(url); }
 
         QString invalidPath() { return QCoreApplication::translate("Vfs", "The local file path is invalid."); }
 
