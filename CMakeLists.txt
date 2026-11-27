@@ -278,6 +278,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/benchmark)
 qt6_add_translations(TARGETS BedrockMap
     SOURCE_TARGETS BedrockMap BedrockMapCore
     TS_FILES ${TS_FILES}
+    LUPDATE_OPTIONS -locations none
     RESOURCE_PREFIX "${BEDROCKMAP_RESOURCE_PREFIX}/i18n"
 )
 

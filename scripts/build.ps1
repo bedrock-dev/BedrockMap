@@ -11,12 +11,7 @@ $qtPath = $env:QT_ROOT
 
 # Update language files.
 $lupdate = Join-Path  $qtPath "\bin\lupdate.exe"
-& $lupdate -no-obsolete -no-ui-lines -recursive ./src -ts translations/zh_CN.ts translations/en.ts
-# Strip line numbers from .ts files (UTF-8 without BOM) to avoid spurious diffs.
-Get-ChildItem translations/*.ts | ForEach-Object {
-    $content = (Get-Content $_ -Encoding UTF8 -Raw) -replace ' line="\d+"', ''
-    [System.IO.File]::WriteAllText($_.FullName, $content, [System.Text.UTF8Encoding]::new($false))
-}
+& $lupdate -no-obsolete -locations none -recursive ./src -ts translations/zh_CN.ts translations/en.ts
 
 # Release (-Rel) builds go to build_rls/, debug builds to build/.
 $build_dir = Join-Path (Get-Location) $(if ($Rel) { "build_rls" } else { "build" })
