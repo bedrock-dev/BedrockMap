@@ -2813,6 +2813,14 @@
         <translation>查看应用、地图和 3D 视图的快捷键</translation>
     </message>
     <message>
+        <source>Tutorial</source>
+        <translation>教程</translation>
+    </message>
+    <message>
+        <source>Open the online BedrockMap guide</source>
+        <translation>在浏览器中打开 BedrockMap 在线指南</translation>
+    </message>
+    <message>
         <source>Show logs</source>
         <translation>显示日志</translation>
     </message>

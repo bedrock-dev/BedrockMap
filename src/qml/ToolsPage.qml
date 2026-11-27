@@ -9,6 +9,14 @@ Item {
 
     readonly property alias childPages: pageGroup
 
+    function openTutorial() {
+        const configured = App.settings.language
+        const language = !configured || configured === "system" ? Qt.locale().name : configured
+        const url = language.toLowerCase().startsWith("zh") ? "https://bedrock-dev.github.io/bm/guide/" :
+                                                              "https://bedrock-dev.github.io/en/bm/guide/"
+        Qt.openUrlExternally(url)
+    }
+
     onVisibleChanged: if (!visible)
                           pageGroup.reset("root")
 
@@ -37,6 +45,12 @@ Item {
                 detail: qsTr("View shortcuts for the application, map and 3D view")
                 iconName: "shortcuts"
                 onClicked: pageGroup.push("shortcuts")
+            }
+            AppListRow {
+                label: qsTr("Tutorial")
+                detail: qsTr("Open the online BedrockMap guide")
+                iconName: "open"
+                onClicked: page.openTutorial()
             }
             AppListRow {
                 label: qsTr("Show logs")

@@ -2813,6 +2813,14 @@
         <translation>View shortcuts for the application, map and 3D view</translation>
     </message>
     <message>
+        <source>Tutorial</source>
+        <translation>Tutorial</translation>
+    </message>
+    <message>
+        <source>Open the online BedrockMap guide</source>
+        <translation>Open the online BedrockMap guide</translation>
+    </message>
+    <message>
         <source>Show logs</source>
         <translation type="unfinished"></translation>
     </message>
