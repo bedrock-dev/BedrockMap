@@ -48,7 +48,7 @@ Item {
             }
             AppListRow {
                 label: qsTr("Tutorial")
-                detail: qsTr("Open the online BedrockMap guide")
+                detail: qsTr("Open the online BedrockMap guide (continuously updated)")
                 iconName: "open"
                 onClicked: page.openTutorial()
             }

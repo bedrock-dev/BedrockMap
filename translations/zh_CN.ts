@@ -228,11 +228,11 @@
     </message>
     <message>
         <source>Extracting world archive</source>
-        <translation type="unfinished"></translation>
+        <translation>正在解压世界存档</translation>
     </message>
     <message>
         <source>Copying world</source>
-        <translation type="unfinished"></translation>
+        <translation>正在复制世界</translation>
     </message>
     <message>
         <source>Import successful</source>
@@ -2801,6 +2801,10 @@
         <translation>键盘快捷键</translation>
     </message>
     <message>
+        <source>Open the online BedrockMap guide (continuously updated)</source>
+        <translation>在浏览器中打开 BedrockMap 在线指南（持续更新中）</translation>
+    </message>
+    <message>
         <source>Logs</source>
         <translation>日志</translation>
     </message>
@@ -2815,10 +2819,6 @@
     <message>
         <source>Tutorial</source>
         <translation>教程</translation>
-    </message>
-    <message>
-        <source>Open the online BedrockMap guide</source>
-        <translation>在浏览器中打开 BedrockMap 在线指南</translation>
     </message>
     <message>
         <source>Show logs</source>

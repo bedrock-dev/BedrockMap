@@ -228,11 +228,11 @@
     </message>
     <message>
         <source>Extracting world archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Extracting world archive</translation>
     </message>
     <message>
         <source>Copying world</source>
-        <translation type="unfinished"></translation>
+        <translation>Copying world</translation>
     </message>
     <message>
         <source>Import successful</source>
@@ -2801,6 +2801,10 @@
         <translation>Keyboard shortcuts</translation>
     </message>
     <message>
+        <source>Open the online BedrockMap guide (continuously updated)</source>
+        <translation>Open the online BedrockMap guide (continuously updated)</translation>
+    </message>
+    <message>
         <source>Logs</source>
         <translation>Logs</translation>
     </message>
@@ -2815,10 +2819,6 @@
     <message>
         <source>Tutorial</source>
         <translation>Tutorial</translation>
-    </message>
-    <message>
-        <source>Open the online BedrockMap guide</source>
-        <translation>Open the online BedrockMap guide</translation>
     </message>
     <message>
         <source>Show logs</source>
