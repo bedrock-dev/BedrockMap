@@ -1,3 +1,57 @@
+# BedrockMap 1.6.0 更新日志
+
+发布日期：2026-11-27
+
+## 新增功能
+
+- 优化整体界面与导航效果，改善控件间距、圆角以及小窗口和移动端布局，并支持调节界面边框宽度。
+- 大幅重做 3D 视图的结构导入和导出流程，支持实体、空气、结构空位、新版格式、虚空区域结构和区块网格参考平面。
+- 世界导出新增“导出到文件夹”，可直接生成 `level.dat` 和 `db/` 等内容，无需再经过压缩包步骤。
+- 导入世界时自动检测文件实际格式，避免文件被错误解析成NBT。
+- 新增地图初始位置设置，可在打开世界时定位到原点、世界出生点或玩家位置。
+- NBT 记录表新增正则搜索和多选批量操作
+- 关闭未保存的会话时新增保存、放弃或取消确认流程。
+- 新增自定义背景图片和透明度调节功能。
+- 新增在线教程（工具->教程，更新中可能不完善）
+- 兼容 LeviLauncher 新版实例目录结构
+- 补充和修复部分缺失的文本和翻译
+
+## Bug 修复
+
+- 修复把mcstructure导入到世界内可能发生的存档格式不兼容进而造成闪退的问题。
+- 修复mcstructure导入到全局数据的名称异常问题。
+- 修复空文件夹被误判为非空、空存档导出和文件夹导出状态判断错误的问题。
+- 修复若干界面布局、图标和交互状态异常。
+
+---
+
+# BedrockMap 1.6.0 Changelog
+
+Release date: 2026-11-27
+
+## New Features
+
+- Improved the overall interface and navigation, including control spacing, corner radii, small-window and mobile layouts, and a configurable interface border width.
+- Overhauled 3D-view structure import and export, with support for entities, air, structure voids, the new format, structures in empty areas, and a chunk-grid reference plane.
+- Added "Export to Folder" for worlds, which writes `level.dat`, `db/`, and other contents directly without requiring an intermediate archive.
+- Added automatic detection of the actual file format when importing worlds, preventing files from being incorrectly parsed as NBT.
+- Added an initial map position setting that can open a world at the origin, world spawn, or player position.
+- Added regular-expression search and multi-select batch operations to NBT record tables.
+- Added a save, discard, or cancel confirmation flow when closing sessions with unsaved changes.
+- Added custom background images and opacity adjustment.
+- Added online tutorials under Tools → Tutorial; they are still being updated and may be incomplete.
+- Added compatibility with the new LeviLauncher instance directory layout.
+- Added and fixed some missing text and translations.
+
+## Bug Fixes
+
+- Fixed crashes caused by save-format incompatibilities when importing an mcstructure into a world.
+- Fixed incorrect names when importing mcstructures into global data.
+- Fixed empty folders being incorrectly detected as non-empty, as well as incorrect status handling for empty-world and folder exports.
+- Fixed several interface layout, icon, and interaction-state issues.
+
+---
+
 # BedrockMap 1.5.0-beta5 更新日志
 
 发布日期：2026-11-15
